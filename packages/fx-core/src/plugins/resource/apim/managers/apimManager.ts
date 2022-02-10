@@ -7,26 +7,15 @@ import {
   ApimPluginConfigKeys,
 } from "../constants";
 import { AssertNotEmpty } from "../error";
-import {
-  IAadPluginConfig,
-  IApimPluginConfig,
-  IFunctionPluginConfig,
-  ISolutionConfig,
-  SolutionConfig,
-} from "../config";
+import { IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import {
-  LogProvider,
-  PluginContext,
-  TelemetryReporter,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
-  getproductNameFromResourceId,
+  getProductNameFromResourceId,
   Lazy,
 } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
@@ -58,11 +47,7 @@ export class ApimManager {
     this.telemetryReporter = telemetryReporter;
   }
 
-  public async provision(
-    apimConfig: IApimPluginConfig,
-    solutionConfig: ISolutionConfig,
-    appName: string
-  ): Promise<void> {
+  public async provision(apimConfig: IApimPluginConfig): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
     const currentUserId = await apimService.getUserId();
 
@@ -80,13 +65,6 @@ export class ApimManager {
       : currentUserId;
   }
 
-  public async postProvision(
-    apimConfig: IApimPluginConfig,
-    ctx: PluginContext,
-    aadConfig: IAadPluginConfig,
-    appName: string
-  ): Promise<void> {}
-
   public async deploy(
     apimConfig: IApimPluginConfig,
     solutionConfig: ISolutionConfig,
@@ -102,7 +80,7 @@ export class ApimManager {
     const resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
     const apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
     const authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
-    const productId = getproductNameFromResourceId(apimProductResourceId);
+    const productId = getProductNameFromResourceId(apimProductResourceId);
 
     const apiPrefix = apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const apiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);

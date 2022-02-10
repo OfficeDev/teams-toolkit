@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { EnvInfo, UserError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { solutionGlobalVars } from "../../../solution/fx-solution/v3/solutionGlobalVars";
 import { PluginLifeCycle, ProjectConstants, OperationStatus } from "../constants";
 import { IName } from "../interfaces/IName";
-import { SolutionConfig } from "../config";
 
 class TelemetryEventName {
   public static readonly apimOperation: string = "apim-operation";
@@ -22,14 +22,12 @@ class TelemetryPropertyName {
 export class Telemetry {
   public static sendLifeCycleEvent(
     telemetryReporter: TelemetryReporter | undefined,
-    envInfo: EnvInfo,
     lifeCycle: PluginLifeCycle,
     status: OperationStatus,
     error?: UserError | SystemError
   ): void {
-    const solutionConfig = new SolutionConfig(envInfo);
-    const properties = solutionConfig.remoteTeamsAppId
-      ? { appid: solutionConfig.remoteTeamsAppId }
+    const properties = solutionGlobalVars.TeamsAppId
+      ? { appid: solutionGlobalVars.TeamsAppId }
       : undefined;
     this.sendOperationEvent(telemetryReporter, lifeCycle, status, properties, undefined, error);
   }

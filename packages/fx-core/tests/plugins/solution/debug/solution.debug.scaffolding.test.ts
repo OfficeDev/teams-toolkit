@@ -19,6 +19,9 @@ import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-
 import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
 import { MockCryptoProvider } from "../../../core/utils";
 
+const numAADLocalEnvs = 2;
+const numSimpleAuthLocalEnvs = 10;
+
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -55,15 +58,15 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
-        numLocalEnvs: 31,
+        numTasks: 5,
+        numLocalEnvs: 21,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
-        numLocalEnvs: 31,
+        numTasks: 6,
+        numLocalEnvs: 21,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -77,7 +80,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -114,15 +117,15 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 6,
-        numLocalEnvs: 17,
+        numTasks: 4,
+        numLocalEnvs: 7,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 6,
-        numLocalEnvs: 17,
+        numTasks: 4,
+        numLocalEnvs: 7,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -135,7 +138,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -161,6 +164,87 @@ describe("solution.debug.scaffolding", () => {
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
+
+      it(`happy path: tab with Simple Auth and without function (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
+        );
+      });
+
+      it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: [],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        // When AAD plugin is not activated, loginUrl and clientId will not be added.
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs - numAADLocalEnvs
+        );
+      });
     });
 
     const parameters3: TestParameter[] = [
@@ -168,14 +252,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
+        numTasks: 5,
         numLocalEnvs: 12,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
+        numTasks: 5,
         numLocalEnvs: 12,
       },
     ];
@@ -221,15 +305,15 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 12,
-        numLocalEnvs: 43,
+        numTasks: 7,
+        numLocalEnvs: 33,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 12,
-        numLocalEnvs: 43,
+        numTasks: 8,
+        numLocalEnvs: 33,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -243,7 +327,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -280,15 +364,15 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
-        numLocalEnvs: 29,
+        numTasks: 6,
+        numLocalEnvs: 19,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
-        numLocalEnvs: 29,
+        numTasks: 6,
+        numLocalEnvs: 19,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -301,7 +385,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -326,6 +410,86 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+
+      it(`happy path: tab with Simple Auth and without function and bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
+        );
+      });
+
+      it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            activeResourcePlugins: [],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs - numAADLocalEnvs
+        );
       });
     });
 
@@ -376,7 +540,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "Azure",
           capabilities: ["Tab"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: [],
         },
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -472,7 +636,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
         programmingLanguage: "javascript",
       };
@@ -488,6 +652,100 @@ describe("solution.debug.scaffolding", () => {
       const packageJson = fs.readJSONSync(packageJsonPath);
       const scripts: [] = packageJson["scripts"];
       chai.assert.isTrue(scripts !== undefined);
+    });
+
+    it("happy path: add capability", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "Pre Debug Check",
+            dependsOn: "validate local prerequisites",
+          },
+          {
+            label: "validate local prerequisites",
+            type: "shell",
+            command: "exit ${command:fx-extension.validate-local-prerequisites}",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 5);
+      chai.assert.equal(compounds.length, 2);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      chai.assert.equal(tasks.length, 6);
+
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
+    });
+
+    it("happy path: add capability to old project", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "Pre Debug Check",
+            dependsOn: "dependency check",
+          },
+          {
+            label: "dependency check",
+            type: "shell",
+            command: "exit ${command:fx-extension.validate-dependencies}",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 5);
+      chai.assert.equal(compounds.length, 2);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      chai.assert.equal(tasks.length, 9);
+
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
   });
 

@@ -111,58 +111,6 @@ describe("ApimService", () => {
     });
   });
 
-  describe("#createService()", () => {
-    const sandbox = createSandbox();
-    let apimService: ApimService | undefined;
-    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
-    let apiManagementServiceStub: any;
-
-    beforeEach(() => {
-      const res = mockApimService(sandbox);
-      apimService = res.apimService;
-      apiManagementClient = res.apiManagementClient;
-      apiManagementServiceStub = mockApiManagementService(sandbox);
-      apiManagementClient.apiManagementService = apiManagementServiceStub;
-    });
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("create a new service", async () => {
-      await apimService!.createService(
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.new,
-        "eastus",
-        "test@uitest.com"
-      );
-
-      sandbox.assert.calledOnceWithMatch(
-        apiManagementServiceStub.createOrUpdate,
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.new,
-        match
-          .has("location", "eastus")
-          .and(match.has("publisherName", "test@uitest.com"))
-          .and(match.has("sku", match.has("name", "Consumption").and(match.has("capacity", 0))))
-      );
-
-      assert.calledOnce(apiManagementServiceStub.createOrUpdate);
-      assert.calledOnce(apiManagementServiceStub.get);
-    });
-
-    it("skip an existing service", async () => {
-      await apimService!.createService(
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.existing,
-        "eastus",
-        "test@uitest.com"
-      );
-
-      assert.notCalled(apiManagementServiceStub.createOrUpdate);
-      assert.calledOnce(apiManagementServiceStub.get);
-    });
-  });
-
   describe("#createVersionSet()", () => {
     const sandbox = createSandbox();
     let apimService: ApimService | undefined;

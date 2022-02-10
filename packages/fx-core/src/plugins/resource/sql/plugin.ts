@@ -10,7 +10,6 @@ import {
   Platform,
   traverse,
 } from "@microsoft/teamsfx-api";
-import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
 import { DialogUtils, ProgressTitle, ConfigureMessage } from "./utils/dialogUtils";
@@ -34,6 +33,7 @@ import {
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, getUuid } from "../../../common/tools";
+import { ManagementClient, SqlMgrClient } from "./managementClient";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -76,9 +76,9 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPreProvision);
     this.removeDatabases(ctx);
     await this.loadConfig(ctx);
-
-    DialogUtils.init(ctx);
-    TelemetryUtils.init(ctx);
+    await SqlMgrClient.create(ctx.azureAccountProvider!, this.config);
+    DialogUtils.init(ctx.ui);
+    TelemetryUtils.init(ctx.telemetryReporter);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
     await this.loadSkipAddingUser(ctx);
@@ -110,8 +110,8 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPostProvision);
     await this.loadConfig(ctx);
 
-    DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
-    TelemetryUtils.init(ctx);
+    DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
+    TelemetryUtils.init(ctx.telemetryReporter);
 
     const telemetryProperties = {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -127,14 +127,14 @@ export class SqlPluginImpl {
 
     ctx.config.delete(Constants.adminPassword);
 
-    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
+    await SqlMgrClient.create(ctx.azureAccountProvider!, this.config);
 
     ctx.logProvider?.info(Message.addFirewall);
-    await this.AddFireWallRules(managementClient);
+    await this.AddFireWallRules(SqlMgrClient);
 
     await DialogUtils.progressBar?.start();
     await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
-    await this.CheckAndSetAadAdmin(ctx, managementClient);
+    await this.CheckAndSetAadAdmin(ctx, SqlMgrClient);
 
     this.getIdentity(ctx);
 
@@ -143,9 +143,9 @@ export class SqlPluginImpl {
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
-        const sqlClient = await SqlClient.create(ctx, this.config);
+        const sqlClient = await SqlClient.create(ctx.azureAccountProvider!, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
-        await this.addDatabaseUser(ctx, sqlClient, managementClient);
+        await this.addDatabaseUser(ctx, sqlClient, SqlMgrClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
           this.config.identity,
@@ -161,7 +161,7 @@ export class SqlPluginImpl {
       );
     }
 
-    await managementClient.deleteLocalFirewallRule();
+    await SqlMgrClient.deleteLocalFirewallRule();
 
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, telemetryProperties);
     ctx.logProvider?.info(Message.endPostProvision);
@@ -345,12 +345,11 @@ export class SqlPluginImpl {
   }
 
   private async checkSqlExisting(ctx: PluginContext) {
-    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
     this.config.admin = ctx.config.get(Constants.admin) as string;
     this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
     this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
     if (this.config.sqlEndpoint && this.config.azureSubscriptionId) {
-      this.config.existSql = await managementClient.existAzureSQL();
+      this.config.existSql = await SqlMgrClient.existAzureSQL();
     }
   }
 

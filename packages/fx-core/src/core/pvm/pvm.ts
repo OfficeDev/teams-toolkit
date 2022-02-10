@@ -63,11 +63,7 @@ export default class PVM {
         return err(LoadPluginError());
       }
       const dynamicPlugins = Object.keys(plugins);
-      const allPlugins = [
-        ...dynamicPlugins,
-        ...BuiltInResourcePluginNames,
-        ...BuiltInScaffoldPluginNames,
-      ] as PluginName[];
+      const allPlugins = [...dynamicPlugins, ...BuiltInFeaturePluginNames] as PluginName[];
       return ok(allPlugins);
     } else {
       return err(result.error);
@@ -75,17 +71,11 @@ export default class PVM {
   }
 }
 
-export const BuiltInResourcePluginNames: string[] = [
+export const BuiltInFeaturePluginNames: string[] = [
   "fx-resource-appstudio",
   "fx-resource-aad",
   "fx-resource-bot",
   "fx-resource-azure-web-app",
-  "fx-resource-azure-storage",
+  "fx-resource-frontend-hosting",
   "fx-resource-spfx",
-];
-export const BuiltInScaffoldPluginNames: string[] = [
-  "fx-scaffold-blazor",
-  "fx-scaffold-react-tab",
-  "fx-scaffold-spfx",
-  "fx-scaffold-bot",
 ];

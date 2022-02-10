@@ -27,6 +27,7 @@ import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import "./v2";
+import "./v3";
 @Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
@@ -125,7 +126,7 @@ export class SqlPlugin implements Plugin {
       const errorCode = res.error.source + "." + res.error.name;
       const errorType =
         res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      TelemetryUtils.init(ctx);
+      TelemetryUtils.init(ctx.telemetryReporter);
       let errorMessage = res.error.message;
       if (res.error.innerError) {
         errorMessage += ` Detailed error: ${res.error.innerError.message}.`;

@@ -45,7 +45,7 @@ export async function provisionLocalResource(
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
     }
     const result = await ensurePermissionRequest(
-      azureSolutionSettings,
+      azureSolutionSettings!,
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {
@@ -109,16 +109,6 @@ export async function provisionLocalResource(
       );
       if (result.isErr()) {
         return new v2.FxPartialSuccess(localSettings, result.error);
-      }
-    } else {
-      if (!ctx.projectSetting.solutionSettings!.migrateFromV1) {
-        return new v2.FxFailure(
-          returnSystemError(
-            new Error("AAD plugin not selected or executeUserTask is undefined"),
-            SolutionSource,
-            SolutionError.InternelError
-          )
-        );
       }
     }
   }

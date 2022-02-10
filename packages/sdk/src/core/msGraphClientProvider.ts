@@ -3,7 +3,7 @@
 
 import { Client } from "@microsoft/microsoft-graph-client";
 import { MsGraphAuthProvider } from "./msGraphAuthProvider";
-import { TeamsFx } from "./teamsfx";
+import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 import { internalLogger } from "../util/logger";
 
 /**
@@ -57,7 +57,10 @@ import { internalLogger } from "../util/logger";
  *
  * @beta
  */
-export function createMicrosoftGraphClient(teamsfx: TeamsFx, scopes?: string | string[]): Client {
+export function createMicrosoftGraphClient(
+  teamsfx: TeamsFxConfiguration,
+  scopes?: string | string[]
+): Client {
   internalLogger.info("Create Microsoft Graph Client");
   const authProvider = new MsGraphAuthProvider(teamsfx, scopes);
   const graphClient = Client.initWithMiddleware({

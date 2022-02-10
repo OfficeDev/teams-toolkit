@@ -8,12 +8,13 @@ import { UserInfo } from "../models/userinfo";
 import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
+import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
 /**
  * A class providing credential and configuration.
  * @beta
  */
-export class TeamsFx {
+export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;
   private teamsUserCredential?: TeamsUserCredential;
   public identityType: IdentityType;
@@ -34,7 +35,15 @@ export class TeamsFx {
   }
 
   private loadFromEnv(): void {
-    const env = process.env;
+    let env: any;
+    if (window) {
+      env = (window as any).__env__;
+    } else {
+      env = process.env;
+    }
+    if (!env) {
+      return;
+    }
     this.configuration.set("authorityHost", env.REACT_APP_AUTHORITY_HOST);
     this.configuration.set("tenantId", env.REACT_APP_TENANT_ID);
     this.configuration.set("clientId", env.REACT_APP_CLIENT_ID);
@@ -70,9 +79,9 @@ export class TeamsFx {
     return this;
   }
 
-  public setCustomConfig(customConfig: Map<string, string>): TeamsFx {
-    for (const key of customConfig.keys()) {
-      const value = customConfig.get(key);
+  public setCustomConfig(customConfig: Record<string, string>): TeamsFx {
+    for (const key of Object.keys(customConfig)) {
+      const value = customConfig[key];
       if (value) {
         this.configuration.set(key, value);
       }

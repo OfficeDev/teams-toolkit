@@ -3,7 +3,7 @@
 
 import { AuthenticationProvider } from "@microsoft/microsoft-graph-client";
 import { ErrorWithCode, ErrorCode } from "./errors";
-import { TeamsFx } from "./teamsfx";
+import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 import { internalLogger } from "../util/logger";
 import { validateScopesType } from "../util/utils";
 
@@ -15,7 +15,7 @@ const defaultScope = "https://graph.microsoft.com/.default";
  * @beta
  */
 export class MsGraphAuthProvider implements AuthenticationProvider {
-  private teamsfx: TeamsFx;
+  private teamsfx: TeamsFxConfiguration;
   private scopes: string | string[];
 
   /**
@@ -30,7 +30,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    *
    * @beta
    */
-  constructor(teamsfx: TeamsFx, scopes?: string | string[]) {
+  constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]) {
     this.teamsfx = teamsfx;
 
     let scopesStr = defaultScope;

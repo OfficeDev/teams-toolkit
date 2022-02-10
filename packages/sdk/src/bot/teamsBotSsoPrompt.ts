@@ -365,11 +365,11 @@ export class TeamsBotSsoPrompt extends Dialog {
   private getSignInResource(loginHint: string) {
     internalLogger.verbose("Get sign in authentication configuration");
 
-    const signInLink = `${this.teamsfx.getConfig("initiateLoginEndpoint")}?
-      scope=${encodeURI(this.settings.scopes.join(" "))}
-      &clientId=${this.teamsfx.getConfig("clientId")}
-      &tenantId=${this.teamsfx.getConfig("tenantId")}
-      &loginHint=${loginHint}`;
+    const signInLink = `${this.teamsfx.getConfig("initiateLoginEndpoint")}?scope=${encodeURI(
+      this.settings.scopes.join(" ")
+    )}&clientId=${this.teamsfx.getConfig("clientId")}&tenantId=${this.teamsfx.getConfig(
+      "tenantId"
+    )}&loginHint=${loginHint}`;
 
     internalLogger.verbose("Sign in link: " + signInLink);
 

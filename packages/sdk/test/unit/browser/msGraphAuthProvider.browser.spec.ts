@@ -5,8 +5,8 @@ import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import {
+  TeamsFx,
   MsGraphAuthProvider,
-  loadConfiguration,
   TeamsUserCredential,
   ErrorWithCode,
   ErrorCode,
@@ -22,46 +22,34 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
   const accessToken = "fake_access_token";
-
-  function loadDefaultConfig() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: loginUrl,
-        simpleAuthEndpoint: authEndpoint,
-        clientId: clientId,
-      },
-    });
-  }
-
-  beforeEach(function () {
-    loadDefaultConfig();
+  const teamsfx = new TeamsFx();
+  teamsfx.setCustomConfig({
+    initiateLoginEndpoint: loginUrl,
+    simpleAuthEndpoint: authEndpoint,
+    clientId: clientId,
   });
 
   it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function () {
-    const credential = new TeamsUserCredential();
     const invalidScopes: any = [10, 20];
     expect(() => {
-      new MsGraphAuthProvider(credential, invalidScopes);
+      new MsGraphAuthProvider(teamsfx, invalidScopes);
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("create MsGraphAuthProvider instance should success with given scopes", async function () {
-    const credential = new TeamsUserCredential();
-    const authProvider: any = new MsGraphAuthProvider(credential, scopes);
+    const authProvider: any = new MsGraphAuthProvider(teamsfx, scopes);
     assert.strictEqual(authProvider.scopes, scopes);
   });
 
   it("create MsGraphAuthProvider instance should success with empty scope", async function () {
-    const credential = new TeamsUserCredential();
-    const authProvider: any = new MsGraphAuthProvider(credential, emptyScope);
+    const authProvider: any = new MsGraphAuthProvider(teamsfx, emptyScope);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
   it("create MsGraphAuthProvider instance should success without providing scope", async function () {
-    const credential = new TeamsUserCredential();
-    const authProvider: any = new MsGraphAuthProvider(credential);
+    const authProvider: any = new MsGraphAuthProvider(teamsfx);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
@@ -77,8 +65,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
           resolve(token);
         });
       });
-    const credential = new TeamsUserCredential();
-    const authProvider = new MsGraphAuthProvider(credential, scopes);
+    const authProvider = new MsGraphAuthProvider(teamsfx, scopes);
     const token = await authProvider.getAccessToken();
     assert.strictEqual(token, accessToken);
     sinon.restore();
@@ -94,8 +81,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
         );
       });
     const unconsentScopes = "unconsent_scope";
-    const credential = new TeamsUserCredential();
-    const authProvider = new MsGraphAuthProvider(credential, unconsentScopes);
+    const authProvider = new MsGraphAuthProvider(teamsfx, unconsentScopes);
     await expect(authProvider.getAccessToken())
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.UiRequiredError);

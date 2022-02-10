@@ -9,12 +9,13 @@ import { UserInfo } from "../models/userinfo";
 import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
+import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
 /**
  * A class providing credential and configuration.
  * @beta
  */
-export class TeamsFx {
+export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;
   private oboUserCredential?: OnBehalfOfUserCredential;
   private appCredential?: M365TenantCredential;

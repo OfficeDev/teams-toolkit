@@ -19,8 +19,7 @@
     <PackageReference Include="AdaptiveCards.Templating" Version="1.2.2" />
 {{/IS_BOT}}{{#IS_TAB}}
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="1.0.0" />
-    <PackageReference Include="Microsoft.TeamsFx.SimpleAuth" Version="0.1.1" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="0.3.0-rc" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="0.4.0-rc" />
 {{/IS_TAB}}
   </ItemGroup>
 

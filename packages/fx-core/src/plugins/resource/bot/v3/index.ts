@@ -31,6 +31,7 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   MessageExtensionItem,
+  TabOptionItem,
 } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import {
@@ -73,12 +74,12 @@ import {
   TemplateZipFallbackError,
   UnzipError,
 } from "./error";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.bot;
   displayName = "NodeJS Bot";
-  // public config: TeamsBotConfig = new TeamsBotConfig();
 
   getProgrammingLanguage(ctx: v2.Context): ProgrammingLanguage {
     const rawProgrammingLanguage = ctx.projectSetting.programmingLanguage;
@@ -207,23 +208,42 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const scaffoldRes = await this.scaffold(ctx, inputs);
-    if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-    const armRes = await this.generateResourceTemplate(ctx, inputs);
-    if (armRes.isErr()) return err(armRes.error);
+    ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
+    const newCapabilitySet = new Set<string>();
+    capabilities.forEach((c) => newCapabilitySet.add(c));
+    let templates: v2.ResourceTemplate[] = [];
+    if (!(capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id))) {
+      // bot is added for first time, scaffold and generate resource template
+      const scaffoldRes = await this.scaffold(ctx, inputs);
+      if (scaffoldRes.isErr()) return err(scaffoldRes.error);
+      const armRes = await this.generateResourceTemplate(ctx, inputs);
+      if (armRes.isErr()) return err(armRes.error);
+      templates = armRes.value;
+    }
+    const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
     const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (capabilitiesAnswer.includes(BotOptionItem.id)) {
+      capabilitiesToAddManifest.push({ name: "Bot" });
+      newCapabilitySet.add(BotOptionItem.id);
+    }
+    if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
+      capabilitiesToAddManifest.push({ name: "MessageExtension" });
+      newCapabilitySet.add(MessageExtensionItem.id);
+    }
+    const update = await ctx.appManifestProvider.addCapabilities(
+      ctx,
+      inputs,
+      capabilitiesToAddManifest
+    );
+    if (update.isErr()) return err(update.error);
+
+    solutionSettings.capabilities = Array.from(newCapabilitySet);
+
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    if (capabilitiesAnswer.includes(BotOptionItem.id) && !capabilities.includes(BotOptionItem.id))
-      capabilities.push(BotOptionItem.id);
-    if (
-      capabilitiesAnswer.includes(MessageExtensionItem.id) &&
-      !capabilities.includes(MessageExtensionItem.id)
-    )
-      capabilities.push(MessageExtensionItem.id);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(armRes.value);
+    return ok(templates);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async afterOtherFeaturesAdded(

@@ -36,6 +36,8 @@ import {
   AzureResourceFunction,
   AzureResourceKeyVault,
   AzureResourceSQL,
+  BotOptionItem,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();

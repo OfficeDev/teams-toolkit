@@ -70,6 +70,25 @@ describe("Test Errors", () => {
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
     });
+
+    it("[InferInnerError] expect errorType change to SystemError", () => {
+      // Arrange
+      // Act
+      const myError = new CreateAADAppError({
+        response: {
+          status: 500,
+          data: {
+            error: {
+              code: "SomeCode"
+            }
+          }
+        }
+      });
+      
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
+      chai.assert.isTrue(myError.errorType = ErrorType.System);
+    });
   });
 
   describe("CreateAADSecretError", () => {
@@ -80,6 +99,25 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
+    });
+
+    it("[InferInnerError] expect errorType change to SystemError", () => {
+      // Arrange
+      // Act
+      const myError = new CreateAADSecretError({
+        response: {
+          status: 500,
+          data: {
+            error: {
+              code: "SomeCode"
+            }
+          }
+        }
+      });
+      
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
+      chai.assert.isTrue(myError.errorType = ErrorType.System);
     });
   });
 

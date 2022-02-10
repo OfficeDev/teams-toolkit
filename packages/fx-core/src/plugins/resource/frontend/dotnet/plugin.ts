@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  Func,
+  PluginContext,
+  ok,
+  ReadonlyPluginConfig,
+  SolutionSettings,
+} from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
@@ -10,6 +16,7 @@ import {
   WebappBicep,
 } from "./constants";
 import { Messages } from "./resources/messages";
+import { scaffoldFromZipPackage } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
@@ -26,6 +33,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
+import { generateTemplateInfos } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -87,6 +95,16 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartScaffold);
+
+    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
+      .capabilities;
+    const templateInfos = generateTemplateInfos(selectedCapabilities, ctx);
+    for (const templateInfo of templateInfos) {
+      await scaffoldFromZipPackage(ctx.root, templateInfo);
+    }
+
+    Logger.info(Messages.EndScaffold);
     return ok(undefined);
   }
 

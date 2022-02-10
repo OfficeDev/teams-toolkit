@@ -1,17 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { EnvInfo, PluginConfig, ReadonlySolutionConfig } from "@microsoft/teamsfx-api";
+import {
+  EnvInfo,
+  Json,
+  PluginConfig,
+  ReadonlyPluginConfig,
+  ReadonlySolutionConfig,
+  v3,
+} from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
-  ComponentRetryOperations,
   SolutionConfigKeys,
   AadPluginConfigKeys,
   FunctionPluginConfigKeys,
   ApimPluginConfigKeys,
+  ProjectConstants,
+  ConfigRetryOperations,
+  ComponentRetryOperations,
 } from "./constants";
 import {
   AssertConfigNotEmpty,
   BuildError,
+  EmptyConfigValue,
   InvalidConfigValue,
   InvalidPropertyType,
   NoPluginConfig,
@@ -50,16 +60,21 @@ export interface ISolutionConfig {
   teamsAppTenantId: string;
   resourceGroupName: string;
   location: string;
-  remoteTeamsAppId?: string | undefined;
   subscriptionId: string | undefined;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
   // TODO update @microsoft/teamsfx-api to the latest version
-  private readonly config: PluginConfig;
+  private readonly config: PluginConfig | Json;
   private readonly envName: string;
-
-  constructor(config: PluginConfig, envName: string) {
+  constructor(config: PluginConfig | Json, envName: string) {
+    if (!config) {
+      throw BuildError(
+        NoPluginConfig,
+        TeamsToolkitComponent.ApimPlugin,
+        ComponentRetryOperations[TeamsToolkitComponent.ApimPlugin]
+      );
+    }
     this.config = config;
     this.envName = envName;
   }
@@ -144,7 +159,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
   }
 
   private getValue(key: string, namingRule?: INamingRule): string | undefined {
-    const value = this.config.getString(key);
+    const value = this.config.getString ? this.config.getString(key) : (this.config as Json)[key];
 
     if (namingRule && value) {
       const message = NamingRules.validate(value, namingRule);
@@ -156,7 +171,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
   }
 
   private setValue(key: string, value: string | undefined) {
-    this.config.set(key, value);
+    this.config.set ? this.config.set(key, value) : ((this.config as Json)[key] = value);
   }
 
   public checkAndGet(key: string): string {
@@ -171,9 +186,9 @@ export class ApimPluginConfig implements IApimPluginConfig {
 }
 
 export class FunctionPluginConfig implements IFunctionPluginConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo) {
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
     this.configOfOtherPlugins = envInfo.state;
     this.envName = envInfo.envName;
   }
@@ -193,9 +208,9 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
 }
 
 export class AadPluginConfig implements IAadPluginConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo) {
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
     this.configOfOtherPlugins = envInfo.state;
     this.envName = envInfo.envName;
   }
@@ -224,13 +239,12 @@ export class AadPluginConfig implements IAadPluginConfig {
 }
 
 export class SolutionConfig implements ISolutionConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo) {
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
     this.configOfOtherPlugins = envInfo.state;
     this.envName = envInfo.envName;
   }
-
   get resourceNameSuffix(): string {
     return this.checkAndGet(SolutionConfigKeys.resourceNameSuffix);
   }
@@ -243,16 +257,8 @@ export class SolutionConfig implements ISolutionConfig {
   get location(): string {
     return this.checkAndGet(SolutionConfigKeys.location);
   }
-  get remoteTeamsAppId(): string | undefined {
-    return this.configOfOtherPlugins
-      .get(TeamsToolkitComponent.Solution)
-      ?.get(SolutionConfigKeys.remoteTeamsAppId) as string;
-  }
-
   get subscriptionId(): string | undefined {
-    return this.configOfOtherPlugins
-      .get(TeamsToolkitComponent.Solution)
-      ?.get(SolutionConfigKeys.subscriptionId) as string;
+    return this.checkAndGet(SolutionConfigKeys.subscriptionId);
   }
 
   private checkAndGet(key: string): string {
@@ -266,12 +272,14 @@ export class SolutionConfig implements ISolutionConfig {
 }
 
 function checkAndGetOtherPluginConfig(
-  configOfOtherPlugins: ReadonlySolutionConfig,
+  configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates,
   component: TeamsToolkitComponent,
   key: string,
   envName: string
 ): string {
-  const pluginConfig = configOfOtherPlugins.get(component);
+  const pluginConfig = configOfOtherPlugins.get
+    ? (configOfOtherPlugins as ReadonlySolutionConfig).get(component)
+    : (configOfOtherPlugins as v3.ResourceStates)[component];
   if (!pluginConfig) {
     throw BuildError(NoPluginConfig, component, ComponentRetryOperations[component]);
   }

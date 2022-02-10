@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks } from "@feathersjs/hooks";
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
@@ -34,7 +34,8 @@ import {
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
-import { TabOptionItem } from "../../../solution/fx-solution/question";
+import { AzureSolutionQuestionNames, TabOptionItem } from "../../../solution/fx-solution/question";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
@@ -165,16 +166,33 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const scaffoldRes = await this.scaffold(ctx, inputs);
-    if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-    const armRes = await this.generateResourceTemplate(ctx, inputs);
-    if (armRes.isErr()) return err(armRes.error);
+    ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
+    let templates: v2.ResourceTemplate[] = [];
+    if (!capabilities.includes(TabOptionItem.id)) {
+      // tab is added for first time, scaffold and generate resource template
+      const scaffoldRes = await this.scaffold(ctx, inputs);
+      if (scaffoldRes.isErr()) return err(scaffoldRes.error);
+      const armRes = await this.generateResourceTemplate(ctx, inputs);
+      if (armRes.isErr()) return err(armRes.error);
+      templates = armRes.value;
+      capabilities.push(TabOptionItem.id);
+    }
+    const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+    const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+      capabilitiesToAddManifest.push({ name: "staticTab" });
+    }
+    const update = await ctx.appManifestProvider.addCapabilities(
+      ctx,
+      inputs,
+      capabilitiesToAddManifest
+    );
+    if (update.isErr()) return err(update.error);
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(armRes.value);
+    return ok(templates);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async afterOtherFeaturesAdded(

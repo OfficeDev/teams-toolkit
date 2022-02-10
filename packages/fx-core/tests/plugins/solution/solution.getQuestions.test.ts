@@ -46,7 +46,7 @@ import {
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
-import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
@@ -66,7 +66,7 @@ const mockedProvider: TokenProvider = {
 const envInfo: EnvInfoV2 = {
   envName: "default",
   config: {},
-  state: { solution: { output: {}, secrets: {} } },
+  state: { solution: {} },
 };
 
 describe("getQuestionsForScaffolding()", async () => {
@@ -150,10 +150,10 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.deploy,
     };
-    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
     const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
-    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
     if (result2.isOk()) {
@@ -168,7 +168,7 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.publish,
     };
-    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
     const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
 
@@ -177,7 +177,7 @@ describe("getQuestionsForScaffolding()", async () => {
     const result11 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result11.isErr());
 
-    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
     if (result2.isOk()) {
@@ -233,7 +233,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(
@@ -282,7 +282,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(

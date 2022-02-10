@@ -83,18 +83,18 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
   async provisionResource(
     ctx: v2.Context,
     inputs: v2.ProvisionInputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<v2.ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: v2.Context,
     inputs: v2.ProvisionInputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<v2.ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

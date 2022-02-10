@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, returnUserError } from "@microsoft/teamsfx-api";
+import { Inputs, returnUserError } from "@microsoft/teamsfx-api";
 import { DepsCheckerError } from "../../../../../common/deps-checker/depsError";
 import { defaultHelpLink } from "../../../../../common/deps-checker/constant/helpLink";
 import { Messages } from "../../../../../common/deps-checker/constant/message";
@@ -11,10 +11,10 @@ import { DepsLogger } from "../../../../../common";
 export class FuncHelper {
   private readonly dotnetSettingKey = "function-dotnet-checker-enabled";
 
-  public async dotnetCheckerEnabled(ctx: PluginContext): Promise<boolean> {
+  public async dotnetCheckerEnabled(inputs?: Inputs): Promise<boolean> {
     let enabled = true;
-    if (ctx.answers && ctx.answers[this.dotnetSettingKey] !== undefined) {
-      enabled = (<boolean>ctx.answers[this.dotnetSettingKey]) as boolean;
+    if (inputs && inputs[this.dotnetSettingKey] !== undefined) {
+      enabled = (<boolean>inputs[this.dotnetSettingKey]) as boolean;
     }
     return Promise.resolve(enabled);
   }

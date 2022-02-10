@@ -5,25 +5,15 @@ import { v3 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../common/constants";
 import { BuiltInSolutionNames } from "../fx-solution/v3/constants";
-import { scaffold } from "../fx-solution/v3/scaffold";
-import { addModule } from "./addModule";
-import { getQuestionsForInit, init } from "./init";
-import { addResource, getQuestionsForScaffold, publishApplication } from "./scaffold";
+import { addFeature, getQuestionsForAddFeature, publishApplication } from "./addFeature";
 
 @Service(BuiltInSolutionNames.spfx)
 export class TeamsSPFxSolution implements v3.ISolution {
   name = BuiltInSolutionNames.spfx;
   displayName: string = PluginDisplayName.SpfxSolution;
 
-  init = init;
-  getQuestionsForInit = getQuestionsForInit;
-
-  scaffold = scaffold;
-  getQuestionsForScaffold = getQuestionsForScaffold;
+  getQuestionsForAddFeature = getQuestionsForAddFeature;
+  addFeature = addFeature;
 
   publishApplication = publishApplication;
-
-  addResource = addResource;
-
-  addModule = addModule;
 }

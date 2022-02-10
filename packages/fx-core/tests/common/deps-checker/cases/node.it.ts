@@ -8,7 +8,6 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import "mocha";
-import { func } from "ajv/dist/compile/util";
 
 const functionsSupportedNodeVersions = ["10", "12", "14"];
 const azureSupportedNodeVersions = ["10", "12", "14", "16"];

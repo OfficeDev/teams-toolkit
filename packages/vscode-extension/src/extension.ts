@@ -43,6 +43,7 @@ import { ExtensionUpgrade } from "./utils/upgrade";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -71,6 +72,13 @@ export async function activate(context: vscode.ExtensionContext) {
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+  TreatmentVariableValue.removeCreateFromSample = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.RemoveCreateFromSample,
       true
     )) as boolean | undefined;
 
@@ -513,6 +521,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   openWelcomePageAfterExtensionInstallation();
+
+  showDebugChangesNotification();
 }
 
 // this method is called when your extension is deactivated

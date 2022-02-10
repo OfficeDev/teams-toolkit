@@ -17,6 +17,7 @@ interface SampleCollection {
 
 type SampleCardProps = SampleDetailProps & {
   suggested: boolean;
+  order: number;
 };
 
 type SampleListProps = {

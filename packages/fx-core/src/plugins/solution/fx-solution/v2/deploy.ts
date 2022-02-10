@@ -37,9 +37,7 @@ export async function deploy(
 ): Promise<Result<Void, FxError>> {
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG]["output"][
-    SOLUTION_PROVISION_SUCCEEDED
-  ] as boolean;
+  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -77,7 +75,7 @@ export async function deploy(
             ctx,
             {
               ...inputs,
-              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]["output"]),
+              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
               projectPath: inputs.projectPath!,
             },
             envInfo,

@@ -269,7 +269,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: {}, secrets: {} },
+        solution: {},
       },
     };
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
@@ -302,7 +302,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: { provisionSucceeded: true }, secrets: {} },
+        solution: { provisionSucceeded: true },
       },
     };
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
@@ -338,7 +338,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: { provisionSucceeded: true }, secrets: {} },
+        solution: { provisionSucceeded: true },
       },
     };
     mockDeployThatAlwaysSucceed(fehostPlugin);

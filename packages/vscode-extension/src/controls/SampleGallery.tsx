@@ -13,8 +13,7 @@ import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
 import HelloWorldBot from "../../media/helloWorld-bot.gif";
-import Watch from "../../media/watch.svg";
-import Settings from "../../media/settings.svg";
+import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
@@ -76,22 +75,13 @@ export default class SampleGallery extends React.Component<any, any> {
                 </h3>
               </div>
             </div>
-            <Stack
-              className="sample-stack"
-              horizontal
-              verticalFill
-              wrap
-              horizontalAlign={"start"}
-              verticalAlign={"start"}
-              styles={{ root: { overflow: "visible" } }}
-              tokens={{ childrenGap: 20 }}
-            >
+            <div className="sample-stack">
               <SampleAppCardList
                 samples={this.state.samples}
                 baseUrl={this.state.baseUrl}
                 highlightSample={this.highlightSample}
               />
-            </Stack>
+            </div>
           </div>
         )}
         {this.state.highlightSample != "" && (
@@ -143,9 +133,9 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
       const baseUrl = this.props.baseUrl;
-      return samples.map((sample) => {
+      return samples.map((sample, index) => {
         return (
-          <SampleAppCard
+          <SampleCard
             baseUrl={baseUrl}
             image={imageMapping[sample.id]}
             tags={sample.tags}
@@ -156,145 +146,13 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
             suggested={sample.suggested}
+            order={index + 1}
             highlightSample={this.props.highlightSample}
           />
         );
       });
     }
   }
-}
-
-class SampleAppCard extends React.Component<SampleCardProps, any> {
-  constructor(props: SampleCardProps) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <div className="sample-app-card" tabIndex={0}>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-        >
-          sample app card
-        </label>
-        <Image src={this.props.image} width={278} height={160} />
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="tagLabel"
-        >
-          sample app tags:
-        </label>
-        <div className="section" aria-labelledby="tagLabel">
-          {this.props.tags &&
-            this.props.tags.map((value: string) => {
-              return <VSCodeTag className="tag">{value}</VSCodeTag>;
-            })}
-        </div>
-        <div className="estimation-time">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
-        </div>
-        <div className="configuration">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
-        </div>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="titleLabel"
-        >
-          sample app title:
-        </label>
-        <h2>{this.props.title}</h2>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="descriptionLabel"
-        >
-          sample app description:
-        </label>
-        <h3>{this.props.description}</h3>
-        <div className="section buttons">
-          <VSCodeButton
-            className="right-aligned"
-            onClick={() => {
-              this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
-            }}
-          >
-            View on Github
-          </VSCodeButton>
-
-          <VSCodeButton
-            className="right-aligned"
-            onClick={() => {
-              this.cloneSampleApp(
-                this.props.title,
-                this.props.sampleAppUrl,
-                this.props.sampleAppFolder
-              );
-            }}
-          >
-            Create
-          </VSCodeButton>
-        </div>
-      </div>
-    );
-  }
-
-  cloneSampleApp = (sampleAppName: string, sampleAppUrl: string, sampleAppFolder: string) => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: sampleAppName,
-        appUrl: sampleAppUrl,
-        appFolder: sampleAppFolder,
-      },
-    });
-  };
-
-  viewSampleApp = (sampleAppFolder: string, sampleBaseUrl: string) => {
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: sampleBaseUrl + sampleAppFolder,
-    });
-  };
 }
 
 class SampleCard extends React.Component<SampleCardProps, any> {
@@ -305,7 +163,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
   render() {
     return (
       <div
-        className="sample-card"
+        className={`sample-card box${this.props.order}`}
         tabIndex={0}
         onClick={() => {
           this.props.highlightSample(this.props.sampleAppFolder);
@@ -328,7 +186,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app card
         </label>
-        <Image src={this.props.image} width={203} height={117} />
+        <Image src={this.props.image} />
         <label
           style={{
             position: "absolute",
@@ -363,22 +221,15 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         </label>
         <h2>{this.props.title}</h2>
         <div className="estimation-time">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
+          <div className="watch">
+            <Watch></Watch>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
         </div>
         <div className="configuration">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
+          <div className="setting">
+            <Setting></Setting>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
       </div>

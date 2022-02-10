@@ -14,10 +14,8 @@ import {
   sendRequestWithRetry,
 } from "../../src/common/template-utils/templatesUtils";
 
-const candidateVersion1 = semver.inc(
-  templates.templatesVersion.replace(/\^/g, ""),
-  "patch"
-) as string;
+const templatesVersion = "^0.1.0";
+const candidateVersion1 = semver.inc(templatesVersion.replace(/\^/g, ""), "patch") as string;
 const targetVersion = semver.inc(candidateVersion1, "patch") as string;
 const candidateVersion2 = semver.inc(targetVersion, "minor") as string;
 const candidateVersion3 = semver.inc(targetVersion, "prerelease") as string;
@@ -28,11 +26,6 @@ const candidateTag3 = templates.tagPrefix + candidateVersion3;
 const targetTag = templates.tagPrefix + targetVersion;
 
 const manifest = `
-templates@0.2.0
-templates@0.1.1
-templates@0.1.1-alpha
-templates@0.2.1
-templates@0.3.1
 ${candidateTag1}
 ${candidateTag2}
 ${candidateTag3}
@@ -46,6 +39,7 @@ describe("template-helper", () => {
   describe("Template Fetch Test", () => {
     beforeEach(() => {
       sinon.stub(templates, "preRelease").value("");
+      sinon.stub(templates, "templatesVersion").value(templatesVersion);
     });
 
     afterEach(() => {

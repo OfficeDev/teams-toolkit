@@ -34,7 +34,7 @@ import {
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
-import { AzureSolutionQuestionNames, TabOptionItem } from "../../../solution/fx-solution/question";
+import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureStorageClient } from "../clients";
@@ -180,10 +180,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
       capabilities.push(TabOptionItem.id);
     }
     const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-    const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-      capabilitiesToAddManifest.push({ name: "staticTab" });
-    }
+    capabilitiesToAddManifest.push({ name: "staticTab" });
     const update = await ctx.appManifestProvider.addCapabilities(
       ctx,
       inputs,

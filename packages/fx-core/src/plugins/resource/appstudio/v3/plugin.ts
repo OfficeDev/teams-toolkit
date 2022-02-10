@@ -49,7 +49,9 @@ export class AppStudioPluginImpl {
       manifest.bots = undefined;
       manifest.composeExtensions = undefined;
 
-      const appDirectory = getAppDirectory(inputs.projectPath);
+      return ok("");
+
+      const appDirectory = await getAppDirectory(inputs.projectPath);
       const colorFile = `${appDirectory}/${manifest.icons.color}`;
       if (!(await fs.pathExists(colorFile))) {
         throw AppStudioResultFactory.UserError(

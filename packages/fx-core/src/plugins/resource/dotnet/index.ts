@@ -17,7 +17,6 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import { BuiltInFeaturePluginNames } from "../../solution/fx-solution/v3/constants";
 import path from "path";
 import fs from "fs-extra";
-import { getTemplatesFolder } from "../../../folder";
 import {
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
@@ -31,11 +30,13 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 import {
   BotOptionItem,
   MessageExtensionItem,
-  TabOptionItem,
   AzureSolutionQuestionNames,
 } from "../../solution/fx-solution/question";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks } from "@feathersjs/hooks";
+import { DotnetPluginPathInfo as PathInfo, WebappBicep } from "./constants";
+import { ConfigKey } from "./enums";
+import { LogMessage, ProgressMessage } from "./messages";
 
 export interface DotnetPluginConfig {
   /* Config from solution */
@@ -54,44 +55,6 @@ export interface DotnetPluginConfig {
 
   /* Intermediate  */
   site?: Site;
-}
-
-export enum ConfigKey {
-  /* Config from solution */
-  resourceGroupName = "resourceGroupName",
-  subscriptionId = "subscriptionId",
-  resourceNameSuffix = "resourceNameSuffix",
-  location = "location",
-  credential = "credential",
-  teamsAppName = "teamsAppName",
-  projectDir = "dir",
-  buildPath = "buildPath",
-  runtime = "runtime",
-
-  /* Config exported by Dotnet plugin */
-  webAppName = "webAppName",
-  webAppEndpoint = "webAppEndpoint",
-  webAppDomain = "webAppDomain",
-  webAppResourceId = "webAppResourceId",
-
-  /* Intermediate */
-  site = "site",
-}
-
-export class WebappBicep {
-  static readonly endpoint = "provisionOutputs.webappOutput.value.endpoint";
-  static readonly resourceId = "provisionOutputs.webappOutput.value.resourceId";
-  static readonly domain = "provisionOutputs.webappOutput.value.domain";
-  static readonly endpointAsParam = "webappProvision.outputs.endpoint";
-  static readonly domainAsParam = "webappProvision.outputs.domain";
-
-  static readonly Reference = {
-    webappResourceId: WebappBicep.resourceId,
-    endpoint: WebappBicep.endpoint,
-    domain: WebappBicep.domain,
-    endpointAsParam: WebappBicep.endpointAsParam,
-    domainAsParam: WebappBicep.domainAsParam,
-  };
 }
 
 @Service(BuiltInFeaturePluginNames.dotnet)
@@ -146,30 +109,21 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     plugins: string[];
     capabilities: string[];
   }): Promise<v2.ResourceTemplate> {
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "botservice",
-      "bicep"
+    const botTemplatePaths = [
+      PathInfo.botProvisionOrchestrationPath,
+      PathInfo.botProvisionModulePath,
+    ];
+    const bicepSnippets = await Promise.all(
+      botTemplatePaths.map((path) => generateBicepFromFile(path, pluginCtx))
     );
-    const provisionTemplateFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
-    const provisionBotTemplateFilePath = path.join(
-      bicepTemplateDir,
-      "botServiceProvision.template.bicep"
-    );
-    const provisionOrchestration = await generateBicepFromFile(
-      provisionTemplateFilePath,
-      pluginCtx
-    );
-    const provisionModule = await generateBicepFromFile(provisionBotTemplateFilePath, pluginCtx);
+
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: provisionOrchestration,
-        Modules: { botservice: provisionModule },
+        Orchestration: bicepSnippets[0],
+        Modules: { botservice: bicepSnippets[1] },
       },
       Parameters: JSON.parse(
-        await fs.readFile(path.join(bicepTemplateDir, Bicep.ParameterFileName), "utf-8")
+        await fs.readFile(path.join(PathInfo.botBicepTemplateDir, Bicep.ParameterFileName), "utf-8")
       ),
     };
     return { kind: "bicep", template: result };
@@ -179,40 +133,24 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     plugins: string[];
     capabilities: string[];
   }): Promise<v2.ResourceTemplate> {
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "webapp",
-      "bicep"
+    const webappTemplatePaths = [
+      PathInfo.webappProvisionOrchestrationPath,
+      PathInfo.webappProvisionModulePath,
+      PathInfo.webappConfigOrchestrationPath,
+      PathInfo.webappConfigModulePath,
+    ];
+    const bicepSnippets = await Promise.all(
+      webappTemplatePaths.map((path) => generateBicepFromFile(path, pluginCtx))
     );
-    const provisionTemplateFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
-    const provisionWebappTemplateFilePath = path.join(
-      bicepTemplateDir,
-      "webappProvision.template.bicep"
-    );
-    const configTemplateFilePath = path.join(bicepTemplateDir, Bicep.ConfigFileName);
-    const configWebappTemplateFilePath = path.join(
-      bicepTemplateDir,
-      "webappConfiguration.template.bicep"
-    );
-
-    const provisionOrchestration = await generateBicepFromFile(
-      provisionTemplateFilePath,
-      pluginCtx
-    );
-    const provisionModule = await generateBicepFromFile(provisionWebappTemplateFilePath, pluginCtx);
-    const configOrchestration = await generateBicepFromFile(configTemplateFilePath, pluginCtx);
-    const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
 
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: provisionOrchestration,
-        Modules: { webapp: provisionModule },
+        Orchestration: bicepSnippets[0],
+        Modules: { webapp: bicepSnippets[1] },
       },
       Configuration: {
-        Orchestration: configOrchestration,
-        Modules: { webapp: configModule },
+        Orchestration: bicepSnippets[2],
+        Modules: { webapp: bicepSnippets[3] },
       },
       Reference: WebappBicep.Reference,
     };
@@ -225,7 +163,8 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(`[${this.name}] Start generating resource template.`);
+    // TODO: refactor the logger
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.startGenerateResourceTemplate}`);
     const result: v2.ResourceTemplate[] = [];
     const capabilities = this.getCapabilities(inputs);
 
@@ -247,9 +186,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       result.push(botBicep);
     }
 
-    ctx.logProvider.info(
-      `[${this.name}] Successfully generated resource template for ${capabilities.join(", ")}.`
-    );
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.endGenerateResourceTemplate(capabilities)}.`);
     return ok(result);
   }
 
@@ -266,26 +203,14 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(`[${this.name}] Start generating Arm template`);
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "webapp",
-      "bicep"
-    );
-    const configWebappTemplateFilePath = path.join(
-      bicepTemplateDir,
-      "webappConfiguration.template.bicep"
-    );
-
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.startUpdateResourceTemplate}`);
     const capabilities = this.getCapabilities(inputs);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const pluginCtx = {
       plugins: solutionSettings.activeResourcePlugins ?? [],
       capabilities: capabilities,
     };
-    const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
+    const configModule = await generateBicepFromFile(PathInfo.webappConfigModulePath, pluginCtx);
     const result: ArmTemplateResult = {
       Reference: WebappBicep.Reference,
       Configuration: {
@@ -293,7 +218,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       },
     };
 
-    ctx.logProvider.info(`[${this.name}] Successfully updated Arm template`);
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.endUpdateResourceTemplate}`);
     return ok([{ kind: "bicep", template: result }]);
   }
 
@@ -324,9 +249,9 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(`[${this.name}] Start deploying`);
-    const progress = ctx.userInteraction.createProgressBar("deploy", 2);
-    await progress?.start("Start");
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.startDeploy}`);
+    const progress = ctx.userInteraction.createProgressBar(ProgressMessage.deployProgressTitle, 2);
+    await progress?.start(ProgressMessage.startProgress);
 
     const config = this.buildConfig(envInfo);
 
@@ -344,11 +269,11 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     const projectPath = this.checkAndGet(inputs.dir, ConfigKey.projectDir);
     const client = new WebSiteManagementClient(credential, subscriptionId);
 
-    progress?.next("Building publish artifact.");
+    progress?.next(ProgressMessage.building);
     const runtime = this.checkAndGet(inputs.runtime, ConfigKey.runtime);
     await Deploy.build(projectPath, runtime);
 
-    progress?.next("Uploading artifact to Azure Web App.");
+    progress?.next(ProgressMessage.uploading);
     const folderToBeZipped = this.checkAndGet(inputs.buildPath, ConfigKey.buildPath);
     if (!(await fs.pathExists(folderToBeZipped))) {
       throw new Error(`Built path not found: ${folderToBeZipped}`);
@@ -361,7 +286,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     );
 
     progress?.end(true);
-    ctx.logProvider.info(`[${this.name}] Successfully deployed`);
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.endDeploy}`);
     return ok(Void);
   }
 }

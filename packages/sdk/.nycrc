@@ -1,19 +1,9 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
-  "exclude": [
-    "src/**/*.browser.ts"
-  ],
-  "reporter": [
-    "text",
-    "html",
-    "json-summary",
-    "cobertura"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["src/**/*.browser.ts"],
+  "reporter": ["text", "html", "json-summary", "cobertura"],
   "check-coverage": true,
-  "lines": 50
+  "lines": 86
 }

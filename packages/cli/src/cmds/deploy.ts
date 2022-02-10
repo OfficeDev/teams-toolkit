@@ -20,7 +20,7 @@ import {
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -52,19 +52,6 @@ export default class Deploy extends YargsCommand {
       }
     }
     return yargs.version(false);
-  }
-
-  public override modifyArguments(args: { [argName: string]: any }) {
-    if (!("open-api-document" in args)) {
-      args["open-api-document"] = undefined;
-    }
-    if (!("api-prefix" in args)) {
-      args["api-prefix"] = undefined;
-    }
-    if (!("api-version" in args)) {
-      args["api-version"] = undefined;
-    }
-    return args;
   }
 
   public async runCommand(args: {
@@ -108,14 +95,19 @@ export default class Deploy extends YargsCommand {
       }
       const result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.Deploy,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
+
         return err(result.error);
       }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Deploy, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

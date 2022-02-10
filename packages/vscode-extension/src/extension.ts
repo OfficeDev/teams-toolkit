@@ -22,14 +22,8 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import {
-  Correlator,
-  isMultiEnvEnabled,
-  isRemoteCollaborateEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
-import { enableMigrateV1 } from "./utils/migrateV1";
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
@@ -46,10 +40,10 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -78,6 +72,13 @@ export async function activate(context: vscode.ExtensionContext) {
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+  TreatmentVariableValue.removeCreateFromSample = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.RemoveCreateFromSample,
       true
     )) as boolean | undefined;
 
@@ -135,7 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateAzureDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
@@ -152,6 +153,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  // Referenced by tasks.json
+  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
+    Correlator.run(handlers.getFuncPathHandler)
+  );
+  context.subscriptions.push(getFuncPathCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
@@ -404,12 +411,6 @@ export async function activate(context: vscode.ExtensionContext) {
     await canUpgradeToArmAndMultiEnv(workspacePath)
   );
 
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isRemoteCollaborateEnabled",
-    isRemoteCollaborateEnabled() && isValidProject(workspacePath)
-  );
-
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const userDataSelector = {
@@ -499,13 +500,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
 
-  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
-  enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
-    Correlator.run(handlers.migrateV1ProjectHandler)
-  );
-  context.subscriptions.push(migrateV1Cmd);
-
   const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsTabApp",
     () => Correlator.run(handlers.migrateTeamsTabAppHandler)
@@ -527,10 +521,13 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   openWelcomePageAfterExtensionInstallation();
+
+  showDebugChangesNotification();
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
+export async function deactivate() {
+  await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
 }

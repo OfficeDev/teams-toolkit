@@ -13,7 +13,6 @@ import { TokenResponse } from "adal-node/lib/adal";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { FirewallRules, ServerAzureADAdministrators, Servers } from "@azure/arm-sql";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../../src";
 import axios from "axios";
 
 chai.use(chaiAsPromised);
@@ -54,13 +53,12 @@ describe("skipAddingUser", () => {
       userType: commonUtils.UserType.User,
     };
     sinon.stub(commonUtils, "parseToken").returns(mockInfo);
-    if (isMultiEnvEnabled()) {
-      pluginContext.config.set(Constants.sqlEndpoint, "test-sql.database.windows.net");
-      pluginContext.config.set(
-        Constants.sqlResourceId,
-        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql"
-      );
-    }
+
+    pluginContext.config.set(Constants.sqlEndpoint, "test-sql.database.windows.net");
+    pluginContext.config.set(
+      Constants.sqlResourceId,
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql"
+    );
 
     // Act
     let preProvisionResult = await sqlPlugin.preProvision(pluginContext);
@@ -111,9 +109,7 @@ describe("skipAddingUser", () => {
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
-    if (isArmSupportEnabled()) {
-      TestHelper.mockArmOutput(pluginContext);
-    }
+    TestHelper.mockArmOutput(pluginContext);
 
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);

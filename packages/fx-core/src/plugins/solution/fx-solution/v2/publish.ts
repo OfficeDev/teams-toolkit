@@ -29,7 +29,7 @@ export async function publishApplication(
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED];
+  const provisioned = envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -43,7 +43,7 @@ export async function publishApplication(
     );
   }
 
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks = plugins
     .filter((plugin) => !isUndefined(plugin.publishApplication))
     .map((plugin) => {

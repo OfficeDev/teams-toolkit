@@ -74,6 +74,7 @@ import {
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  FRONTEND_INDEX_PATH,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -100,9 +101,16 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
+import Ajv from "ajv-draft-04";
+import axios from "axios";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
+  private readonly ajv;
+
+  constructor() {
+    this.ajv = new Ajv({ formats: { uri: true } });
+  }
 
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
@@ -338,7 +346,6 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<string[], FxError>> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
@@ -356,11 +363,16 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
     }
-    const errors: string[] = await AppStudioClient.validateManifest(
-      manifestString,
-      appStudioToken!
-    );
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
+
+    let errors: string[];
+    const res = await this.validateManifestAgainstSchema(manifest);
+    if (res.isOk()) {
+      errors = res.value;
+    } else {
+      return err(res.error);
+    }
+
     const appDirectory = await getAppDirectory(ctx.root);
     if (manifest.icons.outline) {
       if (
@@ -944,10 +956,10 @@ export class AppStudioPluginImpl {
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists
-      .filter((userList, index) => {
+      .filter((userList) => {
         return userList.isAdministrator;
       })
-      .map((userList, index) => {
+      .map((userList) => {
         return {
           userObjectId: userList.aadId,
           displayName: userList.displayName,
@@ -1005,14 +1017,13 @@ export class AppStudioPluginImpl {
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");
-      const validationResult = await AppStudioClient.validateManifest(
-        manifestString!,
-        (await ctx.appStudioToken?.getAccessToken())!
-      );
-      if (validationResult.length > 0) {
+      const validationResult = await this.validateManifestAgainstSchema(manifest);
+      if (validationResult.isErr()) {
+        throw validationResult.error;
+      } else if (validationResult.value.length > 0) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message(validationResult)
+          AppStudioError.ValidationFailedError.message(validationResult.value)
         );
       }
 
@@ -1197,6 +1208,7 @@ export class AppStudioPluginImpl {
   ): Promise<{
     tabEndpoint?: string;
     tabDomain?: string;
+    tabIndexPath?: string;
     aadId: string;
     botDomain?: string;
     botId?: string;
@@ -1205,6 +1217,7 @@ export class AppStudioPluginImpl {
   }> {
     const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
     const tabDomain = this.getTabDomain(ctx, localDebug);
+    const tabIndexPath = this.getTabIndexPath(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
     const botDomain = this.getBotDomain(ctx, localDebug);
@@ -1217,6 +1230,7 @@ export class AppStudioPluginImpl {
     return {
       tabEndpoint,
       tabDomain,
+      tabIndexPath,
       aadId,
       botDomain,
       botId,
@@ -1238,6 +1252,13 @@ export class AppStudioPluginImpl {
       ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
       : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     return tabDomain;
+  }
+
+  private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
+    const tabIndexPath = isLocalDebug
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath) as string)
+      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
+    return tabIndexPath;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
@@ -1538,6 +1559,44 @@ export class AppStudioPluginImpl {
     }
   }
 
+  private async validateManifestAgainstSchema(
+    manifest: TeamsAppManifest
+  ): Promise<Result<string[], FxError>> {
+    const errors: string[] = [];
+    if (manifest.$schema) {
+      const instance = axios.create();
+      try {
+        const res = await instance.get(manifest.$schema);
+        const validate = this.ajv.compile(res.data);
+        const valid = validate(manifest);
+        if (!valid) {
+          validate.errors?.map((error) => {
+            errors.push(`${error.instancePath} ${error.message}`);
+          });
+        }
+      } catch (e: any) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              `Failed to get schema from ${manifest.$schema}, message: ${e.message}`,
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    } else {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message(["Manifest schema is not defined"]),
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
+    return ok(errors);
+  }
+
   private async getAppDefinitionAndManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
@@ -1545,6 +1604,7 @@ export class AppStudioPluginImpl {
     const {
       tabEndpoint,
       tabDomain,
+      tabIndexPath,
       aadId,
       botDomain,
       botId,
@@ -1597,11 +1657,13 @@ export class AppStudioPluginImpl {
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
+    let indexPath = tabIndexPath;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+      indexPath = "";
     }
 
     const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
@@ -1613,6 +1675,7 @@ export class AppStudioPluginImpl {
       state: {
         "fx-resource-frontend-hosting": {
           endpoint: endpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+          indexPath: indexPath ?? "{{{state.fx-resource-frontend-hosting.indexPath}}}",
         },
         "fx-resource-aad-app-for-teams": {
           clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
@@ -1630,6 +1693,7 @@ export class AppStudioPluginImpl {
       localSettings: {
         frontend: {
           tabEndpoint: endpoint ? endpoint : "{{{localSettings.frontend.tabEndpoint}}}",
+          tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
           clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)

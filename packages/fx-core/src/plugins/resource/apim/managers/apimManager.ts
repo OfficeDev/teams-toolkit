@@ -7,26 +7,15 @@ import {
   ApimPluginConfigKeys,
 } from "../constants";
 import { AssertNotEmpty } from "../error";
-import {
-  IAadPluginConfig,
-  IApimPluginConfig,
-  IFunctionPluginConfig,
-  ISolutionConfig,
-  SolutionConfig,
-} from "../config";
+import { IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import {
-  LogProvider,
-  PluginContext,
-  TelemetryReporter,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
-  getproductNameFromResourceId,
+  getProductNameFromResourceId,
   Lazy,
 } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
@@ -34,7 +23,7 @@ import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -58,80 +47,22 @@ export class ApimManager {
     this.telemetryReporter = telemetryReporter;
   }
 
-  public async provision(
-    apimConfig: IApimPluginConfig,
-    solutionConfig: ISolutionConfig,
-    appName: string
-  ): Promise<void> {
+  public async provision(apimConfig: IApimPluginConfig): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
     const currentUserId = await apimService.getUserId();
 
-    if (isArmSupportEnabled()) {
-      const apimServiceResource = apimConfig.serviceResourceId
-        ? await apimService.getService(
-            getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
-            getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
-          )
-        : undefined;
-      apimConfig.publisherEmail = apimServiceResource?.publisherEmail
-        ? apimServiceResource.publisherEmail
-        : currentUserId;
-      apimConfig.publisherName = apimServiceResource?.publisherName
-        ? apimServiceResource.publisherName
-        : currentUserId;
-    } else {
-      await apimService.ensureResourceProvider();
-
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName =
-        apimConfig.serviceName ??
-        NamingRules.apimServiceName.sanitize(appName, solutionConfig.resourceNameSuffix);
-
-      await apimService.createService(
-        resourceGroupName,
-        apimServiceName,
-        solutionConfig.location,
-        currentUserId
-      );
-      apimConfig.serviceName = apimServiceName;
-
-      const productId =
-        apimConfig.productId ??
-        NamingRules.productId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      await apimService.createProduct(resourceGroupName, apimServiceName, productId);
-      apimConfig.productId = productId;
-    }
-  }
-
-  public async postProvision(
-    apimConfig: IApimPluginConfig,
-    ctx: PluginContext,
-    aadConfig: IAadPluginConfig,
-    appName: string
-  ): Promise<void> {
-    if (!isArmSupportEnabled()) {
-      const solutionConfig = new SolutionConfig(ctx.envInfo);
-      const apimService: ApimService = await this.lazyApimService.getValue();
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      const clientId = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientId);
-      const clientSecret = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientSecret);
-
-      const oAuthServerId =
-        apimConfig.oAuthServerId ??
-        NamingRules.oAuthServerId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      const scopeName = `${aadConfig.applicationIdUris}/${ApimDefaultValues.enableScopeName}`;
-      await apimService.createOrUpdateOAuthService(
-        resourceGroupName,
-        apimServiceName,
-        oAuthServerId,
-        solutionConfig.teamsAppTenantId,
-        clientId,
-        clientSecret,
-        scopeName
-      );
-      apimConfig.oAuthServerId = oAuthServerId;
-    }
+    const apimServiceResource = apimConfig.serviceResourceId
+      ? await apimService.getService(
+          getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
+          getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
+        )
+      : undefined;
+    apimConfig.publisherEmail = apimServiceResource?.publisherEmail
+      ? apimServiceResource.publisherEmail
+      : currentUserId;
+    apimConfig.publisherName = apimServiceResource?.publisherName
+      ? apimServiceResource.publisherName
+      : currentUserId;
   }
 
   public async deploy(
@@ -143,24 +74,13 @@ export class ApimManager {
   ): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
 
-    let resourceGroupName, apimServiceName, authServerId, productId;
-
-    if (isArmSupportEnabled()) {
-      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
-      const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
-      const authServerResourceId = apimConfig.checkAndGet(
-        ApimPluginConfigKeys.authServerResourceId
-      );
-      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
-      apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
-      authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
-      productId = getproductNameFromResourceId(apimProductResourceId);
-    } else {
-      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      authServerId = apimConfig.checkAndGet(ApimPluginConfigKeys.oAuthServerId);
-      productId = apimConfig.checkAndGet(ApimPluginConfigKeys.productId);
-    }
+    const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
+    const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
+    const authServerResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.authServerResourceId);
+    const resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+    const apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+    const authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
+    const productId = getProductNameFromResourceId(apimProductResourceId);
 
     const apiPrefix = apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const apiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
@@ -216,8 +136,7 @@ export class ApimManager {
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -240,8 +159,7 @@ export class ApimManager {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

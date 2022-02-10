@@ -21,6 +21,7 @@ import {
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
+import { checkIsOnline } from "../commonlib/codeFlowLogin";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
@@ -139,6 +140,18 @@ async function outputAzureInfo(
   return Promise.resolve(result !== undefined);
 }
 
+async function outputAccountInfoOffline(accountType: string, username: string): Promise<boolean> {
+  const message = [
+    {
+      content: `[${constants.cliSource}] Your ${accountType} Account is: `,
+      color: Colors.BRIGHT_WHITE,
+    },
+    { content: username, color: Colors.BRIGHT_MAGENTA },
+  ];
+  CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+  return true;
+}
+
 class AccountShow extends YargsCommand {
   public readonly commandHead = `show`;
   public readonly command = `${this.commandHead}`;
@@ -151,12 +164,16 @@ class AccountShow extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const m365Status = await AppStudioTokenProvider.getStatus();
     if (m365Status.status === signedIn) {
-      await outputM365Info("show");
+      (await checkIsOnline())
+        ? await outputM365Info("show")
+        : await outputAccountInfoOffline("M365", (m365Status.accountInfo as any).upn);
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
     if (azureStatus.status === signedIn) {
-      await outputAzureInfo("show");
+      (await checkIsOnline())
+        ? await outputAzureInfo("show")
+        : await outputAccountInfoOffline("AZURE", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {

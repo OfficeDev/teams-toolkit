@@ -35,7 +35,7 @@ export class SharepointValidator {
 
   private static createRequesterWithToken(sharepointToken: string): AxiosInstance {
     const instance = axios.create({
-      baseURL: "https://teamscloudtest.sharepoint.com/sites/zihch-sp",
+      baseURL: "https://utest0.sharepoint.com/sites/test",
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${sharepointToken}`;
     return instance;

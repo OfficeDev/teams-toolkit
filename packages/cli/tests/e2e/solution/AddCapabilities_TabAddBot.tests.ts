@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -16,23 +16,19 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   validateTabAndBotProjectProvision,
 } from "../commonUtils";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 
 describe("Add capabilities", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, true, false, true);
   });
 
   it("tab project can add bot capability and provision", async () => {
@@ -42,12 +38,12 @@ describe("Add capabilities", function () {
     // Act
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Assert
-    await validateTabAndBotProjectProvision(projectPath);
+    await validateTabAndBotProjectProvision(projectPath, env);
   });
 });

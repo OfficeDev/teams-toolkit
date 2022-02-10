@@ -14,6 +14,7 @@ import {
 } from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";
+import { RetryHandler } from "./utils/retryHandler";
 
 export class AADRegistration {
   public static async registerAADAppAndGetSecretByGraph(
@@ -33,12 +34,11 @@ export class AADRegistration {
       // 1. Register a new AAD App.
       let regResponse = undefined;
       try {
-        regResponse = await axiosInstance.post(
-          `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`,
-          {
+        regResponse = await RetryHandler.Retry(() =>
+          axiosInstance.post(`${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`, {
             displayName: displayName,
             signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS,
-          }
+          })
         );
       } catch (e) {
         throw new CreateAADAppError(e);
@@ -59,13 +59,15 @@ export class AADRegistration {
     // 2. Generate client secret.
     let genResponse = undefined;
     try {
-      genResponse = await axiosInstance.post(
-        `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications/${result.objectId}/addPassword`,
-        {
-          passwordCredential: {
-            displayName: "default",
-          },
-        }
+      genResponse = await RetryHandler.Retry(() =>
+        axiosInstance.post(
+          `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications/${result.objectId}/addPassword`,
+          {
+            passwordCredential: {
+              displayName: "default",
+            },
+          }
+        )
       );
     } catch (e) {
       throw new CreateAADSecretError(e);

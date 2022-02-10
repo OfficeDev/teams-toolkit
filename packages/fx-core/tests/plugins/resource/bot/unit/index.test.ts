@@ -284,7 +284,6 @@ describe("Teams Bot Resource Plugin", () => {
     let botPlugin: TeamsBot;
     let botPluginImpl: TeamsBotImpl;
     let rootDir: string;
-    let mockedEnvRestore: () => void;
 
     beforeEach(() => {
       botPlugin = new TeamsBot();
@@ -303,30 +302,10 @@ describe("Teams Bot Resource Plugin", () => {
 
     afterEach(async () => {
       sinon.restore();
-      mockedEnvRestore();
       await fs.remove(rootDir);
     });
 
-    it("Happy Path with Arm support disabled", async () => {
-      // Arrange
-      const pluginContext = testUtils.newPluginContext();
-      pluginContext.root = rootDir;
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
-      botPluginImpl.config.provision.siteName = "test-site-name";
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "0",
-      });
-
-      // Act
-      const result = await botPlugin.deploy(pluginContext);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-
-    it("Happy Path with Arm support enabled", async () => {
+    it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = rootDir;
@@ -337,9 +316,6 @@ describe("Teams Bot Resource Plugin", () => {
         "botWebAppResourceId",
         "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
       );
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "1",
-      });
 
       // Act
       const result = await botPlugin.deploy(pluginContext);

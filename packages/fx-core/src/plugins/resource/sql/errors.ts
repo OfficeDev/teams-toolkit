@@ -22,33 +22,15 @@ export class ErrorMessage {
     message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`,
   };
 
-  public static readonly SqlCreateError = {
-    name: "SqlCreateError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to create SQL Server '${sqlName}'. ${detail}`,
-  };
-
-  public static readonly DatabaseCreateError = {
-    name: "SqlDBCreateError",
-    message: (databaseName: string, detail = "") =>
-      `Failed to create database '${databaseName}'. ${detail}`,
-  };
-
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (sqlName: string, database: string, user: string) =>
-      `Failed to create user '${user}' in database '${sqlName}.${database}'`,
+    message: (database: string, user: string) =>
+      `Failed to create user '${user}' in database ${database}`,
   };
 
   public static readonly SqlAddAdminError = {
     name: "SqlAddAdminError",
     message: (account: string, detail = "") => `Failed to add AAD admin '${account}'. ${detail}`,
-  };
-
-  public static readonly SqlAzureFirwallError = {
-    name: "SqlAzureFirwallError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to add Azure Firewall for '${sqlName}'. ${detail}`,
   };
 
   public static readonly SqlLocalFirwallError = {
@@ -83,12 +65,6 @@ export class ErrorMessage {
   public static readonly SqlCheckError = {
     name: "SqlCheckError",
     message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`,
-  };
-
-  public static readonly SqlCheckDBError = {
-    name: "SqlCheckDBError",
-    message: (databaseName: string, detail = "") =>
-      `Failed to check database '${databaseName}'. ${detail}`,
   };
 
   public static readonly SqlCheckAdminError = {

@@ -51,18 +51,16 @@ import {
   getHashedEnv,
   getResourceGroupInPortal,
   getStrings,
-  isArmSupportEnabled,
   isCheckAccountError,
   isMultiEnvEnabled,
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
-import { CopyFileError } from "../../../core";
+import { CopyFileError, isVsCallingCli } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -98,6 +96,7 @@ import {
   SolutionSource,
   SUBSCRIPTION_ID,
   RESOURCE_GROUP_NAME,
+  SUBSCRIPTION_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -116,9 +115,9 @@ import {
   HostTypeOptionAzure,
   MessageExtensionItem,
   TabOptionItem,
-  GetUserEmailQuestion,
   TabSPFxItem,
   AzureResourceKeyVault,
+  getUserEmailQuestion,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -139,13 +138,10 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
-  parseUserName,
   checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
-import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
 import { checkPermission } from "./v2/checkPermission";
-import { listAllCollaborators } from "./v2/listAllCollaborators";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
@@ -291,7 +287,7 @@ export class TeamsAppSolution implements Solution {
       ctx.projectSettings!.programmingLanguage = lang;
     }
     const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
+    const settingsRes = fillInSolutionSettings(ctx.projectSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -463,17 +459,14 @@ export class TeamsAppSolution implements Solution {
       await scaffoldReadme(capabilities, azureResources, ctx.root);
     }
 
-    if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
+    if (generateResourceTemplate && this.isAzureProject(ctx)) {
       return await generateArmTemplate(ctx, pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold);
     } else {
       return res;
     }
   }
   async createEnv(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (
-      isArmSupportEnabled() &&
-      isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
-    ) {
+    if (isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)) {
       try {
         if (ctx.answers!.copy === true) {
           await copyParameterJson(
@@ -719,7 +712,7 @@ export class TeamsAppSolution implements Solution {
           }
         }
 
-        if (isArmSupportEnabled() && this.isAzureProject(ctx)) {
+        if (this.isAzureProject(ctx)) {
           const armDeploymentResult = await deployArmTemplates(ctx);
           if (armDeploymentResult.isErr()) {
             return armDeploymentResult;
@@ -1172,7 +1165,10 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.grantPermission) {
-      node.addChild(new QTreeNode(GetUserEmailQuestion));
+      if (isDynamicQuestion) {
+        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
+      }
     }
     return ok(node);
   }
@@ -1339,13 +1335,6 @@ export class TeamsAppSolution implements Solution {
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<PermissionsResult, FxError>> {
     return checkPermission({ apiVersion: 1, ctx });
-  }
-
-  @hooks([ErrorHandlerMW])
-  async listAllCollaborators(
-    ctx: SolutionContext
-  ): Promise<Result<Record<string, ListCollaboratorResult>, FxError>> {
-    return listAllCollaborators({ apiVersion: 1, ctx });
   }
 
   @hooks([ErrorHandlerMW])
@@ -1693,7 +1682,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (notifications.length > 0) {
-      if (isArmSupportEnabled() && addNewResourceToProvision) {
+      if (addNewResourceToProvision) {
         showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
@@ -1806,9 +1795,8 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (change) {
-      if (isArmSupportEnabled()) {
-        showUpdateArmTemplateNotice(ctx.ui);
-      }
+      showUpdateArmTemplateNotice(ctx.ui);
+
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);
       const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
@@ -2130,4 +2118,54 @@ export class TeamsAppSolution implements Solution {
       applicationIdUri: configResult.value.applicationIdUri,
     });
   }
+}
+
+export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
+  if (isVsCallingCli()) {
+    // Skip asking users for input on VS calling CLI to simplify user interaction.
+    return ok(Void);
+  }
+
+  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username ? (azureToken as any).username : "";
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
+  const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
+
+  const msg = util.format(
+    getStrings().solution.ProvisionConfirmNotice,
+    username,
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  let confirmRes = undefined;
+  if (isMultiEnvEnabled()) {
+    const msgNew = util.format(
+      getStrings().solution.ProvisionConfirmEnvNotice,
+      ctx.envInfo.envName,
+      username,
+      subscriptionName ? subscriptionName : subscriptionId
+    );
+    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
+  } else {
+    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
+  }
+
+  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+
+  if (confirm !== "Provision") {
+    if (confirm === "Pricing calculator") {
+      ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+    }
+
+    return err(
+      returnUserError(
+        new Error(getStrings().solution.CancelProvision),
+        SolutionSource,
+        getStrings().solution.CancelProvision
+      )
+    );
+  }
+
+  return ok(Void);
 }

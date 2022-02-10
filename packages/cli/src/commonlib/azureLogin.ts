@@ -13,7 +13,12 @@ import {
   SingleSelectConfig,
   ConfigFolderName,
 } from "@microsoft/teamsfx-api";
-import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
+import {
+  CodeFlowLogin,
+  LoginFailureError,
+  ConvertTokenToJson,
+  checkIsOnline,
+} from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
 import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
@@ -335,7 +340,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (AzureAccountManager.codeFlowInstance.account) {
       const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
       if (!loginToken) {
-        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+        if (await checkIsOnline()) {
+          return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+        } else {
+          return Promise.resolve({
+            status: signedIn,
+            token: undefined,
+            accountInfo: { upn: AzureAccountManager.codeFlowInstance.account?.username },
+          });
+        }
       }
       const credential = await this.getAccountCredentialAsync();
       const token = await credential?.getToken();

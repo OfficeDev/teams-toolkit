@@ -11,14 +11,8 @@ import {
   TokenProvider,
   Void,
   v2,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  ProvisionInputs,
-  ResourcePlugin,
-  ResourceProvisionOutput,
-  ResourceTemplate,
-} from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AadAppForTeamsPlugin } from "..";
 import {
@@ -36,42 +30,43 @@ import {
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AadPlugin)
-export class AadPluginV2 implements ResourcePlugin {
+export class AadPluginV2 implements v2.ResourcePlugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   @Inject(ResourcePlugins.AadPlugin)
   plugin!: AadAppForTeamsPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
   async generateResourceTemplate(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: Inputs
-  ): Promise<Result<ResourceTemplate, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
   async provisionResource(
-    ctx: Context,
-    inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    ctx: v2.Context,
+    inputs: v2.ProvisionInputs,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
-    ctx: Context,
-    inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    ctx: v2.Context,
+    inputs: v2.ProvisionInputs,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async provisionLocalResource(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
@@ -86,7 +81,7 @@ export class AadPluginV2 implements ResourcePlugin {
   }
 
   async configureLocalResource(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
@@ -101,7 +96,7 @@ export class AadPluginV2 implements ResourcePlugin {
   }
 
   async executeUserTask(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: Inputs,
     func: Func,
     localSettings: Json,
@@ -120,7 +115,7 @@ export class AadPluginV2 implements ResourcePlugin {
   }
 
   async grantPermission(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider,
@@ -138,7 +133,7 @@ export class AadPluginV2 implements ResourcePlugin {
   }
 
   async checkPermission(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider,
@@ -156,7 +151,7 @@ export class AadPluginV2 implements ResourcePlugin {
   }
 
   async listCollaborator(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider,

@@ -11,6 +11,7 @@ import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/c
 import { TestHelper } from "../helper";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import {
+  GraphAndAppStudioTokenProvider,
   TokenAudience,
   TokenProvider,
 } from "../../../../../src/plugins/resource/aad/utils/tokenProvider";
@@ -25,18 +26,30 @@ import { SystemError } from "@microsoft/teamsfx-api";
 import {
   CreateAppError,
   CreateSecretError,
+  GetAppConfigError,
   GetAppError,
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
+import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
+import {
+  MockAppStudioTokenProvider,
+  MockGraphTokenProvider,
+  MockTools,
+} from "../../../../core/utils";
+import { setTools } from "../../../../../src";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
   let config: ProvisionConfig;
-
+  const mockTokenProviders: GraphAndAppStudioTokenProvider = {
+    graph: new MockGraphTokenProvider(),
+    appStudio: new MockAppStudioTokenProvider(),
+  };
   beforeEach(async () => {
+    setTools(new MockTools());
     ctx = await TestHelper.pluginContext(new Map(), true, false, false);
     config = new ProvisionConfig(true);
     config.restoreConfigFromContext(ctx);
@@ -48,7 +61,7 @@ describe("AAD App Client Test", () => {
 
   describe("createAadApp", async () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const displayName = "createAADApp";
 
@@ -57,12 +70,12 @@ describe("AAD App Client Test", () => {
         displayName: displayName,
       });
 
-      await AadAppClient.createAadApp(ctx, "createAADApp", config);
+      await AadAppClient.createAadApp("createAADApp", config);
       chai.assert.equal(config.objectId, objectId);
     });
 
     it("Happy Path: App Studio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
       const displayName = "createAADApp";
 
@@ -71,12 +84,12 @@ describe("AAD App Client Test", () => {
         displayName: displayName,
       });
 
-      await AadAppClient.createAadApp(ctx, "createAADApp", config);
+      await AadAppClient.createAadApp("createAADApp", config);
       chai.assert.equal(config.objectId, objectId);
     });
 
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
 
       const error = {
         response: {
@@ -86,7 +99,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(GraphClient, "createAADApp").throws(error);
       try {
-        await AadAppClient.createAadApp(ctx, "createAADApp", config);
+        await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, CreateAppError.message());
@@ -94,7 +107,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
 
       const error = {
         response: {
@@ -104,7 +117,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadApp(ctx, "createAADApp", config);
+        await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateAppError.message());
@@ -114,7 +127,7 @@ describe("AAD App Client Test", () => {
 
   describe("createAadAppSecret", () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       sinon.stub(GraphClient, "createAadAppSecret").resolves({
         hint: "hint",
         id: faker.datatype.uuid(),
@@ -123,12 +136,12 @@ describe("AAD App Client Test", () => {
         value: "secret",
       });
 
-      await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+      await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       chai.assert.equal(config.password, "secret");
     });
 
     it("Happy Path: App Studio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       sinon.stub(AppStudio, "createAADAppPassword").resolves({
         hint: "hint",
         id: faker.datatype.uuid(),
@@ -137,12 +150,12 @@ describe("AAD App Client Test", () => {
         value: "secret",
       });
 
-      await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+      await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       chai.assert.equal(config.password, "secret");
     });
 
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
 
       const error = {
         response: {
@@ -152,7 +165,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+        await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, CreateSecretError.message());
@@ -160,7 +173,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
 
       const error = {
         response: {
@@ -170,7 +183,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+        await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateSecretError.message());
@@ -180,7 +193,7 @@ describe("AAD App Client Test", () => {
 
   describe("updateAadAppRedirectUri", () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const redirectUris: IAADDefinition = {
         web: {
@@ -189,16 +202,11 @@ describe("AAD App Client Test", () => {
       };
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppRedirectUri(
-        ctx,
-        "updateAadAppRedirectUri",
-        objectId,
-        redirectUris
-      );
+      await AadAppClient.updateAadAppRedirectUri("updateAadAppRedirectUri", objectId, redirectUris);
     });
 
     it("Happy Path: App Studio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
       const redirectUris: IAADDefinition = {
         web: {
@@ -207,16 +215,11 @@ describe("AAD App Client Test", () => {
       };
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppRedirectUri(
-        ctx,
-        "updateAadAppRedirectUri",
-        objectId,
-        redirectUris
-      );
+      await AadAppClient.updateAadAppRedirectUri("updateAadAppRedirectUri", objectId, redirectUris);
     });
 
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const redirectUris: IAADDefinition = {
         web: {
@@ -233,7 +236,6 @@ describe("AAD App Client Test", () => {
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.updateAadAppRedirectUri(
-          ctx,
           "updateAadAppRedirectUri",
           objectId,
           redirectUris
@@ -245,7 +247,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const redirectUris: IAADDefinition = {
         web: {
@@ -262,7 +264,6 @@ describe("AAD App Client Test", () => {
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.updateAadAppRedirectUri(
-          ctx,
           "updateAadAppRedirectUri",
           objectId,
           redirectUris
@@ -276,25 +277,25 @@ describe("AAD App Client Test", () => {
 
   describe("updateAadAppIdUri", () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const applicationIdUri = "applicationIdUri";
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+      await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
     });
 
     it("Happy Path: App Studio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
       const applicationIdUri = "applicationIdUri";
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+      await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
     });
 
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const applicationIdUri = "applicationIdUri";
 
@@ -306,7 +307,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+        await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, UpdateAppIdUriError.message());
@@ -314,7 +315,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const applicationIdUri = "applicationIdUri";
 
@@ -326,7 +327,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+        await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, UpdateAppIdUriError.message());
@@ -336,35 +337,25 @@ describe("AAD App Client Test", () => {
 
   describe("updateAadAppPermission", () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const permissions: RequiredResourceAccess[] = [{}];
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppPermission(
-        ctx,
-        "updateAadAppPermission",
-        objectId,
-        permissions
-      );
+      await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
     });
 
     it("Happy Path: AppStudio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
       const permissions: RequiredResourceAccess[] = [{}];
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppPermission(
-        ctx,
-        "updateAadAppPermission",
-        objectId,
-        permissions
-      );
+      await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
     });
 
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const permissions: RequiredResourceAccess[] = [{}];
 
@@ -376,12 +367,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppPermission(
-          ctx,
-          "updateAadAppPermission",
-          objectId,
-          permissions
-        );
+        await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, UpdatePermissionError.message());
@@ -389,7 +375,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const permissions: RequiredResourceAccess[] = [{}];
 
@@ -401,12 +387,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppPermission(
-          ctx,
-          "updateAadAppPermission",
-          objectId,
-          permissions
-        );
+        await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, UpdatePermissionError.message());
@@ -416,7 +397,7 @@ describe("AAD App Client Test", () => {
 
   describe("getAadApp", async () => {
     it("Happy Path: Graph", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const clientId = faker.datatype.uuid();
       const oauth2PermissionScopeId = faker.datatype.uuid();
@@ -445,13 +426,18 @@ describe("AAD App Client Test", () => {
         },
       });
 
-      const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+      const getResult = await AadAppClient.getAadApp(
+        "getAadApp",
+        objectId,
+        secret,
+        new MockGraphTokenProvider()
+      );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
 
     it("Happy Path: App Studio", async () => {
-      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
       const clientId = faker.datatype.uuid();
       const oauth2PermissionScopeId = faker.datatype.uuid();
@@ -480,13 +466,57 @@ describe("AAD App Client Test", () => {
         },
       });
 
-      const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+      const getResult = await AadAppClient.getAadApp(
+        "getAadApp",
+        objectId,
+        secret,
+        new MockGraphTokenProvider()
+      );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
 
+    it("throw GetAppConfigError", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.AppStudio);
+      const objectId = faker.datatype.uuid();
+      const clientId = faker.datatype.uuid();
+      const secret = "secret";
+      const displayName = "getAadApp";
+
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
+
+      sinon.stub(AppStudio, "getAadApp").resolves({
+        id: objectId,
+        appId: clientId,
+        displayName: displayName,
+        api: {
+          requestedAccessTokenVersion: 0,
+          oauth2PermissionScopes: [],
+          preAuthorizedApplications: [],
+        },
+      });
+
+      try {
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(
+          error.message,
+          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
+        );
+      }
+    });
+
     it("System Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const tenantId = faker.datatype.uuid();
       const fileName = "fileName";
@@ -502,7 +532,12 @@ describe("AAD App Client Test", () => {
       sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
-        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
@@ -510,7 +545,7 @@ describe("AAD App Client Test", () => {
     });
 
     it("User Error", async () => {
-      TokenProvider.init(ctx, TokenAudience.Graph);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
       const tenantId = faker.datatype.uuid();
       const fileName = "fileName";
@@ -526,7 +561,12 @@ describe("AAD App Client Test", () => {
       sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
-        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
@@ -636,6 +676,26 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
       }
+    });
+
+    it("Create owner duplicated without throw error", async () => {
+      const error = {
+        response: {
+          status: 404,
+          data: {
+            error: {
+              message: Constants.createOwnerDuplicatedMessage,
+            },
+          },
+        },
+      };
+      sinon.stub(GraphClient, "grantPermission").throws(error);
+      const grantPermissionResult = await AadAppClient.grantPermission(
+        ctx,
+        "grantPermission",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
     });
   });
 

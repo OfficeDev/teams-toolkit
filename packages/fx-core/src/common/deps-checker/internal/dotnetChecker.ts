@@ -18,6 +18,7 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { getResourceFolder } from "../../../folder";
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -407,7 +408,7 @@ export class DotnetChecker implements DepsChecker {
   }
 
   public getResourceDir(): string {
-    return path.resolve(__dirname, "..", "..", "..", "..", "resource", "deps-checker");
+    return path.resolve(path.join(getResourceFolder(), "deps-checker"));
   }
 
   private getDotnetInstallScriptName(): string {

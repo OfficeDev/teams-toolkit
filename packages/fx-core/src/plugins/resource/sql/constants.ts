@@ -6,8 +6,6 @@ export class Constants {
   public static readonly pluginFullName: string = "fx-resource-azure-sql";
 
   public static readonly firewall = {
-    azureIp: "0.0.0.0",
-    azureRule: "AllowAzure",
     localRule: "AllowLocal",
   };
 
@@ -64,8 +62,6 @@ export class Constants {
     confirmPassword: "sql-confirm-password",
     skipAddingUser: "sql-skip-adding-user",
   };
-
-  public static readonly resourceProvider: string = "Microsoft.Sql";
 }
 
 export class Telemetry {
@@ -92,6 +88,7 @@ export class Telemetry {
     errorMessage: "error-message",
     appid: "appid",
     skipAddingUser: "skip-adding-user",
+    dbCount: "db-count",
   };
 }
 
@@ -108,4 +105,7 @@ export class AzureSqlBicep {
 export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "provision.template.bicep";
   static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
+  static readonly newDatabaseOrchestrationTemplateFileName: string =
+    "newDatabase.orchestration.template.bicep";
+  static readonly newDatabaseProvisionTemplateFileName = "newDatabaseProvision.template.bicep";
 }

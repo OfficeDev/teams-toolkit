@@ -21,17 +21,6 @@ import {
 } from "../../../../common/template-utils/templatesActions";
 import { TemplateInfo } from "../resources/templateInfo";
 
-export type Manifest = {
-  [key: string]: {
-    [key: string]: {
-      [key: string]: {
-        version: string;
-        url: string;
-      }[];
-    };
-  };
-};
-
 export class FrontendScaffold {
   public static async scaffoldFromZipPackage(
     componentPath: string,

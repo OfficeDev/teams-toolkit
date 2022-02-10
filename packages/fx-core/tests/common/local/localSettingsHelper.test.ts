@@ -23,16 +23,9 @@ describe("localSettingsHelper", () => {
         name: "fx-solution-azure",
         version: "1.0.0",
         hostType: "Azure",
-        azureResources: [],
+        azureResources: [] as string[],
         capabilities: ["Tab"],
-        activeResourcePlugins: [
-          "fx-resource-frontend-hosting",
-          "fx-resource-identity",
-          "fx-resource-aad-app-for-teams",
-          "fx-resource-local-debug",
-          "fx-resource-appstudio",
-          "fx-resource-simple-auth",
-        ],
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     };
     const localSettings0 = {
@@ -56,6 +49,45 @@ describe("localSettingsHelper", () => {
       await fs.emptyDir(projectPath);
 
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, localSettings0);
+
+      chai.assert.isDefined(localEnvs);
+      chai.assert.equal(Object.keys(localEnvs).length, 7);
+      chai.assert.equal(
+        localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
+        "https://localhost:53000/auth-start.html"
+      );
+      chai.assert.equal(
+        localEnvs["FRONTEND_REACT_APP_CLIENT_ID"],
+        "44444444-4444-4444-4444-444444444444"
+      );
+    });
+
+    it("happy path without AAD plugin", async () => {
+      await fs.ensureDir(projectPath);
+      await fs.emptyDir(projectPath);
+
+      const projectSettingsAll = cloneDeep(projectSettings0);
+      const aadPluginKey = projectSettingsAll.solutionSettings.activeResourcePlugins.indexOf(
+        "fx-resource-aad-app-for-teams"
+      );
+      if (aadPluginKey > -1) {
+        projectSettingsAll.solutionSettings.activeResourcePlugins.splice(aadPluginKey, 1);
+      }
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
+
+      chai.assert.isDefined(localEnvs);
+      chai.assert.equal(Object.keys(localEnvs).length, 5);
+      chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"]);
+      chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
+    });
+
+    it("happy path with Simple Auth", async () => {
+      await fs.ensureDir(projectPath);
+      await fs.emptyDir(projectPath);
+
+      const projectSettingsAll = cloneDeep(projectSettings0);
+      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
 
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(Object.keys(localEnvs).length, 17);
@@ -91,8 +123,8 @@ describe("localSettingsHelper", () => {
       fs.ensureFileSync(botEnvPath);
       fs.writeFileSync(botEnvPath, "FOO=BOT");
       const projectSettingsAll = cloneDeep(projectSettings0);
-      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
-      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-function");
+      projectSettingsAll.solutionSettings.capabilities.push("Bot");
+      projectSettingsAll.solutionSettings.azureResources.push("function");
 
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, undefined);
 

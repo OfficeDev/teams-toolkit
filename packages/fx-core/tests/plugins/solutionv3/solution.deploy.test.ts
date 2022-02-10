@@ -5,10 +5,7 @@ import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/tea
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
-import {
-  BuiltInResourcePluginNames,
-  TeamsFxAzureSolutionNameV3,
-} from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deploy, getQuestionsForDeploy } from "../../../src/plugins/solution/fx-solution/v3/deploy";
 import {
   MockedAppStudioTokenProvider,
@@ -17,8 +14,10 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../solution/util";
-import { MockResourcePluginNames } from "./mockPlugins";
-
+import { MockFeaturePluginNames } from "./mockPlugins";
+import * as os from "os";
+import * as path from "path";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - deploy", () => {
   it("deploy", async () => {
     const projectSettings: ProjectSettings = {
@@ -30,23 +29,13 @@ describe("SolutionV3 - deploy", () => {
         capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        modules: [
-          {
-            capabilities: ["Tab"],
-            hostingPlugin: MockResourcePluginNames.storage,
-            dir: "tabs",
-            buildPath: "build",
-            deployType: "folder",
-          },
-        ],
-        activeResourcePlugins: [MockResourcePluginNames.storage],
+        activeResourcePlugins: [MockFeaturePluginNames.tab],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath & { modules: string[] } = {
+    const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
-      modules: ["0", "1"],
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -70,32 +59,16 @@ describe("SolutionV3 - deploy", () => {
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
-        capabilities: ["Tab", "Bot"],
+        capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        modules: [
-          {
-            capabilities: ["Tab"],
-            hostingPlugin: BuiltInResourcePluginNames.storage,
-            dir: "tabs",
-            buildPath: "build",
-            deolpyType: "folder",
-          },
-          {
-            capabilities: ["Bot"],
-            hostingPlugin: BuiltInResourcePluginNames.bot,
-            dir: "bot",
-            buildPath: "build",
-            deployType: "folder",
-          },
-        ],
-        activeResourcePlugins: [BuiltInResourcePluginNames.storage, BuiltInResourcePluginNames.bot],
+        activeResourcePlugins: [MockFeaturePluginNames.tab],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -103,12 +76,12 @@ describe("SolutionV3 - deploy", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfov3: v3.EnvInfoV3 = {
+    const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",
-      state: { solution: {} },
       config: {},
+      state: { solution: {} },
     };
-    const res = await getQuestionsForDeploy(ctx, inputs, envInfov3, mockedTokenProvider);
+    const res = await getQuestionsForDeploy(ctx, inputs, envInfoV3, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

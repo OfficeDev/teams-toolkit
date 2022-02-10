@@ -11,7 +11,7 @@ import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -70,14 +70,18 @@ export default class Provision extends YargsCommand {
     {
       const result = await core.provisionResources(inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.Provision,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
         return err(result.error);
       }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Provision, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

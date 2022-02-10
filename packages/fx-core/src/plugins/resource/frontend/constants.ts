@@ -14,6 +14,7 @@ export class Constants {
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
   static FrontendSuffix = "fe";
+  static FrontendIndexPath = `/${Constants.FrontendIndexDocument}#`;
 
   static EmptyString = "";
 
@@ -115,6 +116,9 @@ export class TelemetryEvent {
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
+
+  static readonly LocalDebug = "local-debug";
+
   static readonly SaveEnvFile = "frontend-save-env-file";
   static readonly LoadEnvFile = "frontend-load-env-file";
 }

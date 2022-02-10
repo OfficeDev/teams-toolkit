@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/failpoint-ts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Fault Injection for TypeScript",
   "keywords": [
     "Fault Injection"
@@ -17,15 +17,18 @@
   },
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
     "build": "npx tsc -p ./",
     "prepare": "rimraf build && npm run build",
-    "format-check": "echo test"
+    "format-check": "echo test",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.21",
@@ -36,6 +39,7 @@
     "chai": "^4.3.4",
     "eslint": "^7.22.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^10.5.4",
     "mocha": "^9.0.2",

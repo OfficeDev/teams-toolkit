@@ -11,10 +11,6 @@ export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
 export const tscWatchProblemMatcher = "$tsc-watch";
 
-export const frontendFolderName = "tabs";
-export const backendFolderName = "api";
-export const botFolderName = "bot";
-
 export const localSettingsJsonName = "localSettings.json";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
@@ -23,11 +19,7 @@ export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
 
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
-
+export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `
 **Describe the bug**
@@ -70,3 +62,10 @@ export const localDebugFAQUrl =
 
 export const localDebugHelpDoc = "https://aka.ms/teamsfx-localdebug";
 export const portInUseHelpLink = "https://aka.ms/teamsfx-port-in-use";
+export const skipNgrokHelpLink = "https://aka.ms/teamsfx-skip-ngrok";
+export const trustDevCertHelpLink = "https://aka.ms/teamsfx-trust-dev-cert";
+
+export const skipNgrokRetiredNotification =
+  "Property 'skipNgrok' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.ngrok' in VSCode settings instead.";
+export const trustDevCertRetiredNotification =
+  "Property 'trustDevCert' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.devCert' in VSCode settings instead.";

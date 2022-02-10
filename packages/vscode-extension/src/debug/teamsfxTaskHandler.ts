@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProductName } from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
 import * as vscode from "vscode";
 import {
   endLocalDebugSession,
@@ -14,7 +15,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
-import { errorDetail, issueLink, issueTemplate } from "./constants";
+import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -24,18 +25,33 @@ import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
-interface IRunningTeamsfxTask {
-  source: string;
-  name: string;
-  scope: vscode.WorkspaceFolder | vscode.TaskScope;
-}
-
-const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<
-  IRunningTeamsfxTask,
-  number
->();
+const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
+
+/**
+ * This EventEmitter is used to track all running tasks called by `runTask`.
+ * Each task executed by `runTask` will have an internal task id.
+ * Event emitters use this id to identify each tracked task, and `runTask` matches this id
+ * to determine whether a task is terminated or not.
+ */
+export let taskEndEventEmitter: vscode.EventEmitter<{
+  id: string;
+  name: string;
+  exitCode?: number;
+}>;
+let taskStartEventEmitter: vscode.EventEmitter<string>;
+export const trackedTasks = new Map<string, string>();
+
+function getTaskKey(task: vscode.Task): string {
+  if (task === undefined) {
+    return "";
+  }
+
+  // "source|name|scope"
+  const scope = (task.scope as vscode.WorkspaceFolder)?.uri?.toString() || task.scope?.toString();
+  return `${task.source}|${task.name}|${scope}`;
+}
 
 function isNpmInstallTask(task: vscode.Task): boolean {
   if (task) {
@@ -47,7 +63,6 @@ function isNpmInstallTask(task: vscode.Task): boolean {
 
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
-  // teamsfx: dev / watch
   if (task) {
     if (
       task.source === ProductName &&
@@ -64,10 +79,19 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       return (
         command !== undefined &&
         (command.trim().toLocaleLowerCase().endsWith("start") ||
-          command.trim().toLocaleLowerCase().endsWith("watch") ||
-          command.trim().toLowerCase() === "dev" ||
-          command.trim().toLowerCase() === "watch")
+          command.trim().toLocaleLowerCase().endsWith("watch"))
       );
+    }
+
+    // dev:teamsfx and watch:teamsfx
+    let commandLine: string | undefined;
+    if (task.execution && <vscode.ShellExecution>task.execution) {
+      const execution = <vscode.ShellExecution>task.execution;
+      commandLine =
+        execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
+    }
+    if (commandLine !== undefined) {
+      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
     }
   }
 
@@ -82,6 +106,41 @@ function displayTerminal(taskName: string): boolean {
   }
 
   return false;
+}
+
+export async function runTask(task: vscode.Task): Promise<number | undefined> {
+  if (task.definition.teamsfxTaskId === undefined) {
+    task.definition.teamsfxTaskId = uuid.v4();
+  }
+
+  const taskId = task.definition.teamsfxTaskId;
+  let started = false;
+
+  return new Promise<number | undefined>((resolve, reject) => {
+    // corner case but need to handle - somehow the task does not start
+    const startTimer = setTimeout(() => {
+      if (!started) {
+        reject(new Error("Task start timeout"));
+      }
+    }, 30000);
+
+    const startListener = taskStartEventEmitter.event((result) => {
+      if (taskId === result) {
+        clearTimeout(startTimer);
+        started = true;
+        startListener.dispose();
+      }
+    });
+
+    vscode.tasks.executeTask(task);
+
+    const endListener = taskEndEventEmitter.event((result) => {
+      if (taskId === result.id) {
+        endListener.dispose();
+        resolve(result.exitCode);
+      }
+    });
+  });
 }
 
 // TODO: move to local debug prerequisites checker
@@ -135,14 +194,31 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
   */
 }
 
+function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
+  const taskId = event.execution.task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined) {
+    trackedTasks.set(taskId, event.execution.task.name);
+    taskStartEventEmitter.fire(taskId as string);
+  }
+}
+
+function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
+  const taskId = event.execution.task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined && trackedTasks.has(taskId as string)) {
+    trackedTasks.delete(taskId as string);
+    taskEndEventEmitter.fire({
+      id: taskId as string,
+      name: event.execution.task.name,
+      exitCode: undefined,
+    });
+  }
+}
+
 async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
-      allRunningTeamsfxTasks.set(
-        { source: task.source, name: task.name, scope: task.scope },
-        event.processId
-      );
+      allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
     } else if (isNpmInstallTask(task)) {
       try {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
@@ -168,8 +244,18 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   const task = event.execution.task;
   const activeTerminal = vscode.window.activeTerminal;
 
+  const taskId = task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined) {
+    trackedTasks.delete(taskId as string);
+    taskEndEventEmitter.fire({
+      id: taskId as string,
+      name: event.execution.task.name,
+      exitCode: event.exitCode,
+    });
+  }
+
   if (task.scope !== undefined && isTeamsfxTask(task)) {
-    allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
+    allRunningTeamsfxTasks.delete(getTaskKey(task));
   } else if (isNpmInstallTask(task)) {
     try {
       activeNpmInstallTasks.delete(task.name);
@@ -189,7 +275,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
+        cwd = cwdOption.replace("${workspaceFolder}", ext.workspaceUri.fsPath);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;
@@ -220,9 +306,17 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-        let url = `${issueLink}title=new+bug+report: Task '${task.name}' failed&body=${issueTemplate}`;
+        let url: string;
         if (validNpmInstallLogInfo) {
-          url = `${url}${errorDetail}${JSON.stringify(npmInstallLogInfo, undefined, 4)}`;
+          url = `${issueLink}title=new+bug+report: Task '${
+            task.name
+          }' failed&body=${issueTemplate}${errorDetail}${JSON.stringify(
+            npmInstallLogInfo,
+            undefined,
+            4
+          )}`;
+        } else {
+          url = issueChooseLink;
         }
         const issue = {
           title: StringResources.vsc.handlers.reportIssue,
@@ -370,6 +464,19 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
 }
 
 export function registerTeamsfxTaskAndDebugEvents(): void {
+  taskEndEventEmitter = new vscode.EventEmitter<{ id: string; name: string; exitCode?: number }>();
+  taskStartEventEmitter = new vscode.EventEmitter<string>();
+  ext.context.subscriptions.push({
+    dispose() {
+      taskEndEventEmitter.dispose();
+      taskStartEventEmitter.dispose();
+      trackedTasks.clear();
+    },
+  });
+
+  ext.context.subscriptions.push(vscode.tasks.onDidStartTask(onDidStartTaskHandler));
+  ext.context.subscriptions.push(vscode.tasks.onDidEndTask(onDidEndTaskHandler));
+
   ext.context.subscriptions.push(
     vscode.tasks.onDidStartTaskProcess((event: vscode.TaskProcessStartEvent) =>
       Correlator.runWithId(getLocalDebugSessionId(), onDidStartTaskProcessHandler, event)

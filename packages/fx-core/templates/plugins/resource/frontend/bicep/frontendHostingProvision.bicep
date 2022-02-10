@@ -22,3 +22,4 @@ var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https
 output resourceId string = storage.id
 output endpoint string = 'https://${siteDomain}'
 output domain string = siteDomain
+output indexPath string = '/index.html#'

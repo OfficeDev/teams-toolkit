@@ -2,140 +2,233 @@
 // Licensed under the MIT license.
 
 import * as chai from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
+import * as sinon from "sinon";
+import * as vscode from "vscode";
 
-import { checkDependencies } from "../../../src/debug/npmInstallHandler";
+import { AzureSolutionSettings, ok, ProjectSettings } from "@microsoft/teamsfx-api";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 
-const testDataFolder = path.resolve(__dirname, "test-data");
+import * as commonUtils from "../../../src/utils/commonUtils";
+import * as extension from "../../../src/extension";
+import { ext } from "../../../src/extensionVariables";
+import * as teamsfxTaskHandler from "../../../src/debug/teamsfxTaskHandler";
+import { automaticNpmInstallHandler } from "../../../src/debug/npmInstallHandler";
 
-suite("[debug > npmInstallHandler]", () => {
-  suiteSetup(async () => {
-    await fs.ensureDir(testDataFolder);
-  });
+suite("npmInstallHandler", () => {
+  suite("automaticNpmInstallHandler", () => {
+    const workspaceFolder: vscode.WorkspaceFolder = {
+      uri: vscode.Uri.file("test"),
+      name: "test",
+      index: 0,
+    };
+    ext.workspaceUri = workspaceFolder.uri;
+    let state: any;
+    const solutionSettings: AzureSolutionSettings = {
+      name: "fx-solution-azure",
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    const projectSettings: ProjectSettings = {
+      appName: "test",
+      version: "2.0.0",
+      projectId: "11111111-1111-1111-1111-111111111111",
+      solutionSettings,
+    };
 
-  suite("checkDependencies()", () => {
-    setup(async () => {
-      await fs.emptyDir(testDataFolder);
-    });
-    test("npm installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
-      await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
+    let globalStateGetStub: sinon.SinonStub;
+    let globalStateUpdateStub: sinon.SinonStub;
+    let runTaskStub: sinon.SinonStub;
+    let showMessageCalledCount: number;
 
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.true;
-    });
-
-    test("yarn installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const yarnLockJson = "yarn.lock place holder";
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testDataFolder, "yarn.lock"), yarnLockJson);
-      await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
-
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.true;
-    });
-
-    test("installing", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package1": "1.0.0",\n\
-            "my-package2": "1.0.0"\n\
-          }\n\
-        }`;
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package1"));
-
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.false;
+    setup(() => {
+      sinon.stub(vscode.workspace, "workspaceFolders").value([workspaceFolder]);
+      globalStateGetStub = sinon.stub(globalState, "globalStateGet").callsFake(async () => state);
+      globalStateUpdateStub = sinon
+        .stub(globalState, "globalStateUpdate")
+        .callsFake(async (key, value) => (state = value));
+      sinon.stub(commonUtils, "getConfiguration").returns(true);
+      solutionSettings.hostType = "Azure";
+      solutionSettings.capabilities = [];
+      solutionSettings.azureResources = [];
+      sinon
+        .stub(LocalEnvManager.prototype, "getProjectSettings")
+        .returns(Promise.resolve(projectSettings));
+      showMessageCalledCount = 0;
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: async () => {
+          showMessageCalledCount += 1;
+          return ok(undefined);
+        },
+      });
+      runTaskStub = sinon.stub(teamsfxTaskHandler, "runTask").callsFake(async () => undefined);
     });
 
-    test("has dependencies but no node_modules", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
-
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.false;
+    teardown(() => {
+      sinon.restore();
     });
 
-    test("has dependencies but no package installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
-      await fs.ensureDir(path.join(testDataFolder, "node_modules", ".staging"));
-
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.false;
+    test("Create SPFx", async () => {
+      state = true;
+      solutionSettings.hostType = "SPFx";
+      solutionSettings.capabilities = ["TabSPFx"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
     });
 
-    test("no dependencies npm installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-          }\n\
-        }`;
-      await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
+    test("Create Tab", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
 
-      const npmInstalled = await checkDependencies(testDataFolder);
-      chai.expect(npmInstalled).to.be.true;
+    test("Create Bot", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Bot"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Create Message extension", async () => {
+      state = true;
+      solutionSettings.capabilities = ["MessagingExtension"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Create Tab + Bot", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "Bot"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledTwice(runTaskStub);
+    });
+
+    test("Create Tab + Message extension", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "MessagingExtension"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledTwice(runTaskStub);
+    });
+
+    test("Create Tab + Bot + Message extension", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "Bot", "MessagingExtension"];
+      await automaticNpmInstallHandler(false, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledTwice(runTaskStub);
+    });
+
+    test("Tab add Function", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab"];
+      solutionSettings.azureResources = ["function"];
+      await automaticNpmInstallHandler(true, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Bot add Function", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Bot"];
+      solutionSettings.azureResources = ["function"];
+      await automaticNpmInstallHandler(false, false, true);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Message extension add Function", async () => {
+      state = true;
+      solutionSettings.capabilities = ["MessagingExtension"];
+      solutionSettings.azureResources = ["function"];
+      await automaticNpmInstallHandler(false, false, true);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Tab + Bot add Function", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "Bot"];
+      solutionSettings.azureResources = ["function"];
+      await automaticNpmInstallHandler(true, false, true);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Tab + Function add Function", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab"];
+      solutionSettings.azureResources = ["function"];
+      await automaticNpmInstallHandler(true, true, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
+    });
+
+    test("Tab add Bot", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "Bot"];
+      await automaticNpmInstallHandler(true, false, false);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
+    });
+
+    test("Bot add Tab", async () => {
+      state = true;
+      solutionSettings.capabilities = ["Tab", "Bot"];
+      await automaticNpmInstallHandler(false, false, true);
+      sinon.assert.calledOnce(globalStateGetStub);
+      sinon.assert.calledOnce(globalStateUpdateStub);
+      chai.expect(state).false;
+      chai.expect(showMessageCalledCount).equals(1);
+      sinon.assert.calledOnce(runTaskStub);
     });
   });
 });

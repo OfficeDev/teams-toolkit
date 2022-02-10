@@ -12,7 +12,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppIdByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager, FolderName } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -83,7 +83,7 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
     return false;
   }
 
-  const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
+  const backendRoot = await getProjectRoot(workspacePath, FolderName.Function);
 
   return backendRoot !== undefined;
 }
@@ -99,7 +99,7 @@ export async function hasTeamsfxBot(): Promise<boolean> {
     return false;
   }
 
-  const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+  const botRoot = await getProjectRoot(workspacePath, FolderName.Bot);
 
   return botRoot !== undefined;
 }
@@ -144,17 +144,6 @@ export async function getDebugConfig(
   } catch (error: any) {
     showError(error);
     return undefined;
-  }
-}
-
-export async function getSkipNgrokConfig(): Promise<boolean> {
-  try {
-    const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
-  } catch (error: any) {
-    showError(error);
-    return false;
   }
 }
 

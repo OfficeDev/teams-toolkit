@@ -9,7 +9,6 @@ export * from "./migrateConditionHandler";
 export * from "./projectMigrator";
 export * from "./projectSettingsLoader";
 export * from "./projectSettingsWriter";
-export * from "./projectUpgrader";
 export * from "./questionModel";
 export * from "./solutionLoader";
 export * from "./telemetrySender";

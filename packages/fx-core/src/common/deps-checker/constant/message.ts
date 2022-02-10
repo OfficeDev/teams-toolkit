@@ -3,8 +3,6 @@
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
-  continueButtonText: "Continue anyway",
-
   defaultErrorMessage: "Install the required dependencies manually.",
 
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
@@ -37,7 +35,6 @@ Click "Learn more" to learn how to install the Node.js.
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
 
 Click "Learn more" to learn more about the supported Node.js versions.
-Click "Continue anyway" to continue local debugging.
 
 (If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)`,
 
@@ -51,8 +48,6 @@ Click "Install" to install @InstallPackages.`,
   linuxDepsNotFound: `Cannot find @SupportedPackages.
 
 Teams Toolkit requires these dependencies. 
-
-Click "Continue anyway" to continue.
 
 (If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
 

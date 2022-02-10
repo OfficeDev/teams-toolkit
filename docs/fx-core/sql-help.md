@@ -38,6 +38,7 @@ Since the current logged in account hasn't enough permission to add database use
    ```
 
       ![image](../images/fx-core/sql/add-database-user.png)
+1. (Optional) If there are multiple databases added in the project, you can find all databases besides the default one from `databaseName_{suffix}` config `.fx\states\state.{envName}.json`. Add database user for them using the same steps mentioned above.
 
 ## SQL.SqlAccessError
 

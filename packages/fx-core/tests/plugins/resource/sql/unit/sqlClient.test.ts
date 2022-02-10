@@ -36,7 +36,7 @@ describe("sqlClient", () => {
     sinon
       .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
-    client = await SqlClient.create(pluginContext, sqlPlugin.sqlImpl.config);
+    client = await SqlClient.create(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
   });
 
   afterEach(() => {
@@ -53,7 +53,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
@@ -70,7 +70,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.isTrue(SqlClient.isFireWallError(error?.innerError));
@@ -85,7 +85,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GuestAdminError);
@@ -121,12 +121,12 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       const reason = ErrorMessage.IdentityCredentialUndefine(
         sqlPlugin.sqlImpl.config.identity,
-        sqlPlugin.sqlImpl.config.databaseName
+        `(${sqlPlugin.sqlImpl.config.databaseName})`
       );
       chai.assert.include(error.message, reason);
     }
@@ -138,7 +138,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
@@ -153,7 +153,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.DomainError);

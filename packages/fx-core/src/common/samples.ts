@@ -9,6 +9,7 @@ export interface SampleInfo {
   time: string;
   configuration: string;
   link: string;
+  suggested: boolean;
 }
 
 export interface SampleCollection {
@@ -31,6 +32,7 @@ class SampleProvider {
           time: sample.time,
           configuration: sample.configuration,
           link: sampleConfig.defaultPackageLink,
+          suggested: sample.suggested,
         } as SampleInfo;
       });
 

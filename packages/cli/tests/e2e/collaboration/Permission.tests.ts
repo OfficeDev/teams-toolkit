@@ -7,7 +7,7 @@
 
 import { expect } from "chai";
 import path from "path";
-import { environmentManager, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   cleanUp,
   execAsync,
@@ -27,9 +27,6 @@ describe("Collaboration", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
 
   it("Collaboration: CLI with permission status and permission grant", async function () {
-    if (!isRemoteCollaborateEnabled()) {
-      return;
-    }
     // new a project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
       cwd: testFolder,
@@ -106,8 +103,6 @@ describe("Collaboration", function () {
 
   after(async () => {
     // clean up
-    if (isRemoteCollaborateEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    }
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 });

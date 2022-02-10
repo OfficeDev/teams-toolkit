@@ -24,6 +24,7 @@ import { LocalSettingsProvider } from "../../../../common/localSettingsProvider"
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
+import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
@@ -34,7 +35,7 @@ export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   return await _scaffoldLocalDebugSettings(
     ctx.projectSetting,
     inputs,
@@ -51,13 +52,14 @@ export async function scaffoldLocalDebugSettingsV1(
   if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
     return err(ScaffoldLocalDebugSettingsV1Error());
   }
-  return await _scaffoldLocalDebugSettings(
+  await _scaffoldLocalDebugSettings(
     ctx.projectSettings,
     ctx.answers,
     ctx.telemetryReporter,
     ctx.logProvider,
     ctx.cryptoProvider
   );
+  return ok(Void);
 }
 
 export async function _scaffoldLocalDebugSettings(
@@ -67,7 +69,7 @@ export async function _scaffoldLocalDebugSettings(
   logProvider: LogProvider,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSetting);
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
@@ -147,14 +149,22 @@ export async function _scaffoldLocalDebugSettings(
           includeBot
         );
 
-        const tasks = Tasks.generateTasks(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          includeSimpleAuth,
-          isMigrateFromV1,
-          programmingLanguage
-        );
+        const tasks =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? TasksNext.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                programmingLanguage
+              )
+            : Tasks.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeSimpleAuth,
+                isMigrateFromV1,
+                programmingLanguage
+              );
 
         //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
@@ -184,7 +194,13 @@ export async function _scaffoldLocalDebugSettings(
         );
 
         // generate localSettings.json
-        await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings);
+
+        localSettings = await scaffoldLocalSettingsJson(
+          projectSetting,
+          inputs,
+          cryptoProvider,
+          localSettings
+        );
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -238,7 +254,7 @@ export async function _scaffoldLocalDebugSettings(
     TelemetryEventName.scaffoldLocalDebugSettings,
     telemetryProperties
   );
-  return ok(Void);
+  return ok(localSettings as Json);
 }
 
 async function scaffoldLocalSettingsJson(
@@ -246,7 +262,7 @@ async function scaffoldLocalSettingsJson(
   inputs: Inputs,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<void> {
+): Promise<Json> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
@@ -267,4 +283,20 @@ async function scaffoldLocalSettingsJson(
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
+  return localSettings;
+}
+
+async function useNewTasks(projectPath?: string): Promise<boolean> {
+  // for new project or project with "validate-local-prerequisites", use new tasks content
+  const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
+  if (await fs.pathExists(tasksJsonPath)) {
+    try {
+      const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
+      return tasksContent.includes("fx-extension.validate-local-prerequisites");
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
 }

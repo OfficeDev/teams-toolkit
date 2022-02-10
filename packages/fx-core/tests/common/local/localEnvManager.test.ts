@@ -157,49 +157,78 @@ describe("LocalEnvManager", () => {
     });
   });
 
-  const testData: { message: string; activeResourcePlugins: string[]; depsTypes: DepsType[] }[] = [
+  const testData: { message: string; solutionSettings: any; depsTypes: DepsType[] }[] = [
     {
       message: "tab",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-      ],
-      depsTypes: [DepsType.Dotnet],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
+    },
+    {
+      message: "tab without simple auth",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+      },
+      depsTypes: [DepsType.AzureNode],
     },
     {
       message: "tab + function",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-        "fx-resource-function",
-      ],
-      depsTypes: [DepsType.Dotnet, DepsType.FuncCoreTools],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
     {
       message: "bot",
-      activeResourcePlugins: ["fx-resource-bot", "fx-resource-aad-app-for-teams"],
-      depsTypes: [DepsType.Ngrok],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Bot"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
     },
     {
       message: "tab + bot",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-        "fx-resource-bot",
-      ],
-      depsTypes: [DepsType.Dotnet, DepsType.Ngrok],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
+    },
+    {
+      message: "tab + bot + function",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot", "MessagingExtension"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
     {
       message: "spfx",
-      activeResourcePlugins: ["fx-resource-spfx"],
-      depsTypes: [],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "SPFx",
+      },
+      depsTypes: [DepsType.SpfxNode],
     },
   ];
 
-  describe("checkDependencies()", () => {
+  describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => {
       sandbox.restore();
@@ -210,117 +239,11 @@ describe("LocalEnvManager", () => {
         const projectSettings = {
           appName: "",
           projectId: "",
-          solutionSettings: {
-            name: "",
-            activeResourcePlugins: data.activeResourcePlugins,
-          },
+          solutionSettings: data.solutionSettings,
         };
-        const isInstallStubs = stubIsInstall(sandbox);
-        await localEnvManager.checkDependencies(projectSettings);
-        assertStubIsCalled(data.depsTypes, isInstallStubs);
-      });
-    });
-  });
-
-  describe("checkAndResolveDependencies()", () => {
-    const sandbox = sinon.createSandbox();
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    testData.forEach((data) => {
-      it(data.message, async () => {
-        const projectSettings = {
-          appName: "",
-          projectId: "",
-          solutionSettings: {
-            name: "",
-            activeResourcePlugins: data.activeResourcePlugins,
-          },
-        };
-        const resolveStubs = stubResolve(sandbox);
-        const getDepsInfoStubs = stubGetDepsInfo(sandbox);
-        const commandStubs = stubCommand(sandbox);
-        await localEnvManager.checkAndResolveDependencies(projectSettings);
-        assertStubIsCalled(data.depsTypes, resolveStubs);
-        assertStubIsCalled(data.depsTypes, getDepsInfoStubs);
-        assertStubIsCalled(data.depsTypes, commandStubs);
+        const result = localEnvManager.getActiveDependencies(projectSettings);
+        chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });
   });
 });
-
-const checkerMapping = [
-  { checker: DotnetChecker, type: DepsType.Dotnet },
-  { checker: NgrokChecker, type: DepsType.Ngrok },
-  { checker: FuncToolChecker, type: DepsType.FuncCoreTools },
-];
-
-function stubIsInstall(sandbox: sinon.SinonSandbox) {
-  return checkerMapping.map(({ checker, type }) => {
-    return {
-      type: type,
-      stub: sandbox.stub(checker.prototype, "isInstalled").callsFake(async () => {
-        return true;
-      }),
-    };
-  });
-}
-
-function stubResolve(sandbox: sinon.SinonSandbox) {
-  return checkerMapping.map(({ checker, type }) => {
-    return {
-      type: type,
-      stub: sandbox
-        .stub(checker.prototype, "resolve")
-        .callsFake(async (): Promise<Result<boolean, DepsCheckerError>> => {
-          return ok(true);
-        }),
-    };
-  });
-}
-
-function stubCommand(sandbox: sinon.SinonSandbox) {
-  return checkerMapping.map(({ checker, type }) => {
-    return {
-      type: type,
-      stub: sandbox.stub(checker.prototype, "command").callsFake(async (): Promise<string> => {
-        return "";
-      }),
-    };
-  });
-}
-
-function stubGetDepsInfo(sandbox: sinon.SinonSandbox) {
-  return checkerMapping.map(({ checker, type }) => {
-    return {
-      type: type,
-      stub: sandbox
-        .stub(checker.prototype, "getDepsInfo")
-        .callsFake(async (): Promise<DepsInfo> => {
-          return {
-            name: "",
-            isLinuxSupported: false,
-            supportedVersions: [],
-            details: new Map<string, string>(),
-          };
-        }),
-    };
-  });
-}
-
-function assertStubIsCalled(
-  expectedDepsTypes: DepsType[],
-  stubs: {
-    type: DepsType;
-    stub: sinon.SinonStub<[], Promise<any>>;
-  }[]
-) {
-  stubs.forEach((stub) => {
-    if (expectedDepsTypes.includes(stub.type)) {
-      chai.assert.isTrue(stub.stub.calledOnce, `Assert ${stub.type} stub called once.`);
-    } else {
-      chai.assert.isTrue(stub.stub.notCalled, `Assert ${stub.type} stub not called.`);
-    }
-  });
-}

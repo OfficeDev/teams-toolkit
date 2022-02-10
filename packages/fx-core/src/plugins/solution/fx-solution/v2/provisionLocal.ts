@@ -45,7 +45,7 @@ export async function provisionLocalResource(
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
     }
     const result = await ensurePermissionRequest(
-      azureSolutionSettings,
+      azureSolutionSettings!,
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {
@@ -69,7 +69,7 @@ export async function provisionLocalResource(
     return new v2.FxFailure(m365TenantMatches.error);
   }
 
-  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(azureSolutionSettings);
+  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(ctx.projectSetting);
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
@@ -109,16 +109,6 @@ export async function provisionLocalResource(
       );
       if (result.isErr()) {
         return new v2.FxPartialSuccess(localSettings, result.error);
-      }
-    } else {
-      if (!ctx.projectSetting.solutionSettings.migrateFromV1) {
-        return new v2.FxFailure(
-          returnSystemError(
-            new Error("AAD plugin not selected or executeUserTask is undefined"),
-            SolutionSource,
-            SolutionError.InternelError
-          )
-        );
       }
     }
   }

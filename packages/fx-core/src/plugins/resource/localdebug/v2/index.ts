@@ -9,6 +9,7 @@ import {
   Inputs,
   Json,
   ok,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -37,7 +38,8 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
   displayName = "LocalDebug";
   @Inject(ResourcePlugins.LocalDebugPlugin)
   plugin!: LocalDebugPlugin;
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
@@ -111,8 +113,6 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
       }
     } else if (func.method === "getProgrammingLanguage") {
       return ok(ctx.projectSetting.programmingLanguage);
-    } else if (func.method === "getSkipNgrokConfig") {
-      return ok((localSettings?.bot?.skipNgrok as boolean) === true);
     } else if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await localEnvManager.getLocalDebugEnvs(
         inputs.projectPath as string,

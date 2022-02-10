@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import path from "path";
-import fs from "fs-extra";
 import * as apis from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import {
   Colors,
   ConfigFolderName,
@@ -14,6 +14,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
+import * as uuid from "uuid";
 
 import {
   argsToInputs,
@@ -23,10 +24,8 @@ import {
   getProjectId,
   getSingleOptionString,
   getSystemInputs,
-  getTeamsAppId,
   getVersion,
   getConfigPath,
-  isWorkspaceSupported,
   readEnvJsonFile,
   readEnvJsonFileSync,
   readProjectSecrets,
@@ -35,10 +34,12 @@ import {
   sleep,
   toLocaleLowerCase,
   toYargsOptions,
+  getTeamsAppIdByEnv,
 } from "../../src/utils";
+import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, PluginNames } from "@microsoft/teamsfx-core";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -435,27 +436,61 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", async () => {
-      const result = isWorkspaceSupported("real");
+      const result = utils.isWorkspaceSupported("real");
       expect(result).equals(true);
     });
 
     it("Fake Path", async () => {
-      const result = isWorkspaceSupported("fake");
+      const result = utils.isWorkspaceSupported("fake");
       expect(result).equals(false);
     });
   });
 
-  describe("getTeamsAppId", async () => {
+  describe("getTeamsAppIdByEnv", async () => {
     const sandbox = sinon.createSandbox();
+    const env = "dev";
+    const invalidProjectDir = "invaldProjectDir";
+    const invalidStateProjectDir = "invaldStateProjectDir";
+    const validProjectDir = "validProjectDir";
+    const simpleProjectSettings = {
+      appName: "testApp",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "fx-solution-azure",
+        version: "1.0.0",
+        hostType: "Azure",
+        azureResources: [],
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-appstudio"],
+      },
+      version: "2.0.0",
+      programmingLanguage: "javascript",
+    };
+    const teamsAppId = "teamsAppId";
 
     before(() => {
       sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
+        return true;
       });
-      sandbox.stub(fs, "readJsonSync").returns({
-        solution: {
-          remoteTeamsAppId: "real",
-        },
+      sandbox.stub(utils, "isWorkspaceSupported").callsFake((file: string): boolean => {
+        return true;
+      });
+
+      sandbox.stub(fs, "readFileSync").callsFake((path: any): string | Buffer => {
+        const file = path as string;
+        if (file.includes("projectSettings.json")) {
+          return JSON.stringify(simpleProjectSettings);
+        } else if (file.includes(validProjectDir) && file.includes(`state.${env}.json`)) {
+          return JSON.stringify({
+            [PluginNames.APPST]: {
+              teamsAppId: teamsAppId,
+            },
+          });
+        } else if (file.includes(invalidStateProjectDir) && file.includes(`state.${env}.json`)) {
+          return "! invalid JSON";
+        } else {
+          throw new Error("readJsonError");
+        }
       });
     });
 
@@ -463,19 +498,19 @@ describe("Utils Tests", function () {
       sandbox.restore();
     });
 
-    it("No Root Folder", async () => {
-      const result = getTeamsAppId(undefined);
+    it("Invalid Project Dir", async () => {
+      const result = getTeamsAppIdByEnv(invalidProjectDir, env);
       expect(result).equals(undefined);
     });
 
-    it("Real Path", async () => {
-      const result = getTeamsAppId("real");
-      expect(result).equals("real");
+    it("Invalid State File", async () => {
+      const result = getTeamsAppIdByEnv(invalidProjectDir, env);
+      expect(result).equals(undefined);
     });
 
-    it("Fake Path", async () => {
-      const result = getTeamsAppId("fake");
-      expect(result).equals(undefined);
+    it("Valid State File", async () => {
+      const result = getTeamsAppIdByEnv(validProjectDir, env);
+      expect(result).equals(teamsAppId);
     });
   });
 

@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { v2, AzureSolutionSettings, Plugin, returnUserError } from "@microsoft/teamsfx-api";
+import {
+  v2,
+  AzureSolutionSettings,
+  Plugin,
+  returnUserError,
+  ProjectSettings,
+} from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
@@ -110,21 +116,17 @@ export function getActivatedResourcePlugins(solutionSettings: AzureSolutionSetti
 
 /**
  * return activated resource plugin according to solution settings
- * @param solutionSettings Azure solution settings
+ * @param projectSettings project settings
  * @returns activated resource plugins
  */
 export function getActivatedV2ResourcePlugins(
-  solutionSettings: AzureSolutionSettings
+  projectSettings: ProjectSettings
 ): v2.ResourcePlugin[] {
-  const activatedPlugins = getAllV2ResourcePlugins().filter(
-    (p) => p.activate && p.activate(solutionSettings) === true
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    ?.activeResourcePlugins;
+  if (!activeResourcePlugins) return [];
+  const activatedPlugins = getAllV2ResourcePlugins().filter((p) =>
+    activeResourcePlugins.includes(p.name)
   );
-  if (activatedPlugins.length === 0) {
-    throw returnUserError(
-      new Error(`No plugin selected`),
-      SolutionSource,
-      SolutionError.NoResourcePluginSelected
-    );
-  }
   return activatedPlugins;
 }

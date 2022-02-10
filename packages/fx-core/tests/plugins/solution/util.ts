@@ -49,9 +49,9 @@ export const validManifest = {
   packageName: "com.microsoft.teams.extension",
   developer: {
     name: "Teams App, Inc.",
-    websiteUrl: "{baseUrl}",
-    privacyUrl: "{baseUrl}/index.html#/privacy",
-    termsOfUseUrl: "{baseUrl}/index.html#/termsofuse",
+    websiteUrl: "https://{baseUrl}",
+    privacyUrl: "https://{baseUrl}/index.html#/privacy",
+    termsOfUseUrl: "https://{baseUrl}/index.html#/termsofuse",
   },
   icons: {
     color: "color.png",
@@ -322,7 +322,9 @@ export class MockedAppStudioProvider implements AppStudioTokenProvider {
     return "fakeToken";
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
+    return {
+      upn: "fakeUserPrincipalName@fake.com",
+    };
   }
   async signout(): Promise<boolean> {
     return true;

@@ -43,8 +43,8 @@ export interface ScaffoldAction {
   run: (context: ScaffoldContext) => Promise<void>;
 }
 
-const defaultTryLimits = 3;
-const defaultTimeoutInMs = 10000;
+const defaultTryLimits = 1;
+const defaultTimeoutInMs = 30000;
 
 const missKeyErrorInfo = (key: string) => `Missing ${key} in template action.`;
 
@@ -88,7 +88,7 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
     //! This path only works in debug mode
     const templateSourceCodePath = path.resolve(
       __dirname,
-      "../../../../",
+      "../../../../../",
       "templates",
       context.group,
       context.lang,

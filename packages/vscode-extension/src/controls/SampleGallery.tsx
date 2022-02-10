@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Icon, Stack, Image, PrimaryButton, Label } from "@fluentui/react";
+import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
+import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
@@ -12,27 +13,11 @@ import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
 import HelloWorldBot from "../../media/helloWorld-bot.gif";
-import Watch from "../../media/watch.svg";
-import Settings from "../../media/settings.svg";
+import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
-
-interface SampleInfo {
-  id: string;
-  title: string;
-  shortDescription: string;
-  fullDescription: string;
-  tags: string[];
-  time: string;
-  configuration: string;
-  link: string;
-}
-
-interface SampleCollection {
-  baseUrl: string;
-  samples: SampleInfo[];
-}
+import SampleDetailPage from "./sampleDetailPage";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -55,6 +40,7 @@ export default class SampleGallery extends React.Component<any, any> {
     this.state = {
       baseUrl: "",
       samples: [],
+      highlightSample: "",
     };
   }
 
@@ -70,29 +56,48 @@ export default class SampleGallery extends React.Component<any, any> {
   }
 
   render() {
+    const samples = this.state.samples as Array<SampleInfo>;
+    const hightSample = samples.filter(
+      (sample: SampleInfo) => sample.id == this.state.highlightSample
+    )[0];
     return (
-      <div className="sample-gallery">
-        <div className="section" id="title">
-          <div className="logo">
-            <Icon iconName="Heart" className="logo" />
+      <div>
+        {this.state.highlightSample == "" && (
+          <div className="sample-gallery">
+            <div className="section" id="title">
+              <div className="logo">
+                <Icon iconName="Library" className="logo" />
+              </div>
+              <div className="title">
+                <h2>Samples</h2>
+                <h3>
+                  Explore our sample apps to quickly get started with concepts and code examples.
+                </h3>
+              </div>
+            </div>
+            <div className="sample-stack">
+              <SampleAppCardList
+                samples={this.state.samples}
+                baseUrl={this.state.baseUrl}
+                highlightSample={this.highlightSample}
+              />
+            </div>
           </div>
-          <div className="title">
-            <h2>Samples</h2>
-            <h3>Explore our sample apps to quickly get started with concepts and code examples.</h3>
-          </div>
-        </div>
-        <Stack
-          className="sample-stack"
-          horizontal
-          verticalFill
-          wrap
-          horizontalAlign={"start"}
-          verticalAlign={"start"}
-          styles={{ root: { overflow: "visible" } }}
-          tokens={{ childrenGap: 20 }}
-        >
-          <SampleAppCardList samples={this.state.samples} baseUrl={this.state.baseUrl} />
-        </Stack>
+        )}
+        {this.state.highlightSample != "" && (
+          <SampleDetailPage
+            baseUrl={this.state.baseUrl}
+            image={imageMapping[hightSample.id]}
+            tags={hightSample.tags}
+            time={hightSample.time}
+            configuration={hightSample.configuration}
+            title={hightSample.title}
+            description={hightSample.fullDescription}
+            sampleAppFolder={hightSample.id}
+            sampleAppUrl={hightSample.link}
+            highlightSample={this.highlightSample}
+          ></SampleDetailPage>
+        )}
       </div>
     );
   }
@@ -111,10 +116,16 @@ export default class SampleGallery extends React.Component<any, any> {
         break;
     }
   };
+
+  highlightSample = (id: string) => {
+    this.setState({
+      highlightSample: id,
+    });
+  };
 }
 
-class SampleAppCardList extends React.Component<any, any> {
-  constructor(props: any) {
+class SampleAppCardList extends React.Component<SampleListProps, any> {
+  constructor(props: SampleListProps) {
     super(props);
   }
 
@@ -122,9 +133,9 @@ class SampleAppCardList extends React.Component<any, any> {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
       const baseUrl = this.props.baseUrl;
-      return samples.map((sample) => {
+      return samples.map((sample, index) => {
         return (
-          <SampleAppCard
+          <SampleCard
             baseUrl={baseUrl}
             image={imageMapping[sample.id]}
             tags={sample.tags}
@@ -134,6 +145,9 @@ class SampleAppCardList extends React.Component<any, any> {
             description={sample.fullDescription}
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
+            suggested={sample.suggested}
+            order={index + 1}
+            highlightSample={this.props.highlightSample}
           />
         );
       });
@@ -141,14 +155,25 @@ class SampleAppCardList extends React.Component<any, any> {
   }
 }
 
-class SampleAppCard extends React.Component<any, any> {
-  constructor(props: any) {
+class SampleCard extends React.Component<SampleCardProps, any> {
+  constructor(props: SampleCardProps) {
     super(props);
   }
 
   render() {
     return (
-      <div className="sample-app-card" tabIndex={0}>
+      <div
+        className={`sample-card box${this.props.order}`}
+        tabIndex={0}
+        onClick={() => {
+          this.props.highlightSample(this.props.sampleAppFolder);
+        }}
+      >
+        {this.props.suggested && (
+          <div className="triangle">
+            <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
+          </div>
+        )}
         <label
           style={{
             position: "absolute",
@@ -161,7 +186,7 @@ class SampleAppCard extends React.Component<any, any> {
         >
           sample app card
         </label>
-        <Image src={this.props.image} width={278} height={160} />
+        <Image src={this.props.image} />
         <label
           style={{
             position: "absolute",
@@ -178,27 +203,8 @@ class SampleAppCard extends React.Component<any, any> {
         <div className="section" aria-labelledby="tagLabel">
           {this.props.tags &&
             this.props.tags.map((value: string) => {
-              return <p className="tag">{value}</p>;
+              return <VSCodeTag className="tag">{value}</VSCodeTag>;
             })}
-        </div>
-        <div className="estimation-time">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
-        </div>
-        <div className="configuration">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
         <label
           style={{
@@ -214,39 +220,17 @@ class SampleAppCard extends React.Component<any, any> {
           sample app title:
         </label>
         <h2>{this.props.title}</h2>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="descriptionLabel"
-        >
-          sample app description:
-        </label>
-        <h3>{this.props.description}</h3>
-        <div className="section buttons">
-          <PrimaryButton
-            text="View on Github"
-            className="right-aligned"
-            onClick={() => {
-              this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
-            }}
-          />
-          <PrimaryButton
-            text="Create"
-            className="right-aligned"
-            onClick={() => {
-              this.cloneSampleApp(
-                this.props.title,
-                this.props.sampleAppUrl,
-                this.props.sampleAppFolder
-              );
-            }}
-          />
+        <div className="estimation-time">
+          <div className="watch">
+            <Watch></Watch>
+          </div>
+          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+        </div>
+        <div className="configuration">
+          <div className="setting">
+            <Setting></Setting>
+          </div>
+          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
       </div>
     );

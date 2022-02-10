@@ -455,6 +455,51 @@ describe("Question Model - Visitor Test", () => {
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
 
+    it("pre-defined question will not be count as one step", async () => {
+      const actualSequence: string[] = [];
+      const inputs = createInputs();
+      sandbox
+        .stub(mockUI, "selectOption")
+        .callsFake(
+          async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+            actualSequence.push(config.name);
+            return ok({ type: "success", result: config.options[0] });
+          }
+        );
+      const multiSelect = sandbox
+        .stub(mockUI, "selectOptions")
+        .callsFake(
+          async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+            actualSequence.push(config.name);
+            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+          }
+        );
+
+      const root = new QTreeNode({ type: "group" });
+
+      const question1 = createSingleSelectQuestion("1");
+      question1.staticOptions = [
+        { id: `mocked value of 1`, label: `mocked value of 1` },
+        { id: `mocked value of 2`, label: `mocked value of 2` },
+      ];
+      question1.returnObject = true;
+      root.addChild(new QTreeNode(question1));
+      inputs["1"] = { id: `mocked value of 1`, label: `mocked value of 1` };
+
+      const question3 = createMultiSelectQuestion("3");
+      question3.staticOptions = [
+        { id: `mocked value of 3`, label: `mocked value of 3` },
+        { id: `mocked value of 4`, label: `mocked value of 4` },
+      ];
+      question3.skipSingleOption = true;
+      question3.returnObject = true;
+      root.addChild(new QTreeNode(question3));
+
+      const res = await traverse(root, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.equal((multiSelect.lastCall.args[0] as MultiSelectConfig).step, 1);
+    });
+
     it("success: complex go back", async () => {
       const actualSequence: string[] = [];
       const inputs = createInputs();

@@ -84,7 +84,6 @@ import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/u
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { newEnvInfo } from "../../../src/core/tools";
-import { isArmSupportEnabled } from "../../../src/common/tools";
 import Container from "typedi";
 import {
   askResourceGroupInfo,
@@ -97,13 +96,14 @@ import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm
 import * as msRest from "@azure/ms-rest-js";
 import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
-import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
 import { assert } from "sinon";
+import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -280,12 +280,12 @@ function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
 }
 
 function mockProvisionV2ThatAlwaysSucceed(plugin: v2.ResourcePlugin) {
-  plugin.provisionResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return ok({ output: {}, secrets: {} });
+  plugin.provisionResource = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
   };
 
-  plugin.configureResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return ok({ output: {}, secrets: {} });
+  plugin.configureResource = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
   };
 }
 
@@ -479,9 +479,8 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "validateManifest").resolves([]);
-    mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
-      .returns(ok(new TeamsAppManifest()));
+    mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
+    mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
   });
 
   afterEach(() => {
@@ -575,24 +574,14 @@ describe("Resource group creation failed for provision() in Azure projects", () 
       },
     };
 
-    if (!isArmSupportEnabled()) {
-      const result = await solution.provision(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
-      expect(result._unsafeUnwrapErr().message).contains(
-        "Failed to create resource group my_app-rg due to some error"
-      );
-    } else {
-      mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
-      const result = await solution.provision(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.ResourceGroupNotFound);
-      expect(result._unsafeUnwrapErr().message).contains(
-        "please specify an existing resource group."
-      );
-    }
+    mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.ResourceGroupNotFound);
+    expect(result._unsafeUnwrapErr().message).contains(
+      "please specify an existing resource group."
+    );
   });
 });
 
@@ -690,17 +679,7 @@ describe("provision() happy path for Azure projects", () => {
       })
     );
     const result = await solution.provision(mockedCtx);
-    if (!isArmSupportEnabled()) {
-      expect(result.isOk()).to.be.true;
-      expect(spy.calledOnce).to.be.true;
-      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
-        .true;
-      // expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-      //   mockedAppDef.teamsAppId
-      // );
-    } else {
-      expect(stub.called).to.be.true;
-    }
+    expect(stub.called).to.be.true;
   });
 });
 
@@ -819,6 +798,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,
@@ -867,6 +847,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,
@@ -918,6 +899,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,
@@ -1077,7 +1059,7 @@ describe("API v2 implementation", () => {
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
       };
-      const mockedEnvInfo: EnvInfoV2 = {
+      const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
         state: {},
@@ -1092,7 +1074,7 @@ describe("API v2 implementation", () => {
         mockedEnvInfo,
         mockedTokenProvider
       );
-      expect(result.kind).equals("success");
+      expect(result.isOk()).equals(true);
     });
   });
 
@@ -1104,6 +1086,24 @@ describe("API v2 implementation", () => {
       mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
         body: false,
       } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
+
+      mocker
+        .stub<any, any>(resourceGroupHelper, "askResourceGroupInfo")
+        .callsFake(
+          async (
+            ctx: v2.Context,
+            inputs: Inputs,
+            azureAccountProvider: AzureAccountProvider,
+            rmClient: ResourceManagementClient,
+            defaultResourceGroupName: string
+          ): Promise<Result<any, FxError>> => {
+            return ok({
+              createNewResourceGroup: false,
+              name: "mockRG",
+              location: "mockLoc",
+            });
+          }
+        );
     });
     afterEach(() => {
       mocker.restore();
@@ -1133,7 +1133,7 @@ describe("API v2 implementation", () => {
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
       };
-      const mockedEnvInfo: EnvInfoV2 = {
+      const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
         state: {},
@@ -1149,10 +1149,7 @@ describe("API v2 implementation", () => {
         mockedEnvInfo,
         mockedTokenProvider
       );
-      expect(result.kind).equals("success");
-      if (result.kind === "success") {
-        expect(result.output["fx-resource-identity"] !== undefined).equals(true);
-      }
+      expect(result.isOk()).equals(true);
     });
   });
 });

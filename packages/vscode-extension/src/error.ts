@@ -12,6 +12,7 @@ export enum ExtensionErrors {
   UnsupportedNodeType = "UnsupportedNodeType",
   UnknownSubscription = "UnknownSubscription",
   PortAlreadyInUse = "PortAlreadyInUse",
+  PrerequisitesValidationError = "PrerequisitesValidationError",
   OpenExternalFailed = "OpenExternalFailed",
   FolderAlreadyExist = "FolderAlreadyExist",
   InvalidProject = "InvalidProject",

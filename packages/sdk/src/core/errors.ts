@@ -60,6 +60,11 @@ export enum ErrorCode {
    * Operation failed.
    */
   FailedOperation = "FailedOperation",
+
+  /**
+   * Invalid response error.
+   */
+  InvalidResponse = "InvalidResponse",
 }
 
 /**

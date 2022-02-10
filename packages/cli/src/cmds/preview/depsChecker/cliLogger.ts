@@ -3,16 +3,15 @@
 
 import * as os from "os";
 import cliLogger from "../../../commonlib/log";
+import { DepsLogger } from "@microsoft/teamsfx-core";
 import { LogLevel } from "@microsoft/teamsfx-api";
-import { IDepsLogger } from "./checker";
 
-export class CLILogger implements IDepsLogger {
+export class CLILogger implements DepsLogger {
   private detailLogLines: string[] = [];
 
   public constructor() {}
-
   public async debug(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Debug, message);
+    this.addToCache(LogLevel.Debug, message);
     return true;
   }
 
@@ -22,13 +21,22 @@ export class CLILogger implements IDepsLogger {
   }
 
   public async warning(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Warning, message);
+    this.addToCache(LogLevel.Warning, message);
     return await cliLogger.warning(message);
   }
 
   public async error(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Error, message);
+    this.addToCache(LogLevel.Error, message);
     return await cliLogger.error(message);
+  }
+
+  public async append(message: string): Promise<boolean> {
+    cliLogger.rawLog(message);
+    return Promise.resolve(true);
+  }
+  public async appendLine(message: string): Promise<boolean> {
+    cliLogger.rawLog(`${message}${os.EOL}`);
+    return Promise.resolve(true);
   }
 
   public async printDetailLog(): Promise<void> {
@@ -39,7 +47,7 @@ export class CLILogger implements IDepsLogger {
     this.detailLogLines = [];
   }
 
-  private appendLine(level: LogLevel, message: string): void {
+  private addToCache(level: LogLevel, message: string): void {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
     this.detailLogLines.push(line);
   }

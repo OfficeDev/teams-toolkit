@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
+import { isVSProject } from "../../../..";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
 import {
@@ -37,9 +38,7 @@ export async function deploy(
 ): Promise<Result<Void, FxError>> {
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG]["output"][
-    SOLUTION_PROVISION_SUCCEEDED
-  ] as boolean;
+  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -53,20 +52,28 @@ export async function deploy(
     );
   }
 
-  const optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
-  if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
-    return err(
-      returnUserError(
-        new Error(`No plugin selected`),
-        SolutionSource,
-        SolutionError.NoResourcePluginSelected
-      )
-    );
+  const isVsProject = isVSProject(ctx.projectSetting);
+
+  let optionsToDeploy: string[] = [];
+  if (!isVsProject) {
+    optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
+    if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
+      return err(
+        returnUserError(
+          new Error(`No plugin selected`),
+          SolutionSource,
+          SolutionError.NoResourcePluginSelected
+        )
+      );
+    }
   }
 
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks: NamedThunk<Json>[] = plugins
-    .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
+    .filter(
+      (plugin) =>
+        !isUndefined(plugin.deploy) && (isVsProject ? true : optionsToDeploy.includes(plugin.name))
+    )
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
@@ -77,7 +84,7 @@ export async function deploy(
             ctx,
             {
               ...inputs,
-              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]["output"]),
+              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
               projectPath: inputs.projectPath!,
             },
             envInfo,

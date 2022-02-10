@@ -3,43 +3,43 @@
 import * as tedious from "tedious";
 import { Constants, HelpLinks } from "./constants";
 import { SqlConfig } from "./config";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
 export class SqlClient {
   config: SqlConfig;
   token: string;
-  ctx: PluginContext;
 
-  private constructor(ctx: PluginContext, config: SqlConfig, token: string) {
-    this.ctx = ctx;
+  private constructor(config: SqlConfig, token: string) {
     this.config = config;
     this.token = token;
   }
 
-  static async create(ctx: PluginContext, config: SqlConfig): Promise<SqlClient> {
-    const token = await SqlClient.initToken(ctx, config);
-    return new SqlClient(ctx, config, token);
+  static async create(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<SqlClient> {
+    const token = await SqlClient.initToken(azureAccountProvider, config);
+    return new SqlClient(config, token);
   }
 
-  async addDatabaseUser(): Promise<void> {
+  async addDatabaseUser(database: string): Promise<void> {
     try {
       let query: string;
       query = `IF NOT EXISTS (SELECT name FROM [sys].[database_principals] WHERE name='${this.config.identity}')
       BEGIN
       CREATE USER [${this.config.identity}] FROM EXTERNAL PROVIDER;
       END;`;
-      await this.doQuery(this.token, query);
+      await this.doQuery(this.token, query, database);
       query = `sp_addrolemember 'db_datareader', '${this.config.identity}'`;
-      await this.doQuery(this.token, query);
+      await this.doQuery(this.token, query, database);
       query = `sp_addrolemember 'db_datawriter', '${this.config.identity}'`;
-      await this.doQuery(this.token, query);
+      await this.doQuery(this.token, query, database);
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.GuestAdminMessage)) {
         const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
+          database,
           this.config.identity
         );
         const e = SqlResultFactory.UserError(
@@ -54,8 +54,7 @@ export class SqlClient {
         throw e;
       } else {
         const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
+          database,
           this.config.identity
         );
         const e = SqlResultFactory.UserError(
@@ -72,16 +71,16 @@ export class SqlClient {
     }
   }
 
-  static async initToken(ctx: PluginContext, config: SqlConfig): Promise<string> {
-    const credential = await ctx.azureAccountProvider!.getIdentityCredentialAsync();
+  static async initToken(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<string> {
+    const credential = await azureAccountProvider.getIdentityCredentialAsync();
+    const databaseNames = `(${config.databases.join(",")})`;
     if (!credential) {
       const link = HelpLinks.default;
-      const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, config.databaseName);
-      let message = ErrorMessage.DatabaseUserCreateError.message(
-        config.sqlServer,
-        config.databaseName,
-        config.identity
-      );
+      const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, databaseNames);
+      let message = ErrorMessage.DatabaseUserCreateError.message(databaseNames, config.identity);
       message += `. ${reason}`;
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseUserCreateError.name,
@@ -99,8 +98,7 @@ export class SqlClient {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.DomainCode)) {
         const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
+          databaseNames,
           config.identity
         );
         const e = SqlResultFactory.UserError(
@@ -115,8 +113,7 @@ export class SqlClient {
         throw e;
       } else {
         const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
+          databaseNames,
           config.identity
         );
         const e = SqlResultFactory.UserError(
@@ -133,7 +130,7 @@ export class SqlClient {
     }
   }
 
-  async doQuery(token: string, cmd: string): Promise<any[]> {
+  async doQuery(token: string, cmd: string, database: string): Promise<any[]> {
     const config = {
       server: this.config.sqlEndpoint,
       authentication: {
@@ -151,7 +148,7 @@ export class SqlClient {
           log: true,
         },
         rowCollectionOnDone: true,
-        database: this.config.databaseName,
+        database: database,
         encrypt: true,
         requestTimeout: 30000,
         connectTimeout: 30000,

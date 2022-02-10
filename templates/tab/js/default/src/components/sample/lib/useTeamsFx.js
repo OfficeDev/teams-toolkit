@@ -2,7 +2,6 @@ import { loadConfiguration, ResourceType, LogLevel, setLogLevel, setLogFunction 
 import { useData } from "./useData";
 import { useTeams } from "msteams-react-base-component";
 
-var teamsfxEndpoint = process.env.REACT_APP_TEAMSFX_ENDPOINT;
 var startLoginPageUrl = process.env.REACT_APP_START_LOGIN_PAGE_URL;
 var functionEndpoint = process.env.REACT_APP_FUNC_ENDPOINT;
 var clientId = process.env.REACT_APP_CLIENT_ID;
@@ -21,7 +20,6 @@ export function useTeamsFx() {
       loadConfiguration({
         authentication: {
           initiateLoginEndpoint: startLoginPageUrl,
-          simpleAuthEndpoint: teamsfxEndpoint,
           clientId: clientId,
         },
         resources: [

@@ -12,19 +12,26 @@ import {
   DepsCheckerEvent,
   defaultHelpLink,
 } from "@microsoft/teamsfx-core";
-import { openUrl, showWarningMessage, checkerEnabled, isLinux } from "./cliUtils";
-import { CliConfigOptions } from "../../../userSetttings";
+import {
+  openUrl,
+  showWarningMessage,
+  isNodeCheckerEnabled,
+  isDotnetCheckerEnabled,
+  isFuncCoreToolsEnabled,
+  isLinux,
+  isNgrokCheckerEnabled,
+} from "./cliUtils";
 
 export class CliDepsChecker {
   private static learnMoreButtonText = "Learn more";
+
   private readonly depsManager: DepsManager;
 
   constructor(
     private logger: DepsLogger,
     private telemetry: DepsTelemetry,
-    private hasBot: boolean,
-    private hasFunction: boolean,
-    private enableNgrok: boolean
+    private hasBackend: boolean,
+    private hasBot: boolean
   ) {
     this.depsManager = new DepsManager(logger, telemetry);
   }
@@ -118,18 +125,15 @@ export class CliDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
+        return await isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return (await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode)) && this.hasFunction;
+        return (await isNodeCheckerEnabled()) && this.hasBackend;
       case DepsType.Dotnet:
-        return await checkerEnabled(CliConfigOptions.EnvCheckerValidateDotnetSdk);
+        return await isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return (
-          (await checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools)) &&
-          this.hasFunction
-        );
+        return (await isFuncCoreToolsEnabled()) && this.hasBackend;
       case DepsType.Ngrok:
-        return this.hasBot && this.enableNgrok;
+        return this.hasBot && (await isNgrokCheckerEnabled());
       default:
         return false;
     }

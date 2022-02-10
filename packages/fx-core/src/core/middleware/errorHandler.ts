@@ -48,13 +48,13 @@ const Reg8 =
 const Reg9 = /The access token is from the wrong issuer '.+'\./;
 const Reg10 = /Entry not found in cache\./;
 const Reg11 = /request to .+ failed, reason: .+/;
-
+const Reg12 = /.+no space left on device.+/;
 // const Reg12 = /ENOENT: no such file or directory/;
 // const Reg13 = /EBUSY: resource busy or locked/;
 // const Reg14 = /Lock is not .+ by you/;
 // const Reg15 = /EPERM: operation not permitted/;
 
-const Regs = [Reg1, Reg2, Reg3, Reg4, Reg5, Reg6, Reg7, Reg8, Reg9, Reg10, Reg11];
+const Regs = [Reg1, Reg2, Reg3, Reg4, Reg5, Reg6, Reg7, Reg8, Reg9, Reg10, Reg11, Reg12];
 
 async function tryConvertToUserError(err: SystemError): Promise<UserError | SystemError> {
   const msg = err.message;

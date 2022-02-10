@@ -24,6 +24,7 @@ import {
   MigrateV1ProjectError,
 } from "./resources/errors";
 import {
+  Constants,
   DependentPluginInfo,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
@@ -35,13 +36,14 @@ import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
+import { ProgressHelper } from "./utils/progress-helper";
 import {
-  MigrateSteps,
-  PostProvisionSteps,
-  PreDeploySteps,
-  ProgressHelper,
-  ScaffoldSteps,
-} from "./utils/progress-helper";
+  DeployProgress,
+  MigrateProgress,
+  PostProvisionProgress,
+  PreDeployProgress,
+  ScaffoldProgress,
+} from "./resources/steps";
 import { TemplateInfo } from "./resources/templateInfo";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -52,11 +54,14 @@ import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
-export class FrontendPluginImpl {
+import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
+import { PluginImpl } from "./interface";
+
+export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
-    await progressHandler?.next(ScaffoldSteps.Scaffold);
+    const progressHandler = await ProgressHelper.startProgress(ctx, ScaffoldProgress);
+    await progressHandler?.next(ScaffoldProgress.steps.Scaffold);
 
     const templateInfo = new TemplateInfo(ctx);
 
@@ -65,15 +70,15 @@ export class FrontendPluginImpl {
       templateInfo
     );
 
-    await ProgressHelper.endScaffoldProgress(true);
+    await ProgressHelper.endProgress(true);
     Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
     return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startPostProvisionProgressHandler(ctx);
-    await progressHandler?.next(PostProvisionSteps.EnableStaticWebsite);
+    const progressHandler = await ProgressHelper.startProgress(ctx, PostProvisionProgress);
+    await progressHandler?.next(PostProvisionProgress.steps.EnableStaticWebsite);
 
     const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
     await runWithErrorCatchAndThrow(
@@ -81,7 +86,7 @@ export class FrontendPluginImpl {
       async () => await client.enableStaticWebsite()
     );
 
-    await ProgressHelper.endPostProvisionProgress(true);
+    await ProgressHelper.endProgress(true);
     Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
 
     await this.updateDotEnv(ctx);
@@ -91,21 +96,21 @@ export class FrontendPluginImpl {
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartPreDeploy(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.createPreDeployProgressHandler(ctx);
+    const progressHandler = await ProgressHelper.startProgress(ctx, PreDeployProgress);
 
     await this.updateDotEnv(ctx);
 
-    await progressHandler?.next(PreDeploySteps.CheckStorage);
+    await progressHandler?.next(PreDeployProgress.steps.CheckStorage);
     await this.checkStorageAvailability(ctx);
 
-    await ProgressHelper.endPreDeployProgress(true);
+    await ProgressHelper.endProgress(true);
     Logger.info(Messages.EndPreDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
-    await ProgressHelper.startDeployProgressHandler(ctx);
+    await ProgressHelper.startProgress(ctx, DeployProgress);
 
     const config = await FrontendConfig.fromPluginContext(ctx);
     const client = new AzureStorageClient(config);
@@ -118,7 +123,7 @@ export class FrontendPluginImpl {
     await FrontendDeployment.doFrontendBuild(componentPath, envs, envName);
     await FrontendDeployment.doFrontendDeployment(client, componentPath, envName);
 
-    await ProgressHelper.endDeployProgress(true);
+    await ProgressHelper.endProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
     return ok(undefined);
   }
@@ -138,8 +143,7 @@ export class FrontendPluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -170,6 +174,14 @@ export class FrontendPluginImpl {
     return ok(result);
   }
 
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    ctx.localSettings?.frontend?.set(
+      LocalSettingsFrontendKeys.TabIndexPath,
+      Constants.FrontendIndexPath
+    );
+    return ok(undefined);
+  }
+
   private collectEnvs(ctx: PluginContext): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
@@ -198,7 +210,6 @@ export class FrontendPluginImpl {
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
-      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
@@ -208,6 +219,7 @@ export class FrontendPluginImpl {
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
     return envs;
   }
@@ -226,8 +238,8 @@ export class FrontendPluginImpl {
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
     if (func.method === "migrateV1Project") {
       Logger.info(Messages.StartMigrateV1Project(PluginInfo.DisplayName));
-      const progressHandler = await ProgressHelper.startMigrateProgressHandler(ctx);
-      await progressHandler?.next(MigrateSteps.Migrate);
+      const progressHandler = await ProgressHelper.startProgress(ctx, MigrateProgress);
+      await progressHandler?.next(MigrateProgress.steps.Migrate);
 
       const sourceFolder = path.join(ctx.root, ArchiveFolderName);
       const distFolder = path.join(ctx.root, FrontendPathInfo.WorkingDir);
@@ -242,7 +254,7 @@ export class FrontendPluginImpl {
         await copyFiles(sourceFolder, distFolder, excludeFiles);
       });
 
-      await ProgressHelper.endMigrateProgress(true);
+      await ProgressHelper.endProgress(true);
       Logger.info(Messages.EndMigrateV1Project(PluginInfo.DisplayName));
       return ok(undefined);
     }

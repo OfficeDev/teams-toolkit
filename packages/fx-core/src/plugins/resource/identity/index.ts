@@ -30,6 +30,7 @@ import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/Resour
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
 import "./v2";
+import "./v3";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
@@ -121,8 +122,7 @@ export class IdentityPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

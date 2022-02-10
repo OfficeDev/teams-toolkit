@@ -12,8 +12,15 @@ Generate connection configuration consumed by tedious.
 <b>Signature:</b>
 
 ```typescript
-getConfig(): Promise<ConnectionConfig>;
+getConfig(databaseName?: string): Promise<ConnectionConfig>;
 ```
+
+## Parameters
+
+|  Parameter | Type | Description |
+|  --- | --- | --- |
+|  databaseName | string | specify database name to override default one if there are multiple databases. |
+
 <b>Returns:</b>
 
 Promise&lt;ConnectionConfig&gt;

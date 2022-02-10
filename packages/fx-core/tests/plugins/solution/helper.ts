@@ -28,6 +28,7 @@ import {
 } from "../../constants";
 import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
+import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 
 export class TestHelper {
@@ -109,13 +110,6 @@ export class TestHelper {
               frontendHostingProvision: TestFileContent.feHostProvisionModule,
             },
           },
-          Configuration: {
-            Orchestration:
-              "Mocked frontend hosting configuration orchestration content. Module path: '{{fx-resource-frontend-hosting.Configuration.frontendHostingConfig.path}}'.",
-            Modules: {
-              frontendHostingConfig: TestFileContent.feHostConfigurationModule,
-            },
-          },
           Reference: {
             frontendHostingOutputKey: TestFileContent.feHostReferenceValue,
           },
@@ -184,23 +178,6 @@ export class TestHelper {
   static mockedAadGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       const res: ArmTemplateResult = {
-        Provision: {
-          Orchestration:
-            "Mocked aad provision orchestration content. Module path: '{{fx-resource-aad-app-for-teams.Provision.aadProvision.path}}'.",
-          Modules: {
-            aadProvision: TestFileContent.aadProvisionModule,
-          },
-        },
-        Configuration: {
-          Orchestration:
-            "Mocked aad configuration orchestration content. Module path: '{{fx-resource-aad-app-for-teams.Configuration.aadConfig.path}}'.",
-          Modules: {
-            aadConfig: TestFileContent.aadConfigurationModule,
-          },
-        },
-        Reference: {
-          aadOutputKey: TestFileContent.aadReferenceValue,
-        },
         Parameters: {
           AadParameter: TestFileContent.aadParameterValue,
         },
@@ -221,13 +198,6 @@ export class TestHelper {
               "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
             Modules: {
               identityProvision: TestFileContent.identityProvisionModule,
-            },
-          },
-          Configuration: {
-            Orchestration:
-              "Mocked identity configuration orchestration content. Module path: '{{fx-resource-identity.Configuration.identityConfig.path}}'.",
-            Modules: {
-              identityConfig: TestFileContent.identityConfigurationModule,
             },
           },
           Reference: {
@@ -279,7 +249,17 @@ export class TestHelper {
 
   static mockedBotUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker.stub(botPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok({});
+      const res: ArmTemplateResult = {
+        Configuration: {
+          Modules: {
+            botConfig: TestFileContent.botConfigUpdateModule,
+          },
+        },
+        Reference: {
+          botOutputKey: TestFileContent.botReferenceValue,
+        },
+      };
+      return ok(res);
     });
   }
 
@@ -318,5 +298,21 @@ export class TestHelper {
     plugin.postScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
       return ok(Void);
     };
+  }
+
+  static getParameterFileContent(
+    provisionParameters: Record<string, string>,
+    customizedParameters?: Record<string, string>
+  ): string {
+    const params = Object.assign(
+      { provisionParameters: { value: provisionParameters } },
+      customizedParameters
+    );
+    const parameterObject = {
+      $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      contentVersion: "1.0.0.0",
+      parameters: params,
+    };
+    return JSON.stringify(parameterObject, undefined, 2).replace(/\r?\n/g, os.EOL);
   }
 }

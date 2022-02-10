@@ -27,7 +27,7 @@ export class FrontendConfig {
   endpoint?: string;
   domain?: string;
 
-  private constructor(
+  public constructor(
     subscriptionId: string,
     resourceGroupName: string,
     location: string,

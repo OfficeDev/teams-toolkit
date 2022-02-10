@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { Json } from "./types";
+
 export interface IDeveloper {
   /**
    * The display name for the developer.
@@ -322,10 +324,12 @@ export interface ILocalizationInfo {
   }[];
 }
 
+export type AppManifest = Json;
+
 /**
  * manifest definition according to : https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json
  */
-export class TeamsAppManifest {
+export class TeamsAppManifest implements AppManifest {
   $schema?: string =
     "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json";
   /**

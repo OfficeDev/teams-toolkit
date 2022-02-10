@@ -7,7 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import axios from "axios";
 
-import { BackendExtensionsInstaller } from "../../../../../src/plugins/resource/function/utils/depsChecker/backendExtensionsInstall";
+import { funcDepsHelper } from "../../../../../src/plugins/resource/function/utils/depsChecker/funcHelper";
 
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
@@ -20,7 +20,7 @@ import { FunctionDeploy } from "../../../../../src/plugins/resource/function/ops
 import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
-import { isArmSupportEnabled, newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src";
 
 const context: any = {
   envInfo: newEnvInfo(
@@ -85,14 +85,10 @@ const context: any = {
   },
   config: new Map<string, string>([
     ["functionAppName", "ut"],
-    ...((isArmSupportEnabled()
-      ? [
-          [
-            "functionAppResourceId",
-            "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/ut",
-          ],
-        ]
-      : ([] as [string, string][])) as [string, string][]),
+    [
+      "functionAppResourceId",
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/ut",
+    ],
   ]),
   azureAccountProvider: {
     getAccountCredentialAsync: async () => ({
@@ -155,7 +151,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(axios, "post").resolves({ status: 200 });
       sinon.stub(execute, "execute").resolves("");
       sinon.stub(FunctionDeploy, "hasUpdatedContent").resolves(true);
-      sinon.stub(BackendExtensionsInstaller.prototype, "install").resolves(undefined);
+      sinon.stub(funcDepsHelper, "installFuncExtension").resolves(undefined);
       const plugin: FunctionPlugin = new FunctionPlugin();
 
       // Act

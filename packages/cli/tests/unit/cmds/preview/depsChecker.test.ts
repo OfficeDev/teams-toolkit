@@ -13,14 +13,14 @@ import {
 } from "@microsoft/teamsfx-core";
 import { ok } from "@microsoft/teamsfx-api";
 
-import { CliConfigOptions } from "../../../../src/userSetttings";
+import { UserSettings } from "../../../../src/userSetttings";
 import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
 import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";
 import UI from "../../../../src/userInteraction";
 
 const expect = chai.expect;
 
-describe("[Checker UT - Extension]", () => {
+describe("[Checker UT - Cli]", () => {
   const logger: DepsLogger = <DepsLogger>{};
   const telemetry: DepsTelemetry = <DepsTelemetry>{};
   const sandbox = sinon.createSandbox();
@@ -136,7 +136,7 @@ describe("[Checker UT - Extension]", () => {
     });
 
     it("azure + f5: all disabled", async () => {
-      const checker = new CliDepsChecker(logger, telemetry, true, false, false);
+      const checker = new CliDepsChecker(logger, telemetry, false, false, false);
       const deps = [
         DepsType.SpfxNode,
         DepsType.FunctionNode,
@@ -150,19 +150,13 @@ describe("[Checker UT - Extension]", () => {
         chai.assert.equal(deps.length, 0);
         return [];
       });
-      sandbox
-        .stub(cliUtils, "checkerEnabled")
-        .withArgs(CliConfigOptions.EnvCheckerValidateFuncCoreTools.toString())
-        .resolves(true)
-        .withArgs(
-          sinon.match((input: string) =>
-            [
-              CliConfigOptions.EnvCheckerValidateNode.toString(),
-              CliConfigOptions.EnvCheckerValidateDotnetSdk.toString(),
-            ].includes(input)
-          )
-        )
-        .resolves(false);
+
+      const config = {
+        "validate-func-core-tools": "on",
+        "validate-node": "off",
+        "validate-dotnet-sdk": "off",
+      };
+      sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
 
       sandbox.stub(cliUtils, "isLinux").returns(false);
       const shouldContinue = await checker.resolve(deps);

@@ -111,7 +111,6 @@ function isSame(set1: Set<string>, set2: Set<string>): boolean {
 }
 
 export class VsCodeUI implements UserInteraction {
-  showSteps = true;
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
     this.context = context;
@@ -148,10 +147,6 @@ export class VsCodeUI implements UserInteraction {
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = false;
-      if (this.showSteps) {
-        quickPick.step = option.step;
-        quickPick.totalSteps = option.totalSteps;
-      }
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
@@ -244,10 +239,6 @@ export class VsCodeUI implements UserInteraction {
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = true;
-      if (this.showSteps) {
-        quickPick.step = option.step;
-        quickPick.totalSteps = option.totalSteps;
-      }
       const preIds: Set<string> = new Set<string>();
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
@@ -362,10 +353,6 @@ export class VsCodeUI implements UserInteraction {
       inputBox.ignoreFocusOut = true;
       inputBox.password = option.password === true;
       inputBox.prompt = option.prompt;
-      if (this.showSteps) {
-        inputBox.step = option.step;
-        inputBox.totalSteps = option.totalSteps;
-      }
       return await new Promise<Result<InputTextResult, FxError>>((resolve): void => {
         const onDidAccept = async () => {
           const validationRes = option.validation
@@ -465,10 +452,6 @@ export class VsCodeUI implements UserInteraction {
       quickPick.matchOnDescription = false;
       quickPick.matchOnDetail = false;
       quickPick.canSelectMany = false;
-      if (this.showSteps) {
-        quickPick.step = config.step;
-        quickPick.totalSteps = config.totalSteps;
-      }
       let fileSelectorIsOpen = false;
       return await new Promise(async (resolve) => {
         const onDidAccept = () => {

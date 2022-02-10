@@ -18,22 +18,17 @@ import {
   deleteResourceGroupByName,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
@@ -57,7 +52,7 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
@@ -66,21 +61,14 @@ describe("Deploy to customized resource group", function () {
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
       // Validate Function App
-      const functionValidator = new FunctionValidator(
-        context,
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const functionValidator = new FunctionValidator(context, projectPath, env);
       await functionValidator.validateProvision();
       await functionValidator.validateDeploy();
     }

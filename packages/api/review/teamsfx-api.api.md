@@ -52,6 +52,35 @@ interface APIM extends AzureResource {
 }
 
 // @public (undocumented)
+export type AppManifest = Json;
+
+// @public (undocumented)
+interface AppManifestProvider {
+    // (undocumented)
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
+        name: "staticTab";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "configurableTab";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "Bot";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "MessageExtension";
+        snippet?: Json;
+        existing?: boolean;
+    })[]) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
+    // (undocumented)
+    saveManifest: (ctx: Context_2, inputs: InputsWithProjectPath, manifest: AppManifest) => Promise<Result<Void, FxError>>;
+}
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public
@@ -139,6 +168,8 @@ interface AzureSolutionConfig extends Json {
     // (undocumented)
     location: string;
     // (undocumented)
+    needCreateResourceGroup: boolean;
+    // (undocumented)
     provisionSucceeded: boolean;
     // (undocumented)
     resourceGroupName: string;
@@ -148,6 +179,8 @@ interface AzureSolutionConfig extends Json {
     subscriptionId: string;
     // (undocumented)
     subscriptionName: string;
+    // (undocumented)
+    teamsAppTenantId: string;
     // (undocumented)
     tenantId: string;
 }
@@ -176,16 +209,6 @@ interface AzureSQL extends AzureResource {
     sqlEndpoint: string;
     // (undocumented)
     sqlResourceId: string;
-}
-
-// @public (undocumented)
-interface AzureStorage extends AzureResource {
-    // (undocumented)
-    domain: string;
-    // (undocumented)
-    endpoint: string;
-    // (undocumented)
-    storageResourceId: string;
 }
 
 // @public
@@ -319,6 +342,12 @@ interface Context_2 {
 }
 
 // @public (undocumented)
+interface ContextWithManifestProvider extends Context_2 {
+    // (undocumented)
+    appManifestProvider: AppManifestProvider;
+}
+
+// @public (undocumented)
 export interface Core {
     // (undocumented)
     activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -341,8 +370,6 @@ export interface Core {
     // (undocumented)
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
-    // (undocumented)
-    listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
@@ -457,7 +484,7 @@ type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
     config: Json;
 };
 
-// @public
+// @public (undocumented)
 interface EnvInfoV3 extends EnvInfoV2 {
     // (undocumented)
     state: ResourceStates;
@@ -496,9 +523,45 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
+export interface ExistingAppConfig {
+    // (undocumented)
+    isCreatedFromExistingApp: boolean;
+    // (undocumented)
+    newAppTypes: ExistingTeamsAppType[];
+}
+
+// @public (undocumented)
+export enum ExistingTeamsAppType {
+    // (undocumented)
+    Bot = 2,
+    // (undocumented)
+    ConfigurableTab = 1,
+    // (undocumented)
+    MessageExtension = 3,
+    // (undocumented)
+    StaticTab = 0
+}
+
+// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
+}
+
+// @public (undocumented)
+interface FeaturePlugin {
+    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2[], FxError>>;
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    description?: string;
+    displayName?: string;
+    getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    name: string;
+    pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -508,6 +571,16 @@ export interface FolderQuestion extends UserInputQuestion {
     type: "folder";
     validation?: FuncValidation<string>;
     value?: string;
+}
+
+// @public (undocumented)
+interface FrontendHostingResource extends AzureResource {
+    // (undocumented)
+    domain: string;
+    // (undocumented)
+    endpoint: string;
+    // (undocumented)
+    storageResourceId: string;
 }
 
 // @public (undocumented)
@@ -706,12 +779,10 @@ export interface IConnector {
 
 // @public (undocumented)
 interface ICore extends Core {
-    addModule: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     init: (inputs: InputsWithProjectPath & {
         solution?: string;
     }) => Promise<Result<Void, FxError>>;
-    scaffold: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -776,6 +847,8 @@ export interface InputResult<T> {
 export interface Inputs extends Json {
     // (undocumented)
     env?: string;
+    // (undocumented)
+    existingAppConfig?: ExistingAppConfig;
     // (undocumented)
     existingResources?: string[];
     // (undocumented)
@@ -860,47 +933,29 @@ export function isAutoSkipSelect(q: Question): boolean;
 
 // @public (undocumented)
 interface ISolution {
-    addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        capabilities?: string[];
-    }) => Promise<Result<Void, FxError>>;
-    addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: string;
-        resource?: string;
-    }) => Promise<Result<Void, FxError>>;
+    addFeature?: (ctx: Context_2, inputs: SolutionAddFeatureInputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        modules: string[];
-    }, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
-    getQuestionsForAddModule?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForAddResource?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
+    getQuestionsForAddFeature?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForInit?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    init: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    init?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     // (undocumented)
     name: string;
     // (undocumented)
-    provisionLocalResources?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    // (undocumented)
-    provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<EnvInfoV3, FxError>>;
+    provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: string;
-        template?: OptionItem;
-    }) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -1013,16 +1068,38 @@ export interface LogProvider {
 }
 
 // @public (undocumented)
-export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
+type ManifestCapability = {
+    name: "staticTab";
+    snippet?: {
+        local: IStaticTab;
+        remote: IStaticTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "configurableTab";
+    snippet?: {
+        local: IConfigurableTab;
+        remote: IConfigurableTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "Bot";
+    snippet?: {
+        local: IBot;
+        remote: IBot;
+    };
+    existingApp?: boolean;
+} | {
+    name: "MessageExtension";
+    snippet?: {
+        local: IComposeExtension;
+        remote: IComposeExtension;
+    };
+    existingApp?: boolean;
+};
 
-// @public
-interface Module {
-    buildPath?: string;
-    capabilities: string[];
-    deployType?: string;
-    dir?: string;
-    hostingPlugin?: string;
-}
+// @public (undocumented)
+export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
 
 // @public (undocumented)
 export interface MultiFileQuestion extends UserInputQuestion {
@@ -1088,6 +1165,15 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public (undocumented)
+interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
+    // (undocumented)
+    features: {
+        name: string;
+        value: ResourceTemplate_2[];
+    }[];
 }
 
 // @public (undocumented)
@@ -1170,12 +1256,6 @@ interface Plugin_2 {
 export { Plugin_2 as Plugin }
 
 // @public (undocumented)
-interface Plugin_3 {
-    displayName?: string;
-    name: string;
-}
-
-// @public (undocumented)
 export type PluginConfig = ConfigMap;
 
 // @public (undocumented)
@@ -1187,25 +1267,10 @@ export interface PluginContext extends Context {
 }
 
 // @public (undocumented)
-interface PluginDeployInputs extends InputsWithProjectPath {
-    buildPath?: string;
-    deployType?: string;
-    dir?: string;
-}
-
-// @public (undocumented)
 export type PluginIdentity = string;
 
 // @public (undocumented)
 type PluginName = string;
-
-// @public (undocumented)
-interface PluginScaffoldInputs extends InputsWithProjectPath {
-    buildPath?: string;
-    dir?: string;
-    module?: string;
-    template: string;
-}
 
 // @public (undocumented)
 export const ProductName = "teamsfx";
@@ -1234,7 +1299,7 @@ export interface ProjectSettings {
     // (undocumented)
     projectId: string;
     // (undocumented)
-    solutionSettings: SolutionSettings;
+    solutionSettings?: SolutionSettings;
     // (undocumented)
     version?: string;
 }
@@ -1303,11 +1368,11 @@ export type ResourceConfigs = ResourceTemplates;
 
 // @public
 interface ResourcePlugin {
-    activate(solutionSettings: AzureSolutionSettings): boolean;
+    activate(projectSettings: ProjectSettings): boolean;
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
@@ -1327,46 +1392,11 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     updateResourceTemplate?: (ctx: Context_2, inputs: Inputs & {
-        existingResources: string[];
-    }) => Promise<Result<ResourceTemplate_2, FxError>>;
-}
-
-// @public (undocumented)
-interface ResourcePlugin_2 extends Plugin_3 {
-    addResource?: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        existingResources: string[];
-    }) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    configureLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
-    description?: string;
-    // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
-    // (undocumented)
-    generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        existingResources: string[];
-    }) => Promise<Result<ResourceTemplate_2, FxError>>;
-    getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
-    // (undocumented)
-    provisionLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    // (undocumented)
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
-    resourceType: string;
-    // (undocumented)
-    updateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath & {
         existingResources: string[];
     }) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
@@ -1409,20 +1439,6 @@ export interface RunnableTask<T> {
     name?: string;
     run(...args: any): Promise<Result<T, FxError>>;
     readonly total?: number;
-}
-
-// @public (undocumented)
-interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
-}
-
-// @public
-interface ScaffoldTemplate {
-    description: string;
-    language: string;
-    name: string;
 }
 
 // @public
@@ -1508,8 +1524,6 @@ export interface Solution {
     getQuestionsForUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listAllCollaborators?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
-    // (undocumented)
     listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1523,6 +1537,12 @@ export interface Solution {
     publish: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     scaffold: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+}
+
+// @public (undocumented)
+interface SolutionAddFeatureInputs extends InputsWithProjectPath {
+    // (undocumented)
+    feature: string;
 }
 
 // @public (undocumented)
@@ -1565,13 +1585,11 @@ interface SolutionPlugin {
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
-    listAllCollaborators?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    // (undocumented)
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<FxResult<Json, FxError>>;
-    provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
@@ -1593,7 +1611,7 @@ export enum Stage {
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
-    addModule = "addModule",
+    addFeature = "addFeature",
     // (undocumented)
     addResource = "addResource",
     // (undocumented)
@@ -1617,8 +1635,6 @@ export enum Stage {
     // (undocumented)
     init = "init",
     // (undocumented)
-    listAllCollaborators = "listAllCollaborators",
-    // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)
     listEnv = "listEnv",
@@ -1632,8 +1648,6 @@ export enum Stage {
     publish = "publish",
     // (undocumented)
     removeEnv = "removeEnv",
-    // (undocumented)
-    scaffold = "scaffold",
     // (undocumented)
     switchEnv = "switchEnv",
     // (undocumented)
@@ -1720,7 +1734,7 @@ export interface TaskGroupConfig {
 }
 
 // @public
-export class TeamsAppManifest {
+export class TeamsAppManifest implements AppManifest {
     // (undocumented)
     $schema?: string;
     accentColor: string;
@@ -1766,29 +1780,6 @@ interface TeamsFxAzureResourceStates extends ResourceStates {
     // (undocumented)
     [key: string]: AzureResource;
     solution: AzureSolutionConfig;
-}
-
-// @public (undocumented)
-interface TeamsFxSolutionSettings extends AzureSolutionSettings {
-    // (undocumented)
-    modules: Module[];
-    version: "3.0.0";
-}
-
-// @public (undocumented)
-interface TeamsSPFxSolutionSettings extends SolutionSettings {
-    // (undocumented)
-    activeResourcePlugins: string[];
-    // (undocumented)
-    capabilities: string[];
-    // (undocumented)
-    hostType: string;
-    // (undocumented)
-    migrateFromV1?: boolean;
-    // (undocumented)
-    modules: Module[];
-    // (undocumented)
-    version: "3.0.0";
 }
 
 // @public (undocumented)
@@ -2036,25 +2027,22 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
+        ManifestCapability,
         CloudResource,
         ResourceStates,
         AzureResource,
         AzureSolutionConfig,
         TeamsAppResource,
         TeamsFxAzureResourceStates,
-        ScaffoldTemplate,
-        PluginScaffoldInputs,
-        PluginDeployInputs,
-        Plugin_3 as Plugin,
-        ScaffoldPlugin,
-        ResourcePlugin_2 as ResourcePlugin,
-        Module,
-        TeamsFxSolutionSettings,
-        TeamsSPFxSolutionSettings,
+        AppManifestProvider,
+        ContextWithManifestProvider,
+        OtherFeaturesAddedInputs,
+        FeaturePlugin,
+        SolutionAddFeatureInputs,
         ISolution,
         ICore,
         AzureIdentity,
-        AzureStorage,
+        FrontendHostingResource,
         AzureSQL,
         AzureBot,
         AADApp,

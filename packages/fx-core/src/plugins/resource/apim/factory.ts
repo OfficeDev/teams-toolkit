@@ -1,123 +1,130 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { ApiManagementClient } from "@azure/arm-apimanagement";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
+  EnvInfo,
   GraphTokenProvider,
+  Json,
   LogProvider,
   Platform,
-  PluginContext,
+  ReadonlyPluginConfig,
   TelemetryReporter,
+  v3,
 } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { ISolutionConfig, SolutionConfig } from "./config";
+import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
-import { ApimService } from "./services/apimService";
-import { AadService } from "./services/aadService";
-import { OpenApiProcessor } from "./utils/openApiProcessor";
-import { ApimManager } from "./managers/apimManager";
 import { AadManager } from "./managers/aadManager";
+import { ApimManager } from "./managers/apimManager";
 import {
   CliQuestionManager,
   IQuestionManager,
   VscQuestionManager,
 } from "./managers/questionManager";
-import * as VSCode from "./questions/vscodeQuestion";
-import * as CLI from "./questions/cliQuestion";
-import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
-import axios from "axios";
-import { AadDefaultValues } from "./constants";
-import { Lazy } from "./utils/commonUtils";
 import { ScaffoldManager } from "./managers/scaffoldManager";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
-import { ISolutionConfig, SolutionConfig } from "./config";
+import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
+import * as CLI from "./questions/cliQuestion";
+import * as VSCode from "./questions/vscodeQuestion";
+import { AadService } from "./services/aadService";
+import { ApimService } from "./services/apimService";
+import { Lazy } from "./utils/commonUtils";
+import { OpenApiProcessor } from "./utils/openApiProcessor";
 
 export class Factory {
-  public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
-    const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+  public static async buildApimManager(
+    envInfo: EnvInfo | v3.EnvInfoV3,
+    telemetryReporter?: TelemetryReporter,
+    azureAccountProvider?: AzureAccountProvider,
+    logProvider?: LogProvider
+  ): Promise<ApimManager> {
+    const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
 
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
+    const solutionConfig = new SolutionConfig(envInfo);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
           solutionConfig,
-          ctx.azureAccountProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          azureAccountProvider,
+          telemetryReporter,
+          logProvider
         )
     );
-    return new ApimManager(
-      lazyApimService,
-      openApiProcessor,
-      ctx.telemetryReporter,
-      ctx.logProvider
-    );
+    return new ApimManager(lazyApimService, openApiProcessor, telemetryReporter, logProvider);
   }
 
-  public static async buildAadManager(ctx: PluginContext): Promise<AadManager> {
+  public static async buildAadManager(
+    graphTokenProvider?: GraphTokenProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<AadManager> {
     const lazyAadService = new Lazy(
-      async () =>
-        await Factory.buildAadService(
-          ctx.graphTokenProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
-        )
+      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
     );
-    return new AadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
+    return new AadManager(lazyAadService, telemetryReporter, logProvider);
   }
 
-  public static async buildTeamsAppAadManager(ctx: PluginContext): Promise<TeamsAppAadManager> {
+  public static async buildTeamsAppAadManager(
+    graphTokenProvider?: GraphTokenProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<TeamsAppAadManager> {
     const lazyAadService = new Lazy(
-      async () =>
-        await Factory.buildAadService(
-          ctx.graphTokenProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
-        )
+      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
     );
-    return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
+    return new TeamsAppAadManager(lazyAadService, telemetryReporter, logProvider);
   }
 
-  public static async buildScaffoldManager(ctx: PluginContext): Promise<ScaffoldManager> {
-    const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
-    return new ScaffoldManager(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
+  public static async buildScaffoldManager(
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<ScaffoldManager> {
+    const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
+    return new ScaffoldManager(openApiProcessor, telemetryReporter, logProvider);
   }
 
-  public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
-    switch (ctx.answers?.platform) {
+  public static async buildQuestionManager(
+    platform: Platform,
+    envInfo: EnvInfo | v3.EnvInfoV3,
+    azureAccountProvider?: AzureAccountProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<IQuestionManager> {
+    const solutionConfig = new SolutionConfig(envInfo);
+    switch (platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
           async () =>
             await Factory.buildApimService(
               solutionConfig,
-              ctx.azureAccountProvider,
-              ctx.telemetryReporter,
-              ctx.logProvider
+              azureAccountProvider,
+              telemetryReporter,
+              logProvider
             )
         );
-        const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+        const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
         const openApiDocumentQuestion = new VSCode.OpenApiDocumentQuestion(
           openApiProcessor,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
         const existingOpenApiDocumentFunc = new VSCode.ExistingOpenApiDocumentFunc(
           openApiProcessor,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
-        const apiPrefixQuestion = new VSCode.ApiPrefixQuestion(
-          ctx.telemetryReporter,
-          ctx.logProvider
-        );
+        const apiPrefixQuestion = new VSCode.ApiPrefixQuestion(telemetryReporter, logProvider);
         const apiVersionQuestion = new VSCode.ApiVersionQuestion(
           lazyApimService,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
         const newApiVersionQuestion = new VSCode.NewApiVersionQuestion(
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
 
         return new VscQuestionManager(
@@ -179,7 +186,7 @@ export class Factory {
   }
 
   public static async buildAadService(
-    graphTokenProvider: GraphTokenProvider | undefined,
+    graphTokenProvider?: GraphTokenProvider,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<AadService> {

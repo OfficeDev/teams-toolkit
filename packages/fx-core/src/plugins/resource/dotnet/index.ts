@@ -11,6 +11,7 @@ import {
   Void,
   err,
   AzureSolutionSettings,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -37,6 +38,7 @@ import { hooks } from "@feathersjs/hooks";
 import { DotnetPluginPathInfo as PathInfo, WebappBicep } from "./constants";
 import { ConfigKey } from "./enums";
 import { LogMessage, ProgressMessage } from "./messages";
+import { ensureSolutionSettings } from "../../solution/fx-solution/utils/solutionSettingsHelper";
 
 export interface DotnetPluginConfig {
   /* Config from solution */
@@ -74,11 +76,17 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return (inputs[AzureSolutionQuestionNames.Capabilities] as string[]) ?? [];
   }
 
+  async pluginDependencies?(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok([BuiltInFeaturePluginNames.identity]);
+  }
+
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    ensureSolutionSettings(ctx.projectSetting);
+
     const scaffoldResult = await this.scaffold(ctx, inputs);
     if (scaffoldResult.isErr()) return err(scaffoldResult.error);
     const armResult = await this.generateResourceTemplate(ctx, inputs);
@@ -122,9 +130,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
         Orchestration: bicepSnippets[0],
         Modules: { botservice: bicepSnippets[1] },
       },
-      Parameters: JSON.parse(
-        await fs.readFile(path.join(PathInfo.botBicepTemplateDir, Bicep.ParameterFileName), "utf-8")
-      ),
+      Parameters: JSON.parse(await fs.readFile(PathInfo.botParameterPath, "utf-8")),
     };
     return { kind: "bicep", template: result };
   }
@@ -179,7 +185,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     };
 
     const webAppBicep = await this.generateWebAppTemplate(pluginCtx);
-    result.push({ kind: "bicep", template: webAppBicep });
+    result.push(webAppBicep);
 
     if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id)) {
       const botBicep = await this.generateBotServiceTemplate(pluginCtx);

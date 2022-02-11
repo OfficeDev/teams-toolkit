@@ -18,12 +18,12 @@ var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 var webappDomain = provisionOutputs.webappOutput.value.domain
 var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
 
-{{#if (contains "bot" capabilities)}}
+{{#if (contains "Bot" capabilities)}}
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
-{{#if (contains "bot" capabilities)}}
+{{#if (contains "Bot" capabilities)}}
 var m365ApplicationIdUri = 'api://${webappDomain}/botid-${botAadAppClientId}'
 {{else}}
 var m365ApplicationIdUri = 'api://${webappDomain}/${m365ClientId}'
@@ -54,7 +54,7 @@ resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TeamsFx__Authentication__SimpleAuthEndpoint: webappEndpoint
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_TENANT_ID: m365TenantId
-    {{#if (contains "bot" capabilities)}}
+    {{#if (contains "Bot" capabilities)}}
     BOT_ID: botAadAppClientId
     BOT_PASSWORD: botAadAppClientSecret
     {{/if}}

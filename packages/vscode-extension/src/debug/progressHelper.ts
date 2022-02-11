@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
-import { ProgressHandler } from "../../progressHandler";
+import { ProgressHandler } from "../progressHandler";
 
-export class VsCodeProgressHandler extends ProgressHandler implements IProgressHandler {
+export class DebugProgressHandler extends ProgressHandler implements IProgressHandler {
   private stepNum: number;
   constructor(title: string, totalSteps: number) {
     super(title, totalSteps);
@@ -22,7 +22,7 @@ export class VsCodeProgressHandler extends ProgressHandler implements IProgressH
 }
 
 export class ProgressBarGroup {
-  private subProgressBars: VsCodeProgressHandler[] = [];
+  private subProgressBars: DebugProgressHandler[] = [];
   constructor(private title: string, private totalSteps: number) {}
 
   private getCurrentStep(): number {
@@ -33,8 +33,8 @@ export class ProgressBarGroup {
     return res;
   }
 
-  public async startProgressHandler(): Promise<VsCodeProgressHandler> {
-    const newProgressBar = new VsCodeProgressHandler(this.title, this.totalSteps);
+  public async startProgressHandler(): Promise<DebugProgressHandler> {
+    const newProgressBar = new DebugProgressHandler(this.title, this.totalSteps);
     this.subProgressBars.push(newProgressBar);
     await newProgressBar.start(undefined, this.getCurrentStep());
     return newProgressBar;

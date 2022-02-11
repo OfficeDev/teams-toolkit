@@ -55,7 +55,7 @@ import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
 import { trustDevCertHelpLink } from "./constants";
-import { ProgressBarGroup, VsCodeProgressHandler } from "./depsChecker/vscodeProgressHandler";
+import { ProgressBarGroup, DebugProgressHandler } from "./progressHelper";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 
 enum Checker {
@@ -270,7 +270,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   return ok(null);
 }
 
-async function checkM365Account(progressBar: VsCodeProgressHandler): Promise<CheckResult> {
+async function checkM365Account(progressBar: DebugProgressHandler): Promise<CheckResult> {
   await progressBar.next(ProgressMessage.checkM365Account);
   let result = ResultStatus.success;
   let error = undefined;
@@ -313,7 +313,7 @@ async function checkM365Account(progressBar: VsCodeProgressHandler): Promise<Che
 async function checkNode(
   enabledDeps: DepsType[],
   depsManager: DepsManager,
-  progressBar: VsCodeProgressHandler
+  progressBar: DebugProgressHandler
 ): Promise<CheckResult | undefined> {
   try {
     for (const dep of enabledDeps) {
@@ -354,7 +354,7 @@ async function checkNode(
 async function checkDependencies(
   enabledDeps: DepsType[],
   depsManager: DepsManager,
-  progressBar: VsCodeProgressHandler
+  progressBar: DebugProgressHandler
 ): Promise<CheckResult[]> {
   try {
     // remove node deps
@@ -391,7 +391,7 @@ async function checkDependencies(
 
 async function resolveBackendExtension(
   depsManager: DepsManager,
-  progressBar: VsCodeProgressHandler
+  progressBar: DebugProgressHandler
 ): Promise<CheckResult> {
   try {
     await progressBar.next(ProgressMessage.resolveBackendExtension);
@@ -415,7 +415,7 @@ async function resolveBackendExtension(
 
 async function resolveLocalCertificate(
   localEnvManager: LocalEnvManager,
-  progressBar: VsCodeProgressHandler
+  progressBar: DebugProgressHandler
 ): Promise<CheckResult> {
   let result = ResultStatus.success;
   let error = undefined;
@@ -485,7 +485,7 @@ async function checkNpmInstall(
   component: string,
   folder: string,
   displayName: string,
-  progressBar: VsCodeProgressHandler
+  progressBar: DebugProgressHandler
 ): Promise<CheckResult> {
   await progressBar.next(ProgressMessage.checkNpmInstall(displayName));
   let installed = false;

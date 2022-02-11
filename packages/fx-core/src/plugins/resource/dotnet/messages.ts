@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export class LogMessage {
   // All of log messages are started with component name.
   // Example: [fx-resource-dotnet] Start generating resource template.

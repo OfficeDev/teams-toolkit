@@ -7,8 +7,6 @@ import { DepsChecker, DepsInfo, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 import { DepsCheckerError } from "./depsError";
 import { NodeChecker } from "./internal/nodeChecker";
-import { IProgressHandler } from "@microsoft/teamsfx-api";
-import { DepsCheckerProgressMessage } from "./constant/message";
 
 export type DepsOptions = {
   fastFail?: boolean;
@@ -65,18 +63,16 @@ export class DepsManager {
    */
   public async ensureDependencies(
     dependencies: DepsType[],
-    { fastFail = true, doctor = false }: DepsOptions,
-    progressBar?: IProgressHandler
+    { fastFail = true, doctor = false }: DepsOptions
   ): Promise<DependencyStatus[]> {
     if (!dependencies || dependencies.length == 0) {
       return [];
     }
 
-    const orderedDeps: DepsType[] = this.sortBySequence(dependencies, DepsManager.depsOrders);
+    const orderedDeps: DepsType[] = DepsManager.sortBySequence(dependencies);
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
-      await progressBar?.next(DepsCheckerProgressMessage[type]);
       const status: DependencyStatus = await this.resolve(type, shouldInstall, doctor);
       result.push(status);
 
@@ -134,9 +130,9 @@ export class DepsManager {
     };
   }
 
-  private sortBySequence(dependencies: DepsType[], sequence: DepsType[]): DepsType[] {
+  public static sortBySequence(dependencies: DepsType[]): DepsType[] {
     return dependencies
       .filter((value) => value != null)
-      .sort((a, b) => sequence.indexOf(a) - sequence.indexOf(b));
+      .sort((a, b) => DepsManager.depsOrders.indexOf(a) - DepsManager.depsOrders.indexOf(b));
   }
 }

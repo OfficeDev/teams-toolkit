@@ -17,7 +17,7 @@ import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DepsInfo } from "../depsChecker";
 import { Messages } from "../constant/message";
 
-const ngrokName = "Ngrok";
+const ngrokName = "ngrok";
 
 const installPackageVersion = "4.2.2";
 const supportedPackageVersions = [">=3.4.0"];

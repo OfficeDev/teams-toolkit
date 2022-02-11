@@ -13,7 +13,6 @@ import { DepsCheckerProgressMessage } from "./constant/message";
 export type DepsOptions = {
   fastFail?: boolean;
   doctor?: boolean;
-  progressBar?: IProgressHandler;
 };
 
 export type DependencyStatus = {
@@ -99,7 +98,6 @@ export class DepsManager {
     return result;
   }
 
-  // TODO: remove doctor
   private async resolve(
     type: DepsType,
     shouldInstall: boolean,

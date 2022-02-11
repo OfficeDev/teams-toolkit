@@ -23,7 +23,7 @@ import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
-import { isConfigUnifyEnabled } from "../../../..";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export async function provisionLocalResource(

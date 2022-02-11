@@ -86,11 +86,11 @@ enum ResultStatus {
 }
 
 const ProgressMessage = {
-  checkM365Account: "Checking M365 Account",
-  resolveBackendExtension: "Installing backend extension",
-  resolveLocalCertificate: "Checking local certificate",
+  checkM365Account: `Checking ${Checker.M365Account}`,
+  resolveBackendExtension: `Installing ${Checker.AzureFunctionsExtension}`,
+  resolveLocalCertificate: `Checking ${Checker.LocalCertificate}`,
   checkNpmInstall: (displayName: string) => `Executing NPM Install for ${displayName}`,
-  checkPorts: "Checking ports",
+  checkPorts: `Checking ${Checker.Ports}`,
 };
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {

@@ -1420,6 +1420,10 @@ export class FxCore implements v3.ICore {
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
     }
+    const createEnvResult2 = await this.createEnvWithName("dev", projectSettings, inputs);
+    if (createEnvResult2.isErr()) {
+      return err(createEnvResult2.error);
+    }
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
     const basicFolderRes = await createBasicFolderStructure(inputs);

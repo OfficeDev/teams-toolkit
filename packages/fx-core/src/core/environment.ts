@@ -310,9 +310,8 @@ class EnvironmentManager {
     const userData = userDataResult.value;
 
     if (!(await fs.pathExists(envFiles.envState))) {
-      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
-
-      return ok(data);
+      if (isV3) return ok({ solution: {} });
+      return ok(new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]));
     }
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });

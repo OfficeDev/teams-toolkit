@@ -12,14 +12,6 @@ suite("[debug > ProgressHelper]", () => {
       sinon.restore();
     });
 
-    test("Empty", async () => {
-      const mockProgressHandler = sinon.createStubInstance(ProgressHandler);
-      const testProgressHelper = new ParallelProgressHelper(mockProgressHandler);
-      await testProgressHelper.startAll([]);
-      await testProgressHelper.end("error key");
-      sinon.assert.notCalled(mockProgressHandler.next);
-    });
-
     const testData = [
       {
         name: "empty",

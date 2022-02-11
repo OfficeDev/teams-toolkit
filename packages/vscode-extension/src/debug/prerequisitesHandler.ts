@@ -22,6 +22,7 @@ import {
   DepsType,
   EmptyLogger,
   FolderName,
+  getSideloadingStatus,
   installExtension,
   LocalEnvManager,
   NodeNotFoundError,
@@ -244,6 +245,17 @@ async function checkM365Account(): Promise<CheckResult> {
         ExtensionSource,
         ExtensionErrors.PrerequisitesValidationError
       );
+    } else {
+      const isSideloadingEnabled = await getSideloadingStatus(token);
+      if (isSideloadingEnabled === false) {
+        // sideloading disabled
+        result = ResultStatus.failed;
+        error = new UserError(
+          ExtensionErrors.PrerequisitesValidationError,
+          StringResources.vsc.accountTree.sideloadingWarningTooltip,
+          ExtensionSource
+        );
+      }
     }
     const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
     if (tokenObject && tokenObject.upn) {
@@ -562,12 +574,7 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
 
 function outputCheckResultError(result: CheckResult, output: vscode.OutputChannel) {
   if (result.error) {
-    let message: string = result.error.message;
-    if (result.checker === "M365 Account" && message.startsWith("User Cancel")) {
-      message = doctorConstant.SignInCancelled;
-    }
-
-    output.appendLine(`${doctorConstant.WhiteSpace}${message}`);
+    output.appendLine(`${doctorConstant.WhiteSpace}${result.error.message}`);
 
     if (result.error instanceof UserError) {
       const userError = result.error as UserError;

@@ -121,7 +121,8 @@
     },
     "appStudioLogin": {
       "message": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "loginCancel": "Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered."
     },
     "azureLogin": {
       "message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",

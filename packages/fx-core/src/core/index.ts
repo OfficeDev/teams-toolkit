@@ -47,7 +47,10 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
-import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  MessageExtensionItem,
+} from "../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -277,6 +280,7 @@ export class FxCore implements v3.ICore {
           name: "",
           version: "1.0.0",
         };
+        projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
         ctx.projectSettings = projectSettings;
         const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
@@ -389,10 +393,9 @@ export class FxCore implements v3.ICore {
       if (initRes.isErr()) {
         return err(initRes.error);
       }
-
+      ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
       // set solution in context
       ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-
       // addFeature
       if (inputs.platform === Platform.VS) {
         const addFeatureInputs: v2.InputsWithProjectPath = {
@@ -441,6 +444,9 @@ export class FxCore implements v3.ICore {
             return err(addFeatureRes.error);
           }
         }
+      }
+      if (ctx.projectSettings?.solutionSettings) {
+        ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -995,9 +1001,9 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW,
+    SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -1439,6 +1445,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -1449,6 +1456,8 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     return this._addFeature(inputs, ctx);
   }
+
+  @hooks([QuestionModelMW])
   async _addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

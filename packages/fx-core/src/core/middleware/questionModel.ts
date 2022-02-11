@@ -76,6 +76,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (
     [
       "addFeature",
+      "_addFeature",
       "provisionResourcesV3",
       "deployArtifactsV3",
       "publishApplicationV3",
@@ -85,7 +86,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     const solutionV3 = ctx.solutionV3;
     const contextV2 = ctx.contextV2;
     if (solutionV3 && contextV2) {
-      if (method === "addFeature") {
+      if (method === "addFeature" || method === "_addFeature") {
         getQuestionRes = await core._getQuestionsForAddFeature(
           inputs as v2.InputsWithProjectPath,
           solutionV3,

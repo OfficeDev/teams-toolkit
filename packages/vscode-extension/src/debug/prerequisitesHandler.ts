@@ -55,6 +55,7 @@ import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
 import { trustDevCertHelpLink } from "./constants";
+import { ProgressBarGroup, VsCodeProgressHandler } from "./depsChecker/vscodeProgressHandler";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 
 enum Checker {
@@ -84,7 +85,16 @@ enum ResultStatus {
   failed = "failed",
 }
 
+const ProgressMessage = {
+  checkM365Account: "Checking M365 Account",
+  resolveBackendExtension: "Installing backend extension",
+  resolveLocalCertificate: "Checking local certificate",
+  checkNpmInstall: (displayName: string) => `Executing NPM Install for ${displayName}`,
+  checkPorts: "Checking ports",
+};
+
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
+  let progressBarGroup: ProgressBarGroup | undefined;
   try {
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
@@ -109,71 +119,100 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // TODO: add total number
     VsCodeLogInstance.outputChannel.appendLine(doctorConstant.CheckNumber);
 
-    // node
+    // Get deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
-    const nodeResult = await checkNode(localEnvManager, depsManager, projectSettings);
+    // TODO update it into usage
+    const enabledCheckers = await getEnabledCheckers(projectSettings);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
+      localEnvManager.getActiveDependencies(projectSettings)
+    );
+
+    progressBarGroup = new ProgressBarGroup(
+      "Prerequisites Check",
+      enabledCheckers.length + enabledDeps.length
+    );
+
+    const progressBar1 = await progressBarGroup.startProgressHandler();
+
+    // node
+    const nodeResult = await checkNode(enabledDeps, depsManager, progressBar1);
     if (nodeResult) {
       checkResults.push(nodeResult);
     }
-    await checkFailure(checkResults);
+
+    await checkFailure(checkResults, progressBarGroup);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // login checker
-    const accountResult = await checkM365Account();
+    const accountResult = await checkM365Account(progressBar1);
     checkResults.push(accountResult);
 
     // local cert
-    const localCertResult = await resolveLocalCertificate(localEnvManager);
+    const localCertResult = await resolveLocalCertificate(localEnvManager, progressBar1);
     checkResults.push(localCertResult);
 
     // deps
-    const depsResults = await checkDependencies(localEnvManager, depsManager, projectSettings);
+    const depsResults = await checkDependencies(enabledDeps, depsManager, progressBar1);
     checkResults.push(...depsResults);
 
-    await checkFailure(checkResults);
+    await checkFailure(checkResults, progressBarGroup);
+    await progressBar1.end(true);
+
     const checkPromises = [];
 
     // backend extension
-    const backendExtensionPromise = resolveBackendExtension(depsManager, projectSettings);
-    if (backendExtensionPromise) {
-      checkPromises.push(backendExtensionPromise);
+    if (enabledCheckers.includes(Checker.AzureFunctionsExtension)) {
+      const progressBar2 = await progressBarGroup.startProgressHandler();
+      checkPromises.push(resolveBackendExtension(depsManager, progressBar2));
     }
 
     // npm installs
-    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+    if (enabledCheckers.includes(Checker.SPFx)) {
+      const progressBar3 = await progressBarGroup.startProgressHandler();
       checkPromises.push(
         checkNpmInstall(
           Checker.SPFx,
           path.join(workspacePath, FolderName.SPFx),
-          "tab app (SPFx-based)"
+          "tab app (SPFx-based)",
+          progressBar3
         )
       );
-    } else {
-      if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-        checkPromises.push(
-          checkNpmInstall(
-            Checker.Frontend,
-            path.join(workspacePath, FolderName.Frontend),
-            "tab app (react-based)"
-          )
-        );
-      }
+    }
 
-      if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-        checkPromises.push(
-          checkNpmInstall(
-            Checker.Backend,
-            path.join(workspacePath, FolderName.Function),
-            "function app"
-          )
-        );
-      }
+    if (enabledCheckers.includes(Checker.Frontend)) {
+      const progressBar4 = await progressBarGroup.startProgressHandler();
+      checkPromises.push(
+        checkNpmInstall(
+          Checker.Frontend,
+          path.join(workspacePath, FolderName.Frontend),
+          "tab app (react-based)",
+          progressBar4
+        )
+      );
+    }
 
-      if (ProjectSettingsHelper.includeBot(projectSettings)) {
-        checkPromises.push(
-          checkNpmInstall(Checker.Bot, path.join(workspacePath, FolderName.Bot), "bot app")
-        );
-      }
+    if (enabledCheckers.includes(Checker.Backend)) {
+      const progressBar5 = await progressBarGroup.startProgressHandler();
+      checkPromises.push(
+        checkNpmInstall(
+          Checker.Backend,
+          path.join(workspacePath, FolderName.Function),
+          "function app",
+          progressBar5
+        )
+      );
+    }
+
+    if (enabledCheckers.includes(Checker.Bot)) {
+      const progressBar6 = await progressBarGroup.startProgressHandler();
+      checkPromises.push(
+        checkNpmInstall(
+          Checker.Bot,
+          path.join(workspacePath, FolderName.Bot),
+          "bot app",
+          progressBar6
+        )
+      );
     }
 
     const promiseResults = await Promise.all(checkPromises);
@@ -182,9 +221,11 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checkResults.push(r);
       }
     }
-    await checkFailure(checkResults);
+    await checkFailure(checkResults, progressBarGroup);
 
     // check port
+    const progressBar7 = await progressBarGroup.startProgressHandler();
+    await progressBar7.next(ProgressMessage.checkPorts);
     const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
     if (portsInUse.length > 0) {
       let message: string;
@@ -204,7 +245,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // handle checkResults
-    await handleCheckResults(checkResults);
+    await handleCheckResults(checkResults, progressBarGroup);
 
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
@@ -216,6 +257,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   } catch (error: any) {
     const fxError = assembleError(error);
     showError(fxError);
+    await progressBarGroup?.endAll();
     try {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
     } catch {
@@ -228,7 +270,8 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   return ok(null);
 }
 
-async function checkM365Account(): Promise<CheckResult> {
+async function checkM365Account(progressBar: VsCodeProgressHandler): Promise<CheckResult> {
+  await progressBar.next(ProgressMessage.checkM365Account);
   let result = ResultStatus.success;
   let error = undefined;
   const failureMsg = Checker.M365Account;
@@ -268,20 +311,22 @@ async function checkM365Account(): Promise<CheckResult> {
 }
 
 async function checkNode(
-  localEnvManager: LocalEnvManager,
+  enabledDeps: DepsType[],
   depsManager: DepsManager,
-  projectSettings: ProjectSettings
+  progressBar: VsCodeProgressHandler
 ): Promise<CheckResult | undefined> {
   try {
-    const deps = localEnvManager.getActiveDependencies(projectSettings);
-    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
     for (const dep of enabledDeps) {
       if (VSCodeDepsChecker.getNodeDeps().includes(dep)) {
         const nodeStatus = (
-          await depsManager.ensureDependencies([dep], {
-            fastFail: false,
-            doctor: true,
-          })
+          await depsManager.ensureDependencies(
+            [dep],
+            {
+              fastFail: false,
+              doctor: true,
+            },
+            progressBar
+          )
         )[0];
         return {
           checker: nodeStatus.name,
@@ -307,19 +352,21 @@ async function checkNode(
 }
 
 async function checkDependencies(
-  localEnvManager: LocalEnvManager,
+  enabledDeps: DepsType[],
   depsManager: DepsManager,
-  projectSettings: ProjectSettings
+  progressBar: VsCodeProgressHandler
 ): Promise<CheckResult[]> {
   try {
-    const deps = localEnvManager.getActiveDependencies(projectSettings);
-    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
     // remove node deps
     const nonNodeDeps = enabledDeps.filter((d) => !VSCodeDepsChecker.getNodeDeps().includes(d));
-    const depsStatus = await depsManager.ensureDependencies(nonNodeDeps, {
-      fastFail: false,
-      doctor: true,
-    });
+    const depsStatus = await depsManager.ensureDependencies(
+      nonNodeDeps,
+      {
+        fastFail: false,
+        doctor: true,
+      },
+      progressBar
+    );
 
     const results: CheckResult[] = [];
     for (const dep of depsStatus) {
@@ -341,34 +388,39 @@ async function checkDependencies(
     ];
   }
 }
+
 async function resolveBackendExtension(
   depsManager: DepsManager,
-  projectSettings: ProjectSettings
-): Promise<CheckResult | undefined> {
+  progressBar: VsCodeProgressHandler
+): Promise<CheckResult> {
   try {
-    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
-      const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
-      await installExtension(backendRoot, dotnet.command, new EmptyLogger());
-      return {
-        checker: Checker.AzureFunctionsExtension,
-        result: ResultStatus.success,
-      };
-    }
+    await progressBar.next(ProgressMessage.resolveBackendExtension);
+    const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
+    const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+    await installExtension(backendRoot, dotnet.command, new EmptyLogger());
+    await progressBar.end(true);
+    return {
+      checker: Checker.AzureFunctionsExtension,
+      result: ResultStatus.success,
+    };
   } catch (err: any) {
+    await progressBar.end(false);
     return {
       checker: Checker.AzureFunctionsExtension,
       result: ResultStatus.failed,
       error: handleDepsCheckerError(err),
     };
   }
-  return undefined;
 }
 
-async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promise<CheckResult> {
+async function resolveLocalCertificate(
+  localEnvManager: LocalEnvManager,
+  progressBar: VsCodeProgressHandler
+): Promise<CheckResult> {
   let result = ResultStatus.success;
   let error = undefined;
   try {
+    await progressBar.next(ProgressMessage.resolveLocalCertificate);
     VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate ...`);
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
     const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
@@ -432,8 +484,10 @@ function handleNodeNotSupportedError(error: any, dep: DependencyStatus) {
 async function checkNpmInstall(
   component: string,
   folder: string,
-  displayName: string
+  displayName: string,
+  progressBar: VsCodeProgressHandler
 ): Promise<CheckResult> {
+  await progressBar.next(ProgressMessage.checkNpmInstall(displayName));
   let installed = false;
   try {
     installed = await checkNpmDependencies(folder);
@@ -499,6 +553,7 @@ async function checkNpmInstall(
     // treat unexpected error as installed
     error = err;
   }
+  await progressBar.end(result === ResultStatus.success);
   return {
     checker: component,
     result: result,
@@ -508,10 +563,14 @@ async function checkNpmInstall(
   };
 }
 
-async function handleCheckResults(results: CheckResult[]): Promise<void> {
+async function handleCheckResults(
+  results: CheckResult[],
+  progressBarGroup: ProgressBarGroup
+): Promise<void> {
   if (results.length <= 0) {
     return;
   }
+
   let shouldStop = false;
   const output = VsCodeLogInstance.outputChannel;
   const successes = results.filter((a) => a.result === ResultStatus.success);
@@ -549,9 +608,11 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
   if (!shouldStop) {
     output.appendLine("");
     output.appendLine(`${doctorConstant.LaunchServices}`);
+    await progressBarGroup.endAll();
   }
 
   if (shouldStop) {
+    await progressBarGroup.endAll();
     throw returnUserError(
       new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
       ExtensionSource,
@@ -582,8 +643,31 @@ function outputCheckResultError(result: CheckResult, output: vscode.OutputChanne
   }
 }
 
-async function checkFailure(checkResults: CheckResult[]) {
+async function checkFailure(checkResults: CheckResult[], progressBarGroup: ProgressBarGroup) {
   if (checkResults.some((r) => !r.result)) {
-    await handleCheckResults(checkResults);
+    await handleCheckResults(checkResults, progressBarGroup);
   }
+}
+
+async function getEnabledCheckers(projectSettings: ProjectSettings): Promise<Checker[]> {
+  const checkers: Checker[] = [Checker.LocalCertificate, Checker.M365Account];
+  if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+    checkers.push(Checker.SPFx);
+  } else {
+    checkers.push(Checker.Ports);
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      checkers.push(Checker.Frontend);
+    }
+
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      checkers.push(Checker.Backend);
+      checkers.push(Checker.AzureFunctionsExtension);
+    }
+
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      checkers.push(Checker.Bot);
+    }
+  }
+
+  return checkers;
 }

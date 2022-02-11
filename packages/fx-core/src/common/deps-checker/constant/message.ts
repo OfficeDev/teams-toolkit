@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { DepsType } from "../depsChecker";
+
 export const Messages = {
   learnMoreButtonText: "Learn more",
   defaultErrorMessage: "Install the required dependencies manually.",
@@ -55,3 +57,12 @@ Teams Toolkit requires these dependencies.
 
 Teams Toolkit requires these dependencies.`,
 };
+
+export const DepsCheckerProgressMessage: { [key in DepsType]: string } = Object.freeze({
+  [DepsType.AzureNode]: "Checking Node.js",
+  [DepsType.SpfxNode]: "Checking Node.js",
+  [DepsType.FunctionNode]: "Checking Node.js",
+  [DepsType.Dotnet]: "Checking and installing .NET Core SDK",
+  [DepsType.Ngrok]: "Checking and installing Ngrok",
+  [DepsType.FuncCoreTools]: "Checking and installing Azure Function Core Tool",
+});

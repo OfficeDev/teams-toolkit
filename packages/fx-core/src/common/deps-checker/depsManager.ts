@@ -7,10 +7,13 @@ import { DepsChecker, DepsInfo, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 import { DepsCheckerError } from "./depsError";
 import { NodeChecker } from "./internal/nodeChecker";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { DepsCheckerProgressMessage } from "./constant/message";
 
 export type DepsOptions = {
   fastFail?: boolean;
   doctor?: boolean;
+  progressBar?: IProgressHandler;
 };
 
 export type DependencyStatus = {
@@ -63,7 +66,8 @@ export class DepsManager {
    */
   public async ensureDependencies(
     dependencies: DepsType[],
-    { fastFail = true, doctor = false }: DepsOptions
+    { fastFail = true, doctor = false }: DepsOptions,
+    progressBar?: IProgressHandler
   ): Promise<DependencyStatus[]> {
     if (!dependencies || dependencies.length == 0) {
       return [];
@@ -73,6 +77,7 @@ export class DepsManager {
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
+      await progressBar?.next(DepsCheckerProgressMessage[type]);
       const status: DependencyStatus = await this.resolve(type, shouldInstall, doctor);
       result.push(status);
 
@@ -94,6 +99,7 @@ export class DepsManager {
     return result;
   }
 
+  // TODO: remove doctor
   private async resolve(
     type: DepsType,
     shouldInstall: boolean,

@@ -2,47 +2,22 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
-import { ProgressHandler } from "../progressHandler";
 
-export class DebugProgressHandler extends ProgressHandler implements IProgressHandler {
-  private stepNum: number;
-  constructor(title: string, totalSteps: number) {
-    super(title, totalSteps);
-    this.stepNum = 0;
+export class ParallelProgressHelper {
+  private details: string[];
+  constructor(private progressBar: IProgressHandler) {
+    this.details = [];
   }
 
-  public async next(detail?: string) {
-    ++this.stepNum;
-    super.next(detail);
+  public async start(details: string[]): Promise<void> {
+    this.details = details.reverse();
   }
 
-  public getStepNum(): number {
-    return this.stepNum;
-  }
-}
-
-export class ProgressBarGroup {
-  private subProgressBars: DebugProgressHandler[] = [];
-  constructor(private title: string, private totalSteps: number) {}
-
-  private getCurrentStep(): number {
-    let res = 0;
-    for (const bar of this.subProgressBars) {
-      res += bar.getStepNum();
+  public async next(): Promise<void> {
+    if (this.details.length == 0) {
+      return;
     }
-    return res;
-  }
-
-  public async startProgressHandler(): Promise<DebugProgressHandler> {
-    const newProgressBar = new DebugProgressHandler(this.title, this.totalSteps);
-    this.subProgressBars.push(newProgressBar);
-    await newProgressBar.start(undefined, this.getCurrentStep());
-    return newProgressBar;
-  }
-
-  public async endAll() {
-    for (const bar of this.subProgressBars) {
-      await bar.end(true);
-    }
+    const detail = this.details.pop();
+    await this.progressBar.next(detail);
   }
 }

@@ -1394,9 +1394,23 @@ export class FxCore implements v3.ICore {
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    const createEnvResult = await this.createEnvWithName("local", projectSettings, inputs);
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
+    }
+    if (isConfigUnifyEnabled()) {
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
+      }
     }
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));

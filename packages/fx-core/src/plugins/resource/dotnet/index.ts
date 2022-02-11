@@ -12,6 +12,7 @@ import {
   err,
   AzureSolutionSettings,
   Inputs,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -175,7 +176,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     const capabilities = this.getCapabilities(inputs);
 
     if (!capabilities?.length) {
-      throw new Error("no capability");
+      return err(returnSystemError(new Error("no capability"), this.name, "NoCapability"));
     }
 
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
@@ -282,7 +283,13 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     progress?.next(ProgressMessage.uploading);
     const folderToBeZipped = this.checkAndGet(inputs.buildPath, ConfigKey.buildPath);
     if (!(await fs.pathExists(folderToBeZipped))) {
-      throw new Error(`Built path not found: ${folderToBeZipped}`);
+      return err(
+        returnSystemError(
+          new Error(`Built path not found: ${folderToBeZipped}`),
+          this.name,
+          "NoBuiltPath"
+        )
+      );
     }
     await Deploy.zipDeploy(
       client,

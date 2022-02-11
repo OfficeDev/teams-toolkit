@@ -87,7 +87,7 @@ describe("Test Errors", () => {
       
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType = ErrorType.System);
+      chai.assert.isTrue(myError.errorType == ErrorType.System);
     });
   });
 
@@ -117,7 +117,7 @@ describe("Test Errors", () => {
       
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType = ErrorType.System);
+      chai.assert.isTrue(myError.errorType == ErrorType.System);
     });
   });
 

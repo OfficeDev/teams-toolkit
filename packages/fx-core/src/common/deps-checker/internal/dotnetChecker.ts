@@ -59,6 +59,7 @@ export class DotnetChecker implements DepsChecker {
       isLinuxSupported: false,
       installVersion: `${installVersion}`,
       supportedVersions: supportedVersions,
+      binFolders: execPath ? [execPath] : undefined,
       details: map,
     };
   }

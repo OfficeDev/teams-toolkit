@@ -19,8 +19,6 @@ import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./consta
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
-import * as constants from "../debug/constants";
 import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
@@ -390,33 +388,6 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           [TelemetryProperty.DebugAppId]: appId,
           [TelemetryProperty.Env]: env,
         });
-
-        if (
-          debugConfig.request === "launch" &&
-          isLocal &&
-          !globalStateGet(constants.SideloadingHintStateKeys.DoNotShowAgain, false)
-        ) {
-          vscode.window
-            .showInformationMessage(
-              StringResources.vsc.localDebug.sideloadingHintMessage,
-              StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain,
-              StringResources.vsc.localDebug.openFAQ
-            )
-            .then(async (selected) => {
-              if (selected === StringResources.vsc.localDebug.sideloadingHintDoNotShowAgain) {
-                await globalStateUpdate(constants.SideloadingHintStateKeys.DoNotShowAgain, true);
-              } else if (selected === StringResources.vsc.localDebug.openFAQ) {
-                vscode.commands.executeCommand(
-                  "vscode.open",
-                  vscode.Uri.parse(constants.localDebugFAQUrl)
-                );
-              }
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugFAQ, {
-                [TelemetryProperty.DebugFAQSelection]: selected + "",
-                [TelemetryProperty.DebugAppId]: localAppId,
-              });
-            });
-        }
       } catch {
         // ignore telemetry error
       }

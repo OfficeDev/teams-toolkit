@@ -10,14 +10,14 @@ export class ParallelProgressHelper {
   }
 
   public async start(details: string[]): Promise<void> {
-    this.details = details.reverse();
+    this.details = details;
   }
 
   public async next(): Promise<void> {
     if (this.details.length == 0) {
       return;
     }
-    const detail = this.details.pop();
+    const detail = this.details.shift();
     await this.progressBar.next(detail);
   }
 }

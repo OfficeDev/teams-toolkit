@@ -1,6 +1,6 @@
 var webappCurrentAppSettings = list('${provisionOutputs.webappOutput.value.webAppResourceId}/config/appsettings', '2021-02-01').properties
 
-module teamsFxWebappConfig '\{{fx-resource-aspdnet.Configuration.webapp.path}}' = {
+module teamsFxWebappConfig '\{{fx-resource-dotnet.Configuration.webapp.path}}' = {
   name: 'addTeamsFxWebappConfiguration'
   params: {
     provisionParameters: provisionParameters

@@ -1,5 +1,6 @@
 @secure()
 param provisionParameters object
+param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverFarmsName = contains(provisionParameters, 'webappServerfarmsName') ? provisionParameters['webappServerfarmsName'] : '${resourceBaseName}webapp'
@@ -21,6 +22,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   location: resourceGroup().location
   properties: {
     serverFarmId: serverFarms.id
+    keyVaultReferenceIdentity: userAssignedIdentityId
     siteConfig: {
       appSettings: [
         {
@@ -28,6 +30,12 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1'
         }
       ]
+    }
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
     }
   }
 }

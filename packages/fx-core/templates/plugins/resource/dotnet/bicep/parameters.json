@@ -1,0 +1,4 @@
+{
+  "botAadAppClientId": "{{state.fx-resource-dotnet.botId}}",
+  "botAadAppClientSecret": "{{state.fx-resource-dotnet.botPassword}}"
+}

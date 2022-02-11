@@ -1,5 +1,5 @@
 import { IProgressHandler, err, ok, returnUserError } from "@microsoft/teamsfx-api";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import {
   createTaskStartCb,
   createTaskStopCb,
@@ -17,7 +17,7 @@ describe("commonUtils", () => {
 
   describe("createTaskStartCb", () => {
     it("happy path", async () => {
-      const progressHandler = sinon.createStubInstance(MockProgressHandler);
+      const progressHandler = sandbox.createStubInstance(MockProgressHandler);
       const taskStartCallback = createTaskStartCb(progressHandler, "start message");
       await taskStartCallback("start", true);
       expect(progressHandler.start.calledOnce).to.be.true;
@@ -25,7 +25,7 @@ describe("commonUtils", () => {
   });
   describe("createTaskStopCb", () => {
     it("happy path", async () => {
-      const progressHandler = sinon.createStubInstance(MockProgressHandler);
+      const progressHandler = sandbox.createStubInstance(MockProgressHandler);
       const taskStopCallback = createTaskStopCb(progressHandler);
       await taskStopCallback("stop", true, {
         command: "command",
@@ -41,12 +41,8 @@ describe("commonUtils", () => {
   describe("getAutomaticNpmInstallSetting", () => {
     const automaticNpmInstallOption = "automatic-npm-install";
 
-    afterEach(() => {
-      sinon.restore();
-    });
-
     it("on", () => {
-      sinon.stub(UserSettings, "getConfigSync").returns(
+      sandbox.stub(UserSettings, "getConfigSync").returns(
         ok({
           [automaticNpmInstallOption]: "on",
         })
@@ -55,7 +51,7 @@ describe("commonUtils", () => {
     });
 
     it("off", () => {
-      sinon.stub(UserSettings, "getConfigSync").returns(
+      sandbox.stub(UserSettings, "getConfigSync").returns(
         ok({
           [automaticNpmInstallOption]: "off",
         })
@@ -64,7 +60,7 @@ describe("commonUtils", () => {
     });
 
     it("others", () => {
-      sinon.stub(UserSettings, "getConfigSync").returns(
+      sandbox.stub(UserSettings, "getConfigSync").returns(
         ok({
           [automaticNpmInstallOption]: "others",
         })
@@ -73,18 +69,18 @@ describe("commonUtils", () => {
     });
 
     it("none", () => {
-      sinon.stub(UserSettings, "getConfigSync").returns(ok({}));
+      sandbox.stub(UserSettings, "getConfigSync").returns(ok({}));
       expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
 
     it("getConfigSync error", () => {
       const error = returnUserError(new Error("Test"), cliSource, "Test");
-      sinon.stub(UserSettings, "getConfigSync").returns(err(error));
+      sandbox.stub(UserSettings, "getConfigSync").returns(err(error));
       expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
 
     it("getConfigSync exception", () => {
-      sinon.stub(UserSettings, "getConfigSync").throws("Test");
+      sandbox.stub(UserSettings, "getConfigSync").throws("Test");
       expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
   });

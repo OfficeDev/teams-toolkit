@@ -48,6 +48,12 @@ export class DotnetPluginError extends FrontendPluginError {
   }
 }
 
+export class NoProjectSettingError extends DotnetPluginError {
+  constructor() {
+    super(ErrorType.System, "NoProjectSettingError", "Failed to load project setting", []);
+  }
+}
+
 export class FetchConfigError extends DotnetPluginError {
   constructor(key: string) {
     super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration`, [

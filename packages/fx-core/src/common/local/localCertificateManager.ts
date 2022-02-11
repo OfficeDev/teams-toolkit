@@ -9,7 +9,6 @@ import {
   UserInteraction,
   FxError,
   returnUserError,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
@@ -31,6 +30,14 @@ const confirmMessage =
   warningMessage +
   " You may be asked for your account credentials when installing the certificate.";
 
+const trustCertificateCancelError = returnUserError(
+  new Error(
+    "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store."
+  ),
+  CoreSource,
+  "TrustCertificateCancelError",
+  learnMoreUrl
+);
 export interface LocalCertificate {
   certPath: string;
   keyPath: string;
@@ -294,7 +301,7 @@ export class LocalCertificateManager {
       if (os.type() === "Windows_NT") {
         if (!(await this.waitForUserConfirm())) {
           localCert.isTrusted = false;
-          localCert.error = UserCancelError;
+          localCert.error = trustCertificateCancelError;
           return;
         }
 
@@ -309,7 +316,7 @@ export class LocalCertificateManager {
       } else if (os.type() === "Darwin") {
         if (!(await this.waitForUserConfirm())) {
           localCert.isTrusted = false;
-          localCert.error = UserCancelError;
+          localCert.error = trustCertificateCancelError;
           return;
         }
 

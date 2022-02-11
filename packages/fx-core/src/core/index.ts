@@ -416,7 +416,6 @@ export class FxCore implements v3.ICore {
             return err(addFeatureRes.error);
           }
         } else if (capabilities.includes(TabSPFxItem.id)) {
-          ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.spfx);
           const addFeatureInputs: v2.InputsWithProjectPath = {
             ...inputs,
             projectPath: projectPath,
@@ -435,6 +434,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             feature: BuiltInFeaturePluginNames.bot,
+            capabilities: capabilities,
           };
           const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
           if (addFeatureRes.isErr()) {

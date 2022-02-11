@@ -21,6 +21,7 @@ import open from "open";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
+import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
 
 export async function openBrowser(
   browser: constants.Browser,
@@ -264,4 +265,23 @@ export function mergeProcessEnv(
     }
   }
   return result;
+}
+
+export function getAutomaticNpmInstallSetting(): boolean {
+  try {
+    const result = UserSettings.getConfigSync();
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    const config = result.value;
+    const automaticNpmInstallOption = "automatic-npm-install"; // TODO: use CliConfigOptions.AutomaticNpmInstall instead
+    if (!(automaticNpmInstallOption in config)) {
+      return false; // TODO: make automatic-npm-install enabled by default
+    }
+    return config[automaticNpmInstallOption] !== CliConfigAutomaticNpmInstall.Off;
+  } catch (error: any) {
+    cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
+    return false; // TODO: make automatic-npm-install enabled by default
+  }
 }

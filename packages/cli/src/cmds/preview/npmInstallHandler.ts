@@ -18,9 +18,9 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
 import * as constants from "./constants";
 import { NpmInstallFailed } from "./errors";
+import { getAutomaticNpmInstallSetting } from "./commonUtils";
 
 export async function automaticNpmInstallHandler(
   workspaceFolder: string,
@@ -83,25 +83,6 @@ export async function automaticNpmInstallHandler(
     }
   } catch (error) {
     cliLogger.warning(`Automatic npm install failed: ${error}`);
-  }
-}
-
-export function getAutomaticNpmInstallSetting(): boolean {
-  try {
-    const result = UserSettings.getConfigSync();
-    if (result.isErr()) {
-      throw result.error;
-    }
-
-    const config = result.value;
-    const automaticNpmInstallOption = "automatic-npm-install"; // TODO: use CliConfigOptions.AutomaticNpmInstall instead
-    if (!(automaticNpmInstallOption in config)) {
-      return false; // TODO: make automatic-npm-install enabled by default
-    }
-    return config[automaticNpmInstallOption] !== CliConfigAutomaticNpmInstall.Off;
-  } catch (error: any) {
-    cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
-    return false; // TODO: make automatic-npm-install enabled by default
   }
 }
 

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DepsType } from "../depsChecker";
-
 export const Messages = {
   learnMoreButtonText: "Learn more",
   defaultErrorMessage: "Install the required dependencies manually.",

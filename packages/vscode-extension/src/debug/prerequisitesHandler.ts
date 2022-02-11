@@ -108,6 +108,9 @@ const CheckerProgressMessage = Object.freeze({
 });
 
 const DepsProgressMessage = Object.freeze({
+  [DepsType.FunctionNode]: `Checking ${Checker.Node}`,
+  [DepsType.SpfxNode]: `Checking ${Checker.Node}`,
+  [DepsType.AzureNode]: `Checking ${Checker.Node}`,
   [DepsType.Dotnet]: "Checking and installing .NET Core SDK",
   [DepsType.Ngrok]: "Checking and installing Ngrok",
   [DepsType.FuncCoreTools]: "Checking and installing Azure Function Core Tool",

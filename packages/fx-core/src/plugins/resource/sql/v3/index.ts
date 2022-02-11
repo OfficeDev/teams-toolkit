@@ -136,7 +136,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    const firstTime = activeResourcePlugins.includes(this.name);
+    const firstTime = !activeResourcePlugins.includes(this.name);
     const armRes = firstTime
       ? await this.generateNewSqlServerBicep(ctx)
       : await this.generateNewDatabaseBicep(ctx);

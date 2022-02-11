@@ -33,9 +33,9 @@ export class ProgressHandler implements IProgressHandler {
     return util.format(StringResources.vsc.progressHandler.reloadNotice, head, body, tail);
   }
 
-  public async start(detail?: string, currentStep = 0) {
+  public async start(detail?: string) {
     this.resolve = undefined;
-    this.currentStep = currentStep;
+    this.currentStep = 0;
     this.ended = false;
 
     this.detail = detail;

@@ -23,10 +23,7 @@ function InferInnerError(target: PluginError, helpLinkMap: Map<string, string>):
 
   const statusCode = target.innerError.response?.status;
   if (!statusCode) return;
-  if (
-    statusCode >= Constants.statusCodeUserError &&
-    statusCode < Constants.statusCodeServerError
-  ) {
+  if (statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
     target.errorType = ErrorType.User;
   } else {
     target.errorType = ErrorType.System;

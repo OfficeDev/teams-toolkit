@@ -79,12 +79,12 @@ describe("Test Errors", () => {
           status: 500,
           data: {
             error: {
-              code: "SomeCode"
-            }
-          }
-        }
+              code: "SomeCode",
+            },
+          },
+        },
       });
-      
+
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
       chai.assert.isTrue(myError.errorType == ErrorType.System);
@@ -109,12 +109,12 @@ describe("Test Errors", () => {
           status: 500,
           data: {
             error: {
-              code: "SomeCode"
-            }
-          }
-        }
+              code: "SomeCode",
+            },
+          },
+        },
       });
-      
+
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
       chai.assert.isTrue(myError.errorType == ErrorType.System);

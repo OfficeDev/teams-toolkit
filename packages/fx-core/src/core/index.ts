@@ -123,7 +123,7 @@ import {
   getAllSolutionPluginsV2,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import { newEnvInfo, newEnvInfoV3 } from "./tools";
 import { isCreatedFromExistingApp, isPureExistingApp } from "./utils";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
@@ -650,6 +650,38 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+
+  /**
+   * Only used to provision Teams app with user provided app package
+   * @param inputs
+   * @returns
+   */
+  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (!inputs.appPackagePath) {
+      return err(InvalidInputError("appPackagePath is not defined", inputs));
+    }
+    const projectSettings: ProjectSettings = {
+      appName: "fake",
+      projectId: uuid.v4(),
+    };
+    const context: v2.Context = {
+      userInteraction: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      cryptoProvider: new LocalCrypto(projectSettings.projectId),
+      permissionRequestProvider: TOOLS.permissionRequest,
+      projectSetting: projectSettings,
+    };
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    await appStudioV3.registerTeamsApp(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      newEnvInfoV3(),
+      TOOLS.tokenProvider
+    );
+    return ok(Void);
+  }
+
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3()) return this.deployArtifactsV3(inputs);
     else return this.deployArtifactsV2(inputs);

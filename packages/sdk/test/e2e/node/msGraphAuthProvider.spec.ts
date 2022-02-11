@@ -3,12 +3,7 @@
 
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import {
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  M365TenantCredential,
-  MsGraphAuthProvider,
-} from "../../../src";
+import { MsGraphAuthProvider, TeamsFx, IdentityType } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
@@ -24,7 +19,6 @@ describe("MsGraphAuthProvider Tests - Node", () => {
   let ssoToken = "";
   beforeEach(async function () {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
 
     ssoToken = await getSsoTokenFromTeams();
   });
@@ -35,8 +29,8 @@ describe("MsGraphAuthProvider Tests - Node", () => {
 
   it("getAccessToken should success with OnBehalfOfUserCredential", async function () {
     const scopes = "User.Read";
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
-    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(oboCredential, scopes);
+    const teamsfx = new TeamsFx().setSsoToken(ssoToken);
+    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(teamsfx, scopes);
     const accessToken = await authProvider.getAccessToken();
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);
@@ -49,8 +43,8 @@ describe("MsGraphAuthProvider Tests - Node", () => {
 
   it("getAccessToken should success with M365TenantCredential", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
-    const m356Credential = new M365TenantCredential();
-    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(m356Credential, scopes);
+    const teamsfx = new TeamsFx(IdentityType.App);
+    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(teamsfx, scopes);
     const accessToken = await authProvider.getAccessToken();
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);

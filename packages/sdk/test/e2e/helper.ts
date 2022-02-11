@@ -4,6 +4,7 @@ import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
+import { AuthenticationConfiguration } from "../../src";
 const urljoin = require("url-join");
 
 /**
@@ -92,12 +93,24 @@ export function MockEnvironmentVariable(): () => void {
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
     M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
     M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
+    INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
+    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI,
 
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE_NAME: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
     SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
     SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
   });
+}
+
+export function MockAuthenticationConfiguration(): AuthenticationConfiguration {
+  dotenv.config();
+  return {
+    clientId: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    clientSecret: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
+    tenantId: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
+    authorityHost: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
+  };
 }
 
 /**

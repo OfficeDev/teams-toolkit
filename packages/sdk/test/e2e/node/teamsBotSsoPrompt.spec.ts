@@ -21,8 +21,7 @@ import {
   TeamsBotSsoPrompt,
   TeamsBotSsoPromptTokenResponse,
   TeamsBotSsoPromptSettings,
-  loadConfiguration,
-  Configuration,
+  TeamsFx,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -39,8 +38,6 @@ chaiUse(chaiPromises);
 let restore: () => void;
 
 describe("TeamsBotSsoPrompt Tests - Node", () => {
-  const clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID!;
-  const tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!;
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const userPrincipalName = "fake_userPrincipalName";
 
@@ -177,7 +174,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
         id: activity.conversation!.id,
         name: activity.conversation!.name,
         conversationType: "personal",
-        tenantId: tenantId,
+        tenantId: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
       },
     };
   }
@@ -200,9 +197,9 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
 
     assert.strictEqual(
       activity.attachments![0].content.buttons[0].value,
-      `${initiateLoginEndpoint}?scope=${encodeURI(
-        scopes.join(" ")
-      )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
+      `${initiateLoginEndpoint}?scope=${encodeURI(scopes.join(" "))}&clientId=${
+        process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
+      }&tenantId=${process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID}&loginHint=${userPrincipalName}`
     );
   }
 
@@ -245,9 +242,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       endOnInvalidMessage: param.endOnInvalidMessage,
     };
 
-    loadConfiguration(param.config);
-
-    dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings));
+    const teamsfx = new TeamsFx();
+    dialogs.add(new TeamsBotSsoPrompt(teamsfx, TeamsBotSsoPromptId, settings));
 
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {
@@ -278,5 +274,4 @@ interface InitializeParams {
   timeout_value?: number;
   endOnInvalidMessage?: boolean;
   channelId?: Channels;
-  config?: Configuration;
 }

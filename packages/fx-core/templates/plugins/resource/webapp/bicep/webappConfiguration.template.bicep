@@ -7,7 +7,6 @@ param provisionOutputs object
 param currentAppSettings object
 
 var webappName = split(provisionOutputs.webappOutput.value.webappResourceId, '/')[8]
-
 var m365ClientId = provisionParameters['m365ClientId']
 {{#if (contains "fx-resource-key-vault" plugins)}}
 var m365ClientSecret = \{{fx-resource-key-vault.References.m365ClientSecretReference}}
@@ -16,10 +15,9 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
-
-var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
-
+var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
+var initiateLoginEndpoint = uri(webappEndpoint, 'auth-start.html')
 {{#if (contains "fx-resource-bot" plugins) }}
 var botAadAppClientId = provisionParameters['botAadAppClientId']
   {{#if (contains "fx-resource-key-vault" plugins) }}
@@ -28,8 +26,6 @@ var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretR
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
   {{/if}}
 {{/if}}
-
-var initiateLoginEndpoint = uri(webappEndpoint, 'auth-start.html')
 
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webappName}/appsettings'

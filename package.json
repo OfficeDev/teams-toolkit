@@ -10,8 +10,9 @@
     "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --ignore-scripts",
     "prepare": "husky install",
     "precommit": "lint-staged",
-    "postinstall": "npm run bootstrap --hoist --ignore-scripts && npm run install-eslint",
-    "build": "lerna run build"
+    "postinstall": "npm run bootstrap --hoist && npm run install-eslint",
+    "build": "lerna run build",
+    "clean": "lerna clean"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",

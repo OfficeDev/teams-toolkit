@@ -88,6 +88,15 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
+      const targetUri = await Correlator.run(handlers.getNewProjectHandler, args);
+      if (targetUri.isOk()) {
+        return { openFolder: targetUri.value, forceNewWindow: true };
+      }
+    })
+  );
+
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
   );

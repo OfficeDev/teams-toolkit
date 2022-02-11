@@ -9,4 +9,5 @@ coverage
 templates/plugins/resource/bot/**/*.zip
 templates/plugins/resource/frontend/**/*.zip
 templates/plugins/resource/function/**/*.zip
+templates/plugins/resource/dotnet/**/*.zip
 tests/**/TeamsSPFxApp.zip

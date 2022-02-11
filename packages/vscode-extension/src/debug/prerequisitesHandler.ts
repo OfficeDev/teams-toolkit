@@ -59,7 +59,6 @@ import { trustDevCertHelpLink } from "./constants";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { ProgressHandler } from "../progressHandler";
 import { ParallelProgressHelper } from "./progressHelper";
-import { Check } from "@fluentui/react";
 
 enum Checker {
   SPFx = "SPFx",
@@ -353,7 +352,7 @@ async function checkM365Account(): Promise<CheckResult> {
 
 async function checkNode(
   enabledDeps: DepsType[],
-  depsManager: DepsManager,
+  depsManager: DepsManager
 ): Promise<CheckResult | undefined> {
   try {
     for (const dep of enabledDeps) {
@@ -441,9 +440,7 @@ async function resolveBackendExtension(depsManager: DepsManager): Promise<CheckR
   }
 }
 
-async function resolveLocalCertificate(
-  localEnvManager: LocalEnvManager
-): Promise<CheckResult> {
+async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promise<CheckResult> {
   let result = ResultStatus.success;
   let error = undefined;
   try {
@@ -487,11 +484,11 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
   }
   return error instanceof DepsCheckerError
     ? returnUserError(
-      error,
-      ExtensionSource,
-      ExtensionErrors.PrerequisitesValidationError,
-      error.helpLink
-    )
+        error,
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesValidationError,
+        error.helpLink
+      )
     : assembleError(error);
 }
 
@@ -510,7 +507,7 @@ function handleNodeNotSupportedError(error: any, dep: DependencyStatus) {
 async function checkNpmInstall(
   component: string,
   folder: string,
-  displayName: string,
+  displayName: string
 ): Promise<CheckResult> {
   let installed = false;
   try {

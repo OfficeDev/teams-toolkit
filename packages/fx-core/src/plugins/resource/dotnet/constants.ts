@@ -6,33 +6,40 @@ import { Bicep } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 
 export class DotnetPluginPathInfo {
-  static readonly bicepTemplateDir = (resource: string): string =>
-    path.join(getTemplatesFolder(), "plugins", "resource", resource, "bicep");
-  static readonly botBicepTemplateDir = DotnetPluginPathInfo.bicepTemplateDir("botservice");
+  static readonly bicepTemplateDir = path.join(
+    getTemplatesFolder(),
+    "plugins",
+    "resource",
+    "dotnet",
+    "bicep"
+  );
   static readonly botProvisionModulePath = path.join(
-    DotnetPluginPathInfo.botBicepTemplateDir,
-    "botServiceProvision.template.bicep"
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "botProvisionModule.template.bicep"
   );
   static readonly botProvisionOrchestrationPath = path.join(
-    DotnetPluginPathInfo.botBicepTemplateDir,
-    Bicep.ProvisionFileName
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "botProvisionOrchestration.template.bicep"
   );
-  static readonly webappBicepTemplateDir = DotnetPluginPathInfo.bicepTemplateDir("webapp");
+  static readonly botParameterPath = path.join(
+    DotnetPluginPathInfo.bicepTemplateDir,
+    Bicep.ParameterFileName
+  );
   static readonly webappProvisionModulePath = path.join(
-    DotnetPluginPathInfo.webappBicepTemplateDir,
-    "webappProvision.template.bicep"
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "webappProvisionModule.template.bicep"
   );
   static readonly webappProvisionOrchestrationPath = path.join(
-    DotnetPluginPathInfo.webappBicepTemplateDir,
-    Bicep.ProvisionFileName
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "webappProvisionOrchestration.template.bicep"
   );
   static readonly webappConfigModulePath = path.join(
-    DotnetPluginPathInfo.webappBicepTemplateDir,
-    "webappConfiguration.template.bicep"
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "webappConfigModule.template.bicep"
   );
   static readonly webappConfigOrchestrationPath = path.join(
-    DotnetPluginPathInfo.webappBicepTemplateDir,
-    Bicep.ConfigFileName
+    DotnetPluginPathInfo.bicepTemplateDir,
+    "webappConfigOrchestration.template.bicep"
   );
 }
 

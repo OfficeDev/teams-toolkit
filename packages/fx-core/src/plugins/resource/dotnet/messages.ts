@@ -11,8 +11,8 @@ export class LogMessage {
 }
 
 export class ProgressMessage {
-  static readonly startProgress = "preparing";
-  static readonly deployProgressTitle = "deploy";
+  static readonly startProgress = "Preparing";
+  static readonly deployProgressTitle = "Deploy";
   static readonly building = "Building publish artifact";
   static readonly uploading = "Uploading artifact to Azure Web App";
 }

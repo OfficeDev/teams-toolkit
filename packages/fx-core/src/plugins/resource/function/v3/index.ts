@@ -264,7 +264,9 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const plugins = solutionSettings ? solutionSettings.activeResourcePlugins : [];
+    plugins.push(BuiltInFeaturePluginNames.identity);
+    const pluginCtx = { plugins: plugins };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",

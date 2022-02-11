@@ -95,7 +95,7 @@ const NpmInstallDisplayName = {
   Backend: "function app",
 };
 
-const CheckerProgressMessage: { [key in Checker]: string } = Object.freeze({
+const CheckerProgressMessage = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.AzureFunctionsExtension]: `Installing ${Checker.AzureFunctionsExtension}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
@@ -105,10 +105,9 @@ const CheckerProgressMessage: { [key in Checker]: string } = Object.freeze({
   [Checker.Backend]: `Executing NPM Install for ${NpmInstallDisplayName.Backend}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [Checker.Node]: `Checking ${Checker.Node}`,
-  [Checker.Dependencies]: `Checking ${Checker.Dependencies}`
 });
 
-const DepsProgressMessage: { [key in DepsType]: string } = Object.freeze({
+const DepsProgressMessage = Object.freeze({
   [DepsType.Dotnet]: "Checking and installing .NET Core SDK",
   [DepsType.Ngrok]: "Checking and installing Ngrok",
   [DepsType.FuncCoreTools]: "Checking and installing Azure Function Core Tool",

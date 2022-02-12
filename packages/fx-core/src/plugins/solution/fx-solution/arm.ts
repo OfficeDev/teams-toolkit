@@ -546,27 +546,34 @@ export async function doDeployArmTemplatesV3(
 }
 
 function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
-  if (!(armOutput instanceof Object)) return;
-  const armOutputKeys = Object.keys(armOutput);
-  for (const armOutputKey of armOutputKeys) {
-    const moduleOutput = armOutput[armOutputKey].value;
-    if (!(moduleOutput instanceof Object)) continue;
-    const moduleOutputKeys = Object.keys(moduleOutput);
-    for (const moduleOutputKey of moduleOutputKeys) {
-      const pluginOutput = moduleOutput[moduleOutputKey].value;
-      if (!(pluginOutput instanceof Object)) continue;
-      const pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
-      if (!pluginId) continue;
-      const pluginOutputKeys = Object.keys(pluginOutput);
-      for (const pluginOutputKey of pluginOutputKeys) {
-        if (pluginOutputKey == TEAMS_FX_RESOURCE_ID_KEY) continue;
-        if (envInfo.state instanceof Map) {
-          (envInfo.state as Map<string, any>)
-            .get(pluginId)
-            ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
-        } else {
-          if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
-          envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];
+  if (armOutput instanceof Object) {
+    const armOutputKeys = Object.keys(armOutput);
+    for (const armOutputKey of armOutputKeys) {
+      const moduleOutput = armOutput[armOutputKey].value;
+
+      if (moduleOutput instanceof Object) {
+        const moduleOutputKeys = Object.keys(moduleOutput);
+        for (const moduleOutputKey of moduleOutputKeys) {
+          const pluginOutput = moduleOutput[moduleOutputKey].value;
+
+          if (pluginOutput instanceof Object) {
+            const pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
+            if (pluginId) {
+              const pluginOutputKeys = Object.keys(pluginOutput);
+              for (const pluginOutputKey of pluginOutputKeys) {
+                if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
+                  if (envInfo.state instanceof Map) {
+                    (envInfo.state as Map<string, any>)
+                      .get(pluginId)
+                      ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                  } else {
+                    if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
+                    envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

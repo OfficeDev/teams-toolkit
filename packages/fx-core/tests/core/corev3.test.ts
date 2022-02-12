@@ -82,15 +82,14 @@ describe("Core basic APIs for v3", () => {
     sandbox.restore();
     deleteFolder(projectPath);
   });
-
-  it("create from new (VSC, Tab+Bot)", async () => {
+  it("create + provision (VSC, Tab)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -104,6 +103,20 @@ describe("Core basic APIs for v3", () => {
       projectPath: projectPath,
     });
     assert.isTrue(provisionRes.isOk());
+  });
+  it("create from new (VSC, Tab+Bot)", async () => {
+    appName = randomAppName();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
   });
   it("create from new (VS, Tab+Bot)", async () => {
     appName = randomAppName();

@@ -101,6 +101,7 @@ describe("Core basic APIs for v3", () => {
     const provisionRes = await core.provisionResources({
       platform: Platform.VSCode,
       projectPath: projectPath,
+      env: "dev",
     });
     assert.isTrue(provisionRes.isOk());
   });

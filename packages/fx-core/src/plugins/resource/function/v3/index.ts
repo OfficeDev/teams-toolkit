@@ -259,14 +259,9 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const plugins = solutionSettings ? solutionSettings.activeResourcePlugins : [];
-    plugins.push(BuiltInFeaturePluginNames.identity);
-    const pluginCtx = { plugins: plugins };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -314,8 +309,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs,
-    envInfo?: v3.EnvInfoV3
+    inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -324,10 +318,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
       "function",
       "bicep"
     );
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
       FunctionBicepFile.configuraitonTemplateFileName
@@ -348,7 +339,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);

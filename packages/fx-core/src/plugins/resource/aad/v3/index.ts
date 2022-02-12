@@ -99,7 +99,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.aad } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);

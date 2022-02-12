@@ -58,12 +58,10 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   }
 
   public async generateNewSqlServerBicep(
-    ctx: v3.ContextWithManifestProvider
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -94,9 +92,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     return ok([{ kind: "bicep", template: result }]);
   }
 
-  public async generateNewDatabaseBicep(
-    ctx: v3.ContextWithManifestProvider
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  public async generateNewDatabaseBicep(): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const suffix = getUuid().substring(0, 6);
     const compileCtx = {
       suffix: suffix,
@@ -132,14 +128,14 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     const firstTime = !activeResourcePlugins.includes(this.name);
     const armRes = firstTime
-      ? await this.generateNewSqlServerBicep(ctx)
-      : await this.generateNewDatabaseBicep(ctx);
+      ? await this.generateNewSqlServerBicep(ctx, inputs)
+      : await this.generateNewDatabaseBicep();
     if (armRes.isErr()) return err(armRes.error);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     if (!solutionSettings.azureResources.includes(AzureResourceSQL.id))

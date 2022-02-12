@@ -97,12 +97,9 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.pluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
@@ -121,7 +118,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
@@ -143,10 +140,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),

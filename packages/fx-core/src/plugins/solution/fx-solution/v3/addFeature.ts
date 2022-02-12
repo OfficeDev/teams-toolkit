@@ -120,21 +120,26 @@ export async function addFeature(
   allResources.add(inputs.feature);
   const resolveRes = await resolveResourceDependencies(ctx, inputs, allResources);
   if (resolveRes.isErr()) return err(resolveRes.error);
+
+  const existingPluginNames: string[] = Array.from(existingResources);
+  const addedPluginNames: string[] = [];
+  for (const pluginName of allResources.values()) {
+    if (!existingResources.has(pluginName)) {
+      addedPluginNames.push(pluginName);
+    }
+  }
   const contextWithManifestProvider: v3.ContextWithManifestProvider = {
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
-  for (const resource of allResources.values()) {
-    if (!existingResources.has(resource) || resource === inputs.feature) {
-      const armInputs: v3.SolutionAddFeatureInputs = {
-        ...inputs,
-        feature: resource,
-      };
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, armInputs);
-      if (generateArmRes.isErr()) {
-        return err(generateArmRes.error);
-      }
-    }
+  const addFeatureRes = await arm.addFeature(
+    contextWithManifestProvider,
+    inputs,
+    addedPluginNames,
+    existingPluginNames
+  );
+  if (addFeatureRes.isErr()) {
+    return err(addFeatureRes.error);
   }
   return ok(Void);
 }

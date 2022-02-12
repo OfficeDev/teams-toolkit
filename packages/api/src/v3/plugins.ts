@@ -32,8 +32,13 @@ export interface AppManifestProvider {
 export interface ContextWithManifestProvider extends Context {
   appManifestProvider: AppManifestProvider;
 }
-export interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
-  features: {
+
+export interface AddFeatureInputs extends InputsWithProjectPath {
+  allPluginsAfterAdd: string[];
+}
+
+export interface OtherFeaturesAddedInputs extends AddFeatureInputs {
+  addedPlugins: {
     name: string; //plugin name
     value: ResourceTemplate[]; //plugin addFeature result
   }[];
@@ -71,12 +76,12 @@ export interface FeaturePlugin {
    * triggered by add feature event, this API aims to add/modify files in local workspace
    *
    * @param {ContextWithManifestProvider} context with manifest provider
-   * @param {InputsWithProjectPath} inputs with project path
+   * @param {AddFeatureInputs} inputs with plugins names after added
    * @returns {ResourceTemplate[]} resource template
    */
   addFeature: (
     ctx: ContextWithManifestProvider,
-    inputs: InputsWithProjectPath
+    inputs: AddFeatureInputs
   ) => Promise<Result<ResourceTemplate[], FxError>>;
 
   /**

@@ -445,6 +445,16 @@ export class FxCore implements v3.ICore {
           }
         }
       }
+      // AAD is added by default
+      const addFeatureInputs: v2.InputsWithProjectPath = {
+        ...inputs,
+        projectPath: projectPath,
+        feature: BuiltInFeaturePluginNames.aad, //TODO
+      };
+      const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
+      if (addFeatureRes.isErr()) {
+        return err(addFeatureRes.error);
+      }
       if (ctx.projectSettings?.solutionSettings) {
         ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
       }

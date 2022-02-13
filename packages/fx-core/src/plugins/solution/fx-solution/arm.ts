@@ -1229,6 +1229,8 @@ class BicepOrchestrationContent {
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
     this.RenderContext.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
+    if (armResult.Parameters && Object.keys(armResult.Parameters).length > 0)
+      this.TemplateAdded = true;
   }
 
   public applyReference(configContent: string): string {

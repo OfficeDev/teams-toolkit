@@ -1,0 +1,9 @@
+node_modules
+build
+coverage
+.nyc_output
+.npmrc
+.env
+.fx
+mochawesome-report
+.vscode

@@ -88,7 +88,6 @@ export enum TelemetryEvent {
   DebugPrerequisites = "debug-prerequisites",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
-  DebugFAQ = "debug-faq",
   DebugNpmInstallStart = "debug-npm-install-start",
   DebugNpmInstall = "debug-npm-install",
 
@@ -175,7 +174,6 @@ export enum TelemetryProperty {
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
   DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
-  DebugFAQSelection = "debug-faq-selection",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

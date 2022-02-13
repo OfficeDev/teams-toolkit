@@ -22,11 +22,17 @@ import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
+import { ProgrammingLanguageQuestion } from "../../../../core/question";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
   return [
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.frontend),
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.aad),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.function),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.apim),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.keyVault),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.identity),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.sql),
   ];
 }
 
@@ -34,8 +40,13 @@ export async function getQuestionsForAddFeature(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectSingleFeatureQuestion);
+  if (!ctx.projectSetting.solutionSettings?.programmingLanguage) {
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    node.addChild(programmingLanguage);
+  }
   const staticOptions: OptionItem[] = [];
   for (const plugin of plugins) {
     staticOptions.push({
@@ -52,7 +63,8 @@ export async function getQuestionsForAddFeature(
     }
   }
   selectSingleFeatureQuestion.staticOptions = staticOptions;
-  return ok(featureNode);
+  node.addChild(featureNode);
+  return ok(node);
 }
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
@@ -83,16 +95,7 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    capabilities: (
-      | { name: "staticTab"; snippet?: Json; existing?: boolean }
-      | { name: "configurableTab"; snippet?: Json; existing?: boolean }
-      | { name: "Bot"; snippet?: Json; existing?: boolean }
-      | {
-          name: "MessageExtension";
-          snippet?: Json;
-          existing?: boolean;
-        }
-    )[]
+    capabilities: v3.ManifestCapability[]
   ): Promise<Result<Void, FxError>> {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     const res = await appStudioV3.addCapabilities(ctx, inputs, []);
@@ -122,7 +125,7 @@ export async function addFeature(
     appManifestProvider: new DefaultManifestProvider(),
   };
   for (const resource of allResources.values()) {
-    if (!existingResources.has(resource)) {
+    if (!existingResources.has(resource) || resource === inputs.feature) {
       const armInputs: v3.SolutionAddFeatureInputs = {
         ...inputs,
         feature: resource,

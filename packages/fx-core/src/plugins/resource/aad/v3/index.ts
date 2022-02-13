@@ -19,11 +19,21 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
+import { ArmTemplateResult } from "../../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../../common/constants";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
+import { getTemplatesFolder } from "../../../../folder";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AadAppClient } from "../aadAppClient";
-import { Messages, Plugins, ProgressDetail, ProgressTitle, Telemetry } from "../constants";
+import {
+  Messages,
+  Plugins,
+  ProgressDetail,
+  ProgressTitle,
+  Telemetry,
+  TemplatePathInfo,
+} from "../constants";
 import { AppIdUriInvalidError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { AadAppForTeamsImpl } from "../plugin";
@@ -92,6 +102,29 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   resourceType = "Azure AD App";
   description = "Azure AD App provide single-sign-on feature for Teams App";
 
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.aad,
+        eventName: "generate-arm-templates",
+      },
+    }),
+  ])
+  async generateResourceTemplate(): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    const result: ArmTemplateResult = {
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(
+            getTemplatesFolder(),
+            TemplatePathInfo.BicepTemplateRelativeDir,
+            Bicep.ParameterFileName
+          ),
+          ConstantString.UTF8Encoding
+        )
+      ),
+    };
+    return ok([{ kind: "bicep", template: result }]);
+  }
   /**
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
@@ -101,6 +134,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    const armRes = await this.generateResourceTemplate();
+    if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
     const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
@@ -111,7 +146,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
     };
     await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
-    return ok([]);
+    return ok(armRes.value);
   }
 
   @hooks([

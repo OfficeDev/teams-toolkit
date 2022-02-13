@@ -4,7 +4,6 @@ import {
   err,
   UserError,
   SystemError,
-  AzureSolutionSettings,
   v2,
   TokenProvider,
   FxError,
@@ -14,6 +13,7 @@ import {
   Func,
   ok,
   QTreeNode,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -38,13 +38,18 @@ export class CICDPluginV2 implements ResourcePlugin {
   name = "fx-resource-cicd";
   displayName = "CICD";
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
     return true;
   }
 
   public cicdImpl: CICDImpl = new CICDImpl();
 
-  public async addCICDWorkflows(context: Context, projectPath: string, template: string, envName: string): Promise<FxResult> {
+  public async addCICDWorkflows(
+    context: Context,
+    projectPath: string,
+    template: string,
+    envName: string
+  ): Promise<FxResult> {
     const result = await this.runWithExceptionCatching(
       context,
       () => this.cicdImpl.addCICDWorkflows(context, projectPath, template, envName),

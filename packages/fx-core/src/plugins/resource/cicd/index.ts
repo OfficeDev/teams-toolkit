@@ -22,7 +22,7 @@ import { ErrorType, PluginError } from "./errors";
 import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
-import { ResourcePlugin, Context, DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { ResourcePlugin, Context, DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import {
   githubOption,
   azdoOption,
@@ -46,13 +46,12 @@ export class CICDPluginV2 implements ResourcePlugin {
 
   public async addCICDWorkflows(
     context: Context,
-    projectPath: string,
-    template: string,
-    envName: string
+    inputs: Inputs,
+    envInfo: v2.EnvInfoV2
   ): Promise<FxResult> {
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.cicdImpl.addCICDWorkflows(context, projectPath, template, envName),
+      () => this.cicdImpl.addCICDWorkflows(context, inputs, envInfo),
       true,
       LifecycleFuncNames.ADD_CICD_WORKFLOWS
     );
@@ -72,7 +71,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     const whichPlatform = new QTreeNode({
-      name: "which_platform",
+      name: "provider",
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: "Select a CI/CD Platform",
@@ -104,7 +103,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,
-        () => this.addCICDWorkflows(ctx, inputs.projectPath!, inputs["template"], envInfo.envName),
+        () => this.addCICDWorkflows(ctx, inputs, envInfo),
         true,
         LifecycleFuncNames.ADD_CICD_WORKFLOWS
       );

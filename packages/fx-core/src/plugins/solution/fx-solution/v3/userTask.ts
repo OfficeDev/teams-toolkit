@@ -71,10 +71,14 @@ export async function getQuestionsForAddResource(
     if (!settings) {
       return err(new OperationNotSupportedForExistingAppError("addResource"));
     }
-    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
-    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
-    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    const alreadyHaveFunction = settings.activeResourcePlugins.includes(
+      BuiltInFeaturePluginNames.function
+    );
+    const alreadyHaveSQL = settings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.sql);
+    const alreadyHaveAPIM = settings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.apim);
+    const alreadyHaveKeyVault = settings.activeResourcePlugins.includes(
+      BuiltInFeaturePluginNames.keyVault
+    );
     addQuestion = createAddAzureResourceQuestion(
       alreadyHaveFunction,
       alreadyHaveSQL,

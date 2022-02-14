@@ -20,7 +20,6 @@ import {
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
 } from "../helper";
-import mockedEnv from "mocked-env";
 
 chaiUse(chaiPromises);
 let restore: () => void;

@@ -4,7 +4,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
-import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
+import { TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
@@ -18,13 +18,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   let ssoToken: SSOToken;
   before(async () => {
     ssoToken = await getSSOToken();
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
-        simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-      },
-    });
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -41,7 +34,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetUserInfo should success with SSOToken", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
+    const credential: TeamsUserCredential = new TeamsUserCredential({
+      initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
     const info = await credential.getUserInfo();
     assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
     assert.strictEqual(info.displayName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME.split("@", 1)[0]);
@@ -49,7 +45,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should success with consent scope", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
+    const credential: TeamsUserCredential = new TeamsUserCredential({
+      initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken!.token);
@@ -58,7 +57,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should throw UiRequiredError with unconsent scope", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
+    const credential: TeamsUserCredential = new TeamsUserCredential({
+      initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
     await expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", UIREQUIREDERROR);

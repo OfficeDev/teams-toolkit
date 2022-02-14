@@ -11,7 +11,7 @@ export const doctorConstant = {
   WhiteSpace: "   ",
   Check:
     "Teams Toolkit is checking if all required prerequisites are installed and will install them if not, if you wish to bypass checking and installing any prerequisistes, you can disable them in Visual Studio Code settings. A summary will be generated for your reference.",
-  CheckNumber: "We are checking total {$number} of prerequisistes for you.",
+  CheckNumber: "We are checking total {@number} of prerequisistes for you.",
   Summary: "Prerequisites Check Summary:",
   RestartVSCode:
     "Restart all your Visual Studio Code instances after the installation is finished.",

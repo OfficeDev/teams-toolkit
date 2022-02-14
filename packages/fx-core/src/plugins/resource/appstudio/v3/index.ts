@@ -188,7 +188,7 @@ export class AppStudioPluginV3 {
     tokenProvider: TokenProvider
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.provision);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
     const result = await this.appStudioPluginImpl.createTeamsApp(
       ctx,
       inputs,
@@ -198,9 +198,9 @@ export class AppStudioPluginV3 {
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provision);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provisionManifest);
     } else {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.provision, result.error);
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.provisionManifest, result.error);
     }
     return result;
   }

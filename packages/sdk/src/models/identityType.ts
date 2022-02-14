@@ -10,9 +10,9 @@ export enum IdentityType {
   /**
    * Represents the current user of Teams.
    */
-  User,
+  User = "User",
   /**
    * Represents the application itself.
    */
-  App,
+  App = "Application",
 }

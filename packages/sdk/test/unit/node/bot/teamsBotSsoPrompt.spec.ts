@@ -26,6 +26,7 @@ import {
   ErrorCode,
   TeamsBotSsoPromptSettings,
   TeamsFx,
+  IdentityType,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -352,6 +353,35 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
+  });
+
+  it("create TeamsBotSsoPrompt instance should throw IdentityTypeNotSupported error with invalid identity type", async function () {
+    const settings: any = {
+      scopes: requiredScopes,
+    };
+
+    expect(() => {
+      new TeamsBotSsoPrompt(new TeamsFx(IdentityType.App), TeamsBotSsoPromptId, settings);
+    })
+      .to.throw(ErrorWithCode, "Application identity is not supported in TeamsBotSsoPrompt")
+      .with.property("code", ErrorCode.IdentityTypeNotSupported);
+  });
+
+  it("create TeamsBotSsoPrompt instance should throw InvalidConfiguration error with empty configuration", async function () {
+    mockedEnvRestore();
+    mockedEnvRestore = mockedEnv({});
+    const settings: any = {
+      scopes: requiredScopes,
+    };
+
+    expect(() => {
+      new TeamsBotSsoPrompt(new TeamsFx(), TeamsBotSsoPromptId, settings);
+    })
+      .to.throw(
+        ErrorWithCode,
+        "initiateLoginEndpoint, clientId, tenantId, applicationIdUri in configuration is invalid: undefined."
+      )
+      .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
   function createReply(type: ActivityTypes, activity: Partial<Activity>): Partial<Activity> {

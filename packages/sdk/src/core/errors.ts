@@ -97,7 +97,7 @@ export class ErrorMessage {
   static readonly OnlyMSTeamsChannelSupported = "{0} is only supported in MS Teams Channel";
 
   // IdentityTypeNotSupported Error
-  static readonly IdentityTypeNotSupported = "{0} is not supported in {1}";
+  static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 }
 
 /**

@@ -76,7 +76,7 @@ const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
-  [DepsType.Ngrok]: "Ngrok",
+  [DepsType.Ngrok]: "ngrok",
   [DepsType.FuncCoreTools]: "Azure Function Core Tool",
 };
 

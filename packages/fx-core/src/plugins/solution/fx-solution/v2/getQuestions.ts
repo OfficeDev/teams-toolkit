@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   returnUserError,
@@ -51,7 +52,7 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { isPureExistingApp } from "../../../../core/utils";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -272,30 +273,34 @@ export async function getQuestions(
         )
       );
     }
-    const pluginPrefix = "fx-resource-";
-    const options: OptionItem[] = plugins.map((plugin) => {
-      const item: OptionItem = {
-        id: plugin.name,
-        label: plugin.displayName,
-        cliName: plugin.name.replace(pluginPrefix, ""),
-      };
-      return item;
-    });
 
-    const selectQuestion = DeployPluginSelectQuestion;
-    selectQuestion.staticOptions = options;
-    selectQuestion.default = options.map((i) => i.id);
-    const pluginSelection = new QTreeNode(selectQuestion);
-    node.addChild(pluginSelection);
+    // On VS, users are not expected to select plugins to deploy.
+    if (!isVSProject(ctx.projectSetting)) {
+      const pluginPrefix = "fx-resource-";
+      const options: OptionItem[] = plugins.map((plugin) => {
+        const item: OptionItem = {
+          id: plugin.name,
+          label: plugin.displayName,
+          cliName: plugin.name.replace(pluginPrefix, ""),
+        };
+        return item;
+      });
 
-    for (const plugin of plugins) {
-      if (plugin.getQuestions) {
-        const getQuestionRes = await plugin.getQuestions(ctx, inputs, envInfo, tokenProvider);
-        if (getQuestionRes.isErr()) return getQuestionRes;
-        if (getQuestionRes.value) {
-          const subnode = getQuestionRes.value as QTreeNode;
-          subnode.condition = { contains: plugin.name };
-          if (subnode.data) pluginSelection.addChild(subnode);
+      const selectQuestion = DeployPluginSelectQuestion;
+      selectQuestion.staticOptions = options;
+      selectQuestion.default = options.map((i) => i.id);
+      const pluginSelection = new QTreeNode(selectQuestion);
+      node.addChild(pluginSelection);
+
+      for (const plugin of plugins) {
+        if (plugin.getQuestions) {
+          const getQuestionRes = await plugin.getQuestions(ctx, inputs, envInfo, tokenProvider);
+          if (getQuestionRes.isErr()) return getQuestionRes;
+          if (getQuestionRes.value) {
+            const subnode = getQuestionRes.value as QTreeNode;
+            subnode.condition = { contains: plugin.name };
+            if (subnode.data) pluginSelection.addChild(subnode);
+          }
         }
       }
     }

@@ -121,7 +121,8 @@
     },
     "appStudioLogin": {
       "message": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "loginCancel": "Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered."
     },
     "azureLogin": {
       "message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
@@ -167,9 +168,6 @@
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
       "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
       "portWarning": "Changing port(s) in package.json may break local debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)",
-      "sideloadingHintDoNotShowAgain": "Don't Show Again",
-      "openFAQ": "Open FAQ",
-      "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",
       "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.",
       "learnMore":"Learn More",
       "openSettings":"Open settings",

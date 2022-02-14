@@ -10,7 +10,6 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "rollup -c && api-extractor run --local && npm run api-markdown",
-    "prepare": "npm run build",
     "api-markdown": "api-documenter generate -i temp -o ../../docs/sdk",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
     "check-format": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\" \"config/*.js\"",

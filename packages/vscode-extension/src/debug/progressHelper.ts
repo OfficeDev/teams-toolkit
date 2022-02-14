@@ -2,14 +2,19 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { ProgressHandler } from "../progressHandler";
 
-export class ParallelProgressHelper {
+export class ProgressHelper {
   private details: { key: string; detail: string; isFinished?: boolean }[];
   constructor(private progressBar: IProgressHandler) {
     this.details = [];
   }
 
-  public async startAll(details: { key: string; detail: string }[]): Promise<void> {
+  public async start() {
+    await this.progressBar.start();
+  }
+
+  public async next(...details: { key: string; detail: string }[]): Promise<void> {
     this.details = details;
     if (details.length > 0) {
       await this.progressBar.next(details[0].detail);
@@ -28,5 +33,9 @@ export class ParallelProgressHelper {
         await this.progressBar.next(this.details[0].detail);
       }
     }
+  }
+
+  public async stop(success: boolean): Promise<void> {
+    await this.progressBar.end(success);
   }
 }

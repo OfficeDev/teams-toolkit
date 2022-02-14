@@ -58,7 +58,7 @@ import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
 import { trustDevCertHelpLink } from "./constants";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { ProgressHandler } from "../progressHandler";
-import { ParallelProgressHelper } from "./progressHelper";
+import { ProgressHelper } from "./progressHelper";
 
 enum Checker {
   SPFx = "SPFx",
@@ -116,7 +116,7 @@ const DepsProgressMessage = Object.freeze({
 });
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
-  let progressBar: IProgressHandler | undefined;
+  let progressHelper: ProgressHelper | undefined;
   try {
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
@@ -149,47 +149,54 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       localEnvManager.getActiveDependencies(projectSettings)
     );
 
-    progressBar = new ProgressHandler(
-      "Prerequisites Check",
-      enabledCheckers.length + enabledDeps.length
+    progressHelper = new ProgressHelper(
+      new ProgressHandler("Prerequisites Check", enabledCheckers.length + enabledDeps.length)
     );
-    await progressBar.start();
+    await progressHelper.start();
 
     // node
-    await progressBar.next(CheckerProgressMessage[Checker.Node]);
+    await progressHelper.next({ key: Checker.Node, detail: CheckerProgressMessage[Checker.Node] });
     const nodeResult = await checkNode(enabledDeps, depsManager);
+    await progressHelper.end(Checker.Node);
     if (nodeResult) {
       checkResults.push(nodeResult);
     }
 
-    await checkFailure(checkResults, progressBar);
+    await checkFailure(checkResults, progressHelper);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // login checker
-    await progressBar.next(CheckerProgressMessage[Checker.M365Account]);
+    await progressHelper.next({
+      key: Checker.M365Account,
+      detail: CheckerProgressMessage[Checker.M365Account],
+    });
     const accountResult = await checkM365Account();
+    await progressHelper.end(Checker.M365Account);
     checkResults.push(accountResult);
 
     // local cert
-    await progressBar.next(CheckerProgressMessage[Checker.LocalCertificate]);
+    await progressHelper.next({
+      key: Checker.LocalCertificate,
+      detail: CheckerProgressMessage[Checker.LocalCertificate],
+    });
     const localCertResult = await resolveLocalCertificate(localEnvManager);
+    await progressHelper.end(Checker.LocalCertificate);
     checkResults.push(localCertResult);
 
     // deps
-    const depsResults = await checkDependencies(enabledDeps, depsManager, progressBar);
+    const depsResults = await checkDependencies(enabledDeps, depsManager, progressHelper);
     checkResults.push(...depsResults);
 
-    await checkFailure(checkResults, progressBar);
+    await checkFailure(checkResults, progressHelper);
 
     const checkPromises = [];
     const progressMessages: { key: string; detail: string }[] = [];
 
-    const parallelProgressHelper = new ParallelProgressHelper(progressBar);
     // backend extension
     if (enabledCheckers.includes(Checker.AzureFunctionsExtension)) {
       checkPromises.push(
         resolveBackendExtension(depsManager).finally(() =>
-          parallelProgressHelper.end(Checker.AzureFunctionsExtension)
+          progressHelper?.end(Checker.AzureFunctionsExtension)
         )
       );
       progressMessages.push({
@@ -205,7 +212,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
           Checker.SPFx,
           path.join(workspacePath, FolderName.SPFx),
           NpmInstallDisplayName.SPFx
-        ).finally(() => parallelProgressHelper.end(Checker.SPFx))
+        ).finally(() => progressHelper?.end(Checker.SPFx))
       );
       progressMessages.push({
         key: Checker.SPFx,
@@ -219,7 +226,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
           Checker.Backend,
           path.join(workspacePath, FolderName.Function),
           NpmInstallDisplayName.Backend
-        ).finally(() => parallelProgressHelper.end(Checker.Backend))
+        ).finally(() => progressHelper?.end(Checker.Backend))
       );
       progressMessages.push({
         key: Checker.Backend,
@@ -233,7 +240,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
           Checker.Bot,
           path.join(workspacePath, FolderName.Bot),
           NpmInstallDisplayName.Bot
-        ).finally(() => parallelProgressHelper.end(Checker.Bot))
+        ).finally(() => progressHelper?.end(Checker.Bot))
       );
       progressMessages.push({
         key: Checker.Bot,
@@ -247,7 +254,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
           Checker.Frontend,
           path.join(workspacePath, FolderName.Frontend),
           NpmInstallDisplayName.Frontend
-        ).finally(() => parallelProgressHelper.end(Checker.Frontend))
+        ).finally(() => progressHelper?.end(Checker.Frontend))
       );
       progressMessages.push({
         key: Checker.Frontend,
@@ -255,7 +262,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       });
     }
 
-    await parallelProgressHelper.startAll(progressMessages);
+    await progressHelper.next(...progressMessages);
 
     const promiseResults = await Promise.all(checkPromises);
     for (const r of promiseResults) {
@@ -263,10 +270,13 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checkResults.push(r);
       }
     }
-    await checkFailure(checkResults, progressBar);
+    await checkFailure(checkResults, progressHelper);
 
     // check port
-    await progressBar.next(CheckerProgressMessage[Checker.Ports]);
+    await progressHelper.next({
+      key: Checker.Ports,
+      detail: CheckerProgressMessage[Checker.Ports],
+    });
     const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
     if (portsInUse.length > 0) {
       let message: string;
@@ -284,9 +294,10 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
       });
     }
+    await progressHelper.end(Checker.Ports);
 
     // handle checkResults
-    await handleCheckResults(checkResults, progressBar);
+    await handleCheckResults(checkResults, progressHelper);
 
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
@@ -298,7 +309,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   } catch (error: any) {
     const fxError = assembleError(error);
     showError(fxError);
-    await progressBar?.end(false);
+    await progressHelper?.stop(false);
     try {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
     } catch {
@@ -389,13 +400,13 @@ async function checkNode(
 async function checkDependencies(
   enabledDeps: DepsType[],
   depsManager: DepsManager,
-  progressBar: IProgressHandler
+  progressHelper: ProgressHelper
 ): Promise<CheckResult[]> {
   try {
     const nonNodeDeps = enabledDeps.filter((d) => !VSCodeDepsChecker.getNodeDeps().includes(d));
     const results: CheckResult[] = [];
     for (const nonNodeDep of nonNodeDeps) {
-      await progressBar.next(DepsProgressMessage[nonNodeDep]);
+      await progressHelper.next({ key: nonNodeDep, detail: DepsProgressMessage[nonNodeDep] });
       const depsStatus = await depsManager.ensureDependencies([nonNodeDep], {
         fastFail: false,
         doctor: true,
@@ -409,6 +420,7 @@ async function checkDependencies(
           error: handleDepsCheckerError(dep.error, dep),
         });
       }
+      await progressHelper.end(nonNodeDep);
     }
     return results;
   } catch (error: any) {
@@ -585,7 +597,7 @@ async function checkNpmInstall(
 
 async function handleCheckResults(
   results: CheckResult[],
-  progressBar: IProgressHandler
+  progressHelper: ProgressHelper
 ): Promise<void> {
   if (results.length <= 0) {
     return;
@@ -628,11 +640,11 @@ async function handleCheckResults(
   if (!shouldStop) {
     output.appendLine("");
     output.appendLine(`${doctorConstant.LaunchServices}`);
-    await progressBar.end(true);
+    await progressHelper.stop(true);
   }
 
   if (shouldStop) {
-    await progressBar.end(false);
+    await progressHelper.stop(false);
     throw returnUserError(
       new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
       ExtensionSource,
@@ -663,9 +675,9 @@ function outputCheckResultError(result: CheckResult, output: vscode.OutputChanne
   }
 }
 
-async function checkFailure(checkResults: CheckResult[], progressBar: IProgressHandler) {
+async function checkFailure(checkResults: CheckResult[], progressHelper: ProgressHelper) {
   if (checkResults.some((r) => !r.result)) {
-    await handleCheckResults(checkResults, progressBar);
+    await handleCheckResults(checkResults, progressHelper);
   }
 }
 

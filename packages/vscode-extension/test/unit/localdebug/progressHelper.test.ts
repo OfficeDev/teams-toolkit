@@ -3,7 +3,7 @@
 
 import * as sinon from "sinon";
 import * as chai from "chai";
-import { ParallelProgressHelper } from "../../../src/debug/progressHelper";
+import { ProgressHelper } from "../../../src/debug/progressHelper";
 import { ProgressHandler } from "../../../src/progressHandler";
 
 suite("[debug > ProgressHelper]", () => {
@@ -93,8 +93,8 @@ suite("[debug > ProgressHelper]", () => {
     testData.forEach((data) => {
       test(data.name, async () => {
         const mockProgressHandler = sinon.createSandbox().createStubInstance(ProgressHandler);
-        const testProgressHelper = new ParallelProgressHelper(mockProgressHandler);
-        await testProgressHelper.startAll(data.input);
+        const testProgressHelper = new ProgressHelper(mockProgressHandler);
+        await testProgressHelper.next(...data.input);
         for (const callMessage of data.calledMessage) {
           await testProgressHelper.end(callMessage);
         }

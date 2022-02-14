@@ -5,7 +5,6 @@ import {
   assembleError,
   err,
   FxError,
-  IProgressHandler,
   ok,
   ProductName,
   ProjectSettings,

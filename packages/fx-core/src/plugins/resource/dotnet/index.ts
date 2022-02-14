@@ -70,7 +70,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return ok([BuiltInFeaturePluginNames.identity]);
   }
 
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -94,7 +94,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return ok(armResult.value);
   }
 
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async scaffold(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -102,7 +102,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return ok(Void);
   }
 
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async generateBotServiceTemplate(pluginCtx: {
     plugins: string[];
     capabilities: string[];
@@ -154,7 +154,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
   }
 
   // TODO: need to cover add capability scenario
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -186,7 +186,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return ok(result);
   }
 
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
@@ -194,7 +194,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return await this.updateResourceTemplate(ctx, inputs);
   }
 
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
   async updateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath

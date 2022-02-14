@@ -7,7 +7,6 @@ import {
   v2,
   v3,
   ok,
-  AzureAccountProvider,
   Void,
   err,
   AzureSolutionSettings,
@@ -17,18 +16,9 @@ import {
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { BuiltInFeaturePluginNames } from "../../solution/fx-solution/v3/constants";
-import path from "path";
 import fs from "fs-extra";
-import {
-  generateBicepFromFile,
-  getResourceGroupNameFromResourceId,
-  getSiteNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../common/tools";
-import { Bicep } from "../../../common/constants";
+import { generateBicepFromFile } from "../../../common/tools";
 import { Site } from "@azure/arm-appservice/esm/models";
-import * as Deploy from "./deploy";
-import { WebSiteManagementClient } from "@azure/arm-appservice";
 import {
   BotOptionItem,
   MessageExtensionItem,
@@ -37,8 +27,7 @@ import {
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks";
 import { DotnetPluginPathInfo as PathInfo, WebappBicep } from "./constants";
-import { ConfigKey } from "./enums";
-import { LogMessage, ProgressMessage } from "./messages";
+import { LogMessage } from "./messages";
 import { ensureSolutionSettings } from "../../solution/fx-solution/utils/solutionSettingsHelper";
 
 export interface DotnetPluginConfig {
@@ -227,79 +216,5 @@ export class DotnetPlugin implements v3.FeaturePlugin {
 
     ctx.logProvider.info(`[${this.name}] ${LogMessage.endUpdateResourceTemplate}`);
     return ok([{ kind: "bicep", template: result }]);
-  }
-
-  private buildConfig(envInfo: v2.DeepReadonly<v3.EnvInfoV3>) {
-    const config: DotnetPluginConfig = {};
-    const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
-    config.resourceGroupName = solutionConfig.resourceGroupName;
-    config.subscriptionId = solutionConfig.subscriptionId;
-
-    const webApp = envInfo.state[this.name] as v3.AzureResource;
-    config.webAppName = webApp.resourceName;
-
-    // Resource id priors to other configs
-    const webAppResourceId = webApp.resourceId;
-    if (webAppResourceId) {
-      config.webAppResourceId = webAppResourceId;
-      config.resourceGroupName = getResourceGroupNameFromResourceId(webAppResourceId);
-      config.webAppName = getSiteNameFromResourceId(webAppResourceId);
-      config.subscriptionId = getSubscriptionIdFromResourceId(webAppResourceId);
-    }
-    return config;
-  }
-
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
-  async deploy(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.startDeploy}`);
-    const progress = ctx.userInteraction.createProgressBar(ProgressMessage.deployProgressTitle, 2);
-    await progress?.start(ProgressMessage.startProgress);
-
-    const config = this.buildConfig(envInfo);
-
-    const webAppName = this.checkAndGet(config.webAppName, ConfigKey.webAppName);
-    const resourceGroupName = this.checkAndGet(
-      config.resourceGroupName,
-      ConfigKey.resourceGroupName
-    );
-    const subscriptionId = this.checkAndGet(config.subscriptionId, ConfigKey.subscriptionId);
-    const credential = this.checkAndGet(
-      await tokenProvider?.getAccountCredentialAsync(),
-      ConfigKey.credential
-    );
-
-    const projectPath = this.checkAndGet(inputs.dir, ConfigKey.projectDir);
-    const client = new WebSiteManagementClient(credential, subscriptionId);
-
-    progress?.next(ProgressMessage.building);
-    const runtime = this.checkAndGet(inputs.runtime, ConfigKey.runtime);
-    await Deploy.build(projectPath, runtime);
-
-    progress?.next(ProgressMessage.uploading);
-    const folderToBeZipped = this.checkAndGet(inputs.buildPath, ConfigKey.buildPath);
-    if (!(await fs.pathExists(folderToBeZipped))) {
-      return err(
-        returnSystemError(
-          new Error(`Built path not found: ${folderToBeZipped}`),
-          this.name,
-          "NoBuiltPath"
-        )
-      );
-    }
-    await Deploy.zipDeploy(
-      client,
-      resourceGroupName,
-      webAppName,
-      path.resolve(projectPath, folderToBeZipped)
-    );
-
-    progress?.end(true);
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.endDeploy}`);
-    return ok(Void);
   }
 }

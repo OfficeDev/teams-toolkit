@@ -302,7 +302,8 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
-      sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
+      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       mockedEnvRestore = mockedEnv({
         __TEAMSFX_INSIDER_PREVIEW: "true",
       });
@@ -996,7 +997,7 @@ describe("Middleware - others", () => {
           }
         }
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });
@@ -1063,7 +1064,7 @@ describe("Middleware - others", () => {
           }
         }
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });
@@ -1106,7 +1107,7 @@ describe("Middleware - others", () => {
         tools.ui = new MockUserInteractionSelectFirst();
 
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });

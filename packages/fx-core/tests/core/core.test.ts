@@ -383,7 +383,7 @@ describe("Core basic APIs", () => {
     projectPath = path.resolve(os.tmpdir(), appName);
 
     const newEnvName = "newEnv";
-    const envListResult = await environmentManager.listEnvConfigs(projectPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (envListResult.isErr()) {
       assert.fail("failed to list env names");
     }
@@ -393,7 +393,7 @@ describe("Core basic APIs", () => {
     const createEnvRes = await core.createEnv(inputs);
     assert.isTrue(createEnvRes.isOk());
 
-    const newEnvListResult = await environmentManager.listEnvConfigs(projectPath);
+    const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (newEnvListResult.isErr()) {
       assert.fail("failed to list env names");
     }

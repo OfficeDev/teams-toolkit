@@ -56,7 +56,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
   return (
     <div>
       <h2>Call your Azure Function</h2>
-      <p>An Azure Functions app is running. Click below to call it for a response:</p>
+      <p>An Azure Functions app is running. Authorize this app and click below to call it for a response:</p>
       <Button primary content="Call Azure Function" disabled={loading} onClick={reload} />
       {loading && (
         <pre className="fixed">

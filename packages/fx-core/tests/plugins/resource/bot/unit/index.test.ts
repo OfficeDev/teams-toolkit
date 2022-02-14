@@ -527,7 +527,12 @@ describe("Teams Bot Resource Plugin", () => {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), randomAppName()),
       };
-      const azureAccountProvider = new MockedAzureAccountProvider();
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureAccountProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
+      };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
         config: {},
@@ -544,11 +549,11 @@ describe("Teams Bot Resource Plugin", () => {
         },
       };
       sinon
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
+        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(testUtils.generateFakeTokenCredentialsBase());
 
       // Act
-      const result = await botPlugin.deploy(ctx, inputs, envInfoV3, azureAccountProvider);
+      const result = await botPlugin.deploy(ctx, inputs, envInfoV3, mockedTokenProvider);
 
       // Assert
       chai.assert.isTrue(result.isOk());

@@ -32,6 +32,9 @@ elif [ $1 == 'core-template' ]; then
     echo "need to bump up templates' fallback version in fx-core"
     node ../.github/scripts/fxcore-sync-up-version.js
     git add ../packages/fx-core
+    echo "sync up all sub templates deps"
+    node ../.github/scripts/sync-templates.js
+    git add ../templates
 elif [ $1 == 'template-adaptive-card' ]; then
     if [[ $SkipSyncup == *"template"* ]]; then
         echo "skip sync up templates version with adaptive-card version"

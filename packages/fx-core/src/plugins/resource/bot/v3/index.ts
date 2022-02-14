@@ -154,13 +154,9 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.GeneratingArmTemplatesBot);
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDir, Bicep.ProvisionFileName),
@@ -199,13 +195,12 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
         )
       ),
     };
-    ctx.logProvider.info(Messages.SuccessfullyGenerateArmTemplatesBot);
     return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
@@ -248,11 +243,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.UpdatingArmTemplatesBot);
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const configModule = await generateBicepFromFile(
       path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
@@ -268,10 +259,9 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
         Modules: { bot: configModule },
       },
     };
-    ctx.logProvider.info(Messages.SuccessfullyUpdateArmTemplatesBot);
     return ok([{ kind: "bicep", template: result }]);
   }
-  private async getAzureAccountCredenial(
+  private async getAzureAccountCredential(
     tokenProvider: AzureAccountProvider
   ): Promise<TokenCredentialsBase> {
     const serviceClientCredentials = await tokenProvider.getAccountCredentialAsync();
@@ -341,6 +331,8 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    const botState = envInfo.state[this.name] as v3.AzureBot;
+    if (!botState.secretFields) botState.secretFields = ["botPassword"];
     if (envInfo.envName === "local") {
       const handler = await ProgressBarFactory.newProgressBar(
         ProgressBarConstants.LOCAL_DEBUG_TITLE,
@@ -363,7 +355,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       await handler?.start(ProgressBarConstants.PROVISION_STEP_START);
 
       // 0. Check Resource Provider
-      const azureCredential = await this.getAzureAccountCredenial(
+      const azureCredential = await this.getAzureAccountCredential(
         tokenProvider.azureAccountProvider
       );
       const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
@@ -427,7 +419,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.PreDeployingBot);
 
@@ -488,7 +480,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
 
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
-      await this.getAzureAccountCredenial(tokenProvider),
+      await this.getAzureAccountCredential(tokenProvider.azureAccountProvider),
       subscriptionId!
     );
     const listResponse = await AzureOperations.ListPublishingCredentials(

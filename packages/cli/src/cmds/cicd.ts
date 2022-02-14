@@ -9,7 +9,7 @@ import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -55,14 +55,18 @@ export default class CICD extends YargsCommand {
       inputs = getSystemInputs(rootFolder, args.env as any);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CICD, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.CICD,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
         return err(result.error);
       }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CICD, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

@@ -49,7 +49,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     context: Context,
     inputs: Inputs,
     envInfo: v2.EnvInfoV2
-  ): Promise<FxResult> {
+  ): Promise<Result<any, FxError>> {
     const result = await this.runWithExceptionCatching(
       context,
       () => this.cicdImpl.addCICDWorkflows(context, inputs, envInfo),
@@ -64,7 +64,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const cicdWorkflowQuestions = new QTreeNode({
@@ -100,7 +100,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<unknown, FxError>> {
+  ): Promise<Result<any, FxError>> {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,

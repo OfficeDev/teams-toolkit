@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
+import { AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chaiUse(chaiPromises);
 const env = (window as any).__env__;
@@ -21,7 +22,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
-        simpleAuthEndpoint: "http://localhost:5000",
         clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
       },
     });
@@ -50,6 +50,27 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   it("GetToken should success with consent scope", async function () {
     const credential: TeamsUserCredential = new TeamsUserCredential();
+    sinon.stub(PublicClientApplication.prototype, <any>"getAccountByUsername").returns(null);
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"acquireTokenSilent")
+      .callsFake((): Promise<AuthenticationResult> => {
+        return new Promise((resolve) => {
+          resolve({
+            authority: "authority",
+            uniqueId: "uniqueId",
+            tenantId: "tenantId",
+            scopes: ["User.Read"],
+            account: null,
+            idToken: "idToken",
+            idTokenClaims: {},
+            accessToken: ssoToken.token!,
+            fromCache: false,
+            expiresOn: null,
+            tokenType: "tokenType",
+            correlationId: "correlationId",
+          });
+        });
+      });
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken!.token);

@@ -9,12 +9,9 @@ export class ProgressHelper {
     this.details = [];
   }
 
-  public async start() {
-    await this.progressBar.start();
-  }
-
-  public async next(...details: { key: string; detail: string }[]): Promise<void> {
+  public async start(details: { key: string; detail: string }[]): Promise<void> {
     this.details = details;
+    await this.progressBar.start();
     if (details.length > 0) {
       await this.progressBar.next(details[0].detail);
     }

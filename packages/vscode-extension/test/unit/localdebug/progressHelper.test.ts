@@ -94,7 +94,7 @@ suite("[debug > ProgressHelper]", () => {
       test(data.name, async () => {
         const mockProgressHandler = sinon.createSandbox().createStubInstance(ProgressHandler);
         const testProgressHelper = new ProgressHelper(mockProgressHandler);
-        await testProgressHelper.next(...data.input);
+        await testProgressHelper.start(data.input);
         for (const callMessage of data.calledMessage) {
           await testProgressHelper.end(callMessage);
         }

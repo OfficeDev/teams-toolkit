@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
-import { ProgressHandler } from "../progressHandler";
 
 export class ProgressHelper {
   private details: { key: string; detail: string; isFinished?: boolean }[];

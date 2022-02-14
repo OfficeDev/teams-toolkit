@@ -537,7 +537,7 @@ describe("APIs of Environment Manager", () => {
         await fs.ensureFile(path.resolve(configFolder, envFileName));
       }
 
-      const envNamesResult = await environmentManager.listEnvConfigs(projectPath);
+      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
       if (envNamesResult.isErr()) {
         assert.fail("Fail to get the list of env configs.");
       }
@@ -553,7 +553,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     it("no env state found", async () => {
-      const envNamesResult = await environmentManager.listEnvConfigs(projectPath);
+      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
       if (envNamesResult.isErr()) {
         assert.fail("Fail to get the list of env configs.");
       }

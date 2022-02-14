@@ -118,7 +118,7 @@ class EnvAdd extends YargsCommand {
     if (!match) {
       return err(InvalidEnvNameError());
     }
-    const envConfigs = await environmentManager.listEnvConfigs(projectDir);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(projectDir);
     if (!envConfigs.isErr() && envConfigs.value!.indexOf(newTargetEnvName) >= 0) {
       return err(ProjectEnvAlreadyExistError(newTargetEnvName));
     }
@@ -147,7 +147,7 @@ class EnvList extends YargsCommand {
 
     CliTelemetry.withRootFolder(projectDir).sendTelemetryEvent(TelemetryEvent.EnvListStart);
 
-    const envResult = await environmentManager.listEnvConfigs(projectDir);
+    const envResult = await environmentManager.listRemoteEnvConfigs(projectDir);
     if (envResult.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EnvList, envResult.error);
       return err(envResult.error);

@@ -18,8 +18,7 @@
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
-    "build": "npx tsc -p ./",
-    "prepare": "rimraf build && npm run build",
+    "build": "rimraf build && npx tsc -p ./",
     "format-check": "echo test",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged"

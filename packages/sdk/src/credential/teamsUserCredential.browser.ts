@@ -11,15 +11,14 @@ import {
   validateScopesType,
   getUserInfoFromSsoToken,
   parseJwt,
+  formatString,
   getTenantIdAndLoginHintFromSsoToken,
   parseAccessTokenFromAuthCodeTokenResponse,
 } from "../util/utils";
-import { formatString } from "../util/utils";
 import { internalLogger } from "../util/logger";
 import { PublicClientApplication } from "@azure/msal-browser";
 
 const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
-const initializeTeamsSdkTimeoutInMillisecond = 5000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
 
@@ -309,52 +308,47 @@ export class TeamsUserCredential implements TokenCredential {
         }
       }
 
-      let initialized = false;
-      microsoftTeams.initialize(() => {
-        initialized = true;
-        microsoftTeams.authentication.getAuthToken({
-          successCallback: (token: string) => {
-            if (!token) {
-              const errorMsg = "Get empty SSO token from Teams";
+      if (this.checkInTeams()) {
+        microsoftTeams.initialize(() => {
+          microsoftTeams.authentication.getAuthToken({
+            successCallback: (token: string) => {
+              if (!token) {
+                const errorMsg = "Get empty SSO token from Teams";
+                internalLogger.error(errorMsg);
+                reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+                return;
+              }
+
+              const tokenObject = parseJwt(token);
+              if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
+                const errorMsg =
+                  "SSO token is not valid with an unknown version: " + tokenObject.ver;
+                internalLogger.error(errorMsg);
+                reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+                return;
+              }
+
+              const ssoToken: AccessToken = {
+                token,
+                expiresOnTimestamp: tokenObject.exp * 1000,
+              };
+
+              this.ssoToken = ssoToken;
+              resolve(ssoToken);
+            },
+            failureCallback: (errMessage: string) => {
+              const errorMsg = "Get SSO token failed with error: " + errMessage;
               internalLogger.error(errorMsg);
               reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
-
-            const tokenObject = parseJwt(token);
-            if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
-              const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
-
-            const ssoToken: AccessToken = {
-              token,
-              expiresOnTimestamp: tokenObject.exp * 1000,
-            };
-
-            this.ssoToken = ssoToken;
-            resolve(ssoToken);
-          },
-          failureCallback: (errMessage: string) => {
-            const errorMsg = "Get SSO token failed with error: " + errMessage;
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-          },
-          resources: [],
+            },
+            resources: [],
+          });
         });
-      });
-
-      // If the code not running in Teams, the initialize callback function would never trigger
-      setTimeout(() => {
-        if (!initialized) {
-          const errorMsg =
-            "Initialize teams sdk timeout, maybe the code is not running inside Teams";
-          internalLogger.error(errorMsg);
-          reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-        }
-      }, initializeTeamsSdkTimeoutInMillisecond);
+      } else {
+        const errorMsg = "Initialize teams sdk failed due to not running inside Teams";
+        internalLogger.error(errorMsg);
+        reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+      }
     });
   }
 
@@ -398,11 +392,11 @@ export class TeamsUserCredential implements TokenCredential {
     throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
   }
 
-  private setSessionStorage(sessonStorageValues: any): void {
+  private setSessionStorage(sessionStorageValues: any): void {
     try {
-      const sessionStorageKeys = Object.keys(sessonStorageValues);
+      const sessionStorageKeys = Object.keys(sessionStorageValues);
       sessionStorageKeys.forEach((key) => {
-        sessionStorage.setItem(key, sessonStorageValues[key]);
+        sessionStorage.setItem(key, sessionStorageValues[key]);
       });
     } catch (error: any) {
       // Values in result.sessionStorage can not be set into session storage.
@@ -411,5 +405,18 @@ export class TeamsUserCredential implements TokenCredential {
       internalLogger.error(errorMessage);
       throw new ErrorWithCode(errorMessage, ErrorCode.InternalError);
     }
+  }
+
+  // Come from here: https://github.com/wictorwilen/msteams-react-base-component/blob/master/src/useTeams.ts
+  private checkInTeams(): boolean {
+    if (
+      (window.parent === window.self && (window as any).nativeInterface) ||
+      window.navigator.userAgent.includes("Teams/") ||
+      window.name === "embedded-page-container" ||
+      window.name === "extension-tab-frame"
+    ) {
+      return true;
+    }
+    return false;
   }
 }

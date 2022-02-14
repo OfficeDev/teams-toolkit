@@ -40,7 +40,7 @@ async function checkAndReadEnvJson(
   if (!env) {
     return err(new EnvNotSpecified());
   }
-  const envsResult = await environmentManager.listEnvConfigs(rootFolder);
+  const envsResult = await environmentManager.listRemoteEnvConfigs(rootFolder);
   if (envsResult.isErr()) {
     if (envsResult.error.name === "PathNotExist") {
       return err(NotSupportedProjectType());

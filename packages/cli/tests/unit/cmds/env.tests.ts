@@ -113,7 +113,10 @@ describe("Env Add Command Tests", function () {
       checkedRootDir = rootDir;
       return validProject;
     });
-    sandbox.stub(core.environmentManager, "listEnvConfigs").callsFake(async (projectPath) => {
+    sandbox.stub(core.environmentManager, "listRemoteEnvConfigs").callsFake(async (projectPath) => {
+      return ok(envList);
+    });
+    sandbox.stub(core.environmentManager, "listAllEnvConfigs").callsFake(async (projectPath) => {
       return ok(envList);
     });
     sandbox
@@ -288,6 +291,7 @@ describe("Env List Command Tests", function () {
   let validProject = true;
   let checkedRootDir = "";
   let envList = ["dev", "test", "staging"];
+  const allEnvList = ["dev", "test", "staging", "local"];
 
   before(() => {
     mockYargs(sandbox, vars);
@@ -296,8 +300,11 @@ describe("Env List Command Tests", function () {
       checkedRootDir = rootDir;
       return validProject;
     });
-    sandbox.stub(core.environmentManager, "listEnvConfigs").callsFake(async (projectPath) => {
+    sandbox.stub(core.environmentManager, "listRemoteEnvConfigs").callsFake(async (projectPath) => {
       return ok(envList);
+    });
+    sandbox.stub(core.environmentManager, "listAllEnvConfigs").callsFake(async (projectPath) => {
+      return ok(allEnvList);
     });
   });
 

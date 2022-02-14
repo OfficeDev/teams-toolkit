@@ -12,7 +12,6 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   let validateRes = validateStringArray(solutionSettings.azureResources);
   if (validateRes) {
     return `solutionSettings.azureResources validation failed: ${validateRes}`;

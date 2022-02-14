@@ -26,13 +26,15 @@ export class TeamsClientId {
 }
 
 export class OfficeClientId {
+  static readonly Desktop = "0ec893e0-5785-4de6-99da-4ed124e5296c";
   static readonly Web1 = "4345a7b9-9a63-4910-a426-35363201d503";
   static readonly Web2 = "4765445b-32c6-49b0-83e6-1d93765276ca";
 }
 
 export class OutlookClientId {
   static readonly Desktop = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
-  static readonly Web = "00000002-0000-0ff1-ce00-000000000000";
+  static readonly Web1 = "00000002-0000-0ff1-ce00-000000000000";
+  static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 }
 
 export class ResourcePlugins {
@@ -59,6 +61,7 @@ export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
+  static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
 }
 
 export class ManifestVariables {

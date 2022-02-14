@@ -97,12 +97,9 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.pluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
@@ -121,7 +118,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
@@ -143,10 +140,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
@@ -174,6 +168,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
+    const apimState = envInfo.state[this.name] as v3.APIM;
+    if (!apimState.secretFields) {
+      apimState.secretFields = ["apimClientAADClientSecret"];
+    }
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
 
     const apimManager = await Factory.buildApimManager(
@@ -250,7 +248,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const solutionConfig = new SolutionConfig(envInfo as v3.EnvInfoV3);
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
@@ -266,7 +264,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     const apimManager = await Factory.buildApimManager(
       envInfo as v3.EnvInfoV3,
       ctx.telemetryReporter,
-      tokenProvider,
+      tokenProvider.azureAccountProvider,
       ctx.logProvider
     );
 

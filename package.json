@@ -1,7 +1,7 @@
 {
   "name": "teamsfx",
   "scripts": {
-    "setup": "npm install && npm run bootstrap --hoist && npm run install-eslint",
+    "setup": "npm install && npm run build",
     "setup-failpoint": "npm run setup && npx lerna run build-failpoint",
     "bootstrap": "lerna bootstrap",
     "install-eslint": "cd packages/eslint-config && npm install",
@@ -9,7 +9,10 @@
     "lint": "lerna run lint --stream",
     "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --ignore-scripts",
     "prepare": "husky install",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "postinstall": "npm run bootstrap --hoist && npm run install-eslint",
+    "build": "lerna run build",
+    "clean": "lerna clean"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",

@@ -70,7 +70,7 @@ export async function deploy(
       taskName: "deploy",
       thunk: () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return plugin.deploy!(ctx, inputs, envInfo, tokenProvider.azureAccountProvider);
+        return plugin.deploy!(ctx, inputs, envInfo, tokenProvider);
       },
     };
   });

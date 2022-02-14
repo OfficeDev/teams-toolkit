@@ -112,14 +112,16 @@ export async function generateArmTemplate(
 
 export async function addFeature(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs
+  inputs: v2.InputsWithProjectPath,
+  addedPlugins: string[],
+  existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
   try {
-    result = await doAddFeature(ctx, inputs);
+    result = await doAddFeature(ctx, inputs, addedPlugins, existingPlugins);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -565,8 +567,8 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
                       .get(pluginId)
                       ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
-                    (envInfo.state as v3.TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
-                      pluginOutput[pluginOutputKey];
+                    if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
+                    envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];
                   }
                 }
               }
@@ -874,79 +876,87 @@ async function doGenerateArmTemplate(
 
 async function doAddFeature(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs
+  inputs: v2.InputsWithProjectPath,
+  addedPlugins: string[],
+  existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
-  const pluginNames = [];
-  if (ctx.projectSetting.solutionSettings)
-    (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.forEach(
-      (p) => pluginNames.push(p)
-    );
-  pluginNames.push(inputs.feature);
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(pluginNames, baseName);
+  const allPlugins: string[] = [];
+  addedPlugins.forEach((p) => allPlugins.push(p));
+  existingPlugins.forEach((p) => allPlugins.push(p));
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(allPlugins, baseName);
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
 
   // add feature for selected plugin
-  const selectedPlugin = await Container.get<v3.FeaturePlugin>(inputs.feature);
-  if (!selectedPlugin.addFeature) return ok(undefined);
-  const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs);
-  if (addFeatureRes && addFeatureRes.isErr()) {
-    return err(addFeatureRes.error);
-  }
-  if (addFeatureRes.value) {
-    for (const template of addFeatureRes.value) {
-      if (template.kind === "bicep") {
-        const armTemplate = template.template as ArmTemplateResult;
-        generateArmFromResult(
-          armTemplate,
-          bicepOrchestrationTemplate,
-          inputs.feature,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      }
+  const otherFeaturesAddedInputs: v3.OtherFeaturesAddedInputs = {
+    ...inputs,
+    allPluginsAfterAdd: allPlugins,
+    addedPlugins: [],
+  };
+  for (const pluginName of addedPlugins) {
+    const selectedPlugin = await Container.get<v3.FeaturePlugin>(pluginName);
+    if (!selectedPlugin.addFeature) continue;
+    const addFeatureInputs: v3.AddFeatureInputs = {
+      ...inputs,
+      allPluginsAfterAdd: allPlugins,
+    };
+    const addFeatureRes = await selectedPlugin.addFeature(ctx, addFeatureInputs);
+    if (addFeatureRes.isErr()) {
+      ctx.logProvider.error(`${pluginName}: addFeature() failed!`);
+      return err(addFeatureRes.error);
     }
-    // notify other plugins
-    for (const pluginName of pluginNames) {
-      if (pluginName === inputs.feature) continue;
-      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-      if (plugin.afterOtherFeaturesAdded) {
-        const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
-          ...inputs,
-          features: [
-            {
-              name: inputs.feature,
-              value: addFeatureRes.value,
-            },
-          ],
-        });
-        if (notifyRes.isErr()) {
-          return err(notifyRes.error);
-        }
-        if (notifyRes.value) {
-          for (const template of notifyRes.value) {
-            if (template.kind === "bicep") {
-              const armTemplate = template.template as ArmTemplateResult;
-              generateArmFromResult(
-                armTemplate,
-                bicepOrchestrationTemplate,
-                plugin.name,
-                moduleProvisionFiles,
-                moduleConfigFiles
-              );
-            }
-          }
+    otherFeaturesAddedInputs.addedPlugins.push({ name: pluginName, value: addFeatureRes.value });
+    if (addFeatureRes.value) {
+      for (const template of addFeatureRes.value) {
+        if (template.kind === "bicep") {
+          const armTemplate = template.template as ArmTemplateResult;
+          generateArmFromResult(
+            armTemplate,
+            bicepOrchestrationTemplate,
+            pluginName,
+            moduleProvisionFiles,
+            moduleConfigFiles
+          );
         }
       }
     }
-    await persistBicepTemplates(
-      bicepOrchestrationTemplate,
-      moduleProvisionFiles,
-      moduleConfigFiles,
-      inputs.projectPath
-    );
+    ctx.logProvider.info(`${inputs.feature}: addFeature() success!`);
   }
+
+  //notify existing plugins
+  for (const pluginName of existingPlugins) {
+    const existingPlugin = await Container.get<v3.FeaturePlugin>(pluginName);
+    if (!existingPlugin.afterOtherFeaturesAdded) continue;
+    const notifyRes = await existingPlugin.afterOtherFeaturesAdded(ctx, otherFeaturesAddedInputs);
+    if (notifyRes.isErr()) {
+      ctx.logProvider.error(`${pluginName}: afterOtherFeaturesAdded() failed!`);
+      return err(notifyRes.error);
+    }
+    if (notifyRes.value) {
+      for (const template of notifyRes.value) {
+        if (template.kind === "bicep") {
+          const armTemplate = template.template as ArmTemplateResult;
+          generateArmFromResult(
+            armTemplate,
+            bicepOrchestrationTemplate,
+            pluginName,
+            moduleProvisionFiles,
+            moduleConfigFiles
+          );
+        }
+      }
+    }
+    ctx.logProvider.info(`${pluginName}: afterOtherFeaturesAdded() success!`);
+  }
+
+  await persistBicepTemplates(
+    bicepOrchestrationTemplate,
+    moduleProvisionFiles,
+    moduleConfigFiles,
+    inputs.projectPath
+  );
+
   return ok(undefined); // Nothing to return when success
 }
 
@@ -959,7 +969,7 @@ async function persistBicepTemplates(
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(projectaPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectaPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }
@@ -1219,6 +1229,8 @@ class BicepOrchestrationContent {
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
     this.RenderContext.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
+    if (armResult.Parameters && Object.keys(armResult.Parameters).length > 0)
+      this.TemplateAdded = true;
   }
 
   public applyReference(configContent: string): string {
@@ -1544,9 +1556,11 @@ class ArmV2 {
 class Arm {
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.SolutionAddFeatureInputs
+    inputs: v2.InputsWithProjectPath,
+    addedPlugins: string[],
+    existingPlugins: string[]
   ): Promise<Result<any, FxError>> {
-    return addFeature(ctx, inputs);
+    return addFeature(ctx, inputs, addedPlugins, existingPlugins);
   }
   async deployArmTemplates(
     ctx: v2.Context,

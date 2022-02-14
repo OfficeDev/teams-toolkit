@@ -62,6 +62,7 @@ import {
   globalStateGet,
   globalStateUpdate,
   InvalidProjectError,
+  isConfigUnifyEnabled,
   isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
@@ -489,7 +490,7 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (!isValidProject(projectPath)) {
     return err(InvalidProjectError());
   }
-  const envProfilesResult = await environmentManager.listEnvConfigs(projectPath!);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
@@ -629,7 +630,11 @@ export async function runCommand(
         break;
       }
       case Stage.debug: {
-        inputs.ignoreEnvInfo = true;
+        if (isConfigUnifyEnabled()) {
+          inputs.ignoreEnvInfo = false;
+        } else {
+          inputs.ignoreEnvInfo = true;
+        }
         inputs.checkerInfo = {
           skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
           trustDevCert: vscodeHelper.isTrustDevCertEnabled(),

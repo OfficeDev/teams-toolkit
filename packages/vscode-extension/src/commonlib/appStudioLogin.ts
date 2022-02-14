@@ -102,7 +102,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
           });
           throw new UserError(
             ExtensionErrors.UserCancel,
-            StringResources.vsc.common.userCancel,
+            StringResources.vsc.appStudioLogin.loginCancel,
             "Login"
           );
         }

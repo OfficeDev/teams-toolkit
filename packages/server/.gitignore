@@ -45,3 +45,4 @@ resource
 !src/cmds/preview/depsChecker/resource/
 templates
 *.tgz
+.pkg*

@@ -64,6 +64,7 @@ describe("Resource Command Tests", function () {
   let logs: string[] = [];
   let allArguments = new Map<string, any>();
   const envs = ["dev"];
+  const allEnvs = ["dev", "local"];
   const params = {
     "apim-resource-group": {},
     "apim-service-name": {},
@@ -136,10 +137,19 @@ describe("Resource Command Tests", function () {
       logs.push(message);
     });
     sandbox
-      .stub(environmentManager, "listEnvConfigs")
+      .stub(environmentManager, "listRemoteEnvConfigs")
       .callsFake(async function (projectPath: string): Promise<Result<string[], FxError>> {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(envs);
+        } else {
+          return err(PathNotExistError(projectPath));
+        }
+      });
+    sandbox
+      .stub(environmentManager, "listAllEnvConfigs")
+      .callsFake(async function (projectPath: string): Promise<Result<string[], FxError>> {
+        if (path.normalize(projectPath).endsWith("real")) {
+          return ok(allEnvs);
         } else {
           return err(PathNotExistError(projectPath));
         }

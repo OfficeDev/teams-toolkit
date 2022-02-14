@@ -46,7 +46,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     await mutex.runExclusive(async () => {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
-      const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
+      const envNamesResult = await environmentManager.listRemoteEnvConfigs(workspacePath);
       if (envNamesResult.isErr()) {
         return err(envNamesResult.error);
       }

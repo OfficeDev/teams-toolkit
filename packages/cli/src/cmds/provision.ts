@@ -82,6 +82,7 @@ export default class Provision extends YargsCommand {
       require: false,
       description: "The name of an existing resource group",
       type: "string",
+      global: false,
     });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

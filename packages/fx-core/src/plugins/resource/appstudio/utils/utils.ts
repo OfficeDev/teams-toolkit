@@ -74,10 +74,9 @@ export function getLocalAppName(appName: string): string {
 }
 
 /**
+ * Convert from TeamsAppManifest to AppDefinition
  * Localization file is not included
- * @param ctx
  * @param appManifest
- * @param ignoreIcon
  * @returns
  */
 export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {

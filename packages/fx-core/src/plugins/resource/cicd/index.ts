@@ -31,6 +31,7 @@ import {
   cdOption,
   provisionOption,
   publishOption,
+  questionNames,
 } from "./questions";
 
 @Service(ResourcePluginsV2.CICDPlugin)
@@ -70,8 +71,8 @@ export class CICDPluginV2 implements ResourcePlugin {
       type: "group",
     });
 
-    const whichPlatform = new QTreeNode({
-      name: "provider",
+    const whichProvider = new QTreeNode({
+      name: questionNames.Provider,
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: "Select a CI/CD Platform",
@@ -79,14 +80,14 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     const whichTemplate = new QTreeNode({
-      name: "template",
+      name: questionNames.Template,
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
       title: "Select template(s)",
       default: [ciOption.id],
     });
 
-    cicdWorkflowQuestions.addChild(whichPlatform);
+    cicdWorkflowQuestions.addChild(whichProvider);
     cicdWorkflowQuestions.addChild(whichTemplate);
 
     return ok(cicdWorkflowQuestions);

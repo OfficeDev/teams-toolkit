@@ -41,3 +41,8 @@ export const publishOption: OptionItem = {
   label: "Publish",
   detail: "Help publish Teams app to tenants.",
 };
+
+export enum questionNames {
+  Provider = "provider",
+  Template = "template",
+}

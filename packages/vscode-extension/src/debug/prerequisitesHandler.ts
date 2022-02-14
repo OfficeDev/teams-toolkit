@@ -213,20 +213,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       });
     }
 
-    if (enabledCheckers.includes(Checker.Frontend)) {
-      checkPromises.push(
-        checkNpmInstall(
-          Checker.Frontend,
-          path.join(workspacePath, FolderName.Frontend),
-          NpmInstallDisplayName.Frontend
-        ).finally(() => parallelProgressHelper.end(Checker.Frontend))
-      );
-      progressMessages.push({
-        key: Checker.Frontend,
-        detail: CheckerProgressMessage[Checker.Frontend],
-      });
-    }
-
     if (enabledCheckers.includes(Checker.Backend)) {
       checkPromises.push(
         checkNpmInstall(
@@ -252,6 +238,20 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       progressMessages.push({
         key: Checker.Bot,
         detail: CheckerProgressMessage[Checker.Bot],
+      });
+    }
+
+    if (enabledCheckers.includes(Checker.Frontend)) {
+      checkPromises.push(
+        checkNpmInstall(
+          Checker.Frontend,
+          path.join(workspacePath, FolderName.Frontend),
+          NpmInstallDisplayName.Frontend
+        ).finally(() => parallelProgressHelper.end(Checker.Frontend))
+      );
+      progressMessages.push({
+        key: Checker.Frontend,
+        detail: CheckerProgressMessage[Checker.Frontend],
       });
     }
 

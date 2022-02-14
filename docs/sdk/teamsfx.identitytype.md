@@ -19,6 +19,6 @@ export declare enum IdentityType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  App | <code>1</code> | <b><i>(BETA)</i></b> Represents the application itself. |
-|  User | <code>0</code> | <b><i>(BETA)</i></b> Represents the current user of Teams. |
+|  App | <code>&quot;Application&quot;</code> | <b><i>(BETA)</i></b> Represents the application itself. |
+|  User | <code>&quot;User&quot;</code> | <b><i>(BETA)</i></b> Represents the current user of Teams. |
 

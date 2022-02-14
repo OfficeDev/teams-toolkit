@@ -12,14 +12,14 @@ Constructor of MsGraphAuthProvider.
 <b>Signature:</b>
 
 ```typescript
-constructor(teamsfx: TeamsFx, scopes?: string | string[]);
+constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | Used to provide configuration and auth. |
+|  teamsfx | TeamsFxConfiguration | Used to provide configuration and auth. |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 
 ## Exceptions

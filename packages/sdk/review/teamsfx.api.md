@@ -26,8 +26,10 @@ export interface AuthenticationConfiguration {
     readonly tenantId?: string;
 }
 
+// Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
+//
 // @beta
-export function createMicrosoftGraphClient(teamsfx: TeamsFx, scopes?: string | string[]): Client;
+export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @beta
 export enum ErrorCode {
@@ -60,8 +62,8 @@ export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: stri
 
 // @beta
 export enum IdentityType {
-    App = 1,
-    User = 0
+    App = "Application",
+    User = "User"
 }
 
 // @beta
@@ -91,7 +93,7 @@ export class M365TenantCredential implements TokenCredential {
 
 // @beta
 export class MsGraphAuthProvider implements AuthenticationProvider {
-    constructor(teamsfx: TeamsFx, scopes?: string | string[]);
+    constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
 }
 
@@ -132,7 +134,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 }
 
 // @beta
-export class TeamsFx {
+export class TeamsFx implements TeamsFxConfiguration {
     constructor(identityType?: IdentityType);
     get Credential(): TokenCredential;
     getConfig(key: string): string;

@@ -157,7 +157,7 @@
     "faker": "^5.5.2",
     "find-process": "^1.4.4",
     "lint-staged": "^10.5.4",
-    "mocha": "^9.1.3",
+    "mocha": "^9.2.0",
     "mocha-junit-reporter": "^2.0.2",
     "mock-fs": "^4.13.0",
     "mocked-env": "^1.3.5",

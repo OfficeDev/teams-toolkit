@@ -386,6 +386,10 @@ class EnvironmentManager {
       if (!dataNeedEncryption(secretKey)) {
         continue;
       }
+      if (!secrets[secretKey]) {
+        delete secrets[secretKey];
+        continue;
+      }
       const encryptedSecret = cryptoProvider.encrypt(secrets[secretKey]);
       // always success
       if (encryptedSecret.isOk()) {

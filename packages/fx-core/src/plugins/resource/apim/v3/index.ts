@@ -168,6 +168,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
+    const apimState = envInfo.state[this.name] as v3.APIM;
+    if (!apimState.secretFields) {
+      apimState.secretFields = ["apimClientAADClientSecret"];
+    }
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
 
     const apimManager = await Factory.buildApimManager(

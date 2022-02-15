@@ -69,7 +69,7 @@ export class DepsManager {
       return [];
     }
 
-    const orderedDeps: DepsType[] = this.sortBySequence(dependencies, DepsManager.depsOrders);
+    const orderedDeps: DepsType[] = DepsManager.sortBySequence(dependencies);
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
@@ -104,16 +104,13 @@ export class DepsManager {
       doctor ? this.emptyLogger : this.logger,
       this.telemetry
     );
-    const depsInfo: DepsInfo = await checker.getDepsInfo();
     let error = undefined;
 
     if (shouldInstall && !(await checker.isInstalled())) {
-      if (doctor && !(checker instanceof NodeChecker)) {
-        this.logger.appendLine(`Installing ${depsInfo.name} ...`);
-      }
       const result = await checker.resolve();
       error = result.isErr() ? result.error : undefined;
     }
+    const depsInfo: DepsInfo = await checker.getDepsInfo();
 
     return {
       name: depsInfo.name,
@@ -130,9 +127,9 @@ export class DepsManager {
     };
   }
 
-  private sortBySequence(dependencies: DepsType[], sequence: DepsType[]): DepsType[] {
+  public static sortBySequence(dependencies: DepsType[]): DepsType[] {
     return dependencies
       .filter((value) => value != null)
-      .sort((a, b) => sequence.indexOf(a) - sequence.indexOf(b));
+      .sort((a, b) => DepsManager.depsOrders.indexOf(a) - DepsManager.depsOrders.indexOf(b));
   }
 }

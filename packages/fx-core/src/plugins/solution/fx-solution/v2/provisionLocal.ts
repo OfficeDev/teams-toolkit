@@ -29,7 +29,7 @@ import {
   setupLocalEnvironment,
 } from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../..";
-import { EnvInfoV2, LocalSetting } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { ResourcePlugins } from "../../../../common/constants";
 
 // TODO: will be removed after all plugins have updated

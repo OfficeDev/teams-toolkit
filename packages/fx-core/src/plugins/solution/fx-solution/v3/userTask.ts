@@ -2,12 +2,15 @@
 // Licensed under the MIT license.
 
 import {
+  AzureSolutionSettings,
+  DynamicPlatforms,
   err,
   Func,
   FxError,
   Inputs,
   InvalidInputError,
   Json,
+  MultiSelectQuestion,
   ok,
   Platform,
   QTreeNode,
@@ -17,9 +20,10 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
+import { Container } from "typedi";
 import * as util from "util";
 import { getStrings } from "../../../../common/tools";
-import { isVSProject } from "../../../../core";
+import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,
@@ -28,11 +32,13 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  createAddAzureResourceQuestion,
   MessageExtensionItem,
   TabOptionItem,
 } from "../question";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
-import { getQuestionsForAddCapability, getQuestionsForAddResource } from "../v2/getQuestions";
+import { canAddResource } from "../v2/executeUserTask";
+import { getQuestionsForAddCapability } from "../v2/getQuestions";
 import { addFeature } from "./addFeature";
 import { BuiltInFeaturePluginNames } from "./constants";
 
@@ -47,9 +53,62 @@ export async function getQuestionsForUserTask(
     return await getQuestionsForAddCapability(ctx, inputs);
   }
   if (func.method === "addResource") {
-    return await getQuestionsForAddResource(ctx, inputs, func, envInfo, tokenProvider);
+    return await getQuestionsForAddResource(ctx, inputs);
   }
   return ok(undefined);
+}
+
+export async function getQuestionsForAddResource(
+  ctx: v2.Context,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  let addQuestion: MultiSelectQuestion;
+  if (!isDynamicQuestion) {
+    addQuestion = createAddAzureResourceQuestion(false, false, false, false);
+  } else {
+    if (!settings) {
+      return err(new OperationNotSupportedForExistingAppError("addResource"));
+    }
+    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
+    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
+    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
+    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    addQuestion = createAddAzureResourceQuestion(
+      alreadyHaveFunction,
+      alreadyHaveSQL,
+      alreadyHaveAPIM,
+      alreadyHaveKeyVault
+    );
+    const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
+    if (canProceed.isErr()) {
+      return err(canProceed.error);
+    }
+  }
+  const addAzureResourceNode = new QTreeNode(addQuestion);
+  //traverse plugins' getQuestionsForAddFeature
+  const pluginsWithResources = [
+    [BuiltInFeaturePluginNames.function, AzureResourceFunction.id],
+    [BuiltInFeaturePluginNames.sql, AzureResourceSQL.id],
+    [BuiltInFeaturePluginNames.apim, AzureResourceApim.id],
+    [BuiltInFeaturePluginNames.keyVault, AzureResourceKeyVault.id],
+  ];
+  for (const pair of pluginsWithResources) {
+    const pluginName = pair[0];
+    const resourceName = pair[1];
+    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+    if (plugin.getQuestionsForAddFeature) {
+      const res = await plugin.getQuestionsForAddFeature(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = { contains: resourceName };
+        if (node.data) addAzureResourceNode.addChild(node);
+      }
+    }
+  }
+  return ok(addAzureResourceNode);
 }
 
 export async function addCapability(

@@ -26,6 +26,7 @@ import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
+import { DepsManager } from "../deps-checker/depsManager";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -70,7 +71,7 @@ export class LocalEnvManager {
       depsTypes.push(DepsType.Ngrok);
     }
 
-    return depsTypes;
+    return DepsManager.sortBySequence(depsTypes);
   }
 
   public async getLocalDebugEnvs(

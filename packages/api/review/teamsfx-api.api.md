@@ -57,23 +57,7 @@ export type AppManifest = Json;
 // @public (undocumented)
 interface AppManifestProvider {
     // (undocumented)
-    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
-        name: "staticTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "configurableTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "Bot";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "MessageExtension";
-        snippet?: Json;
-        existing?: boolean;
-    })[]) => Promise<Result<Void, FxError>>;
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
     // (undocumented)
     loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
     // (undocumented)

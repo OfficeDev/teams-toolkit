@@ -5,11 +5,11 @@ import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { AppManifest } from "../manifest";
 import { QTreeNode } from "../qm/question";
-import { Inputs, Json, Void } from "../types";
+import { Inputs, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { EnvInfoV3 } from "./types";
+import { EnvInfoV3, ManifestCapability } from "./types";
 
 export interface AppManifestProvider {
   loadManifest: (
@@ -26,16 +26,7 @@ export interface AppManifestProvider {
   addCapabilities: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    capabilities: (
-      | { name: "staticTab"; snippet?: Json; existing?: boolean }
-      | { name: "configurableTab"; snippet?: Json; existing?: boolean }
-      | { name: "Bot"; snippet?: Json; existing?: boolean }
-      | {
-          name: "MessageExtension";
-          snippet?: Json;
-          existing?: boolean;
-        }
-    )[]
+    capabilities: ManifestCapability[]
   ) => Promise<Result<Void, FxError>>;
 }
 export interface ContextWithManifestProvider extends Context {

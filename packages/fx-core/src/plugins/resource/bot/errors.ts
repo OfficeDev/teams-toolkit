@@ -19,7 +19,7 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
 
   const statusCode = target.innerError.response?.status;
   if (statusCode) {
-    if (statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
+    if (statusCode >= 400 && statusCode < 500) {
       target.errorType = ErrorType.User;
     } else {
       target.errorType = ErrorType.System;

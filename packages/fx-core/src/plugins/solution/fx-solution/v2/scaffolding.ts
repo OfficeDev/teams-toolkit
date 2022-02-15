@@ -24,6 +24,7 @@ import {
   getSelectedPlugins,
   fillInSolutionSettings,
   isAzureProject,
+  isVsPlatform,
 } from "./utils";
 import path from "path";
 import fs from "fs-extra";
@@ -89,7 +90,9 @@ export async function scaffoldSourceCode(
     if (scaffoldLocalDebugSettingsResult.isErr()) {
       return scaffoldLocalDebugSettingsResult;
     }
-    await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
+    if (!isVsPlatform(ctx)) {
+      await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
+    }
     if (isAzureProject(solutionSettings)) {
       await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
         spaces: 4,

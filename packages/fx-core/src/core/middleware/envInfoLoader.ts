@@ -342,7 +342,7 @@ export async function useUserSetEnv(
   return ok(env);
 }
 
-async function getQuestionsForTargetEnv(
+export async function getQuestionsForTargetEnv(
   inputs: Inputs,
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {

@@ -6,3 +6,10 @@ export enum ProviderKind {
   AzDo = "azdo",
   Jenkins = "jenkins",
 }
+
+export enum TemplateKind {
+  CI = "ci",
+  CD = "cd",
+  Provision = "provision",
+  Publish = "publish",
+}

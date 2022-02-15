@@ -33,10 +33,8 @@ export default class CICD extends YargsCommand {
     return args;
   }
 
-  public async runCommand(args: {
-    [argName: string]: string | string[];
-  }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve((args.folder as string) || "./");
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.CICDStart);
 
     const result = await activate(rootFolder);

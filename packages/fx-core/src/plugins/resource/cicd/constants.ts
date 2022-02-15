@@ -62,3 +62,15 @@ export class Suggestions {
 export class FileNames {
   public static readonly PACKAGE_JSON = "package.json";
 }
+
+export class URLPrefixes {
+  public static readonly CICD_TEMPLATES =
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/ruhe/cicd_scaffolding/templates/cicd";
+  public static readonly CICD_READMES =
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/ruhe/cicd_scaffolding/docs/cicd";
+}
+
+export class Retry {
+  public static readonly RETRY_TIMES = 10;
+  public static readonly BACKOFF_TIME_MS = 5000;
+}

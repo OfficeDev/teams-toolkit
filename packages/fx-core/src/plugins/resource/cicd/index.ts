@@ -16,9 +16,13 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 
-import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
+import {
+  FxResult,
+  FxCICDPluginResultFactory as ResultFactory,
+  FxCICDPluginResultFactory,
+} from "./result";
 import { CICDImpl } from "./plugin";
-import { ErrorType, PluginError } from "./errors";
+import { ErrorType, InternalError, PluginError } from "./errors";
 import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -33,6 +37,8 @@ import {
   publishOption,
   questionNames,
 } from "./questions";
+import { Logger } from "./logger";
+import { getQuestionsForTargetEnv } from "../../../core/middleware";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -50,6 +56,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     inputs: Inputs,
     envInfo: v2.EnvInfoV2
   ): Promise<Result<any, FxError>> {
+    Logger.setLogger(context.logProvider);
     const result = await this.runWithExceptionCatching(
       context,
       () => this.cicdImpl.addCICDWorkflows(context, inputs, envInfo),
@@ -75,7 +82,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       name: questionNames.Provider,
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
-      title: "Select a CI/CD Platform",
+      title: "Select a CI/CD Provider",
       default: githubOption.id,
     });
 
@@ -87,6 +94,17 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
+    Logger.debug(`inputs.projectPath: ${inputs.projectPath}`);
+    // const res = await getQuestionsForTargetEnv(inputs);
+    // if (res.isErr()) {
+    //   return err(res.error);
+    // }
+
+    // if (!res.value) {
+    //   return FxCICDPluginResultFactory.SystemError("UnknownError", "get questions for target env failed.");
+    // }
+
+    // cicdWorkflowQuestions.addChild(res.value);
     cicdWorkflowQuestions.addChild(whichProvider);
     cicdWorkflowQuestions.addChild(whichTemplate);
 

@@ -92,8 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
       const targetUri = await Correlator.run(handlers.getNewProjectHandler, args);
-      await delay(2000);
       if (targetUri.isOk()) {
+        await ExtTelemetry.dispose();
+        await delay(2000);
         return { openFolder: targetUri.value };
       }
     })

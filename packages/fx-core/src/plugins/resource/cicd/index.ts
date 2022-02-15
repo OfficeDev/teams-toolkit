@@ -95,16 +95,18 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     Logger.debug(`inputs.projectPath: ${inputs.projectPath}`);
-    // const res = await getQuestionsForTargetEnv(inputs);
-    // if (res.isErr()) {
-    //   return err(res.error);
-    // }
+    const res = await getQuestionsForTargetEnv(inputs);
+    if (res.isErr()) {
+      return err(res.error);
+    }
 
-    // if (!res.value) {
-    //   return FxCICDPluginResultFactory.SystemError("UnknownError", "get questions for target env failed.");
-    // }
+    if (!res.value) {
+      return FxCICDPluginResultFactory.SystemError("UnknownError", "get questions for target env failed.");
+    }
 
-    // cicdWorkflowQuestions.addChild(res.value);
+    res.value.children?.pop();
+    res.value.data.name = "CICDTargetEnv";
+    cicdWorkflowQuestions.addChild(res.value);
     cicdWorkflowQuestions.addChild(whichProvider);
     cicdWorkflowQuestions.addChild(whichTemplate);
 

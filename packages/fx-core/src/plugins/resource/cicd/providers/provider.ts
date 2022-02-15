@@ -13,7 +13,7 @@ export class CICDProvider {
   public targetPath = "";
   public async scaffold(
     projectPath: string,
-    templateName: string,
+    templateNames: string[],
     replacements: any
   ): Promise<Result<boolean, FxError>> {
     if (!(await fs.pathExists(projectPath))) {

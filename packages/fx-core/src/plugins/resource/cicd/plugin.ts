@@ -22,7 +22,7 @@ export class CICDImpl {
     const projectPath = inputs.projectPath;
     const envName = envInfo.envName;
     const providerName = inputs[questionNames.Provider];
-    const templateName = inputs[questionNames.Template];
+    const templateNames = inputs[questionNames.Template] as string[];
 
     // 2. Call factory to get provider instance.
     const providerInstance = CICDProviderFactory.create(providerName as ProviderKind);
@@ -41,7 +41,7 @@ export class CICDImpl {
       hosting_type_contains_azure: hostType == "Azure",
     };
     //  3.2 Call scaffold.
-    const res = await providerInstance.scaffold(projectPath, templateName, replacements);
+    const res = await providerInstance.scaffold(projectPath, templateNames, replacements);
 
     // 4. Notification & Preview scaffolded readme.
 

@@ -571,17 +571,10 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
-  }
-
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-cicd",
     method: "addCICDWorkflows",
-    params: {
-      envName: selectedEnv.value,
-    },
+    params: {},
   };
 
   const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, false);

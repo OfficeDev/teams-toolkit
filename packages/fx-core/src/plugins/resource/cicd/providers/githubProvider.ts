@@ -22,10 +22,24 @@ export class GitHubProvider extends CICDProvider {
 
   public async scaffold(
     projectPath: string,
+    templateNames: string[],
+    replacements: any
+  ): Promise<Result<boolean, FxError>> {
+    await super.scaffold(projectPath, templateNames, replacements);
+
+    for (let i = 0; i < templateNames.length; i += 1) {
+      await this.scaffoldTemplate(projectPath, templateNames[i], replacements);
+    }
+
+    return ok(true);
+  }
+
+  public async scaffoldTemplate(
+    projectPath: string,
     templateName: string,
     replacements: any
   ): Promise<Result<boolean, FxError>> {
-    await super.scaffold(projectPath, templateName, replacements);
+    
 
     // 1. Ensure the target path is existing.
     const targetPath = path.join(projectPath, this.targetPath);

@@ -52,7 +52,7 @@ export class AppStudioValidator {
     try {
       const response = await requester.delete(`/api/appdefinitions/${teamsAppId}`);
       chai.assert.isTrue(response.status === 200);
-      return app;
+      return;
     } catch (e) {
       chai.assert.fail(`Failed to delete Teams App, error: ${e}`);
     }

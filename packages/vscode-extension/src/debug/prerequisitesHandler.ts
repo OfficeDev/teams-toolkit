@@ -67,11 +67,18 @@ enum Checker {
   Bot = "bot",
   M365Account = "M365 Account",
   LocalCertificate = "Local Certificate",
-  Node = "Node.js",
-  Dependencies = "Dependencies",
   AzureFunctionsExtension = "Azure Functions Extension",
   Ports = "Ports",
 }
+
+const DepsDisplayName = {
+  [DepsType.FunctionNode]: "Node.js",
+  [DepsType.SpfxNode]: "Node.js",
+  [DepsType.AzureNode]: "Node.js",
+  [DepsType.Dotnet]: ".NET Core SDK",
+  [DepsType.Ngrok]: "ngrok",
+  [DepsType.FuncCoreTools]: "Azure Function Core Tool",
+};
 
 interface CheckResult {
   checker: string;
@@ -103,13 +110,12 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.Bot]: `Executing NPM Install for ${NpmInstallDisplayName.Bot}`,
   [Checker.Backend]: `Executing NPM Install for ${NpmInstallDisplayName.Backend}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
-  [Checker.Node]: `Checking ${Checker.Node}`,
-  [DepsType.FunctionNode]: `Checking ${Checker.Node}`,
-  [DepsType.SpfxNode]: `Checking ${Checker.Node}`,
-  [DepsType.AzureNode]: `Checking ${Checker.Node}`,
-  [DepsType.Dotnet]: "Checking and installing .NET Core SDK",
-  [DepsType.Ngrok]: "Checking and installing Ngrok",
-  [DepsType.FuncCoreTools]: "Checking and installing Azure Function Core Tool",
+  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
+  [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
+  [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
+  [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
 });
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
@@ -153,14 +159,15 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     );
 
     // node
-    const nodeResult = await checkNode(getDeps(enabledCheckers), depsManager);
-    await progressHelper.end(Checker.Node);
-    if (nodeResult) {
-      checkResults.push(nodeResult);
+    const nodeDep = getNodeDep(enabledCheckers);
+    if (nodeDep) {
+      const nodeResult = await checkNode(nodeDep, depsManager, progressHelper);
+      if (nodeResult) {
+        checkResults.push(nodeResult);
+      }
+      await checkFailure(checkResults, progressHelper);
+      VsCodeLogInstance.outputChannel.appendLine("");
     }
-
-    await checkFailure(checkResults, progressHelper);
-    VsCodeLogInstance.outputChannel.appendLine("");
 
     // login checker
     const accountResult = await checkM365Account();
@@ -174,7 +181,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     // deps
     const depsResults = await checkDependencies(
-      getDeps(enabledCheckers),
+      getNonNodeDeps(enabledCheckers),
       depsManager,
       progressHelper
     );
@@ -339,50 +346,47 @@ async function checkM365Account(): Promise<CheckResult> {
 }
 
 async function checkNode(
-  enabledDeps: DepsType[],
-  depsManager: DepsManager
-): Promise<CheckResult | undefined> {
+  nodeDep: DepsType,
+  depsManager: DepsManager,
+  progressHelper: ProgressHelper
+): Promise<CheckResult> {
   try {
-    for (const dep of enabledDeps) {
-      if (VSCodeDepsChecker.getNodeDeps().includes(dep)) {
-        const nodeStatus = (
-          await depsManager.ensureDependencies([dep], {
-            fastFail: false,
-            doctor: true,
-          })
-        )[0];
-        return {
-          checker: nodeStatus.name,
-          result: nodeStatus.isInstalled ? ResultStatus.success : ResultStatus.failed,
-          successMsg: nodeStatus.isInstalled
-            ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
-            : nodeStatus.name,
-          failureMsg: nodeStatus.name,
-          error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
-        };
-      }
-    }
-    return undefined;
+    const nodeStatus = (
+      await depsManager.ensureDependencies([nodeDep], {
+        fastFail: false,
+        doctor: true,
+      })
+    )[0];
+    return {
+      checker: nodeStatus.name,
+      result: nodeStatus.isInstalled ? ResultStatus.success : ResultStatus.failed,
+      successMsg: nodeStatus.isInstalled
+        ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
+        : nodeStatus.name,
+      failureMsg: nodeStatus.name,
+      error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+    };
   } catch (error: any) {
     return {
-      checker: Checker.Node,
+      checker: DepsDisplayName[nodeDep],
       result: ResultStatus.failed,
-      successMsg: Checker.Node,
-      failureMsg: Checker.Node,
+      successMsg: DepsDisplayName[nodeDep],
+      failureMsg: DepsDisplayName[nodeDep],
       error: handleDepsCheckerError(error),
     };
+  } finally {
+    await progressHelper.end(nodeDep);
   }
 }
 
 async function checkDependencies(
-  enabledDeps: DepsType[],
+  nonNodeDeps: DepsType[],
   depsManager: DepsManager,
   progressHelper: ProgressHelper
 ): Promise<CheckResult[]> {
-  try {
-    const nonNodeDeps = enabledDeps.filter((d) => !VSCodeDepsChecker.getNodeDeps().includes(d));
-    const results: CheckResult[] = [];
-    for (const nonNodeDep of nonNodeDeps) {
+  const results: CheckResult[] = [];
+  for (const nonNodeDep of nonNodeDeps) {
+    try {
       const depsStatus = await depsManager.ensureDependencies([nonNodeDep], {
         fastFail: false,
         doctor: true,
@@ -396,18 +400,17 @@ async function checkDependencies(
           error: handleDepsCheckerError(dep.error, dep),
         });
       }
-      await progressHelper.end(nonNodeDep);
-    }
-    return results;
-  } catch (error: any) {
-    return [
-      {
-        checker: Checker.Dependencies,
+    } catch (error: any) {
+      results.push({
+        checker: DepsDisplayName[nonNodeDep],
         result: ResultStatus.failed,
         error: handleDepsCheckerError(error),
-      },
-    ];
+      });
+    } finally {
+      await progressHelper.end(nonNodeDep);
+    }
   }
+  return results;
 }
 
 async function resolveBackendExtension(depsManager: DepsManager): Promise<CheckResult> {
@@ -660,9 +663,11 @@ async function getOrderedCheckers(
   const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
     localEnvManager.getActiveDependencies(projectSettings)
   );
-  const nodeDeps = enabledDeps.filter((d) => VSCodeDepsChecker.getNodeDeps().includes(d));
-  const nonNodeDeps = enabledDeps.filter((d) => !VSCodeDepsChecker.getNodeDeps().includes(d));
-  checkers.push(...nodeDeps);
+  const nodeDeps = getNodeDep(enabledDeps);
+  const nonNodeDeps = getNonNodeDeps(enabledDeps);
+  if (nodeDeps) {
+    checkers.push(nodeDeps);
+  }
   checkers.push(Checker.M365Account, Checker.LocalCertificate);
   checkers.push(...nonNodeDeps);
 
@@ -687,4 +692,14 @@ async function getOrderedCheckers(
 
 function getDeps(checkerOrDeps: (Checker | DepsType)[]): DepsType[] {
   return checkerOrDeps.map((v) => v as DepsType).filter((v) => Object.values(DepsType).includes(v));
+}
+
+function getNodeDep(checkerOrDeps: (Checker | DepsType)[]): DepsType | undefined {
+  return getDeps(checkerOrDeps)
+    .filter((dep) => VSCodeDepsChecker.getNodeDeps().includes(dep))
+    .shift();
+}
+
+function getNonNodeDeps(checkerOrDeps: (Checker | DepsType)[]): DepsType[] {
+  return getDeps(checkerOrDeps).filter((dep) => !VSCodeDepsChecker.getNodeDeps().includes(dep));
 }

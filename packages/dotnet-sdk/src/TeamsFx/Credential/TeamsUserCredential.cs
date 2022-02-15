@@ -126,7 +126,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         try
         {
             var teamsSdk = await _teamsSdkTask.Value.ConfigureAwait(false);
-            var url = $"{_authenticationOptions.InitiateLoginEndpoint}?clientId={_authenticationOptions.ClientId}&scope={WebUtility.UrlEncode(scopes)}";
+            var url = $"teamsfx-authorize-start?clientId={_authenticationOptions.ClientId}&scope={WebUtility.UrlEncode(scopes)}";
             var token = await teamsSdk.InvokeAsync<string>("authenticate", url).ConfigureAwait(false);
             if (string.IsNullOrEmpty(token))
             {

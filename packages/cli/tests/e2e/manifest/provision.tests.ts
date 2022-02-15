@@ -11,6 +11,7 @@ import * as chai from "chai";
 import { execAsync } from "../commonUtils";
 
 import { AppStudioValidator } from "../../commonlib";
+import { update } from "lodash";
 
 describe("teamsfx provision manifest command", function () {
   const testAppPkgPath = path.resolve(__dirname, "appPackage.dev.zip");
@@ -32,11 +33,17 @@ describe("teamsfx provision manifest command", function () {
       `teamsfx provision manifest --file-path ${testAppPkgPath}`
     );
     const createAppMatchResult = createAppResult.stdout.match(createAppReg);
+    console.log(`create app stdout: ${createAppResult.stdout}`);
 
-    chai.assert.isTrue(createAppMatchResult !== undefined && createAppMatchResult!.length > 1);
+    chai.assert.isTrue(
+      createAppMatchResult !== undefined &&
+        createAppMatchResult !== null &&
+        createAppMatchResult!.length > 1
+    );
     const teamsAppId = createAppMatchResult![1];
     chai.assert.isTrue(teamsAppId.length > 0);
 
+    console.log(`extracted teamsApp: ${teamsAppId}`);
     AppStudioValidator.setE2ETestProvider();
     await AppStudioValidator.getApp(teamsAppId);
 
@@ -44,9 +51,14 @@ describe("teamsfx provision manifest command", function () {
     const updateAppResult = await execAsync(
       `teamsfx provision manifest --file-path ${testAppPkgPath}`
     );
+    console.log(`update app stdout: ${updateAppResult.stdout}`);
     const updateAppMatchResult = updateAppResult.stdout.match(updateAppReg);
 
-    chai.assert.isTrue(updateAppMatchResult !== undefined && updateAppMatchResult!.length > 1);
+    chai.assert.isTrue(
+      updateAppMatchResult !== undefined &&
+        updateAppMatchResult !== null &&
+        updateAppMatchResult!.length > 1
+    );
     const updatedTeamsAppId = updateAppMatchResult![1];
     chai.assert.equal(updatedTeamsAppId, teamsAppId);
 

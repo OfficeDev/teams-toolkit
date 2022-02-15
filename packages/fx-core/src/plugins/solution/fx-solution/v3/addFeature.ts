@@ -98,7 +98,8 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     capabilities: v3.ManifestCapability[]
   ): Promise<Result<Void, FxError>> {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.addCapabilities(ctx, inputs, []);
+    const res = await appStudioV3.addCapabilities(ctx, inputs, capabilities);
+    if (res.isErr()) return err(res.error);
     return ok(Void);
   }
 }

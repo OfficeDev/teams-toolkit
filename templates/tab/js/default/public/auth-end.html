@@ -47,7 +47,7 @@
             }
           })
           .catch((error) => {
-            microsoftTeams.authentication.notifyFailure(error);
+            microsoftTeams.authentication.notifyFailure(JSON.stringify(error));
           });
       })
     </script>

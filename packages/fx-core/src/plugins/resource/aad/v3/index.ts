@@ -24,6 +24,7 @@ import { Bicep, ConstantString } from "../../../../common/constants";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AadAppClient } from "../aadAppClient";
 import {
@@ -134,6 +135,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    ensureSolutionSettings(ctx.projectSetting);
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const armRes = await this.generateResourceTemplate();
     if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
@@ -146,6 +149,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
     };
     await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
+    if (!solutionSettings.activeResourcePlugins.includes(this.name))
+      solutionSettings.activeResourcePlugins.push(this.name);
     return ok(armRes.value);
   }
 
@@ -174,10 +179,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     });
 
     //init aad part in local settings or env state
-    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
-      envInfo.state[BuiltInFeaturePluginNames.aad] = {
-        secretFields: ["clientSecret"],
-      };
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad].secretFields) {
+      envInfo.state[BuiltInFeaturePluginNames.aad].secretFields = ["clientSecret"];
     }
     // Move objectId etc. from input to output.
     const skip = Utils.skipCreateAadForProvision(envInfo);

@@ -531,7 +531,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
@@ -591,7 +591,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
         FunctionConfigKey.functionLanguage
       );
       const credential = this.checkAndGet(
-        await tokenProvider.getAccountCredentialAsync(),
+        await tokenProvider.azureAccountProvider.getAccountCredentialAsync(),
         FunctionConfigKey.credential
       );
 

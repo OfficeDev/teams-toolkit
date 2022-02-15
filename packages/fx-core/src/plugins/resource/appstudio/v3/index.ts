@@ -37,7 +37,7 @@ import {
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../constants";
-import { TelemetryUtils, TelemetryEventName } from "../utils/telemetry";
+import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
 import { AppStudioPluginImpl } from "./plugin";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
@@ -187,7 +187,22 @@ export class AppStudioPluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.createTeamsApp(ctx, inputs, envInfo, tokenProvider);
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
+    const result = await this.appStudioPluginImpl.createTeamsApp(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider
+    );
+    if (result.isOk()) {
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.appId] = result.value;
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provisionManifest);
+    } else {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.provisionManifest, result.error);
+    }
+    return result;
   }
 
   async updateTeamsApp(

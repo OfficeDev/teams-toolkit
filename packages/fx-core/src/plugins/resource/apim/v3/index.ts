@@ -168,6 +168,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
+    const apimState = envInfo.state[this.name] as v3.APIM;
+    if (!apimState.secretFields) {
+      apimState.secretFields = ["apimClientAADClientSecret"];
+    }
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
 
     const apimManager = await Factory.buildApimManager(
@@ -244,7 +248,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const solutionConfig = new SolutionConfig(envInfo as v3.EnvInfoV3);
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
@@ -260,7 +264,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     const apimManager = await Factory.buildApimManager(
       envInfo as v3.EnvInfoV3,
       ctx.telemetryReporter,
-      tokenProvider,
+      tokenProvider.azureAccountProvider,
       ctx.logProvider
     );
 

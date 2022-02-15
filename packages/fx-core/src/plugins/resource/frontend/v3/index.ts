@@ -305,7 +305,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.StartDeploy(this.name));
     const progress = ctx.userInteraction.createProgressBar(
@@ -313,7 +313,10 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
       Object.entries(DeployProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
-    const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);
+    const frontendConfigRes = await this.buildFrontendConfig(
+      envInfo,
+      tokenProvider.azureAccountProvider
+    );
     if (frontendConfigRes.isErr()) {
       return err(frontendConfigRes.error);
     }

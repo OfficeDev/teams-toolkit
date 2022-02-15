@@ -33,6 +33,7 @@ export enum TelemetryEventName {
   migrateV1Project = "migrate-v1-project",
   updateManifest = "update-manifest",
   provision = "provision",
+  provisionManifest = "provision-manifest",
   postProvision = "post-provision",
   checkPermission = "check-permission",
   grantPermission = "grant-permission",

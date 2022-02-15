@@ -27,10 +27,7 @@ import {
   getUuid,
 } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "../constants";
 import fs from "fs-extra";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
@@ -39,7 +36,7 @@ import { ErrorMessage } from "../errors";
 import { SqlConfig } from "../config";
 import { Message } from "../utils/message";
 import { ConfigureMessage, DialogUtils, ProgressTitle } from "../utils/dialogUtils";
-import { UserType } from "../utils/commonUtils";
+import { parseToken, UserType } from "../utils/commonUtils";
 import { SqlClient } from "../sqlClient";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks";
@@ -182,7 +179,71 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   getRuleName(suffix: number): string {
     return Constants.firewall.localRule + suffix;
   }
-
+  private removeDatabases(envInfo: v3.EnvInfoV3) {
+    const sqlResource = envInfo.state[BuiltInFeaturePluginNames.sql] as v3.AzureSQL;
+    if (sqlResource) {
+      for (const key of Object.keys(sqlResource)) {
+        if (key.startsWith(Constants.databaseName) && key !== Constants.databaseName) {
+          delete sqlResource[key];
+        }
+      }
+    }
+  }
+  private async parseLoginToken(azureAccountProvider: AzureAccountProvider) {
+    // get login user info to set aad admin in sql
+    try {
+      const credential = await azureAccountProvider.getAccountCredentialAsync();
+      const token = await credential!.getToken();
+      const accessToken = token.accessToken;
+      const tokenInfo = parseToken(accessToken);
+      this.config.aadAdmin = tokenInfo.name;
+      this.config.aadAdminObjectId = tokenInfo.objectId;
+      this.config.aadAdminType = tokenInfo.userType;
+    } catch (error: any) {
+      throw SqlResultFactory.SystemError(
+        ErrorMessage.SqlUserInfoError.name,
+        ErrorMessage.SqlUserInfoError.message(),
+        error
+      );
+    }
+  }
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.sql,
+        eventName: Telemetry.stage.preProvision,
+      },
+    }),
+  ])
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(Message.startPreProvision);
+    this.removeDatabases(envInfo);
+    await this.loadConfig(envInfo, tokenProvider.azureAccountProvider);
+    await SqlMgrClient.create(tokenProvider.azureAccountProvider, this.config);
+    DialogUtils.init(ctx.userInteraction);
+    this.config.existSql = await SqlMgrClient.existAzureSQL();
+    if (!this.config.existSql) {
+      this.config.admin = inputs[Constants.questionKey.adminName] as string;
+      this.config.adminPassword = inputs[Constants.questionKey.adminPassword] as string;
+      if (!this.config.admin || !this.config.adminPassword) {
+        throw SqlResultFactory.SystemError(
+          ErrorMessage.SqlInputError.name,
+          ErrorMessage.SqlInputError.message()
+        );
+      }
+    }
+    await this.parseLoginToken(tokenProvider.azureAccountProvider);
+    const sqlResource = envInfo.state[this.name] as v3.AzureSQL;
+    sqlResource.admin = this.config.admin;
+    sqlResource.adminPassword = this.config.adminPassword;
+    ctx.logProvider.info(Message.endPreProvision);
+    return ok(Void);
+  }
   @hooks([
     CommonErrorHandlerMW({
       telemetry: {
@@ -201,6 +262,11 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     ctx.logProvider?.info(Message.startPostProvision);
 
     await this.loadConfig(envInfo, tokenProvider.azureAccountProvider);
+
+    //delete admin password
+    const sqlState = envInfo.state[this.name];
+    delete sqlState[Constants.adminPassword];
+
     await SqlMgrClient.create(tokenProvider.azureAccountProvider, this.config);
 
     DialogUtils.init(

@@ -5,7 +5,7 @@ import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
 import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
-import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
+import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 import { AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
@@ -17,7 +17,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
-  before(async () => {
+  beforeEach(async () => {
     ssoToken = await getSSOToken();
     loadConfiguration({
       authentication: {
@@ -36,7 +36,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
   });
-  after(() => {
+  afterEach(() => {
     sinon.restore();
   });
 
@@ -44,16 +44,16 @@ describe("TeamsUserCredential Tests - Browser", () => {
     const credential: TeamsUserCredential = new TeamsUserCredential();
     const info = await credential.getUserInfo();
     assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
-    assert.strictEqual(info.displayName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME.split("@", 1)[0]);
+    assert.strictEqual(info.displayName, "Integration Test");
     assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
   });
 
   it("GetToken should success with consent scope", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
     sinon.stub(PublicClientApplication.prototype, <any>"getAccountByUsername").returns(null);
     sinon
       .stub(PublicClientApplication.prototype, <any>"acquireTokenSilent")
-      .callsFake((): Promise<AuthenticationResult> => {
+      .callsFake(async (): Promise<AuthenticationResult> => {
+        const graphToken = await getGraphToken(ssoToken, "User.Read");
         return new Promise((resolve) => {
           resolve({
             authority: "authority",
@@ -63,7 +63,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
             account: null,
             idToken: "idToken",
             idTokenClaims: {},
-            accessToken: ssoToken.token!,
+            accessToken: graphToken,
             fromCache: false,
             expiresOn: null,
             tokenType: "tokenType",
@@ -71,14 +71,18 @@ describe("TeamsUserCredential Tests - Browser", () => {
           });
         });
       });
+
+    const credential: TeamsUserCredential = new TeamsUserCredential();
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken!.token);
     assert.strictEqual(decodedToken.aud, "00000003-0000-0000-c000-000000000000");
-    assert.isTrue(decodedToken.scp!.startsWith("User.Read"));
+    assert.isTrue(decodedToken.scp!.includes("User.Read"));
   });
 
   it("GetToken should throw UiRequiredError with unconsent scope", async function () {
+    sinon.stub(PublicClientApplication.prototype, <any>"acquireTokenSilent").throws("error");
+    sinon.stub(PublicClientApplication.prototype, <any>"ssoSilent").throws("error");
     const credential: TeamsUserCredential = new TeamsUserCredential();
     await expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)

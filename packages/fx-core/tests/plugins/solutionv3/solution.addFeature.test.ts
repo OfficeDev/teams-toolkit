@@ -86,7 +86,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.frontend,
+      features: [BuiltInFeaturePluginNames.frontend],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -118,7 +118,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.bot,
+      features: [BuiltInFeaturePluginNames.bot],
       [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id],
     };
     const res = await addFeature(ctx, inputs);
@@ -129,7 +129,7 @@ describe("SolutionV3 - addFeature", () => {
       capabilities: [BotOptionItem.id],
       hostType: "Azure",
       azureResources: [],
-      activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.bot, BuiltInFeaturePluginNames.identity],
     });
     deleteFolder(projectPath);
   });
@@ -151,7 +151,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.identity,
+      features: [BuiltInFeaturePluginNames.identity],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -185,7 +185,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.function,
+      features: [BuiltInFeaturePluginNames.function],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -242,7 +242,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.keyVault,
+      features: [BuiltInFeaturePluginNames.keyVault],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -277,7 +277,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.sql,
+      features: [BuiltInFeaturePluginNames.sql],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -309,7 +309,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.sql,
+      features: [BuiltInFeaturePluginNames.sql],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -341,7 +341,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.apim,
+      features: [BuiltInFeaturePluginNames.apim],
     };
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());

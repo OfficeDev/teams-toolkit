@@ -24,7 +24,7 @@ export class ProvisionManifest extends YargsCommand {
   public readonly commandHead = "manifest";
   public readonly command = this.commandHead;
   public readonly description =
-    "Provision a Teams App in Teams Developer portoal with corresponding information specified in the given manifest file";
+    "Provision a Teams App in Teams Developer portal with corresponding information specified in the given manifest file";
 
   public readonly filePathParam = "file-path";
 

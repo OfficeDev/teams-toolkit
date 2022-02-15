@@ -36,6 +36,7 @@ export class DotnetPathInfo {
 
   static readonly bicepTemplateFolder = (templateFolder: string) =>
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
+  static readonly TemplateFolderName = "dotnet";
 }
 
 export class DotnetCommands {
@@ -55,6 +56,11 @@ export class DotnetConfigInfo {
   static readonly webAppEndpoint = "endpoint";
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
+}
+
+export class Capability {
+  static readonly tab = "Tab";
+  static readonly bot = "Bot";
 }
 
 export class WebappBicepFile {

@@ -890,6 +890,59 @@
             }
           }
         ]
+      },
+      {
+        "id": "teamsToolkitQuickStartNew",
+        "title": "Get started with Teams toolkit",
+        "description": "Jumpstart your Teams app development experience",
+        "when": "false",
+        "steps": [
+          {
+            "id": "teamsToolkitEnvironment",
+            "title": "Get your environment ready",
+            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)",
+            "media": {
+              "svg": "media/environment.svg",
+              "altText": "Get your environment ready"
+            }
+          },
+          {
+            "id": "teamsToolkitBuildApp",
+            "title": "Build your first Teams app",
+            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.create?%5B%22Webview%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
+            "media": {
+              "svg": "media/step_create.svg",
+              "altText": "Build your first Teams app"
+            }
+          },
+          {
+            "id": "teamsToolkitPreview",
+            "title": "Preview your Teams app locally",
+            "description": "Press [F5](command:fx-extension.selectAndDebug) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, [sign in to M365](https://www.bing.com) (organizational account) with sideloading option.__",
+            "media": {
+              "svg": "media/preview.svg",
+              "altText": "Preview your Teams app locally"
+            }
+          },
+          {
+            "id": "teamsToolkitDeploy",
+            "title": "Deploy Teams apps",
+            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "media": {
+              "svg": "media/openExtensionIcon.svg",
+              "altText": "Deploy Teams apps"
+            }
+          },
+          {
+            "id": "teamsToolkitExploreMore",
+            "title": "Explore more TeamsFx functionalities",
+            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README.md](https://aka.ms/teamsfx-arm-templates)",
+            "media": {
+              "svg": "media/goodToGo.svg",
+              "altText": "Explore more"
+            }
+          }
+        ]
       }
     ]
   },

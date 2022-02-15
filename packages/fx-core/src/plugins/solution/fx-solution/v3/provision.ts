@@ -105,7 +105,12 @@ export async function provisionResources(
 
   // register teams app
   const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  const registerTeamsAppRes = await appStudioV3.registerTeamsApp(ctx, inputs, envInfo);
+  const registerTeamsAppRes = await appStudioV3.registerTeamsApp(
+    ctx,
+    inputs,
+    envInfo,
+    tokenProvider
+  );
   if (registerTeamsAppRes.isErr()) return err(registerTeamsAppRes.error);
   const teamsAppId = registerTeamsAppRes.value;
   solutionGlobalVars.TeamsAppId = teamsAppId;

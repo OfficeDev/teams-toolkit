@@ -9,6 +9,7 @@ export interface PluginImpl {
   generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult>;
   updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult>;
   localDebug(ctx: PluginContext): Promise<TeamsFxResult>;
+  provision(ctx: PluginContext): Promise<TeamsFxResult>;
   postProvision(ctx: PluginContext): Promise<TeamsFxResult>;
   preDeploy(ctx: PluginContext): Promise<TeamsFxResult>;
   deploy(ctx: PluginContext): Promise<TeamsFxResult>;

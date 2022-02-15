@@ -35,6 +35,8 @@ import {
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { ResourcePlugins } from "../../../../common/constants";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -141,6 +143,116 @@ export async function setupLocalDebugSettings(
           } else {
             localSettings.bot.botEndpoint = ngrokHttpUrl;
             localSettings.bot.botDomain = ngrokHttpUrl.slice(8);
+          }
+        }
+      }
+    }
+  } catch (error: any) {
+    const systemError = SetupLocalDebugSettingsError(error);
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, systemError);
+    return err(systemError);
+  }
+  TelemetryUtils.sendSuccessEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
+  return ok(Void);
+}
+
+export async function setupLocalEnvironment(
+  ctx: v2.Context,
+  inputs: Inputs,
+  envInfo: EnvInfoV2
+): Promise<Result<Void, FxError>> {
+  const vscEnv = inputs.vscodeEnv;
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
+
+  const telemetryProperties = {
+    platform: inputs.platform as string,
+    vscenv: vscEnv as string,
+    frontend: includeFrontend ? "true" : "false",
+    function: includeBackend ? "true" : "false",
+    bot: includeBot ? "true" : "false",
+    auth: "false",
+    "skip-ngrok": skipNgrok ? "true" : "false",
+    v1: isMigrateFromV1 ? "true" : "false",
+  };
+  TelemetryUtils.init(ctx.telemetryReporter);
+  TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
+
+  try {
+    // setup configs used by other plugins
+    // TODO: dynamicly determine local ports
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
+      const authPort = isMigrateFromV1 ? 5000 : 55000;
+      let localTabEndpoint: string;
+      let localTabDomain: string;
+      let localAuthEndpoint: string;
+      let localFuncEndpoint: string;
+
+      if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
+        const codespaceName = await getCodespaceName();
+
+        localTabEndpoint = getCodespaceUrl(codespaceName, frontendPort);
+        localTabDomain = new URL(localTabEndpoint).host;
+        localAuthEndpoint = getCodespaceUrl(codespaceName, authPort);
+        localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
+      } else {
+        localTabDomain = "localhost";
+        localTabEndpoint = `https://localhost:${frontendPort}`;
+        localAuthEndpoint = `http://localhost:${authPort}`;
+        localFuncEndpoint = "http://localhost:7071";
+      }
+
+      if (includeFrontend) {
+        if (!envInfo.state[ResourcePlugins.FrontendHosting]) {
+          envInfo.state[ResourcePlugins.FrontendHosting] = {};
+        }
+        envInfo.state[ResourcePlugins.FrontendHosting].endpoint = localTabEndpoint;
+        envInfo.state[ResourcePlugins.FrontendHosting].domain = localTabDomain;
+      }
+
+      if (includeBackend) {
+        if (!envInfo.state[ResourcePlugins.Function]) {
+          envInfo.state[ResourcePlugins.Function] = {};
+        }
+        envInfo.state[ResourcePlugins.Function].functionEndpoint = localFuncEndpoint;
+      }
+
+      if (includeBot) {
+        if (!envInfo.state[ResourcePlugins.Bot]) {
+          envInfo.state[ResourcePlugins.Bot] = {};
+        }
+
+        if (skipNgrok) {
+          const localBotEndpoint = envInfo.state[ResourcePlugins.Bot].siteEndPoint as string;
+          if (localBotEndpoint === undefined) {
+            const error = LocalBotEndpointNotConfigured();
+            TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
+            return err(error);
+          }
+
+          const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
+          if (!botEndpointRegex.test(localBotEndpoint)) {
+            const error = InvalidLocalBotEndpointFormat(localBotEndpoint);
+            TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
+            return err(error);
+          }
+
+          envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
+          envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
+        } else {
+          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
+          if (!ngrokHttpUrl) {
+            const error = NgrokTunnelNotConnected();
+            TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
+            return err(error);
+          } else {
+            envInfo.state[ResourcePlugins.Bot].siteEndpoint = ngrokHttpUrl;
+            envInfo.state[ResourcePlugins.Bot].validDomain = ngrokHttpUrl.slice(8);
           }
         }
       }

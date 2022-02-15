@@ -165,6 +165,10 @@ export class DotnetPluginImpl implements PluginImpl {
     return ok(undefined);
   }
 
+  public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     return ok(undefined);
   }

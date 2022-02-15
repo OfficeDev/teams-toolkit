@@ -10,21 +10,30 @@ import { executeConcurrently } from "./executor";
 import {
   checkWhetherLocalDebugM365TenantMatches,
   ensurePermissionRequest,
+  extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
   isAzureProject,
   loadTeamsAppTenantIdForLocal,
 } from "./utils";
-import { PluginNames, SolutionError, SolutionSource } from "../constants";
+import { GLOBAL_CONFIG, PluginNames, SolutionError, SolutionSource } from "../constants";
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import {
+  configLocalDebugSettings,
+  setupLocalDebugSettings,
+  setupLocalEnvironment,
+} from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../..";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2, LocalSetting } from "@microsoft/teamsfx-api/build/v2";
+import { ResourcePlugins } from "../../../../common/constants";
+
+// TODO: will be removed after all plugins have updated
+const updatedPlugins = [ResourcePlugins.Aad, ResourcePlugins.FrontendHosting];
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -78,15 +87,34 @@ export async function provisionLocalResource(
   }
 
   const plugins: v2.ResourcePlugin[] = getSelectedPlugins(ctx.projectSetting);
+  const solutionInputs = extractSolutionInputs(envInfo!.state[GLOBAL_CONFIG]);
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
-      return {
-        pluginName: `${plugin.name}`,
-        taskName: "provisionLocalResource",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.provisionLocalResource!(ctx, inputs, localSettings, tokenProvider),
-      };
+      if (updatedPlugins.indexOf(plugin.name) >= 0) {
+        if (!envInfo!.state[plugin.name]) {
+          envInfo!.state[plugin.name] = {};
+        }
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "provisionResource",
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          thunk: () =>
+            plugin.provisionResource!(
+              ctx,
+              { ...inputs, ...solutionInputs, projectPath: inputs.projectPath! },
+              envInfo!,
+              tokenProvider
+            ),
+        };
+      } else {
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "provisionLocalResource",
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          thunk: () => plugin.provisionLocalResource!(ctx, inputs, localSettings, tokenProvider),
+        };
+      }
     });
 
   const provisionResult = await executeConcurrently(provisionLocalResourceThunks, ctx.logProvider);
@@ -100,23 +128,52 @@ export async function provisionLocalResource(
     return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
   }
 
+  if (isConfigUnifyEnabled()) {
+    const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo!);
+
+    if (localEnvSetupResult.isErr()) {
+      return new v2.FxPartialSuccess(localSettings, localEnvSetupResult.error);
+    }
+
+    setDataForLocal(envInfo!, localSettings);
+  }
+
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (isAzureProject(azureSolutionSettings)) {
     if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-      const result = await aadPlugin.executeUserTask(
-        ctx,
-        inputs,
-        {
-          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-          method: "setApplicationInContext",
-          params: { isLocal: true },
-        },
-        localSettings,
-        { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
-        tokenProvider
-      );
-      if (result.isErr()) {
-        return new v2.FxPartialSuccess(localSettings, result.error);
+      let result;
+      if (isConfigUnifyEnabled()) {
+        result = await aadPlugin.executeUserTask(
+          ctx,
+          inputs,
+          {
+            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+            method: "setApplicationInContext",
+            params: { isLocal: false },
+          },
+          {},
+          envInfo!,
+          tokenProvider
+        );
+        if (result.isErr()) {
+          return new v2.FxPartialSuccess(envInfo!, result.error);
+        }
+      } else {
+        result = await aadPlugin.executeUserTask(
+          ctx,
+          inputs,
+          {
+            namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+            method: "setApplicationInContext",
+            params: { isLocal: true },
+          },
+          localSettings,
+          { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
+          tokenProvider
+        );
+        if (result.isErr()) {
+          return new v2.FxPartialSuccess(localSettings, result.error);
+        }
       }
     }
   }
@@ -133,13 +190,32 @@ export async function provisionLocalResource(
   const configureLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureLocalResource))
     .map((plugin) => {
-      return {
-        pluginName: `${plugin.name}`,
-        taskName: "configureLocalResource",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.configureLocalResource!(ctx, inputs, localSettings, tokenProvider),
-      };
+      if (updatedPlugins.indexOf(plugin.name) >= 0) {
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "configureResource",
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          thunk: () =>
+            plugin.configureResource!(
+              ctx,
+              { ...inputs, ...solutionInputs, projectPath: inputs.projectPath! },
+              envInfo!,
+              tokenProvider
+            ),
+        };
+      } else {
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "configureLocalResource",
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          thunk: () => plugin.configureLocalResource!(ctx, inputs, localSettings, tokenProvider),
+        };
+      }
     });
+
+  if (isConfigUnifyEnabled()) {
+    setPostDataForLocal(envInfo!, localSettings);
+  }
 
   const configureResourceResult = await executeConcurrently(
     configureLocalResourceThunks,
@@ -160,4 +236,23 @@ export async function provisionLocalResource(
   }
 
   return new v2.FxSuccess(localSettings);
+}
+
+// TODO delete me later
+function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
+  localSettings.auth.clientId = envInfo.state[ResourcePlugins.Aad].clientId;
+  localSettings.auth.clientSecret = envInfo.state[ResourcePlugins.Aad].clientSecret;
+  localSettings.auth.objectId = envInfo.state[ResourcePlugins.Aad].objectId;
+  localSettings.auth.oauth2PermissionScopeId =
+    envInfo.state[ResourcePlugins.Aad].oauth2PermissionScopeId;
+  localSettings.auth.oauthAuthority = envInfo.state[ResourcePlugins.Aad].oauthAuthority;
+  localSettings.auth.oauthHost = envInfo.state[ResourcePlugins.Aad].oauthHost;
+
+  localSettings.frontend.tabIndexPath = envInfo.state[ResourcePlugins.FrontendHosting].indexPath;
+
+  localSettings.teamsApp.teamsAppId = envInfo.state.solution.teamsAppId;
+}
+
+function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
+  localSettings.auth.applicationIdUris = envInfo.state[ResourcePlugins.Aad].applicationIdUris;
 }

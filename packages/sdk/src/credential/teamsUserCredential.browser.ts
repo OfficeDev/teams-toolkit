@@ -4,7 +4,7 @@
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
-import * as microsoftTeams from "@microsoft/teams-js";
+import { app, authentication } from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import {
@@ -98,58 +98,53 @@ export class TeamsUserCredential implements TokenCredential {
       await this.init();
     }
 
-    return new Promise<void>((resolve, reject) => {
-      microsoftTeams.initialize(() => {
-        microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${
-            this.config.clientId
-          }&scope=${encodeURI(scopesStr)}&loginHint=${this.loginHint}`,
-          width: loginPageWidth,
-          height: loginPageHeight,
-          successCallback: async (result?: string) => {
-            if (!result) {
-              const errorMsg = "Get empty authentication result from MSAL";
+    await app.initialize();
+    let result: string;
+    try {
+      const params = {
+        url: `${this.config.initiateLoginEndpoint}?clientId=${
+          this.config.clientId
+        }&scope=${encodeURI(scopesStr)}&loginHint=${this.loginHint}`,
+        width: loginPageWidth,
+        height: loginPageHeight,
+      } as authentication.AuthenticatePopUpParameters;
+      result = await authentication.authenticate(params);
+      if (!result) {
+        const errorMsg = "Get empty authentication result from MSAL";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
+    } catch (err: unknown) {
+      const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${
+        (err as Error).message
+      }`;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed);
+    }
+    let resultJson: any = {};
+    try {
+      resultJson = JSON.parse(result);
+    } catch (error) {
+      // If can not parse result as Json, will throw error.
+      const failedToParseResult = "Failed to parse response to Json.";
+      internalLogger.error(failedToParseResult);
+      throw new ErrorWithCode(failedToParseResult, ErrorCode.InvalidResponse);
+    }
 
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
+    // If code exists in result, user may using previous auth-start and auth-end page.
+    if (resultJson.code) {
+      const helpLink = "https://aka.ms/teamsfx-auth-code-flow";
+      const usingPreviousAuthPage =
+        "Found auth code in response. Auth code is not support for current version of SDK. " +
+        `Please refer to the help link for how to fix the issue: ${helpLink}.`;
+      internalLogger.error(usingPreviousAuthPage);
+      throw new ErrorWithCode(usingPreviousAuthPage, ErrorCode.InvalidResponse);
+    }
 
-            let resultJson: any = {};
-            try {
-              resultJson = JSON.parse(result);
-            } catch (error) {
-              // If can not parse result as Json, will throw error.
-              const failedToParseResult = "Failed to parse response to Json.";
-              internalLogger.error(failedToParseResult);
-              reject(new ErrorWithCode(failedToParseResult, ErrorCode.InvalidResponse));
-            }
-
-            // If code exists in result, user may using previous auth-start and auth-end page.
-            if (resultJson.code) {
-              const helpLink = "https://aka.ms/teamsfx-auth-code-flow";
-              const usingPreviousAuthPage =
-                "Found auth code in response. Auth code is not support for current version of SDK. " +
-                `Please refer to the help link for how to fix the issue: ${helpLink}.`;
-              internalLogger.error(usingPreviousAuthPage);
-              reject(new ErrorWithCode(usingPreviousAuthPage, ErrorCode.InvalidResponse));
-            }
-
-            // If sessionStorage exists in result, set the values in current session storage.
-            if (resultJson.sessionStorage) {
-              this.setSessionStorage(resultJson.sessionStorage);
-            }
-
-            resolve();
-          },
-          failureCallback: (reason?: string) => {
-            const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${reason}`;
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed));
-          },
-        });
-      });
-    });
+    // If sessionStorage exists in result, set the values in current session storage.
+    if (resultJson.sessionStorage) {
+      this.setSessionStorage(resultJson.sessionStorage);
+    }
   }
 
   /**
@@ -306,48 +301,42 @@ export class TeamsUserCredential implements TokenCredential {
       }
     }
 
-      if (this.checkInTeams()) {
-        microsoftTeams.initialize(() => {
-          microsoftTeams.authentication.getAuthToken({
-            successCallback: (token: string) => {
-              if (!token) {
-                const errorMsg = "Get empty SSO token from Teams";
-                internalLogger.error(errorMsg);
-                reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-                return;
-              }
-
-              const tokenObject = parseJwt(token);
-              if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
-                const errorMsg =
-                  "SSO token is not valid with an unknown version: " + tokenObject.ver;
-                internalLogger.error(errorMsg);
-                reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-                return;
-              }
-
-              const ssoToken: AccessToken = {
-                token,
-                expiresOnTimestamp: tokenObject.exp * 1000,
-              };
-
-              this.ssoToken = ssoToken;
-              resolve(ssoToken);
-            },
-            failureCallback: (errMessage: string) => {
-              const errorMsg = "Get SSO token failed with error: " + errMessage;
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-            },
-            resources: [],
-          });
-        });
-      } else {
-        const errorMsg = "Initialize teams sdk failed due to not running inside Teams";
+    if (this.checkInTeams()) {
+      const params = {} as authentication.AuthTokenRequestParameters;
+      let token: string;
+      try {
+        token = await authentication.getAuthToken(params);
+      } catch (err: unknown) {
+        const errorMsg = "Get SSO token failed with error: " + (err as Error).message;
         internalLogger.error(errorMsg);
-        reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
       }
-    });
+
+      if (!token) {
+        const errorMsg = "Get empty SSO token from Teams";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
+
+      const tokenObject = parseJwt(token);
+      if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
+        const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
+
+      const ssoToken: AccessToken = {
+        token,
+        expiresOnTimestamp: tokenObject.exp * 1000,
+      };
+
+      this.ssoToken = ssoToken;
+      return ssoToken;
+    } else {
+      const errorMsg = "Initialize teams sdk failed due to not running inside Teams";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+    }
   }
 
   /**

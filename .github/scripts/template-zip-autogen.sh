@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-if [ $1 = "" ]; then
+if [ "$1" = "" ]; then
     echo "Must input a path for templates folder"
     exit -1
 fi

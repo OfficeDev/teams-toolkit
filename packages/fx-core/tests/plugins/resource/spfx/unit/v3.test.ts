@@ -15,16 +15,18 @@ import {
   BuiltInSolutionNames,
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import { MockedV2Context } from "../../../solution/util";
-import * as path from "path";
+import { MockedLogProvider, MockedV2Context } from "../../../solution/util";
+import path from "path";
 import * as os from "os";
 import { randomAppName } from "../../../../core/utils";
 import { AppManifestProvider, ContextWithManifestProvider } from "@microsoft/teamsfx-api/build/v3";
 import Sinon from "sinon";
 import { SPFxPluginImpl } from "../../../../../src/plugins/resource/spfx/v3/plugin";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { SPFxPlugin } from "../../../../../src/plugins/resource/spfx/v3/index";
+import { ProgressHelper } from "../../../../../src/plugins/resource/spfx/utils/progress-helper";
+import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
 
 describe("SPFx plugin v3", () => {
   beforeEach(async () => {
@@ -33,7 +35,8 @@ describe("SPFx plugin v3", () => {
     Sinon.stub(fs, "stat").resolves();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await fs.remove(testFolder);
     Sinon.restore();
   });
 
@@ -56,7 +59,7 @@ describe("SPFx plugin v3", () => {
   const ctx = new MockedV2Context(projectSettings);
   const inputs: v2.InputsWithProjectPath = {
     platform: Platform.VSCode,
-    projectPath: path.join(os.tmpdir(), randomAppName()),
+    projectPath: testFolder,
   };
 
   it("getQuestionsForAddFeature", async () => {
@@ -102,5 +105,53 @@ describe("SPFx plugin v3", () => {
     await pluginV3.addFeature(ctxV3, inputs);
 
     chai.assert.isTrue(addCapabilities.calledOnce);
+  });
+
+  it("Scaffold", async () => {
+    const componentId = uuid.v4();
+    ctx.projectSetting.solutionSettings!.capabilities = [];
+    const appManifestProvider: AppManifestProvider = {
+      loadManifest: async (): Promise<Result<JSON, FxError>> => {
+        return ok({ local: {}, remote: {} } as unknown as JSON);
+      },
+      saveManifest: async (): Promise<Result<Void, FxError>> => {
+        return ok(Void);
+      },
+      addCapabilities: async (): Promise<Result<Void, FxError>> => {
+        return ok(Void);
+      },
+    };
+    const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
+    inputs[SPFXQuestionNames.webpart_name] = "helloworld";
+    inputs[SPFXQuestionNames.webpart_desp] = "test";
+    inputs[SPFXQuestionNames.framework_type] = "none";
+
+    const result = await pluginImplV3.scaffold(ctxV3, inputs, componentId);
+
+    chai.expect(result.isOk()).to.eq(true);
+    // check specified files
+    const files: string[] = [
+      "config/config.json",
+      "config/copy-assets.json",
+      "config/deploy-azure-storage.json",
+      "config/package-solution.json",
+      "config/serve.json",
+      "config/write-manifests.json",
+      "src/webparts/helloworld/HelloworldWebPart.manifest.json",
+      "src/webparts/helloworld/HelloworldWebPart.ts",
+      "src/webparts/helloworld/loc/en-us.js",
+      "src/webparts/helloworld/loc/mystrings.d.ts",
+      "src/index.ts",
+      ".gitignore",
+      "gulpfile.js",
+      "package.json",
+      "README.md",
+      "tsconfig.json",
+      "tslint.json",
+    ];
+    for (const file of files) {
+      const filePath = path.join(testFolder, subFolderName, file);
+      chai.expect(await fs.pathExists(filePath), `${filePath} must exist.`).to.eq(true);
+    }
   });
 });

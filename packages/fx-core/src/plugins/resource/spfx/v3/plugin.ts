@@ -20,8 +20,8 @@ import {
 import lodash from "lodash";
 import { SPFXQuestionNames } from "../utils/questions";
 import { sleep, Utils } from "../utils/utils";
-import * as path from "path";
-import * as fs from "fs-extra";
+import path from "path";
+import fs from "fs-extra";
 import {
   Colors,
   err,

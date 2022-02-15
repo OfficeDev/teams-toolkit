@@ -21,7 +21,7 @@ describe("teamsfx provision manifest command", function () {
     const createAppMatchResult = createAppResult.stdout.match(createAppReg);
 
     chai.assert.isTrue(createAppMatchResult !== undefined && createAppMatchResult.length > 1);
-    const teamsAppId = createAppMatchResult[1];
+    const teamsAppId = createAppMatchResult![1];
     chai.assert.isTrue(teamsAppId.length > 0);
 
     AppStudioValidator.setE2ETestProvider();
@@ -32,7 +32,7 @@ describe("teamsfx provision manifest command", function () {
     const updateAppMatchResult = updateAppResult.stdout.match(updateAppReg);
 
     chai.assert.isTrue(updateAppMatchResult !== undefined && updateAppMatchResult.length > 1);
-    const updatedTeamsAppId = createAppMatchResult[1];
+    const updatedTeamsAppId = updateAppMatchResult![1];
     chai.assert.equal(updatedTeamsAppId, teamsAppId);
 
     await AppStudioValidator.deleteApp(teamsAppId);

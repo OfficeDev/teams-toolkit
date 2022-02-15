@@ -393,3 +393,7 @@ export function isValidNode(): boolean {
   } catch (e) {}
   return false;
 }
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

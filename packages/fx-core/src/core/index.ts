@@ -45,7 +45,7 @@ import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { getRootDirectory, mapToJson } from "../common/tools";
+import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   HostTypeOptionAzure,
@@ -289,6 +289,17 @@ export class FxCore implements v3.ICore {
         );
         if (createEnvResult.isErr()) {
           return err(createEnvResult.error);
+        }
+
+        if (isConfigUnifyEnabled()) {
+          const createLocalEnvResult = await this.createEnvWithName(
+            environmentManager.getLocalEnvName(),
+            projectSettings,
+            inputs
+          );
+          if (createLocalEnvResult.isErr()) {
+            return err(createLocalEnvResult.error);
+          }
         }
 
         const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
@@ -761,6 +772,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
+    inputs.env = environmentManager.getLocalEnvName();
     if (isV3()) return this.localDebugV3(inputs);
     else return this.localDebugV2(inputs);
   }
@@ -770,13 +782,13 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
+    EnvInfoLoaderMW(!isConfigUnifyEnabled()),
     LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(true),
+    EnvInfoWriterMW(!isConfigUnifyEnabled()),
     LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -802,7 +814,8 @@ export class FxCore implements v3.ICore {
         ctx.contextV2,
         inputs,
         ctx.localSettings,
-        this.tools.tokenProvider
+        this.tools.tokenProvider,
+        ctx.envInfoV2
       );
       if (res.kind === "success") {
         ctx.localSettings = res.output;
@@ -1308,7 +1321,10 @@ export class FxCore implements v3.ICore {
     projectSettings: ProjectSettings,
     inputs: Inputs
   ): Promise<Result<Void, FxError>> {
-    const appName = projectSettings.appName;
+    let appName = projectSettings.appName;
+    if (targetEnvName === environmentManager.getLocalEnvName()) {
+      appName = appName + "-local-debug";
+    }
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
@@ -1375,7 +1391,7 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
 
-    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
 
     if (envConfigs.isErr()) {
       return envConfigs;
@@ -1415,9 +1431,23 @@ export class FxCore implements v3.ICore {
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    const createEnvResult = await this.createEnvWithName("local", projectSettings, inputs);
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
+    }
+    if (isConfigUnifyEnabled()) {
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
+      }
     }
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));

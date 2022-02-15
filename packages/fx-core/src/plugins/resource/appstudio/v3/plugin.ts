@@ -84,6 +84,7 @@ export class AppStudioPluginImpl {
         appStudioToken!,
         ctx.logProvider
       );
+      ctx.logProvider?.info(`Teams app created: ${appDefinition.appId}`);
       return ok(appDefinition.appId!);
     } catch (e: any) {
       // Teams app already exists, will update it
@@ -122,6 +123,7 @@ export class AppStudioPluginImpl {
             outlineIconContent
           );
 
+          ctx.logProvider?.info(`Teams app updated: ${appDefinition.appId}`);
           return ok(app.teamsAppId!);
         } catch (e: any) {
           return err(

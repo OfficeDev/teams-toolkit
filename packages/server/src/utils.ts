@@ -27,8 +27,9 @@ export async function getResponseWithErrorHandling<T>(
     promise
       .then((v) => {
         if ("error" in v && v.error != null) {
-          if (v.error instanceof UserError || v.error instanceof SystemError) return v.error;
-          if ((v.error as any).errorType === "UserError") {
+          if (v.error instanceof UserError || v.error instanceof SystemError) {
+            resolve(err(v.error));
+          } else if ((v.error as any).errorType === "UserError") {
             const userError = new UserError(
               new Error(v.error.message),
               v.error.source,

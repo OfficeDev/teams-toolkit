@@ -60,8 +60,8 @@
 /packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
-/packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
-/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang
+/packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang

@@ -7,6 +7,7 @@
 
 import path from "path";
 import "mocha";
+import * as chai from "chai";
 import { execAsync } from "../commonUtils";
 
 import { AppStudioValidator } from "../../commonlib";

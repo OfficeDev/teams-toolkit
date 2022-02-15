@@ -760,7 +760,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "[nodemon] starting",
-          "endsPattern": "listening|[nodemon] app crashed"
+          "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
         }
       }
     ],

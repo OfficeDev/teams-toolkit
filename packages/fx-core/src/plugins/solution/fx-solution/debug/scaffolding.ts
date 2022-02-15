@@ -23,6 +23,7 @@ import {
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
+import * as LaunchNext from "./util/launchNext";
 import * as Tasks from "./util/tasks";
 import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
@@ -137,13 +138,13 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = Launch.generateConfigurations(
+        const launchConfigurations = LaunchNext.generateConfigurations(
           includeFrontend,
           includeBackend,
           includeBot,
           isMigrateFromV1
         );
-        const launchCompounds = Launch.generateCompounds(
+        const launchCompounds = LaunchNext.generateCompounds(
           includeFrontend,
           includeBackend,
           includeBot

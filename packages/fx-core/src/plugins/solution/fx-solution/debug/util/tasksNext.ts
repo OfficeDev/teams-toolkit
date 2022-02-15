@@ -14,18 +14,20 @@ export function generateTasks(
 ): Record<string, unknown>[] {
   /**
    * Referenced by launch.json
-   *   - Pre Debug Check
-   *   - Start Frontend
-   *   - Start Backend
-   *   - Start Bot
+   *   - Pre Debug Check & Start All
    *
    * Referenced inside tasks.json
    *   - validate local prerequisites
    *   - start ngrok
    *   - prepare local environment
+   *   - start all
+   *   - start frontend
+   *   - start backend
+   *   - watch backend
+   *   - start bot
    */
   const tasks: Record<string, unknown>[] = [
-    preDebugCheck(includeBot),
+    preDebugCheckAndStartAll(includeBot),
     validateLocalPrerequisites(),
   ];
 
@@ -34,6 +36,8 @@ export function generateTasks(
   }
 
   tasks.push(prepareLocalEnvironment());
+
+  tasks.push(startAll(includeFrontend, includeBackend, includeBot));
 
   if (includeFrontend) {
     tasks.push(startFrontend());
@@ -52,12 +56,12 @@ export function generateTasks(
   return tasks;
 }
 
-function preDebugCheck(includeBot: boolean): Record<string, unknown> {
+function preDebugCheckAndStartAll(includeBot: boolean): Record<string, unknown> {
   return {
-    label: "Pre Debug Check",
+    label: "Pre Debug Check & Start All",
     dependsOn: includeBot
-      ? ["validate local prerequisites", "start ngrok", "prepare local environment"]
-      : ["validate local prerequisites", "prepare local environment"],
+      ? ["validate local prerequisites", "start ngrok", "prepare local environment", "start all"]
+      : ["validate local prerequisites", "prepare local environment", "start all"],
     dependsOrder: "sequence",
   };
 }
@@ -86,7 +90,7 @@ function prepareLocalEnvironment(): Record<string, unknown> {
 
 function startFrontend(): Record<string, unknown> {
   return {
-    label: "Start Frontend",
+    label: "start frontend",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -99,7 +103,7 @@ function startFrontend(): Record<string, unknown> {
 
 function startBackend(programmingLanguage: string): Record<string, unknown> {
   const result = {
-    label: "Start Backend",
+    label: "start backend",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -116,7 +120,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
   } as Record<string, unknown>;
 
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    result.dependsOn = "Watch Backend";
+    result.dependsOn = "watch backend";
   }
 
   return result;
@@ -124,7 +128,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
 
 function watchBackend(): Record<string, unknown> {
   return {
-    label: "Watch Backend",
+    label: "watch backend",
     type: "shell",
     command: "npm run watch:teamsfx",
     isBackground: true,
@@ -140,11 +144,25 @@ function watchBackend(): Record<string, unknown> {
 
 function startBot(includeFrontend: boolean): Record<string, unknown> {
   const result = {
-    label: "Start Bot",
+    label: "start bot",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
-    problemMatcher: "$teamsfx-bot-watch",
+    problemMatcher: {
+      pattern: [
+        {
+          regexp: "^.*$",
+          file: 0,
+          location: 1,
+          message: 2,
+        },
+      ],
+      background: {
+        activeOnStart: true,
+        beginsPattern: "[nodemon] starting",
+        endsPattern: "restify listening to|Bot/ME service listening at|[nodemon] app crashed",
+      },
+    },
     options: {
       cwd: "${workspaceFolder}/bot",
     },
@@ -161,5 +179,26 @@ function startNgrok(): Record<string, unknown> {
   return {
     label: "start ngrok",
     dependsOn: `${ProductName}: ngrok start`,
+  };
+}
+
+function startAll(
+  includeFrontend: boolean,
+  includeBackend: boolean,
+  includeBot: boolean
+): Record<string, unknown> {
+  const dependsOn: string[] = [];
+  if (includeFrontend) {
+    dependsOn.push("start frontend");
+  }
+  if (includeBackend) {
+    dependsOn.push("start backend");
+  }
+  if (includeBot) {
+    dependsOn.push("start bot");
+  }
+  return {
+    label: "start all",
+    dependsOn,
   };
 }

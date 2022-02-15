@@ -14,8 +14,8 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "prepare local environment");
-      chai.assert.equal(tasks[3].label, "start all");
-      chai.assert.equal(tasks[4].label, "start frontend");
+      chai.assert.equal(tasks[3].label, "Start All");
+      chai.assert.equal(tasks[4].label, "Start Frontend");
     });
 
     it("frontend + backend (js)", () => {
@@ -25,9 +25,9 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "prepare local environment");
-      chai.assert.equal(tasks[3].label, "start all");
-      chai.assert.equal(tasks[4].label, "start frontend");
-      chai.assert.equal(tasks[5].label, "start backend");
+      chai.assert.equal(tasks[3].label, "Start All");
+      chai.assert.equal(tasks[4].label, "Start Frontend");
+      chai.assert.equal(tasks[5].label, "Start Backend");
     });
 
     it("frontend + backend (ts)", () => {
@@ -37,10 +37,10 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "prepare local environment");
-      chai.assert.equal(tasks[3].label, "start all");
-      chai.assert.equal(tasks[4].label, "start frontend");
-      chai.assert.equal(tasks[5].label, "start backend");
-      chai.assert.equal(tasks[6].label, "watch backend");
+      chai.assert.equal(tasks[3].label, "Start All");
+      chai.assert.equal(tasks[4].label, "Start Frontend");
+      chai.assert.equal(tasks[5].label, "Start Backend");
+      chai.assert.equal(tasks[6].label, "Watch Backend");
     });
 
     it("bot", () => {
@@ -51,8 +51,8 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "start ngrok");
       chai.assert.equal(tasks[3].label, "prepare local environment");
-      chai.assert.equal(tasks[4].label, "start all");
-      chai.assert.equal(tasks[5].label, "start bot");
+      chai.assert.equal(tasks[4].label, "Start All");
+      chai.assert.equal(tasks[5].label, "Start Bot");
     });
 
     it("frontend + bot", () => {
@@ -63,9 +63,9 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "start ngrok");
       chai.assert.equal(tasks[3].label, "prepare local environment");
-      chai.assert.equal(tasks[4].label, "start all");
-      chai.assert.equal(tasks[5].label, "start frontend");
-      chai.assert.equal(tasks[6].label, "start bot");
+      chai.assert.equal(tasks[4].label, "Start All");
+      chai.assert.equal(tasks[5].label, "Start Frontend");
+      chai.assert.equal(tasks[6].label, "Start Bot");
     });
 
     it("frontend + backend (js) + bot", () => {
@@ -76,10 +76,10 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "start ngrok");
       chai.assert.equal(tasks[3].label, "prepare local environment");
-      chai.assert.equal(tasks[4].label, "start all");
-      chai.assert.equal(tasks[5].label, "start frontend");
-      chai.assert.equal(tasks[6].label, "start backend");
-      chai.assert.equal(tasks[7].label, "start bot");
+      chai.assert.equal(tasks[4].label, "Start All");
+      chai.assert.equal(tasks[5].label, "Start Frontend");
+      chai.assert.equal(tasks[6].label, "Start Backend");
+      chai.assert.equal(tasks[7].label, "Start Bot");
     });
 
     it("frontend + backend (ts) + bot", () => {
@@ -90,11 +90,11 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[1].label, "validate local prerequisites");
       chai.assert.equal(tasks[2].label, "start ngrok");
       chai.assert.equal(tasks[3].label, "prepare local environment");
-      chai.assert.equal(tasks[4].label, "start all");
-      chai.assert.equal(tasks[5].label, "start frontend");
-      chai.assert.equal(tasks[6].label, "start backend");
-      chai.assert.equal(tasks[7].label, "watch backend");
-      chai.assert.equal(tasks[8].label, "start bot");
+      chai.assert.equal(tasks[4].label, "Start All");
+      chai.assert.equal(tasks[5].label, "Start Frontend");
+      chai.assert.equal(tasks[6].label, "Start Backend");
+      chai.assert.equal(tasks[7].label, "Watch Backend");
+      chai.assert.equal(tasks[8].label, "Start Bot");
     });
   });
 });

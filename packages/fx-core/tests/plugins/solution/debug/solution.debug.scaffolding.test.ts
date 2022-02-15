@@ -743,7 +743,7 @@ describe("solution.debug.scaffolding", () => {
       //assert output tasks.json
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
-      chai.assert.equal(tasks.length, 10);
+      chai.assert.equal(tasks.length, 9);
 
       await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });

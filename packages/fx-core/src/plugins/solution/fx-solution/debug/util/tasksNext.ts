@@ -20,11 +20,11 @@ export function generateTasks(
    *   - validate local prerequisites
    *   - start ngrok
    *   - prepare local environment
-   *   - start all
-   *   - start frontend
-   *   - start backend
-   *   - watch backend
-   *   - start bot
+   *   - Start All
+   *   - Start Frontend
+   *   - Start Backend
+   *   - Watch Backend
+   *   - Start Bot
    */
   const tasks: Record<string, unknown>[] = [
     preDebugCheckAndStartAll(includeBot),
@@ -60,8 +60,8 @@ function preDebugCheckAndStartAll(includeBot: boolean): Record<string, unknown> 
   return {
     label: "Pre Debug Check & Start All",
     dependsOn: includeBot
-      ? ["validate local prerequisites", "start ngrok", "prepare local environment", "start all"]
-      : ["validate local prerequisites", "prepare local environment", "start all"],
+      ? ["validate local prerequisites", "start ngrok", "prepare local environment", "Start All"]
+      : ["validate local prerequisites", "prepare local environment", "Start All"],
     dependsOrder: "sequence",
   };
 }
@@ -90,7 +90,7 @@ function prepareLocalEnvironment(): Record<string, unknown> {
 
 function startFrontend(): Record<string, unknown> {
   return {
-    label: "start frontend",
+    label: "Start Frontend",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -103,7 +103,7 @@ function startFrontend(): Record<string, unknown> {
 
 function startBackend(programmingLanguage: string): Record<string, unknown> {
   const result = {
-    label: "start backend",
+    label: "Start Backend",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -120,7 +120,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
   } as Record<string, unknown>;
 
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    result.dependsOn = "watch backend";
+    result.dependsOn = "Watch Backend";
   }
 
   return result;
@@ -128,7 +128,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
 
 function watchBackend(): Record<string, unknown> {
   return {
-    label: "watch backend",
+    label: "Watch Backend",
     type: "shell",
     command: "npm run watch:teamsfx",
     isBackground: true,
@@ -144,7 +144,7 @@ function watchBackend(): Record<string, unknown> {
 
 function startBot(includeFrontend: boolean): Record<string, unknown> {
   const result = {
-    label: "start bot",
+    label: "Start Bot",
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -189,16 +189,16 @@ function startAll(
 ): Record<string, unknown> {
   const dependsOn: string[] = [];
   if (includeFrontend) {
-    dependsOn.push("start frontend");
+    dependsOn.push("Start Frontend");
   }
   if (includeBackend) {
-    dependsOn.push("start backend");
+    dependsOn.push("Start Backend");
   }
   if (includeBot) {
-    dependsOn.push("start bot");
+    dependsOn.push("Start Bot");
   }
   return {
-    label: "start all",
+    label: "Start All",
     dependsOn,
   };
 }

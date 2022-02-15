@@ -921,7 +921,7 @@ async function doAddFeature(
         }
       }
     }
-    ctx.logProvider.info(`${inputs.feature}: addFeature() success!`);
+    ctx.logProvider.info(`${pluginName}: addFeature() success!`);
   }
 
   //notify existing plugins

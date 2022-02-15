@@ -17,7 +17,9 @@ describe("teamsfx provision manifest command", function () {
   const updateAppReg = /Teams app updated: (.*)\n/;
 
   it(`should create Teams App successfully`, async function () {
-    const createAppResult = await execAsync(`teamsfx provision manifest --path ${testAppPkgPath}`);
+    const createAppResult = await execAsync(
+      `teamsfx provision manifest --file-path ${testAppPkgPath}`
+    );
     const createAppMatchResult = createAppResult.stdout.match(createAppReg);
 
     chai.assert.isTrue(createAppMatchResult !== undefined && createAppMatchResult!.length > 1);
@@ -28,7 +30,9 @@ describe("teamsfx provision manifest command", function () {
     await AppStudioValidator.getApp(teamsAppId);
 
     // Since app has been created, the second run should update the app
-    const updateAppResult = await execAsync(`teamsfx provision manifest --path ${testAppPkgPath}`);
+    const updateAppResult = await execAsync(
+      `teamsfx provision manifest --file-path ${testAppPkgPath}`
+    );
     const updateAppMatchResult = updateAppResult.stdout.match(updateAppReg);
 
     chai.assert.isTrue(updateAppMatchResult !== undefined && updateAppMatchResult!.length > 1);

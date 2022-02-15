@@ -182,6 +182,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         return { key: v, detail: ProgressMessage[v] };
       })
     );
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
     const nodeResult = await checkNode(
@@ -193,9 +194,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     if (nodeResult) {
       checkResults.push(nodeResult);
     }
-
     await checkFailure(checkResults, progressHelper);
-    VsCodeLogInstance.outputChannel.appendLine("");
 
     // login checker
     const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`);
@@ -558,6 +557,8 @@ async function checkNpmInstall(
   appName: string,
   displayMessage: string
 ): Promise<CheckResult> {
+  VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+
   let installed = false;
   try {
     installed = await checkNpmDependencies(folder);
@@ -594,7 +595,6 @@ async function checkNpmInstall(
           }
         });
       } else {
-        VsCodeLogInstance.outputChannel.appendLine(displayMessage);
         exitCode = await runTask(
           new vscode.Task(
             {

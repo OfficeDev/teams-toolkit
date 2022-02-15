@@ -104,13 +104,13 @@ export class DepsManager {
       doctor ? this.emptyLogger : this.logger,
       this.telemetry
     );
-    const depsInfo: DepsInfo = await checker.getDepsInfo();
     let error = undefined;
 
     if (shouldInstall && !(await checker.isInstalled())) {
       const result = await checker.resolve();
       error = result.isErr() ? result.error : undefined;
     }
+    const depsInfo: DepsInfo = await checker.getDepsInfo();
 
     return {
       name: depsInfo.name,

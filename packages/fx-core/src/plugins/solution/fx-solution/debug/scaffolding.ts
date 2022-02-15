@@ -138,17 +138,19 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = LaunchNext.generateConfigurations(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          isMigrateFromV1
-        );
-        const launchCompounds = LaunchNext.generateCompounds(
-          includeFrontend,
-          includeBackend,
-          includeBot
-        );
+        const launchConfigurations =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+            : Launch.generateConfigurations(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                isMigrateFromV1
+              );
+        const launchCompounds =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+            : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
         const tasks =
           !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))

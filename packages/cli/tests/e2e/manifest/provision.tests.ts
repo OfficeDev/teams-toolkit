@@ -16,8 +16,18 @@ describe("teamsfx provision manifest command", function () {
   const testAppPkgPath = path.resolve(__dirname, "appPackage.dev.zip");
   const createAppReg = /Teams app created: (.*)\n/;
   const updateAppReg = /Teams app updated: (.*)\n/;
+  // This id is specified by the zip file at testAppPkgPath
+  const testTeamsAppId = "1befd3b2-4441-4a3a-be6c-b4ad95334d6f";
 
-  it(`should create Teams App successfully`, async function () {
+  before(async () => {
+    AppStudioValidator.setE2ETestProvider();
+    if (AppStudioValidator.checkWetherAppExists(testTeamsAppId)) {
+      await AppStudioValidator.deleteApp(testTeamsAppId);
+      console.log(`Teams App ${testTeamsAppId} has been deleted`);
+    }
+  });
+
+  it(`should create Teams App then update it successfully`, async function () {
     const createAppResult = await execAsync(
       `teamsfx provision manifest --file-path ${testAppPkgPath}`
     );

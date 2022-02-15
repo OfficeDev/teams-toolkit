@@ -51,7 +51,7 @@ export class AppStudioValidator {
     const requester = AppStudioValidator.createRequesterWithToken(token!);
     try {
       const response = await requester.delete(`/api/appdefinitions/${teamsAppId}`);
-      chai.assert.isTrue(response.status === 200);
+      chai.assert.isTrue(response.status >= 200 && response.status < 300);
       return;
     } catch (e) {
       chai.assert.fail(`Failed to delete Teams App, error: ${e}`);
@@ -64,6 +64,21 @@ export class AppStudioValidator {
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     return instance;
+  }
+
+  public static async checkWetherAppExists(teamsAppId: string): Promise<boolean> {
+    const token = await this.provider.getAccessToken();
+    if (!token) {
+      throw new Error("Failed to get token");
+    }
+    const requester = AppStudioValidator.createRequesterWithToken(token);
+    try {
+      const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
+      const app = response.data;
+      return app && app.teamsAppId && app.teamsAppId === teamsAppId;
+    } catch (e) {
+      return false;
+    }
   }
 
   public static async getApp(teamsAppId: string): Promise<JSON> {

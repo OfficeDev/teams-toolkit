@@ -4,7 +4,7 @@
 
 ## AzureAccountProvider.getAccountCredentialAsync() method
 
-Async get ms-rest-\* \[credential\](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
+Async get ms-rest-\* \[credential\](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts) On login failure or user cancellation, it will throw an exception instead of returning undefined. This method never returns undefined.
 
 <b>Signature:</b>
 

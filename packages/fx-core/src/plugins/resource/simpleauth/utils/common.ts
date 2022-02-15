@@ -12,14 +12,15 @@ import {
 } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { getArmOutput } from "../../utils4v2";
-import { getTemplatesFolder, isArmSupportEnabled, isMultiEnvEnabled } from "../../../..";
+import { isMultiEnvEnabled } from "../../../../common/tools";
+import { getTemplatesFolder } from "../../../../folder";
 import got from "got";
+import os from "os";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
-import { TeamsClientId } from "../../../../common/constants";
+import { getAllowedAppIds } from "../../../../common/tools";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -56,7 +57,8 @@ export class Utils {
       );
     }
 
-    const version = await fs.readFile(versionFilePath, "utf-8");
+    const versionFile = await fs.readFile(versionFilePath, "utf-8");
+    const version = versionFile.split(os.EOL)[0];
     const tag = Constants.SimpleAuthTag(version);
     const fileName = Constants.SimpleAuthZipName(version);
     const distUrl = Constants.SimpleAuthReleaseUrl(tag, fileName);
@@ -84,17 +86,10 @@ export class Utils {
     const clientSecret = this.getClientSecret(ctx, isLocalDebug);
     const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
     const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
-    const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
-    const teamsWebAppId = TeamsClientId.Web;
 
-    let endpoint: string;
-    if (!isArmSupportEnabled() || isLocalDebug) {
-      endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
-    } else {
-      endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
-    }
+    const endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
 
-    const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
+    const allowedAppIds = getAllowedAppIds().join(";");
     const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;
     let endpointUrl;
     try {

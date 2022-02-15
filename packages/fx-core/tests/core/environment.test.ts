@@ -6,12 +6,15 @@ import "mocha";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { randomAppName } from "./utils";
+import { deleteFolder, randomAppName } from "./utils";
 import {
   ConfigFolderName,
   CryptoProvider,
+  EnvConfig,
   EnvConfigFileNameTemplate,
+  EnvInfo,
   EnvNamePlaceholder,
+  ExistingTeamsAppType,
   FxError,
   InputConfigsFolderName,
   Json,
@@ -19,9 +22,9 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import { environmentManager, envPrefix } from "../../src/core/environment";
+import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { isMultiEnvEnabled } from "../../src/common/tools";
+import mockedEnv from "mocked-env";
 import sinon from "sinon";
 
 class MockCrypto implements CryptoProvider {
@@ -89,16 +92,12 @@ describe("APIs of Environment Manager", () => {
   };
   const envStateDataWithCredential = {
     solution: {
-      teamsAppTenantId: "{{solution.teamsAppTenantId}}",
+      teamsAppTenantId: decryptedValue,
       key: "value",
     },
   };
 
   describe("Load Environment Config File", () => {
-    // environment config exists only in multi-env
-    if (!isMultiEnvEnabled()) {
-      return;
-    }
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
     });
@@ -146,6 +145,26 @@ describe("APIs of Environment Manager", () => {
 
     it("load invalid environment config file", async () => {
       await mockEnvConfigs(projectPath, invalidEnvConfigData);
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
+    it("load environment config file with invalid subscription id", async () => {
+      await mockEnvConfigs(projectPath, {
+        manifest: {
+          appName: {
+            short: appName,
+          },
+        },
+        azure: {
+          subscriptionId: "invalid-subscription-id",
+        },
+      });
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
@@ -224,7 +243,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -233,9 +252,7 @@ describe("APIs of Environment Manager", () => {
 
     it("no userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -247,15 +264,13 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("no userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential, targetEnvName);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -266,15 +281,13 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("with userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -285,7 +298,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -293,9 +306,7 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -306,7 +317,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -316,9 +327,7 @@ describe("APIs of Environment Manager", () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, {
         ...userData,
       });
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -329,7 +338,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -337,9 +346,7 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata (legacy project): load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -350,16 +357,14 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("Environment state doesn't exist", async () => {
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         throw actualEnvDataResult.error;
@@ -480,12 +485,7 @@ describe("APIs of Environment Manager", () => {
         projectPath
       );
 
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithCredential);
-      assert.equal(
-        formatContent(fileMap.get(envFiles.userDataFile)),
-        formatContent(expectedUserDataFileContent)
-      );
     });
 
     it("with userdata: write environment state with target env", async () => {
@@ -498,14 +498,9 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
 
       const expectedEnvStateContent = JSON.stringify(envStateDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envState)),
         formatContent(expectedEnvStateContent)
-      );
-      assert.equal(
-        formatContent(fileMap.get(envFiles.userDataFile)),
-        formatContent(expectedUserDataFileContent)
       );
     });
   });
@@ -542,7 +537,7 @@ describe("APIs of Environment Manager", () => {
         await fs.ensureFile(path.resolve(configFolder, envFileName));
       }
 
-      const envNamesResult = await environmentManager.listEnvConfigs(projectPath);
+      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
       if (envNamesResult.isErr()) {
         assert.fail("Fail to get the list of env configs.");
       }
@@ -558,7 +553,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     it("no env state found", async () => {
-      const envNamesResult = await environmentManager.listEnvConfigs(projectPath);
+      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
       if (envNamesResult.isErr()) {
         assert.fail("Fail to get the list of env configs.");
       }
@@ -592,6 +587,114 @@ describe("APIs of Environment Manager", () => {
         path.resolve(configFolder, fileName)
       );
       assert.isFalse(isEnvConfig);
+    });
+  });
+
+  describe("Create New Environment Config", () => {
+    const appName = "test";
+    const basicConfig: EnvConfig = {
+      $schema: environmentManager.schema,
+      description: environmentManager.envConfigDescription,
+      manifest: {
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
+        },
+      },
+    };
+
+    const configForExistingApp = Object.assign({}, basicConfig, {
+      manifest: {
+        ...basicConfig.manifest,
+        [ManifestVariables.DeveloperWebsiteUrl]: "",
+        [ManifestVariables.DeveloperPrivacyUrl]: "",
+        [ManifestVariables.DeveloperTermsOfUseUrl]: "",
+      },
+    });
+
+    it("create new env config for normal project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName);
+      assert.deepEqual(envConfig, basicConfig);
+    });
+
+    it("create new env config for existing static tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.StaticTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabContentUrl]: "",
+          [ManifestVariables.TabWebsiteUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing configurable tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.ConfigurableTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabConfigurationUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing static & configurable tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.StaticTab, ExistingTeamsAppType.ConfigurableTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabContentUrl]: "",
+          [ManifestVariables.TabWebsiteUrl]: "",
+          [ManifestVariables.TabConfigurationUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing bot project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.Bot],
+      });
+
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.BotId]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing bot/ME project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.Bot, ExistingTeamsAppType.MessageExtension],
+      });
+
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.BotId]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
     });
   });
 });

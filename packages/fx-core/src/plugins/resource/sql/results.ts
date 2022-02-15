@@ -13,9 +13,18 @@ export class SqlResultFactory {
     message: string,
     innerError?: any,
     stack?: string,
-    helpLink?: string
+    helpLink?: string,
+    notificationMessage?: string
   ): UserError {
-    return new UserError(name, message, this.source, stack, helpLink, innerError);
+    return new UserError(
+      name,
+      message,
+      this.source,
+      stack,
+      helpLink,
+      innerError,
+      notificationMessage
+    );
   }
 
   public static SystemError(
@@ -23,8 +32,17 @@ export class SqlResultFactory {
     message: string,
     innerError?: any,
     stack?: string,
-    issueLink?: string
+    issueLink?: string,
+    notificationMessage?: string
   ): SystemError {
-    return new SystemError(name, message, this.source, stack, issueLink, innerError);
+    return new SystemError(
+      name,
+      message,
+      this.source,
+      stack,
+      issueLink,
+      innerError,
+      notificationMessage
+    );
   }
 }

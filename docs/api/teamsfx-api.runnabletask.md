@@ -26,6 +26,6 @@ export interface RunnableTask<T>
 
 |  Method | Description |
 |  --- | --- |
-|  [cancel()?](./teamsfx-api.runnabletask.cancel.md) | <i>(Optional)</i> a function that implements the cancalling of the task |
+|  [cancel()?](./teamsfx-api.runnabletask.cancel.md) | <i>(Optional)</i> a function that implements the cancelling of the task |
 |  [run(args)](./teamsfx-api.runnabletask.run.md) | a function that realy implements the running of the task |
 

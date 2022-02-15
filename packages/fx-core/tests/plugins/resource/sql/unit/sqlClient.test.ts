@@ -36,46 +36,11 @@ describe("sqlClient", () => {
     sinon
       .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
-    client = await SqlClient.create(pluginContext, sqlPlugin.sqlImpl.config);
+    client = await SqlClient.create(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
   });
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  it("existUser false", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").resolves([[{ value: 0 }]]);
-
-    // Act
-    const res = await client.existUser();
-
-    // Assert
-    chai.assert.isFalse(res);
-  });
-
-  it("existUser true", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").resolves([[{ value: 1 }]]);
-
-    // Act
-    const res = await client.existUser();
-
-    // Assert
-    chai.assert.isTrue(res);
-  });
-
-  it("existUser error", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").rejects(new Error("test error"));
-
-    // Act
-    try {
-      await client.existUser();
-    } catch (error) {
-      // Assert
-      chai.assert.include(error.message, "test error");
-    }
   });
 
   it("addDatabaseUser error", async function () {
@@ -88,10 +53,27 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GetDetail);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
+    }
+  });
+
+  it("addDatabaseUser firewall error", async function () {
+    // Arrange
+    const err: any = new Error(
+      "Client with IP address '1.1.1.1' is not allowed to access the server."
+    );
+    err.code = "ELOGIN";
+    sinon.stub(SqlClient.prototype, "doQuery").rejects(err);
+
+    // Act
+    try {
+      await client.addDatabaseUser("test_db");
+    } catch (error) {
+      // Assert
+      chai.assert.isTrue(SqlClient.isFireWallError(error?.innerError));
     }
   });
 
@@ -103,10 +85,10 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GuestAdminError);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GuestAdminError);
     }
   });
 });
@@ -139,12 +121,12 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       const reason = ErrorMessage.IdentityCredentialUndefine(
         sqlPlugin.sqlImpl.config.identity,
-        sqlPlugin.sqlImpl.config.databaseName
+        `(${sqlPlugin.sqlImpl.config.databaseName})`
       );
       chai.assert.include(error.message, reason);
     }
@@ -156,10 +138,10 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GetDetail);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
     }
   });
 
@@ -171,10 +153,10 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.DomainError);
+      chai.assert.include(error.notificationMessage, ErrorMessage.DomainError);
     }
   });
 });

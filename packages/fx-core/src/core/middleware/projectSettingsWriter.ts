@@ -16,8 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CoreHookContext, FxCore, isV2 } from "..";
-import { isMultiEnvEnabled } from "../../common";
+import { CoreHookContext, TOOLS } from "..";
 import { WriteFileError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -42,20 +41,16 @@ export const ProjectSettingsWriterMW: Middleware = async (
     if (projectSettings === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-      const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-      if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
-      if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
-      let settingFile;
-      if (isMultiEnvEnabled()) {
-        const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
-        await fs.ensureDir(confFolderPathNew);
-        settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
-      } else {
-        settingFile = path.resolve(confFolderPath, "settings.json");
+      const solutionSettings = projectSettings.solutionSettings;
+      if (solutionSettings) {
+        if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
+        if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
       }
-      const core = ctx.self as FxCore;
+      const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
+      await fs.ensureDir(confFolderPathNew);
+      const settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
-      core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
+      TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       if ((ctx.result as Result<any, FxError>).isOk()) {
         ctx.result = err(WriteFileError(e));

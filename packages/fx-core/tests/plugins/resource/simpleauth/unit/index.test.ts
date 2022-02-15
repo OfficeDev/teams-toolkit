@@ -16,13 +16,21 @@ import { WebAppClient } from "../../../../../src/plugins/resource/simpleauth/web
 import * as faker from "faker";
 import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
-import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
-import { TeamsClientId } from "../../../../../src/common/constants";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+} from "../../util";
 import { isMultiEnvEnabled } from "../../../../../src";
-import { LocalSettingsAuthKeys } from "../../../../../src/common/localSettingsConstants";
-
+import { LocalSettingsSimpleAuthKeys } from "../../../../../src/common/localSettingsConstants";
+import { getAllowedAppIds } from "../../../../../src/common/tools";
+import {
+  AzureResourceKeyVault,
+  HostTypeOptionAzure,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import { ResourcePlugins } from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -63,18 +71,20 @@ describe("simpleAuthPlugin", () => {
     let filePath: string;
     if (isMultiEnvEnabled()) {
       filePath = pluginContext.localSettings?.auth?.get(
-        LocalSettingsAuthKeys.SimpleAuthFilePath
+        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
       ) as string;
     } else {
       filePath = pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.filePath) as string;
     }
     chai.assert.isOk(filePath);
     chai.assert.isTrue(await fs.pathExists(filePath));
-    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="${TeamsClientId.MobileDesktop};${TeamsClientId.Web}" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"`;
+    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="${getAllowedAppIds().join(
+      ";"
+    )}" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"`;
     if (isMultiEnvEnabled()) {
       chai.assert.strictEqual(
         pluginContext.localSettings?.auth?.get(
-          LocalSettingsAuthKeys.SimpleAuthEnvironmentVariableParams
+          LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams
         ),
         expectedEnvironmentVariableParams
       );
@@ -87,32 +97,160 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("generate arm templates: only simple auth plugin", async function () {
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.SimpleAuth];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    await testGenerateArmTemplates(
+      settings,
+      "simpleAuthConfig.result.bicep",
+      "config.result.bicep"
+    );
+  });
+
+  it("generate arm templates: simple auth plugin + key vault plugin", async function () {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.KeyVault,
+    ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+    } as AzureSolutionSettings;
+    await testGenerateArmTemplates(
+      settings,
+      "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    settings: AzureSolutionSettings,
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ): Promise<void> {
     // Act
-    const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    pluginContext.projectSettings = {
+      appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
+      projectId: uuid.v4(),
+      solutionSettings: settings,
+    };
+    const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
+    const simpleAuthOutput = {
+      "fx-resource-simple-auth": {
+        Provision: {
+          simpleAuth: {
+            path: `./${testProvisionModuleFileName}`,
+          },
+        },
+        Configuration: {
+          simpleAuth: {
+            path: `./${testConfigurationModuleFileName}`,
+          },
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: { ...simpleAuthOutput, ...addtionalPluginOutput },
+    };
+
+    chai.assert.isTrue(generateArmTemplatesResult.isOk());
+    if (generateArmTemplatesResult.isOk()) {
+      const expectedResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        generateArmTemplatesResult.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testProvisionModuleFileName
+      );
+      const provisionMpduleFile = await fs.readFile(
+        expectedProvisionModuleFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.simpleAuth, provisionMpduleFile);
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+
+      const configModuleFile = await fs.readFile(
+        expectedConfigurationModuleFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
+      const expectedPrvosionSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "provision.result.bicep"
+      );
+
+      const orchestrationProvisionFile = await fs.readFile(
+        expectedPrvosionSnippetFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
+      const expectedConfigFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationFileName
+      );
+
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedConfigFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
+      chai.assert.isUndefined(expectedResult.Parameters);
+      chai.assert.isNotNull(expectedResult.Reference);
+    }
+  }
+
+  it("update arm templates: only simple auth plugin", async function () {
+    // Act
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.SimpleAuth];
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: "test_solution",
-        version: "1.0.0",
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
         activeResourcePlugins: activeResourcePlugins,
       },
     };
-    const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
+    const generateArmTemplatesResult = await simpleAuthPlugin.updateArmTemplates(pluginContext);
 
     // Assert
-    const testProvisionModuleFileName = "simple_auth_provision.only.bicep";
-    const testConfigurationModuleFileName = "simple_auth_configuration.only.bicep";
+    const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
+    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-simple-auth": {
-          Modules: {
-            simpleAuthProvision: {
-              Path: `./${testProvisionModuleFileName}`,
+          Provision: {
+            simpleAuth: {
+              path: `./${testProvisionModuleFileName}`,
             },
-            simpleAuthConfiguration: {
-              Path: `./${testConfigurationModuleFileName}`,
+          },
+          Configuration: {
+            simpleAuth: {
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -125,133 +263,21 @@ describe("simpleAuthPlugin", () => {
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );
-
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedProvisionModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        testProvisionModuleFileName
-      );
-      chai.assert.strictEqual(
-        expectedResult.Modules!.simpleAuthProvision.Content,
-        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
-      );
       const expectedConfigurationModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testConfigurationModuleFileName
       );
-      chai.assert.strictEqual(
-        expectedResult.Modules!.simpleAuthConfiguration.Content,
-        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
+      const configModuleFile = await fs.readFile(
+        expectedConfigurationModuleFilePath,
+        ConstantString.UTF8Encoding
       );
-      const expectedModuleSnippetFilePath = path.join(
-        expectedBicepFileDirectory,
-        "module.only.bicep"
-      );
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-      );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
-    }
-  });
-
-  it("generate arm templates: simple auth plugin with all resource plugins enabled", async function () {
-    // Act
-    const activeResourcePlugins = [
-      Constants.AadAppPlugin.id,
-      Constants.SimpleAuthPlugin.id,
-      Constants.FrontendPlugin.id,
-    ];
-    pluginContext.projectSettings = {
-      appName: "test_generate_arm_template_with_all_plugins_app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "test_solution",
-        version: "1.0.0",
-        activeResourcePlugins: activeResourcePlugins,
-      },
-    };
-    const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
-
-    // Assert
-    const testProvisionModuleFileName = "simple_auth_provision.all.bicep";
-    const testConfigurationModuleFileName = "simple_auth_configuration.all.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-simple-auth": {
-          Modules: {
-            simpleAuthProvision: {
-              Path: `./${testProvisionModuleFileName}`,
-            },
-            simpleAuthConfiguration: {
-              Path: `./${testConfigurationModuleFileName}`,
-            },
-          },
-        },
-        "fx-resource-frontend-hosting": {
-          Outputs: {
-            endpoint: "frontend_hosting_test_endpoint",
-          },
-        },
-      },
-    };
-
-    chai.assert.isTrue(generateArmTemplatesResult.isOk());
-    if (generateArmTemplatesResult.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
-        mockedSolutionDataContext,
-        generateArmTemplatesResult.value
-      );
-
-      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedProvisionModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        testProvisionModuleFileName
-      );
-      chai.assert.strictEqual(
-        expectedResult.Modules!.simpleAuthProvision.Content,
-        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedConfigurationModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        testConfigurationModuleFileName
-      );
-      chai.assert.strictEqual(
-        expectedResult.Modules!.simpleAuthConfiguration.Content,
-        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedModuleSnippetFilePath = path.join(
-        expectedBicepFileDirectory,
-        "module.all.bicep"
-      );
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-      );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
+      chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
+      chai.assert.notExists(expectedResult.Provision);
+      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
+      chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.exists(expectedResult.Reference!.skuName);
+      chai.assert.exists(expectedResult.Reference!.endpoint);
     }
   });
 

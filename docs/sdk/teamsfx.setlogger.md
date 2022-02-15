@@ -35,6 +35,5 @@ setLogger({
   warn: console.warn,
   error: console.error,
 });
-
 ```
 

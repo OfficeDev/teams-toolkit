@@ -8,6 +8,7 @@ export class Messages {
   // Progress bar messages
   static readonly ScaffoldProgressTitle = "Scaffolding Tab";
   static readonly ProvisionProgressTitle = "Provisioning Tab";
+  static readonly PostProvisionProgressTitle = "Configuring Tab";
   static readonly PreDeployProgressTitle = "Building Tab";
   static readonly DeployProgressTitle = "Deploying Tab";
   static readonly MigrateProgressTitle = "Migrating Tab";
@@ -17,6 +18,8 @@ export class Messages {
   static readonly ProgressRegisterRP = "Registering required resource provider.";
   static readonly ProgressCreateStorage = "Creating Azure Storage account.";
   static readonly ProgressConfigure = "Configuring.";
+  static readonly ProgressEnableStorageStaticWebsite =
+    "Enabling Azure Storage account static website.";
   static readonly ProgressNPMInstall = `Running "npm install" for Tab frontend project.`;
   static readonly ProgressBuild = "Building Tab frontend project.";
   static readonly ProgressCheckStorage = "Checking Azure Storage account availability.";
@@ -32,6 +35,8 @@ export class Messages {
   static readonly EndPreProvision = (name: string) => `Successfully pre-provisioned '${name}'.`;
   static readonly StartProvision = (name: string) => `Provisioning '${name}'.`;
   static readonly EndProvision = (name: string) => `Successfully provisioned '${name}'.`;
+  static readonly StartPostProvision = (name: string) => `Post-provisioning '${name}'.`;
+  static readonly EndPostProvision = (name: string) => `Successfully post-provisioned '${name}'.`;
   static readonly StartPreDeploy = (name: string) => `Pre-deploying '${name}'.`;
   static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
   static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;
@@ -40,6 +45,9 @@ export class Messages {
     `Generating ARM templates '${name}'.`;
   static readonly EndGenerateArmTemplates = (name: string) =>
     `Successfully generated ARM templates '${name}'.`;
+  static readonly StartUpdateArmTemplates = (name: string) => `Updating ARM templates '${name}'.`;
+  static readonly EndUpdateTemplates = (name: string) =>
+    `Successfully updated ARM templates '${name}'.`;
   static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;
   static readonly EndMigrateV1Project = (name: string) => `Successfully migrated '${name}'.`;
   static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
@@ -74,6 +82,10 @@ export class Messages {
     `Failed to retrieve zip package from '${url}'. Retrying...`;
   static readonly FailedFetchTemplate =
     "Failed to retrieve latest template from GitHub. Using local template instead.";
+  static readonly FailedSaveEnv = (envPath: string) =>
+    `Failed to save environment variables to ${envPath}. Your App may not work.`;
+  static readonly FailedLoadEnv = (envPath: string) =>
+    `Failed to load environment variables from ${envPath}. Your App may not work.`;
 
   static readonly FailedOperationWithErrorCode = (doOperation: string, errorCode?: string) =>
     `Failed to '${doOperation}' with error code '${errorCode}'.`;

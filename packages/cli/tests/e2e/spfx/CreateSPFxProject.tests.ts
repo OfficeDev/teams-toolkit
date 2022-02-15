@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ning Liu <nliu@microsoft.com>
+ */
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
@@ -8,11 +12,14 @@ import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
   execAsync,
+  execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
   readContext,
+  readContextMultiEnv,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -58,7 +65,7 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     // validation succeed without provision
-    command = "teamsfx validate";
+    command = "teamsfx manifest validate";
     result = await execAsync(command, {
       cwd: path.join(testFolder, appName),
       env: process.env,
@@ -67,7 +74,7 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     // provision
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -76,16 +83,28 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     {
-      // Get context
-      const context = await readContext(projectPath);
+      if (isMultiEnvEnabled()) {
+        // Get context
+        const context = await readContextMultiEnv(
+          projectPath,
+          environmentManager.getDefaultEnvName()
+        );
 
-      // Only check Teams App existence
-      const appStudio = AppStudioValidator.init(context);
-      AppStudioValidator.validateTeamsAppExist(appStudio);
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+      } else {
+        // Get context
+        const context = await readContext(projectPath);
+
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+      }
     }
 
     // deploy
-    result = await execAsync(`teamsfx deploy`, {
+    result = await execAsyncWithRetry(`teamsfx deploy`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

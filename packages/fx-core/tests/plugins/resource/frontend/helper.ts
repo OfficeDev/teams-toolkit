@@ -12,13 +12,12 @@ import { v4 as uuid } from "uuid";
 
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
 import {
-  ArmOutput,
   DependentPluginInfo,
   FrontendConfigInfo,
 } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
-import { ARM_TEMPLATE_OUTPUT, isArmSupportEnabled, newEnvInfo } from "../../../../src";
+import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
 
 export class TestHelper {
@@ -134,20 +133,23 @@ export class TestHelper {
 
   static async getFakeAzureStorageClient(ctx?: PluginContext): Promise<AzureStorageClient> {
     ctx ??= TestHelper.getFakePluginContext();
-    if (isArmSupportEnabled()) {
-      ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
-    }
+    ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
     const config = await TestHelper.getFakeFrontendConfig(ctx);
     return new AzureStorageClient(config);
   }
 
-  static mockArmOutput(ctx: PluginContext, key: string, value: string) {
+  static mockArmOutput(ctx: PluginContext) {
     const solutionProfile = ctx.envInfo.state.get("solution") ?? new Map();
     const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
 
-    armOutput[key] = {
-      type: "String",
-      value: value,
+    armOutput["frontendHostingOutput"] = {
+      type: "Object",
+      value: {
+        teamsFxPluginId: "fx-resource-frontend-hosting",
+        storageResourceId: `/subscriptions/test_subscription_id/resourceGroups/test_resource_group_name/providers/Microsoft.Storage/storageAccounts/test_storage_name`,
+        endpoint: `https://test_storage_name.z13.web.core.windows.net`,
+        domain: `test_storage_name.z13.web.core.windows.net`,
+      },
     };
 
     solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);

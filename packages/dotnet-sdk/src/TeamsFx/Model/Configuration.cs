@@ -1,52 +1,48 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-
+namespace Microsoft.TeamsFx.Model;
 #nullable enable
-using System.Collections.Generic;
 
-namespace Microsoft.TeamsFx.Model
+/// <summary>
+/// (Unused) Available resource type.
+/// </summary>
+internal enum ResourceType
 {
     /// <summary>
-    /// (Unused) Available resource type.
+    /// SQL database.
     /// </summary>
-    internal enum ResourceType
-    {
-        /// <summary>
-        /// SQL database.
-        /// </summary>
-        SQL = 0,
-        /// <summary>
-        /// Rest API.
-        /// </summary>
-        API
-    }
+    SQL = 0,
+    /// <summary>
+    /// Rest API.
+    /// </summary>
+    API
+}
+
+/// <summary>
+/// (Unused) Configuration for resources.
+/// </summary>
+internal class ResourceConfiguration
+{
+    /// <summary>
+    /// Resource type.
+    /// </summary>
+    public ResourceType Type { get; }
+    /// <summary>
+    /// Resource name.
+    /// </summary>
+    public string Name { get; }
+    /// <summary>
+    /// Config for the resource.
+    /// </summary>
+    public Dictionary<string, object> Properties { get; }
 
     /// <summary>
-    /// (Unused) Configuration for resources.
+    /// The constructor of ResourceConfiguration.
     /// </summary>
-    internal class ResourceConfiguration
+    public ResourceConfiguration(ResourceType type, string name = "", Dictionary<string, object>? properties = null)
     {
-        /// <summary>
-        /// Resource type.
-        /// </summary>
-        public ResourceType Type { get; }
-        /// <summary>
-        /// Resource name.
-        /// </summary>
-        public string Name { get; }
-        /// <summary>
-        /// Config for the resource.
-        /// </summary>
-        public Dictionary<string, object> Properties { get; }
-
-        /// <summary>
-        /// The constructor of ResourceConfiguration.
-        /// </summary>
-        public ResourceConfiguration(ResourceType type, string name = "", Dictionary<string, object>? properties = null)
-        {
-            Type = type;
-            Name = name;
-            Properties = properties ?? new Dictionary<string, object>();
-        }
+        Type = type;
+        Name = name;
+        Properties = properties ?? new Dictionary<string, object>();
     }
 }

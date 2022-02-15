@@ -36,6 +36,7 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  Json,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
@@ -44,6 +45,7 @@ import { sleep, getColorizedString, toLocaleLowerCase } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
+import { UserSettings } from "./userSetttings";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -52,9 +54,34 @@ export class CLIUserInteraction implements UserInteraction {
   private static instance: CLIUserInteraction;
   private presetAnswers: Map<string, any> = new Map();
 
+  private _interactive = true;
+
+  get ciEnabled(): boolean {
+    return process.env.CI_ENABLED === "true";
+  }
+
+  get interactive(): boolean {
+    if (this.ciEnabled) {
+      return false;
+    } else {
+      return this._interactive;
+    }
+  }
+
+  set interactive(value: boolean) {
+    this._interactive = value;
+  }
+
   public static getInstance(): CLIUserInteraction {
     if (!CLIUserInteraction.instance) {
       CLIUserInteraction.instance = new CLIUserInteraction();
+
+      // get global setting `interactive`
+      const result = UserSettings.getInteractiveSetting();
+      if (result.isErr()) {
+        throw result;
+      }
+      CLIUserInteraction.instance._interactive = result.value;
     }
     return CLIUserInteraction.instance;
   }
@@ -125,10 +152,6 @@ export class CLIUserInteraction implements UserInteraction {
     this.presetAnswers = new Map();
   }
 
-  get ciEnabled(): boolean {
-    return process.env.CI_ENABLED === "true";
-  }
-
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
       const answer = this.presetAnswers.get(question.name!);
@@ -143,16 +166,17 @@ export class CLIUserInteraction implements UserInteraction {
       return ok(answer);
     }
 
-    /// TODO: CI ENABLED refine.
-    if (this.ciEnabled) {
+    /// non-interactive.
+    if (!this.interactive) {
       if (question.default !== undefined) {
+        // if it has a defualt value, return it at first.
         return ok(question.default);
       } else if (
-        "choices" in question &&
-        question.choices &&
+        question.type === "list" &&
         Array.isArray(question.choices) &&
         question.choices.length > 0
       ) {
+        // if it is a single select, return the first choice.
         const firstChoice = question.choices[0];
         if (typeof firstChoice === "string") {
           // TODO: maybe prevent type casting with compile time type assertions or method overloading?
@@ -160,6 +184,11 @@ export class CLIUserInteraction implements UserInteraction {
         } else {
           return ok((firstChoice as ChoiceOptions).name as any);
         }
+      } else if (question.type === "checkbox") {
+        // if it is a multi select, return an empty array.
+        return ok([] as any);
+      } else {
+        return ok(question.default);
       }
     }
 
@@ -260,11 +289,15 @@ export class CLIUserInteraction implements UserInteraction {
   private toChoices<T>(
     option: StaticOptions,
     defaultValue?: T
-  ): [string[] | ChoiceOptions[], T | undefined] {
+  ): [string[] | ChoiceOptions[], T | undefined, { [x: string]: string }] {
+    const mapping: Json = {};
     if (typeof option[0] === "string") {
-      return [option as string[], defaultValue];
+      const choices = option as string[];
+      choices.forEach((s) => (mapping[s] = s));
+      return [choices, defaultValue, mapping];
     } else {
       const choices = (option as OptionItem[]).map((op) => {
+        mapping[op.label] = op.id;
         return {
           name: op.label,
           extra: {
@@ -276,18 +309,30 @@ export class CLIUserInteraction implements UserInteraction {
       const ids = (option as OptionItem[]).map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
-        return [choices, choices[index]?.name as any];
+        return [choices, choices[index]?.name as any, mapping];
       } else {
         const indexes = this.findIndexes(ids, defaultValue as any);
-        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.name) as any];
+        return [
+          choices,
+          this.getSubArray(choices, indexes).map((choice) => choice.name) as any,
+          mapping,
+        ];
       }
     }
   }
 
   private toValidationFunc<T>(
-    validate?: (input: T) => string | undefined | Promise<string | undefined>
+    validate?: (input: T) => string | undefined | Promise<string | undefined>,
+    mapping?: { [x: string]: string }
   ): ValidationType<T> {
     return (input: T) => {
+      if (mapping) {
+        if (typeof input === "string") {
+          input = mapping[input] as any;
+        } else if (Array.isArray(input)) {
+          input = input.map((i) => mapping[i]) as any;
+        }
+      }
       return new Promise(async (resolve) => {
         const result = await validate?.(input);
         if (result === undefined) {
@@ -317,13 +362,13 @@ export class CLIUserInteraction implements UserInteraction {
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
       const result = await this.singleSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation)
+        this.toValidationFunc(config.validation, mapping)
       );
       if (result.isOk()) {
         const index = this.findIndex(
@@ -353,13 +398,13 @@ export class CLIUserInteraction implements UserInteraction {
   ): Promise<Result<MultiSelectResult, FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
       const result = await this.multiSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation)
+        this.toValidationFunc(config.validation, mapping)
       );
       if (result.isOk()) {
         const indexes = this.findIndexes(
@@ -459,7 +504,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   public async openUrl(link: string): Promise<Result<boolean, FxError>> {
-    await open(link);
+    if (!this.ciEnabled) await open(link);
     return ok(true);
   }
 

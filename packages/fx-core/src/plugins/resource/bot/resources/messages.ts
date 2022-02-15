@@ -70,6 +70,10 @@ export class Messages {
   public static readonly SuccessfullyGenerateArmTemplatesBot =
     "Successfully generating ARM templates of bot.";
 
+  public static readonly UpdatingArmTemplatesBot = "Updating ARM templates of bot.";
+  public static readonly SuccessfullyUpdateArmTemplatesBot =
+    "Successfully updating ARM templates of bot.";
+
   public static readonly SuccessfullyGetExistingBotAadAppCredential =
     "Successfully get existing bot AAD app credential.";
   public static readonly SuccessfullyCreatedBotAadApp = "Successfully created bot AAD app.";
@@ -131,6 +135,7 @@ export class Messages {
   public static readonly ReopenWorkingDir = (path = ""): string =>
     `Please check whether the path ${path} exists and you have write access to it, if no, please move the project to a valid path.`;
   public static readonly PostProvisioningStart = "Start to Post Provision.";
+  public static readonly SuccessfullyPostProvisionedBot = "Successfully post-provisioned bot.";
 
   // for the use of migrating v1 project
   public static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;

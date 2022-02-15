@@ -8,22 +8,22 @@ Failed to update redriect uri for Azure AD app. Please refer to the log for deta
 
 This error contains two kind of scenario, and please follow this instruction to address the detailed error.
 
-1. Open `.fx\env.default.json` file
-2. Find `fx-resource-aad-app-for-teams`. Note value of key *applicationIdUri*
+1. Open `.fx\states\state.{envName}.json` file
+2. Find `fx-resource-aad-app-for-teams`. Note value of key *applicationIdUris*
 3. Go to Azure Portal, select "Azure Active Directory"
 4. Select "App Registrations" and select you Azure AD app.
-5. Go to *Expose an API*, and set the value of *applicationIdUri* noted before.
+5. Go to *Expose an API*, and set the value of *applicationIdUris* noted before.
 6. Find the error message show on portal, and find error in the table below.
 
 Error Message | Reason | Mitigation
 ------|------|------
-Failed to update application property. Error detail: Another object with the same value for property identifierUris already exists. | The same *applicationIdUri* has already been set to another Azure AD app. This probably because you are using an exising bot in a bot only project. | Please delete the Azure AD app with the same *applicationIdUri* and try again. Or you can try to provision a new bot.
+Failed to update application property. Error detail: Another object with the same value for property identifierUris already exists. | The same *applicationIdUris* has already been set to another Azure AD app. This probably because you are using an exising bot in a bot only project. | Please delete the Azure AD app with the same *applicationIdUris* and try again. Or you can try to provision a new bot.
 Failed to update application property. Error detail: The host name should not be based on already owned domain paramName. | **Storage Endpoint Host Name** cannot be set to **Application ID URI** of Azure AD App. | [Scenario One: Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain).
 
 
 ### Scenario One: Setup CDN as storage custom domain
 #### Step #1 Note Frontend Info
-1. Open `.fx\env.default.json` file
+1. Open `.fx\states\state.{envName}.json` file
 2. Note the resource group name, fronend storage name.
 
     ![image](../images/fx-core/aad/appIdUri-config.png)
@@ -36,24 +36,19 @@ Failed to update application property. Error detail: The host name should not be
 1. Navigate to your created CDN endpoint and copy the endpoint hostname. For example, "https://sample.azureedge.net"
 
 ### Step #3 Update Frontend Info
-1. Open `.fx\env.default.json` file
-1. Find `fx-resource-aad-app-for-teams`. Add two new keys "domain" and "endpoint" with domain and endpoint of CDN.
+1. Open `tamplates\azure\provision\frontendHosting.bicep` file, and find the following two lines:
+    ```
+    output endpoint string = 'https://${siteDomain}'
+    output domain string = siteDomain
+    ```
 
-    ![image](../images/fx-core/aad/appIdUri-config-add.png)
+1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
+   ```
+   output endpoint string = 'https://sample.azureedge.net'
+   output domain string = 'sample.azureedge.net'
+   ```
 
-1. Run "TeamsFx - Provision Resource" and "TeamsFx - Deploy Package" or press F5 to start local debug.
-1. After adding your app to your teams client, go to teams app store and add app studio, navigate to manifest editor and select your app. Edit the manifest and replace all storage endpoint with your CDN endpoint.
-
-    Including:
-   * App details → Developer information → Website
-   * App details → App URLs → Privacy statement, Terms of use
-   * Tab → Personal Tab → Content URL, Website URL
-   * Domains and permissions → Single-Sign-On
-
-    Review your App Manifest(preview) to make sure all xxxx.xxx.web.core.windows.net/ are replaced by xxxx.azureedge.net/. Finally click Test and distribute → install to reinstall the app.
-
-    *Note: You only need to edit the manifest the first time you run your app.*
-1. If you're using Azure Functions for backend api, remember to add your CDN endpoint to function's allowed origin list to enable CORS. [Learn More](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal#cors).
+1. Run "TeamsFx - Provision in the cloud" and "TeamsFx - Deploy to the cloud" or press F5 to start local debug.
 
 
 ## aad.ParsePermissionError
@@ -98,7 +93,7 @@ az ad sp show --id 00000003-0000-0000-c000-000000000000 --query "appRoles[].valu
 
 ### Error Message
 
-Failed to get all necessary info. You need to set objectId, clientId, clientSecret, oauth2PermissionScopeId under fx-resource-aad-app-for-teams in env.default.json.
+Failed to get all necessary info. You need to set objectId, clientId, clientSecret, oauth2PermissionScopeId under fx-resource-aad-app-for-teams in `state.{envName}.json`.
 
 ### Mitigation
 

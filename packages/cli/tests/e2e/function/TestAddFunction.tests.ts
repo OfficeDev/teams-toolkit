@@ -1,109 +1,90 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import fs from "fs-extra";
+/**
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ */
+
 import path from "path";
 
-import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
-
+import { AadValidator, FunctionValidator } from "../../commonlib";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import {
-  execAsync,
   execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 
 describe("Test Add Function", function () {
-  const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
-  const projectPath = path.resolve(testFolder, appName);
+  let testFolder: string;
+  let appName: string;
+  let subscription: string;
+  let projectPath: string;
+  let env: string;
+
+  // Should succeed on the 3rd try
+  this.retries(2);
+
+  beforeEach(() => {
+    testFolder = getTestFolder();
+    appName = getUniqueAppName();
+    subscription = getSubscriptionId();
+    projectPath = path.resolve(testFolder, appName);
+    env = environmentManager.getDefaultEnvName();
+  });
+
+  afterEach(async () => {
+    // clean up
+    console.log(`[Successfully] start to clean up for ${projectPath}`);
+    await cleanUp(appName, projectPath, true, false, false, true);
+  });
 
   it(`Create Tab Then Add Function`, async function () {
-    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
-
-    await execAsync(`teamsfx resource add azure-function --function-name func1`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    await execAsync(`teamsfx resource add azure-function --function-name func2`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    console.log(`[Successfully] add function to ${projectPath}`);
+    await CliHelper.addResourceToProject(
+      projectPath,
+      Resource.AzureFunction,
+      "--function-name func1"
+    );
+    await CliHelper.addResourceToProject(
+      projectPath,
+      Resource.AzureFunction,
+      "--function-name func2"
+    );
 
     // set subscription
-    await execAsync(`teamsfx account set --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    console.log(`[Successfully] set subscription for ${projectPath}`);
+    await CliHelper.setSubscription(subscription, projectPath);
 
     // provision
-    await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.provisionProject(projectPath);
 
-    console.log(`[Successfully] provision for ${projectPath}`);
+    const context = await readContextMultiEnv(projectPath, env);
 
-    {
-      // Validate provision
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    // Validate provision
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, AppStudioLogin);
+    await AadValidator.validate(aad);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
-      // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad);
-
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateProvision(func, false);
-    }
+    // Validate Function App
+    const functionValidator = new FunctionValidator(context, projectPath, env);
+    await functionValidator.validateProvision();
 
     // deploy
-    await execAsyncWithRetry(`teamsfx deploy function`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] deploy for ${projectPath}`);
-
-    {
-      // Validate deployment
-
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateDeploy(func);
-    }
+    await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
+    // Validate deployment
+    await functionValidator.validateDeploy();
 
     // validate
-    await execAsyncWithRetry(`teamsfx validate`, {
+    await execAsyncWithRetry(`teamsfx manifest validate`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -138,11 +119,5 @@ describe("Test Add Function", function () {
     // {
     //   /// TODO: add check for publish
     // }
-  });
-
-  after(async () => {
-    // clean up
-    console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath);
   });
 });

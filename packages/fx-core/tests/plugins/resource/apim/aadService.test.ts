@@ -1,85 +1,103 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import axios, { AxiosInstance } from "axios";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import sinon from "sinon";
-import { v4 } from "uuid";
-import {
-  AadHelper,
-  MockGraphTokenProvider,
-  it_if,
-  before_if,
-  after_if,
-  EnvConfig,
-} from "./testUtil";
+import { assert, createSandbox, SinonStub } from "sinon";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
-import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
+import { aadMatcher, mockAxios, DefaultTestInput } from "./mock";
 import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 chai.use(chaiAsPromised);
 
-const UT_SUFFIX = v4().substring(0, 6);
-const UT_AAD_NAME = `fx-apim-local-unit-test-aad-${UT_SUFFIX}`;
-
 describe("AadService", () => {
-  let aadService: AadService;
-  let aadHelper: AadHelper;
-  let axiosInstance: AxiosInstance;
-
-  before_if(EnvConfig.enableTest, async () => {
-    const result = await buildService();
-    aadService = result.aadService;
-    aadHelper = result.aadTestHelper;
-    axiosInstance = result.axiosInstance;
-  });
-
-  after_if(EnvConfig.enableTest, async () => {
-    await aadHelper.deleteAadByName(UT_AAD_NAME);
-  });
-
   describe("#createAad()", () => {
-    it_if(EnvConfig.enableTest, "Create a new AAD", async () => {
-      // Act
-      const aadInfo = await aadService.createAad(UT_AAD_NAME);
+    let aadService: AadService | undefined;
+    let requestStub: any;
+    const sandbox = createSandbox();
 
-      // Assert
+    beforeEach(async () => {
+      const res = mockAxios(sandbox);
+      const axiosInstance = res.axiosInstance;
+      requestStub = res.requestStub;
+      aadService = new AadService(axiosInstance, undefined, undefined, 2);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Create a new AAD", async () => {
+      const aadInfo = await aadService!.createAad(DefaultTestInput.aadDisplayName.new);
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.createAad);
       chai.assert.isNotEmpty(aadInfo.id);
-      const queryResult = await aadService.getAad(aadInfo.id ?? "");
-      chai.assert.isNotEmpty(queryResult);
+      chai.assert.isNotEmpty(aadInfo.appId);
+    });
+
+    it("Failed to create a new AAD", async () => {
+      await chai
+        .expect(aadService!.createAad(DefaultTestInput.aadDisplayName.error))
+        .to.be.rejectedWith();
+      sandbox.assert.calledThrice(requestStub);
+      sandbox.assert.calledWith(
+        requestStub,
+        aadMatcher.createAad.and(
+          aadMatcher.body({
+            displayName: DefaultTestInput.aadDisplayName.error,
+          })
+        )
+      );
     });
   });
 
   describe("#addSecret()", () => {
-    let aadObjectId: string;
+    let aadService: AadService | undefined;
+    let requestStub: any;
+    const sandbox = createSandbox();
 
-    before_if(EnvConfig.enableTest, async () => {
-      const aadInfo = await aadService?.createAad(UT_AAD_NAME);
-      aadObjectId = aadInfo.id ?? "";
+    beforeEach(async () => {
+      const res = mockAxios(sandbox);
+      const axiosInstance = res.axiosInstance;
+      requestStub = res.requestStub;
+      aadService = new AadService(axiosInstance, undefined, undefined, 2);
     });
 
-    it_if(EnvConfig.enableTest, "Add a secret", async () => {
-      // Arrange
-      const secretDisplayName = "secret display name";
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-      // Act
-      const secretInfo = await aadService.addSecret(aadObjectId, secretDisplayName);
-
-      // Assert
-      chai.assert.equal(secretInfo?.displayName, secretDisplayName);
-      const queryResult = await aadService.getAad(aadObjectId);
-      chai.assert.isNotEmpty(queryResult);
-      chai.assert.equal(queryResult?.passwordCredentials?.length, 1);
-      chai.assert.equal(queryResult?.passwordCredentials?.pop()?.displayName, secretDisplayName);
+    it("Add a secret", async () => {
+      const secretInfo = await aadService!.addSecret(
+        DefaultTestInput.aadObjectId.created,
+        DefaultTestInput.aadSecretDisplayName.new
+      );
+      sandbox.assert.calledOnceWithMatch(
+        requestStub,
+        aadMatcher.addSecret.and(
+          aadMatcher.body({
+            passwordCredential: {
+              displayName: DefaultTestInput.aadSecretDisplayName.new,
+            },
+          })
+        )
+      );
+      chai.assert.isNotEmpty(secretInfo?.secretText);
     });
   });
 
   describe("#updateAad()", () => {
-    let aadObjectId: string;
+    let aadService: AadService | undefined;
+    let requestStub: any;
+    const sandbox = createSandbox();
 
-    before_if(EnvConfig.enableTest, async () => {
-      const aadInfo = await aadService?.createAad(UT_AAD_NAME);
-      aadObjectId = aadInfo.id ?? "";
+    beforeEach(async () => {
+      const res = mockAxios(sandbox);
+      const axiosInstance = res.axiosInstance;
+      requestStub = res.requestStub;
+      aadService = new AadService(axiosInstance, undefined, undefined, 2);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
     });
 
     const testData: { message: string; updateData: IAadInfo }[] = [
@@ -102,96 +120,47 @@ describe("AadService", () => {
     ];
 
     testData.forEach((data) => {
-      it_if(EnvConfig.enableTest, data.message, async () => {
-        // Act
-        await aadService.updateAad(aadObjectId, data.updateData);
-
-        // Assert
-        const queryResult = await aadService.getAad(aadObjectId);
-        chai.assert.isNotEmpty(queryResult);
-        chai.assert.equal(
-          queryResult?.web?.redirectUris?.length,
-          data.updateData?.web?.redirectUris?.length
-        );
-        chai.assert.deepEqual(
-          queryResult?.web?.redirectUris?.sort(),
-          data.updateData?.web?.redirectUris?.sort()
+      it(data.message, async () => {
+        await aadService!.updateAad(DefaultTestInput.aadObjectId.created, data.updateData);
+        sandbox.assert.calledOnceWithMatch(
+          requestStub,
+          aadMatcher.updateAad.and(aadMatcher.body(data.updateData))
         );
       });
     });
   });
 
   describe("#createServicePrincipalIfNotExists()", () => {
-    const sandbox = sinon.createSandbox();
-    let aadClientId: string;
-    let existingServicePrincipalAadClientId: string;
+    let aadService: AadService | undefined;
+    let requestStub: any;
+    const sandbox = createSandbox();
 
-    before_if(EnvConfig.enableTest, async () => {
-      const aadInfo = await aadService?.createAad(UT_AAD_NAME);
-      aadClientId = aadInfo.appId ?? "";
-      const existingServicePrincipalAadInfo = await aadService?.createAad(UT_AAD_NAME);
-      existingServicePrincipalAadClientId = existingServicePrincipalAadInfo.appId ?? "";
+    beforeEach(async () => {
+      const res = mockAxios(sandbox);
+      const axiosInstance = res.axiosInstance;
+      requestStub = res.requestStub;
+      aadService = new AadService(axiosInstance, undefined, undefined, 2);
     });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "create service principal", async () => {
-      // Arrange
-      const spy = sandbox.spy(axiosInstance, "request");
-
-      // Act
-      await aadService.createServicePrincipalIfNotExists(aadClientId);
-
-      // Assert
-      sinon.assert.calledTwice(spy);
-      const queryResult = await aadService.getServicePrincipals(aadClientId);
-      chai.assert.isNotEmpty(queryResult);
-      chai.assert.equal(queryResult.length, 1);
+    it("create service principal", async () => {
+      await aadService!.createServicePrincipalIfNotExists(DefaultTestInput.aadClientId.new);
+      sandbox.assert.calledTwice(requestStub);
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.getServicePrincipals);
+      sandbox.assert.calledWithMatch(
+        requestStub,
+        aadMatcher.createServicePrincipal.and(
+          aadMatcher.body({ appId: DefaultTestInput.aadClientId.new })
+        )
+      );
     });
 
-    it_if(EnvConfig.enableTest, "skip to create service principal if it is existing", async () => {
-      // Arrange
-      await aadService.createServicePrincipalIfNotExists(existingServicePrincipalAadClientId);
-      const spy = sandbox.spy(axiosInstance, "request");
-
-      // Act
-      await aadService.createServicePrincipalIfNotExists(existingServicePrincipalAadClientId);
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const queryResult = await aadService.getServicePrincipals(
-        existingServicePrincipalAadClientId
-      );
-      chai.assert.isNotEmpty(queryResult);
-      chai.assert.equal(queryResult.length, 1);
+    it("skip to create service principal if it is existing", async () => {
+      await aadService!.createServicePrincipalIfNotExists(DefaultTestInput.aadClientId.created);
+      assert.calledOnceWithMatch(requestStub, aadMatcher.getServicePrincipals);
     });
   });
 });
-
-async function buildService(): Promise<{
-  axiosInstance: AxiosInstance;
-  aadService: AadService;
-  aadTestHelper: AadHelper;
-}> {
-  const mockGraphTokenProvider = new MockGraphTokenProvider(
-    EnvConfig.tenantId,
-    EnvConfig.servicePrincipalClientId,
-    EnvConfig.servicePrincipalClientSecret
-  );
-  const graphToken = await mockGraphTokenProvider.getAccessToken();
-  const axiosInstance = axios.create({
-    baseURL: AadDefaultValues.graphApiBasePath,
-    headers: {
-      authorization: `Bearer ${graphToken}`,
-      "content-type": "application/json",
-    },
-  });
-
-  return {
-    axiosInstance: axiosInstance,
-    aadService: new AadService(axiosInstance),
-    aadTestHelper: new AadHelper(axiosInstance),
-  };
-}

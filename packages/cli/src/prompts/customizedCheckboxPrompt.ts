@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import lodash from "lodash";
+import _ from "lodash";
 import chalk from "chalk";
 import figures from "figures";
 import inquirer from "inquirer";
@@ -111,7 +111,7 @@ function renderChoices(choices: any, pointer: number): string {
     if (choice.disabled) {
       separatorOffset++;
       output += " - " + choice.name;
-      output += " (" + (lodash.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
+      output += " (" + (_.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
     } else {
       if (i - separatorOffset === pointer) {
         output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.name);

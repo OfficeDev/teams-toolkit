@@ -7,14 +7,13 @@ import { Argv } from "yargs";
 import * as path from "path";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { dataNeedEncryption, environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
-import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
+import { dataNeedEncryption } from "@microsoft/teamsfx-core";
+import { UserSettings, CliConfigOptions } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import {
   readProjectSecrets,
   writeSecretToFile,
   getSystemInputs,
-  readEnvJsonFile,
   toYargsOptions,
   readSettingsFileSync,
 } from "../utils";
@@ -25,13 +24,8 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import {
-  NonTeamsFxProjectFolder,
-  ConfigNameNotFound,
-  EnvNotSpecified,
-  ConfigNotFoundError,
-  EnvNotProvisioned,
-} from "../error";
+import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
+
 import * as constants from "../constants";
 
 const GlobalOptions = new Set([
@@ -39,7 +33,12 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
   CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
   CliConfigOptions.EnvCheckerValidateNode as string,
+  CliConfigOptions.EnvCheckerValidateNgrok as string,
+  CliConfigOptions.TrustDevCert as string,
   CliConfigOptions.RunFrom as string,
+  CliConfigOptions.Interactive as string,
+  // TODO: enable this config
+  // CliConfigOptions.AutomaticNpmInstall as string,
 ]);
 
 export class ConfigGet extends YargsCommand {
@@ -48,19 +47,15 @@ export class ConfigGet extends YargsCommand {
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    const result = yargs.positional("option", {
-      description: "User settings option",
-      type: "string",
-    });
-
-    if (isMultiEnvEnabled()) {
-      return result.option("env", {
+    return yargs
+      .positional("option", {
+        description: "User settings option",
+        type: "string",
+      })
+      .option("env", {
         description: "Environment name",
         type: "string",
       });
-    } else {
-      return result;
-    }
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -75,14 +70,10 @@ export class ConfigGet extends YargsCommand {
       }
       if (!args.global && inProject) {
         let env: string | undefined = undefined;
-        if (isMultiEnvEnabled()) {
-          if (args.env) {
-            env = args.env;
-          } else {
-            return err(new EnvNotSpecified());
-          }
+        if (args.env) {
+          env = args.env;
         } else {
-          env = environmentManager.getDefaultEnvName();
+          return err(new EnvNotSpecified());
         }
 
         const projectResult = await this.printProjectConfig(rootFolder, env);
@@ -107,14 +98,10 @@ export class ConfigGet extends YargsCommand {
         // project config
         if (inProject) {
           let env: string | undefined = undefined;
-          if (isMultiEnvEnabled()) {
-            if (args.env) {
-              env = args.env;
-            } else {
-              return err(new EnvNotSpecified());
-            }
+          if (args.env) {
+            env = args.env;
           } else {
-            env = environmentManager.getDefaultEnvName();
+            return err(new EnvNotSpecified());
           }
           const projectResult = await this.printProjectConfig(rootFolder, env, args.option);
           if (projectResult.isErr()) {
@@ -145,34 +132,11 @@ export class ConfigGet extends YargsCommand {
     }
 
     const config = result.value;
-    switch (option) {
-      case CliConfigOptions.Telemetry:
-        CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateDotnetSdk], null, 2),
-          true
-        );
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateFuncCoreTools], null, 2),
-          true
-        );
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateNode:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateNode], null, 2),
-          true
-        );
-        return ok(null);
+    if (option && GlobalOptions.has(option)) {
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config[option], null, 2), true);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     }
-
-    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     return ok(null);
   }
 
@@ -241,14 +205,10 @@ export class ConfigSet extends YargsCommand {
         describe: "Option value",
         type: "string",
       });
-    if (isMultiEnvEnabled()) {
-      return result.option("env", {
-        description: "Environment name",
-        type: "string",
-      });
-    } else {
-      return result;
-    }
+    return result.option("env", {
+      description: "Environment name",
+      type: "string",
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -269,16 +229,12 @@ export class ConfigSet extends YargsCommand {
       }
     } else {
       let env: string | undefined = undefined;
-      if (isMultiEnvEnabled()) {
-        if (!args.global) {
-          if (args.env) {
-            env = args.env;
-          } else {
-            return err(new EnvNotSpecified());
-          }
+      if (!args.global) {
+        if (args.env) {
+          env = args.env;
+        } else {
+          return err(new EnvNotSpecified());
         }
-      } else {
-        env = environmentManager.getDefaultEnvName();
       }
 
       const inProject = readSettingsFileSync(rootFolder).isOk();
@@ -306,25 +262,17 @@ export class ConfigSet extends YargsCommand {
   }
 
   private async setGlobalConfig(option: string, value: string): Promise<Result<null, FxError>> {
-    switch (option) {
-      case CliConfigOptions.Telemetry:
-      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
-      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
-      case CliConfigOptions.EnvCheckerValidateNode:
-      case CliConfigOptions.RunFrom:
-        const opt = { [option]: value };
-        const result = UserSettings.setConfigSync(opt);
-        if (result.isErr()) {
-          CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
-          return result;
-        }
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          `Successfully configured user setting ${option}.`
-        );
-        return ok(null);
+    if (GlobalOptions.has(option)) {
+      const opt = { [option]: value };
+      const result = UserSettings.setConfigSync(opt);
+      if (result.isErr()) {
+        CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
+        return result;
+      }
+      CLILogProvider.necessaryLog(LogLevel.Info, `Successfully configured user setting ${option}.`);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Warning, `No user setting ${option}.`);
     }
-    CLILogProvider.necessaryLog(LogLevel.Warning, `No user setting ${option}.`);
     return ok(null);
   }
 

@@ -26,7 +26,6 @@ Can only be used in server side.
 ```typescript
 loadConfiguration(); // load configuration from environment variables
 const credential = new OnBehalfOfUserCredential(ssoToken);
-
 ```
 
 ## Constructors

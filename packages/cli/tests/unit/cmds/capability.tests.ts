@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 
 import Capability, {
   CapabilityAdd,
@@ -25,6 +25,7 @@ import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
+import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 
 describe("Capability Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -47,6 +48,9 @@ describe("Capability Command Tests", function () {
       } else {
         options = options.concat(...Object.keys(ops));
       }
+      return yargs;
+    });
+    sandbox.stub(yargs, "positional").callsFake((name: string) => {
       return yargs;
     });
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
@@ -76,6 +80,16 @@ describe("Capability Command Tests", function () {
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
+    sandbox.stub(FxCore.prototype, "getProjectConfig").callsFake(async (inputs: Inputs) => {
+      if (inputs.projectPath?.includes("real")) {
+        return ok({});
+      } else {
+        return err(NotSupportedProjectType());
+      }
+    });
+    sandbox.stub(ProjectSettingsHelper, "includeFrontend").returns(false);
+    sandbox.stub(ProjectSettingsHelper, "includeBot").returns(false);
+    sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").callsFake(async () => {});
     sandbox.stub(LogProvider, "necessaryLog").returns();
   });
 
@@ -94,8 +108,8 @@ describe("Capability Command Tests", function () {
     const cmd = new Capability();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals([
-      "capability <action>",
-      "add <capability>",
+      "capability [action]",
+      "add [capability]",
       "tab",
       "bot",
       "messaging-extension",

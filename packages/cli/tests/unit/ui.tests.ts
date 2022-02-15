@@ -55,6 +55,10 @@ describe("User Interaction Tests", function () {
     logs = [];
   });
 
+  it("Check process.env", () => {
+    expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
+  });
+
   it("Update/Remove Preset Answers", () => {
     const params = { a: undefined, b: undefined, c: undefined };
     const answers = { a: "123", c: ["1", "2"], d: undefined };

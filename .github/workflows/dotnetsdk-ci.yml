@@ -25,9 +25,9 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.x
+        dotnet-version: 6.x
     - name: Build
-      run: 
+      run:
         dotnet build -c Release Microsoft.TeamsFx.sln
     - name: Test
       run:

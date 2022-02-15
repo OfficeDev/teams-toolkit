@@ -61,6 +61,9 @@ export interface Plugin {
   deploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
   postDeploy?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 
+  generateArmTemplates?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+  updateArmTemplates?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+
   /**
    * publish
    */

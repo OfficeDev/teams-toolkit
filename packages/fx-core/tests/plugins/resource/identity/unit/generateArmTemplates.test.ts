@@ -10,7 +10,13 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
+import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solution/question";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -40,21 +46,20 @@ describe("identityPlugin", () => {
   it("generate arm templates", async function () {
     const activeResourcePlugins = [ResourcePlugins.Identity];
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
     const result = await identityPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "userAssignedIdentity.template.bicep";
+    const testModuleFileName = "identityProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-identity": {
-          Modules: {
-            userAssignedIdentityProvision: {
-              Path: `./${testModuleFileName}`,
+          Provision: {
+            identity: {
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -62,33 +67,63 @@ describe("identityPlugin", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
-
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      chai.assert.strictEqual(
-        expectedResult.Modules!.userAssignedIdentityProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.identity, moduleFile);
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "provision.result.bicep"
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
+      chai.assert.isNotNull(expectedResult.Reference);
+      chai.assert.isUndefined(expectedResult.Parameters);
+    }
+  });
+
+  it("Update arm templates", async function () {
+    const activeResourcePlugins = [ResourcePlugins.Identity];
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await identityPlugin.updateArmTemplates(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.notExists(result.value.Provision);
+      chai.assert.exists(result.value.Reference!.identityName);
       chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+        result.value.Reference!.identityName,
+        "provisionOutputs.identityOutput.value.identityName"
       );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
+      chai.assert.exists(result.value.Reference!.identityClientId);
       chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
+        result.value.Reference!.identityClientId,
+        "provisionOutputs.identityOutput.value.identityClientId"
       );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
+      chai.assert.exists(result.value.Reference!.identityResourceId);
+      chai.assert.strictEqual(
+        result.value.Reference!.identityResourceId,
+        "userAssignedIdentityProvision.outputs.identityResourceId"
+      );
+      chai.assert.exists(result.value.Reference!.identityPrincipalId);
+      chai.assert.strictEqual(
+        result.value.Reference!.identityPrincipalId,
+        "userAssignedIdentityProvision.outputs.identityPrincipalId"
+      );
+      chai.assert.notExists(result.value.Configuration);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

@@ -1,3 +1,0 @@
-output frontendHosting_storageResourceId string = frontendHostingProvision.outputs.resourceId
-output frontendHosting_endpoint string = frontendHostingProvision.outputs.endpoint
-output frontendHosting_domain string = frontendHostingProvision.outputs.domain

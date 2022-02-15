@@ -19,6 +19,6 @@ export interface Configuration
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [authentication](./teamsfx.configuration.authentication.md) | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
-|  [resources](./teamsfx.configuration.resources.md) | [ResourceConfiguration](./teamsfx.resourceconfiguration.md)<!-- -->\[\] | <b><i>(BETA)</i></b> Configuration for resources. |
+|  [authentication?](./teamsfx.configuration.authentication.md) | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> Authentication related configuration. |
+|  [resources?](./teamsfx.configuration.resources.md) | [ResourceConfiguration](./teamsfx.resourceconfiguration.md)<!-- -->\[\] | <b><i>(BETA)</i></b> <i>(Optional)</i> Configuration for resources. |
 

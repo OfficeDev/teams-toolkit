@@ -10,13 +10,14 @@ import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
-import { getArmOutput } from "../utils4v2";
-import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
+import { getTemplatesFolder } from "../../../folder";
+import { ArmTemplateResult } from "../../../common/armInterface";
+import { isMultiEnvEnabled } from "../../../common";
+import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
-
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -26,7 +27,10 @@ export class SimpleAuthPluginImpl {
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
     if (isMultiEnvEnabled()) {
-      ctx.localSettings?.auth?.set(LocalSettingsAuthKeys.SimpleAuthFilePath, simpleAuthFilePath);
+      ctx.localSettings?.auth?.set(
+        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
+        simpleAuthFilePath
+      );
     } else {
       ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
     }
@@ -50,7 +54,7 @@ export class SimpleAuthPluginImpl {
 
     if (isMultiEnvEnabled()) {
       ctx.localSettings?.auth?.set(
-        LocalSettingsAuthKeys.SimpleAuthEnvironmentVariableParams,
+        LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
         configArray.join(" ")
       );
     } else {
@@ -106,35 +110,19 @@ export class SimpleAuthPluginImpl {
 
     const configs = Utils.getWebAppConfig(ctx, false);
 
-    if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndpoint) as string;
-      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
-
-      const sku = getArmOutput(ctx, Constants.ArmOutput.simpleAuthSkuName) as string;
-      if (sku) {
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.skuName, sku);
-      }
-    } else {
-      await this.webAppClient.configWebApp(configs);
-    }
-
     await DialogUtils.progressBar?.end(true);
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();
   }
 
-  public async generateArmTemplates(
-    ctx: PluginContext
-  ): Promise<Result<ScaffoldArmTemplateResult, FxError>> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
-
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdateArmTemplates);
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -144,66 +132,72 @@ export class SimpleAuthPluginImpl {
       "bicep"
     );
 
-    const provisionModuleTemplateFilePath = path.join(
+    const configModuleFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.configModuleTemplateFileName
+    );
+    const configModules = await generateBicepFromFile(configModuleFilePath, pluginCtx);
+    const result: ArmTemplateResult = {
+      Reference: {
+        skuName: Constants.SimpleAuthBicepOutputSkuName,
+        endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+      },
+      Configuration: {
+        Modules: { simpleAuth: configModules },
+      },
+    };
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdateArmTemplates);
+    return ResultFactory.Success(result);
+  }
+
+  public async generateArmTemplates(
+    ctx: PluginContext
+  ): Promise<Result<ArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "simpleauth",
+      "bicep"
+    );
+
+    const provisionModuleResult = path.join(
       bicepTemplateDirectory,
       Constants.provisionModuleTemplateFileName
     );
-    const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
-      context
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleTemplateFilePath = path.join(
+    const configModuleFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.configurationModuleTemplateFileName
+      Constants.configModuleTemplateFileName
     );
-    const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
-      context
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+      pluginCtx
     );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    const parameterTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
+    const provisionModules = await generateBicepFromFile(provisionModuleResult, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
+      pluginCtx
     );
-    const resourceTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
-    );
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        simpleAuthProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        simpleAuthConfiguration: {
-          Content: configurationModuleContentResult.value,
-        },
+    const configModule = await generateBicepFromFile(configModuleFilePath, pluginCtx);
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { simpleAuth: provisionModules },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            skuName: Constants.SimpleAuthBicepOutputSkuName,
-            endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
-        },
+      Configuration: {
+        Orchestration: configOrchestration,
+        Modules: { simpleAuth: configModule },
+      },
+      Reference: {
+        skuName: Constants.SimpleAuthBicepOutputSkuName,
+        endpoint: Constants.SimpleAuthBicepOutputEndpoint,
       },
     };
 
@@ -239,18 +233,8 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.configKeys.location
     ) as string;
 
-    let webAppName: string;
-    let appServicePlanName: string;
-    if (isArmSupportEnabled()) {
-      webAppName = getArmOutput(ctx, Constants.ArmOutput.simpleAuthWebAppName) as string;
-      appServicePlanName = getArmOutput(
-        ctx,
-        Constants.ArmOutput.simpleAuthAppServicePlanName
-      ) as string;
-    } else {
-      webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
-      appServicePlanName = webAppName;
-    }
+    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
+    const appServicePlanName = webAppName;
 
     this.webAppClient = new WebAppClient(
       credentials,

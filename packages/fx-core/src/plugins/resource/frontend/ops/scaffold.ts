@@ -10,7 +10,6 @@ import {
 import { Constants, FrontendPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
-import { TemplateInfo } from "../resources/templateInfo";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import {
   genTemplateRenderReplaceFn,
@@ -19,18 +18,8 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/templatesActions";
-
-export type Manifest = {
-  [key: string]: {
-    [key: string]: {
-      [key: string]: {
-        version: string;
-        url: string;
-      }[];
-    };
-  };
-};
+} from "../../../../common/template-utils/templatesActions";
+import { TemplateInfo } from "../resources/templateInfo";
 
 export class FrontendScaffold {
   public static async scaffoldFromZipPackage(

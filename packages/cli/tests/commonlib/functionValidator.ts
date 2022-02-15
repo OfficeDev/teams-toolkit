@@ -6,19 +6,19 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
+import { StateConfigKey, PluginId } from "./constants";
+import {
+  getSubscriptionIdFromResourceId,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getWebappSettings,
+  runWithRetry,
+  getWebappConfigs,
+  getExpectedM365ApplicationIdUri,
+  getExpectedM365ClientSecret,
+} from "./utilities";
 
-function functionAppNameFromId(functionAppId: string) {
-  const tokens = functionAppId.split("/");
-  if (tokens.length == 0) {
-    return "";
-  }
-  return tokens[tokens.length - 1];
-}
-
-const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
-const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
 const baseUrlListDeploymentLogs = (subscriptionId: string, rg: string, name: string, id: string) =>
@@ -32,85 +32,40 @@ enum BaseConfig {
   ALLOWED_APP_IDS = "ALLOWED_APP_IDS",
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
+  IDENTITY_ID = "IDENTITY_ID",
 }
 
 enum SQLConfig {
-  IDENTITY_ID = "IDENTITY_ID",
   SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
   SQL_ENDPOINT = "SQL_ENDPOINT",
 }
 
-class DependentPluginInfo {
-  public static readonly functionPluginName = "fx-resource-function";
-  public static readonly apiEndpoint = "functionEndpoint";
-
-  public static readonly solutionPluginName = "solution";
-  public static readonly resourceGroupName: string = "resourceGroupName";
-  public static readonly subscriptionId: string = "subscriptionId";
-  public static readonly resourceNameSuffix: string = "resourceNameSuffix";
-  public static readonly location: string = "location";
-  public static readonly programmingLanguage: string = "programmingLanguage";
-
-  public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
-  public static readonly aadClientId: string = "clientId";
-  public static readonly aadClientSecret: string = "clientSecret";
-  public static readonly oauthHost: string = "oauthHost";
-  public static readonly teamsAppTenantId: string = "teamsAppTenantId";
-  public static readonly applicationIdUris: string = "applicationIdUris";
-
-  public static readonly sqlPluginName: string = "fx-resource-azure-sql";
-  public static readonly databaseName: string = "databaseName";
-  public static readonly sqlEndpoint: string = "sqlEndpoint";
-
-  public static readonly identityPluginName: string = "fx-resource-identity";
-  public static readonly identityId: string = "identityId";
-  public static readonly identityName: string = "identityName";
-
-  public static readonly frontendPluginName: string = "fx-resource-frontend-hosting";
-  public static readonly frontendEndpoint: string = "endpoint";
-  public static readonly frontendDomain: string = "domain";
-
-  public static readonly apimPluginName: string = "fx-resource-apim";
-  public static readonly apimAppId: string = "apimClientAADClientId";
-}
-
-interface IFunctionObject {
-  functionAppName: string;
-  appServicePlanName: string;
-  expectValues: Map<string, string>;
-  functionAppId?: string;
-}
-
 export class FunctionValidator {
-  private static subscriptionId: string;
-  private static rg: string;
+  private ctx: any;
+  private projectPath: string;
+  private env: string;
 
-  public static init(ctx: any): IFunctionObject {
-    console.log("Start to init validator for Function.");
+  private subscriptionId: string;
+  private rg: string;
+  private functionAppName: string;
 
-    const functionObject = ctx[DependentPluginInfo.functionPluginName] as IFunctionObject;
-    chai.assert.exists(functionObject);
+  constructor(ctx: any, projectPath: string, env: string) {
+    console.log("Start to init validator for function.");
 
-    this.subscriptionId =
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
+    this.ctx = ctx;
+    this.projectPath = projectPath;
+    this.env = env;
+
+    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
-
-    this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
     chai.assert.exists(this.rg);
+    this.functionAppName = getSiteNameFromResourceId(resourceId);
+    chai.assert.exists(this.functionAppName);
 
-    const expectValues = new Map<string, string>([]);
-    expectValues.set(
-      BaseConfig.API_ENDPOINT,
-      ctx[DependentPluginInfo.functionPluginName][DependentPluginInfo.apiEndpoint] as string
-    );
-    expectValues.set(
-      SQLConfig.SQL_ENDPOINT,
-      ctx[DependentPluginInfo.sqlPluginName]?.[DependentPluginInfo.sqlEndpoint] as string
-    );
-    functionObject.expectValues = expectValues;
-
-    console.log("Successfully init validator for Function.");
-    return functionObject;
+    console.log("Successfully init validator for function.");
   }
 
   public static async validateScaffold(
@@ -130,134 +85,89 @@ export class FunctionValidator {
     );
   }
 
-  public static async validateProvision(
-    functionObject: IFunctionObject,
-    sqlEnabled = true,
-    isMultiEnvEnabled = false
-  ): Promise<void> {
+  public async validateProvision(): Promise<void> {
     console.log("Start to validate Function Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    enum BaseConfig {
-      M365_CLIENT_ID = "M365_CLIENT_ID",
-      M365_CLIENT_SECRET = "M365_CLIENT_SECRET",
-      M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST",
-      M365_TENANT_ID = "M365_TENANT_ID",
-      ALLOWED_APP_IDS = "ALLOWED_APP_IDS",
-      API_ENDPOINT = "API_ENDPOINT",
-      M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
-    }
-
-    enum SQLConfig {
-      IDENTITY_ID = "IDENTITY_ID",
-      SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
-      SQL_ENDPOINT = "SQL_ENDPOINT",
-    }
-
-    console.log("Validating app settings.");
-
-    const appName = functionObject.functionAppId
-      ? functionAppNameFromId(functionObject.functionAppId)
-      : functionObject.functionAppName;
-    const response = await this.getWebappConfigs(
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    // Validating app settings
+    console.log("validating app settings.");
+    const webappSettingsResponse = await getWebappSettings(
       this.subscriptionId,
       this.rg,
-      appName,
+      this.functionAppName,
       token as string
     );
+    chai.assert.exists(webappSettingsResponse);
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.API_ENDPOINT],
+      this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
+      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
+      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.IDENTITY_ID],
+      this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
+    );
 
-    chai.assert.exists(response);
-
-    Object.values(BaseConfig).forEach((v: string) => {
-      chai.assert.exists(response[v]);
-      if (functionObject.expectValues.get(v)) {
-        chai.assert.equal(functionObject.expectValues.get(v), response[v]);
-      }
-    });
-
-    if (sqlEnabled) {
-      Object.values(SQLConfig).forEach((v: string) => {
-        chai.assert.exists(response[v]);
-        if (functionObject.expectValues.get(v)) {
-          chai.assert.equal(functionObject.expectValues.get(v), response[v]);
-        }
-      });
+    if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
+      chai.assert.equal(
+        webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
+      );
+      chai.assert.equal(
+        webappSettingsResponse[SQLConfig.SQL_DATABASE_NAME],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
+      );
     }
 
-    if (!isMultiEnvEnabled) {
-      console.log("Validating app service plan.");
-      const servicePlanResponse = await this.getWebappServicePlan(
+    // validate app config with allowedOrigins
+    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+      console.log("validating app config.");
+      const webAppConfigResponse = await getWebappConfigs(
         this.subscriptionId,
         this.rg,
-        functionObject.appServicePlanName,
+        this.functionAppName,
         token as string
       );
-      chai.assert(servicePlanResponse, functionObject.appServicePlanName);
+      chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
+      chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
+      chai
+        .expect(webAppConfigResponse!.cors!.allowedOrigins)
+        .to.includes(this.ctx[PluginId.FrontendHosting][StateConfigKey.endpoint]);
     }
 
     console.log("Successfully validate Function Provision.");
   }
 
-  private static async runWithRetry<T>(fn: () => Promise<T>) {
-    const maxTryCount = 3;
-    const defaultRetryAfterInSecond = 2;
-    const maxRetryAfterInSecond = 3 * 60;
-    const secondInMilliseconds = 1000;
-
-    for (let i = 0; i < maxTryCount - 1; i++) {
-      try {
-        const ret = await fn();
-        return ret;
-      } catch (e) {
-        let retryAfterInSecond = defaultRetryAfterInSecond;
-        if (e.response?.status === 429) {
-          // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
-          const suggestedRetryAfter = e.response?.headers?.["retry-after"];
-          // Explicit check, _retryAfter can be 0.
-          if (suggestedRetryAfter !== undefined) {
-            if (suggestedRetryAfter > maxRetryAfterInSecond) {
-              // Don't wait too long.
-              throw e;
-            } else {
-              // Take one more second for time error.
-              retryAfterInSecond = suggestedRetryAfter + 1;
-            }
-          }
-        }
-        await new Promise((resolve) =>
-          setTimeout(resolve, retryAfterInSecond * secondInMilliseconds)
-        );
-      }
-    }
-
-    return fn();
-  }
-
-  public static async validateDeploy(functionObject: IFunctionObject): Promise<void> {
+  public async validateDeploy(): Promise<void> {
     console.log("Start to validate Function Deployment.");
 
     // Disable validate deployment since we have too many requests and the test is not stable.
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    const appName = functionObject.functionAppId
-      ? functionAppNameFromId(functionObject.functionAppId)
-      : functionObject.functionAppName;
-
     const deployments = await this.getDeployments(
       this.subscriptionId,
       this.rg,
-      appName,
+      this.functionAppName,
       token as string
     );
     const deploymentId = deployments?.[0]?.properties?.id;
     const deploymentLog = await this.getDeploymentLog(
       this.subscriptionId,
       this.rg,
-      appName,
+      this.functionAppName,
       token as string,
       deploymentId!
     );
@@ -269,15 +179,10 @@ export class FunctionValidator {
     console.log("Successfully validate Function Deployment.");
   }
 
-  private static async getDeployments(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
+  private async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeployments(subscriptionId, rg, name))
       );
 
@@ -288,7 +193,7 @@ export class FunctionValidator {
     }
   }
 
-  private static async getDeploymentLog(
+  private async getDeploymentLog(
     subscriptionId: string,
     rg: string,
     name: string,
@@ -297,64 +202,11 @@ export class FunctionValidator {
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id))
       );
 
       return functionGetResponse?.data?.value;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappConfigs(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
-        axios.post(baseUrlAppSettings(subscriptionId, rg, name))
-      );
-      if (
-        !functionGetResponse ||
-        !functionGetResponse.data ||
-        !functionGetResponse.data.properties
-      ) {
-        return undefined;
-      }
-
-      return functionGetResponse.data.properties;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappServicePlan(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionPlanResponse = await this.runWithRetry(() =>
-        axios.get(baseUrlPlan(subscriptionId, rg, name))
-      );
-      if (
-        !functionPlanResponse ||
-        !functionPlanResponse.data ||
-        !functionPlanResponse.data.sku ||
-        !functionPlanResponse.data.sku.name
-      ) {
-        return undefined;
-      }
-
-      return functionPlanResponse.data.sku.name;
     } catch (error) {
       console.log(error);
       return undefined;

@@ -7,6 +7,7 @@ import * as chai from "chai";
 import * as path from "path";
 import { SpfxPlugin } from "../../../../../src/plugins/resource/spfx";
 import { SPFxPluginImpl } from "../../../../../src/plugins/resource/spfx/plugin";
+import * as Utils from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { ok, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper, MockUserInteraction } from "../helper";
 import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
@@ -54,6 +55,7 @@ describe("SPFxDeploy", function () {
   it("create app catalog failed", async function () {
     sandbox.stub(SPOClient, "getAppCatalogSite").resolves(undefined);
     sandbox.stub(SPOClient, "createAppCatalog").resolves();
+    sandbox.stub(Utils, "sleep" as any).resolves();
     pluginContext.ui = new MockUserInteraction();
     const result = await plugin.deploy(pluginContext);
     chai.assert.isTrue(result.isErr());

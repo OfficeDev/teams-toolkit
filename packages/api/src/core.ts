@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Stage } from ".";
-import { CoreCallbackEvent } from "./constants";
+import { CoreCallbackEvent, Stage } from "./constants";
 import { FxError } from "./error";
 import { Func, FunctionRouter, QTreeNode } from "./qm";
 import { Inputs, Void } from "./types";
@@ -47,7 +46,6 @@ export interface Core {
   grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
   checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
   listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
-  listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
 
   /**
    * This callback type is called `onEventCallback` and is displayed as a global symbol.

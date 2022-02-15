@@ -14,13 +14,15 @@ Use the library to:
 
 ## Getting started
 
-TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
+> Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
+
+TeamsFx SDK is pre-configured in scaffolded project using Teams Toolkit extension for Visual Studio and vscode, or the `teamsfx` cli from the `teamsfx-cli` npm package.
 Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md) to see how to create a Teams App project.
 
 ### Prerequisites
 
 - Node.js version 10.x.x or higher
-- A project created by TeamsFx toolkit VS Code extension or Cli tool.
+- A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
 - If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.9.3`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
 
 ### Install the `@microsoft/teamsfx` package
@@ -43,7 +45,6 @@ Please note that you need to load configuration before using any credentials.
 loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
     clientId: process.env.REACT_APP_CLIENT_ID,
   },
 });
@@ -65,7 +66,6 @@ Use the snippet below:
 loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
     clientId: process.env.REACT_APP_CLIENT_ID,
   },
 });
@@ -163,7 +163,6 @@ Use `TeamsUserCredential` and `createMicrosoftGraphClient`.
 loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
     clientId: process.env.REACT_APP_CLIENT_ID,
   },
 });
@@ -180,7 +179,6 @@ Use `axios` library to make HTTP request to Azure Function.
 loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
     clientId: process.env.REACT_APP_CLIENT_ID,
   },
 });
@@ -203,7 +201,10 @@ Apart from `tedious`, you can also compose connection config of other SQL librar
 ```ts
 loadConfiguration();
 const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
+// if there's only one SQL database
 const config = await sqlConnectConfig.getConfig();
+// if there are multiple SQL databases
+const config2 = await sqlConnectionConfig.getConfig("your database name");
 const connection = new Connection(config);
 connection.on("connect", (error) => {
   if (error) {

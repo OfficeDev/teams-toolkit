@@ -13,14 +13,14 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser, getTeamsAppId } from "../utils/commonUtils";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { getIsExistingUser } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;
   /* eslint-disable prefer-const */
   export let isFromSample: boolean | undefined = undefined;
+  export let settingsVersion: string | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -34,6 +34,7 @@ export namespace ExtTelemetry {
   export class Reporter extends vscode.Disposable {
     constructor(ctx: vscode.ExtensionContext) {
       super(() => reporter.dispose());
+
       reporter = new VSCodeTelemetryReporter(
         extensionPackage.aiKey,
         extensionPackage.version,
@@ -80,15 +81,14 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
-    }
-
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (settingsVersion !== undefined) {
+      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryEvent(eventName, properties, measurements);
@@ -109,10 +109,6 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
-    }
-
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
@@ -131,6 +127,9 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (settingsVersion !== undefined) {
+      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+    }
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
@@ -148,17 +147,20 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
-    }
-
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (settingsVersion !== undefined) {
+      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+    }
 
     reporter.sendTelemetryException(error, properties, measurements);
+  }
+
+  export async function dispose() {
+    await reporter.dispose();
   }
 }

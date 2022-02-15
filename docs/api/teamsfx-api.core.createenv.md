@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-createEnv: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 ```

@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
@@ -37,6 +37,14 @@ describe("Deploy Command Tests", function () {
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return params;
+    });
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["a", "b", "c"],
+      });
     });
     sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
       if (typeof ops === "string") {
@@ -102,7 +110,6 @@ describe("Deploy Command Tests", function () {
     expect(allArguments.get("open-api-document")).equals(undefined);
     expect(allArguments.get("api-prefix")).equals(undefined);
     expect(allArguments.get("api-version")).equals(undefined);
-    expect(allArguments.get(constants.deployPluginNodeName)).deep.equals(["a", "b", "c"]);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 
@@ -114,7 +121,6 @@ describe("Deploy Command Tests", function () {
       components: ["a"],
     };
     await cmd.handler(args);
-    expect(allArguments.get(constants.deployPluginNodeName)).deep.equals(["a"]);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 

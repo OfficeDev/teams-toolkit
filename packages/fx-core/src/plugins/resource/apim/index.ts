@@ -14,7 +14,13 @@ import {
   Func,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
-import { AssertNotEmpty, BuildError, NotImplemented, UnhandledError } from "./error";
+import {
+  AssertNotEmpty,
+  BuildError,
+  NoPluginConfig,
+  NotImplemented,
+  UnhandledError,
+} from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
@@ -27,6 +33,8 @@ import {
   OperationStatus,
   UserTask,
   ApimPluginConfigKeys,
+  TeamsToolkitComponent,
+  ComponentRetryOperations,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -35,7 +43,9 @@ import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import "./v3";
+import { ArmTemplateResult } from "../../../common/armInterface";
+import { CliQuestionManager, VscQuestionManager } from "./managers/questionManager";
 
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
@@ -54,18 +64,6 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
 
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.executeWithFxError(
-      PluginLifeCycle.GetQuestionsForUserTask,
-      _getQuestionsForUserTask,
-      ctx,
-      func
-    );
-  }
-
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
   }
@@ -74,7 +72,17 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
   }
 
-  public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    return await this.executeWithFxError(
+      PluginLifeCycle.UpdateArmTemplates,
+      _updateArmTemplates,
+      ctx
+    );
+  }
+
+  public async generateArmTemplates(
+    ctx: PluginContext
+  ): Promise<Result<ArmTemplateResult, FxError>> {
     return await this.executeWithFxError(
       PluginLifeCycle.GenerateArmTemplates,
       _generateArmTemplates,
@@ -108,20 +116,10 @@ export class ApimPlugin implements Plugin {
     ...params: any[]
   ): Promise<Result<T, FxError>> {
     try {
-      await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
-      Telemetry.sendLifeCycleEvent(
-        ctx.telemetryReporter,
-        ctx.envInfo,
-        lifeCycle,
-        OperationStatus.Started
-      );
+      await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx.ui);
+      Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Started);
       const result = await fn(ctx, this.progressBar, ...params);
-      Telemetry.sendLifeCycleEvent(
-        ctx.telemetryReporter,
-        ctx.envInfo,
-        lifeCycle,
-        OperationStatus.Succeeded
-      );
+      Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Succeeded);
       await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle], true);
       return ok(result);
     } catch (error: any) {
@@ -137,7 +135,6 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -154,56 +151,56 @@ async function _getQuestions(
   stage: Stage
 ): Promise<QTreeNode | undefined> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const questionManager = await Factory.buildQuestionManager(ctx);
+  const questionManager = await Factory.buildQuestionManager(
+    ctx.answers!.platform!,
+    ctx.envInfo!,
+    ctx.azureAccountProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   switch (stage) {
     case Stage.deploy:
-      return await questionManager.deploy(ctx, apimConfig);
+      return await questionManager.deploy(ctx.root, ctx.envInfo, apimConfig);
     default:
       return undefined;
   }
 }
 
-async function _getQuestionsForUserTask(
-  ctx: PluginContext,
-  progressBar: ProgressBar,
-  func: Func
-): Promise<QTreeNode | undefined> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const questionManager = await Factory.buildQuestionManager(ctx);
-  if (func.method === "addResource") {
-    return await questionManager.addResource(ctx, apimConfig);
-  }
-  return undefined;
-}
-
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
-  const questionManager = await Factory.buildQuestionManager(ctx);
+  const questionManager = await Factory.buildQuestionManager(
+    ctx.answers!.platform!,
+    ctx.envInfo!,
+    ctx.azureAccountProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   return await questionManager.callFunc(func, ctx);
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const answer = buildAnswer(ctx.answers);
-  const scaffoldManager = await Factory.buildScaffoldManager(ctx);
-
+  const scaffoldManager = await Factory.buildScaffoldManager(
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
-  if (answer.validate) {
-    await answer.validate(PluginLifeCycle.Scaffold, apimConfig, ctx.root);
-  }
-
-  answer.save(PluginLifeCycle.Scaffold, apimConfig);
-
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
   await scaffoldManager.scaffold(appName, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo);
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
-  const apimManager = await Factory.buildApimManager(ctx);
-  const aadManager = await Factory.buildAadManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo,
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
+  const aadManager = await Factory.buildAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
@@ -211,7 +208,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateApim
   );
-  await apimManager.provision(apimConfig, solutionConfig, appName);
+  await apimManager.provision(apimConfig);
 
   await progressBar.next(
     ProgressStep.Provision,
@@ -220,36 +217,50 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   await aadManager.provision(apimConfig, appName);
 }
 
+async function _updateArmTemplates(
+  ctx: PluginContext,
+  progressBar: ProgressBar
+): Promise<ArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo,
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
+  return await apimManager.updateArmTemplates(ctx);
+}
+
 async function _generateArmTemplates(
   ctx: PluginContext,
   progressBar: ProgressBar
-): Promise<ScaffoldArmTemplateResult> {
-  const apimManager = await Factory.buildApimManager(ctx);
-  const solutionConfig = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  return await apimManager.generateArmTemplates(solutionConfig);
+): Promise<ArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo,
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
+  return await apimManager.generateArmTemplates(ctx);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const aadConfig = new AadPluginConfig(ctx.envInfo);
-
-  const apimManager = await Factory.buildApimManager(ctx);
-  const aadManager = await Factory.buildAadManager(ctx);
-  const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
-
-  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
+  const aadManager = await Factory.buildAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
+  const teamsAppAadManager = await Factory.buildTeamsAppAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   await progressBar.next(
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
   );
   await aadManager.postProvision(apimConfig, aadConfig, AadDefaultValues.redirectUris);
-
-  await progressBar.next(
-    ProgressStep.PostProvision,
-    ProgressMessages[ProgressStep.PostProvision].ConfigApim
-  );
-  await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,
@@ -274,7 +285,12 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
 
   answer.save(PluginLifeCycle.Deploy, apimConfig);
 
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo,
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
 
   await progressBar.next(ProgressStep.Deploy, ProgressMessages[ProgressStep.Deploy].ImportApi);
   await apimManager.deploy(apimConfig, solutionConfig, functionConfig, answer, ctx.root);

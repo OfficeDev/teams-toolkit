@@ -20,8 +20,6 @@ export class InfoMessages {
     PathInfo.solutionFolderName,
     PathInfo.funcDeploymentFolderName
   )}' folder and rerun the command.`;
-  public static readonly failedToCheckDotnet = (error: Error) =>
-    `Failed to check .NET SDK, error = '${error}'`;
   public static readonly failedToInstallDotnet = (error: Error) =>
     `Failed to install .NET SDK, error = '${error}'`;
 

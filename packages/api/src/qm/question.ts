@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs } from "../types";
+import { Inputs, OptionItem } from "../types";
 import {
   FuncValidation,
   StringArrayValidation,
@@ -22,44 +22,11 @@ export interface Func extends FunctionRouter {
  * definition of a function that return some dynamic value
  */
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
-export type ValidateFunc<T> = (
-  input: T,
-  inputs?: Inputs
-) => string | undefined | Promise<string | undefined>;
+
 export type OnSelectionChangeFunc = (
   currentSelectedIds: Set<string>,
   previousSelectedIds: Set<string>
 ) => Promise<Set<string>>;
-
-/**
- * Definition of option item in single selection or multiple selection
- */
-export interface OptionItem {
-  /**
-   * unique identifier of the option item in the option list
-   */
-  id: string;
-  /**
-   * display name
-   */
-  label: string;
-  /**
-   * short description
-   */
-  description?: string;
-  /**
-   * detailed description
-   */
-  detail?: string;
-  /**
-   * customized user data, which is not displayed
-   */
-  data?: unknown;
-  /**
-   * CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
-   */
-  cliName?: string;
-}
 
 /**
  * static option is `string` array or `OptionItem` array.

@@ -34,7 +34,6 @@ import {
   AzureAccountProvider,
   SubscriptionInfo,
   AppStudioTokenProvider,
-  Inputs,
   PermissionRequestProvider,
   GraphTokenProvider,
   SharepointTokenProvider,
@@ -50,9 +49,9 @@ export const validManifest = {
   packageName: "com.microsoft.teams.extension",
   developer: {
     name: "Teams App, Inc.",
-    websiteUrl: "{baseUrl}",
-    privacyUrl: "{baseUrl}/index.html#/privacy",
-    termsOfUseUrl: "{baseUrl}/index.html#/termsofuse",
+    websiteUrl: "https://{baseUrl}",
+    privacyUrl: "https://{baseUrl}/index.html#/privacy",
+    termsOfUseUrl: "https://{baseUrl}/index.html#/termsofuse",
   },
   icons: {
     color: "color.png",
@@ -104,64 +103,6 @@ export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin)
     return ok(Void);
   };
 }
-
-export const mockedFehostScaffoldArmResult = {
-  Modules: {
-    frontendHostingProvision: {
-      Content: "Mocked frontend hosting provision module content",
-    },
-  },
-  Orchestration: {
-    ParameterTemplate: {
-      Content: "Mocked frontend hosting parameter content",
-      ParameterJson: { FrontendParameter: "FrontendParameterValue" },
-    },
-    VariableTemplate: {
-      Content: "Mocked frontend hosting variable content",
-    },
-    ModuleTemplate: {
-      Content:
-        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
-      Outputs: {
-        endpoint: "Mocked frontend hosting endpoint",
-      },
-    },
-    OutputTemplate: {
-      Content: "Mocked frontend hosting output content",
-    },
-  },
-};
-
-export const mockedSimpleAuthScaffoldArmResult = {
-  Modules: {
-    simpleAuthProvision: {
-      Content: "Mocked simple auth provision module content",
-    },
-  },
-  Orchestration: {
-    ParameterTemplate: {
-      Content: "Mocked simple auth parameter content",
-      ParameterJson: { SimpleAuthParameter: "SimpleAuthParameterValue" },
-    },
-    VariableTemplate: {
-      Content: "Mocked simple auth variable content",
-    },
-    ModuleTemplate: {
-      Content:
-        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
-      Outputs: {
-        endpoint: "Mocked simple auth endpoint",
-      },
-    },
-    OutputTemplate: {
-      Content: "Mocked simple auth output content",
-    },
-  },
-};
-
-export const mockedAadScaffoldArmResult = {
-  Orchestration: {},
-};
 
 export class MockedLogProvider implements LogProvider {
   async info(message: { content: string; color: Colors }[] | string | any): Promise<boolean> {
@@ -313,6 +254,43 @@ class MockedTokenCredentials extends TokenCredentialsBase {
   }
 }
 
+export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 export class MockedGraphTokenProvider implements GraphTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
     return "some token";
@@ -344,7 +322,9 @@ export class MockedAppStudioProvider implements AppStudioTokenProvider {
     return "fakeToken";
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
+    return {
+      upn: "fakeUserPrincipalName@fake.com",
+    };
   }
   async signout(): Promise<boolean> {
     return true;

@@ -111,10 +111,10 @@ export class ScreenManager {
     // set fps, 20 if stdout is TTY, otherwise 0.2.
     this.fps = this.isTTY("out") ? 20 : 0.2;
 
-    // localize the cursor position
-    this.moveCursorDown(0);
     // show cursor at first
     this.showCursor();
+    // localize the cursor position
+    this.moveCursorDown(0);
   }
 
   /**

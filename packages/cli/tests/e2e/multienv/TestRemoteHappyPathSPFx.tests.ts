@@ -1,12 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Aocheng Wang <aochengwang@microsoft.com>
+ */
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 
 import {
   cleanUpLocalProject,
+  cleanupSharePointPackage,
   execAsync,
   execAsyncWithRetry,
   getTestFolder,
@@ -24,6 +29,7 @@ describe("Multi Env Happy Path for SPFx", function () {
   const type = "none";
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
   const env = "e2e";
+  let appId: string;
 
   it("Can create/provision/deploy/validate/package/publish an SPFx project", async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
@@ -111,11 +117,12 @@ describe("Multi Env Happy Path for SPFx", function () {
       // Validate sharepoint package, see fx-core/src/plugins/resource/spfx/plugin.ts: SPFxPluginImpl.buildSPPackge()
       const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
       const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      appId = solutionConfig["solution"]["id"];
       expect(await fs.pathExists(sharepointPackage)).to.be.true;
     }
 
     // validate manifest
-    result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
+    result = await execAsyncWithRetry(`teamsfx manifest validate --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -154,5 +161,6 @@ describe("Multi Env Happy Path for SPFx", function () {
   after(async () => {
     // clean up
     await cleanUpLocalProject(projectPath);
+    await cleanupSharePointPackage(appId);
   });
 });

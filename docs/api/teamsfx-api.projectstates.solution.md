@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-solution: Dict<ConfigValue>;
+solution: Record<string, ConfigValue>;
 ```

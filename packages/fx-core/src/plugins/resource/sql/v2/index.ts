@@ -3,16 +3,13 @@
 
 import {
   AzureSolutionSettings,
-  err,
   FxError,
   Inputs,
   Json,
-  PluginContext,
+  ProjectSettings,
   QTreeNode,
   Result,
-  Stage,
   TokenProvider,
-  traverse,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -31,9 +28,10 @@ import {
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
   configureResourceAdapter,
-  convert2PluginContext,
+  generateResourceTemplateAdapter,
   getQuestionsAdapter,
   provisionResourceAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SqlPlugin)
@@ -43,38 +41,26 @@ export class SqlPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.SqlPlugin)
   plugin!: SqlPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    // run question model for publish
-    // const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-    // const getQuestionRes = await this.plugin.getQuestions(Stage.provision, pluginContext);
-    // if (getQuestionRes.isOk()) {
-    //   const node = getQuestionRes.value;
-    //   if (node) {
-    //     const res = await traverse(node, inputs, ctx.userInteraction);
-    //     if (res.isErr()) {
-    //       return err(res.error);
-    //     }
-    //   }
-    // }
-
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
@@ -85,5 +71,19 @@ export class SqlPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

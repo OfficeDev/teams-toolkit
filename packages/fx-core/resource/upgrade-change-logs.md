@@ -1,22 +1,21 @@
-# Change Logs for Project Structure Upgrade
-Congratulations! You have successfully upgraded your Teams App project structure. We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features, including using the IaC approach for resource provision with pre-cooked ARM templates tailored to your project and defining multiple environments within the project.
+# Congratulations! You have successfully upgraded your Teams App project structure
+
+We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features, including using the Infrastructure as Code approach for resource provision with pre-cooked ARM templates tailored to your project and defining multiple environments within the project. Click [here](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#file-structure-change) to learn more about the file structure changes.
 
 ## Know about the changes we made
+After project upgrade, the new file structure will consist:
+* Project configurations for local debug setting, project setting etc.
+* Environment specific configurations for AAD, Manifest etc.
+* Project level template files including ARM and Manifest templates.
+ 
+## Know what you need to do
+Below are the important things you should know about after upgrading your project.
 
-### Project Configuration Files
-The exiting project configuration files under the `.fx` folder are outdated and incompatible with the current version of Teams Toolkit and made some clean-ups and now your `.fx` folder will consist:
-* Parameters for Provisioning Azure Resource, specific for each environment.
-* Configurations for Manifest, AAD, etc, specific for each environment.
-* Project Settings, including capabilities, programming languages, etc.
-* Local Settings, including necessary information to start debugging the project locally.
+* Execute [provision again if your project contains Bot / Messaging Extension](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#reprovision-bot-project) capability.
+* Update properties if your project contains Azure [API Management (APIM) Service](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#customize-apim-service).
+* Reset environment variables if you used an [existing AAD app](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/using-existing-aad.md#set-necessary-info-in-teamsfx-project).
+* Optionally you can connect to an [Azure SQL instance when local debug](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#local-debug-with-sql) your Teams app.
+* [Change resource names](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#change-resource-name-when-creating-a-new-environment) when creating a new environment and if you have executed provision before upgrading.
 
-We will update those files according to your original project settings and move existing ones into `.backup` folder for your reference. You can safely delete the `.backup` folder after you have compared and reviewed the changes.
-
-### ARM Templating and Resource Configuration Files
-Teams Toolkit now supports provision Azure resources using an Infrastructure as Code approach, pre-cooked ARM templates tailored to your project will be automatically added under the `templates/azure` folder. The ARM templates are authored using [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview).
-
-### Environment Specific Configuration Files
-Teams Toolkit now supports creating multiple environments for a project, and you can customize the configurations for a specific environment, for example using different app names in the manifest for different environments. You can read more about what you can do in [this wiki](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit#managing-multiple-environments-in-teams-toolkit).
-
-## Restore Your Project Configurations
-Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.
+## Learn More
+Read the [Wiki Page](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) to learn more about the project upgrade process.

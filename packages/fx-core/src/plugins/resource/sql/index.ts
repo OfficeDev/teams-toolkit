@@ -14,30 +14,28 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { isArmSupportEnabled } from "../../..";
 import {
   AzureResourceSQL,
   HostTypeOptionAzure,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { Telemetry } from "./constants";
+import { Constants, Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import "./v2";
+import "./v3";
 @Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";
   displayName = "Azure SQL Database";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const azureResources = solutionSettings.azureResources || [];
-    const cap = solutionSettings.capabilities || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      cap.includes(TabOptionItem.id) &&
       azureResources.includes(AzureResourceSQL.id)
     );
   }
@@ -52,15 +50,7 @@ export class SqlPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<SqlResult> {
-    if (!isArmSupportEnabled()) {
-      return this.runWithSqlError(
-        Telemetry.stage.provision,
-        () => this.sqlImpl.provision(ctx),
-        ctx
-      );
-    } else {
-      return ok(undefined);
-    }
+    return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<SqlResult> {
@@ -71,10 +61,24 @@ export class SqlPlugin implements Plugin {
     );
   }
 
-  public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
     return this.runWithSqlError(
       Telemetry.stage.generateArmTemplates,
-      () => this.sqlImpl.generateArmTemplates(ctx),
+      () => this.sqlImpl.updateArmTemplates(ctx),
+      ctx
+    );
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+    let handleFunction: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    if (ctx.answers?.existingResources?.includes(Constants.pluginFullName)) {
+      handleFunction = this.sqlImpl.generateNewDatabaseBicepSnippet;
+    } else {
+      handleFunction = this.sqlImpl.generateArmTemplates;
+    }
+    return this.runWithSqlError(
+      Telemetry.stage.generateArmTemplates,
+      () => handleFunction(ctx),
       ctx
     );
   }
@@ -122,10 +126,10 @@ export class SqlPlugin implements Plugin {
       const errorCode = res.error.source + "." + res.error.name;
       const errorType =
         res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      TelemetryUtils.init(ctx);
+      TelemetryUtils.init(ctx.telemetryReporter);
       let errorMessage = res.error.message;
       if (res.error.innerError) {
-        errorMessage += ` Detailed error: ${e.innerError.message}.`;
+        errorMessage += ` Detailed error: ${res.error.innerError.message}.`;
       }
       TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, errorMessage);
       return res;

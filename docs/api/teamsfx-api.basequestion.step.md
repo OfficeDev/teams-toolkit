@@ -4,7 +4,7 @@
 
 ## BaseQuestion.step property
 
-`step` and `totalSteps` are used to discribe the progress in question flow `step` is the sequence number of current question
+`step` and `totalSteps` are used to describe the progress in question flow `step` is the sequence number of current question
 
 <b>Signature:</b>
 

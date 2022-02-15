@@ -24,7 +24,6 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled } from "../../../../src";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -126,9 +125,5 @@ export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
 }
 
 export function getAzureProjectRoot(): string {
-  if (isMultiEnvEnabled()) {
-    return "./tests/plugins/resource/appstudio/resources-multi-env";
-  } else {
-    return "./tests/plugins/resource/appstudio/resources";
-  }
+  return "./tests/plugins/resource/appstudio/resources-multi-env";
 }

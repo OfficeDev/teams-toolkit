@@ -19,12 +19,7 @@ import sinon from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { readJson } from "../../src/common/fileUtils";
-import {
-  isArmSupportEnabled,
-  isFeatureFlagEnabled,
-  isMultiEnvEnabled,
-  getRootDirectory,
-} from "../../src/common/tools";
+import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
@@ -124,9 +119,9 @@ describe("Other test case", () => {
   });
 
   it("error: FetchSampleError", async () => {
-    const error = FetchSampleError();
+    const error = FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
-    assert.isTrue(error.message === "Failed to download sample app");
+    assert.isTrue(error.message.includes("hello world app"));
   });
 
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
@@ -178,48 +173,6 @@ describe("Other test case", () => {
       [featureFlagName]: "",
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
-    restore();
-  });
-
-  it("isArmSupportEnabled: return correct result based on environment variable value", () => {
-    const armSupportFeatureFlagName = "TEAMSFX_INSIDER_PREVIEW";
-
-    let restore = mockedEnv({
-      [armSupportFeatureFlagName]: undefined,
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "",
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "true",
-    });
-    assert.isTrue(isArmSupportEnabled());
-    restore();
-  });
-
-  it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
-    let restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: undefined,
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "",
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "true",
-    });
-    assert.isTrue(isMultiEnvEnabled());
     restore();
   });
 
@@ -287,6 +240,13 @@ describe("Other test case", () => {
     });
 
     assert.equal(getRootDirectory(), os.tmpdir());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: "${homeDir}/TeamsApps",
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
     restore();
   });
 });

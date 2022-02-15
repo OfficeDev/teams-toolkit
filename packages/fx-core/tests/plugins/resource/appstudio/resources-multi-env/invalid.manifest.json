@@ -10,8 +10,8 @@
     "privacyUrl": "https://localhost:3000/privacy"
   },
   "icons": {
-    "color": "color.png",
-    "outline": "outline.png"
+    "color": "resources/color.png",
+    "outline": "resources/outline.png"
   },
   "name": {
     "short": "",

@@ -10,7 +10,11 @@ import * as path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 
 chai.use(chaiAsPromised);
 
@@ -30,21 +34,21 @@ describe("FrontendGenerateArmTemplates", () => {
     ];
     const pluginContext: PluginContext = TestHelper.getFakePluginContext();
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
     const result = await frontendPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "frontend_hosting.bicep";
+    const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-frontend-hosting": {
-          Modules: {
-            frontendHostingProvision: {
-              Path: `./${testModuleFileName}`,
+          Provision: {
+            frontendHosting: {
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -52,34 +56,61 @@ describe("FrontendGenerateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      chai.assert.strictEqual(
-        expectedResult.Modules!.frontendHostingProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "provision.result.bicep"
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
+      chai.assert.isNotNull(expectedResult.Reference);
+      chai.assert.isUndefined(expectedResult.Parameters);
+    }
+  });
+
+  it("update bicep arm templates", async () => {
+    // Act
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+    ];
+    const pluginContext: PluginContext = TestHelper.getFakePluginContext();
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+    } as AzureSolutionSettings;
+    const result = await frontendPlugin.updateArmTemplates(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.exists(result.value.Reference!.endpoint);
+      chai.assert.exists(result.value.Reference!.domain);
       chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+        result.value.Reference!.endpoint,
+        "provisionOutputs.frontendHostingOutput.value.endpoint"
       );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
       chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
+        result.value.Reference!.domain,
+        "provisionOutputs.frontendHostingOutput.value.domain"
       );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
+      chai.assert.notExists(result.value.Provision);
+      chai.assert.notExists(result.value.Parameters);
+      chai.assert.notExists(result.value.Configuration);
     }
   });
 });

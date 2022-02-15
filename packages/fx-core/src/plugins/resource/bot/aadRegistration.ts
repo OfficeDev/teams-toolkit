@@ -6,9 +6,15 @@ import { AxiosInstance, default as axios } from "axios";
 import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
-import { CheckThrowSomethingMissing, ProvisionError } from "./errors";
+import {
+  CheckThrowSomethingMissing,
+  CreateAADAppError,
+  CreateAADSecretError,
+  ProvisionError,
+} from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";
+import { RetryHandler } from "./utils/retryHandler";
 
 export class AADRegistration {
   public static async registerAADAppAndGetSecretByGraph(
@@ -18,12 +24,9 @@ export class AADRegistration {
     msAppId?: string
   ): Promise<BotAuthCredential> {
     const axiosInstance: AxiosInstance = axios.create({
-      headers: {
-        post: {
-          Authorization: `Bearer ${graphToken}`,
-        },
-      },
+      baseURL: AADRegistrationConstants.GRAPH_REST_BASE_URL,
     });
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
 
     const result = new BotAuthCredential();
 
@@ -31,15 +34,14 @@ export class AADRegistration {
       // 1. Register a new AAD App.
       let regResponse = undefined;
       try {
-        regResponse = await axiosInstance.post(
-          `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`,
-          {
+        regResponse = await RetryHandler.Retry(() =>
+          axiosInstance.post(`${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`, {
             displayName: displayName,
             signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS,
-          }
+          })
         );
       } catch (e) {
-        throw new ProvisionError(CommonStrings.AAD_APP, e);
+        throw new CreateAADAppError(e);
       }
 
       if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
@@ -57,16 +59,18 @@ export class AADRegistration {
     // 2. Generate client secret.
     let genResponse = undefined;
     try {
-      genResponse = await axiosInstance.post(
-        `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications/${result.objectId}/addPassword`,
-        {
-          passwordCredential: {
-            displayName: "default",
-          },
-        }
+      genResponse = await RetryHandler.Retry(() =>
+        axiosInstance.post(
+          `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications/${result.objectId}/addPassword`,
+          {
+            passwordCredential: {
+              displayName: "default",
+            },
+          }
+        )
       );
     } catch (e) {
-      throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET, e);
+      throw new CreateAADSecretError(e);
     }
 
     if (!genResponse || !genResponse.data) {

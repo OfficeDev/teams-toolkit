@@ -9,6 +9,6 @@
 ```typescript
 additionalLanguages?: {
         languageTag: string;
-        file?: string;
+        file: string;
     }[];
 ```

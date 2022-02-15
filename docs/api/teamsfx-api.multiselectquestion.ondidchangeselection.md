@@ -9,5 +9,5 @@ a callback function which is triggered when the selected values change, which ca
 <b>Signature:</b>
 
 ```typescript
-onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+onDidChangeSelection?: OnSelectionChangeFunc;
 ```

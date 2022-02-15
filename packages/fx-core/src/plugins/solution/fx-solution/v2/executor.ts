@@ -8,6 +8,7 @@ import {
   SystemError,
   returnUserError,
   UserError,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
@@ -15,6 +16,34 @@ import { SolutionError, SolutionSource } from "../constants";
 export type Thunk<R> = () => Promise<Result<R, FxError>>;
 
 export type NamedThunk<R> = { pluginName: string; taskName: string; thunk: Thunk<R> };
+
+export async function executeThunks<R>(
+  namedThunks: NamedThunk<R>[],
+  logger: LogProvider
+): Promise<Result<R, FxError>[]> {
+  const result = Promise.all(
+    namedThunks.map(async (namedThunk) => {
+      logger.info(`Running ${namedThunk.pluginName} concurrently`);
+      try {
+        return namedThunk.thunk();
+      } catch (e) {
+        if (e instanceof UserError || e instanceof SystemError) {
+          return err<R, FxError>(e);
+        }
+        return err<R, FxError>(
+          new SystemError(
+            "UnknownError",
+            `[SolutionV2.executeConcurrently] unknown error, plugin: ${
+              namedThunk.pluginName
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
+            SolutionSource
+          )
+        );
+      }
+    })
+  );
+  return result;
+}
 
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
@@ -68,22 +97,20 @@ export async function executeConcurrently<R>(
     );
 
   if (failed) {
-    const errMsg = JSON.stringify(errors.map((e) => `${e.name}:${e.message}`));
-    return ret.length === 0
-      ? new v2.FxFailure(
-          returnSystemError(
-            new Error(`Failed to run tasks concurrently due to ${errMsg}`),
-            SolutionSource,
-            SolutionError.InternelError
-          )
-        )
-      : new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
+    if (ret.length === 0) {
+      return new v2.FxFailure(mergeFxErrors(errors));
+    } else {
+      return new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
+    }
   }
 
   return new v2.FxSuccess(ret);
 }
 
 function mergeFxErrors(errors: FxError[]): FxError {
+  if (errors.length === 1) {
+    return errors[0];
+  }
   let hasSystemError = false;
   const errMsgs: string[] = [];
   for (const err of errors) {

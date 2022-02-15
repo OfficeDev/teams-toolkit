@@ -3,6 +3,7 @@
 
 "use strict";
 
+import "./console/screen";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -11,7 +12,6 @@ import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import HelpParamGenerator from "./helpParamGenerator";
 import { getVersion } from "./utils";
-import { CLILogProvider } from "./commonlib/log";
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
@@ -41,6 +41,10 @@ export async function start() {
       description: "Print diagnostic information.",
       boolean: true,
       default: false,
+    })
+    .options("interactive", {
+      description: "Run the command interactively.",
+      boolean: true,
     })
     .demandCommand()
     .scriptName(constants.cliName)

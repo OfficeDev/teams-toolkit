@@ -3,7 +3,6 @@ review
 **/*.yml
 **/*.yaml
 **/*.d.ts
-tools
 doc
 
 coverage/

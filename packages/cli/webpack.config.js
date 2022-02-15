@@ -66,14 +66,6 @@ const config = {
     new CopyPlugin({
       patterns: [
         {
-          from: "./src/cmds/preview/depsChecker/resource/dotnet-install.sh",
-          to: "resource/dotnet-install.sh",
-        },
-        {
-          from: "./src/cmds/preview/depsChecker/resource/dotnet-install.ps1",
-          to: "resource/dotnet-install.ps1",
-        },
-        {
           from: "../fx-core/resource/",
           to: "../resource/",
         },
@@ -94,6 +86,11 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
+    // ignore node-gyp/bin/node-gyp.js since it's not used in runtime
+    new webpack.NormalModuleReplacementPlugin(
+      /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
+      "@npmcli/node-gyp"
+    ),
   ],
   optimization: {
     minimizer: [

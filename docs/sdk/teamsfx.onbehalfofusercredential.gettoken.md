@@ -60,6 +60,5 @@ await credential.getToken(["User.Read", "Application.Read.All"]) // Get Graph ac
 await credential.getToken("User.Read Application.Read.All") // Get Graph access token for multiple scopes using space-separated string
 await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
 await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
-
 ```
 

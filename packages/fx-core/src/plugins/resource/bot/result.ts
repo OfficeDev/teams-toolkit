@@ -18,8 +18,8 @@ export class FxBotPluginResultFactory {
   public static UserError(
     errorName: string,
     errorMessage: string,
-    showHelpLink: boolean,
-    innerError?: any
+    innerError?: any,
+    helpLink?: string
   ): FxResult {
     return err(
       new UserError(
@@ -27,7 +27,7 @@ export class FxBotPluginResultFactory {
         errorMessage,
         FxBotPluginResultFactory.source,
         innerError?.stack,
-        showHelpLink ? FxBotPluginResultFactory.defaultHelpLink : undefined,
+        helpLink,
         innerError
       )
     );

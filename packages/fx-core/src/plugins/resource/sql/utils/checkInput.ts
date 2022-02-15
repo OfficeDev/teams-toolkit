@@ -6,7 +6,7 @@ export function sqlUserNameValidator(name: string): string | undefined {
     return Message.inputCheck.sqlUserNameEmpty;
   }
 
-  if (invalidSqlUserName.names.includes(name)) {
+  if (invalidSqlUserName.names.includes(name.toLowerCase())) {
     return Message.inputCheck.sqlUserNameContainsSqlIdentifier;
   }
 
@@ -40,7 +40,7 @@ class invalidSqlUserName {
     "db_denydatawriter",
     "db_owner",
     "db_securityadmin",
-    "INFORMATION_SCHEMA",
+    "information_schema",
     "sys",
   ];
 }

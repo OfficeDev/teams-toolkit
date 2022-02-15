@@ -29,7 +29,7 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/templatesActions";
+} from "../../../../common/template-utils/templatesActions";
 
 export type TemplateVariables = { [key: string]: string };
 

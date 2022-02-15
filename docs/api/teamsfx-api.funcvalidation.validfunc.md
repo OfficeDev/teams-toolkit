@@ -9,5 +9,5 @@ A function that will be called to validate input and to give a hint to the user.
 <b>Signature:</b>
 
 ```typescript
-validFunc: (input: T, previousInputs?: Inputs) => string | undefined | Promise<string | undefined>;
+validFunc: ValidateFunc<T>;
 ```

@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Bowen Song <bowen.song@microsoft.com>
+ */
+
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
 
@@ -14,6 +19,7 @@ import {
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
 describe("Provision", function () {
@@ -31,7 +37,11 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     {
       // update permission
@@ -49,15 +59,27 @@ describe("Provision", function () {
     // Get context
     const expectedPermission =
       '[{"resourceAppId":"00000003-0000-0000-c000-000000000000","resourceAccess": [{"id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d","type": "Scope"},{"id": "a154be20-db9c-4678-8ab7-66f6cc099a59","type": "Scope"}]}]';
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    if (isMultiEnvEnabled()) {
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-    // Validate Aad App
-    const aad = AadValidator.init(context);
-    await AadValidator.validate(aad, expectedPermission);
+      // Validate Aad App
+      const aad = AadValidator.init(context);
+      await AadValidator.validate(aad, expectedPermission);
+    } else {
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+      // Validate Aad App
+      const aad = AadValidator.init(context);
+      await AadValidator.validate(aad, expectedPermission);
+    }
   });
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, false);
+    }
   });
 });

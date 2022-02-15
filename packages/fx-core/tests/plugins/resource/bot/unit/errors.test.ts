@@ -13,6 +13,8 @@ import {
   PackDirExistenceError,
   TemplateZipFallbackError,
   UnzipError,
+  CreateAADSecretError,
+  CreateAADAppError,
 } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("Test Errors", () => {
@@ -21,7 +23,7 @@ describe("Test Errors", () => {
       // Arrange
       const errorName = "error";
       const details = "some error occurs";
-      const suggestions: string[] = [];
+      const suggestions: string[] = ["suggestions"];
       // Act
       const pluginError = new PluginError(ErrorType.System, errorName, details, suggestions);
 
@@ -56,7 +58,28 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.System);
+    });
+  });
+
+  describe("CreateAADAppError", () => {
+    it("Happy Path", () => {
+      // Arrange
+      // Act
+      const myError = new CreateAADAppError();
+
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
+    });
+  });
+
+  describe("CreateAADSecretError", () => {
+    it("Happy Path", () => {
+      // Arrange
+      // Act
+      const myError = new CreateAADSecretError();
+
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
     });
   });
 

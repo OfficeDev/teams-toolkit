@@ -1,6 +1,6 @@
 {
   "name": "simpleauth",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.",
   "scripts": {
     "version": "../../.github/scripts/pkg-version.sh fx-core && git add .",

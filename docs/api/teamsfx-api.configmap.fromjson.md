@@ -7,14 +7,14 @@
 <b>Signature:</b>
 
 ```typescript
-static fromJSON(obj?: Dict<unknown>): ConfigMap | undefined;
+static fromJSON(obj?: Json): ConfigMap | undefined;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  obj | [Dict](./teamsfx-api.dict.md)<!-- -->&lt;unknown&gt; |  |
+|  obj | [Json](./teamsfx-api.json.md) |  |
 
 <b>Returns:</b>
 

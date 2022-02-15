@@ -6,3 +6,4 @@
 *.tsx eol=lf
 *.yml eol=lf
 *.sh eol=lf
+*.bicep eol=lf

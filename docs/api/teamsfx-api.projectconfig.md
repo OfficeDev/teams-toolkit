@@ -14,6 +14,7 @@ export interface ProjectConfig
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [config?](./teamsfx-api.projectconfig.config.md) | [SolutionConfig](./teamsfx-api.solutionconfig.md) | <i>(Optional)</i> |
+|  [config?](./teamsfx-api.projectconfig.config.md) | [SolutionConfig](./teamsfx-api.solutionconfig.md) \| [Json](./teamsfx-api.json.md) | <i>(Optional)</i> |
+|  [localSettings?](./teamsfx-api.projectconfig.localsettings.md) | [LocalSettings](./teamsfx-api.localsettings.md) \| [Json](./teamsfx-api.json.md) | <i>(Optional)</i> |
 |  [settings?](./teamsfx-api.projectconfig.settings.md) | [ProjectSettings](./teamsfx-api.projectsettings.md) | <i>(Optional)</i> |
 

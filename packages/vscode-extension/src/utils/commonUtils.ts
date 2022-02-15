@@ -1,19 +1,12 @@
 // Copyright (c) Microsoft Corporation.
-
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-
 import * as os from "os";
-
 import * as extensionPackage from "./../../package.json";
-
 import * as fs from "fs-extra";
-
 import { ext } from "../extensionVariables";
-
 import * as path from "path";
-
 import {
   ConfigFolderName,
   InputConfigsFolderName,
@@ -24,20 +17,11 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import {
-  environmentManager,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  isValidProject,
-  PluginNames,
-} from "@microsoft/teamsfx-core";
+import { environmentManager, isValidProject, PluginNames } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
-
 import * as commonUtils from "../debug/commonUtils";
-
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
-
-import { envDefaultJsonFile } from "../commonlib/common/constant";
+import { execSync } from "child_process";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -77,32 +61,6 @@ export function isLinux() {
   return os.type() === "Linux";
 }
 
-// Only used for telemetry when multi-env is disable
-export function getTeamsAppId() {
-  if (isMultiEnvEnabled()) {
-    return undefined;
-  }
-
-  try {
-    const ws = ext.workspaceUri.fsPath;
-
-    if (isValidProject(ws)) {
-      const envJsonPath = path.join(
-        ws,
-        `.${ConfigFolderName}`,
-        `env.${environmentManager.getDefaultEnvName()}.json`
-      );
-
-      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
-      return isMultiEnvEnabled()
-        ? envJson[PluginNames.APPST].teamsAppId
-        : envJson.solution.remoteTeamsAppId;
-    }
-  } catch (e) {
-    return undefined;
-  }
-}
-
 // Only used for telemetry when multi-env is enabled
 export function getTeamsAppIdByEnv(env: string) {
   try {
@@ -129,25 +87,18 @@ export function getProjectId(): string | undefined {
     );
     const settingsJsonPathOld = path.join(ws, `.${ConfigFolderName}/settings.json`);
 
-    if (isMultiEnvEnabled()) {
-      // Do not check validity of project in multi-env.
-      // Before migration, `isValidProject()` is false, but we still need to send `project-id` telemetry property.
-      try {
-        const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
-        return settingsJson.projectId;
-      } catch (e) {}
-
-      // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
-      // While doing migration, sending telemetry will call this `getProjectId()` function.
-      // But before migration done, the settings file is still in the old location.
-      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
+    // Do not check validity of project in multi-env.
+    // Before migration, `isValidProject()` is false, but we still need to send `project-id` telemetry property.
+    try {
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
       return settingsJson.projectId;
-    } else {
-      if (isValidProject(ws)) {
-        const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
-        return settingsJson.projectId;
-      }
-    }
+    } catch (e) {}
+
+    // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
+    // While doing migration, sending telemetry will call this `getProjectId()` function.
+    // But before migration done, the settings file is still in the old location.
+    const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
+    return settingsJson.projectId;
   } catch (e) {
     return undefined;
   }
@@ -242,10 +193,6 @@ export function getConfiguration(key: string): boolean {
 }
 
 export function syncFeatureFlags() {
-  process.env["TEAMSFX_INSIDER_PREVIEW"] = getConfiguration(
-    ConfigurationKey.InsiderPreview
-  ).toString();
-
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
@@ -256,8 +203,7 @@ export function syncFeatureFlags() {
 }
 
 export class FeatureFlags {
-  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
-
+  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }
 
@@ -335,7 +281,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  return provisionResult?.[PluginNames.AAD]?.tenantId;
+  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
@@ -392,14 +338,11 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
 
     const provisionOutputFile = path.join(
       configRoot!,
+      path.join(
+        StatesFolderName,
 
-      isMultiEnvEnabled()
-        ? path.join(
-            StatesFolderName,
-
-            EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
-          )
-        : envDefaultJsonFile
+        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
+      )
     );
 
     if (!fs.existsSync(provisionOutputFile)) {
@@ -415,7 +358,6 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
 export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {
-    if (!isArmSupportEnabled() || !isMultiEnvEnabled()) return false;
     const fx = path.join(workspacePath, ".fx");
     if (!(await fs.pathExists(fx))) {
       return false;
@@ -429,4 +371,25 @@ export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promis
   } catch (err) {
     return false;
   }
+}
+
+export function isValidNode(): boolean {
+  try {
+    const supportedVersions = ["10", "12", "14"];
+    const output = execSync("node --version");
+    const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+
+    const match = regex.exec(output.toString());
+    if (!match) {
+      return false;
+    }
+
+    const majorVersion = match.groups?.major_version;
+    if (!majorVersion) {
+      return false;
+    }
+
+    return supportedVersions.includes(majorVersion);
+  } catch (e) {}
+  return false;
 }

@@ -3,15 +3,15 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   MsGraphAuthProvider,
   loadConfiguration,
   TeamsUserCredential,
   ErrorWithCode,
   ErrorCode,
-} from "../../../src";
-import sinon from "sinon";
+} from "../../../src/index.browser";
+import * as sinon from "sinon";
 
 chaiUse(chaiPromises);
 describe("MsGraphAuthProvider Tests - Browser", () => {

@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   createMicrosoftGraphClient,
   ErrorCode,
   ErrorWithCode,
   loadConfiguration,
   TeamsUserCredential,
-} from "../../../src";
+} from "../../../src/index.browser";
 
 chaiUse(chaiPromises);
 describe("MsGraphClientProvider Tests - Browser", () => {

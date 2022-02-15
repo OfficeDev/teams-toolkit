@@ -13,7 +13,6 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 import * as constants from "./constants";
 
@@ -138,11 +137,7 @@ export function InvalidEnvFile(msg: string, path: string): UserError {
 
 export class EnvUndefined extends SystemError {
   constructor() {
-    super(
-      new.target.name,
-      `env is undefined, isMultiEnvEnabled = ${isMultiEnvEnabled()}`,
-      constants.cliSource
-    );
+    super(new.target.name, `env is undefined`, constants.cliSource);
   }
 }
 
@@ -171,5 +166,14 @@ export class UserdataNotFound extends UserError {
       `The userdata file ".${ConfigFolderName}/${StatesFolderName}/${env}.userdata" is not found. Please try to provision in the "${env}" envrionment`,
       constants.cliSource
     );
+  }
+}
+
+export class InvalidTemplateName extends UserError {
+  constructor(name: string) {
+    super({
+      source: constants.cliSource,
+      message: `Invalid template name: ${name}`,
+    });
   }
 }

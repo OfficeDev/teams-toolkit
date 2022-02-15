@@ -6,7 +6,7 @@ The provision task will fail because of some resources are failed to created. In
 
 You have to delete the resource group created in the previous task manually in [Azure portal](https://ms.portal.azure.com/).
 
-The resource group name can be found in the file: `.fx/env.default.json`, you can search key `resourceGroupName`.
+The resource group name can be found in the file: `.fx/states/state.{envName}.json`, you can search key `resourceGroupName`.
 
 ### Option 2 - Solve the provision problem, continue to provision in the existing resource group
 

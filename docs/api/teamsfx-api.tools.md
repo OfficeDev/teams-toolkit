@@ -14,8 +14,10 @@ export interface Tools
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [dialog?](./teamsfx-api.tools.dialog.md) | [Dialog](./teamsfx-api.dialog.md) | <i>(Optional)</i> |
+|  [cryptoProvider?](./teamsfx-api.tools.cryptoprovider.md) | [CryptoProvider](./teamsfx-api.cryptoprovider.md) | <i>(Optional)</i> |
+|  [expServiceProvider?](./teamsfx-api.tools.expserviceprovider.md) | [ExpServiceProvider](./teamsfx-api.expserviceprovider.md) | <i>(Optional)</i> |
 |  [logProvider](./teamsfx-api.tools.logprovider.md) | [LogProvider](./teamsfx-api.logprovider.md) |  |
+|  [permissionRequest?](./teamsfx-api.tools.permissionrequest.md) | [PermissionRequestProvider](./teamsfx-api.permissionrequestprovider.md) | <i>(Optional)</i> |
 |  [telemetryReporter?](./teamsfx-api.tools.telemetryreporter.md) | [TelemetryReporter](./teamsfx-api.telemetryreporter.md) | <i>(Optional)</i> |
 |  [tokenProvider](./teamsfx-api.tools.tokenprovider.md) | [TokenProvider](./teamsfx-api.tokenprovider.md) |  |
 |  [treeProvider?](./teamsfx-api.tools.treeprovider.md) | [TreeProvider](./teamsfx-api.treeprovider.md) | <i>(Optional)</i> |

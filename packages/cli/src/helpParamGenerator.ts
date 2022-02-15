@@ -20,7 +20,7 @@ import {
   OptionItem,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -50,6 +50,7 @@ export class HelpParamGenerator {
     Stage.grantPermission,
     Stage.checkPermission,
     "validate",
+    "update",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",
@@ -109,7 +110,7 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  private getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
     if (this.questionsMap.has(stage)) {
       return this.questionsMap.get(stage);
     }
@@ -122,15 +123,7 @@ export class HelpParamGenerator {
     }
     const systemInput = this.getSystemInputs();
     for (const stage in Stage) {
-      let result;
-      if (stage === Stage.publish) {
-        result = await this.core.getQuestions(
-          stage as Stage,
-          this.getSystemInputs("", Platform.VS)
-        );
-      } else {
-        result = await this.core.getQuestions(stage as Stage, systemInput);
-      }
+      const result = await this.core.getQuestions(stage as Stage, systemInput);
       if (result.isErr()) {
         return err(result.error);
       } else {
@@ -164,21 +157,27 @@ export class HelpParamGenerator {
     }
     const root = this.getQuestionRootNodeForHelp(stage);
     let nodes: QTreeNode[] = [];
+    if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
+      const sqlOrApim = ["sql", "apim"].find((r) => r === resourceName);
+      const resources = sqlOrApim ? ["function", resourceName] : [resourceName];
       // Do CLI map for resource add
       const mustHaveNodes = rootCopy.children!.filter(
         (node) => (node.condition as any).minItems === 1
       );
       const resourcesNodes = rootCopy.children!.filter(
-        (node) => (node.condition as any).contains === resourceName
-      )[0];
+        (node) =>
+          resources.includes((node.condition as any).contains) ||
+          (node.condition as any).containsAny?.includes(resourceName)
+      );
       (rootCopy.data as any).default = [resourceName];
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
-      nodes = [rootCopy]
-        .concat(mustHaveNodes)
-        .concat(resourcesNodes ? flattenNodes(resourcesNodes) : []);
+      nodes = [rootCopy].concat(mustHaveNodes);
+      if (resourcesNodes) {
+        resourcesNodes.forEach((node) => (nodes = nodes.concat(flattenNodes(node))));
+      }
     } else if (capabilityId && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for capability add
@@ -222,10 +221,8 @@ export class HelpParamGenerator {
     }
 
     // Add env node
-    if (isMultiEnvEnabled()) {
-      if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
-        nodes = nodes.concat([EnvNodeNoCreate]);
-      }
+    if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
+      nodes = nodes.concat([EnvNodeNoCreate]);
     }
 
     // hide sql-confirm-password in provision stage.

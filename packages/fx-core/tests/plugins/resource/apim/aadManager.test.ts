@@ -1,21 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import axios from "axios";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import sinon from "sinon";
+import { createSandbox, match, SinonSandbox } from "sinon";
 import dotenv from "dotenv";
 import { AadManager } from "../../../../src/plugins/resource/apim/managers/aadManager";
 import { v4 } from "uuid";
-import {
-  AadHelper,
-  MockGraphTokenProvider,
-  it_if,
-  after_if,
-  before_if,
-  EnvConfig,
-} from "./testUtil";
 import {
   AssertConfigNotEmpty,
   InvalidAadObjectId,
@@ -24,205 +15,240 @@ import { IRequiredResourceAccess } from "../../../../src/plugins/resource/apim/i
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
 import { IAadPluginConfig, IApimPluginConfig } from "../../../../src/plugins/resource/apim/config";
 import {
-  AadDefaultValues,
   ApimPluginConfigKeys,
   TeamsToolkitComponent,
 } from "../../../../src/plugins/resource/apim/constants";
 import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
+import {
+  aadMatcher,
+  DefaultTestInput,
+  DefaultTestOutput,
+  mockAxios,
+  MockAxiosInput,
+  MockAxiosOutput,
+} from "./mock";
 dotenv.config();
 chai.use(chaiAsPromised);
 
-const UT_SUFFIX = v4().substring(0, 6);
-const UT_APP_NAME = `fx-apim-local-unit-test-aad-manager-${UT_SUFFIX}`;
-
 describe("AadManager", () => {
-  let aadManager: AadManager;
-  let aadService: AadService;
-  let aadHelper: AadHelper;
-
-  before(async () => {
-    const result = await buildService(EnvConfig.enableTest);
-    aadService = result.aadService;
-    aadManager = result.aadManager;
-    aadHelper = result.aadHelper;
-  });
-
-  after_if(EnvConfig.enableTest, async () => {
-    await aadHelper.deleteAadByName(UT_APP_NAME);
-    await aadHelper.deleteAadByName(`${UT_APP_NAME}-client`);
-  });
-
   describe("#provision()", () => {
-    let testObjectId = EnvConfig.defaultGuid;
-    let testSecret = "";
-    let testClientId = EnvConfig.defaultGuid;
-
-    before_if(EnvConfig.enableTest, async () => {
-      const aadInfo = await aadService.createAad(UT_APP_NAME);
-      testObjectId = aadInfo.id ?? "";
-      testClientId = aadInfo.appId ?? "";
-      const secretInfo = await aadService.addSecret(testObjectId, "test secret");
-      testSecret = secretInfo.secretText ?? "";
+    const sandbox = createSandbox();
+    afterEach(() => {
+      sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "Create a new AAD", async () => {
+    it("Create a new AAD", async () => {
       // Arrange
+      const newAppName = "test-new-app-name";
       const apimPluginConfig = buildApimPluginConfig();
+      const { aadManager, requestStub } = buildAadManager(sandbox);
 
       // Act
-      await aadManager.provision(apimPluginConfig, UT_APP_NAME);
+      await aadManager.provision(apimPluginConfig, newAppName);
 
       // Assert
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.createAad);
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.addSecret);
+      sandbox.assert.neverCalledWithMatch(requestStub, aadMatcher.getAad);
       chai.assert.isNotEmpty(apimPluginConfig.apimClientAADObjectId);
       chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientId);
       chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientSecret);
-
-      const queryResult = await aadService.getAad(apimPluginConfig.apimClientAADObjectId ?? "");
-      chai.assert.isNotEmpty(queryResult);
     });
 
-    it_if(
-      EnvConfig.enableTest,
-      "Use an existing AAD failed because of error object id",
-      async () => {
-        // Arrange
-        const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
-
-        // Act & Assert
-        await chai
-          .expect(aadManager.provision(apimPluginConfig, UT_APP_NAME))
-          .to.be.rejectedWith(InvalidAadObjectId.message(EnvConfig.defaultGuid));
-      }
-    );
-
-    it_if(EnvConfig.enableTest, "Use an existing AAD, using existing secret", async () => {
+    it("Use an existing AAD failed because of error object id", async () => {
       // Arrange
-      const apimPluginConfig = buildApimPluginConfig(testObjectId, testSecret);
+      const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.new);
+      const { aadManager, requestStub } = buildAadManager(sandbox);
 
-      // Act
-      await aadManager.provision(apimPluginConfig, UT_APP_NAME);
-
-      // Assert
-      chai.assert.equal(testObjectId, apimPluginConfig.apimClientAADObjectId);
-      chai.assert.equal(testClientId, apimPluginConfig.apimClientAADClientId);
-      chai.assert.equal(testSecret, apimPluginConfig.apimClientAADClientSecret);
+      // Act & Assert
+      await chai
+        .expect(aadManager.provision(apimPluginConfig, DefaultTestInput.aadDisplayName.new))
+        .to.be.rejectedWith(InvalidAadObjectId.message(DefaultTestInput.aadObjectId.new));
+      sandbox.assert.calledOnceWithMatch(requestStub, aadMatcher.getAad);
     });
 
-    it_if(EnvConfig.enableTest, "Use an existing AAD, create new secret", async () => {
+    it("Use an existing AAD, using existing secret", async () => {
       // Arrange
-      const apimPluginConfig = buildApimPluginConfig(testObjectId);
+      const apimPluginConfig = buildApimPluginConfig(
+        DefaultTestInput.aadObjectId.created,
+        "test-secret"
+      );
+      const { aadManager, requestStub } = buildAadManager(sandbox);
 
       // Act
-      await aadManager.provision(apimPluginConfig, UT_APP_NAME);
+      await aadManager.provision(apimPluginConfig, DefaultTestInput.aadDisplayName.new);
 
       // Assert
-      chai.assert.equal(testObjectId, apimPluginConfig.apimClientAADObjectId);
-      chai.assert.equal(testClientId, apimPluginConfig.apimClientAADClientId);
-      chai.assert.notEqual(testSecret, apimPluginConfig.apimClientAADClientSecret);
+      sandbox.assert.calledOnceWithMatch(requestStub, aadMatcher.getAad);
+      chai.assert.equal(
+        DefaultTestInput.aadObjectId.created,
+        apimPluginConfig.apimClientAADObjectId
+      );
+      chai.assert.equal(DefaultTestOutput.createAad.appId, apimPluginConfig.apimClientAADClientId);
+      chai.assert.equal("test-secret", apimPluginConfig.apimClientAADClientSecret);
+    });
+
+    it("Use an existing AAD, create new secret", async () => {
+      // Arrange
+      const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
+      const { aadManager, requestStub } = buildAadManager(sandbox);
+
+      // Act
+      await aadManager.provision(apimPluginConfig, DefaultTestInput.aadDisplayName.new);
+
+      // Assert
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.addSecret);
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.getAad);
+      sandbox.assert.neverCalledWithMatch(requestStub, aadMatcher.createAad);
+      chai.assert.equal(
+        DefaultTestInput.aadObjectId.created,
+        apimPluginConfig.apimClientAADObjectId
+      );
+      chai.assert.equal(DefaultTestOutput.getAad.appId, apimPluginConfig.apimClientAADClientId);
+      chai.assert.equal(
+        DefaultTestOutput.addSecret.secretText,
+        apimPluginConfig.apimClientAADClientSecret
+      );
     });
   });
 
   describe("#postProvision()", () => {
-    let testObjectId = EnvConfig.defaultGuid;
-    let testScopeClientId = EnvConfig.defaultGuid;
-    const testNewScopeId = v4();
-    const testExistingScopeId = v4();
+    const sandbox = createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-    before_if(EnvConfig.enableTest, async () => {
-      const clientAadInfo = await aadService.createAad(UT_APP_NAME);
-      testScopeClientId = clientAadInfo.appId ?? "";
+    it("Add a existing scope and add a new redirect url", async () => {
+      // Arrange
+      const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
+      const aadPluginConfig = buildAadPluginConfig(
+        "test-scope-client-id-created",
+        "test-scope-id-created"
+      );
+      const redirectUris = [`https://testredirect/${v4()}`];
+      const { aadManager, requestStub } = buildAadManager(sandbox, DefaultTestInput, {
+        getAad: {
+          id: "test-aad-object-id-created",
+          appId: "test-aad-client-id-created",
+          displayName: "test-aad-display-name-created",
+          requiredResourceAccess: [
+            {
+              resourceAppId: "test-scope-client-id-created",
+              resourceAccess: [{ id: "test-scope-id-created", type: "Scope" }],
+            },
+          ],
+          web: {
+            redirectUris: [],
+            implicitGrantSettings: { enableIdTokenIssuance: true },
+          },
+        },
+      });
 
-      await updateAadScope(aadService, clientAadInfo.id ?? "", [
-        testNewScopeId,
-        testExistingScopeId,
-      ]);
+      // Act
+      await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
 
-      const aadInfo = await aadService.createAad(UT_APP_NAME);
-      testObjectId = aadInfo.id ?? "";
-      aadService.updateAad(testObjectId, {
+      // Assert
+      const updatedAadInfo = {
+        web: {
+          redirectUris: redirectUris,
+        },
+      };
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.getAad);
+      sandbox.assert.calledWithMatch(
+        requestStub,
+        aadMatcher.updateAad.and(aadMatcher.body(updatedAadInfo))
+      );
+    });
+
+    it("Add a new scope and existing redirect url", async () => {
+      // Arrange
+      const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
+      const aadPluginConfig = buildAadPluginConfig(
+        "test-scope-client-id-created",
+        "test-scope-id-new"
+      );
+      const redirectUris = [`https://testredirect/${v4()}`];
+      const { aadManager, requestStub } = buildAadManager(sandbox, DefaultTestInput, {
+        getAad: {
+          id: "test-aad-object-id-created",
+          appId: "test-aad-client-id-created",
+          displayName: "test-aad-display-name-created",
+          requiredResourceAccess: [
+            {
+              resourceAppId: "test-scope-client-id-created",
+              resourceAccess: [{ id: "test-scope-id-created", type: "Scope" }],
+            },
+          ],
+          web: {
+            redirectUris: redirectUris,
+            implicitGrantSettings: { enableIdTokenIssuance: false },
+          },
+        },
+      });
+
+      // Act
+      await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
+
+      // Assert
+      const updatedAadInfo = {
         requiredResourceAccess: [
           {
-            resourceAppId: testScopeClientId,
-            resourceAccess: [{ id: testExistingScopeId, type: "Scope" }],
+            resourceAppId: "test-scope-client-id-created",
+            resourceAccess: [
+              { id: "test-scope-id-created", type: "Scope" },
+              { id: "test-scope-id-new", type: "Scope" },
+            ],
           },
         ],
-      });
+        web: {
+          implicitGrantSettings: { enableIdTokenIssuance: true },
+        },
+      };
+      sandbox.assert.calledWithMatch(requestStub, aadMatcher.getAad);
+      sandbox.assert.calledWithMatch(
+        requestStub,
+        aadMatcher.updateAad.and(aadMatcher.body(updatedAadInfo))
+      );
     });
 
-    it_if(EnvConfig.enableTest, "Add a existing scope and add a new redirect url", async () => {
+    it("Add existing scope and existing redirect url", async () => {
       // Arrange
-      const apimPluginConfig = buildApimPluginConfig(testObjectId);
-      const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testExistingScopeId);
+      const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
+      const aadPluginConfig = buildAadPluginConfig(
+        "test-scope-client-id-created",
+        "test-scope-id-created"
+      );
       const redirectUris = [`https://testredirect/${v4()}`];
+      const { aadManager, requestStub } = buildAadManager(sandbox, DefaultTestInput, {
+        getAad: {
+          id: "test-aad-object-id-created",
+          appId: "test-aad-client-id-created",
+          displayName: "test-aad-display-name-created",
+          requiredResourceAccess: [
+            {
+              resourceAppId: "test-scope-client-id-created",
+              resourceAccess: [{ id: "test-scope-id-created", type: "Scope" }],
+            },
+          ],
+          web: {
+            redirectUris: redirectUris,
+            implicitGrantSettings: { enableIdTokenIssuance: true },
+          },
+        },
+      });
 
       // Act
       await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
 
       // Assert
-      const updatedAad = await aadService.getAad(apimPluginConfig.apimClientAADObjectId!);
-      chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
-      chai.assert.exists(updatedAad?.web?.redirectUris);
-      chai.assert.oneOf(redirectUris[0], updatedAad?.web?.redirectUris ?? []);
-      const foundResourceAccess = updatedAad?.requiredResourceAccess?.find(
-        (x) => x.resourceAppId === testScopeClientId
-      );
-      chai.assert.exists(foundResourceAccess);
-      chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [
-        { id: testExistingScopeId, type: "Scope" },
-      ]);
-    });
-
-    it_if(EnvConfig.enableTest, "Add a new scope and existing redirect url", async () => {
-      // Arrange
-      const apimPluginConfig = buildApimPluginConfig(testObjectId);
-      const redirectUris = [`https://testredirect`, `https://testredirect/${v4()}`];
-      const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testNewScopeId);
-
-      // Act
-      await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
-
-      // Assert
-      const updatedAad = await aadService.getAad(testObjectId);
-      chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
-      chai.assert.exists(updatedAad?.web?.redirectUris);
-      chai.assert.oneOf(redirectUris[0], updatedAad?.web?.redirectUris ?? []);
-      chai.assert.oneOf(redirectUris[1], updatedAad?.web?.redirectUris ?? []);
-      const foundResourceAccess = updatedAad?.requiredResourceAccess?.find(
-        (x) => x.resourceAppId === testScopeClientId
-      );
-      chai.assert.exists(foundResourceAccess);
-      chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [
-        { id: testNewScopeId, type: "Scope" },
-      ]);
-    });
-
-    it_if(EnvConfig.enableTest, "Add existing scope and existing redirect url", async () => {
-      // Arrange
-      const apimPluginConfig = buildApimPluginConfig(testObjectId);
-      const redirectUris = [`https://testredirect`];
-      const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testExistingScopeId);
-
-      // Act
-      await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
-
-      // Assert
-      const updatedAad = await aadService.getAad(testObjectId);
-      chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
-      chai.assert.exists(updatedAad?.web?.redirectUris);
-      chai.assert.oneOf(redirectUris[0], updatedAad?.web?.redirectUris ?? []);
-      const foundResourceAccess = updatedAad?.requiredResourceAccess?.find(
-        (x) => x.resourceAppId === testScopeClientId
-      );
-      chai.assert.exists(foundResourceAccess);
-      chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [
-        { id: testExistingScopeId, type: "Scope" },
-      ]);
+      sandbox.assert.calledOnceWithMatch(requestStub, aadMatcher.getAad);
     });
   });
 
   describe("#refreshRequiredResourceAccess()", () => {
+    const sandbox = createSandbox();
     afterEach(() => {
-      sinon.restore();
+      sandbox.restore();
     });
 
     const testInput: {
@@ -281,33 +307,41 @@ describe("AadManager", () => {
     testInput.forEach((input) => {
       it(input.message, async () => {
         // Arrange
-        sinon
-          .stub(aadService, "getAad")
-          .callsFake((objectId: string) =>
-            Promise.resolve({ requiredResourceAccess: input.source })
-          );
-        const updateAadStub = sinon
-          .stub(aadService, "updateAad")
-          .callsFake((objectId, data) => Promise.resolve());
+        const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
         const aadPluginConfig = buildAadPluginConfig("0", "0");
-        const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
+        const { aadManager, requestStub } = buildAadManager(sandbox, DefaultTestInput, {
+          getAad: {
+            requiredResourceAccess: input.source,
+          },
+        });
 
         // Act
         await aadManager.postProvision(apimPluginConfig, aadPluginConfig, []);
 
         // Assert
-        sinon.assert.calledWith(
-          updateAadStub,
-          EnvConfig.defaultGuid,
-          sinon.match({ requiredResourceAccess: input.expected })
-        );
+        sandbox.assert.calledWithMatch(requestStub, aadMatcher.getAad);
+        if (input.expected) {
+          sandbox.assert.calledWithMatch(
+            requestStub,
+            aadMatcher.updateAad.and(
+              aadMatcher.body(match.has("requiredResourceAccess", input.expected))
+            )
+          );
+        } else {
+          sandbox.assert.calledWithMatch(requestStub, aadMatcher.updateAad);
+          sandbox.assert.neverCalledWithMatch(
+            requestStub,
+            aadMatcher.updateAad.and(match.has("requiredResourceAccess"))
+          );
+        }
       });
     });
   });
 
   describe("#refreshRedirectUri()", () => {
+    const sandbox = createSandbox();
     afterEach(() => {
-      sinon.restore();
+      sandbox.restore();
     });
 
     const testInput: {
@@ -357,52 +391,54 @@ describe("AadManager", () => {
     testInput.forEach((input) => {
       it(input.message, async () => {
         // Arrange
-        sinon
-          .stub(aadService, "getAad")
-          .callsFake((objectId: string) =>
-            Promise.resolve({ web: { redirectUris: input.source } })
-          );
-        const updateAadStub = sinon
-          .stub(aadService, "updateAad")
-          .callsFake((objectId, data) => Promise.resolve());
+        const apimPluginConfig = buildApimPluginConfig(DefaultTestInput.aadObjectId.created);
         const aadPluginConfig = buildAadPluginConfig("", "");
-        const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
+        const { aadManager, requestStub } = buildAadManager(sandbox, DefaultTestInput, {
+          getAad: {
+            web: { redirectUris: input.source },
+          },
+        });
 
         // Act
         await aadManager.postProvision(apimPluginConfig, aadPluginConfig, input.added);
 
         // Assert
-        sinon.assert.calledWith(
-          updateAadStub,
-          EnvConfig.defaultGuid,
-          sinon.match({ web: { redirectUris: input.expected } })
-        );
+        sandbox.assert.calledWithMatch(requestStub, aadMatcher.getAad);
+        if (input.expected) {
+          sandbox.assert.calledWithMatch(
+            requestStub,
+            aadMatcher.updateAad.and(
+              aadMatcher.body(match.has("web", match.has("redirectUris", input.expected)))
+            )
+          );
+        } else {
+          sandbox.assert.calledWithMatch(requestStub, aadMatcher.updateAad);
+          sandbox.assert.neverCalledWithMatch(
+            requestStub,
+            aadMatcher.updateAad.and(match.has("web", match.has("redirectUris")))
+          );
+        }
       });
     });
   });
 });
 
-async function buildService(
-  enableLogin: boolean
-): Promise<{ aadService: AadService; aadManager: AadManager; aadHelper: AadHelper }> {
-  const mockGraphTokenProvider = new MockGraphTokenProvider(
-    EnvConfig.tenantId,
-    EnvConfig.servicePrincipalClientId,
-    EnvConfig.servicePrincipalClientSecret
+function buildAadManager(
+  sandbox: SinonSandbox,
+  mockInput?: MockAxiosInput,
+  mockOutput?: MockAxiosOutput
+): {
+  aadManager: AadManager;
+  requestStub: any;
+} {
+  const res = mockAxios(sandbox, mockInput, mockOutput);
+  const requestStub = res.requestStub;
+  const axiosInstance = res.axiosInstance;
+  const lazyAadService = new Lazy(
+    async () => new AadService(axiosInstance, undefined, undefined, 2)
   );
-  const graphToken = enableLogin ? await mockGraphTokenProvider.getAccessToken() : "";
-  const axiosInstance = axios.create({
-    baseURL: AadDefaultValues.graphApiBasePath,
-    headers: {
-      authorization: `Bearer ${graphToken}`,
-      "content-type": "application/json",
-    },
-  });
-  const aadService = new AadService(axiosInstance);
-  const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
   const aadManager = new AadManager(lazyAadService);
-  const aadHelper = new AadHelper(axiosInstance);
-  return { aadService: aadService, aadManager: aadManager, aadHelper: aadHelper };
+  return { aadManager: aadManager, requestStub: requestStub };
 }
 
 function buildApimPluginConfig(objectId?: string, clientSecret?: string): IApimPluginConfig {
@@ -428,23 +464,4 @@ function buildAadPluginConfig(clientId: string, scopeId: string): IAadPluginConf
     oauth2PermissionScopeId: scopeId,
     applicationIdUris: "",
   };
-}
-
-async function updateAadScope(aadService: AadService, objectId: string, scopeIds: string[]) {
-  await aadService.updateAad(objectId, {
-    api: {
-      oauth2PermissionScopes: scopeIds.map((scope) => {
-        return {
-          adminConsentDescription: "Test consent description",
-          adminConsentDisplayName: "Test display name",
-          id: scope,
-          isEnabled: true,
-          type: "User",
-          userConsentDescription: "Test consent description",
-          userConsentDisplayName: "Test display name",
-          value: `access_as_user_${scope.substring(0, 6)}`,
-        };
-      }),
-    },
-  });
 }

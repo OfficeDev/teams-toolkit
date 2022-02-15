@@ -74,3 +74,7 @@ export class Utils {
     return axiosInstance;
   }
 }
+
+export async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}

@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "ES2015",
+    "outDir": "./lib",
+    "declarationDir": "./types",
+    "target": "es5",
+    "lib": [
+      "es5",
+      "dom",
+      "es2015.promise",
+      "es2015.symbol",
+      "es2015.iterable",
+      "es2015.collection",
+      "es2015.symbol.wellknown",
+      "es2015.core",
+      "es2017.object",
+      "es2017.string"
+    ],
+    "jsx": "react",
+    "declaration": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "importHelpers": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false, // TODO: temporarily disabled
+    "noUnusedParameters": false, // TODO: temporarily disabled
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "include": ["./src"],
+  "exclude": ["node_modules", "rollup.config.js", "lib"]
+}

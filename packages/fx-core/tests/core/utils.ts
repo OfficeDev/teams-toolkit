@@ -47,15 +47,17 @@ import {
   Tools,
   UserInteraction,
   v2,
+  v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
 import fs from "fs-extra";
-import { environmentManager } from "../../src";
+import * as uuid from "uuid";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
+import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
+import sinon from "sinon";
 
 function solutionSettings(): AzureSolutionSettings {
   return {
@@ -131,7 +133,7 @@ export class MockSolution implements Solution {
 }
 
 export class MockSolutionV2 implements v2.SolutionPlugin {
-  name = "fx-solution-azure";
+  name = TeamsAppSolutionNameV2;
   displayName = "Azure Solution V2 Mock";
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     ctx.projectSetting.solutionSettings = solutionSettings();
@@ -143,19 +145,16 @@ export class MockSolutionV2 implements v2.SolutionPlugin {
   async provisionResources(
     ctx: v2.Context,
     inputs: Inputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
-    return {
-      kind: "success",
-      output: {},
-    };
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
   async deploy(
     ctx: v2.Context,
     inputs: Inputs,
     provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
@@ -429,31 +428,31 @@ class MockTelemetryReporter implements TelemetryReporter {
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectOption not implemented: ${JSON.stringify(config)}`);
   }
 
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectOptions not implemented: ${JSON.stringify(config)}`);
   }
 
   inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method inputText not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFile not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFiles not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFolder not implemented: ${JSON.stringify(config)}`);
   }
 
   openUrl(link: string): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method openUrl not implemented: ${link}`);
   }
 
   async showMessage(
@@ -653,5 +652,26 @@ export function deleteFolder(filePath?: string): void {
       }
     });
     fs.rmdirSync(filePath);
+  }
+}
+
+export function mockSolutionV3getQuestionsAPI(solution: v3.ISolution, sandbox: sinon.SinonSandbox) {
+  if (solution.getQuestionsForAddFeature) {
+    sandbox.stub(solution, "getQuestionsForAddFeature").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForInit) {
+    sandbox.stub(solution, "getQuestionsForInit").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForProvision) {
+    sandbox.stub(solution, "getQuestionsForProvision").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForDeploy) {
+    sandbox.stub(solution, "getQuestionsForDeploy").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForPublish) {
+    sandbox.stub(solution, "getQuestionsForPublish").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForUserTask) {
+    sandbox.stub(solution, "getQuestionsForUserTask").resolves(ok(undefined));
   }
 }

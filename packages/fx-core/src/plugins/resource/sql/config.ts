@@ -20,5 +20,5 @@ export class SqlConfig {
   identity = "";
   existSql = false;
   skipAddingUser = false;
-  prepareQuestions = false;
+  databases: string[] = [];
 }

@@ -7,6 +7,8 @@
     "rootDir": "./",
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "./lib/.tsbuildinfo"
+    "tsBuildInfoFile": "./lib/.tsbuildinfo",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
   }
 }

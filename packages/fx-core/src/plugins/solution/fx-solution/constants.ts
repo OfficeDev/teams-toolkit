@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
+import { RestError } from "@azure/ms-rest-js";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -38,6 +39,7 @@ export const DEFAULT_FUNC_NAME = "defaultFunctionName";
  * Config key whose value is output of ARM templates deployment.
  */
 export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
+export const TEAMS_FX_RESOURCE_ID_KEY = "teamsFxPluginId";
 
 /**
  * Config key whose value is the resource group name of project.
@@ -92,7 +94,6 @@ export enum SolutionError {
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
   NoUserName = "NoUserName",
-  FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
   FailedToListResourceGroupLocation = "FailedToListResourceGroupLocation",
@@ -114,6 +115,7 @@ export enum SolutionError {
   FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
   RemoteClientIdNotFound = "RemoteClientIdNotFound",
   AddResourceNotSupport = "AddResourceNotSupport",
+  AddCapabilityNotSupport = "AddCapabilityNotSupport",
   FailedToAddCapability = "FailedToAddCapability",
   NoResourceToDeploy = "NoResourceToDeploy",
   ProvisionInProgress = "ProvisionInProgress",
@@ -136,11 +138,12 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
+  FailedToUpdateArmParameters = "FailedToUpdateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  FailedToPollArmDeploymentStatus = "FailedToPollArmDeploymentStatus",
+  FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
-  M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
-  CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
@@ -165,12 +168,17 @@ export const LOCAL_APPLICATION_ID_URIS = "local_applicationIdUris";
 export const REMOTE_APPLICATION_ID_URIS = "applicationIdUris";
 export const LOCAL_CLIENT_SECRET = "local_clientSecret";
 export const REMOTE_CLIENT_SECRET = "clientSecret";
-export const REMOTE_TENANT_ID = "tenantId";
+export const REMOTE_TEAMS_APP_TENANT_ID = "teamsAppTenantId";
 export const LOCAL_TENANT_ID = "local_tenantId";
 // Teams App Id for local debug
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
+
+export const AzureRoleAssignmentsHelpLink =
+  "https://aka.ms/teamsfx-azure-role-assignments-help-link";
+export const SharePointManageSiteAdminHelpLink =
+  "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
 
 export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",
@@ -203,9 +211,6 @@ export enum SolutionTelemetryEvent {
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
 
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
-
   GenerateArmTemplateStart = "generate-armtemplate-start",
   GenerateArmTemplate = "generate-armtemplate",
 
@@ -221,6 +226,7 @@ export enum SolutionTelemetryProperty {
   CollaboratorCount = "collaborator-count",
   AadOwnerCount = "aad-owner-count",
   AadPermission = "aad-permission",
+  ArmDeploymentError = "arm-deployment-error",
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
@@ -233,3 +239,51 @@ export enum SolutionTelemetrySuccess {
 
 export const SolutionTelemetryComponentName = "solution";
 export const SolutionSource = "Solution";
+
+export class UnauthorizedToCheckResourceGroupError extends UserError {
+  constructor(resourceGroupName: string, subscriptionId: string, subscriptionName: string) {
+    const subscriptionInfoString =
+      subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+    super(
+      new.target.name,
+      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`,
+      SolutionSource
+    );
+  }
+}
+
+export class FailedToCheckResourceGroupExistenceError extends UserError {
+  constructor(
+    error: unknown,
+    resourceGroupName: string,
+    subscriptionId: string,
+    subscriptionName: string
+  ) {
+    const subscriptionInfoString =
+      subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+    const baseErrorMessage = `Failed to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'`;
+
+    if (error instanceof RestError) {
+      // Avoid sensitive information like request headers in the error message.
+      const rawErrorString = JSON.stringify({
+        code: error.code,
+        statusCode: error.statusCode,
+        body: error.body,
+        name: error.name,
+        message: error.message,
+      });
+
+      super(new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+    } else if (error instanceof Error) {
+      // Reuse the original error object to prevent losing the stack info
+      error.message = `${baseErrorMessage}, error: '${error.message}'`;
+      super(error, SolutionSource, new.target.name);
+    } else {
+      super(
+        new.target.name,
+        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`,
+        SolutionSource
+      );
+    }
+  }
+}

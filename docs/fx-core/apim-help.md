@@ -15,7 +15,7 @@ To import the API definition to Azure API Management, you need to provide an Ope
 ### Error Message
 The Azure Active Directory application with object id '{objectId}' could not be found.
 ### Mitigation
-The property `apimClientAADObjectId` in the config file `.fx/env.default.json` is invalid. Please fill in an existing AAD object id or delete it and run provision command again.
+The property `apimClientAADObjectId` in the config file `.fx/states/state.{envName}.json` is invalid. Please fill in an existing AAD object id or delete it and run provision command again.
 
 ## APIM.ApimOperationError
 
@@ -29,7 +29,7 @@ The property `apimClientAADObjectId` in the config file `.fx/env.default.json` i
 ### Error Message
 Failed: create Azure Active Directory application. [Detail] Insufficient privileges to complete the operation.
 ### Mitigation
-Please make sure that the user has permission to create AAD application. Or you can fill in an existing AAD application information into the configuration items `apimClientAADObjectId` and `apimClientAADClientId` in `env.default.json`.
+Please make sure that the user has permission to create AAD application. Or you can fill in an existing AAD application information into the configuration items `apimClientAADObjectId` and `apimClientAADClientId` in `.fx/states/state.{envName}.json`.
 
 ### Error Message
 Failed: create Service Principal. [Detail] When using this permission, the backing application of the service principal being created must in the local tenant.

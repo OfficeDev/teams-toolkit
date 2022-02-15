@@ -1,6 +1,9 @@
 import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node";
 import { AuthenticationConfiguration } from "../models/configuration";
-import { ClientCertificate, getAuthority, parseCertificate } from "./utils";
+import { ClientCertificate, getAuthority } from "./utils";
+import { internalLogger } from "./logger";
+import { ErrorWithCode, ErrorCode } from "../core/errors";
+import { createHash } from "crypto";
 
 /**
  * @internal
@@ -27,4 +30,33 @@ export function createConfidentialClientApplication(
   return new ConfidentialClientApplication({
     auth,
   });
+}
+
+/**
+ * @internal
+ */
+export function parseCertificate(
+  certificateContent: string | undefined
+): ClientCertificate | undefined {
+  if (!certificateContent) {
+    return undefined;
+  }
+
+  const certificatePattern =
+    /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
+  const match = certificatePattern.exec(certificateContent);
+  if (!match) {
+    const errorMsg = "The certificate content does not contain a PEM-encoded certificate.";
+    internalLogger.error(errorMsg);
+    throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
+  }
+  const thumbprint = createHash("sha1")
+    .update(Buffer.from(match[3], "base64"))
+    .digest("hex")
+    .toUpperCase();
+
+  return {
+    thumbprint: thumbprint,
+    privateKey: certificateContent,
+  };
 }

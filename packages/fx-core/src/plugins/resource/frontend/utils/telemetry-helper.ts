@@ -9,17 +9,19 @@ import {
   TelemetryValue,
 } from "../constants";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FrontendPluginError } from "../resources/errors";
+import { ErrorType, FrontendPluginError } from "../resources/errors";
 
 export class TelemetryHelper {
   private static ctx?: PluginContext;
+  private static component?: string;
 
-  static setContext(ctx: PluginContext): void {
+  static setContext(ctx: PluginContext, component?: string): void {
     this.ctx = ctx;
+    this.component = component;
   }
 
   private static fillCommonProperty(properties: { [key: string]: string }): void {
-    properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+    properties[TelemetryKey.Component] = this.component ?? FrontendPluginInfo.PluginName;
     properties[TelemetryKey.AppId] =
       (this.ctx?.envInfo.state
         .get(DependentPluginInfo.SolutionPluginName)
@@ -53,20 +55,24 @@ export class TelemetryHelper {
 
   static sendErrorEvent(
     eventName: string,
-    e: SystemError | UserError,
+    e: SystemError | UserError | FrontendPluginError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
     TelemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
 
+    properties[TelemetryKey.ErrorMessage] = e.message;
+    properties[TelemetryKey.ErrorCode] = e.name;
     if (e instanceof SystemError) {
       properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;
     } else if (e instanceof UserError) {
       properties[TelemetryKey.ErrorType] = TelemetryValue.UserError;
+    } else if (e instanceof FrontendPluginError) {
+      properties[TelemetryKey.ErrorType] =
+        e.errorType === ErrorType.User ? TelemetryValue.UserError : TelemetryValue.SystemError;
+      properties[TelemetryKey.ErrorCode] = e.code;
     }
-    properties[TelemetryKey.ErrorMessage] = e.message;
-    properties[TelemetryKey.ErrorCode] = e.name;
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }

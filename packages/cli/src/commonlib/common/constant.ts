@@ -47,3 +47,7 @@ export const subscriptionInfoFile = "subscriptionInfo.json";
 export const envDefaultJsonFile = "env.default.json";
 
 export const sendFileTimeout = "Send success page timeout.";
+export const usageError = "UsageError";
+export const servicePrincipalLoginFormat =
+  "teamsfx account login azure --service-principal --username NAME --password SECRET --tenant TENANT";
+export const codeFlowLoginFormat = "teamsfx account login azure";

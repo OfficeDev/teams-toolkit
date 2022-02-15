@@ -5,9 +5,11 @@
 
 import os from "os";
 import fs from "fs-extra";
-import { ConfigFolderName, FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 import path from "path";
-import { ReadFileError, ConfigNotFoundError, WriteFileError } from "./error";
+
+import { ConfigFolderName, FxError, err, ok, Result } from "@microsoft/teamsfx-api";
+
+import { ReadFileError, WriteFileError } from "./error";
 
 const UserSettingsFileName = "cliProfile.json";
 
@@ -16,7 +18,12 @@ export enum CliConfigOptions {
   EnvCheckerValidateDotnetSdk = "validate-dotnet-sdk",
   EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
   EnvCheckerValidateNode = "validate-node",
+  EnvCheckerValidateNgrok = "validate-ngrok",
+  TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
+  Interactive = "interactive",
+  // TODO: enable this config
+  // AutomaticNpmInstall = "automatic-npm-install",
 }
 
 export enum CliConfigTelemetry {
@@ -33,6 +40,11 @@ export enum CliConfigRunFrom {
   GitHubAction = "GitHubAction",
   AzDoTask = "AzDoTask",
   Other = "Other",
+}
+
+export enum CliConfigAutomaticNpmInstall {
+  On = "on",
+  Off = "off",
 }
 
 export class UserSettings {
@@ -110,5 +122,19 @@ export class UserSettings {
     }
 
     return ok(config);
+  }
+
+  public static getInteractiveSetting(): Result<boolean, FxError> {
+    const result = this.getConfigSync();
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const config = result.value;
+    if (config[CliConfigOptions.Interactive] && config[CliConfigOptions.Interactive] === "false") {
+      return ok(false);
+    }
+
+    return ok(true);
   }
 }

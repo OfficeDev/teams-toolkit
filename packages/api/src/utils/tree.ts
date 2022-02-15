@@ -29,6 +29,6 @@ export enum TreeCategory {
   Account,
   Feedback,
   Project,
-  Provison,
+  Provision,
   Environment,
 }

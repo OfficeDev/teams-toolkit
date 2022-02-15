@@ -1,39 +1,41 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, PluginContext } from "@microsoft/teamsfx-api";
+import { Plugin } from "@microsoft/teamsfx-api";
 
-// WIP: Put the interfaces here temporary to unblock development, they will be moved to the V2 teamsfx-api in the future.
-export interface ArmResourcePlugin {
-  generateArmTemplates?: (
-    ctx: PluginContext
-  ) => Promise<Result<ScaffoldArmTemplateResult, FxError>>;
-}
+export type ArmResourcePlugin = Pick<Plugin, "generateArmTemplates" | "updateArmTemplates">;
 
-export interface BicepOrchestrationTemplate {
-  Content: string;
-}
+export type NamedArmResourcePlugin = { name: string } & ArmResourcePlugin;
 
-export interface BicepOrchestrationParameterTemplate extends BicepOrchestrationTemplate {
-  ParameterJson?: Record<string, unknown>;
-}
-
-export interface BicepOrchestrationModuleTemplate extends BicepOrchestrationTemplate {
-  Outputs?: { [OutputName: string]: string };
-}
-
-export interface BicepModule {
-  Content: string;
-}
-
-export interface BicepOrchestration {
-  ParameterTemplate?: BicepOrchestrationParameterTemplate;
-  VariableTemplate?: BicepOrchestrationTemplate;
-  ModuleTemplate?: BicepOrchestrationModuleTemplate;
-  OutputTemplate?: BicepOrchestrationTemplate;
-}
-
-export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
-  Modules?: { [moduleFileName: string]: BicepModule };
-  Orchestration: BicepOrchestration;
+export interface ArmTemplateResult extends Record<any, unknown> {
+  Provision?: {
+    /*
+    Content of this property will be appended to templates/azure/provision.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of each modules will be appended to templates/azure/provision/${moduleFileName}.bicep
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  Configuration?: {
+    /*
+    Content of this property will be appended to templates/azure/config.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of this property override each templates/azure/teamsFx/${moduleFileName}.bicep file
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  /*
+  The reference values you provided here will be resolved by other resource plugins in run time
+  You always need to provide full reference value list in generateArmTemplate/updateArmTemplate function call
+  */
+  Reference?: Record<string, unknown>;
+  /*
+  The parameters will be merged to .fx/configs/azure.parameters.{env}.json
+  All environments will be updated when you provides this parameter
+  */
+  Parameters?: Record<string, string>;
 }

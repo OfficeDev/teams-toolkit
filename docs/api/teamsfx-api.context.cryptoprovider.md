@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-cryptoProvider?: CryptoProvider;
+cryptoProvider: CryptoProvider;
 ```

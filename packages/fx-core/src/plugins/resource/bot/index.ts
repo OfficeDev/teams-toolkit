@@ -3,10 +3,6 @@
 import {
   Plugin,
   PluginContext,
-  Result,
-  QTreeNode,
-  Stage,
-  FxError,
   err,
   UserError,
   SystemError,
@@ -26,6 +22,10 @@ import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
+import { DotnetBotImpl } from "./dotnet/plugin";
+import { PluginImpl } from "./interface";
+import { ProgrammingLanguage } from "./enums/programmingLanguage";
+
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
   name = "fx-resource-bot";
@@ -35,13 +35,22 @@ export class TeamsBot implements Plugin {
     return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
+  public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
+
+  public getImpl(context: PluginContext): PluginImpl {
+    return TeamsBot.isVsPlatform(context) ? this.dotnetBotImpl : this.teamsBotImpl;
+  }
+
+  private static isVsPlatform(context: PluginContext): boolean {
+    return context.projectSettings?.programmingLanguage === ProgrammingLanguage.Csharp;
+  }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.scaffold(context),
+      () => this.getImpl(context).scaffold(context),
       true,
       LifecycleFuncNames.SCAFFOLD
     );
@@ -56,7 +65,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.preProvision(context),
+      () => this.getImpl(context).preProvision(context),
       true,
       LifecycleFuncNames.PRE_PROVISION
     );
@@ -67,7 +76,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.provision(context),
+      () => this.getImpl(context).provision(context),
       true,
       LifecycleFuncNames.PROVISION
     );
@@ -82,10 +91,23 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.postProvision(context),
+      () => this.getImpl(context).postProvision(context),
       true,
       LifecycleFuncNames.POST_PROVISION
     );
+  }
+
+  public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
+    Logger.setLogger(context.logProvider);
+
+    const result = await this.runWithExceptionCatching(
+      context,
+      () => this.getImpl(context).updateArmTemplates(context),
+      true,
+      LifecycleFuncNames.GENERATE_ARM_TEMPLATES
+    );
+
+    return result;
   }
 
   public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
@@ -93,7 +115,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.generateArmTemplates(context),
+      () => this.getImpl(context).generateArmTemplates(context),
       true,
       LifecycleFuncNames.GENERATE_ARM_TEMPLATES
     );
@@ -106,7 +128,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.preDeploy(context),
+      () => this.getImpl(context).preDeploy(context),
       true,
       LifecycleFuncNames.PRE_DEPLOY
     );
@@ -117,7 +139,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.deploy(context),
+      () => this.getImpl(context).deploy(context),
       true,
       LifecycleFuncNames.DEPLOY
     );
@@ -132,7 +154,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.localDebug(context),
+      () => this.getImpl(context).localDebug(context),
       false,
       LifecycleFuncNames.LOCAL_DEBUG
     );
@@ -150,7 +172,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.postLocalDebug(context),
+      () => this.getImpl(context).postLocalDebug(context),
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
@@ -162,7 +184,7 @@ export class TeamsBot implements Plugin {
     if (func.method === "migrateV1Project") {
       return await this.runWithExceptionCatching(
         context,
-        () => this.teamsBotImpl.migrateV1Project(context),
+        () => this.getImpl(context).migrateV1Project(context),
         true,
         LifecycleFuncNames.MIGRATE_V1_PROJECT
       );
@@ -181,6 +203,9 @@ export class TeamsBot implements Plugin {
       errorMsg += ` Detailed error: ${e.innerError.message}.`;
       if (e.innerError.response?.data?.errorMessage) {
         errorMsg += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+      } else if (e.innerError.response?.data?.error?.message) {
+        // For errors return from Graph API
+        errorMsg += ` Reason: ${e.innerError.response?.data?.error?.message}`;
       }
     }
     Logger.error(errorMsg);
@@ -194,7 +219,7 @@ export class TeamsBot implements Plugin {
       const result =
         e.errorType === ErrorType.System
           ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-          : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+          : ResultFactory.UserError(e.name, e.genMessage(), e.innerError, e.helpLink);
       sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
       return result;
     } else {

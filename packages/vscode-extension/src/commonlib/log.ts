@@ -29,22 +29,24 @@ export class VsCodeLogProvider implements LogProvider {
     return VsCodeLogProvider.instance;
   }
 
-  trace(message: string): Promise<boolean> {
-    return this.log(LogLevel.Trace, message);
+  async trace(message: string): Promise<boolean> {
+    // return this.log(LogLevel.Trace, message);
+    return true;
   }
 
-  debug(message: string): Promise<boolean> {
-    return this.log(LogLevel.Debug, message);
+  async debug(message: string): Promise<boolean> {
+    // return this.log(LogLevel.Debug, message);
+    return true;
   }
 
-  info(message: Array<{content: string, color: Colors}>): Promise<boolean>;
-  
+  info(message: Array<{ content: string; color: Colors }>): Promise<boolean>;
+
   info(message: string): Promise<boolean>;
 
-  info(message: string | Array<{content: string, color: Colors}>): Promise<boolean> {
+  info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
     // VSCode output channel is not TTY, does not support ANSI color
     if (message instanceof Array) {
-      message = message.map(x => x.content).join("");
+      message = message.map((x) => x.content).join("");
     }
     return this.log(LogLevel.Info, message);
   }
@@ -66,6 +68,7 @@ export class VsCodeLogProvider implements LogProvider {
    */
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
     try {
+      if (logLevel < LogLevel.Info) return true;
       if (logLevel >= LogLevel.Warning) this.outputChannel.show();
       const dateString = new Date().toJSON();
       this.outputChannel.appendLine(`[${dateString}] [${LogLevel[logLevel]}] - ${message}`);

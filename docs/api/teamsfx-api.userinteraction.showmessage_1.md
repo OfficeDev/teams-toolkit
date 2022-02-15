@@ -4,7 +4,7 @@
 
 ## UserInteraction.showMessage() method
 
-Show an information/warnning/error message with different colors to users, which only works for CLI.
+Show an information/warning/error message with different colors to users, which only works for CLI.
 
 <b>Signature:</b>
 

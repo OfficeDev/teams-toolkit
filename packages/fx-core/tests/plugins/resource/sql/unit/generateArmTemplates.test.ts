@@ -4,13 +4,24 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
-import { AzureSolutionSettings, Platform, PluginContext } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, Inputs, Platform, PluginContext } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
+import {
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import * as tools from "../../../../../src/common/tools";
+
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -42,19 +53,19 @@ describe("generateArmTemplates", () => {
     pluginContext.projectSettings!.solutionSettings = {
       name: "test_solution",
       version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
     const result = await sqlPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "sql.template.bicep";
+    const testModuleFileName = "sqlProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-azure-sql": {
-          Modules: {
-            azureSqlProvision: {
-              Path: `./${testModuleFileName}`,
+          Provision: {
+            azureSql: {
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -62,33 +73,114 @@ describe("generateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      chai.assert.strictEqual(
-        expectedResult.Modules!.azureSqlProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.azureSql, moduleFile);
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "provision.result.bicep"
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const OrchestrationProvisionFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationProvisionFile);
+      chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+        JSON.stringify(expectedResult.Parameters, undefined, 2),
+        fs.readFileSync(
+          path.join(expectedBicepFileDirectory, "parameters.json"),
+          ConstantString.UTF8Encoding
+        )
       );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
+    }
+  });
+
+  it("Update arm templates", async function () {
+    const activeResourcePlugins = [ResourcePlugins.AzureSQL];
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "test_solution",
+      version: "1.0.0",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await sqlPlugin.updateArmTemplates(pluginContext);
+
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
       chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
+        result.value.Reference!.sqlResourceId,
+        "provisionOutputs.azureSqlOutput.value.sqlResourceId"
       );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
+      chai.assert.strictEqual(
+        result.value.Reference!.sqlEndpoint,
+        "provisionOutputs.azureSqlOutput.value.sqlEndpoint"
+      );
+      chai.assert.strictEqual(
+        result.value.Reference!.databaseName,
+        "provisionOutputs.azureSqlOutput.value.databaseName"
+      );
+      chai.assert.notExists(result.value.Provision);
+      chai.assert.notExists(result.value.Configuration);
+      chai.assert.notExists(result.value.Parameters);
+    }
+  });
+
+  it("generate multiple database templates", async function () {
+    sinon.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
+    const activeResourcePlugins = [ResourcePlugins.AzureSQL];
+    pluginContext.projectSettings!.solutionSettings = {
+      name: "test_solution",
+      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    pluginContext.answers = { existingResources: [ResourcePlugins.AzureSQL] } as Inputs;
+    const result = await sqlPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const testModuleFileName = "newDatabase.orchestration.result.bicep";
+    const mockedSolutionDataContext = {
+      Plugins: {
+        "fx-resource-azure-sql": {
+          Provision: {
+            azureSql: {
+              path: `./${testModuleFileName}`,
+            },
+          },
+        },
+      },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const expectedResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.azureSql, moduleFile);
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "newDatabaseProvision.result.bicep"
+      );
+      const OrchestrationProvisionFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationProvisionFile);
+      chai.assert.isNotNull(expectedResult.Reference);
     }
   });
 });

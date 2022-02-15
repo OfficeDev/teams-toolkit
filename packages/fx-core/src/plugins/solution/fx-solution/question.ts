@@ -57,6 +57,7 @@ export enum AzureSolutionQuestionNames {
   AppName = "app-name",
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
+  Solution = "solution",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -88,6 +89,12 @@ export const AzureResourceApim: OptionItem = {
   description: "Azure Function App will be also selected to be published as an API",
 };
 
+export const AzureResourceKeyVault: OptionItem = {
+  id: "keyvault",
+  label: "Azure Key Vault",
+  description: "Secure runtime application secrets with Azure Key Vault",
+};
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   return {
     name: AzureSolutionQuestionNames.Capabilities,
@@ -100,13 +107,13 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
         if (name.length === 0) {
-          return "Select at at least 1 capability";
+          return "Select at least 1 capability";
         }
         if (
           name.length > 1 &&
           (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
         ) {
-          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
         }
 
         return undefined;
@@ -135,7 +142,7 @@ export function createV1CapabilityQuestion(): SingleSelectQuestion {
     name: AzureSolutionQuestionNames.V1Capability,
     title: "Select capability",
     type: "singleSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
     default: TabOptionItem.id,
     placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },
@@ -186,12 +193,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 
 export function createAddAzureResourceQuestion(
   alreadyHaveFunction: boolean,
-  alreadhHaveSQL: boolean,
-  alreadyHaveAPIM: boolean
+  alreadyHaveSQL: boolean,
+  alreadyHaveAPIM: boolean,
+  alreadyHaveKeyVault: boolean
 ): MultiSelectQuestion {
-  const options: OptionItem[] = [AzureResourceFunction];
-  if (!alreadhHaveSQL) options.push(AzureResourceSQL);
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
   return {
     name: AzureSolutionQuestionNames.AddResources,
     title: "Cloud resources",
@@ -248,50 +256,34 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   },
 };
 
-export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
-  name: AzureSolutionQuestionNames.ProgrammingLanguage,
-  title: "Programming Language",
-  type: "singleSelect",
-  staticOptions: [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ],
-  dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
-    return [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
-    ];
-  },
-  skipSingleOption: true,
-  default: (inputs: Inputs) => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "typescript";
-    return "javascript";
-  },
-  placeholder: (inputs: Inputs): string => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
-    return "Select a programming language.";
-  },
-};
+export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+  let defaultUserEmail = "";
+  if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
+    defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  }
+  return {
+    name: "email",
+    type: "text",
+    title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
+    default: defaultUserEmail,
+    validation: {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+        if (!input || input.trim() === "") {
+          return "Email address cannot be null or empty";
+        }
 
-export const GetUserEmailQuestion: TextInputQuestion = {
-  name: "email",
-  type: "text",
-  title: "Invite a collaborator (email or user principal name)",
-  validation: {
-    validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
-      if (!input || input.trim() === "") {
-        return "email address or user principal name cannot be null or empty";
-      }
+        input = input.trim();
 
-      const re = /\S+@\S+\.\S+/;
-      if (!re.test(input)) {
-        return "email address or user principal name is not valid";
-      }
-      return undefined;
+        if (input === defaultUserEmail) {
+          return "Please change [UserName] to the real user name";
+        }
+
+        const re = /\S+@\S+\.\S+/;
+        if (!re.test(input)) {
+          return "Email address is not valid";
+        }
+        return undefined;
+      },
     },
-  },
-};
+  };
+}

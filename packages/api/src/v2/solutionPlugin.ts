@@ -3,7 +3,13 @@
 "use strict";
 
 import { Result } from "neverthrow";
-import { DeepReadonly, DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
+import {
+  DeepReadonly,
+  DeploymentInputs,
+  InputsWithProjectPath,
+  ProvisionInputs,
+  ResourceProvisionOutput,
+} from ".";
 import { Stage } from "../constants";
 import { EnvInfo } from "../context";
 import {
@@ -59,17 +65,15 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - system inputs
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {EnvInfoV2} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {EnvProfile} the state (persist by core as `state.${env}.json`) containing provision outputs, which will be used for deploy and publish
    */
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResources}.
@@ -77,23 +81,22 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {Json} provisionOutputs - provision outputs
-   * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {TokenProvider} tokenProvider - Token providers for Azure, AppStudio and m365.
    *
    */
   deploy?: (
     ctx: Context,
     inputs: Inputs,
-    provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
-   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view to the current env
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    */
   publishApplication: (
@@ -120,7 +123,8 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ) => Promise<FxResult<Json, FxError>>;
 
   /**
@@ -148,24 +152,28 @@ export interface SolutionPlugin {
    */
   createEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
   activateEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+
   /**
    * For grant and check permission in remote collaboration
    */
   grantPermission?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
   checkPermission?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
   listCollaborator?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   //legacy API for compatibility reason
   getQuestions?: (

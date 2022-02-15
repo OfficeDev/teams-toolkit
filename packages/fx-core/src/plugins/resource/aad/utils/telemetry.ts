@@ -2,14 +2,12 @@
 // Licensed under the MIT license.
 
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { Telemetry, Plugins, ConfigKeysOfOtherPlugin } from "../constants";
+import { TOOLS } from "../../../../core";
+import { solutionGlobalVars } from "../../../solution/fx-solution/v3/solutionGlobalVars";
+import { Plugins, Telemetry } from "../constants";
 
 export class TelemetryUtils {
-  static ctx: PluginContext;
-
-  public static init(ctx: PluginContext): void {
-    TelemetryUtils.ctx = ctx;
-  }
+  public static init(ctx: PluginContext): void {}
 
   public static sendEvent(
     eventName: string,
@@ -20,8 +18,8 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[Telemetry.component] = Plugins.pluginNameComplex;
-    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    TelemetryUtils.addAppIdInProperty(properties);
+    TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public static sendSuccessEvent(
@@ -53,12 +51,8 @@ export class TelemetryUtils {
     properties[Telemetry.errorType] = errorType;
     properties[Telemetry.errorMessage] = errorMessage;
     properties[Telemetry.isSuccess] = Telemetry.no;
-    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
-      eventName,
-      properties,
-      measurements
-    );
+    TelemetryUtils.addAppIdInProperty(properties);
+    TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements);
   }
 
   static readonly getErrorProperty = (errorType: string, errorMessage: string) => {
@@ -68,17 +62,8 @@ export class TelemetryUtils {
     };
   };
 
-  private static addAppIdInProperty(
-    properties: { [key: string]: string },
-    ctx: PluginContext
-  ): void {
-    const appId = ctx.envInfo.state
-      .get(Plugins.solution)
-      ?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
-    if (appId) {
-      properties[Telemetry.appId] = appId as string;
-    } else {
-      properties[Telemetry.appId] = "";
-    }
+  private static addAppIdInProperty(properties: { [key: string]: string }): void {
+    const appId = solutionGlobalVars.TeamsAppId || "";
+    properties[Telemetry.appId] = appId as string;
   }
 }

@@ -1,14 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { PluginContext, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
-import {
-  GLOBAL_CONFIG,
-  REMOTE_TEAMS_APP_ID,
-  PluginNames,
-} from "../../../solution/fx-solution/constants";
-import { isMultiEnvEnabled } from "../../../../common";
+import { PluginNames } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -36,17 +31,24 @@ export enum TelemetryEventName {
   buildTeamsPackage = "build",
   publish = "publish",
   migrateV1Project = "migrate-v1-project",
+  updateManifest = "update-manifest",
   provision = "provision",
+  provisionManifest = "provision-manifest",
+  postProvision = "post-provision",
   checkPermission = "check-permission",
   grantPermission = "grant-permission",
   listCollaborator = "list-collaborator",
   localDebug = "local-debug",
+  init = "init",
+  addCapability = "add-capability",
+  loadManifest = "load-manifest",
+  saveManifest = "save-manifest",
 }
 
 export class TelemetryUtils {
-  static ctx: PluginContext;
+  static ctx: PluginContext | v2.Context;
 
-  public static init(ctx: PluginContext) {
+  public static init(ctx: PluginContext | v2.Context) {
     TelemetryUtils.ctx = ctx;
   }
 
@@ -59,9 +61,9 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -82,9 +84,9 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -110,9 +112,9 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }

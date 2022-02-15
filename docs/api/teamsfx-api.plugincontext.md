@@ -16,5 +16,5 @@ export interface PluginContext extends Context
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [config](./teamsfx-api.plugincontext.config.md) | [PluginConfig](./teamsfx-api.pluginconfig.md) |  |
-|  [configOfOtherPlugins](./teamsfx-api.plugincontext.configofotherplugins.md) | [ReadonlySolutionConfig](./teamsfx-api.readonlysolutionconfig.md) |  |
+|  [envInfo](./teamsfx-api.plugincontext.envinfo.md) | [EnvInfo](./teamsfx-api.envinfo.md) |  |
 

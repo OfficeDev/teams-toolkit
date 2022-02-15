@@ -4,7 +4,7 @@
 
 ## FuncQuestion interface
 
-`FuncQuestion` will not show any UI, but load some dynamic data in the question flow; The dynamic data can be refered by the following question.
+`FuncQuestion` will not show any UI, but load some dynamic data in the question flow; The dynamic data can be referred by the following question.
 
 <b>Signature:</b>
 

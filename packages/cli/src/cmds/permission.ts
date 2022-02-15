@@ -5,6 +5,7 @@
 
 import path from "path";
 import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
+
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -14,7 +15,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { argsToInputs, getSystemInputs } from "../utils";
+import { argsToInputs, getSystemInputs, isSpfxProject } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 
@@ -24,13 +25,16 @@ const azureMessage =
   "Assign Azure roles using the Azure portal: " +
   "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
 
+const spfxMessage =
+  "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
+  "Manage site admins using SharePoint admin center: " +
+  "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
+
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Check user's permission.";
   private readonly listAllCollaborators = "list-all-collaborators";
-
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.checkPermission);
@@ -51,10 +55,21 @@ export class PermissionStatus extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
-
     const core = result.value;
     const listAll = args[this.listAllCollaborators];
+
+    const isSpfx = await isSpfxProject(rootFolder, core);
+    if (isSpfx.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+      return err(isSpfx.error);
+    }
+
+    if (!isSpfx.value) {
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+    }
+
     {
       const result = listAll
         ? await core.listCollaborator(getSystemInputs(rootFolder, args.env))
@@ -81,8 +96,6 @@ export class PermissionGrant extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Grant permission for another account.";
 
-  public params: { [_: string]: Options } = {};
-
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.grantPermission);
     return yargs.option(this.params);
@@ -98,10 +111,21 @@ export class PermissionGrant extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
-
     const answers = argsToInputs(this.params, args);
     const core = result.value;
+
+    const isSpfx = await isSpfxProject(rootFolder, core);
+    if (isSpfx.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+      return err(isSpfx.error);
+    }
+
+    if (!isSpfx.value) {
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+    }
+
     {
       const result = await core.grantPermission(answers);
       if (result.isErr()) {

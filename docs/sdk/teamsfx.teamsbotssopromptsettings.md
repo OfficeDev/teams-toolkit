@@ -19,7 +19,7 @@ export interface TeamsBotSsoPromptSettings
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [endOnInvalidMessage](./teamsfx.teamsbotssopromptsettings.endoninvalidmessage.md) | boolean | <b><i>(BETA)</i></b> (Optional) value indicating whether the TeamsBotSsoPrompt should end upon receiving an invalid message. Generally the TeamsBotSsoPrompt will end the auth flow when receives user message not related to the auth flow. Setting the flag to false ignores the user's message instead. Defaults to value <code>true</code> |
+|  [endOnInvalidMessage?](./teamsfx.teamsbotssopromptsettings.endoninvalidmessage.md) | boolean | <b><i>(BETA)</i></b> <i>(Optional)</i> (Optional) value indicating whether the TeamsBotSsoPrompt should end upon receiving an invalid message. Generally the TeamsBotSsoPrompt will end the auth flow when receives user message not related to the auth flow. Setting the flag to false ignores the user's message instead. Defaults to value <code>true</code> |
 |  [scopes](./teamsfx.teamsbotssopromptsettings.scopes.md) | string\[\] | <b><i>(BETA)</i></b> The array of strings that declare the desired permissions and the resources requested. |
-|  [timeout](./teamsfx.teamsbotssopromptsettings.timeout.md) | number | <b><i>(BETA)</i></b> (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value <code>900,000</code> (15 minutes.) |
+|  [timeout?](./teamsfx.teamsbotssopromptsettings.timeout.md) | number | <b><i>(BETA)</i></b> <i>(Optional)</i> (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value <code>900,000</code> (15 minutes.) |
 

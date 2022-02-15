@@ -4,7 +4,7 @@
 
 ## SingleSelectQuestion.skipSingleOption property
 
-whether to skip the single option select question if true: single select question will be automtically answered with the single option; if false: use still need to do the selection manually even there is no other choice.
+whether to skip the single option select question if true: single select question will be automatically answered with the single option; if false: use still need to do the selection manually even there is no other choice.
 
 <b>Signature:</b>
 

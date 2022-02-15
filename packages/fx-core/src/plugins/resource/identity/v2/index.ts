@@ -4,10 +4,13 @@
 import {
   AzureSolutionSettings,
   FxError,
+  Inputs,
   Json,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -21,7 +24,11 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
-import { provisionResourceAdapter } from "../../utils4v2";
+import {
+  generateResourceTemplateAdapter,
+  provisionResourceAdapter,
+  updateResourceTemplateAdapter,
+} from "../../utils4v2";
 
 @Service(ResourcePluginsV2.IdentityPlugin)
 export class IdentityPluginV2 implements ResourcePlugin {
@@ -30,15 +37,30 @@ export class IdentityPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.IdentityPlugin)
   plugin!: IdentityPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

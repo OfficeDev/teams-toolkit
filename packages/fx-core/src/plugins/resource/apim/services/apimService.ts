@@ -7,9 +7,6 @@ import {
   ApiManagementServiceResource,
   ApiVersionSetContract,
   ApiVersionSetGetHeaders,
-  AuthorizationServerContract,
-  AuthorizationServerGetHeaders,
-  ProductContract,
 } from "@azure/arm-apimanagement/src/models";
 import {
   ApimDefaultValues,
@@ -18,10 +15,8 @@ import {
   Operation,
   ErrorHandlerResult,
   OpenApiSchemaVersion,
-  ProjectConstants,
 } from "../constants";
-import { ApimOperationError, AssertNotEmpty, BuildError, InvalidAzureResourceId } from "../error";
-import { IApimServiceResource } from "../interfaces/IApimResource";
+import { ApimOperationError, AssertNotEmpty, BuildError } from "../error";
 import { IName } from "../interfaces/IName";
 import { Telemetry } from "../utils/telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
@@ -29,7 +24,6 @@ import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { OpenAPI } from "openapi-types";
 import { Providers } from "@azure/arm-resources";
-import { Provider } from "@azure/arm-resources/esm/models";
 
 export class ApimService {
   private readonly subscriptionId: string;
@@ -55,63 +49,6 @@ export class ApimService {
     this.logger = logger;
   }
 
-  public async getRegisteredResourceProvider(): Promise<Provider | undefined> {
-    const fn = () => this.resourceProviderClient.get(ProjectConstants.apimResourceProvider);
-    const provider = await this.execute(
-      Operation.Get,
-      AzureResource.ResourceProvider,
-      ProjectConstants.apimResourceProvider,
-      fn
-    );
-    if (provider?.registrationState === "Registered") {
-      return provider;
-    }
-    return undefined;
-  }
-
-  public async ensureResourceProvider(): Promise<void> {
-    const provider = await this.getRegisteredResourceProvider();
-    if (!provider) {
-      const fn = () => this.resourceProviderClient.register(ProjectConstants.apimResourceProvider);
-      await this.execute(
-        Operation.Register,
-        AzureResource.ResourceProvider,
-        ProjectConstants.apimResourceProvider,
-        fn
-      );
-    }
-  }
-
-  public async createService(
-    resourceGroupName: string,
-    serviceName: string,
-    location: string,
-    userId: string
-  ): Promise<void> {
-    const existingService = await this.getService(resourceGroupName, serviceName);
-    if (existingService) {
-      return;
-    }
-
-    const apimService: ApiManagementServiceResource = {
-      publisherName: userId,
-      publisherEmail: userId,
-      sku: {
-        name: "Consumption",
-        capacity: 0,
-      },
-      location: location,
-    };
-
-    const fn = () =>
-      this.apimClient.apiManagementService.createOrUpdate(
-        resourceGroupName,
-        serviceName,
-        apimService
-      );
-    await this.execute(Operation.Create, AzureResource.APIM, serviceName, fn);
-  }
-
   public async getService(
     resourceGroupName: string,
     serviceName: string
@@ -121,144 +58,6 @@ export class ApimService {
       Operation.Get,
       AzureResource.APIM,
       serviceName,
-      fn,
-      resourceNotFoundErrorHandler
-    );
-  }
-
-  public async listService(): Promise<Array<IApimServiceResource>> {
-    const fn = () => this.apimClient.apiManagementService.list();
-    const response = await this.execute(Operation.List, AzureResource.APIM, undefined, fn);
-    const serviceList = AssertNotEmpty("response", response);
-    const result = serviceList.map((response) => this.convertApimServiceResource(response));
-
-    let nextLink = serviceList.nextLink;
-    while (nextLink) {
-      const nextFn = () => this.apimClient.apiManagementService.listNext(nextLink!);
-      const nextPageResponse = await this.execute(
-        Operation.ListNextPage,
-        AzureResource.APIM,
-        undefined,
-        nextFn
-      );
-      const nextPageServiceList = AssertNotEmpty("nextPageResponse", nextPageResponse);
-      result.push(
-        ...nextPageServiceList.map((response) => this.convertApimServiceResource(response))
-      );
-      nextLink = nextPageServiceList.nextLink;
-    }
-    return result;
-  }
-
-  public async createProduct(
-    resourceGroupName: string,
-    serviceName: string,
-    productId: string,
-    productDisplayName?: string
-  ): Promise<void> {
-    const product = await this.getProduct(resourceGroupName, serviceName, productId);
-    if (product) {
-      return;
-    }
-
-    const newProduct: ProductContract = {
-      displayName: productDisplayName ?? productId,
-      description: ApimDefaultValues.productDescription,
-      subscriptionRequired: false,
-      state: "published",
-    };
-
-    const fn = () =>
-      this.apimClient.product.createOrUpdate(resourceGroupName, serviceName, productId, newProduct);
-    await this.execute(Operation.Create, AzureResource.Product, productId, fn);
-  }
-
-  public async getProduct(
-    resourceGroupName: string,
-    serviceName: string,
-    productId: string
-  ): Promise<ProductContract | undefined> {
-    const fn = () => this.apimClient.product.get(resourceGroupName, serviceName, productId);
-    return await this.execute(
-      Operation.Get,
-      AzureResource.Product,
-      productId,
-      fn,
-      resourceNotFoundErrorHandler
-    );
-  }
-
-  public async createOrUpdateOAuthService(
-    resourceGroupName: string,
-    serviceName: string,
-    oAuthServerId: string,
-    tenantId: string,
-    clientId: string,
-    clientSecret: string,
-    scope: string,
-    oAuthServerDisplayName?: string
-  ): Promise<void> {
-    const oAuthServer = await this.getOAuthServer(resourceGroupName, serviceName, oAuthServerId);
-
-    const authorizationEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
-    const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-
-    if (!oAuthServer) {
-      const newOAuthServer: AuthorizationServerContract = {
-        authorizationEndpoint: authorizationEndpoint,
-        authorizationMethods: ["GET", "POST"],
-        bearerTokenSendingMethods: ["authorizationHeader"],
-        clientAuthenticationMethod: ["Body"],
-        clientId: clientId,
-        clientRegistrationEndpoint: "http://localhost",
-        clientSecret: clientSecret,
-        defaultScope: scope,
-        description: ApimDefaultValues.oAuthServerDescription,
-        displayName: oAuthServerDisplayName ?? oAuthServerId,
-        grantTypes: ["authorizationCode"],
-        tokenEndpoint: tokenEndpoint,
-      };
-
-      const fn = () =>
-        this.apimClient.authorizationServer.createOrUpdate(
-          resourceGroupName,
-          serviceName,
-          oAuthServerId,
-          newOAuthServer
-        );
-      await this.execute(Operation.Create, AzureResource.OAuthServer, oAuthServerId, fn);
-    } else {
-      oAuthServer.authorizationEndpoint = authorizationEndpoint;
-      oAuthServer.tokenEndpoint = tokenEndpoint;
-      oAuthServer.clientId = clientId;
-      oAuthServer.clientSecret = clientSecret;
-      oAuthServer.defaultScope = scope;
-
-      const fn = () =>
-        this.apimClient.authorizationServer.createOrUpdate(
-          resourceGroupName,
-          serviceName,
-          oAuthServerId,
-          oAuthServer,
-          {
-            ifMatch: oAuthServer.eTag,
-          }
-        );
-      await this.execute(Operation.Update, AzureResource.OAuthServer, oAuthServerId, fn);
-    }
-  }
-
-  public async getOAuthServer(
-    resourceGroupName: string,
-    serviceName: string,
-    oAuthServerId: string
-  ): Promise<(AuthorizationServerContract & AuthorizationServerGetHeaders) | undefined> {
-    const fn = () =>
-      this.apimClient.authorizationServer.get(resourceGroupName, serviceName, oAuthServerId);
-    return await this.execute(
-      Operation.Get,
-      AzureResource.OAuthServer,
-      oAuthServerId,
       fn,
       resourceNotFoundErrorHandler
     );
@@ -502,20 +301,6 @@ export class ApimService {
       );
       throw wrappedError;
     }
-  }
-
-  private convertApimServiceResource(src: ApiManagementServiceResource): IApimServiceResource {
-    const resourceId = AssertNotEmpty("apimServiceListResponse.id", src.id);
-    const name = AssertNotEmpty("apimServiceListResponse.name", src.name);
-    const matches = resourceId.match(
-      /\/subscriptions\/(.*)\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)/
-    );
-
-    if (matches === null || matches.length < 3) {
-      throw BuildError(InvalidAzureResourceId, resourceId);
-    }
-
-    return { serviceName: name, resourceGroupName: matches[2] };
   }
 
   private generateVersionSetResourceId(

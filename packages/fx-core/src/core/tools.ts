@@ -1,26 +1,25 @@
 import {
   AppPackageFolderName,
   ArchiveFolderName,
-  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
   EnvConfig,
   EnvInfo,
-  Json,
   ProductName,
   ProjectSettings,
   ProjectSettingsFileName,
   SolutionContext,
   V1ManifestFileName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { isMultiEnvEnabled } from "../common";
 import { ConstantString } from "../common/constants";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
 import crypto from "crypto";
 import * as os from "os";
+import { validateProjectSettings } from "../common/projectSettingsValidator";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -29,22 +28,14 @@ export function validateProject(solutionContext: SolutionContext): string | unde
 
 export function validateSettings(projectSettings?: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
-  if (!projectSettings.solutionSettings) return "empty solutionSettings";
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
-  return undefined;
+  return validateProjectSettings(projectSettings);
 }
 
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = isMultiEnvEnabled()
-      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
-      : path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(
-      confFolderPath,
-      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
-    );
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;
@@ -106,13 +97,8 @@ export async function validateV1Project(
 export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = isMultiEnvEnabled()
-      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
-      : path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(
-      confFolderPath,
-      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
-    );
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return !!projectSettings?.solutionSettings?.migrateFromV1;
@@ -139,32 +125,27 @@ export function newEnvInfo(
   };
 }
 
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
+  };
+}
+
 export function getLockFolder(projectPath: string): string {
   return path.join(
     os.tmpdir(),
     `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
   );
-}
-
-// flattens output/secrets fields in config map for backward compatibility
-// e.g. { "a": { "output": {"b": 1}, "secrets": { "value": 9 } }, "c": 2 } will be converted to
-// { "a": { "b": 1, "value": 9 }, "c": 2 }
-export function flattenConfigJson(configJson: Json): Json {
-  const config: Json = {};
-  for (const [k, v] of Object.entries(configJson)) {
-    if (v instanceof Object) {
-      const value = flattenConfigJson(v);
-      if (k === "output" || k === "secrets") {
-        for (const [k, v] of Object.entries(value)) {
-          config[k] = v;
-        }
-      } else {
-        config[k] = value;
-      }
-    } else {
-      config[k] = v;
-    }
-  }
-
-  return config;
 }

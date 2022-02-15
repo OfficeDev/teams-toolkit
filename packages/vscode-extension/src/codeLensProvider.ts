@@ -89,3 +89,103 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     return codeLenses;
   }
 }
+
+export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
+  private schemaRegex = /\$schema/;
+  private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
+  private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (document.fileName.endsWith("template.json")) {
+      return this.computeTemplateCodeLenses(document);
+    } else {
+      return this.computePreviewCodeLenses(document);
+    }
+  }
+
+  private computeTemplateCodeLenses(document: vscode.TextDocument) {
+    const codeLenses: vscode.CodeLens[] = [];
+    const command = {
+      title: "🖼️Preview",
+      command: "fx-extension.openPreviewFile",
+      arguments: [{ fsPath: document.fileName }],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+
+    const text = document.getText();
+    const regex = new RegExp(this.schemaRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
+      const schemaCommand = {
+        title: "Open schema",
+        command: "fx-extension.openSchema",
+        arguments: [{ url: url }],
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+    }
+
+    if (document.fileName.endsWith("manifest.remote.template.json")) {
+      const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
+        title: "✏️Edit the config file",
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "config" }],
+      });
+      codeLenses.push(...configCodelenses);
+
+      const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
+        title: "👀View the state file",
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "state" }],
+      });
+      codeLenses.push(...stateCodelenses);
+    }
+
+    return codeLenses;
+  }
+
+  private calculateCodeLens(document: vscode.TextDocument, regex: RegExp, command: vscode.Command) {
+    let matches;
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    while ((matches = regex.exec(text)) !== null) {
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(matches[0]);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = document.getWordRangeAtPosition(position, new RegExp(regex));
+
+      if (range) {
+        codeLenses.push(new vscode.CodeLens(range, command));
+      }
+    }
+    return codeLenses;
+  }
+
+  private computePreviewCodeLenses(document: vscode.TextDocument) {
+    const codeLenses: vscode.CodeLens[] = [];
+    const updateCmd = {
+      title: "🔄Update to Teams platform",
+      command: "fx-extension.updatePreviewFile",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
+
+    const editTemplateCmd = {
+      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+      command: "fx-extension.editManifestTemplate",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+    return codeLenses;
+  }
+}

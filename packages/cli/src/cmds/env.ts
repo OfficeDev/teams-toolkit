@@ -20,7 +20,7 @@ import { WorkspaceNotSupported } from "./preview/errors";
 import HelpParamGenerator from "../helpParamGenerator";
 import activate from "../activate";
 import { getSystemInputs, isWorkspaceSupported } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -50,7 +50,6 @@ class EnvAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <name>`;
   public readonly description = "Add a new environment by copying from the specified environment.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details
@@ -94,12 +93,17 @@ class EnvAdd extends YargsCommand {
 
     const result = await fxCore.createEnv(inputs);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.CreateNewEnvironment,
+        result.error,
+        makeEnvRelatedProperty(projectDir, inputs)
+      );
       return err(result.error);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironment, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(projectDir, inputs),
     });
 
     return ok(null);
@@ -114,7 +118,7 @@ class EnvAdd extends YargsCommand {
     if (!match) {
       return err(InvalidEnvNameError());
     }
-    const envConfigs = await environmentManager.listEnvConfigs(projectDir);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(projectDir);
     if (!envConfigs.isErr() && envConfigs.value!.indexOf(newTargetEnvName) >= 0) {
       return err(ProjectEnvAlreadyExistError(newTargetEnvName));
     }
@@ -127,7 +131,6 @@ class EnvList extends YargsCommand {
   public readonly commandHead = `list`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "List all environments.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details
@@ -144,8 +147,9 @@ class EnvList extends YargsCommand {
 
     CliTelemetry.withRootFolder(projectDir).sendTelemetryEvent(TelemetryEvent.EnvListStart);
 
-    const envResult = await environmentManager.listEnvConfigs(projectDir);
+    const envResult = await environmentManager.listRemoteEnvConfigs(projectDir);
     if (envResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EnvList, envResult.error);
       return err(envResult.error);
     }
 

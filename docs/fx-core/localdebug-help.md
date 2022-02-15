@@ -13,14 +13,14 @@ During debugging, a localhost development certificate will also be automatically
 Some frequently asked questions are listed bellow.
 
 ## Which ports will be used?
-| Port | Component |
+| Component | Port |
 | --- | --- |
-| 3000 | Tab |
-| 5000 | Auth |
-| 7071 | Function |
-| 9229 | Node inspector for Function |
-| 3978 | Bot / Messaging Extension |
-| 9239 | Node inspector for Bot / Messaging Extension |
+| Tab | 53000, or 3000 (for Teams Toolkit version < 3.2.0) |
+| Auth | 55000. or 5000 (for Teams Toolkit version < 3.2.0) |
+| Function | 7071 |
+| Node inspector for Function | 9229 |
+| Bot / Messaging Extension | 3978 |
+| Node inspector for Bot / Messaging Extension | 9239 |
 
 ## What to do if some port is already in use?
 
@@ -66,12 +66,31 @@ Or, if there's no `.env.teamsfx.local` file in your project (e.g., migrated from
 Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
 
 ### Mitigation
-To use your own tunneling service, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+To use your own tunneling service, you should set `botDomain`, and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root.
+```json
+{
+    "bot": {
+        "botDomain": "02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io",
+        "botEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
+    }
+}
 ```
-fx-resource-local-debug.skipNgrok=true
-fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
-```
-Please note that the `localBotEndpoint` should use https protocol.
+Please note that the `botEndpoint` should use https protocol.
+
+You should also close the ngrok validation during local debug.
+
+For VSCode, you should set the setting `fx-extension.prerequisiteCheck.skipNgrok` to be false.
+![VSCode skip ngrok](../images/fx-core/localdebug/vsc-skip-ngrok.jpg)
+For CLI, you should run command `teamsfx config set validate-ngrok off`.
+
+## localdebug-plugin.NgrokTunnelNotConnected
+### Error Message
+Ngrok tunnel is not connected. Check your network settings and try again.
+
+### Mitigation
+Please ensure that your network connection is stable and then try again.
+
+Or you can use your own tunneling service by following [the configuration](#what-to-do-if-i-want-to-use-my-own-tunneling-service-instead-of-the-built-in-one-for-bot-or-messaging-extension).
 
 ## What to do if Teams shows "App not found" when the Teams web client is opened?
 ### Error
@@ -119,17 +138,68 @@ Since Teams requires https Tab hosting endpoint, a localhost development certifi
 ### Mitigation
 We recommend you to install the development certificate. However, if you do not want to install the development certificate and do not want the confirmation window to pop up every time during debugging, you can follow the script bellow to disable the development certificate.
 
-Set the following configuration in *.fx/default.userdata* under the project root, then start debugging, like:
-```
-fx-resource-local-debug.trustDevCert=false
-```
+Close the trust development certificate setting, then start debugging.
+
+For VSCode, you should set the setting `fx-extension.prerequisiteCheck.devCert` to be false.
+![VSCode trust dev cert](../images/fx-core/localdebug/vsc-trust-dev-cert.jpg)
+For CLI, you should run command `teamsfx config set trust-development-certificate off`.
+
 If so, an error will show in the Tab page of your app, look like:
 
 ![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)
 
-To resolve this issue, open a new tab in the same browser, go to https://localhost:3000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
+To resolve this issue, open a new tab in the same browser, go to https://localhost:53000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
 
 ![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
+
+## How to manually install the development certificate for Windows Subsystem for Linux (WSL) users?
+### Reason
+Since Teams requires https Tab hosting endpoint, a localhost development certificate will be automatically generated when you launch local debug. Teams toolkit runs on WSL but the browser runs on Windows, so the dev certificate will not be automatically installed. If the development certificate is not installed, local debug will fail after adding app to Teams.
+
+![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)
+
+### Mitigation
+#### Method 1: Trust the development certificate in browser
+This method is simpler but only takes effect for current browser. You need to repeat these steps for each browser you use to debug your app.
+
+1. Open a new tab in the same browser, go to https://localhost:53000/index.html#/tab.
+2. Click the "Advanced" button and then select "Proceed to localhost (unsafe)".
+3. Refresh the Teams web client.
+
+![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
+
+#### Method 2: Trust the development certificate in Windows
+This method is a little bit more complex but it takes effect globally. You only need to do once for all browsers.
+
+1. Open the certificate folder of your WSL distribution in Windows Explorer (example path: `\\wsl$\{DISTRO_NAME}\home\{USER_NAME}\.fx\certificate`).
+
+    ![WSL-Cert-Folder](../images/fx-core/localdebug/wsl-cert-1-folder.png)
+
+2. Open "localhost.crt" and click "Install Certificate...".
+
+    ![WSL-Cert-Localhost-Crt](../images/fx-core/localdebug/wsl-cert-2-localhostcrt.png)
+
+3. In the "Certificate Import Wizard", select "Next".
+
+    ![WSL-Cert-Import-Wizard](../images/fx-core/localdebug/wsl-cert-3-import-wizard.png)
+
+4. Select "Place all certificates in the following store" and click "Browse".
+
+    ![WSL-Cert-Browse](../images/fx-core/localdebug/wsl-cert-4-browse.png)
+
+5. Select "Trusted Root Certification Authorities", click "OK" and then click "Next".
+
+    ![WSL-Cert-Root-Cert](../images/fx-core/localdebug/wsl-cert-5-root-cert.png)
+
+6. Click "OK" to confirm importing the certificate.
+
+    ![WSL-Cert-Confirm](../images/fx-core/localdebug/wsl-cert-6-confirm.png)
+
+7. You will see a confirmation that the import process has succeeded.
+
+    ![WSL-Cert-Succeed](../images/fx-core/localdebug/wsl-cert-7-succeed.png)
+
+8. Restart your browser to take effect.
 
 ## SPFx known issue on Teams workbench debug on macOS/Linux
 ### Error

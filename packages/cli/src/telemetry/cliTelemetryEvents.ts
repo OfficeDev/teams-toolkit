@@ -22,6 +22,9 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdateManifestStart = "update-manifest-start",
+  UpdateManifest = "update-manifest",
+
   BuildStart = "build-start",
   Build = "build",
 
@@ -50,6 +53,9 @@ export enum TelemetryEvent {
   PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
   PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
 
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
+
   ConfigGet = "config-get",
   ConfigSet = "config-set",
 
@@ -76,7 +82,7 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
-  SampleName = "sample-name",
+  SampleName = "sample-app-name",
   Capabilities = "capabilities",
   Resources = "resources",
   Internal = "internal",
@@ -96,6 +102,7 @@ export enum TelemetryProperty {
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
+  SettingsVersion = "settings-version",
 }
 
 export enum TelemetrySuccess {

@@ -1,59 +1,58 @@
-param botServiceName string
-param botWebAppName string
-param botAadClientId string
+// Auto generated content, please customize files under provision folder
+
 @secure()
-param botAadClientSecret string
-param authLoginUriSuffix string
-param botEndpoint string
-param m365ClientId string
+param provisionParameters object
+param provisionOutputs object
 @secure()
-param m365ClientSecret string
-param m365TenantId string
-param m365OauthAuthorityHost string
-param m365ApplicationIdUri string
-{{#contains 'fx-resource-function' Plugins}}
-param functionEndpoint string
-{{/contains}}
-{{#contains 'fx-resource-azure-sql' Plugins}}
-param sqlDatabaseName string
-param sqlEndpoint string
-{{/contains}}
-{{#contains 'fx-resource-identity' Plugins}}
-param identityClientId string
-{{/contains}}
+param currentAppSettings object
 
-var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
+var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
+var m365ClientId = provisionParameters['m365ClientId']
 
-resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
-  location: 'global'
-  name: '${botServiceName}/MsTeamsChannel'
-  properties: {
-    channelName: 'MsTeamsChannel'
-  }
-}
+{{#if (contains "fx-resource-key-vault" plugins) }}
+var m365ClientSecret = \{{fx-resource-key-vault.References.m365ClientSecretReference}}
+{{else}}
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+{{/if}}
 
-resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
-    name: '${botWebAppName}/appsettings'
-     properties: {
-      BOT_ID: botAadClientId
-      BOT_PASSWORD: botAadClientSecret
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint
-      M365_APPLICATION_ID_URI: m365ApplicationIdUri
-      M365_AUTHORITY_HOST: m365OauthAuthorityHost
-      M365_CLIENT_ID: m365ClientId
-      M365_CLIENT_SECRET: m365ClientSecret
-      M365_TENANT_ID: m365TenantId
-      SCM_DO_BUILD_DURING_DEPLOYMENT: 'true'
-      WEBSITE_NODE_DEFAULT_VERSION: '12.13.0'
-      {{#contains 'fx-resource-function' Plugins}}
-      API_ENDPOINT: functionEndpoint
-      {{/contains}}
-      {{#contains 'fx-resource-azure-sql' Plugins}}
-      SQL_DATABASE_NAME: sqlDatabaseName
-      SQL_ENDPOINT: sqlEndpoint
-      {{/contains}}
-      {{#contains 'fx-resource-identity' Plugins}}
-      IDENTITY_ID: identityClientId
-      {{/contains}}
-     }
+var m365TenantId = provisionParameters['m365TenantId']
+var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+var botAadAppClientId = provisionParameters['botAadAppClientId']
+
+{{#if (contains "fx-resource-key-vault" plugins) }}
+var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretReference}}
+{{else}}
+var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
+{{/if}}
+
+var botId = provisionParameters['botAadAppClientId']
+
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+  {{#if (contains "fx-resource-bot" plugins) }}
+var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
+  {{/if}}
+{{else}}
+var m365ApplicationIdUri = 'api://botid-${botId}'
+{{/if}}
+
+resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
+  name: '${botWebAppName}/appsettings'
+  properties: union({
+    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
+    M365_CLIENT_ID: m365ClientId // Client id of AAD application
+    M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
+    M365_TENANT_ID: m365TenantId // Tenant id of AAD application
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
+    BOT_ID: botAadAppClientId // ID of your bot
+    BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
+    {{#if (contains "fx-resource-function" plugins) }}
+    API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint // Azure Function endpoint
+    {{/if}}
+    {{#if (contains "fx-resource-azure-sql" plugins)}}
+    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}} // SQL database name
+    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}} // SQL server endpoint
+    {{/if}}
+    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}} // User assigned identity id, the identity is used to access other Azure resources
+  }, currentAppSettings)
 }

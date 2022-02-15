@@ -44,6 +44,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot } from "../helper";
 
@@ -123,6 +124,7 @@ describe("Post Local Debug", () => {
           [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
           [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
         ]),
+        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
       };
     }
 
@@ -151,6 +153,8 @@ describe("Post Local Debug", () => {
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {
@@ -178,7 +182,8 @@ describe("Post Local Debug", () => {
         capabilities: ["Bot"],
       },
     };
-    const invalidManifestPath = "tests/plugins/resource/appstudio/resources/invalid.manifest.json";
+    const invalidManifestPath =
+      "tests/plugins/resource/appstudio/resources-multi-env/invalid.manifest.json";
     const invalidManifest = fs.readJson(invalidManifestPath);
 
     sandbox.stub<any, any>(fs, "readJson").resolves(invalidManifest);
@@ -194,7 +199,7 @@ describe("Post Local Debug", () => {
 
   it("should return AppDefinition error", async () => {
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: "./tests/plugins/resource/appstudio/resources-multi-env/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),

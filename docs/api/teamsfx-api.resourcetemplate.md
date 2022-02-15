@@ -7,7 +7,7 @@
 <b>Signature:</b>
 
 ```typescript
-export declare type ResourceTemplate = Dict<ConfigValue>;
+export declare type ResourceTemplate = Record<string, ConfigValue>;
 ```
-<b>References:</b> [Dict](./teamsfx-api.dict.md)<!-- -->, [ConfigValue](./teamsfx-api.configvalue.md)
+<b>References:</b> [ConfigValue](./teamsfx-api.configvalue.md)
 

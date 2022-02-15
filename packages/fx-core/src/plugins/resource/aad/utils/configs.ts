@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue, Platform, Stage } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  ConfigValue,
+  v2,
+  err,
+  Result,
+  FxError,
+  ok,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
 import {
   ConfigErrorMessages as Errors,
@@ -12,12 +21,12 @@ import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common";
-import { getArmOutput } from "../../utils4v2";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
+import { getPermissionRequest } from "../v3";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 
 export class ConfigUtils {
   public static getAadConfig(
@@ -26,17 +35,9 @@ export class ConfigUtils {
     isLocalDebug = false
   ): string | undefined {
     if (isLocalDebug) {
-      if (isMultiEnvEnabled()) {
-        return ctx.localSettings?.auth?.get(key) as string;
-      } else {
-        return ctx.config?.get(Utils.addLocalDebugPrefix(true, key)) as string;
-      }
+      return ctx.localSettings?.auth?.get(key) as string;
     } else {
-      if (isMultiEnvEnabled()) {
-        return ctx.envInfo.state.get(Plugins.pluginNameComplex)?.get(key) as string;
-      } else {
-        return ctx.config?.get(key) as string;
-      }
+      return ctx.envInfo.state.get(Plugins.pluginNameComplex)?.get(key) as string;
     }
   }
 
@@ -44,24 +45,15 @@ export class ConfigUtils {
     ctx: PluginContext,
     key: string
   ): string | undefined {
-    const isMultiEnvEnable: boolean = isMultiEnvEnabled();
     switch (key) {
       case ConfigKeysOfOtherPlugin.localDebugTabDomain:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain);
       case ConfigKeysOfOtherPlugin.localDebugTabEndpoint:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint);
       case ConfigKeysOfOtherPlugin.localDebugBotEndpoint:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint);
       case ConfigKeysOfOtherPlugin.teamsBotIdLocal:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-          : ctx.envInfo.state.get(Plugins.teamsBot)?.get(key);
+        return ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId);
       default:
         return undefined;
     }
@@ -77,14 +69,10 @@ export class ConfigUtils {
       return;
     }
 
-    if (isMultiEnvEnabled()) {
-      if (isLocalDebug) {
-        ctx.localSettings?.auth?.set(key, value);
-      } else {
-        ctx.envInfo.state.get(Plugins.pluginNameComplex)?.set(key, value);
-      }
+    if (isLocalDebug) {
+      ctx.localSettings?.auth?.set(key, value);
     } else {
-      ctx.config.set(Utils.addLocalDebugPrefix(isLocalDebug, key), value);
+      ctx.envInfo.state.get(Plugins.pluginNameComplex)?.set(key, value);
     }
   }
 
@@ -118,7 +106,65 @@ export class ProvisionConfig {
     this.isLocalDebug = isLocalDebug;
     this.oauth2PermissionScopeId = uuidv4();
   }
-
+  public async restoreConfigFromLocalSettings(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    localSettings: v2.LocalSettings
+  ): Promise<Result<any, FxError>> {
+    const displayName: string = ctx.projectSetting.appName;
+    if (displayName) {
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetDisplayNameError)
+      );
+    }
+    const permissionRes = await getPermissionRequest(inputs.projectPath);
+    if (permissionRes.isErr()) {
+      return err(permissionRes.error);
+    }
+    this.permissionRequest = permissionRes.value;
+    const objectId = localSettings.auth?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    const clientSecret = localSettings.auth?.clientSecret;
+    if (clientSecret) {
+      this.password = clientSecret as string;
+    }
+    return ok(undefined);
+  }
+  public async restoreConfigFromEnvInfo(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<any, FxError>> {
+    const displayName: string = ctx.projectSetting.appName;
+    if (displayName) {
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetDisplayNameError)
+      );
+    }
+    const permissionRes = await getPermissionRequest(inputs.projectPath);
+    if (permissionRes.isErr()) {
+      return err(permissionRes.error);
+    }
+    this.permissionRequest = permissionRes.value;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const objectId = aadResource?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    const clientSecret = aadResource?.clientSecret;
+    if (clientSecret) {
+      this.password = clientSecret as string;
+    }
+    return ok(undefined);
+  }
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
     const displayName: string = ctx.projectSettings!.appName;
     if (displayName) {
@@ -169,16 +215,47 @@ export class ProvisionConfig {
       ctx,
       ConfigKeys.oauthHost,
       Constants.oauthAuthorityPrefix,
-      isMultiEnvEnabled() && this.isLocalDebug
+      this.isLocalDebug
     );
     ConfigUtils.checkAndSaveConfig(
       ctx,
       ConfigKeys.oauthAuthority,
       oauthAuthority,
-      isMultiEnvEnabled() && this.isLocalDebug
+      this.isLocalDebug
     );
   }
-
+  public saveConfigIntoLocalSettings(localSettings: v2.LocalSettings, tenantId: string): void {
+    const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
+    if (!localSettings.auth) {
+      localSettings.auth = {};
+    }
+    if (localSettings.auth) {
+      if (this.clientId) localSettings.auth.clientId = this.clientId;
+      if (this.password) localSettings.auth.clientSecret = this.password;
+      if (this.objectId) localSettings.auth.objectId = this.objectId;
+      if (this.oauth2PermissionScopeId)
+        localSettings.auth.oauth2PermissionScopeId = this.oauth2PermissionScopeId;
+      localSettings.auth.tenantId = tenantId;
+      localSettings.auth.oauthHost = Constants.oauthAuthorityPrefix;
+      localSettings.auth.oauthAuthority = oauthAuthority;
+    }
+  }
+  public saveConfigIntoEnvInfo(envInfo: v3.EnvInfoV3, tenantId: string): void {
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
+      envInfo.state[BuiltInFeaturePluginNames.aad] = {};
+      (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).secretFields = ["clientSecret"];
+    }
+    const envState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
+    if (this.clientId) envState.clientId = this.clientId;
+    if (this.password) envState.clientSecret = this.password;
+    if (this.objectId) envState.objectId = this.objectId;
+    if (this.oauth2PermissionScopeId)
+      envState.oauth2PermissionScopeId = this.oauth2PermissionScopeId;
+    envState.tenantId = tenantId;
+    envState.oauthHost = Constants.oauthAuthorityPrefix;
+    envState.oauthAuthority = oauthAuthority;
+  }
   private static getOauthAuthority(tenantId: string): string {
     return `${Constants.oauthAuthorityPrefix}/${tenantId}`;
   }
@@ -205,13 +282,9 @@ export class SetApplicationInContextConfig {
     } else {
       frontendDomain = ctx.config.get(ConfigKeys.domain);
       if (!frontendDomain) {
-        if (isArmSupportEnabled()) {
-          frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
-        } else {
-          frontendDomain = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
-        }
+        frontendDomain = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       }
     }
 
@@ -240,7 +313,51 @@ export class SetApplicationInContextConfig {
       );
     }
   }
+  public restoreConfigFromLocalSettings(localSettings: v2.LocalSettings): void {
+    const frontendDomain = localSettings.frontend?.tabDomain;
+    if (frontendDomain) {
+      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    }
+    const botId = localSettings.bot?.botId;
+    if (botId) {
+      this.botId = format(botId as string, Formats.UUID);
+    }
 
+    const clientId = localSettings.auth?.clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
+  public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    let frontendDomain = aadResource?.domain;
+    if (!frontendDomain) {
+      frontendDomain = (
+        envInfo.state[BuiltInFeaturePluginNames.frontend] as v3.FrontendHostingResource
+      )?.domain;
+    }
+    if (frontendDomain) {
+      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    }
+    const botId = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.botId;
+    if (botId) {
+      this.botId = format(botId as string, Formats.UUID);
+    }
+    const clientId: ConfigValue = aadResource?.clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
   public saveConfigIntoContext(ctx: PluginContext): void {
     ConfigUtils.checkAndSaveConfig(
       ctx,
@@ -255,11 +372,101 @@ export class PostProvisionConfig {
   public frontendEndpoint?: string;
   public botEndpoint?: string;
   public objectId?: string;
+  public clientId?: string;
   public applicationIdUri?: string;
   private isLocalDebug: boolean;
 
   constructor(isLocalDebug = false) {
     this.isLocalDebug = isLocalDebug;
+  }
+  public restoreConfigFromLocalSettings(localSettings: v2.LocalSettings): void {
+    const frontendEndpoint = localSettings.frontend?.tabEndpoint;
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    }
+    const botEndpoint = localSettings.bot?.botEndpoint;
+    if (botEndpoint) {
+      this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
+    }
+    const objectId = localSettings.auth?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+      );
+    }
+    const applicationIdUri = localSettings.auth?.applicationIdUris;
+    if (applicationIdUri) {
+      this.applicationIdUri = applicationIdUri as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+        )
+      );
+    }
+    const clientId = localSettings.auth?.clientId;
+    if (objectId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
+  public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
+    // const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    let frontendEndpoint = aadResource?.endpoint;
+    if (!frontendEndpoint) {
+      frontendEndpoint = envInfo.state[BuiltInFeaturePluginNames.frontend]?.endpoint;
+    }
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    }
+    const botEndpoint = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.siteEndpoint;
+    if (botEndpoint) {
+      this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
+    }
+    const objectId = aadResource?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+      );
+    }
+    const applicationIdUri = aadResource?.applicationIdUris;
+    if (applicationIdUri) {
+      this.applicationIdUri = applicationIdUri as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+        )
+      );
+    }
+    const clientId = aadResource?.clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
@@ -272,13 +479,9 @@ export class PostProvisionConfig {
     } else {
       frontendEndpoint = ctx.config.get(ConfigKeys.endpoint);
       if (!frontendEndpoint) {
-        if (isArmSupportEnabled()) {
-          frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
-        } else {
-          frontendEndpoint = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
-        }
+        frontendEndpoint = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       }
     }
 
@@ -323,6 +526,20 @@ export class PostProvisionConfig {
         GetConfigError.message(
           Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
         )
+      );
+    }
+
+    const clientId: ConfigValue = ConfigUtils.getAadConfig(
+      ctx,
+      ConfigKeys.clientId,
+      this.isLocalDebug
+    );
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
       );
     }
   }

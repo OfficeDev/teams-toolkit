@@ -16,7 +16,11 @@ A Messaging Extension allows users to interact with your web service while compo
 
 ## Edit the manifest
 
-You can find the Teams manifest in `templates/appPackage/manifest.template.json`. It contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more.
+You can find the Teams app manifest in `templates/appPackage` folder. The folder contains two manifest files:
+* `manifest.local.template.json`: Manifest file for Teams app running locally.
+* `manifest.remote.template.json`: Manifest file for Teams app running remotely (After deployed to Azure).
+
+Both files contain template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 
@@ -47,10 +51,10 @@ To check that your manifest file is valid:
 - From Visual Studio Code: open the Teams Toolkit and click `Validate manifest file` or open the command palette and select: `Teams: Validate manifest file`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
-## Build
+## Package
 
-- From Visual Studio Code: open the Teams Toolkit and click `Zip Teams metadata package` or open the command palette and select `Teams: Zip Teams metadata package`.
-- Alternatively, from the command line run `teamsfx build` in the project directory.
+- From Visual Studio Code: open the command palette and select `Teams: Zip Teams metadata package`.
+- Alternatively, from the command line run `teamsfx package` in the project directory.
 
 ## Publish to Teams
 
@@ -64,22 +68,35 @@ Once deployed, you may want to distribute your application to your organization'
 This template provides some sample functionality:
 
 - You can search for `npm` packages from the search bar.
+
 - You can create and send an adaptive card.
+
   ![CreateCard](./images/AdaptiveCard.png)
+
 - You can share a message in an adaptive card form.
+
   ![ShareMessage](./images/ShareMessage.png)
+
 - You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
+
   ![ComposeArea](./images/LinkUnfurlingImage.png)
 
 To trigger these functions, there are multiple entry points:
 
 - `@mention` Your messaging extension, from the `search box area`.
+
   ![AtBotFromSearch](./images/AtBotFromSearch.png)
+
 - `@mention` your messaging extension from the `compose message area`.
+
   ![AtBotFromMessage](./images/AtBotInMessage.png)
+
 - Click the `...` under compose message area, find your messaging extension.
+
   ![ComposeArea](./images/ThreeDot.png)
+
 - Click the `...` next to any messages you received or sent.
+
   ![ComposeArea](./images/ThreeDotOnMessage.png)
 
 ## Further reading

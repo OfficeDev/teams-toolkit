@@ -17,7 +17,6 @@ import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
 import { ErrorMessagesForChecking } from "./constants";
-import { Logger } from "../../../core";
 
 export class AzureOperations {
   public static async CreateBotChannelRegistration(

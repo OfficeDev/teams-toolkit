@@ -11,7 +11,7 @@ $ npm install -g @microsoft/teamsfx-cli
 $ teamsfx -h
 ```
 
-Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md) for in-depth instructions.
+Please refer to [TeamsFx CLI User Manual](https://aka.ms/teamsfx-cli) for in-depth instructions.
 
 ## Extensibility Model
 

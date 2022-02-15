@@ -6,7 +6,7 @@ import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
 import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
-import { DepsCheckerEvent } from "./depsChecker/common";
+import { DepsCheckerEvent } from "../../../../common/deps-checker/constant/telemetry";
 import { FunctionPluginError } from "../resources/errors";
 
 export class TelemetryHelper {

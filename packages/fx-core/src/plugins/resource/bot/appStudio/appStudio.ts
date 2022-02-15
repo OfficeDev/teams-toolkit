@@ -6,11 +6,11 @@ import { AxiosInstance, default as axios } from "axios";
 import {
   AADAppCheckingError,
   ConfigUpdatingError,
+  MessageEndpointUpdatingError,
   ProvisionError,
   SomethingMissingError,
 } from "../errors";
 import { CommonStrings, ConfigNames } from "../resources/strings";
-import { LifecycleFuncNames } from "../constants";
 import { RetryHandler } from "../utils/retryHandler";
 import { getAppStudioEndpoint } from "../../../..";
 import { Messages } from "../resources/messages";
@@ -157,8 +157,9 @@ export class AppStudio {
     let response = undefined;
     try {
       if (registration.botId) {
-        const getBotRegistrationResponse = await RetryHandler.Retry(() =>
-          axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${registration.botId}`)
+        const getBotRegistrationResponse = await RetryHandler.Retry(
+          () => axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${registration.botId}`),
+          true
         );
         if (getBotRegistrationResponse && getBotRegistrationResponse.data) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
@@ -193,7 +194,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
       );
     } catch (e) {
-      throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT, e);
+      throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
     }
 
     if (!response || !response.data) {

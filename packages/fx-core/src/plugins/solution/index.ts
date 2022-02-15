@@ -3,3 +3,4 @@
 "use strict";
 
 export * from "./fx-solution";
+export * from "./spfx-solution";

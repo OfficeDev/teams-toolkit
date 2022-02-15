@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   QTreeNode,
   Result,
   Stage,
@@ -36,11 +37,13 @@ import {
   convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
+  generateResourceTemplateAdapter,
   getQuestionsAdapter,
   getQuestionsForScaffoldingAdapter,
   getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.ApimPlugin)
@@ -50,7 +53,8 @@ export class ApimPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.ApimPlugin)
   plugin!: ApimPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
@@ -63,30 +67,6 @@ export class ApimPluginV2 implements ResourcePlugin {
     return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
-  async getQuestionsForScaffolding(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
-  }
-
-  async getQuestionsForUserTask(
-    ctx: Context,
-    inputs: Inputs,
-    func: Func,
-    envInfo: DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await getQuestionsForUserTaskAdapter(
-      ctx,
-      inputs,
-      func,
-      envInfo,
-      tokenProvider,
-      this.plugin
-    );
-  }
-
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
@@ -94,26 +74,26 @@ export class ApimPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async deploy(
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     // const questionRes = await this.plugin.getQuestions(
     //   Stage.deploy,
@@ -128,7 +108,7 @@ export class ApimPluginV2 implements ResourcePlugin {
     //     }
     //   }
     // }
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async executeUserTask(
@@ -148,5 +128,19 @@ export class ApimPluginV2 implements ResourcePlugin {
       tokenProvider,
       this.plugin
     );
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

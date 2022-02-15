@@ -4,10 +4,10 @@
 
 ## SingleSelectQuestion.dynamicOptions property
 
-dynamic option, which has higer priority than static options
+dynamic option, which has higher priority than static options
 
 <b>Signature:</b>
 
 ```typescript
-dynamicOptions?: DymanicOptions;
+dynamicOptions?: DynamicOptions;
 ```

@@ -6,13 +6,13 @@ export class Constants {
   public static readonly pluginFullName: string = "fx-resource-azure-sql";
 
   public static readonly firewall = {
-    azureIp: "0.0.0.0",
-    azureRule: "AllowAzure",
     localRule: "AllowLocal",
   };
 
   public static readonly ipBeginToken = "0";
   public static readonly ipEndToken = "255";
+
+  public static readonly maxRetryTimes = 3;
 
   public static readonly jwtToken = {
     ver1: "1.0",
@@ -30,7 +30,7 @@ export class Constants {
   public static readonly sqlEndpoint: string = "sqlEndpoint";
   public static readonly sqlResourceId: string = "sqlResourceId";
   public static readonly databaseName: string = "databaseName";
-  public static readonly skipAddingUser: string = "skipAddingUser";
+  public static readonly skipAddingSqlUser: string = "skipAddingSqlUser";
   public static readonly admin: string = "admin";
   public static readonly adminPassword: string = "adminPassword";
 
@@ -62,8 +62,6 @@ export class Constants {
     confirmPassword: "sql-confirm-password",
     skipAddingUser: "sql-skip-adding-user",
   };
-
-  public static readonly resourceProvider: string = "Microsoft.Sql";
 }
 
 export class Telemetry {
@@ -90,6 +88,7 @@ export class Telemetry {
     errorMessage: "error-message",
     appid: "appid",
     skipAddingUser: "skip-adding-user",
+    dbCount: "db-count",
   };
 }
 
@@ -98,16 +97,15 @@ export class HelpLinks {
 }
 
 export class AzureSqlBicep {
-  static readonly sqlEndpoint: string = "azureSqlProvision.outputs.sqlEndpoint";
-  static readonly databaseName: string = "azureSqlProvision.outputs.databaseName";
-}
-
-export class AzureSqlArmOutput {
-  static readonly sqlResourceId: string = "azureSql_sqlResourceId";
-  static readonly sqlEndpoint: string = "azureSql_sqlEndpoint";
-  static readonly databaseName: string = "azureSql_databaseName";
+  static readonly sqlResourceId: string = "provisionOutputs.azureSqlOutput.value.sqlResourceId";
+  static readonly sqlEndpoint: string = "provisionOutputs.azureSqlOutput.value.sqlEndpoint";
+  static readonly databaseName: string = "provisionOutputs.azureSqlOutput.value.databaseName";
 }
 
 export class AzureSqlBicepFile {
-  static readonly moduleTemplateFileName: string = "sql.template.bicep";
+  static readonly moduleTemplateFileName: string = "provision.template.bicep";
+  static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
+  static readonly newDatabaseOrchestrationTemplateFileName: string =
+    "newDatabase.orchestration.template.bicep";
+  static readonly newDatabaseProvisionTemplateFileName = "newDatabaseProvision.template.bicep";
 }

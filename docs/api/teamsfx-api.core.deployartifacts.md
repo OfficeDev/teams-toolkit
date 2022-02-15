@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-deployArtifacts: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 ```

@@ -80,6 +80,6 @@ export namespace SPOClient {
 
   export async function createAppCatalog(spoToken: string): Promise<any> {
     const requester = createRequesterWithToken(spoToken);
-    await requester.post(`/_api/web/EnsureTenantAppCatalog(callerId='teamsdev'`);
+    await requester.post(`/_api/web/EnsureTenantAppCatalog(callerId='teamsdev')`);
   }
 }

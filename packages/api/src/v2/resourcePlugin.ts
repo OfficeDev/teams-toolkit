@@ -2,11 +2,18 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { DeepReadonly } from ".";
-import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
-import { AzureSolutionSettings } from "../types";
-import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, DeploymentInputs, EnvInfoV2, FxResult, ProvisionInputs } from "./types";
+import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
+import { ProjectSettings, Inputs, Json, Void } from "../types";
+import { AppStudioTokenProvider, TokenProvider } from "../utils";
+import {
+  Context,
+  DeepReadonly,
+  DeploymentInputs,
+  EnvInfoV2,
+  InputsWithProjectPath,
+  ProvisionInputs,
+} from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
@@ -46,13 +53,13 @@ export interface ResourcePlugin {
 
   /**
    * A resource plugin can decide whether it needs to be activated when the Toolkit initializes
-   * based on solution settings.
+   * based on project settings.
    *
-   * @param solutionSettings solution settings
+   * @param projectSettings project settings
    *
    * @returns whether to be activated
    */
-  activate(solutionSettings: AzureSolutionSettings): boolean;
+  activate(projectSettings: ProjectSettings): boolean;
 
   /**
    * Called by Toolkit when creating a new project or adding a new resource.
@@ -89,9 +96,12 @@ export interface ResourcePlugin {
    */
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
-
+  updateResourceTemplate?: (
+    ctx: Context,
+    inputs: Inputs & { existingResources: string[] }
+  ) => Promise<Result<ResourceTemplate, FxError>>;
   /**
    * provisionResource() runs before ARM/Bicep provision when Provision command is called.
    * There are two reasons why a resource needs to implement this method:
@@ -104,17 +114,16 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {EnvInfoV2} envInfo - a reference of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
+   * @returns Void because side effect is expected.
    */
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * configureResource() is guaranteed to run after Bicep/ARM provision.
@@ -125,33 +134,33 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {EnvInfoV2} envInfo - a reference of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
+   * @returns Void because side effect is expected.
    */
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the provision output values returned by {@link provisionResource}, ARM/Bicep provision
    * and {@link configureResource}.
-   * Plugins are expected to deploy code to cloud using access tokens provided by {@link AzureAccountProvider}.
+   * Plugins are expected to deploy code to cloud using access tokens provided by {@link TokenProvider}.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionOutputs - state containing provision outputs modeled after state.${env}.json
-   * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {TokenProvider} tokenProvider - Token provider for Azure, AppStudio and m365
+   * @returns Void because side effect is expected.
    */
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -245,4 +254,31 @@ export interface ResourcePlugin {
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * For grant and check permission in remote collaboration
+   */
+  grantPermission?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
+
+  checkPermission?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
+
+  listCollaborator?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
 }

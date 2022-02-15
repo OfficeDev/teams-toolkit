@@ -1,41 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimArmOutput, ApimDefaultValues, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
-import { AssertNotEmpty } from "../error";
 import {
-  IAadPluginConfig,
-  IApimPluginConfig,
-  IFunctionPluginConfig,
-  ISolutionConfig,
-  SolutionConfig,
-} from "../config";
+  ApimDefaultValues,
+  ApimOutputBicepSnippet,
+  ApimPathInfo,
+  ApimPluginConfigKeys,
+} from "../constants";
+import { AssertNotEmpty } from "../error";
+import { IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import {
-  AzureSolutionSettings,
-  LogProvider,
-  PluginContext,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
-  getproductNameFromResourceId,
+  getProductNameFromResourceId,
   Lazy,
 } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
 import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
+import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getArmOutput } from "../../utils4v2";
-import {
-  generateBicepFiles,
-  getResourceGroupNameFromResourceId,
-  isArmSupportEnabled,
-} from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
+import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../../common/tools";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -55,84 +47,22 @@ export class ApimManager {
     this.telemetryReporter = telemetryReporter;
   }
 
-  public async provision(
-    apimConfig: IApimPluginConfig,
-    solutionConfig: ISolutionConfig,
-    appName: string
-  ): Promise<void> {
+  public async provision(apimConfig: IApimPluginConfig): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
     const currentUserId = await apimService.getUserId();
 
-    if (isArmSupportEnabled()) {
-      const apimServiceResource = apimConfig.serviceResourceId
-        ? await apimService.getService(
-            getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
-            getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
-          )
-        : undefined;
-      apimConfig.publisherEmail = apimServiceResource?.publisherEmail
-        ? apimServiceResource.publisherEmail
-        : currentUserId;
-      apimConfig.publisherName = apimServiceResource?.publisherName
-        ? apimServiceResource.publisherName
-        : currentUserId;
-    } else {
-      await apimService.ensureResourceProvider();
-
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName =
-        apimConfig.serviceName ??
-        NamingRules.apimServiceName.sanitize(appName, solutionConfig.resourceNameSuffix);
-
-      await apimService.createService(
-        resourceGroupName,
-        apimServiceName,
-        solutionConfig.location,
-        currentUserId
-      );
-      apimConfig.serviceName = apimServiceName;
-
-      const productId =
-        apimConfig.productId ??
-        NamingRules.productId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      await apimService.createProduct(resourceGroupName, apimServiceName, productId);
-      apimConfig.productId = productId;
-    }
-  }
-
-  public async postProvision(
-    apimConfig: IApimPluginConfig,
-    ctx: PluginContext,
-    aadConfig: IAadPluginConfig,
-    appName: string
-  ): Promise<void> {
-    if (isArmSupportEnabled()) {
-      apimConfig.serviceResourceId = getArmOutput(ctx, ApimArmOutput.ServiceResourceId);
-      apimConfig.productResourceId = getArmOutput(ctx, ApimArmOutput.ProductResourceId);
-      apimConfig.authServerResourceId = getArmOutput(ctx, ApimArmOutput.AuthServerResourceId);
-    } else {
-      const solutionConfig = new SolutionConfig(ctx.envInfo);
-      const apimService: ApimService = await this.lazyApimService.getValue();
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      const clientId = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientId);
-      const clientSecret = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientSecret);
-
-      const oAuthServerId =
-        apimConfig.oAuthServerId ??
-        NamingRules.oAuthServerId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      const scopeName = `${aadConfig.applicationIdUris}/${ApimDefaultValues.enableScopeName}`;
-      await apimService.createOrUpdateOAuthService(
-        resourceGroupName,
-        apimServiceName,
-        oAuthServerId,
-        solutionConfig.teamsAppTenantId,
-        clientId,
-        clientSecret,
-        scopeName
-      );
-      apimConfig.oAuthServerId = oAuthServerId;
-    }
+    const apimServiceResource = apimConfig.serviceResourceId
+      ? await apimService.getService(
+          getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
+          getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
+        )
+      : undefined;
+    apimConfig.publisherEmail = apimServiceResource?.publisherEmail
+      ? apimServiceResource.publisherEmail
+      : currentUserId;
+    apimConfig.publisherName = apimServiceResource?.publisherName
+      ? apimServiceResource.publisherName
+      : currentUserId;
   }
 
   public async deploy(
@@ -144,24 +74,13 @@ export class ApimManager {
   ): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
 
-    let resourceGroupName, apimServiceName, authServerId, productId;
-
-    if (isArmSupportEnabled()) {
-      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
-      const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
-      const authServerResourceId = apimConfig.checkAndGet(
-        ApimPluginConfigKeys.authServerResourceId
-      );
-      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
-      apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
-      authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
-      productId = getproductNameFromResourceId(apimProductResourceId);
-    } else {
-      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      authServerId = apimConfig.checkAndGet(ApimPluginConfigKeys.oAuthServerId);
-      productId = apimConfig.checkAndGet(ApimPluginConfigKeys.productId);
-    }
+    const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
+    const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
+    const authServerResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.authServerResourceId);
+    const resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+    const apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+    const authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
+    const productId = getProductNameFromResourceId(apimProductResourceId);
 
     const apiPrefix = apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const apiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
@@ -216,54 +135,69 @@ export class ApimManager {
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
   }
 
-  public async generateArmTemplates(
-    solutionConfig: AzureSolutionSettings
-  ): Promise<ScaffoldArmTemplateResult> {
-    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-
-    const handleBarsContext = {
-      Plugins: solutionConfig.activeResourcePlugins,
-    };
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
-      handleBarsContext
+  public async updateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
-    }
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
+    );
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        apimProvision: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+    const result: ArmTemplateResult = {
+      Reference: {
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-            ConstantString.UTF8Encoding
-          ),
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
-          ),
-        },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+      Configuration: {
+        Modules: { apim: configModules },
       },
+    };
+
+    return result;
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
+      pluginCtx
+    );
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
+      pluginCtx
+    );
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
+    );
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { apim: provisionModules },
+      },
+      Configuration: {
+        Orchestration: configOrchestration,
+        Modules: { apim: configModules },
+      },
+      Reference: {
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+      },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
     return result;

@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 import { ErrorWithCode, ErrorCode } from "../core/errors";
 import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoTokenInfo";
-import { UserInfo } from "../models/userinfo";
+import { UserInfo, UserTenantIdAndLoginHint } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
-import { createHash } from "crypto";
+import { AccessToken } from "@azure/identity";
+import { AuthenticationResult } from "@azure/msal-browser";
 
 /**
  * Parse jwt token payload
@@ -57,6 +58,69 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
     userInfo.preferredUserName = (tokenObject as SSOTokenV1Info).upn;
   }
   return userInfo;
+}
+
+/**
+ * @internal
+ */
+export function getTenantIdAndLoginHintFromSsoToken(ssoToken: string): UserTenantIdAndLoginHint {
+  if (!ssoToken) {
+    const errorMsg = "SSO token is undefined.";
+    internalLogger.error(errorMsg);
+    throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
+  }
+  const tokenObject = parseJwt(ssoToken) as SSOTokenV1Info | SSOTokenV2Info;
+
+  const userInfo: UserTenantIdAndLoginHint = {
+    tid: tokenObject.tid,
+    loginHint:
+      tokenObject.ver === "2.0"
+        ? (tokenObject as SSOTokenV2Info).preferred_username
+        : (tokenObject as SSOTokenV1Info).upn,
+  };
+
+  return userInfo;
+}
+
+/**
+ * @internal
+ */
+export function parseAccessTokenFromAuthCodeTokenResponse(
+  tokenResponse: string | AuthenticationResult
+): AccessToken {
+  try {
+    const tokenResponseObject =
+      typeof tokenResponse == "string"
+        ? (JSON.parse(tokenResponse) as AuthenticationResult)
+        : tokenResponse;
+    if (!tokenResponseObject || !tokenResponseObject.accessToken) {
+      const errorMsg = "Get empty access token from Auth Code token response.";
+
+      internalLogger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    const token = tokenResponseObject.accessToken;
+    const tokenObject = parseJwt(token);
+
+    if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
+      const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
+      internalLogger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    const accessToken: AccessToken = {
+      token: token,
+      expiresOnTimestamp: tokenObject.exp * 1000,
+    };
+    return accessToken;
+  } catch (error: any) {
+    const errorMsg =
+      "Parse access token failed from Auth Code token response in node env with error: " +
+      error.message;
+    internalLogger.error(errorMsg);
+    throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+  }
 }
 
 /**
@@ -123,36 +187,16 @@ export function getAuthority(authorityHost: string, tenantId: string): string {
 /**
  * @internal
  */
-export function parseCertificate(
-  certificateContent: string | undefined
-): ClientCertificate | undefined {
-  if (!certificateContent) {
-    return undefined;
-  }
-
-  const certificatePattern =
-    /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
-  const match = certificatePattern.exec(certificateContent);
-  if (!match) {
-    const errorMsg = "The certificate content does not contain a PEM-encoded certificate.";
-    internalLogger.error(errorMsg);
-    throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
-  }
-  const thumbprint = createHash("sha1")
-    .update(Buffer.from(match[3], "base64"))
-    .digest("hex")
-    .toUpperCase();
-
-  return {
-    thumbprint: thumbprint,
-    privateKey: certificateContent,
-  };
+export interface ClientCertificate {
+  thumbprint: string;
+  privateKey: string;
 }
 
 /**
  * @internal
  */
-export interface ClientCertificate {
-  thumbprint: string;
-  privateKey: string;
-}
+export const isNode =
+  typeof process !== "undefined" &&
+  !!process.version &&
+  !!process.versions &&
+  !!process.versions.node;

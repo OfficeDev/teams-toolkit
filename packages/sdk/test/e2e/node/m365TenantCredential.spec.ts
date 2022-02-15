@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";

@@ -27,6 +27,10 @@ Alternately, you can use the Package Manager.
 > Install-Package Microsoft.TeamsFx
 ```
 
+### How to choose version
+For .NET 5 projects (VS 2019): Choose version < 0.3.0-rc.
+For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
+
 ### Using Teams User Credential in Teams Tab app
 
 1. Add authentication options in appsettings.{Environment}.json file.
@@ -34,8 +38,9 @@ Alternately, you can use the Package Manager.
 "TeamsFx": {
     "Authentication": {
         "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-        "SimpleAuthEndpoint": "https://localhost:44357/",
-        "InitiateLoginEndpoint": "https://localhost:44357/auth-start.html"
+        "ClientSecret": "xxx", // 'User Secrets' is a better place to store secret string.
+        "InitiateLoginEndpoint": "https://localhost:44302/auth-start.html",
+        "OAuthAuthority": "https://login.microsoftonline.com/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     }
 }
 ```
@@ -44,7 +49,7 @@ Alternately, you can use the Package Manager.
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    services.AddTeamsFx(Configuration);
+    services.AddTeamsFx(Configuration.GetSection("TeamsFx"));
 }
 ```
 3. Add the required namespaces to the `_Imports.razor` file.
@@ -56,7 +61,7 @@ public void ConfigureServices(IServiceCollection services)
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 ```
-5. Call `teamsUserCredential.GetTokenAsync()` to get token or pass `teamsUserCredential` to other functions.
+5. Call `teamsUserCredential.GetTokenAsync()` to get access token or pass `teamsUserCredential` to other functions.
 ```csharp
 try
 {
@@ -76,6 +81,72 @@ catch (ExceptionWithCode e)
     }
 }
 ```
+
+## SDK Upgrade Steps
+### Upgrade from 0.1.0-rc to 0.3.0 (For projects created by Visual Studio 2019 toolkit)
+If there is an existing project created in VS2019, you can use the following steps to upgrade:
+1. Open project in VS2022 and change project target framework to ".NET 6".
+
+2. Upgrade dependencies:
+  `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
+  `Newtonsoft.Json` to `13.0.1`,
+  `Microsoft.Graph` to `4.12.0`,
+  `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
+
+3. Add following lines in appsettings.{Environment}.json file after "ALLOWED_APP_IDS".
+```json
+"ALLOWED_APP_IDS": "...",
+"TeamsFx": {
+    "Authentication": {
+        "ClientId": "value copied from CLIENT_ID",
+        "SimpleAuthEndpoint": "value copied from TAB_APP_ENDPOINT",
+        "InitiateLoginEndpoint": "{value copied from TAB_APP_ENDPOINT}/auth-start.html"
+    }
+}
+```
+
+4. Add following lines in `Startup.cs`.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddTeamsFx(Configuration.GetSection("TeamsFx"));
+}
+```
+and remove following 2 lines.
+```csharp
+services.AddScoped<TeamsFx>();
+services.AddScoped<TeamsUserCredential>();
+```
+
+5. Remove following codes in `Welcome.razor`.
+```csharp
+var clientId = Configuration.GetValue<string>("CLIENT_ID");
+var endpoint = MyNavigationManager.BaseUri;
+
+await teamsfx.SetLogLevelAsync(LogLevel.Verbose);
+await teamsfx.SetLogFunctionAsync(printLog);
+
+AuthenticationConfiguration authentication = new AuthenticationConfiguration(clientId: clientId, simpleAuthEndpoint: endpoint, initiateLoginEndpoint: endpoint + "auth-start.html");
+Configuration configuration = new Configuration(authentication);
+await teamsfx.LoadConfigurationAsync(configuration);
+...
+private void printLog(LogLevel level, string message)
+{
+    Console.WriteLine(message);
+}
+```
+
+### Upgrade from 0.3.0-rc to 0.4.0 (For projects created by Visual Studio 2022 17.1 Preview toolkit)
+If there is an existing project created in VS2022 17.1 Preview, you can use the following steps to upgrade:
+- In `appsettings.{Environment}.json` file:
+1. Add `OAuthAuthority` under `TeamsFx:Authentication` and copy the value from `OAUTH_AUTHORITY`.
+2. Remove the line `"SimpleAuthEndpoint": "https://localhost:port/"`.
+3. Remove lines of configuration starting with "CLIENT_ID", "IDENTIFIER_URI", "TAB_APP_ENDPOINT", "OAUTH_AUTHORITY", "AAD_METADATA_ADDRESS", "ALLOWED_APP_IDS".
+4. Remove the Nuget dependency package "Microsoft.TeamsFx.SimpleAuth".
+- In Solution Explorer:
+1. Right click project file and choose "Manage User Secrets".
+2. Change key name "CLIENT_SECRET" to "TeamsFx:Authentication:ClientSecret".
 
 ### Configure Logging
 `ILogger` is used to print logs. You can configure logging in appsettings.{Environment}.json. [Visit the ASP.NET documentation to learn more](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#configure-logging-1) 

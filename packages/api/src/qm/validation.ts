@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as jsonschema from "jsonschema";
-import { Inputs } from "../types";
-import { ValidateFunc } from "./question";
+import { Inputs, OptionItem } from "../types";
+
+export type ValidateFunc<T> = (
+  input: T,
+  inputs?: Inputs
+) => string | undefined | Promise<string | undefined>;
 
 /**
  * Validation for Any Instance Type
@@ -101,7 +105,9 @@ export interface StringArrayValidation extends StaticValidation {
 /**
  * The validation is checked by a validFunc provided by user
  */
-export interface FuncValidation<T extends string | string[] | undefined> {
+export interface FuncValidation<
+  T extends string | string[] | OptionItem | OptionItem[] | undefined
+> {
   /**
    * A function that will be called to validate input and to give a hint to the user.
    *
@@ -140,7 +146,7 @@ export function getValidationFunction<T extends string | string[] | undefined>(
  * @returns A human-readable string which is presented as diagnostic message.
  * Return `undefined` when 'value' is valid.
  */
-export async function validate<T extends string | string[] | undefined>(
+export async function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(
   validSchema: ValidationSchema,
   value: T,
   inputs?: Inputs
@@ -215,20 +221,24 @@ export async function validate<T extends string | string[] | undefined>(
           return `'${arrayToValidate}' ${validateResult.errors[0].message}`;
         }
       }
-      if (stringArrayValidation.equals && stringArrayValidation.equals instanceof Array) {
-        stringArrayValidation.enum = stringArrayValidation.equals;
-        stringArrayValidation.containsAll = stringArrayValidation.equals;
+      if (stringArrayValidation.equals) {
+        if (stringArrayValidation.equals instanceof Array) {
+          stringArrayValidation.enum = stringArrayValidation.equals;
+          stringArrayValidation.containsAll = stringArrayValidation.equals;
+        } else {
+          return `Array '${arrayToValidate}' does not equals to string:'${stringArrayValidation.equals}'`;
+        }
       }
       if (stringArrayValidation.enum) {
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
-            return `'${arrayToValidate}' does not meet enum:'${stringArrayValidation.enum}'`;
+            return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
           }
         }
       }
       if (stringArrayValidation.contains) {
         if (!arrayToValidate.includes(stringArrayValidation.contains)) {
-          return `'${arrayToValidate}' does not meet contains:'${stringArrayValidation.contains}'`;
+          return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
       if (stringArrayValidation.containsAll) {
@@ -236,7 +246,7 @@ export async function validate<T extends string | string[] | undefined>(
         if (containsAll.length > 0) {
           for (const i of containsAll) {
             if (!arrayToValidate.includes(i)) {
-              return `'${arrayToValidate}' does not meet containsAll:'${containsAll}'`;
+              return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
             }
           }
         }

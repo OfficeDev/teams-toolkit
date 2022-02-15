@@ -73,6 +73,7 @@ describe("Provision Command Tests", function () {
   it("Provision Command Running -- with sqlPasswordQustionName", async () => {
     const cmd = new Provision();
     const args = {
+      interactive: false,
       [constants.RootFolderNode.data.name as string]: "real",
       [constants.sqlPasswordQustionName]: "123",
     };

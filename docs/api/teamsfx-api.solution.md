@@ -14,12 +14,19 @@ export interface Solution
 
 |  Property | Type | Description |
 |  --- | --- | --- |
+|  [activateEnv?](./teamsfx-api.solution.activateenv.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
+|  [checkPermission?](./teamsfx-api.solution.checkpermission.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [create](./teamsfx-api.solution.create.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |
+|  [createEnv?](./teamsfx-api.solution.createenv.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> for env management |
 |  [deploy](./teamsfx-api.solution.deploy.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |
 |  [executeUserTask?](./teamsfx-api.solution.executeusertask.md) | (func: [Func](./teamsfx-api.func.md)<!-- -->, ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [getQuestions](./teamsfx-api.solution.getquestions.md) | (task: [Stage](./teamsfx-api.stage.md)<!-- -->, ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;[QTreeNode](./teamsfx-api.qtreenode.md) \| undefined, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |
 |  [getQuestionsForUserTask?](./teamsfx-api.solution.getquestionsforusertask.md) | (func: [Func](./teamsfx-api.func.md)<!-- -->, ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;[QTreeNode](./teamsfx-api.qtreenode.md) \| undefined, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
+|  [grantPermission?](./teamsfx-api.solution.grantpermission.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> For grant and check permission in remote collaboration |
+|  [listAllCollaborators?](./teamsfx-api.solution.listallcollaborators.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
+|  [listCollaborator?](./teamsfx-api.solution.listcollaborator.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [localDebug](./teamsfx-api.solution.localdebug.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |
+|  [migrate?](./teamsfx-api.solution.migrate.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [name](./teamsfx-api.solution.name.md) | string |  |
 |  [provision](./teamsfx-api.solution.provision.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |
 |  [publish](./teamsfx-api.solution.publish.md) | (ctx: [SolutionContext](./teamsfx-api.solutioncontext.md)<!-- -->) =&gt; Promise&lt;Result&lt;any, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; |  |

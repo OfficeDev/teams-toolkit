@@ -6,6 +6,11 @@ import * as chai from "chai";
 import * as fs from "fs";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  parseFromResourceId,
+} from "./utilities";
 
 const baseUrlContainer = (
   subscriptionId: string,
@@ -53,20 +58,36 @@ export class FrontendValidator {
   private static subscriptionId: string;
   private static resourceGroupName: string;
 
-  public static init(ctx: any): IFrontendObject {
+  private static storageResourceIdKeyName = "storageResourceId";
+
+  public static init(ctx: any, insiderPreview = false): IFrontendObject {
     console.log("Start to init validator for Frontend.");
 
-    const frontendObject = ctx[DependentPluginInfo.frontendPluginName] as IFrontendObject;
-    chai.assert.exists(frontendObject);
-    frontendObject.containerName = "$web";
+    let frontendObject: IFrontendObject;
+    if (insiderPreview) {
+      const resourceId = ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
+      chai.assert.exists(resourceId);
 
-    this.subscriptionId =
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
-    chai.assert.exists(this.subscriptionId);
+      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+      this.resourceGroupName = getResourceGroupNameFromResourceId(resourceId);
 
-    this.resourceGroupName =
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
-    chai.assert.exists(this.resourceGroupName);
+      frontendObject = {
+        storageName: this.getStorageAccountName(resourceId),
+        containerName: "$web",
+      };
+    } else {
+      frontendObject = ctx[DependentPluginInfo.frontendPluginName] as IFrontendObject;
+      chai.assert.exists(frontendObject);
+      frontendObject.containerName = "$web";
+
+      this.subscriptionId =
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
+      chai.assert.exists(this.subscriptionId);
+
+      this.resourceGroupName =
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
+      chai.assert.exists(this.resourceGroupName);
+    }
 
     console.log("Successfully init validator for Frontend.");
     return frontendObject;
@@ -133,6 +154,17 @@ export class FrontendValidator {
     chai.assert.exists(response);
 
     console.log("Successfully validate Frontend Deploy.");
+  }
+
+  private static getStorageAccountName(storageResourceId: string): string {
+    const result = parseFromResourceId(
+      /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
+      storageResourceId
+    );
+    if (!result) {
+      throw new Error(`Cannot parse storage accounts name from resource id ${storageResourceId}`);
+    }
+    return result;
   }
 
   private static async getContainer(

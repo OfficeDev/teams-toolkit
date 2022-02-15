@@ -34,6 +34,11 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdatePreviewManifestStart = "update-preview-manifest-start",
+  UpdatePreviewManifest = "update-preview-manifest",
+
+  EditManifestTemplate = "edit-manifest-template",
+
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
@@ -79,17 +84,25 @@ export enum TelemetryEvent {
   ClickQuickStartCard = "click-quick-start-card",
 
   DebugPreCheck = "debug-precheck",
+  DebugPrerequisitesStart = "debug-prerequisites-start",
+  DebugPrerequisites = "debug-prerequisites",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
-  DebugFAQ = "debug-faq",
   DebugNpmInstallStart = "debug-npm-install-start",
   DebugNpmInstall = "debug-npm-install",
+
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
+  ClickDisableAutomaticNpmInstall = "click-disable-automatic-npm-install",
 
   Survey = "survey",
   SurveyData = "survey-data",
 
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
+
+  OpenManifestConfigStateStart = "open-manifest-config-state-start",
+  OpenManifestConfigState = "open-manifest-config-state",
 
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
@@ -102,23 +115,18 @@ export enum TelemetryEvent {
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
 
-  ViewEnvironment = "view-environment",
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
-  CheckSideloading = "check-sideloading",
-
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
-
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
 
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+  OpenSideloadingJoinM365 = "open-sideloading-joinm365",
   OpenSideloadingReadmore = "open-sideloading-readmore",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -126,9 +134,21 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
-  ShowChangeLocationNotification = "show-change-location-notification",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+
+  PreviewManifestFile = "preview-manifest",
+
+  MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
+  MigrateTeamsTabApp = "migrate-teams-tab-app",
+  MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
+  MigrateTeamsManifestStart = "migrate-teams-manifest-start",
+  MigrateTeamsManifest = "migrate-teams-manifest",
+
+  TreeViewLocalDebug = "treeview-localdebug",
+
+  TreeViewPreviewStart = "treeview-preview-start",
+  TreeViewPreview = "treeview-preview",
 }
 
 export enum TelemetryProperty {
@@ -154,7 +174,6 @@ export enum TelemetryProperty {
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
   DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
-  DebugFAQSelection = "debug-faq-selection",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -164,13 +183,15 @@ export enum TelemetryProperty {
   VideoPlayFrom = "video-play-from",
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
-  IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
   CollaborationState = "collaboration-state",
   Env = "env",
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  SettingsVersion = "settings-version",
+  UpdateFailedFiles = "update-failed-files",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {
@@ -183,6 +204,8 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   CodeLens = "CodeLens",
+  EditorTitle = "EditorTitle",
+  SideBar = "SideBar",
   Other = "Other",
   Unknow = "Unknow",
 }

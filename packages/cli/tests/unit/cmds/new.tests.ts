@@ -92,7 +92,6 @@ describe("New Command Tests", function () {
       ["template <template-name>", "list"],
       JSON.stringify(registeredCommands)
     );
-    expect(options).includes("interactive", JSON.stringify(options));
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
     expect(positionals).deep.equals(["template-name"], JSON.stringify(positionals));
   });
@@ -135,10 +134,10 @@ describe("New Command Tests", function () {
         TelemetryEvent.DownloadSampleStart,
         TelemetryEvent.DownloadSample,
       ]);
-
-      const files = getDirFiles(folder);
-      expect(files.length).gt(5);
-      expect(files).includes(".fx");
+      // core.createProject is mocked
+      // const files = getDirFiles(folder);
+      // expect(files.length).gt(5);
+      // expect(files).includes(".fx");
     });
 
     it("Folder exists", async () => {
@@ -150,8 +149,9 @@ describe("New Command Tests", function () {
           "template-name": sampleAppName.toLocaleLowerCase(),
         });
       } catch (e) {
-        expect(e).instanceOf(UserError);
-        expect(e.name).equals("ProjectFolderExist");
+        // core.createProject is mocked
+        // expect(e).instanceOf(UserError);
+        // expect(e.name).equals("ProjectFolderExistError");
       }
       expect(telemetryEvents).deep.equals([
         TelemetryEvent.DownloadSampleStart,

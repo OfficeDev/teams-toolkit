@@ -4,8 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore, isV2 } from "..";
-import { isMultiEnvEnabled } from "../../common";
+import { CoreHookContext, TOOLS } from "..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -17,7 +16,7 @@ export const LocalSettingsWriterMW: Middleware = async (
   next: NextFunction
 ) => {
   await next();
-  if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
+  if (!shouldIgnored(ctx)) {
     const lastArg = ctx.arguments[ctx.arguments.length - 1];
     const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
     if (
@@ -29,22 +28,11 @@ export const LocalSettingsWriterMW: Middleware = async (
 
     const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
 
-    if (isV2()) {
-      if (ctx.localSettings === undefined) return;
-      // persistent localSettings.json.
-      await localSettingsProvider.saveJson(ctx.localSettings, ctx.contextV2?.cryptoProvider);
-    } else {
-      const solutionContext = ctx.solutionContext;
-      if (solutionContext === undefined || solutionContext.localSettings === undefined) return;
-      // persistent localSettings.json.
-      await localSettingsProvider.save(
-        solutionContext.localSettings,
-        ctx.solutionContext?.cryptoProvider
-      );
-    }
+    if (ctx.localSettings === undefined) return;
+    // persistent localSettings.json.
+    await localSettingsProvider.saveJson(ctx.localSettings, ctx.contextV2?.cryptoProvider);
 
-    const core = ctx.self as FxCore;
-    core.tools.logProvider.debug(
+    TOOLS.logProvider.debug(
       `[core] persist local settings config file: ${localSettingsProvider.localSettingsFilePath}`
     );
   }

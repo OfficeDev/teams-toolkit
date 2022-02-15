@@ -15,7 +15,7 @@ import {
   UnauthenticatedError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
-import { isArmSupportEnabled, newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -58,14 +58,10 @@ describe("FrontendConfig", () => {
 
     it("invalid storage name", async () => {
       const invalidStorageName = "dangerous.com/";
-      if (isArmSupportEnabled()) {
-        const invalidStorageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/${encodeURIComponent(
-          invalidStorageName
-        )}`;
-        pluginContext.config.set(FrontendConfigInfo.StorageResourceId, invalidStorageResourceId);
-      } else {
-        pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
-      }
+      const invalidStorageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/${encodeURIComponent(
+        invalidStorageName
+      )}`;
+      pluginContext.config.set(FrontendConfigInfo.StorageResourceId, invalidStorageResourceId);
       await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),
         new InvalidStorageNameError().code

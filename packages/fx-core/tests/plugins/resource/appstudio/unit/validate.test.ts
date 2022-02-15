@@ -35,7 +35,7 @@ describe("validate manifest", () => {
   });
 
   it("valid manifest", async () => {
-    const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
+    const manifestFile = path.resolve(__dirname, "./../resources-multi-env/valid.manifest.json");
     const manifest = await fs.readJson(manifestFile);
     const manifestString = JSON.stringify(manifest);
 
@@ -51,7 +51,7 @@ describe("validate manifest", () => {
   });
 
   it("invalid manifest", async () => {
-    const manifestFile = path.resolve(__dirname, "./../resources/invalid.manifest.json");
+    const manifestFile = path.resolve(__dirname, "./../resources-multi-env/invalid.manifest.json");
     const manifest = await fs.readJson(manifestFile);
     const manifestString = JSON.stringify(manifest);
 

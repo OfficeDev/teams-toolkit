@@ -15,7 +15,7 @@ Teams toolkit can migrate the projects created using earlier versions (before v2
 ### Limitations
 The migration support for projects created by earlier versions of Teams Toolkit is undergoing, so please be advised on the following limitations:
 - Only the projects created after Teams Toolkit v1.2.0 are supported.
-- Support for the bot / message extension project with Single Sign-on feature included is undergoing.
+- Support for the bot / messaging extension project with Single Sign-on feature included is undergoing.
 - If your tab project include Single Sign-on feature, you will need some manual configuration setups.
 
 ### Know about project structure and file change
@@ -26,7 +26,7 @@ There will be some configuration change in your project to make it compatible wi
 ## Learn more
 To understand more about what you can do after the migration, you can read the readme file listed below to get further information.
 - [Teams Toolkit V1 tab app migration](./migrate-v1-tab.md)
-- [Teams Toolkit V1 bot / message extension migration](./migrate-v1-bot.md)
+- [Teams Toolkit V1 bot / messaging extension migration](./migrate-v1-bot.md)
 
 
 

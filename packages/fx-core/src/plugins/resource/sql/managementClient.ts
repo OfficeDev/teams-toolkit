@@ -6,49 +6,23 @@ import { SqlConfig } from "./config";
 import { ErrorMessage } from "./errors";
 import { Constants } from "./constants";
 import { SqlResultFactory } from "./results";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 export class ManagementClient {
-  client: SqlManagementClient;
-  config: SqlConfig;
-  ctx: PluginContext;
+  client?: SqlManagementClient;
+  config?: SqlConfig;
+  totalFirewallRuleCount = 0;
 
-  private constructor(ctx: PluginContext, config: SqlConfig, client: SqlManagementClient) {
-    this.ctx = ctx;
+  public async create(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<void> {
+    const credential = await azureAccountProvider.getAccountCredentialAsync();
     this.config = config;
-    this.client = client;
-  }
-
-  public static async create(ctx: PluginContext, config: SqlConfig): Promise<ManagementClient> {
-    const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-    const client = new SqlManagementClient(credential!, config.azureSubscriptionId);
-    return new ManagementClient(ctx, config, client);
-  }
-
-  async createAzureSQL() {
-    const model: SqlManagementModels.Server = {
-      location: this.config.location,
-      administratorLogin: this.config.admin,
-      administratorLoginPassword: this.config.adminPassword,
-    };
-    try {
-      await this.client.servers.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        model
-      );
-    } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message)
-      );
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlCreateError.name,
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message),
-        error
-      );
-    }
+    this.client = new SqlManagementClient(credential!, config.azureSubscriptionId);
   }
 
   async existAzureSQL(): Promise<boolean> {
+    if (!this.client || !this.config || !this.config.sqlServer) return false;
     try {
       const result = await this.client.servers.checkNameAvailability({
         name: this.config.sqlServer,
@@ -64,9 +38,6 @@ export class ManagementClient {
         return true;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlCheckError.name,
         ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message),
@@ -76,20 +47,18 @@ export class ManagementClient {
   }
 
   async existAadAdmin(): Promise<boolean> {
+    if (!this.client || !this.config) return false;
     try {
       const result = await this.client.serverAzureADAdministrators.listByServer(
         this.config.resourceGroup,
         this.config.sqlServer
       );
-      if (result.find((item: { login: string }) => item.login === this.config.aadAdmin)) {
+      if (result.find((item: { login: string }) => item.login === this.config!.aadAdmin)) {
         return true;
       } else {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
         ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message),
@@ -98,59 +67,8 @@ export class ManagementClient {
     }
   }
 
-  async createDatabase() {
-    const sku: SqlManagementModels.Sku = {
-      name: "Basic",
-    };
-    const model: SqlManagementModels.Database = {
-      location: this.config.location,
-      sku: sku,
-    };
-    try {
-      await this.client.databases.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        this.config.databaseName,
-        model
-      );
-      // when the request returned, the instance of database may not be ready. Let's wait a moment
-      await this.delay(10);
-    } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message)
-      );
-      throw SqlResultFactory.UserError(
-        ErrorMessage.DatabaseCreateError.name,
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message),
-        error
-      );
-    }
-  }
-
-  async existDatabase(): Promise<boolean> {
-    try {
-      const result = await this.client.databases.listByServer(
-        this.config.resourceGroup,
-        this.config.sqlServer
-      );
-      if (result.find((item) => item.name === this.config.databaseName)) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message)
-      );
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlCheckDBError.name,
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message),
-        error
-      );
-    }
-  }
-
-  async addAADadmin() {
+  async addAADadmin(): Promise<void> {
+    if (!this.client || !this.config) return;
     let model: SqlManagementModels.ServerAzureADAdministrator = {
       tenantId: this.config.tenantId,
       sid: this.config.aadAdminObjectId,
@@ -166,9 +84,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message),
@@ -177,57 +92,33 @@ export class ManagementClient {
     }
   }
 
-  async addAzureFirewallRule() {
-    const model: SqlManagementModels.FirewallRule = {
-      startIpAddress: Constants.firewall.azureIp,
-      endIpAddress: Constants.firewall.azureIp,
-    };
-    try {
-      await this.client.firewallRules.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        Constants.firewall.azureRule,
-        model
-      );
-    } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlAzureFirwallError.name,
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message),
-        error
-      );
-    }
-  }
-
   async addLocalFirewallRule(): Promise<void> {
-    const response = await axios.get(Constants.echoIpAddress);
-    const localIp: string = response.data;
-    const partials: string[] = localIp.split(".");
-
-    partials[2] = Constants.ipBeginToken;
-    partials[3] = Constants.ipBeginToken;
-    const startIp: string = partials.join(".");
-
-    partials[2] = Constants.ipEndToken;
-    partials[3] = Constants.ipEndToken;
-    const endIp: string = partials.join(".");
-    const model: SqlManagementModels.FirewallRule = {
-      startIpAddress: startIp,
-      endIpAddress: endIp,
-    };
+    if (!this.client || !this.config) return;
     try {
+      const response = await axios.get(Constants.echoIpAddress);
+      const localIp: string = response.data;
+      const partials: string[] = localIp.split(".");
+
+      partials[2] = Constants.ipBeginToken;
+      partials[3] = Constants.ipBeginToken;
+      const startIp: string = partials.join(".");
+
+      partials[2] = Constants.ipEndToken;
+      partials[3] = Constants.ipEndToken;
+      const endIp: string = partials.join(".");
+      const model: SqlManagementModels.FirewallRule = {
+        startIpAddress: startIp,
+        endIpAddress: endIp,
+      };
+      const ruleName = this.getRuleName(this.totalFirewallRuleCount);
       await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
-        Constants.firewall.localRule,
+        ruleName,
         model
       );
+      this.totalFirewallRuleCount++;
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlLocalFirwallError.name,
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -236,17 +127,18 @@ export class ManagementClient {
     }
   }
 
-  async deleteLocalFirewallRule() {
+  async deleteLocalFirewallRule(): Promise<void> {
+    if (!this.client || !this.config) return;
     try {
-      await this.client.firewallRules.deleteMethod(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        Constants.firewall.localRule
-      );
+      for (let i = 0; i < this.totalFirewallRuleCount; i++) {
+        const ruleName = this.getRuleName(i);
+        await this.client.firewallRules.deleteMethod(
+          this.config.resourceGroup,
+          this.config.sqlServer,
+          ruleName
+        );
+      }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,
         ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -255,7 +147,13 @@ export class ManagementClient {
     }
   }
 
-  async delay(s: number) {
+  getRuleName(suffix: number): string {
+    return Constants.firewall.localRule + suffix;
+  }
+
+  async delay(s: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, s * 1000));
   }
 }
+
+export const SqlMgrClient = new ManagementClient();

@@ -3,13 +3,7 @@
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import {
-  ArmOutput,
-  Constants,
-  DependentPluginInfo,
-  FrontendConfigInfo,
-  RegularExpr,
-} from "./constants";
+import { Constants, DependentPluginInfo, FrontendConfigInfo, RegularExpr } from "./constants";
 import {
   InvalidConfigError,
   InvalidStorageNameError,
@@ -20,9 +14,7 @@ import {
   getResourceGroupNameFromResourceId,
   getStorageAccountNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isArmSupportEnabled,
 } from "../../..";
-import { getArmOutput } from "../utils4v2";
 
 export class FrontendConfig {
   subscriptionId: string;
@@ -35,7 +27,7 @@ export class FrontendConfig {
   endpoint?: string;
   domain?: string;
 
-  private constructor(
+  public constructor(
     subscriptionId: string,
     resourceGroupName: string,
     location: string,
@@ -49,23 +41,20 @@ export class FrontendConfig {
     this.credentials = credentials;
   }
 
-  static async fromPluginContext(
-    ctx: PluginContext,
-    getFromArmOutput = false
-  ): Promise<FrontendConfig> {
+  static async fromPluginContext(ctx: PluginContext): Promise<FrontendConfig> {
     const credentials = await ctx.azureAccountProvider?.getAccountCredentialAsync();
     if (!credentials) {
       throw new UnauthenticatedError();
     }
 
     return new FrontendConfig(
-      FrontendConfig.getSubscriptionId(ctx, getFromArmOutput),
-      FrontendConfig.getResourceGroupName(ctx, getFromArmOutput),
+      FrontendConfig.getSubscriptionId(ctx),
+      FrontendConfig.getResourceGroupName(ctx),
       FrontendConfig.getConfig<string>(
         DependentPluginInfo.Location,
         ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
       ),
-      FrontendConfig.getStorageName(ctx, getFromArmOutput),
+      FrontendConfig.getStorageName(ctx),
       credentials
     );
   }
@@ -80,14 +69,10 @@ export class FrontendConfig {
       });
   }
 
-  static getStorageName(ctx: PluginContext, getFromArmOutput = false): string {
+  static getStorageName(ctx: PluginContext): string {
     let result;
     try {
-      result = isArmSupportEnabled()
-        ? getStorageAccountNameFromResourceId(
-            FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
-          )
-        : ctx.config.getString(FrontendConfigInfo.StorageName);
+      result = getStorageAccountNameFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     } catch (e) {
       throw new InvalidConfigError(FrontendConfigInfo.StorageName, (e as Error).message);
     }
@@ -108,38 +93,24 @@ export class FrontendConfig {
     return result;
   }
 
-  static getStorageResourceId(ctx: PluginContext, getFromArmOutput = false): string {
-    const result = getFromArmOutput
-      ? getArmOutput(ctx, ArmOutput.FrontendStorageResourceId)
-      : ctx.config.getString(FrontendConfigInfo.StorageResourceId);
+  static getStorageResourceId(ctx: PluginContext): string {
+    const result = ctx.config.getString(FrontendConfigInfo.StorageResourceId);
     if (!result) {
       throw new InvalidConfigError(FrontendConfigInfo.StorageResourceId);
     }
     return result;
   }
 
-  static getSubscriptionId(ctx: PluginContext, getFromArmOutput = false): string {
-    const result = isArmSupportEnabled()
-      ? getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx, getFromArmOutput))
-      : FrontendConfig.getConfig<string>(
-          DependentPluginInfo.SubscriptionId,
-          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
-        );
+  static getSubscriptionId(ctx: PluginContext): string {
+    const result = getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
     }
     return result;
   }
 
-  static getResourceGroupName(ctx: PluginContext, getFromArmOutput = false): string {
-    const result = isArmSupportEnabled()
-      ? getResourceGroupNameFromResourceId(
-          FrontendConfig.getStorageResourceId(ctx, getFromArmOutput)
-        )
-      : FrontendConfig.getConfig<string>(
-          DependentPluginInfo.ResourceGroupName,
-          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
-        );
+  static getResourceGroupName(ctx: PluginContext): string {
+    const result = getResourceGroupNameFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.ResourceGroupName);
     }

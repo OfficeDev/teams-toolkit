@@ -26,6 +26,7 @@ export declare enum ErrorCode
 |  InvalidCertificate | <code>&quot;InvalidCertificate&quot;</code> | <b><i>(BETA)</i></b> Invalid certificate error. |
 |  InvalidConfiguration | <code>&quot;InvalidConfiguration&quot;</code> | <b><i>(BETA)</i></b> Invalid configuration error. |
 |  InvalidParameter | <code>&quot;InvalidParameter&quot;</code> | <b><i>(BETA)</i></b> Invalid parameter error. |
+|  InvalidResponse | <code>&quot;InvalidResponse&quot;</code> | <b><i>(BETA)</i></b> Invalid response error. |
 |  RuntimeNotSupported | <code>&quot;RuntimeNotSupported&quot;</code> | <b><i>(BETA)</i></b> Runtime is not supported error. |
 |  ServiceError | <code>&quot;ServiceError&quot;</code> | <b><i>(BETA)</i></b> Call service (AAD or simple authentication server) failed. |
 |  TokenExpiredError | <code>&quot;TokenExpiredError&quot;</code> | <b><i>(BETA)</i></b> Token is not within its valid time range error. |

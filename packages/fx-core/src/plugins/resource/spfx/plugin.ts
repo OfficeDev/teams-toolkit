@@ -1,13 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  FxError,
+  Result,
+  ok,
+  Platform,
+  Colors,
+  err,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from ".";
-import { Utils } from "./utils/utils";
-import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
+import { Utils, sleep } from "./utils/utils";
+import {
+  Constants,
+  DeployProgressMessage,
+  PlaceHolders,
+  PreDeployProgressMessage,
+} from "./utils/constants";
 import {
   BuildSPPackageError,
   CreateAppCatalogFailedError,
@@ -254,6 +268,7 @@ export class SPFxPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
+    let success = false;
     try {
       const tenant = await this.getTenant(ctx);
       if (tenant.isErr()) {
@@ -281,22 +296,38 @@ export class SPFxPluginImpl {
         switch (confirm) {
           case "OK":
             try {
+              await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
               await SPOClient.createAppCatalog(spoToken);
             } catch (e: any) {
               return err(CreateAppCatalogFailedError(e));
             }
+            let retry = 0;
             appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-            if (!appCatalogSite) {
+            while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
+              ctx.logProvider?.warning(`No tenant app catalog found, retry: ${retry}`);
+              await sleep(Constants.APP_CATALOG_REFRESH_TIME);
+              appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+              retry += 1;
+            }
+            if (appCatalogSite) {
+              SPOClient.setBaseUrl(appCatalogSite);
+              ctx.logProvider?.info(
+                `Sharepoint tenant app catalog ${appCatalogSite} created, wait for a few minutes to be active.`
+              );
+              await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
+            } else {
               return err(
                 CreateAppCatalogFailedError(
-                  new Error("Cannot get app catalog site url after creation.")
+                  new Error(
+                    "Cannot get app catalog site url after creation. You may need wait a few minutes and retry."
+                  )
                 )
               );
             }
             break;
           case Constants.READ_MORE:
             ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
-            break;
+            return ok(UserCancelError);
           default:
             return ok(undefined);
         }
@@ -310,6 +341,7 @@ export class SPFxPluginImpl {
       const fileName = path.parse(appPackage).base;
       const bytes = await fs.readFile(appPackage);
       try {
+        await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
       } catch (e: any) {
         if (e.response?.status === 403) {
@@ -334,11 +366,15 @@ export class SPFxPluginImpl {
         appCatalogSite,
         appCatalogSite
       );
-      ctx.ui?.showMessage("info", guidance, false, "OK");
-
+      if (ctx.answers?.platform === Platform.CLI) {
+        ctx.ui?.showMessage("info", guidance, false);
+      } else {
+        ctx.ui?.showMessage("info", guidance, false, "OK");
+      }
+      success = true;
       return ok(undefined);
     } finally {
-      await ProgressHelper.endDeployProgress(false);
+      await ProgressHelper.endDeployProgress(success);
     }
   }
 

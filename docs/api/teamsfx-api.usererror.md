@@ -9,15 +9,19 @@ Users can recover by themselves, e.g., users input invalid app names.
 <b>Signature:</b>
 
 ```typescript
-export declare class UserError implements FxError 
+export declare class UserError extends Error implements FxError 
 ```
+<b>Extends:</b> Error
+
 <b>Implements:</b> [FxError](./teamsfx-api.fxerror.md)
 
 ## Constructors
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(name, message, source, stack, helpLink, innerError)](./teamsfx-api.usererror._constructor_.md) |  | Constructs a new instance of the <code>UserError</code> class |
+|  [(constructor)(error, source, name, helpLink)](./teamsfx-api.usererror._constructor_.md) |  | Constructs a new instance of the <code>UserError</code> class |
+|  [(constructor)(opt)](./teamsfx-api.usererror._constructor__1.md) |  | Constructs a new instance of the <code>UserError</code> class |
+|  [(constructor)(name, message, source, stack, helpLink, innerError)](./teamsfx-api.usererror._constructor__2.md) |  | Constructs a new instance of the <code>UserError</code> class |
 
 ## Properties
 
@@ -25,9 +29,7 @@ export declare class UserError implements FxError
 |  --- | --- | --- | --- |
 |  [helpLink?](./teamsfx-api.usererror.helplink.md) |  | string | <i>(Optional)</i> A wiki website that shows mapping relationship between error names, descriptions, and fix solutions. |
 |  [innerError?](./teamsfx-api.usererror.innererror.md) |  | any | <i>(Optional)</i> Custom error details . |
-|  [message](./teamsfx-api.usererror.message.md) |  | string | Message to explain what happened and what to do next. |
-|  [name](./teamsfx-api.usererror.name.md) |  | string | Name of error. (error name, eg: Dependency not found) |
-|  [source](./teamsfx-api.usererror.source.md) |  | string | Source name of error. (plugin name, eg: tab-scaffhold-plugin) |
-|  [stack?](./teamsfx-api.usererror.stack.md) |  | string | <i>(Optional)</i> A string that describes the immediate frames of the call stack. |
+|  [source](./teamsfx-api.usererror.source.md) |  | string | Source name of error. (plugin name, eg: tab-scaffold-plugin) |
 |  [timestamp](./teamsfx-api.usererror.timestamp.md) |  | Date | Time of error. |
+|  [userData?](./teamsfx-api.usererror.userdata.md) |  | string | <i>(Optional)</i> data that only be reported to github issue manually by user and will not be reported as telemetry data |
 

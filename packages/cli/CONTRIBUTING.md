@@ -21,7 +21,7 @@ The TeamsFx CLI may require an Azure account and subscription to deploy the Azur
 ## Setup Development Environment
 ---
 
-1. Install Node v12
+1. Install Node v14 or later
 2. Install NPM v6 or later
 
 ## Build the project

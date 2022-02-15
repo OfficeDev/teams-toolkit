@@ -28,3 +28,19 @@ export interface UserInfo {
    */
   preferredUserName: string;
 }
+
+export interface UserTenantIdAndLoginHint {
+  /**
+   * User Login Hint.
+   *
+   * @readonly
+   */
+  loginHint: string;
+
+  /**
+   * User Tenant Id.
+   *
+   * @readonly
+   */
+  tid: string;
+}

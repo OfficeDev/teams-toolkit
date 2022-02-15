@@ -28,47 +28,33 @@ The subscription didn't register to use namespace 'Microsoft.BotService'.
 
 Please refer to this [link](https://aka.ms/rps-not-found) to register your subscription to use namespace 'Microsoft.BotService'.
 
-## How to reuse existing bot registration in Toolkit v2?
+## How to reuse existing AAD in Toolkit v2?
 
-Suppose an existing bot has been registered by [azure bot channel registration](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0) or [bot framework's legacy portal](https://dev.botframework.com/bots/new), you can follow this guide to reuse the existing bot registration in Toolkit v2.
+Suppose an existing AAD has been registered, you can reuse this AAD by configuring Toolkit project settings.
 
-No matter registering bot by azure bot channel registration or bot framework's legacy portal, a pair of bot id and bot password will be generated. please copy/paste them after choosing reusing existing bot in Toolkit v2.
+### Register an AAD on Azure Portal
+1. Manually create a new App Registration on [Azure Portal](https://ms.portal.azure.com/), note down the **Application (client) ID** on the "overview" page.
+2. Create a client secret for the AAD created in step 1, note down the **client secret**.
 
-### Pay attention!!!
-Don't forget to add microsoft teams as a featured channel when registering bot on azure.
-![image](../images/fx-core/bot/dont-forget-add-teams-channel.png)
+![image](../images/fx-core/bot/AAD-secret.png)
 
-### Choose `using an existing bot registration`.
-![image](../images/fx-core/bot/way-to-register-bot.png)
-
-### Enter bot id.
-![image](../images/fx-core/bot/enter-bot-id.png)
-
-### Enter bot password.
-![image](../images/fx-core/bot/enter-bot-password.png)
-
-### Record the message endpoint generated during provision.
-Toolkit v2 will pop-up a dialog to show the target message endpoint for bot. Users should use this message endpoint to do the updating.
-![image](../images/fx-core/bot/pop-up-message-endpoint.png)
-
-### Update message endpoint.
-#### if registering bot by legacy portal:
-1. Choose your bot registration on [legacy portal](https://dev.botframework.com/bots) under `My bots`.
-![image](../images/fx-core/bot/choose-under-mybots.png)
-2. Scroll down to find `Messaging endpoint` under `Configuration`.
-![image](../images/fx-core/bot/scroll-down-settings.png)
-3. Paste the target message endpoint in text box `Messaging endpoint`
-
-#### if registering bot by auzre bot channel registration:
-1. Choose your bot channels registration.
-2. Click menu `Configuration` in `Settings`.
-3. Paste the target message endpoint in text box `Messaging endpoint`.
-![image](../images/fx-core/bot/update-message-endpoint-azure.png)
-
-After updating message endpoint is done, continue to deploy and try the remote experience.
+3. Fill in the appid and secret in `${ProjectFolder}/.fx/configs/config.${env}.json`, add the `bot` section, and the settings will look like:
+```
+  "manifest": {
+        "appName": {
+            "short": "xxxx",
+            "full": "Full name for xxxx"
+        }
+    },
+    "bot": {
+        "appId": "${Application (client) ID}",
+        "appPassword": "${client secret}"
+    }
+```
+4. Provision the Bot, then it will reuse this AAD and won't create a new one.
 
 ## Configuration schema for bot
-This section is to describe configuration items in `fx-resource-bot` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-bot` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------

@@ -29,8 +29,8 @@ import {
   Configuration,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
-import sinon from "sinon";
+import * as chaiPromises from "chai-as-promised";
+import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AccessToken } from "@azure/identity";
 import { promisify } from "util";

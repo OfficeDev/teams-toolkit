@@ -15,8 +15,9 @@ export declare enum TreeCategory
 |  Member | Value | Description |
 |  --- | --- | --- |
 |  Account | <code>1</code> |  |
+|  Environment | <code>5</code> |  |
 |  Feedback | <code>2</code> |  |
 |  GettingStarted | <code>0</code> |  |
 |  Project | <code>3</code> |  |
-|  Provison | <code>4</code> |  |
+|  Provision | <code>4</code> |  |
 

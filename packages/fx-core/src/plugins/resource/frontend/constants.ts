@@ -14,6 +14,7 @@ export class Constants {
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
   static FrontendSuffix = "fe";
+  static FrontendIndexPath = `/${Constants.FrontendIndexDocument}#`;
 
   static EmptyString = "";
 
@@ -39,14 +40,6 @@ export class Commands {
   static BuildFrontend = "npm run build";
 }
 
-export class EnvironmentVariables {
-  static FuncEndpoint = "REACT_APP_FUNC_ENDPOINT";
-  static FuncName = "REACT_APP_FUNC_NAME";
-  static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
-  static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
-  static ClientID = "REACT_APP_CLIENT_ID";
-}
-
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
@@ -55,7 +48,7 @@ export class FrontendPathInfo {
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
 
-  static ModuleFileName = "frontendHosting.bicep";
+  static ModuleProvisionFileName = "frontendHostingProvision.bicep";
 
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
@@ -93,12 +86,6 @@ export class DependentPluginInfo {
   static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
-export class ArmOutput {
-  static readonly FrontendEndpoint = "frontendHosting_endpoint";
-  static readonly FrontendDomain = "frontendHosting_domain";
-  static readonly FrontendStorageResourceId = "frontendHosting_storageResourceId";
-}
-
 export class FrontendConfigInfo {
   static readonly StorageName = "storageName"; // TODO: Remove this storageName config when arm-disabled scenario removed
   static readonly StorageResourceId = "storageResourceId";
@@ -107,9 +94,8 @@ export class FrontendConfigInfo {
 }
 
 export class FrontendOutputBicepSnippet {
-  static readonly StorageName = "frontendHostingProvision.outputs.storageName";
-  static readonly Endpoint = "frontendHostingProvision.outputs.endpoint";
-  static readonly Domain = "frontendHostingProvision.outputs.domain";
+  static readonly Domain = "provisionOutputs.frontendHostingOutput.value.domain";
+  static readonly Endpoint = "provisionOutputs.frontendHostingOutput.value.endpoint";
 }
 
 export class TelemetryEvent {
@@ -128,7 +114,13 @@ export class TelemetryEvent {
   static readonly DeploymentInfoNotFound = "deployment-info-not-found";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
+  static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
+
+  static readonly LocalDebug = "local-debug";
+
+  static readonly SaveEnvFile = "frontend-save-env-file";
+  static readonly LoadEnvFile = "frontend-load-env-file";
 }
 
 export class TelemetryKey {
@@ -147,18 +139,8 @@ export class TelemetryValue {
   static readonly SystemError = "system";
 }
 
-export class AzureErrorCode {
-  static readonly ReservedResourceName = "ReservedResourceName";
-  static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
-  static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
-}
-
 export class RegularExpr {
   static readonly AllCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
-}
-
-export class AzureInfo {
-  static readonly RequiredResourceProviders = ["Microsoft.Storage"];
 }

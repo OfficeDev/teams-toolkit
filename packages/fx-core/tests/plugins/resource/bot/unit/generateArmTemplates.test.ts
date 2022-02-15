@@ -4,11 +4,22 @@ import "mocha";
 import * as chai from "chai";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
 import { TeamsBot } from "../../../../../src";
 import * as testUtils from "./utils";
 import path from "path";
 import fs from "fs-extra";
+import {
+  HostTypeOptionAzure,
+  BotOptionItem,
+  AzureResourceKeyVault,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import * as sinon from "sinon";
 
 describe("Bot Generates Arm Templates", () => {
   let botPlugin: TeamsBot;
@@ -17,99 +28,145 @@ describe("Bot Generates Arm Templates", () => {
     botPlugin = new TeamsBot();
   });
 
-  it("generate bicep arm templates: new bot", async () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("generate bicep arm templates: without key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Identity,
+    ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(settings, "botConfig.result.bicep", "config.result.bicep");
+  });
+
+  it("generate bicep arm templates: with key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Identity,
+      ResourcePlugins.KeyVault,
+    ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(
+      settings,
+      "botConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+            botClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.botClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    settings: AzureSolutionSettings,
+    configurationModuleFileName: string,
+    configurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ) {
     // Arrange
-    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.Bot];
     const pluginContext: PluginContext = testUtils.newPluginContext();
-    const azureSolutionSettings = pluginContext.projectSettings!
-      .solutionSettings! as AzureSolutionSettings;
-    azureSolutionSettings.activeResourcePlugins = activeResourcePlugins;
-    pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
+    pluginContext.projectSettings!.solutionSettings = settings;
 
     // Act
     const result = await botPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const provisionModuleFileName = "botProvision.newBot.bicep";
-    const configurationModuleFileName = "botConfiguration.newBot.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-bot": {
-          Modules: {
-            botProvision: {
-              Path: `./${provisionModuleFileName}`,
-            },
-            botConfiguration: {
-              Path: `./${configurationModuleFileName}`,
-            },
+    const provisionModuleFileName = "botProvision.result.bicep";
+    const pluginOutput = {
+      "fx-resource-bot": {
+        Provision: {
+          bot: {
+            path: `./${provisionModuleFileName}`,
+          },
+        },
+        Configuration: {
+          bot: {
+            path: `./${configurationModuleFileName}`,
           },
         },
       },
+      "fx-resource-identity": {
+        References: {
+          identityName: "provisionOutputs.identityOutput.value.identityName",
+          identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+          identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const compiledResult = mockSolutionUpdateArmTemplates(
+      const compiledResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const provisionModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, provisionModuleFileName),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.bot, provisionModuleFile);
+
+      const configModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, configurationModuleFileName),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
+
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provision.result.bicep"),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Orchestration, orchestrationProvisionFile);
+
       chai.assert.strictEqual(
-        compiledResult.Modules!.botProvision.Content,
+        compiledResult.Configuration!.Orchestration,
         fs.readFileSync(
-          path.join(expectedBicepFileDirectory, provisionModuleFileName),
+          path.join(expectedBicepFileDirectory, configurationFileName),
           ConstantString.UTF8Encoding
         )
       );
       chai.assert.strictEqual(
-        compiledResult.Modules!.botConfiguration.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, configurationModuleFileName),
-          ConstantString.UTF8Encoding
-        )
-      );
-      chai.assert.strictEqual(
-        compiledResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "module.newBot.bicep"),
-          ConstantString.UTF8Encoding
-        )
-      );
-      chai.assert.strictEqual(
-        compiledResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "param.bicep"),
-          ConstantString.UTF8Encoding
-        )
-      );
-      chai.assert.strictEqual(
-        compiledResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "output.bicep"),
-          ConstantString.UTF8Encoding
-        )
-      );
-      chai.assert.strictEqual(
-        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
+        JSON.stringify(compiledResult.Parameters, undefined, 2),
         fs.readFileSync(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding
         )
       );
-      chai.assert.isUndefined(compiledResult.Orchestration.VariableTemplate);
     }
-  });
+  }
 
-  it("generate bicep arm templates: new bot with all resource plugins enabled", async () => {
+  it("Update bicep arm templates", async () => {
     // Arrange
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
-      ResourcePlugins.SimpleAuth,
-      ResourcePlugins.FrontendHosting,
       ResourcePlugins.Bot,
-      ResourcePlugins.Function,
-      ResourcePlugins.AzureSQL,
       ResourcePlugins.Identity,
     ];
     const pluginContext: PluginContext = testUtils.newPluginContext();
@@ -119,42 +176,30 @@ describe("Bot Generates Arm Templates", () => {
     pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
 
     // Act
-    const result = await botPlugin.generateArmTemplates(pluginContext);
+    const result = await botPlugin.updateArmTemplates(pluginContext);
 
     // Assert
-    const testProvisionModuleFileName = "botProvision.all.bicep";
-    const testConfigurationModuleFileName = "botConfiguration.all.bicep";
+    const provisionModuleFileName = "botProvision.result.bicep";
+    const configurationModuleFileName = "botConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-aad-app-for-teams": {},
-        "fx-resource-frontend-hosting": {},
-        "fx-resource-simple-auth": {},
+      Plugins: {
         "fx-resource-bot": {
-          Modules: {
-            botProvision: {
-              Path: `./${testProvisionModuleFileName}`,
-            },
-            botConfiguration: {
-              Path: `./${testConfigurationModuleFileName}`,
+          Provision: {
+            bot: {
+              path: `./${provisionModuleFileName}`,
             },
           },
-        },
-        "fx-resource-function": {
-          Outputs: {
-            functionEndpoint: "test_function_endpoint",
-          },
-        },
-        "fx-resource-azure-sql": {
-          Outputs: {
-            databaseName: "test_sql_database_name",
-            sqlEndpoint: "test_sql_endpoint",
+          Configuration: {
+            bot: {
+              path: `./${configurationModuleFileName}`,
+            },
           },
         },
         "fx-resource-identity": {
-          Outputs: {
-            identityClientId: "test_identity_id",
-            identityResourceId: "test_identity_resource_id",
+          References: {
+            identityName: "provisionOutputs.identityOutput.value.identityName",
+            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
           },
         },
       },
@@ -165,51 +210,95 @@ describe("Bot Generates Arm Templates", () => {
         mockedSolutionDataContext,
         result.value
       );
-
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      chai.assert.strictEqual(
-        compiledResult.Modules!.botProvision.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, testProvisionModuleFileName),
-          ConstantString.UTF8Encoding
-        )
+      const configModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, configurationModuleFileName),
+        ConstantString.UTF8Encoding
       );
+      chai.assert.notExists(compiledResult.Provision);
+      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
+      chai.assert.notExists(compiledResult.Configuration!.Orchestration);
+      chai.assert.notExists(compiledResult.Parameters);
+      chai.assert.exists(compiledResult.Reference!.resourceId);
       chai.assert.strictEqual(
-        compiledResult.Modules!.botConfiguration.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, testConfigurationModuleFileName),
-          ConstantString.UTF8Encoding
-        )
+        compiledResult.Reference!.resourceId,
+        "provisionOutputs.botOutput.value.botWebAppResourceId"
       );
+      chai.assert.exists(compiledResult.Reference!.hostName);
       chai.assert.strictEqual(
-        compiledResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "module.all.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        compiledResult.Reference!.hostName,
+        "provisionOutputs.botOutput.value.validDomain"
       );
+      chai.assert.exists(compiledResult.Reference!.webAppEndpoint);
       chai.assert.strictEqual(
-        compiledResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "param.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        compiledResult.Reference!.webAppEndpoint,
+        "provisionOutputs.botOutputs.value.botWebAppEndpoint"
       );
-      chai.assert.strictEqual(
-        compiledResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "output.bicep"),
-          ConstantString.UTF8Encoding
-        )
+    }
+  });
+
+  it("Generate Arm Template in .NET scenario", async () => {
+    sinon.stub(TeamsBot, <any>"isVsPlatform").returns(true);
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Identity,
+    ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+    const pluginContext: PluginContext = testUtils.newPluginContext();
+    pluginContext.projectSettings!.solutionSettings = settings;
+
+    const result = await botPlugin.generateArmTemplates(pluginContext);
+
+    const provisionModuleFilePath = "./botServiceProvision.result.bicep";
+    const pluginOutput = {
+      "fx-resource-bot": {
+        Provision: {
+          botservice: {
+            path: provisionModuleFilePath,
+          },
+        },
+      },
+      "fx-resource-frontend-hosting": {
+        References: {
+          endpointAsParam: "webappProvision.outputs.endpoint",
+          domainAsParam: "webappProvision.outputs.domain",
+        },
+      },
+    };
+
+    const mockedSolutionDataContext = { Plugins: pluginOutput };
+
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const compiledResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
       );
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const provisionModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, provisionModuleFilePath),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.botservice, provisionModuleFile);
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provisionOnlyBotService.result.bicep"),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Orchestration, orchestrationProvisionFile);
       chai.assert.strictEqual(
-        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
-        fs.readFileSync(
+        JSON.stringify(compiledResult.Parameters, undefined, 2),
+        await fs.readFile(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding
         )
       );
-      chai.assert.isUndefined(compiledResult.Orchestration.VariableTemplate);
     }
   });
 });

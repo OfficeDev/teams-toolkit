@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CacheClass } from "memory-cache";
-
-const cache = new CacheClass<string, string>();
+const cache: Record<string, string> = {};
 
 /**
  * Cache based on memory.
@@ -15,19 +13,18 @@ const cache = new CacheClass<string, string>();
  */
 class Cache {
   public static get(key: string): string | null {
-    return cache.get(key);
+    if (cache[key] === undefined) {
+      return null;
+    }
+    return cache[key];
   }
 
   public static set(key: string, value: string): void {
-    cache.put(key, value);
+    cache[key] = value;
   }
 
   public static remove(key: string): void {
-    cache.del(key);
-  }
-
-  public static clear(): void {
-    cache.clear();
+    delete cache[key];
   }
 }
 

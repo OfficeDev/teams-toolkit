@@ -29,7 +29,8 @@ export interface UserInteraction
 |  Method | Description |
 |  --- | --- |
 |  [openUrl(link)](./teamsfx-api.userinteraction.openurl.md) | Opens a link externally in the browser. |
+|  [reload()?](./teamsfx-api.userinteraction.reload.md) | <i>(Optional)</i> Reload window to update user interface. (Only works for VS Code) |
 |  [runWithProgress(task, config, args)](./teamsfx-api.userinteraction.runwithprogress.md) | A function to run a task with progress bar. (CLI and VS Code has different UI experience for progress bar) |
-|  [showMessage(level, message, modal, items)](./teamsfx-api.userinteraction.showmessage.md) | Show an information/warnning/error message to users. Optionally provide an array of items which will be presented as clickable buttons. |
-|  [showMessage(level, message, modal, items)](./teamsfx-api.userinteraction.showmessage_1.md) | Show an information/warnning/error message with different colors to users, which only works for CLI. |
+|  [showMessage(level, message, modal, items)](./teamsfx-api.userinteraction.showmessage.md) | Show an information/warning/error message to users. Optionally provide an array of items which will be presented as clickable buttons. |
+|  [showMessage(level, message, modal, items)](./teamsfx-api.userinteraction.showmessage_1.md) | Show an information/warning/error message with different colors to users, which only works for CLI. |
 

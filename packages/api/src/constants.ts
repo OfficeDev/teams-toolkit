@@ -5,6 +5,7 @@
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
 export const BuildFolderName = "build";
+export const TemplateFolderName = "templates";
 export const AdaptiveCardsFolderName = "adaptiveCards";
 export const InputConfigsFolderName = "configs";
 export const StatesFolderName = "states";
@@ -30,8 +31,8 @@ export enum Platform {
   CLI_HELP = "cli_help",
 }
 
-export const StaticPlatforms = [Platform.VS, Platform.CLI_HELP];
-export const DynamicPlatforms = [Platform.VSCode, Platform.CLI];
+export const StaticPlatforms = [Platform.CLI_HELP];
+export const DynamicPlatforms = [Platform.VSCode, Platform.CLI, Platform.VS];
 export const CLIPlatforms = [Platform.CLI, Platform.CLI_HELP];
 
 export enum VsCodeEnv {
@@ -60,9 +61,12 @@ export enum Stage {
   grantPermission = "grantPermission",
   checkPermission = "checkPermission",
   listCollaborator = "listCollaborator",
-  listAllCollaborators = "listAllCollaborators",
   getQuestions = "getQuestions",
   getProjectConfig = "getProjectConfig",
+  init = "init",
+  addFeature = "addFeature",
+  addResource = "addResource",
+  addCapability = "addCapability",
 }
 
 export enum TelemetryEvent {

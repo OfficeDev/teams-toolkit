@@ -9,14 +9,23 @@ import {
   TelemetrySuccess,
   TelemetryErrorType,
 } from "./cliTelemetryEvents";
-import { FxError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { getTeamsAppId } from "../utils";
+import { getSettingsVersion, getTeamsAppIdByEnv } from "../utils";
 
-export function makeEnvProperty(
-  env: string | undefined
-): { [TelemetryProperty.Env]: string } | undefined {
-  return env ? { [TelemetryProperty.Env]: getHashedEnv(env) } : undefined;
+export function makeEnvRelatedProperty(
+  projectDir: string,
+  inputs: Inputs
+): { [key: string]: string } {
+  const properties: { [key: string]: string } = {};
+  if (inputs.env) {
+    properties[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+    const appId = getTeamsAppIdByEnv(projectDir, inputs.env);
+    if (appId) {
+      properties[TelemetryProperty.AppId] = appId;
+    }
+  }
+  return properties;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -59,7 +68,10 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    if (settingsVersion !== undefined) {
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
 
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)
@@ -81,7 +93,10 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    if (settingsVersion !== undefined) {
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -111,7 +126,10 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    if (settingsVersion !== undefined) {
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
 
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)

@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  LogProvider,
-  PluginContext,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckGrantPermissionConfig,
@@ -26,8 +20,6 @@ import {
   UnknownPermissionName,
   UnknownPermissionRole,
   UnknownPermissionScope,
-  GetSkipAppConfigError,
-  InvalidSelectedPluginsError,
   GetConfigError,
   ConfigErrorMessages,
 } from "./errors";
@@ -35,7 +27,6 @@ import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
 import {
   ConfigKeys,
-  ConfigKeysOfOtherPlugin,
   Constants,
   Messages,
   Plugins,
@@ -45,16 +36,20 @@ import {
   TemplatePathInfo,
 } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
-import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
+import {
+  IAADDefinition,
+  RequiredResourceAccess,
+  ResourceAccess,
+} from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
 import { IPermissionList } from "./interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { getTemplatesFolder, isMultiEnvEnabled } from "../../..";
+import { ArmTemplateResult } from "../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../common/constants";
+import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 
@@ -72,46 +67,10 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
-    if (skip && !isMultiEnvEnabled()) {
-      ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
-
-      if (
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientId, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.oauth2PermissionScopeId, isLocalDebug)
-      ) {
-        const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
-        config.oauth2PermissionScopeId = ConfigUtils.getAadConfig(
-          ctx,
-          ConfigKeys.oauth2PermissionScopeId,
-          isLocalDebug
-        ) as string;
-        config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
-        Utils.addLogAndTelemetryWithLocalDebug(
-          ctx.logProvider,
-          Messages.EndProvision,
-          Messages.EndLocalDebug,
-          isLocalDebug,
-          { [Telemetry.skip]: Telemetry.yes }
-        );
-        return ResultFactory.Success();
-      } else {
-        const fileName = Utils.getInputFileName(ctx);
-        throw ResultFactory.UserError(
-          GetSkipAppConfigError.name,
-          GetSkipAppConfigError.message(fileName),
-          undefined,
-          undefined,
-          GetSkipAppConfigError.helpLink
-        );
-      }
-    }
-
     DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
@@ -126,30 +85,29 @@ export class AadAppForTeamsImpl {
       if (!skip) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadApp(
-          ctx,
           telemetryMessage,
           config.objectId,
-          isLocalDebug,
-          config.password
+          config.password,
+          ctx.graphTokenProvider,
+          isLocalDebug ? undefined : ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
     } else {
       await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
-      await AadAppClient.createAadApp(ctx, telemetryMessage, config);
+      await AadAppClient.createAadApp(telemetryMessage, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
     }
 
     if (!config.password) {
       await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
-      await AadAppClient.createAadAppSecret(ctx, telemetryMessage, config);
+      await AadAppClient.createAadAppSecret(telemetryMessage, config);
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
     }
 
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     await AadAppClient.updateAadAppPermission(
-      ctx,
       telemetryMessage,
       config.objectId as string,
       permissions,
@@ -163,7 +121,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndProvision,
       Messages.EndLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }
@@ -196,32 +155,21 @@ export class AadAppForTeamsImpl {
     );
 
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
-    if (skip && !isMultiEnvEnabled()) {
-      ctx.logProvider?.info(Messages.SkipProvision);
-      Utils.addLogAndTelemetryWithLocalDebug(
-        ctx.logProvider,
-        Messages.EndPostProvision,
-        Messages.EndPostLocalDebug,
-        isLocalDebug
-      );
-      return ResultFactory.Success();
-    }
-
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
 
-    const redirectUris: string[] = AadAppForTeamsImpl.getRedirectUris(
+    const redirectUris: IAADDefinition = AadAppForTeamsImpl.getRedirectUris(
       config.frontendEndpoint,
-      config.botEndpoint
+      config.botEndpoint,
+      config.clientId!
     );
     await AadAppClient.updateAadAppRedirectUri(
-      ctx,
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       redirectUris,
@@ -231,7 +179,6 @@ export class AadAppForTeamsImpl {
 
     await DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
     await AadAppClient.updateAadAppIdUri(
-      ctx,
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       config.applicationIdUri as string,
@@ -244,7 +191,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }
@@ -266,7 +214,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     const permissions = AadAppForTeamsImpl.parsePermission(
       configs[0].permissionRequest as string,
@@ -277,7 +225,6 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     for (const config of configs) {
       await AadAppClient.updateAadAppPermission(
-        ctx,
         Messages.EndUpdatePermission.telemetry,
         config.objectId as string,
         permissions
@@ -294,48 +241,17 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    if (
-      !selectedPlugins.includes(ResourcePlugins.FrontendHosting) &&
-      !selectedPlugins.includes(ResourcePlugins.Bot)
-    ) {
-      throw ResultFactory.UserError(
-        InvalidSelectedPluginsError.name,
-        InvalidSelectedPluginsError.message(
-          `${ResourcePlugins.FrontendHosting} plugin and(or) ${ResourcePlugins.Bot} plugin must be selected.`
+    const result: ArmTemplateResult = {
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(
+            getTemplatesFolder(),
+            TemplatePathInfo.BicepTemplateRelativeDir,
+            Bicep.ParameterFileName
+          ),
+          ConstantString.UTF8Encoding
         )
-      );
-    }
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      TemplatePathInfo.BicepTemplateRelativeDir
-    );
-    const inputParameterOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const variablesOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.VariablesOrchestrationFileName
-    );
-    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
-
-    const result: ScaffoldArmTemplateResult = {
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
-            ConstantString.UTF8Encoding
-          ),
-          ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
-          ),
-        },
-        VariableTemplate: {
-          Content: await fs.readFile(variablesOrchestrationFilePath, ConstantString.UTF8Encoding),
-        },
-      },
+      ),
     };
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
@@ -349,7 +265,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
@@ -377,7 +296,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
 
     const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
     if (!objectId) {
@@ -405,7 +327,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
@@ -429,17 +354,29 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  private static getRedirectUris(
+  public static getRedirectUris(
     frontendEndpoint: string | undefined,
-    botEndpoint: string | undefined
+    botEndpoint: string | undefined,
+    clientId: string
   ) {
-    const redirectUris: string[] = [];
+    const redirectUris: IAADDefinition = {
+      web: {
+        redirectUris: [],
+      },
+      spa: {
+        redirectUris: [],
+      },
+    };
     if (frontendEndpoint) {
-      redirectUris.push(`${frontendEndpoint}/auth-end.html`);
+      redirectUris.web?.redirectUris?.push(`${frontendEndpoint}/auth-end.html`);
+      redirectUris.spa?.redirectUris?.push(`${frontendEndpoint}/blank-auth-end.html`);
+      redirectUris.spa?.redirectUris?.push(
+        `${frontendEndpoint}/auth-end.html?clientId=${clientId}`
+      );
     }
 
     if (botEndpoint) {
-      redirectUris.push(`${botEndpoint}/auth-end.html`);
+      redirectUris.web?.redirectUris?.push(`${botEndpoint}/auth-end.html`);
     }
 
     return redirectUris;
@@ -491,7 +428,7 @@ export class AadAppForTeamsImpl {
     return configs;
   }
 
-  private static parsePermission(
+  public static parsePermission(
     permissionRequest: string,
     logProvider?: LogProvider
   ): RequiredResourceAccess[] {

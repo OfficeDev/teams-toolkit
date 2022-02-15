@@ -3,17 +3,25 @@
 
 "use strict";
 
-import { Argv } from "yargs";
+import { Argv, Options } from "yargs";
 
-import { Colors, FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
+import { Colors, FxError, LogLevel, ok, Question, Result, UserError } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
-import AzureTokenProvider from "../commonlib/azureLogin";
-import { signedIn } from "../commonlib/common/constant";
+import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
+import AzureTokenCIProvider from "../commonlib/azureLoginCI";
+import {
+  codeFlowLoginFormat,
+  loginComponent,
+  servicePrincipalLoginFormat,
+  signedIn,
+  usageError,
+} from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
+import { checkIsOnline } from "../commonlib/codeFlowLogin";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
@@ -46,10 +54,21 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   return Promise.resolve(result !== undefined);
 }
 
-async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Promise<boolean> {
-  const result = await AzureTokenProvider.getAccountCredentialAsync(true, tenantId);
+async function outputAzureInfo(
+  commandType: "login" | "show",
+  tenantId = "",
+  isServicePrincipal = false,
+  userName = "",
+  password = ""
+): Promise<boolean> {
+  let azureProvider = getAzureProvider();
+  if (isServicePrincipal === true || (await AzureTokenCIProvider.load())) {
+    await AzureTokenCIProvider.init(userName, password, tenantId);
+    azureProvider = AzureTokenCIProvider;
+  }
+  const result = await azureProvider.getAccountCredentialAsync(true, tenantId);
   if (result) {
-    const subscriptions = await AzureTokenProvider.listSubscriptions();
+    const subscriptions = await azureProvider.listSubscriptions();
     if (commandType === "login") {
       const message = [
         {
@@ -67,8 +86,8 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
     } else {
       try {
-        AzureTokenProvider.setRootPath("./");
-        const subscriptionInfo = await AzureTokenProvider.readSubscription();
+        azureProvider.setRootPath("./");
+        const subscriptionInfo = await azureProvider.readSubscription();
         if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
@@ -103,7 +122,7 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
           );
           CLILogProvider.necessaryLog(
             LogLevel.Warning,
-            "WARN：Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
+            "WARN: Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
           );
         } else {
           throw e;
@@ -121,6 +140,18 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
   return Promise.resolve(result !== undefined);
 }
 
+async function outputAccountInfoOffline(accountType: string, username: string): Promise<boolean> {
+  const message = [
+    {
+      content: `[${constants.cliSource}] Your ${accountType} Account is: `,
+      color: Colors.BRIGHT_WHITE,
+    },
+    { content: username, color: Colors.BRIGHT_MAGENTA },
+  ];
+  CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+  return true;
+}
+
 class AccountShow extends YargsCommand {
   public readonly commandHead = `show`;
   public readonly command = `${this.commandHead}`;
@@ -133,12 +164,16 @@ class AccountShow extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const m365Status = await AppStudioTokenProvider.getStatus();
     if (m365Status.status === signedIn) {
-      await outputM365Info("show");
+      (await checkIsOnline())
+        ? await outputM365Info("show")
+        : await outputAccountInfoOffline("M365", (m365Status.accountInfo as any).upn);
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
     if (azureStatus.status === signedIn) {
-      await outputAzureInfo("show");
+      (await checkIsOnline())
+        ? await outputAzureInfo("show")
+        : await outputAccountInfoOffline("AZURE", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
@@ -157,34 +192,96 @@ class AccountLogin extends YargsCommand {
   public readonly command = `${this.commandHead} <service>`;
   public readonly description = "Log in to the selected cloud service.";
 
+  public readonly subCommands: YargsCommand[] = [new M365Login(), new AzureLogin()];
+
+  public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+
+    return yargs;
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return ok(null);
+  }
+}
+
+export class M365Login extends YargsCommand {
+  public readonly commandHead = `m365`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Log in to M365.";
+
+  public builder(yargs: Argv): Argv<any> {
+    return yargs.options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    await AppStudioTokenProvider.signout();
+    await outputM365Info("login");
+    return ok(null);
+  }
+}
+
+export class AzureLogin extends YargsCommand {
+  public readonly commandHead = `azure`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Log in to Azure.";
+  public params: { [_: string]: Options } = {};
+
   public builder(yargs: Argv): Argv<any> {
     return yargs
-      .positional("service", {
-        description: "Azure or M365",
-        type: "string",
-        choices: ["azure", "m365"],
-        coerce: toLocaleLowerCase,
-      })
       .options("tenant", {
         description: "Authenticate with a specific Azure Active Directory tenant.",
         type: "string",
         default: "",
-      });
+      })
+      .options("service-principal", {
+        description: "Authenticate Azure with a credential representing a service principal",
+        type: "boolean",
+        default: "false",
+      })
+      .options("username", {
+        alias: "u",
+        description: "Client ID for service principal",
+        type: "string",
+        default: "",
+      })
+      .options("password", {
+        alias: "p",
+        description: "Provide client secret or a pem file with key and public certificate.",
+        type: "string",
+        default: "",
+      })
+      .example("teamsfx account login azure", "Log in interactively.")
+      .example(
+        "teamsfx account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID",
+        "Log in with a service principal using client secret."
+      )
+      .example(
+        'teamsfx account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID',
+        "Log in with a service principal using client certificate."
+      );
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    switch (args.service) {
-      case "azure": {
-        await AzureTokenProvider.signout();
-        await outputAzureInfo("login", args.tenant);
-        break;
+    if ((args["service-principal"] as any) === true) {
+      if (!args.username || !args.password || !args.tenant) {
+        throw new UserError(usageError, servicePrincipalLoginFormat, loginComponent);
       }
-      case "m365": {
-        await AppStudioTokenProvider.signout();
-        await outputM365Info("login");
-        break;
+    } else {
+      if (args.username || args.password || args.tenant) {
+        throw new UserError(usageError, codeFlowLoginFormat, loginComponent);
       }
     }
+    await AzureTokenProvider.signout();
+    await outputAzureInfo(
+      "login",
+      args.tenant,
+      args["service-principal"] as any,
+      args.username,
+      args.password
+    );
     return ok(null);
   }
 }
@@ -282,6 +379,7 @@ export default class Account extends YargsCommand {
       description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
       type: "string",
       choices: this.subCommands.map((cmd) => cmd.commandHead),
+      global: false,
     });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

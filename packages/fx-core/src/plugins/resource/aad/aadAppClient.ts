@@ -1,11 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError } from "@microsoft/teamsfx-api";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { FxError, GraphTokenProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
+import {
+  ConfigFilePath,
+  ConfigKeys,
+  Constants,
+  Messages,
+  ProgressDetail,
+  Telemetry,
+  UILevels,
+} from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -30,6 +37,8 @@ import { ProvisionConfig } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
+import { getAllowedAppIds } from "../../../common/tools";
+import { TOOLS } from "../../../core";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -37,11 +46,7 @@ function delay(ms: number) {
 }
 
 export class AadAppClient {
-  public static async createAadApp(
-    ctx: PluginContext,
-    stage: string,
-    config: ProvisionConfig
-  ): Promise<void> {
+  public static async createAadApp(stage: string, config: ProvisionConfig): Promise<void> {
     try {
       const provisionObject = AadAppClient.getAadAppProvisionObject(
         config.displayName as string,
@@ -49,11 +54,11 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = (await this.retryHanlder(ctx, stage, () =>
+        provisionAadResponse = (await this.retryHanlder(stage, () =>
           AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       } else {
-        provisionAadResponse = (await this.retryHanlder(ctx, stage, () =>
+        provisionAadResponse = (await this.retryHanlder(stage, () =>
           GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       }
@@ -65,19 +70,15 @@ export class AadAppClient {
     }
   }
 
-  public static async createAadAppSecret(
-    ctx: PluginContext,
-    stage: string,
-    config: ProvisionConfig
-  ): Promise<void> {
+  public static async createAadAppSecret(stage: string, config: ProvisionConfig): Promise<void> {
     try {
       let createSecretObject: IAADPassword;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        createSecretObject = (await AadAppClient.retryHanlder(ctx, stage, () =>
+        createSecretObject = (await AadAppClient.retryHanlder(stage, () =>
           AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       } else {
-        createSecretObject = (await AadAppClient.retryHanlder(ctx, stage, () =>
+        createSecretObject = (await AadAppClient.retryHanlder(stage, () =>
           GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       }
@@ -86,40 +87,29 @@ export class AadAppClient {
       throw AadAppClient.handleError(error, CreateSecretError);
     }
   }
-
   public static async updateAadAppRedirectUri(
-    ctx: PluginContext,
     stage: string,
     objectId: string,
-    redirectUris: string[],
+    redirectUris: IAADDefinition,
     skip = false
   ): Promise<void> {
     try {
-      const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
-          AppStudio.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+        await AadAppClient.retryHanlder(stage, () =>
+          AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
         );
       } else {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
-          GraphClient.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+        await AadAppClient.retryHanlder(stage, () =>
+          GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
         );
       }
     } catch (error) {
       if (skip) {
         const message = Messages.StepFailedAndSkipped(
           ProgressDetail.UpdateRedirectUri,
-          Messages.UpdateRedirectUriHelpMessage(redirectUris.join(", "))
+          Messages.UpdateRedirectUriHelpMessage(Utils.parseRedirectUriMessage(redirectUris))
         );
-        ctx.logProvider?.warning(Messages.getLog(message));
+        TOOLS.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
         throw AadAppClient.handleError(error, UpdateRedirectUriError);
@@ -128,7 +118,6 @@ export class AadAppClient {
   }
 
   public static async updateAadAppIdUri(
-    ctx: PluginContext,
     stage: string,
     objectId: string,
     applicationIdUri: string,
@@ -137,7 +126,7 @@ export class AadAppClient {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
+        await AadAppClient.retryHanlder(stage, () =>
           AppStudio.updateAADApp(
             TokenProvider.token as string,
             objectId as string,
@@ -145,7 +134,7 @@ export class AadAppClient {
           )
         );
       } else {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
+        await AadAppClient.retryHanlder(stage, () =>
           GraphClient.updateAADApp(
             TokenProvider.token as string,
             objectId as string,
@@ -159,16 +148,14 @@ export class AadAppClient {
           ProgressDetail.UpdateAppIdUri,
           Messages.UpdateAppIdUriHelpMessage(applicationIdUri)
         );
-        ctx.logProvider?.warning(Messages.getLog(message));
+        TOOLS.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
         throw AadAppClient.handleError(error, UpdateAppIdUriError);
       }
     }
   }
-
   public static async updateAadAppPermission(
-    ctx: PluginContext,
     stage: string,
     objectId: string,
     permissions: RequiredResourceAccess[],
@@ -177,7 +164,7 @@ export class AadAppClient {
     try {
       const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
+        await AadAppClient.retryHanlder(stage, () =>
           AppStudio.updateAADApp(
             TokenProvider.token as string,
             objectId as string,
@@ -185,7 +172,7 @@ export class AadAppClient {
           )
         );
       } else {
-        await AadAppClient.retryHanlder(ctx, stage, () =>
+        await AadAppClient.retryHanlder(stage, () =>
           GraphClient.updateAADApp(
             TokenProvider.token as string,
             objectId as string,
@@ -199,40 +186,39 @@ export class AadAppClient {
           ProgressDetail.UpdatePermission,
           Messages.UpdatePermissionHelpMessage
         );
-        ctx.logProvider?.warning(Messages.getLog(message));
+        TOOLS.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
         throw AadAppClient.handleError(error, UpdatePermissionError);
       }
     }
   }
-
   public static async getAadApp(
-    ctx: PluginContext,
     stage: string,
     objectId: string,
-    islocalDebug: boolean,
     clientSecret: string | undefined,
+    graphTokenProvider?: GraphTokenProvider,
+    envName?: string,
     skip = false
   ): Promise<ProvisionConfig> {
     let getAppObject: IAADDefinition;
     try {
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        getAppObject = (await this.retryHanlder(ctx, stage, () =>
+        getAppObject = (await this.retryHanlder(stage, () =>
           AppStudio.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       } else {
-        getAppObject = (await this.retryHanlder(ctx, stage, () =>
+        getAppObject = (await this.retryHanlder(stage, () =>
           GraphClient.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       }
     } catch (error) {
-      const tenantId = await Utils.getCurrentTenantId(ctx);
-      const fileName = Utils.getConfigFileName(ctx, islocalDebug);
+      const tenantId = await Utils.getCurrentTenantId(graphTokenProvider);
+      const fileName = Utils.getConfigFileName(envName);
       throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }
 
-    const config = new ProvisionConfig(islocalDebug);
+    const config = new ProvisionConfig(!envName);
     if (
       getAppObject.api?.oauth2PermissionScopes &&
       getAppObject.api?.oauth2PermissionScopes[0] &&
@@ -240,7 +226,7 @@ export class AadAppClient {
     ) {
       config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
     } else {
-      const fileName = Utils.getConfigFileName(ctx, islocalDebug);
+      const fileName = Utils.getConfigFileName(envName);
       throw ResultFactory.UserError(
         GetAppConfigError.name,
         GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
@@ -259,7 +245,7 @@ export class AadAppClient {
     userObjectId: string
   ): Promise<boolean> {
     try {
-      return (await this.retryHanlder(ctx, stage, () =>
+      return (await this.retryHanlder(stage, () =>
         GraphClient.checkPermission(TokenProvider.token as string, objectId, userObjectId)
       )) as boolean;
     } catch (error) {
@@ -298,7 +284,7 @@ export class AadAppClient {
     objectId: string
   ): Promise<AadOwner[] | undefined> {
     try {
-      return await this.retryHanlder(ctx, stage, () =>
+      return await this.retryHanlder(stage, () =>
         GraphClient.getAadOwners(TokenProvider.token as string, objectId)
       );
     } catch (error) {
@@ -307,14 +293,9 @@ export class AadAppClient {
     }
   }
 
-  public static async retryHanlder(
-    ctx: PluginContext,
-    stage: string,
-    fn: () => Promise<any>
-  ): Promise<any> {
+  public static async retryHanlder(stage: string, fn: () => Promise<any>): Promise<any> {
     let retries = Constants.maxRetryTimes;
     let response;
-    TelemetryUtils.init(ctx);
     while (retries > 0) {
       retries = retries - 1;
 
@@ -336,7 +317,6 @@ export class AadAppClient {
 
     throw new Error(AppStudioErrorMessage.ReachRetryLimit);
   }
-
   private static getAadAppProvisionObject(
     displayName: string,
     oauth2PermissionScopeId: string
@@ -360,16 +340,12 @@ export class AadAppClient {
             value: "access_as_user",
           },
         ],
-        preAuthorizedApplications: [
-          {
-            appId: Constants.teamsWebAppId,
+        preAuthorizedApplications: getAllowedAppIds().map((appId) => {
+          return {
+            appId,
             delegatedPermissionIds: [oauth2PermissionScopeId],
-          },
-          {
-            appId: Constants.teamsMobileDesktopAppId,
-            delegatedPermissionIds: [oauth2PermissionScopeId],
-          },
-        ],
+          };
+        }),
       },
       optionalClaims: {
         accessToken: [

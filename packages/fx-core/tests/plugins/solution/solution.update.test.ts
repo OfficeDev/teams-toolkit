@@ -37,20 +37,19 @@ import {
 
 import _ from "lodash";
 import * as uuid from "uuid";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
-import { newEnvInfo } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
+import {
+  fehostPlugin,
+  localdebugPlugin,
+  sqlPlugin,
+  functionPlugin,
+  apimPlugin,
+} from "../../constants";
 
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
-const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
-const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
   return {
     root: ".",
     envInfo: newEnvInfo(),
@@ -91,44 +90,6 @@ describe("update()", () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
   });
-
-  it("should return AddResourceNotSupport if capabilities is empty", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = { platform: Platform.VSCode };
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const result = await solution.update(mockedCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-  });
-
-  it("should return AddResourceNotSupport if capabilities doesn't contain Tab", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = { platform: Platform.VSCode };
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-        capabilities: [],
-      },
-    };
-    const result = await solution.update(mockedCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-  });
-
   it("should return AddResourceNotSupport if user tries to add SQL when SQL is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -141,7 +102,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, sqlPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, sqlPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
@@ -162,7 +123,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, apimPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, apimPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
@@ -183,7 +144,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -228,7 +189,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -272,7 +233,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -320,7 +281,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -366,7 +327,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
@@ -399,7 +360,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
@@ -436,7 +397,7 @@ describe("update()", () => {
 
   it("should ask for confirm regenerate ARM template when adding resources", async () => {
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     const solution = new TeamsAppSolution();
@@ -450,7 +411,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };

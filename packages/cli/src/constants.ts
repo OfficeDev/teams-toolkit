@@ -58,5 +58,5 @@ export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
 export const deployPluginNodeName = "deploy-plugin";
 
 export class FeatureFlags {
-  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
+  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
 }

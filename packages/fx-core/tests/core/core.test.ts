@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StorageBrowserPolicy } from "@azure/storage-blob";
 import {
   AppPackageFolderName,
   err,
@@ -10,6 +9,8 @@ import {
   Inputs,
   InputTextConfig,
   InputTextResult,
+  MultiSelectConfig,
+  MultiSelectResult,
   ok,
   OptionItem,
   Platform,
@@ -19,7 +20,6 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  SolutionContext,
   Stage,
   TokenProvider,
   traverse,
@@ -27,183 +27,458 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
-import fs from "fs-extra";
-import { random } from "lodash";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import Container from "typedi";
+import { Container } from "typedi";
 import {
   environmentManager,
-  FunctionRouterError,
   FxCore,
   InvalidInputError,
-  isV2,
-  validateProject,
+  setTools,
   validateSettings,
 } from "../../src";
-import * as commonTools from "../../src/common/tools";
-import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
+import { ConstantString } from "../../src/common/constants";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
+  BotOptionItem,
   CoreQuestionNames,
+  MessageExtensionItem,
+  ProgrammingLanguageQuestion,
   SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
+  TabOptionItem,
+  TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
-
+import fs from "fs-extra";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
-  const mockSolution = new MockSolution();
+  const mockSolutionV1 = new MockSolution();
   const mockSolutionV2 = new MockSolutionV2();
   const tools = new MockTools();
-  const ui = tools.ui;
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    setTools(tools);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
-    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
   });
-
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
+    mockedEnvRestore();
+  });
+  describe("create from new", async () => {
+    it("CLI with folder input", async () => {
+      appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        solution: mockSolutionV2.name,
+        stage: Stage.create,
+      };
+      const res = await core.createProject(inputs);
+      projectPath = path.resolve(os.tmpdir(), appName);
+      assert.isTrue(res.isOk() && res.value === projectPath);
+    });
+
+    it("VSCode without customized default root directory", async () => {
+      appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        solution: mockSolutionV2.name,
+        stage: Stage.create,
+      };
+      const res = await core.createProject(inputs);
+      projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
+      assert.isTrue(res.isOk() && res.value === projectPath);
+      const projectSettingsResult = await loadProjectSettings(inputs, true);
+      assert.isTrue(projectSettingsResult.isOk());
+      if (projectSettingsResult.isOk()) {
+        const projectSettings = projectSettingsResult.value;
+        const validSettingsResult = validateSettings(projectSettings);
+        assert.isTrue(validSettingsResult === undefined);
+        assert.isTrue(projectSettings.version === "2.1.0");
+      }
+    });
+
+    it("VSCode with customized default root directory", async () => {
+      appName = randomAppName();
+      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+      mockedEnvRestore = mockedEnv(newParam);
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        solution: mockSolutionV2.name,
+        stage: Stage.create,
+      };
+      const res = await core.createProject(inputs);
+      projectPath = path.resolve(
+        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
+        appName
+      );
+      assert.isTrue(res.isOk() && res.value === projectPath);
+      mockedEnvRestore();
+    });
   });
 
-  describe("Core's basic APIs", async () => {
-    const AllEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
-    ];
-    const EnableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
-    ];
-    const DisableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
-    ];
-    for (const param of AllEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
-        let mockedEnvRestore: RestoreFn;
-        beforeEach(() => {
-          sandbox.restore();
-          mockedEnvRestore = mockedEnv(param);
-        });
+  it("createProject, provision, deploy, localDebug, publish, executeUserTask, getProjectConfig, getQuestionsForUserTask, encrypt, decrypt", async () => {
+    appName = randomAppName();
+    const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+    mockedEnvRestore = mockedEnv(newParam);
+    const core = new FxCore(tools);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab"],
+      solution: mockSolutionV2.name,
+      stage: Stage.create,
+    };
+    const createRes = await core.createProject(inputs);
+    projectPath = path.resolve(
+      newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
+      appName
+    );
+    assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
-        afterEach(() => {
-          mockedEnvRestore();
-        });
-        it("create from new", async () => {
-          appName = randomAppName();
-          projectPath = path.resolve(os.tmpdir(), appName);
-          const expectedInputs: Inputs = {
-            platform: Platform.VSCode,
-            [CoreQuestionNames.AppName]: appName,
-            [CoreQuestionNames.Folder]: os.tmpdir(),
-            [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-            projectPath: projectPath,
-            solution: mockSolution.name,
-            stage: Stage.create,
-          };
-          it("CLI", async () => {
-            const core = new FxCore(tools);
-            {
-              const inputs: Inputs = { platform: Platform.CLI };
-              const res = await core.createProject(inputs);
-              assert.isTrue(res.isOk() && res.value === projectPath);
-              assert.deepEqual(expectedInputs, inputs);
-            }
-          });
+    let res = await core.provisionResources(inputs);
+    assert.isTrue(res.isOk());
 
-          it("VSCode without customized default root directory", async () => {
-            const core = new FxCore(tools);
-            {
-              const inputs: Inputs = { platform: Platform.VSCode };
-              const res = await core.createProject(inputs);
-              assert.isTrue(res.isOk() && res.value === os.homedir() + appName);
-              delete expectedInputs.folder;
-              assert.deepEqual(expectedInputs, inputs);
-            }
-          });
+    res = await core.deployArtifacts(inputs);
+    assert.isTrue(res.isOk());
 
-          it("VSCode with customized default root directory", async () => {
-            const newParam = { ...(param && { TEAMSFX_ROOT_DIRECTORY: os.tmpdir() }) };
-            mockedEnvRestore = mockedEnv(newParam);
-            const core = new FxCore(tools);
-            {
-              const inputs: Inputs = { platform: Platform.VSCode };
-              const res = await core.createProject(inputs);
-              assert.isTrue(res.isOk() && res.value === newParam.TEAMSFX_ROOT_DIRECTORY + appName);
-              delete expectedInputs.folder;
-              assert.deepEqual(expectedInputs, inputs);
-            }
-            mockedEnvRestore();
-          });
-        });
+    res = await core.localDebug(inputs);
+    assert.isTrue(res.isOk());
 
-        it("create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {
-          await case1();
-        });
-        it("getQuestions for create", async () => {
-          await case3();
-        });
-        it("getQuestions, getQuestionsForUserTask for static question", async () => {
-          await case4();
-        });
-        it("crypto: encrypt, decrypt secrets", async () => {
-          await case5();
-        });
-      });
+    res = await core.publishApplication(inputs);
+    assert.isTrue(res.isOk());
+
+    const func: Func = { method: "test", namespace: "fx-solution-azure" };
+    const res2 = await core.executeUserTask(func, inputs);
+    assert.isTrue(res2.isOk());
+
+    const configRes = await core.getProjectConfig(inputs);
+    assert.isTrue(configRes.isOk());
+    if (configRes.isOk()) {
+      const projectConfig = configRes.value;
+      assert.isTrue(projectConfig !== undefined);
+      if (projectConfig !== undefined) {
+        assert.isTrue(projectConfig.settings !== undefined);
+        assert.isTrue(projectConfig.config !== undefined);
+      }
     }
-    for (const param of DisableMultiEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
-        let mockedEnvRestore: RestoreFn;
-        beforeEach(() => {
-          mockedEnvRestore = mockedEnv(param);
-        });
-        afterEach(() => {
-          mockedEnvRestore();
-        });
-        it("create from sample", async () => {
-          await case2();
-        });
-      });
+    const questionsForUserTaskRes = await core.getQuestionsForUserTask(func, inputs);
+    assert.isTrue(questionsForUserTaskRes.isOk() && questionsForUserTaskRes.value === undefined);
+
+    const encrypted = await core.encrypt("test secret data", inputs);
+    assert.isTrue(encrypted.isOk());
+    if (encrypted.isOk()) {
+      assert.isTrue(encrypted.value.startsWith("crypto_"));
+      const decrypted = await core.decrypt(encrypted.value, inputs);
+      assert(decrypted.isOk());
+      if (decrypted.isOk()) {
+        assert.strictEqual(decrypted.value, "test secret data");
+      }
     }
-    for (const param of EnableMultiEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
-        let mockedEnvRestore: RestoreFn;
-        beforeEach(() => {
-          mockedEnvRestore = mockedEnv(param);
-          sandbox.restore();
-        });
-        afterEach(() => {
-          mockedEnvRestore();
-        });
-        it("scaffold and create new env copy", async () => {
-          await envCase1();
-        });
-        it("scaffold and activate env", async () => {
-          await envCase2();
-        });
-      });
-    }
+    mockedEnvRestore();
   });
 
-  describe("migrateV1", () => {
-    let mockedEnvRestore: RestoreFn;
+  describe("getQuestions", async () => {
+    for (const platform of [Platform.VS, Platform.CLI, Platform.CLI_HELP, Platform.VSCode]) {
+      it(`getQuestions for create, platform = ${platform}`, async () => {
+        const inputs: Inputs = { platform: platform };
+        const core = new FxCore(tools);
+        const res = await core.getQuestions(Stage.create, inputs);
+        assert.isTrue(res.isOk() && res.value !== undefined);
+      });
+    }
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
+      sandbox
+        .stub<any, any>(mockSolutionV2, "getQuestions")
+        .callsFake(
+          async (
+            ctx: v2.Context,
+            inputs: Inputs,
+            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+            tokenProvider: TokenProvider
+          ): Promise<Result<QTreeNode | undefined, FxError>> => {
+            return ok(
+              new QTreeNode({
+                type: "text",
+                name: "mock-question",
+                title: "mock-question",
+              })
+            );
+          }
+        );
+      sandbox
+        .stub<any, any>(mockSolutionV2, "getQuestionsForUserTask")
+        .callsFake(
+          async (
+            ctx: v2.Context,
+            inputs: Inputs,
+            func: Func,
+            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+            tokenProvider: TokenProvider
+          ): Promise<Result<QTreeNode | undefined, FxError>> => {
+            return ok(
+              new QTreeNode({
+                type: "text",
+                name: "mock-question-user-task",
+                title: "mock-question-user-task",
+              })
+            );
+          }
+        );
     });
     afterEach(async () => {
-      mockedEnvRestore();
+      sandbox.restore();
+    });
+    it("getQuestions for provision success, platform = CLI_HELP", async () => {
+      const inputs: Inputs = { platform: Platform.CLI_HELP };
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.provision, inputs);
+      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question");
+    });
+    it("getQuestions for provision failed, platform = VSCode", async () => {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.provision, inputs);
+      assert.isTrue(res.isErr());
+    });
+    it("getQuestionsForUserTask success, platform = CLI_HELP", async () => {
+      const inputs: Inputs = { platform: Platform.CLI_HELP };
+      const core = new FxCore(tools);
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
+      const res = await core.getQuestionsForUserTask(func, inputs);
+      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
+    });
+    it("getQuestionsForUserTask failed, platform = VSCode", async () => {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const core = new FxCore(tools);
+      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
+      const res = await core.getQuestionsForUserTask(func, inputs);
+      assert.isTrue(res.isErr());
+    });
+    it("getQuestions for create, traverse question tree", async () => {
+      appName = randomAppName();
+      projectPath = path.resolve(os.tmpdir(), appName);
+      const expectedInputs: Inputs = {
+        platform: Platform.CLI,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        stage: Stage.getQuestions,
+      };
+      expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+      expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
+      sandbox
+        .stub<any, any>(tools.ui, "inputText")
+        .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+          if (config.name === CoreQuestionNames.AppName) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.AppName] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
+        });
+      sandbox
+        .stub<any, any>(tools.ui, "selectFolder")
+        .callsFake(
+          async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+            if (config.name === CoreQuestionNames.Folder) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.Folder] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
+          }
+        );
+      sandbox
+        .stub<any, any>(tools.ui, "selectOption")
+        .callsFake(
+          async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+            if (config.name === CoreQuestionNames.CreateFromScratch) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+              });
+            } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
+          }
+        );
+      sandbox
+        .stub<any, any>(tools.ui, "selectOptions")
+        .callsFake(
+          async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+            if (config.name == "capabilities") {
+              return ok({
+                type: "success",
+                result: expectedInputs[CoreQuestionNames.Capabilities],
+              });
+            }
+            throw err(InvalidInputError("invalid question"));
+          }
+        );
+      const core = new FxCore(tools);
+      const inputs: Inputs = { platform: Platform.CLI };
+      const res = await core.getQuestions(Stage.create, inputs);
+      assert.isTrue(res.isOk());
+
+      if (res.isOk()) {
+        const node = res.value;
+        if (node) {
+          const traverseRes = await traverse(node, inputs, tools.ui);
+          assert.isTrue(traverseRes.isOk());
+        }
+        assert.deepEqual(expectedInputs, inputs);
+      }
+    });
+  });
+  it("scaffold and createEnv, activateEnv", async () => {
+    appName = randomAppName();
+    const core = new FxCore(tools);
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab"],
+      solution: mockSolutionV2.name,
+      stage: Stage.create,
+    };
+    const createRes = await core.createProject(inputs);
+    assert.isTrue(createRes.isOk());
+    projectPath = path.resolve(os.tmpdir(), appName);
+
+    const newEnvName = "newEnv";
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
+    if (envListResult.isErr()) {
+      assert.fail("failed to list env names");
+    }
+    assert.isTrue(envListResult.value.length === 1);
+    assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
+    inputs[CoreQuestionNames.NewTargetEnvName] = newEnvName;
+    const createEnvRes = await core.createEnv(inputs);
+    assert.isTrue(createEnvRes.isOk());
+
+    const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
+    if (newEnvListResult.isErr()) {
+      assert.fail("failed to list env names");
+    }
+    assert.isTrue(newEnvListResult.value.length === 2);
+    assert.isTrue(newEnvListResult.value[0] === environmentManager.getDefaultEnvName());
+    assert.isTrue(newEnvListResult.value[1] === newEnvName);
+
+    inputs.env = "newEnv";
+    const activateEnvRes = await core.activateEnv(inputs);
+    assert.isTrue(activateEnvRes.isOk());
+  });
+
+  it("ProgrammingLanguageQuestion", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+    };
+    if (
+      ProgrammingLanguageQuestion.dynamicOptions &&
+      ProgrammingLanguageQuestion.placeholder &&
+      typeof ProgrammingLanguageQuestion.placeholder === "function"
+    ) {
+      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
+      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
+    }
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [MessageExtensionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [
+        TabOptionItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+      ],
+    });
+
+    function languageAssert(inputs: Inputs) {
+      if (
+        ProgrammingLanguageQuestion.dynamicOptions &&
+        ProgrammingLanguageQuestion.placeholder &&
+        typeof ProgrammingLanguageQuestion.placeholder === "function"
+      ) {
+        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+        assert.deepEqual(
+          [
+            { id: "javascript", label: "JavaScript" },
+            { id: "typescript", label: "TypeScript" },
+          ],
+          options
+        );
+        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+        assert.equal("Select a programming language.", placeholder);
+      }
+    }
+  });
+  describe("migrateV1", () => {
+    afterEach(async () => {
       await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [
@@ -245,7 +520,7 @@ describe("Core basic APIs", () => {
         }
 
         sandbox
-          .stub<any, any>(ui, "inputText")
+          .stub<any, any>(tools.ui, "inputText")
           .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
             if (config.name === CoreQuestionNames.AppName) {
               return ok({
@@ -256,7 +531,7 @@ describe("Core basic APIs", () => {
             throw err(InvalidInputError("invalid question"));
           });
         sandbox
-          .stub<any, any>(ui, "showMessage")
+          .stub<any, any>(tools.ui, "showMessage")
           .callsFake(async (): Promise<Result<string, FxError>> => {
             return ok("OK");
           });
@@ -271,665 +546,15 @@ describe("Core basic APIs", () => {
           assert.deepEqual(expectedInputs, inputs);
           inputs.projectPath = testParam.projectPath;
 
-          const projectSettingsResult = await loadProjectSettings(
-            inputs,
-            commonTools.isMultiEnvEnabled()
-          );
+          const projectSettingsResult = await loadProjectSettings(inputs, true);
           if (projectSettingsResult.isErr()) {
             assert.fail("failed to load project settings");
           }
-
           const projectSettings = projectSettingsResult.value;
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
-
-          if (!commonTools.isMultiEnvEnabled()) {
-            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
-            if (envInfoResult.isErr()) {
-              assert.fail("failed to load env info");
-            }
-
-            const solutionContext = envInfoResult.value;
-            const validRes = validateProject(solutionContext);
-            assert.isTrue(validRes === undefined);
-
-            const solutionConfig = solutionContext.envInfo.state.get("solution");
-            assert.isTrue(solutionConfig !== undefined);
-          }
         }
       });
     });
   });
-
-  async function case1() {
-    appName = randomAppName();
-    projectPath = path.join(os.homedir(), "TeamsApps", appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
-      solution: mockSolution.name,
-      stage: Stage.create,
-    };
-    sandbox
-      .stub<any, any>(ui, "inputText")
-      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-        if (config.name === CoreQuestionNames.AppName) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.AppName] as string,
-          });
-        }
-        throw InvalidInputError("invalid question");
-      });
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw InvalidInputError("invalid question");
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk());
-      assert.deepEqual(expectedInputs, inputs);
-
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI, projectPath: projectPath };
-      let res = await core.provisionResources(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.deployArtifacts(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.localDebug(inputs);
-      assert.isTrue(res.isOk());
-
-      res = await core.publishApplication(inputs);
-      assert.isTrue(res.isOk());
-
-      const func: Func = { method: "test", namespace: "fx-solution-azure" };
-      const res2 = await core.executeUserTask(func, inputs);
-      assert.isTrue(res2.isOk());
-
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-    }
-
-    //getQuestion
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    //getQuestionsForUserTask
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    //getProjectConfig
-    {
-      const inputs: Inputs = { platform: Platform.VSCode, projectPath: projectPath };
-      const res = await core.getProjectConfig(inputs);
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        const projectConfig = res.value;
-        assert.isTrue(projectConfig !== undefined);
-        if (projectConfig !== undefined) {
-          assert.isTrue(projectConfig.settings !== undefined);
-          assert.isTrue(projectConfig.config !== undefined);
-        }
-      }
-    }
-  }
-
-  async function case2() {
-    const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
-    appName = sampleOption.id;
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption,
-      stage: Stage.create,
-    };
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          if (config.name === CoreQuestionNames.Samples) {
-            return ok({ type: "success", result: sampleOption });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      assert.deepEqual(expectedInputs, inputs);
-      inputs.projectPath = projectPath;
-
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      projectSettings.solutionSettings.name = mockSolution.name;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-    }
-  }
-
-  async function case3() {
-    appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      solution: mockSolution.name,
-      stage: Stage.getQuestions,
-    };
-    sandbox
-      .stub<any, any>(ui, "inputText")
-      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-        if (config.name === CoreQuestionNames.AppName) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.AppName] as string,
-          });
-        }
-        throw err(InvalidInputError("invalid question"));
-      });
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-
-    const core = new FxCore(tools);
-    const inputs: Inputs = { platform: Platform.CLI };
-    const res = await core.getQuestions(Stage.create, inputs);
-    assert.isTrue(res.isOk());
-
-    if (res.isOk()) {
-      const node = res.value;
-      if (node) {
-        const traverseRes = await traverse(node, inputs, ui);
-        assert.isTrue(traverseRes.isOk());
-      }
-      assert.deepEqual(expectedInputs, inputs);
-    }
-  }
-
-  async function case4() {
-    appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.VS };
-      const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isErr() && res.error.name === FunctionRouterError(func).name);
-    }
-
-    if (isV2()) {
-      sandbox
-        .stub<any, any>(mockSolutionV2, "getQuestions")
-        .callsFake(
-          async (
-            ctx: v2.Context,
-            inputs: Inputs,
-            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-            tokenProvider: TokenProvider
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question",
-                title: "mock-question",
-              })
-            );
-          }
-        );
-      sandbox
-        .stub<any, any>(mockSolutionV2, "getQuestionsForUserTask")
-        .callsFake(
-          async (
-            ctx: v2.Context,
-            inputs: Inputs,
-            func: Func,
-            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-            tokenProvider: TokenProvider
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question-user-task",
-                title: "mock-question-user-task",
-              })
-            );
-          }
-        );
-    } else {
-      sandbox
-        .stub<any, any>(mockSolution, "getQuestions")
-        .callsFake(
-          async (
-            task: Stage,
-            ctx: SolutionContext
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question",
-                title: "mock-question",
-              })
-            );
-          }
-        );
-      sandbox
-        .stub<any, any>(mockSolution, "getQuestionsForUserTask")
-        .callsFake(
-          async (
-            func: Func,
-            ctx: SolutionContext
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question-user-task",
-                title: "mock-question-user-task",
-              })
-            );
-          }
-        );
-    }
-
-    {
-      const inputs: Inputs = { platform: Platform.VS };
-      const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question");
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question");
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
-    }
-    {
-      const inputs: Inputs = { platform: Platform.CLI_HELP };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
-    }
-  }
-
-  async function case5() {
-    appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
-      solution: mockSolution.name,
-    };
-    sandbox
-      .stub<any, any>(ui, "inputText")
-      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-        if (config.name === CoreQuestionNames.AppName) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.AppName] as string,
-          });
-        }
-        throw err(InvalidInputError("invalid question"));
-      });
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw InvalidInputError("invalid question");
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          throw InvalidInputError("invalid question");
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-
-      const encrypted = await core.encrypt("test secret data", inputs);
-      assert.isTrue(encrypted.isOk());
-      if (encrypted.isOk()) {
-        assert.isTrue(encrypted.value.startsWith("crypto_"));
-        const decrypted = await core.decrypt(encrypted.value, inputs);
-        assert(decrypted.isOk());
-        if (decrypted.isOk()) {
-          assert.strictEqual(decrypted.value, "test secret data");
-        }
-      }
-    }
-  }
-
-  async function envCase1() {
-    appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
-      solution: mockSolution.name,
-      env: "dev",
-      stage: Stage.create,
-    };
-
-    const newEnvName = "newEnv";
-    sandbox
-      .stub<any, any>(ui, "inputText")
-      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-        if (config.name === CoreQuestionNames.AppName) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.AppName] as string,
-          });
-        }
-        if (config.name === CoreQuestionNames.NewTargetEnvName) {
-          return ok({
-            type: "success",
-            result: newEnvName,
-          });
-        }
-        throw err(InvalidInputError("invalid question"));
-      });
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      assert.deepEqual(expectedInputs, inputs);
-
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      // assert default env is created on scaffold
-      const envListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
-      if (envListResult.isErr()) {
-        assert.fail("failed to list env names");
-      }
-      assert.isTrue(envListResult.value.length === 1);
-      assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
-
-      const projectSettings = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-
-      const createEnvRes = await core.createEnv(inputs);
-      assert.isTrue(createEnvRes.isOk());
-
-      const newEnvListResult = await environmentManager.listEnvConfigs(inputs.projectPath!);
-      if (newEnvListResult.isErr()) {
-        assert.fail("failed to list env names");
-      }
-      assert.isTrue(newEnvListResult.value.length === 2);
-      assert.isTrue(newEnvListResult.value[0] === environmentManager.getDefaultEnvName());
-      assert.isTrue(newEnvListResult.value[1] === newEnvName);
-    }
-  }
-
-  async function envCase2() {
-    appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
-      solution: mockSolution.name,
-      env: "dev",
-      stage: Stage.create,
-    };
-    sandbox
-      .stub<any, any>(ui, "inputText")
-      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-        if (config.name === CoreQuestionNames.AppName) {
-          return ok({
-            type: "success",
-            result: expectedInputs[CoreQuestionNames.AppName] as string,
-          });
-        }
-        if (config.name === CoreQuestionNames.NewTargetEnvName) {
-          return ok({
-            type: "success",
-            result: "newEnv",
-          });
-        }
-        throw err(InvalidInputError("invalid question"));
-      });
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      assert.deepEqual(expectedInputs, inputs);
-
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
-
-      const createEnvRes = await core.createEnv(inputs);
-      assert.isTrue(createEnvRes.isOk());
-      inputs.env = "newEnv";
-      const activateEnvRes = await core.activateEnv(inputs);
-      assert.isTrue(activateEnvRes.isOk());
-    }
-  }
 });

@@ -1,6 +1,5 @@
 import {
   AppStudioTokenProvider,
-  AzureAccountProvider,
   Func,
   FxError,
   Inputs,
@@ -15,11 +14,15 @@ import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
+import { checkPermission } from "./checkPermission";
+import { TeamsAppSolutionNameV2 } from "./constants";
 import { createEnv } from "./createEnv";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
 import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "./getQuestions";
+import { grantPermission } from "./grantPermission";
+import { listCollaborator } from "./listCollaborator";
 import { provisionResource } from "./provision";
 import { provisionLocalResource } from "./provisionLocal";
 import { publishApplication } from "./publish";
@@ -27,7 +30,7 @@ import { scaffoldSourceCode } from "./scaffolding";
 
 @Service(SolutionPluginsV2.AzureTeamsSolutionV2)
 export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
-  name = "fx-solution-azure";
+  name = TeamsAppSolutionNameV2;
   displayName: string = PluginDisplayName.Solution;
 
   scaffoldSourceCode: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> =
@@ -35,18 +38,13 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
     generateResourceTemplate;
 
-  provisionResources: (
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: EnvInfoV2,
-    tokenProvider: TokenProvider
-  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = provisionResource;
+  provisionResources = provisionResource;
 
   deploy?: (
     ctx: v2.Context,
     inputs: Inputs,
-    provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    envInfo: EnvInfoV2,
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>> = deploy;
 
   publishApplication: (
@@ -59,7 +57,8 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ) => Promise<v2.FxResult<Json, FxError>> = provisionLocalResource;
 
   getQuestionsForScaffolding?: (
@@ -92,4 +91,40 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForUserTask;
+
+  grantPermission?: (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Json, FxError>> = (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => grantPermission({ apiVersion: 2, ctx, inputs, envInfo, tokenProvider });
+
+  checkPermission?: (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Json, FxError>> = (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => checkPermission({ apiVersion: 2, ctx, inputs, envInfo, tokenProvider });
+
+  listCollaborator?: (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Json, FxError>> = (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => listCollaborator({ apiVersion: 2, ctx, inputs, envInfo, tokenProvider });
 }

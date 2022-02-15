@@ -38,13 +38,16 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { CoreHookContext, serializeDict } from "../../src";
+import { CoreHookContext, serializeDict, setTools, TOOLS } from "../../src";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
-import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
+import {
+  migrateArm,
+  ProjectMigratorMW,
+  ArmParameters,
+} from "../../src/core/middleware/projectMigrator";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
   MockLatestVersion2_3_0Context,
@@ -57,6 +60,7 @@ import {
   MockUserInteraction,
   randomAppName,
 } from "./utils";
+import { ConstantString } from "../../src/common/constants";
 import * as dotenv from "dotenv";
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
@@ -70,258 +74,10 @@ describe("Middleware - others", () => {
     sandbox.restore();
   });
 
-  describe("ProjectUpgraderMW", () => {
-    const sandbox = sinon.createSandbox();
-    const appName = randomAppName();
-    const projectSettings = MockProjectSettings(appName);
-    let envJson: Json = {};
-    let userData: Record<string, string> = {};
-
-    const inputs: Inputs = { platform: Platform.VSCode };
-    inputs.projectPath = path.join(os.tmpdir(), appName);
-    const envName = environmentManager.getDefaultEnvName();
-    const confFolderPath = path.resolve(
-      inputs.projectPath,
-      commonTools.isMultiEnvEnabled()
-        ? path.resolve(`.${ConfigFolderName}`, InputConfigsFolderName)
-        : `.${ConfigFolderName}`
-    );
-    const statesFolderPath = path.resolve(
-      inputs.projectPath,
-      `.${ConfigFolderName}`,
-      StatesFolderName
-    );
-    const settingsFile = path.resolve(
-      confFolderPath,
-      commonTools.isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
-    );
-    const envJsonFile = commonTools.isMultiEnvEnabled()
-      ? path.resolve(
-          statesFolderPath,
-          EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
-        )
-      : path.resolve(confFolderPath, `env.${envName}.json`);
-    const userDataFile = commonTools.isMultiEnvEnabled()
-      ? path.resolve(statesFolderPath, `${envName}.userdata`)
-      : path.resolve(confFolderPath, `${envName}.userdata`);
-
-    function MockFunctions() {
-      sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
-        if (settingsFile === file) return projectSettings;
-        if (envJsonFile === file) return envJson;
-        return {};
-      });
-      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, content: any) => {
-        if (userDataFile === file) {
-          userData = dotenv.parse(content);
-        }
-        if (envJsonFile === file) {
-          envJson = JSON.parse(content);
-        }
-      });
-      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
-        if (userDataFile === file) return serializeDict(userData);
-        return {};
-      });
-      sandbox.stub<any, any>(fs, "stat").callsFake(async (file: string) => {
-        if ([settingsFile, envJsonFile, userDataFile].includes(file)) {
-          return {};
-        } else {
-          throw new Error("file not found");
-        }
-      });
-    }
-
-    beforeEach(() => {
-      sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
-        if (userDataFile === file) return true;
-        if (inputs.projectPath === file) return true;
-        return {};
-      });
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("Previous context and userdata", async () => {
-      envJson = MockPreviousVersionBefore2_3_0Context();
-      userData = MockPreviousVersionBefore2_3_0UserData();
-      MockFunctions();
-
-      class ProjectUpgradeHook {
-        tools = new MockTools();
-
-        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], "local_clientId");
-          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId");
-          assert.equal(
-            (envJson["solution"] as any)["localDebugTeamsAppId"],
-            "{{solution.localDebugTeamsAppId}}"
-          );
-          assert.equal(
-            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
-            "{{fx-resource-aad-app-for-teams.local_clientId}}"
-          );
-          return ok("");
-        }
-      }
-
-      hooks(ProjectUpgradeHook, {
-        upgrade: [ProjectUpgraderMW],
-      });
-
-      const my = new ProjectUpgradeHook();
-      const res = await my.upgrade(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-
-    it("Previous context and new userdata", async () => {
-      envJson = MockPreviousVersionBefore2_3_0Context();
-      userData = MockLatestVersion2_3_0UserData();
-      MockFunctions();
-
-      class ProjectUpgradeHook {
-        tools = new MockTools();
-
-        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.equal(
-            userData["fx-resource-aad-app-for-teams.local_clientId"],
-            "local_clientId_new"
-          );
-          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
-          assert.equal(
-            (envJson["solution"] as any)["localDebugTeamsAppId"],
-            "{{solution.localDebugTeamsAppId}}"
-          );
-          assert.equal(
-            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
-            "{{fx-resource-aad-app-for-teams.local_clientId}}"
-          );
-          return ok("");
-        }
-      }
-
-      hooks(ProjectUpgradeHook, {
-        upgrade: [ProjectUpgraderMW],
-      });
-
-      const my = new ProjectUpgradeHook();
-      const res = await my.upgrade(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-
-    it("New context and previous userdata", async () => {
-      envJson = MockLatestVersion2_3_0Context();
-      userData = MockPreviousVersionBefore2_3_0UserData();
-      MockFunctions();
-
-      class ProjectUpgradeHook {
-        tools = new MockTools();
-
-        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
-          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
-          assert.equal(
-            (envJson["solution"] as any)["localDebugTeamsAppId"],
-            "{{solution.localDebugTeamsAppId}}"
-          );
-          assert.equal(
-            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
-            "{{fx-resource-aad-app-for-teams.local_clientId}}"
-          );
-          return ok("");
-        }
-      }
-
-      hooks(ProjectUpgradeHook, {
-        upgrade: [ProjectUpgraderMW],
-      });
-
-      const my = new ProjectUpgradeHook();
-      const res = await my.upgrade(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-
-    it("Previous context and userdata without secret", async () => {
-      envJson = MockPreviousVersionBefore2_3_0Context();
-      userData = {};
-      MockFunctions();
-
-      class ProjectUpgradeHook {
-        name = "jay";
-        tools = new MockTools();
-
-        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.equal(userData["fx-resource-aad-app-for-teams.local_clientId"], undefined);
-          assert.equal(userData["solution.localDebugTeamsAppId"], undefined);
-          assert.equal(
-            (envJson["solution"] as any)["localDebugTeamsAppId"],
-            "{{solution.localDebugTeamsAppId}}"
-          );
-          assert.equal(
-            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
-            "{{fx-resource-aad-app-for-teams.local_clientId}}"
-          );
-          return ok("");
-        }
-      }
-
-      hooks(ProjectUpgradeHook, {
-        upgrade: [ProjectUpgraderMW],
-      });
-
-      const my = new ProjectUpgradeHook();
-      const res = await my.upgrade(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-
-    it("Should not upgrade for the new multi env project", async () => {
-      sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_INSIDER_PREVIEW: "true" };
-      });
-
-      envJson = MockLatestVersion2_3_0Context();
-      userData = MockLatestVersion2_3_0UserData();
-      MockFunctions();
-
-      class ProjectUpgradeHook {
-        name = "jay";
-        tools = new MockTools();
-
-        async upgrade(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.equal(
-            userData["fx-resource-aad-app-for-teams.local_clientId"],
-            "local_clientId_new"
-          );
-          assert.equal(userData["solution.localDebugTeamsAppId"], "teamsAppId_new");
-          assert.equal(
-            (envJson["solution"] as any)["localDebugTeamsAppId"],
-            "{{solution.localDebugTeamsAppId}}"
-          );
-          assert.equal(
-            (envJson["fx-resource-aad-app-for-teams"] as any)["local_clientId"],
-            "{{fx-resource-aad-app-for-teams.local_clientId}}"
-          );
-          return ok("");
-        }
-      }
-
-      hooks(ProjectUpgradeHook, {
-        upgrade: [ProjectUpgraderMW],
-      });
-
-      const my = new ProjectUpgradeHook();
-      const res = await my.upgrade(inputs);
-      assert.isTrue(res.isOk() && res.value === "");
-    });
-  });
-
   describe("MigrateConditionHandlerMW", () => {
     it("Happy ", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -350,9 +106,8 @@ describe("Middleware - others", () => {
     });
 
     it("Failed to migrate if no project is opened", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -369,9 +124,8 @@ describe("Middleware - others", () => {
     });
 
     it("Failed to migrate V1 project before v1.2.0", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -396,9 +150,8 @@ describe("Middleware - others", () => {
     });
 
     it("Failed to migrate V1 project if archive folder already exists", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -426,9 +179,8 @@ describe("Middleware - others", () => {
     });
 
     it("Failed to migrate v1 bot sso project", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -457,9 +209,8 @@ describe("Middleware - others", () => {
     });
 
     it("Migrate v1 project without env file", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -485,9 +236,8 @@ describe("Middleware - others", () => {
     });
 
     it("Migrate v1 project with valid .env file", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -516,9 +266,8 @@ describe("Middleware - others", () => {
     });
 
     it("Migrate V1 project with invalid .env file", async () => {
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
-
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -549,22 +298,14 @@ describe("Middleware - others", () => {
 
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
-    const appName = randomAppName();
     const projectPath = "MigrationArmSuccessTestSample";
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
-      sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
-      await fs.copy(
-        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
-        path.join(projectPath, ".fx", "env.default.json")
-      );
-      await fs.copy(
-        path.join(__dirname, "../samples/migration/.fx/settings.json"),
-        path.join(projectPath, ".fx", "settings.json")
-      );
+      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -572,7 +313,93 @@ describe("Middleware - others", () => {
       sandbox.restore();
       mockedEnvRestore();
     });
-    it("successfully migration arm templates", async () => {
+    it("successfully migrate arm templates only tab", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Tab/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Tab/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      const tools = new MockTools();
+      setTools(tools);
+      class MyClass {
+        tools = tools;
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      const identityBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/identity/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
+          ConstantString.UTF8Encoding
+        ),
+        (
+          await fs.readFile(
+            path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
+      );
+      const frontendBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/frontend/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep"),
+          ConstantString.UTF8Encoding
+        ),
+        (
+          await fs.readFile(
+            path.join(frontendBicepFilePath, "frontendProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
+      );
+    });
+    it("successfully migration arm templates only bot", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Bot/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Bot/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
       class MyClass {
         tools = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -597,28 +424,114 @@ describe("Middleware - others", () => {
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "modules")));
+      const identityBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/identity/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
+          ConstantString.UTF8Encoding
+        ),
+        (
+          await fs.readFile(
+            path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
+      );
+      const botBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/bot/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "provision", "bot.bicep"))
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "bot.bicep"),
+          ConstantString.UTF8Encoding
+        ),
+        (
+          await fs.readFile(
+            path.join(botBicepFilePath, "botProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
+      );
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"))
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"),
+          ConstantString.UTF8Encoding
+        ),
+        (
+          await fs.readFile(
+            path.join(botBicepFilePath, "botConfig.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
+      );
+    });
+    it("successfully migration arm templates", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "provision")));
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx")));
       const armParam = await fs.readJson(
         path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
       );
       assert.isNotNull(armParam.parameters.resourceBaseName);
       assert.isNotNull(armParam.parameters.azureSql_admin);
-      assert.strictEqual(armParam.parameters.frontendHosting_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.identity_managedIdentityName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_serverName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_databaseName.value, "test");
-      assert.strictEqual(armParam.parameters.function_serverfarmsName.value, "test");
-      assert.strictEqual(armParam.parameters.function_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.function_webappName.value, "test");
-
-      // const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
-      // const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
-      // assert.strictEqual(
-      //   newEnv["fx-resource-bot"].wayToRegisterBot,
-      //   envFile["fx-resource-bot"].wayToRegisterBot
-      // );
-      // assert.isUndefined(newEnv["fx-resource-bot"].skuName);
-      // assert.isNotNull(envFile["fx-resource-bot"].skuName);
+      const parameterObj = armParam.parameters.provisionParameters.value;
+      assert.isNotNull(parameterObj);
+      assert.strictEqual(parameterObj[ArmParameters.FEStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.IdentityName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLServer], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLDatabase], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimServiceName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimProductName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimOauthServerName], "test");
     });
   });
 
@@ -630,7 +543,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
@@ -643,8 +556,10 @@ describe("Middleware - others", () => {
 
     it("successfully migrate to version of arm and multi-env", async () => {
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
-        tools?: any = new MockTools();
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -653,25 +568,33 @@ describe("Middleware - others", () => {
         other: [ProjectMigratorMW],
       });
 
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
+        const configDev = await fs.readJson(
+          path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
+        );
+        assert.isTrue(configDev["skipAddingSqlUser"]);
+        assert.isNotNull(configDev["auth"]);
+        assert.strictEqual(configDev["auth"]["accessAsUserScopeId"], "test");
+        assert.strictEqual(configDev["auth"]["objectId"], "test");
+        assert.strictEqual(configDev["auth"]["clientId"], "test");
+        assert.strictEqual(configDev["auth"]["clientSecret"], "{{ $env.AAD_APP_CLIENT_SECRET }}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
-    it("successfully migrate to version of arm and multi-env with error manifest file", async () => {
+    it("pre check with error manifest file", async () => {
       await fs.copy(
         path.join(__dirname, "../samples/migrationErrorManifest/"),
         path.join(projectPath)
       );
+      setTools(new MockTools());
       class MyClass {
-        tools?: any = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -683,10 +606,10 @@ describe("Middleware - others", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
-        const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        await my.other(inputs);
+        assert.fail();
+      } catch (e) {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
@@ -694,8 +617,10 @@ describe("Middleware - others", () => {
 
     it("successfully update the tab project migrated from v1", async () => {
       await fs.copy(path.join(__dirname, "../samples/migrationV1Tab/"), path.join(projectPath));
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
-        tools?: any = new MockTools();
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -741,8 +666,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
@@ -750,8 +675,10 @@ describe("Middleware - others", () => {
     });
     it("successfully update the bot project migrated from v1", async () => {
       await fs.copy(path.join(__dirname, "../samples/migrationV1Bot/"), path.join(projectPath));
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
-        tools?: any = new MockTools();
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -797,8 +724,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
@@ -830,9 +757,7 @@ describe("Middleware - others", () => {
     // test variables
     let solutionContext: SolutionContext | undefined;
     let envLoaded: string | undefined = undefined;
-    let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
       solutionContext = undefined;
       envLoaded = undefined;
 
@@ -878,9 +803,6 @@ describe("Middleware - others", () => {
         }
       });
     });
-    afterEach(() => {
-      mockedEnvRestore();
-    });
     describe("skipping logic", async () => {
       it("skips on getQuestions of the create stage", async () => {
         // Arrange
@@ -888,8 +810,8 @@ describe("Middleware - others", () => {
           platform: Platform.VSCode,
           projectPath: projectPath,
         };
+        setTools(new MockTools());
         class MyClass {
-          tools: Tools = new MockTools();
           async getQuestions(stage: Stage, inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
@@ -918,8 +840,8 @@ describe("Middleware - others", () => {
           platform: Platform.VSCode,
           projectPath: projectPath,
         };
+        setTools(new MockTools());
         class MyClass {
-          tools: Tools = new MockTools();
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
@@ -947,8 +869,8 @@ describe("Middleware - others", () => {
           projectPath: projectPath,
           ignoreEnvInfo: true,
         };
+        setTools(new MockTools());
         class MyClass {
-          tools: Tools = new MockTools();
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
@@ -979,8 +901,8 @@ describe("Middleware - others", () => {
           projectPath: projectPath,
           env: env,
         };
+        setTools(new MockTools());
         class MyClass {
-          tools: Tools = new MockTools();
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
@@ -1018,8 +940,8 @@ describe("Middleware - others", () => {
           projectPath: projectPath,
           env: nonExistentEnvName,
         };
+        setTools(new MockTools());
         class MyClass {
-          tools: Tools = new MockTools();
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
@@ -1068,14 +990,14 @@ describe("Middleware - others", () => {
         }
         const tools = new MockTools();
         tools.ui = new MockUserInteractionSelectFirst();
+        setTools(tools);
         class MyClass {
-          tools: Tools = tools;
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }
         }
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });
@@ -1133,6 +1055,7 @@ describe("Middleware - others", () => {
           }
         }
         const tools = new MockTools();
+        setTools(tools);
         tools.ui = new MockUserInteractionSelectFirst();
         class MyClass {
           tools: Tools = tools;
@@ -1141,7 +1064,7 @@ describe("Middleware - others", () => {
           }
         }
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });
@@ -1180,10 +1103,11 @@ describe("Middleware - others", () => {
           }
         }
         tools = new MockTools();
+        setTools(tools);
         tools.ui = new MockUserInteractionSelectFirst();
 
         sandbox
-          .stub(environmentManager, "listEnvConfigs")
+          .stub(environmentManager, "listRemoteEnvConfigs")
           .callsFake(async (projectPath: string) => {
             return ok(envs);
           });
@@ -1222,8 +1146,10 @@ describe("Middleware - others", () => {
           platform: Platform.VSCode,
           projectPath: projectPath,
         };
+        const tools = new MockTools();
+        setTools(tools);
         class MyClass {
-          tools: Tools = new MockTools();
+          tools = tools;
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }

@@ -17,8 +17,9 @@ export interface BaseQuestion
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [default?](./teamsfx-api.basequestion.default.md) | unknown | <i>(Optional)</i> default input value |
+|  [forgetLastValue?](./teamsfx-api.basequestion.forgetlastvalue.md) | boolean | <i>(Optional)</i> if true, the toolkit will not remember the value as default value |
 |  [name](./teamsfx-api.basequestion.name.md) | string | name is the identifier of the question |
-|  [step?](./teamsfx-api.basequestion.step.md) | number | <i>(Optional)</i> <code>step</code> and <code>totalSteps</code> are used to discribe the progress in question flow <code>step</code> is the sequence number of current question |
+|  [step?](./teamsfx-api.basequestion.step.md) | number | <i>(Optional)</i> <code>step</code> and <code>totalSteps</code> are used to describe the progress in question flow <code>step</code> is the sequence number of current question |
 |  [title?](./teamsfx-api.basequestion.title.md) | string | <i>(Optional)</i> human readable meaningful display name of the question |
 |  [totalSteps?](./teamsfx-api.basequestion.totalsteps.md) | number | <i>(Optional)</i> <code>totalStep</code> is the number of questions totally |
 |  [value?](./teamsfx-api.basequestion.value.md) | unknown | <i>(Optional)</i> the answer of the question |

@@ -10,10 +10,14 @@ import {
   returnUserError,
   PermissionRequestProvider,
   returnSystemError,
-  SolutionSettings,
   Json,
+  SolutionContext,
+  Plugin,
+  AppStudioTokenProvider,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -32,20 +36,22 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
-import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
+import { PluginsWithContext } from "../solution";
+import { getPluginContext } from "../utils/util";
+import * as util from "util";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
-export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
-  const plugins = getActivatedV2ResourcePlugins(azureSettings);
-  azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
-  return plugins;
+export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
+  return getActivatedV2ResourcePlugins(projectSettings);
 }
 
-export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings {
-  return ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings | undefined {
+  return ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
 }
 
-export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
-  return HostTypeOptionAzure.id === azureSettings.hostType;
+export function isAzureProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
@@ -70,10 +76,11 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
   };
 }
 
-export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
-  const res = getActivatedV2ResourcePlugins(solutionSettings);
-  solutionSettings.activeResourcePlugins = res.map((p) => p.name);
-  return res;
+export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings): void {
+  const activatedPluginNames = getAllV2ResourcePlugins()
+    .filter((p) => p.activate && p.activate(projectSettings) === true)
+    .map((p) => p.name);
+  projectSettings.solutionSettings!.activeResourcePlugins = activatedPluginNames;
 }
 
 export async function ensurePermissionRequest(
@@ -156,23 +163,64 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
   return ok(userName);
 }
 
+export async function checkWhetherLocalDebugM365TenantMatches(
+  localDebugTenantId?: string,
+  appStudioTokenProvider?: AppStudioTokenProvider
+): Promise<Result<Void, FxError>> {
+  if (localDebugTenantId) {
+    const m365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    if (m365TenantId.isErr()) {
+      throw err(m365TenantId.error);
+    }
+
+    const m365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    if (m365UserAccount.isErr()) {
+      throw err(m365UserAccount.error);
+    }
+
+    if (m365TenantId.value !== localDebugTenantId) {
+      const errorMessage: string = util.format(
+        getStrings().solution.LocalDebugTenantConfirmNotice,
+        localDebugTenantId,
+        m365UserAccount.value,
+        "localSettings.json"
+      );
+
+      return err(
+        returnUserError(
+          new Error(errorMessage),
+          "Solution",
+          SolutionError.CannotLocalDebugInDifferentTenant
+        )
+      );
+    }
+  }
+
+  return ok(Void);
+}
+
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
-  appStudioToken?: Record<string, unknown>
+  appStudioToken?: Record<string, unknown>,
+  envInfo?: EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
       localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      if (isConfigUnifyEnabled()) {
+        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
+      }
       return ok(Void);
     }
   );
 }
 
 export function fillInSolutionSettings(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   answers: Inputs
 ): Result<Void, FxError> {
+  const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
@@ -220,9 +268,19 @@ export function fillInSolutionSettings(
   }
   solutionSettings.azureResources = azureResources || [];
   solutionSettings.capabilities = capabilities || [];
+
+  // fill in activeResourcePlugins
+  setActivatedResourcePluginsV2(projectSettings);
   return ok(Void);
 }
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
   return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+}
+
+export function getPluginAndContextArray(
+  ctx: SolutionContext,
+  selectedPlugins: Plugin[]
+): PluginsWithContext[] {
+  return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name)]);
 }

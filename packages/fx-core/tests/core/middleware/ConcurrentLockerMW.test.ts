@@ -16,6 +16,7 @@ import {
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
+import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
 import { getLockFolder } from "../../../src";
@@ -28,8 +29,13 @@ import {
 } from "../../../src/core/error";
 import { ConcurrentLockerMW } from "../../../src/core/middleware";
 import { randomAppName } from "../utils";
+import * as tools from "../../../src/common/tools";
 
 describe("Middleware - ConcurrentLockerMW", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("check lock file existence", async () => {
     class MyClass1 {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -149,6 +155,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
   it("concurrent: fail to get lock", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     const my = new MyClass();
+    sinon.stub(tools, "waitSeconds").resolves();
     try {
       inputs.projectPath = path.join(os.tmpdir(), randomAppName());
       await fs.ensureDir(inputs.projectPath);

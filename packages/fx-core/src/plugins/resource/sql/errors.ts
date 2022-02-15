@@ -5,6 +5,8 @@ import { Constants } from "./constants";
 export class ErrorMessage {
   public static readonly GetDetail = "Get the detailed error message in output.";
 
+  public static readonly LinkHelpMessage = (link: string) => `You can follow ${link} to handle it.`;
+
   public static readonly SqlInputError = {
     name: "SqlInputError",
     message: () => "SQL admin name or password is empty",
@@ -20,33 +22,15 @@ export class ErrorMessage {
     message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`,
   };
 
-  public static readonly SqlCreateError = {
-    name: "SqlCreateError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to create SQL Server '${sqlName}'. ${detail}`,
-  };
-
-  public static readonly DatabaseCreateError = {
-    name: "SqlDBCreateError",
-    message: (databaseName: string, detail = "") =>
-      `Failed to create database '${databaseName}'. ${detail}`,
-  };
-
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (sqlName: string, database: string, user: string, detail = "") =>
-      `Failed to create user '${user}' in database '${sqlName}.${database}'. ${detail}`,
+    message: (database: string, user: string) =>
+      `Failed to create user '${user}' in database ${database}`,
   };
 
   public static readonly SqlAddAdminError = {
     name: "SqlAddAdminError",
     message: (account: string, detail = "") => `Failed to add AAD admin '${account}'. ${detail}`,
-  };
-
-  public static readonly SqlAzureFirwallError = {
-    name: "SqlAzureFirwallError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to add Azure Firewall for '${sqlName}'. ${detail}`,
   };
 
   public static readonly SqlLocalFirwallError = {
@@ -83,12 +67,6 @@ export class ErrorMessage {
     message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`,
   };
 
-  public static readonly SqlCheckDBError = {
-    name: "SqlCheckDBError",
-    message: (databaseName: string, detail = "") =>
-      `Failed to check database '${databaseName}'. ${detail}`,
-  };
-
   public static readonly SqlCheckAdminError = {
     name: "SqlCheckAdminError",
     message: (identity: string, detail = "") =>
@@ -122,6 +100,9 @@ export class ErrorMessage {
 
   public static readonly GuestAdminMessage =
     "Server identity does not have Azure Active Directory Readers permission";
+
+  public static readonly FirewallErrorReg =
+    /Client with IP address .*? is not allowed to access the server./g;
 
   public static readonly GuestAdminError = `SQL admin does not have enough permission to add database user. ${ErrorMessage.GetDetail}`;
 

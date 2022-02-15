@@ -1,18 +1,17 @@
 import {
-  v2,
   Inputs,
   FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
+  UserError,
   TokenProvider,
-  ConfigMap,
-  Void,
-  SolutionContext,
   returnSystemError,
+  v2,
+  v3,
+  Result,
+  Void,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -28,33 +27,34 @@ import {
   PluginNames,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
   SolutionSource,
 } from "../constants";
 import * as util from "util";
-import { isUndefined } from "lodash";
+import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { fillInCommonQuestions } from "../commonQuestions";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import _ from "lodash";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2, isVsCallingCli } from "../../../..";
-import { REMOTE_TEAMS_APP_ID } from "..";
 import { Constants } from "../../../resource/appstudio/constants";
+import { isPureExistingApp } from "../../../../core/utils";
+import { BuiltInFeaturePluginNames } from "../v3/constants";
+import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
+import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 
 export async function provisionResource(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
-): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
+): Promise<Result<Void, FxError>> {
+  const azureSolutionSettings = getAzureSolutionSettings(ctx);
+
+  // check projectPath
   if (inputs.projectPath === undefined) {
-    return new v2.FxFailure(
+    return err(
       returnSystemError(
         new Error("projectPath is undefined"),
         SolutionSource,
@@ -62,54 +62,89 @@ export async function provisionResource(
       )
     );
   }
+  const inputsNew: v2.InputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const projectPath: string = inputs.projectPath;
 
-  const azureSolutionSettings = getAzureSolutionSettings(ctx);
-  // Just to trigger M365 login before the concurrent execution of provision.
-  // Because concurrent exectution of provision may getAccessToken() concurrently, which
-  // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
-
+  // check M365 tenant
+  if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
+    envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
+  const teamsAppResource = envInfo.state[BuiltInFeaturePluginNames.appStudio];
+  if (!envInfo.state.solution) envInfo.state.solution = {};
+  const solutionConfig = envInfo.state.solution;
+  const tenantIdInConfig = teamsAppResource.tenantId;
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  if (tenantIdInTokenRes.isErr()) {
+    return err(tenantIdInTokenRes.error);
+  }
+  const tenantIdInToken = tenantIdInTokenRes.value;
+  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+    return err(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        "Solution"
+      )
+    );
+  }
+  if (!tenantIdInConfig) {
+    teamsAppResource.tenantId = tenantIdInToken;
+    solutionConfig.teamsAppTenantId = tenantIdInToken;
+  }
   if (isAzureProject(azureSolutionSettings)) {
     if (ctx.permissionRequestProvider === undefined) {
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
     }
     const result = await ensurePermissionRequest(
-      azureSolutionSettings,
+      azureSolutionSettings!,
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {
-      return new v2.FxFailure(result.error);
+      return err(result.error);
     }
-  }
 
-  const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
-  if (!newEnvInfo.state[GLOBAL_CONFIG]) {
-    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
-  }
-  if (isAzureProject(azureSolutionSettings)) {
-    const appName = ctx.projectSetting.appName;
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
-    const res = await fillInCommonQuestions(
-      contextAdaptor,
-      appName,
-      contextAdaptor.envInfo.state,
-      tokenProvider.azureAccountProvider,
-      await tokenProvider.appStudioToken.getJsonObject()
+    // ask common question and fill in solution config
+    const solutionConfigRes = await fillInAzureConfigs(
+      ctx,
+      inputsNew,
+      envInfo as v3.EnvInfoV3,
+      tokenProvider
     );
-    if (res.isErr()) {
-      return new v2.FxFailure(res.error);
+    if (solutionConfigRes.isErr()) {
+      return err(solutionConfigRes.error);
     }
-    // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = contextAdaptor.getEnvStateJson();
-    const consentResult = await askForProvisionConsent(contextAdaptor);
+
+    // ask for provision consent
+    const consentResult = await askForProvisionConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
     if (consentResult.isErr()) {
-      return new v2.FxFailure(consentResult.error);
+      return err(consentResult.error);
+    }
+
+    // create resource group if needed
+    if (solutionConfig.needCreateResourceGroup) {
+      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+        solutionConfig.resourceGroupName,
+        tokenProvider.azureAccountProvider,
+        solutionConfig.subscriptionId,
+        solutionConfig.location
+      );
+      if (createRgRes.isErr()) {
+        return err(createRgRes.error);
+      }
     }
   }
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
-  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+
+  envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
+  const solutionInputs = extractSolutionInputs(envInfo.state[GLOBAL_CONFIG]);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -117,96 +152,91 @@ export async function provisionResource(
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
         thunk: () => {
-          if (!newEnvInfo.state[plugin.name]) {
-            newEnvInfo.state[plugin.name] = {};
+          if (!envInfo.state[plugin.name]) {
+            envInfo.state[plugin.name] = {};
           }
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           return plugin.provisionResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, state: newEnvInfo.state },
+            envInfo,
             tokenProvider
           );
         },
       };
     });
-
+  // call provisionResources
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
-  if (provisionResult.kind === "failure") {
-    return provisionResult;
-  } else if (provisionResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(
-      { ...newEnvInfo.state, ...combineRecords(provisionResult.output) },
-      provisionResult.error
-    );
-  } else {
-    newEnvInfo.state = { ...newEnvInfo.state, ...combineRecords(provisionResult.output) };
+  if (provisionResult.kind === "failure" || provisionResult.kind === "partialSuccess") {
+    return err(provisionResult.error);
   }
 
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
-  if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
+  const teamsAppId = envInfo.state[PluginNames.APPST][Constants.TEAMS_APP_ID] as string;
+  solutionGlobalVars.TeamsAppId = teamsAppId;
+  solutionInputs.remoteTeamsAppId = teamsAppId;
+
+  // call deployArmTemplates
+  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
+    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
-      return new v2.FxPartialSuccess(
-        combineRecords(provisionResult.output),
-        armDeploymentResult.error
-      );
+      return err(armDeploymentResult.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = contextAdaptor.getEnvStateJson();
+    const update = contextAdaptor.getEnvStateJson();
+    _.assign(envInfo.state, update);
   }
 
-  const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-  if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(
-      ctx,
-      inputs,
-      {
-        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-        method: "setApplicationInContext",
-        params: { isLocal: false },
-      },
-      {},
-      newEnvInfo,
-      tokenProvider
-    );
-    if (result.isErr()) {
-      return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
+  // there is no aad for minimized teamsfx project
+  if (!pureExistingApp) {
+    // call aad.setApplicationInContext
+    const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+    if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
+      const result = await aadPlugin.executeUserTask(
+        ctx,
+        inputs,
+        {
+          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+          method: "setApplicationInContext",
+          params: { isLocal: false },
+        },
+        {},
+        envInfo,
+        tokenProvider
+      );
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
   }
 
-  if (isV2()) {
-    solutionInputs.remoteTeamsAppId =
-      newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
-  }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
-      if (!newEnvInfo.state[plugin.name]) {
-        newEnvInfo.state[plugin.name] = {};
+      if (!envInfo.state[plugin.name]) {
+        envInfo.state[plugin.name] = {};
       }
-
       return {
         pluginName: `${plugin.name}`,
-        taskName: "configureLocalResource",
+        taskName: "configureResource",
         thunk: () =>
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, state: newEnvInfo.state },
+            envInfo,
             tokenProvider
           ),
       };
     });
-
+  //call configResource
   const configureResourceResult = await executeConcurrently(
     configureResourceThunks,
     ctx.logProvider
@@ -221,77 +251,36 @@ export async function provisionResource(
     const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.error(msg);
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
-
-    if (configureResourceResult.kind === "failure") {
-      return configureResourceResult;
-    } else {
-      const output = configureResourceResult.output;
-      output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
-      return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
-    }
+    return err(configureResourceResult.error);
   } else {
-    if (newEnvInfo.state[GLOBAL_CONFIG] && newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
-      delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
+    if (envInfo.state[GLOBAL_CONFIG] && envInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
+      delete envInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
-    const msg = util.format(
-      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-      ctx.projectSetting.appName
-    );
-    ctx.logProvider?.info(msg);
-    ctx.userInteraction.showMessage("info", msg, false);
-    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
-    const output = configureResourceResult.output;
-    output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
-
-    return new v2.FxSuccess(combineRecords(output));
-  }
-}
-
-export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
-  if (isVsCallingCli()) {
-    // Skip asking users for input on VS calling CLI to simplify user interaction.
+    if (!pureExistingApp) {
+      const url = getResourceGroupInPortal(
+        solutionInputs.subscriptionId,
+        solutionInputs.tenantId,
+        solutionInputs.resourceGroupName
+      );
+      const msg = util.format(
+        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+        ctx.projectSetting.appName
+      );
+      ctx.logProvider?.info(msg);
+      if (url) {
+        const title = "View Provisioned Resources";
+        ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.userInteraction.openUrl(url);
+          }
+        });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
+    }
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     return ok(Void);
   }
-
-  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-
-  // Only Azure project requires this confirm dialog
-  const username = (azureToken as any).username ? (azureToken as any).username : "";
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-  const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
-
-  const msg = util.format(
-    getStrings().solution.ProvisionConfirmNotice,
-    username,
-    subscriptionName ? subscriptionName : subscriptionId
-  );
-  let confirmRes = undefined;
-  if (isMultiEnvEnabled()) {
-    const msgNew = util.format(
-      getStrings().solution.ProvisionConfirmEnvNotice,
-      ctx.envInfo.envName,
-      username,
-      subscriptionName ? subscriptionName : subscriptionId
-    );
-    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision", "Pricing calculator");
-  } else {
-    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
-  }
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  if (confirm !== "Provision") {
-    if (confirm === "Pricing calculator") {
-      ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-    }
-
-    return err(
-      returnUserError(
-        new Error(getStrings().solution.CancelProvision),
-        SolutionSource,
-        getStrings().solution.CancelProvision
-      )
-    );
-  }
-  return ok(Void);
 }

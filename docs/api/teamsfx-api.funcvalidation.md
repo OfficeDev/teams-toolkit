@@ -16,5 +16,5 @@ export interface FuncValidation<T extends string | string[] | undefined>
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [validFunc](./teamsfx-api.funcvalidation.validfunc.md) | (input: T, previousInputs?: [Inputs](./teamsfx-api.inputs.md)<!-- -->) =&gt; string \| undefined \| Promise&lt;string \| undefined&gt; | A function that will be called to validate input and to give a hint to the user. |
+|  [validFunc](./teamsfx-api.funcvalidation.validfunc.md) | [ValidateFunc](./teamsfx-api.validatefunc.md)<!-- -->&lt;T&gt; | A function that will be called to validate input and to give a hint to the user. |
 

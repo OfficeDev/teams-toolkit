@@ -70,16 +70,15 @@ describe("Publish Teams app with Azure", () => {
   it("Publish teams app", async () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "https://tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: uuid(),
+      botDomain: "botDomain",
+      botId: uuid(),
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
@@ -98,16 +97,15 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
     ctx.ui = new MockUserInteraction();
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "https://tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: uuid(),
+      botDomain: "botDomain",
+      botId: uuid(),
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
@@ -150,7 +148,6 @@ describe("Publish Teams app with SPFx", () => {
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
     sandbox.stub(AppStudioClient, "updateApp").resolves();
     sandbox.stub(fs, "move").resolves();
-    sandbox.stub(core, "isMultiEnvEnabled").returns(true);
     sandbox.stub(AppStudioPluginImpl.prototype, <any>"beforePublish").returns(uuid());
   });
 
@@ -170,6 +167,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 
@@ -196,6 +194,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 

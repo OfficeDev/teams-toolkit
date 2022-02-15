@@ -19,29 +19,19 @@ import {
   HostTypeOptionSPFx,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import {
-  BOTS_TPL,
   BOTS_TPL_FOR_MULTI_ENV,
-  COMPOSE_EXTENSIONS_TPL,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
-  CONFIGURABLE_TABS_TPL,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
   MANIFEST_TEMPLATE,
-  REMOTE_MANIFEST,
-  STATIC_TABS_TPL,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import { newEnvInfo } from "../../../../../src/core/tools";
-import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
 
 function getRemoteManifestPath(projectRoot: string): string {
-  if (isMultiEnvEnabled()) {
-    return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
-  } else {
-    return `${projectRoot}/${AppPackageFolderName}/${REMOTE_MANIFEST}`;
-  }
+  return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
 }
 
 describe("Scaffold", () => {
@@ -98,14 +88,8 @@ describe("Scaffold", () => {
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
     );
-    chai
-      .expect(manifest.staticTabs)
-      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
-    chai
-      .expect(manifest.configurableTabs)
-      .to.deep.equal(
-        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV : CONFIGURABLE_TABS_TPL
-      );
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
+    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
     chai
       .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
       .to.deep.equal([]);
@@ -131,16 +115,12 @@ describe("Scaffold", () => {
     // Maybe we can refactor this later.
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
       )
     ).to.be.true;
   });
@@ -171,9 +151,7 @@ describe("Scaffold", () => {
         "configurableTabs should be empty, because only bot is chosen"
       )
       .to.deep.equal([]);
-    chai
-      .expect(manifest.bots)
-      .to.deep.equal(isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL);
+    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL_FOR_MULTI_ENV);
     chai
       .expect(
         manifest.composeExtensions,
@@ -183,16 +161,12 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
       )
     ).to.be.true;
   });
@@ -226,24 +200,16 @@ describe("Scaffold", () => {
     chai
       .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
       .to.deep.equal([]);
-    chai
-      .expect(manifest.composeExtensions)
-      .to.deep.equal(
-        isMultiEnvEnabled() ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV : COMPOSE_EXTENSIONS_TPL
-      );
+    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
 
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
       )
     ).to.be.true;
   });
@@ -266,35 +232,19 @@ describe("Scaffold", () => {
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
     );
-    chai
-      .expect(manifest.staticTabs)
-      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
-    chai
-      .expect(manifest.configurableTabs)
-      .to.deep.equal(
-        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV : CONFIGURABLE_TABS_TPL
-      );
-    chai
-      .expect(manifest.bots)
-      .to.deep.equal(isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL);
-    chai
-      .expect(manifest.composeExtensions)
-      .to.deep.equal(
-        isMultiEnvEnabled() ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV : COMPOSE_EXTENSIONS_TPL
-      );
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
+    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
+    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL_FOR_MULTI_ENV);
+    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
 
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
       )
     ).to.be.true;
   });
@@ -320,16 +270,12 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        isMultiEnvEnabled()
-          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
       )
     ).to.be.true;
   });

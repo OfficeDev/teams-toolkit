@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate, isValidProject } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as StringResources from "../resources/Strings.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
+import { ext } from "../extensionVariables";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
@@ -69,7 +70,7 @@ export class ExtensionSurvey {
             return;
           }
 
-          if (!this.showSurveyTimeout && ExtTelemetry.hasSentTelemetry) {
+          if (!this.showSurveyTimeout && isValidProject(ext.workspaceUri.fsPath)) {
             this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
           }
         }, 2000);

@@ -32,6 +32,14 @@ export function ProjectFolderNotExistError(path: string): UserError {
   );
 }
 
+export function ProjectFolderInvalidError(path: string): UserError {
+  return new UserError(
+    "ProjectFolderInvalidError",
+    `Path ${path} is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \${homeDir} ).`,
+    CoreSource
+  );
+}
+
 export function ArchiveUserFileError(path: string, reason: string): UserError {
   return new UserError(
     "ArchiveUserFileError",
@@ -109,7 +117,7 @@ export function PathNotExistError(path: string): UserError {
 export function InvalidProjectError(msg?: string): UserError {
   return new UserError(
     "InvalidProject",
-    `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}`,
+    `The command only works for project created by Teams Toolkit. ${msg ? ": " + msg : ""}`,
     CoreSource
   );
 }
@@ -117,7 +125,7 @@ export function InvalidProjectError(msg?: string): UserError {
 export function InvalidProjectSettingsFileError(msg?: string): UserError {
   return new UserError(
     "InvalidProjectSettingsFile",
-    `The projectSettings.json file is corrupted.`,
+    `The projectSettings.json file is invalid ${msg}`,
     CoreSource
   );
 }
@@ -128,8 +136,12 @@ export class TaskNotSupportError extends SystemError {
   }
 }
 
-export function FetchSampleError(): UserError {
-  return new UserError("FetchSampleError", "Failed to download sample app", CoreSource);
+export function FetchSampleError(sampleId: string): UserError {
+  return new UserError(
+    "FetchSampleError",
+    `Failed to get data from remote repository for ${sampleId}`,
+    CoreSource
+  );
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
@@ -190,6 +202,14 @@ export function ProjectSettingsUndefinedError(): SystemError {
   return new SystemError(
     "ProjectSettingsUndefinedError",
     "Project settings is undefined",
+    CoreSource
+  );
+}
+
+export function MultipleEnvNotEnabledError(): SystemError {
+  return new SystemError(
+    "MultipleEnvNotEnabledError",
+    "MultipleEnv feature is not enabled",
     CoreSource
   );
 }
@@ -265,10 +285,15 @@ export function ProjectSettingError(): UserError {
 
 export function UpgradeCanceledError(): UserError {
   return new UserError(
-    "UpgradeCanceledError",
-    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
+    // @see tools.isUserCancelError()
+    "UserCancel",
+    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
     CoreSource
   );
+}
+
+export function NotJsonError(err: Error): UserError {
+  return new UserError(err, CoreSource, "NotJsonError");
 }
 
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
@@ -281,4 +306,18 @@ export function FailedToParseResourceIdError(name: string, resourceId: string): 
 
 export function SPFxConfigError(file: string): UserError {
   return new UserError("SPFxConfigError", `Load SPFx config ${file} failed.`, CoreSource);
+}
+
+export function NpmInstallError(path: string, e: Error): SystemError {
+  return new SystemError(e, CoreSource, "NpmInstallError");
+}
+
+export function LoadPluginError(): SystemError {
+  return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
+}
+
+export class OperationNotSupportedForExistingAppError extends UserError {
+  constructor(task: string) {
+    super(new.target.name, `Task is not supported for existing app: ${task}`, CoreSource);
+  }
 }

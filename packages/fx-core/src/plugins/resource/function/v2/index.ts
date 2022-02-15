@@ -8,6 +8,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   QTreeNode,
   Result,
   TokenProvider,
@@ -37,6 +38,7 @@ import {
   getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FunctionPlugin)
@@ -46,7 +48,8 @@ export class FunctionPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.FunctionPlugin)
   plugin!: FunctionPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
@@ -60,32 +63,37 @@ export class FunctionPluginV2 implements ResourcePlugin {
   ): Promise<Result<ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
-
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async deploy(
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async executeUserTask(

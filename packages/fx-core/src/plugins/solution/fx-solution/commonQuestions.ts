@@ -21,9 +21,9 @@ import {
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   v2,
-  TokenProvider,
   UserError,
   Void,
+  Err,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -33,6 +33,9 @@ import {
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
+  FailedToCheckResourceGroupExistenceError,
+  SUBSCRIPTION_ID,
+  UnauthorizedToCheckResourceGroupError,
 } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -48,13 +51,13 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { SUBSCRIPTION_ID } from ".";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../common/telemetry";
+import { RestError } from "@azure/ms-rest-js";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -64,8 +67,8 @@ export type AzureSubscription = {
   subscriptionId: string;
 };
 
-const DefaultResourceGroupLocation = "East US";
-type ResourceGroupInfo = {
+export const DefaultResourceGroupLocation = "East US";
+export type ResourceGroupInfo = {
   createNewResourceGroup: boolean;
   name: string;
   location: string;
@@ -74,7 +77,8 @@ type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-class CommonQuestions {
+export class CommonQuestions {
+  needCreateResourceGroup = true;
   resourceNameSuffix = "";
   resourceGroupName = "";
   tenantId = "";
@@ -115,7 +119,7 @@ export async function checkSubscription(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
           envInfo.envName
-        }'(Environment) is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,
@@ -144,7 +148,7 @@ export async function checkM365Tenant(
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The M365 tenant id '${m365TenantId}'(which is used before) for '${envInfo.envName}'(Environment) does not match the current account, please use the right M365 account.`,
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
         "Solution"
       )
     );
@@ -193,7 +197,8 @@ async function getQuestionsForResourceGroup(
  * Ask user to create a new resource group or use an exsiting resource group
  */
 export async function askResourceGroupInfo(
-  ctx: SolutionContext,
+  ctx: SolutionContext | v2.Context,
+  azureAccountProvider: AzureAccountProvider,
   rmClient: ResourceManagementClient,
   inputs: Inputs,
   ui: UserInteraction,
@@ -234,7 +239,7 @@ export async function askResourceGroupInfo(
     .filter((item) => item.name)
     .map((item) => [item.name, item.location] as [string, string]);
 
-  const locations = await getLocations(ctx, rmClient);
+  const locations = await getLocations(azureAccountProvider, rmClient);
   if (locations.isErr()) {
     return err(locations.error);
   }
@@ -291,10 +296,10 @@ export async function askResourceGroupInfo(
 }
 
 async function getLocations(
-  ctx: SolutionContext,
+  azureAccountProvider: AzureAccountProvider,
   rmClient: ResourceManagementClient
 ): Promise<Result<string[], FxError>> {
-  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  const credential = await azureAccountProvider.getAccountCredentialAsync();
   let subscriptionClient = undefined;
   if (credential) {
     subscriptionClient = new SubscriptionClient(credential);
@@ -305,7 +310,7 @@ async function getLocations(
       SolutionError.FailedToGetAzureCredential
     );
   }
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
   const listLocations = await subscriptionClient.subscriptions.listLocations(
     askSubRes!.subscriptionId
   );
@@ -328,8 +333,8 @@ async function getLocations(
   return ok(rgLocations);
 }
 
-async function getResourceGroupInfo(
-  ctx: SolutionContext,
+export async function getResourceGroupInfo(
+  ctx: SolutionContext | v2.Context,
   rmClient: ResourceManagementClient,
   resourceGroupName: string
 ): Promise<ResourceGroupInfo | undefined> {
@@ -362,20 +367,6 @@ async function askCommonQuestions(
   azureAccountProvider?: AzureAccountProvider,
   appstudioTokenJson?: object
 ): Promise<Result<CommonQuestions, FxError>> {
-  if (appstudioTokenJson === undefined) {
-    return err(
-      returnSystemError(
-        new Error("Graph token json is undefined"),
-        SolutionSource,
-        SolutionError.NoAppStudioToken
-      )
-    );
-  }
-
-  const m365TenantResult = await checkM365Tenant(ctx.envInfo, appstudioTokenJson);
-  if (m365TenantResult.isErr()) {
-    return err(m365TenantResult.error);
-  }
   if (!azureAccountProvider) {
     return err(
       returnSystemError(
@@ -451,7 +442,7 @@ async function askCommonQuestions(
       return err(
         returnUserError(
           new Error(
-            `Resource group '${resourceGroupNameFromEnvConfig}' does not exist, please specify an existing resource group.`
+            `Resource group '${ctx.answers?.targetResourceGroupName}' does not exist, please specify an existing resource group.`
           ),
           SolutionSource,
           SolutionError.ResourceGroupNotFound
@@ -481,7 +472,12 @@ async function askCommonQuestions(
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
-    const maybeExist = await checkResourceGroupExistence(rmClient, resourceGroupNameFromState);
+    const maybeExist = await checkResourceGroupExistence(
+      rmClient,
+      resourceGroupNameFromState,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName
+    );
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
     }
@@ -497,6 +493,7 @@ async function askCommonQuestions(
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
       ctx,
+      ctx.azureAccountProvider!,
       rmClient,
       ctx.answers,
       ctx.ui,
@@ -532,13 +529,7 @@ async function askCommonQuestions(
 
   ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
 
-  if (resourceGroupInfo.createNewResourceGroup) {
-    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
-    if (maybeRgName.isErr()) {
-      return err(maybeRgName.error);
-    }
-    resourceGroupInfo.name = maybeRgName.value;
-  }
+  commonQuestions.needCreateResourceGroup = resourceGroupInfo.createNewResourceGroup;
   commonQuestions.resourceGroupName = resourceGroupInfo.name;
   commonQuestions.location = resourceGroupInfo.location;
   ctx.logProvider?.info(
@@ -594,7 +585,7 @@ export async function fillInCommonQuestions(
   azureAccountProvider?: AzureAccountProvider,
   // eslint-disable-next-line @typescript-eslint/ban-types
   appStudioJson?: object
-): Promise<Result<SolutionConfig, FxError>> {
+): Promise<Result<CommonQuestions, FxError>> {
   const result = await askCommonQuestions(
     ctx,
     appName,
@@ -602,6 +593,7 @@ export async function fillInCommonQuestions(
     azureAccountProvider,
     appStudioJson
   );
+
   if (result.isOk()) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const globalConfig = config.get(GLOBAL_CONFIG)!;
@@ -610,17 +602,28 @@ export async function fillInCommonQuestions(
         globalConfig.set(k, v);
       }
     });
-    return ok(config);
   }
-  return result.map((_) => config);
+
+  return result;
 }
 
-async function createNewResourceGroup(
-  rmClient: ResourceManagementClient,
-  rgInfo: ResourceGroupInfo,
+export async function createNewResourceGroup(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string,
+  subscriptionName: string,
+  resourceGroupName: string,
+  location: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
-  const maybeExist = await checkResourceGroupExistence(rmClient, rgInfo.name);
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const rmClient = new ResourceManagementClient(azureToken!, subscriptionId);
+
+  const maybeExist = await checkResourceGroupExistence(
+    rmClient,
+    resourceGroupName,
+    subscriptionId,
+    subscriptionName
+  );
   if (maybeExist.isErr()) {
     return err(maybeExist.error);
   }
@@ -628,7 +631,9 @@ async function createNewResourceGroup(
   if (maybeExist.value) {
     return err(
       returnUserError(
-        new Error(`Failed to create resource group "${rgInfo.name}": the resource group exists`),
+        new Error(
+          `Failed to create resource group "${resourceGroupName}": the resource group exists`
+        ),
         SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )
@@ -637,18 +642,18 @@ async function createNewResourceGroup(
 
   let response: ResourceGroupsCreateOrUpdateResponse;
   try {
-    response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
-      location: rgInfo.location,
+    response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
+      location: location,
       tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;
     if (e instanceof Error) {
-      errMsg = `Failed to create resource group ${rgInfo.name} due to ${e.name}:${e.message}`;
+      errMsg = `Failed to create resource group ${resourceGroupName} due to ${e.name}:${e.message}`;
     } else {
-      errMsg = `Failed to create resource group ${
-        rgInfo.name
-      } due to unknown error ${JSON.stringify(e)}`;
+      errMsg = `Failed to create resource group ${resourceGroupName} due to unknown error ${JSON.stringify(
+        e
+      )}`;
     }
 
     return err(
@@ -659,7 +664,7 @@ async function createNewResourceGroup(
   if (response.name === undefined) {
     return err(
       returnSystemError(
-        new Error(`Failed to create resource group ${rgInfo.name}`),
+        new Error(`Failed to create resource group ${resourceGroupName}`),
         SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )
@@ -671,27 +676,50 @@ async function createNewResourceGroup(
   return ok(response.name);
 }
 
-async function checkResourceGroupExistence(
+function handleRestError<T>(
+  restError: RestError,
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
+): Err<T, FxError> {
+  // ARM API will return 403 with empty body when users does not have permission to access the resource group
+  if (restError.statusCode === 403) {
+    return err(
+      new UnauthorizedToCheckResourceGroupError(resourceGroupName, subscriptionId, subscriptionName)
+    );
+  } else {
+    return err(
+      new FailedToCheckResourceGroupExistenceError(
+        restError,
+        resourceGroupName,
+        subscriptionId,
+        subscriptionName
+      )
+    );
+  }
+}
+
+export async function checkResourceGroupExistence(
   rmClient: ResourceManagementClient,
-  resourceGroupName: string
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
 ): Promise<Result<boolean, FxError>> {
   try {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     return ok(!!checkRes.body);
   } catch (e) {
-    // The `checkExistence()` call returns an error with empty error message in some conditions.
-    // Wrap the error to prevent showing empty error message to the users.
-    let error;
-    const errorMessage = `Failed to check the existence of the resource group '${resourceGroupName}', error: '${e}'`;
-    if (e instanceof Error) {
-      // reuse the original error object to prevent losing the stack info
-      e.message = errorMessage;
-      error = e;
+    if (e instanceof RestError) {
+      return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
     } else {
-      error = new Error(errorMessage);
+      return err(
+        new FailedToCheckResourceGroupExistenceError(
+          e,
+          resourceGroupName,
+          subscriptionId,
+          subscriptionName
+        )
+      );
     }
-    return err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
-    );
   }
 }

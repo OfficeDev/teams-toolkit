@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Yitong Feng <yitong.feng@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 
@@ -15,14 +19,18 @@ import {
   setBotSkuNameToB1,
   cleanUp,
   readContext,
+  setBotSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`Provision Resource: project with new bot - Test Plan ID 9729265`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
@@ -32,7 +40,11 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setBotSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setBotSkuNameToB1Bicep(projectPath, env);
+    } else {
+      await setBotSkuNameToB1(projectPath);
+    }
 
     // set subscription
     await execAsync(`teamsfx account set --subscription ${subscription}`, {
@@ -55,15 +67,15 @@ describe("Provision", function () {
     {
       // Validate provision
       // Get context
-      const context = await readContext(projectPath);
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
       // Validate Bot Provision
-      const bot = BotValidator.init(context);
-      await BotValidator.validateProvision(bot);
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateProvision();
     }
 
     // deploy
@@ -78,15 +90,15 @@ describe("Provision", function () {
       // Validate deployment
 
       // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
       // Validate Bot Deploy
-      const bot = BotValidator.init(context);
-      await BotValidator.validateDeploy(bot);
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
     }
 
     // test (validate)
-    await execAsyncWithRetry(`teamsfx validate`, {
+    await execAsyncWithRetry(`teamsfx manifest validate`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -112,6 +124,10 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    await cleanUp(appName, projectPath, true, true, false);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, true, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, true, false);
+    }
   });
 });

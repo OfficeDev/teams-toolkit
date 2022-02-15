@@ -18,4 +18,5 @@ export interface FxError extends Error
 |  [innerError?](./teamsfx-api.fxerror.innererror.md) | any | <i>(Optional)</i> Custom error details. |
 |  [source](./teamsfx-api.fxerror.source.md) | string | Source name of error. (plugin name, eg: tab-scaffhold-plugin) |
 |  [timestamp](./teamsfx-api.fxerror.timestamp.md) | Date | Time of error. |
+|  [userData?](./teamsfx-api.fxerror.userdata.md) | any | <i>(Optional)</i> |
 

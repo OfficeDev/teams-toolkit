@@ -7,9 +7,8 @@
 
 import path from "path";
 import "mocha";
-import { getTestFolder, readContextMultiEnv, execAsync } from "../commonUtils";
+import { execAsync } from "../commonUtils";
 
-import { environmentManager } from "@microsoft/teamsfx-core";
 import { AppStudioValidator } from "../../commonlib";
 
 describe("teamsfx provision manifest command", function () {

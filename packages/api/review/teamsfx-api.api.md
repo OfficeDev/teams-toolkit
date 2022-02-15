@@ -57,23 +57,7 @@ export type AppManifest = Json;
 // @public (undocumented)
 interface AppManifestProvider {
     // (undocumented)
-    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
-        name: "staticTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "configurableTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "Bot";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "MessageExtension";
-        snippet?: Json;
-        existing?: boolean;
-    })[]) => Promise<Result<Void, FxError>>;
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
     // (undocumented)
     loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
     // (undocumented)
@@ -1588,7 +1572,7 @@ interface SolutionPlugin {
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<FxResult<Json, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<FxResult<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;

@@ -52,6 +52,7 @@ import {
   getResourceGroupInPortal,
   getStrings,
   isCheckAccountError,
+  isConfigUnifyEnabled,
   isMultiEnvEnabled,
   isUserCancelError,
   redactObject,

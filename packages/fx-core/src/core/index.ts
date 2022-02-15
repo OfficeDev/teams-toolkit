@@ -45,9 +45,12 @@ import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { getRootDirectory, mapToJson } from "../common/tools";
+import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
-import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  MessageExtensionItem,
+} from "../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -123,7 +126,7 @@ import {
   getAllSolutionPluginsV2,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import { newEnvInfo, newEnvInfoV3 } from "./tools";
 import { isCreatedFromExistingApp, isPureExistingApp } from "./utils";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
@@ -277,6 +280,7 @@ export class FxCore implements v3.ICore {
           name: "",
           version: "1.0.0",
         };
+        projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
         ctx.projectSettings = projectSettings;
         const createEnvResult = await this.createEnvWithName(
           environmentManager.getDefaultEnvName(),
@@ -285,6 +289,17 @@ export class FxCore implements v3.ICore {
         );
         if (createEnvResult.isErr()) {
           return err(createEnvResult.error);
+        }
+
+        if (isConfigUnifyEnabled()) {
+          const createLocalEnvResult = await this.createEnvWithName(
+            environmentManager.getLocalEnvName(),
+            projectSettings,
+            inputs
+          );
+          if (createLocalEnvResult.isErr()) {
+            return err(createLocalEnvResult.error);
+          }
         }
 
         const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
@@ -389,10 +404,9 @@ export class FxCore implements v3.ICore {
       if (initRes.isErr()) {
         return err(initRes.error);
       }
-
+      ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
       // set solution in context
       ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-
       // addFeature
       if (inputs.platform === Platform.VS) {
         const addFeatureInputs: v2.InputsWithProjectPath = {
@@ -441,6 +455,9 @@ export class FxCore implements v3.ICore {
             return err(addFeatureRes.error);
           }
         }
+      }
+      if (ctx.projectSettings?.solutionSettings) {
+        ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -650,6 +667,38 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+
+  /**
+   * Only used to provision Teams app with user provided app package
+   * @param inputs
+   * @returns
+   */
+  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (!inputs.appPackagePath) {
+      return err(InvalidInputError("appPackagePath is not defined", inputs));
+    }
+    const projectSettings: ProjectSettings = {
+      appName: "fake",
+      projectId: uuid.v4(),
+    };
+    const context: v2.Context = {
+      userInteraction: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      cryptoProvider: new LocalCrypto(projectSettings.projectId),
+      permissionRequestProvider: TOOLS.permissionRequest,
+      projectSetting: projectSettings,
+    };
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    await appStudioV3.registerTeamsApp(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      newEnvInfoV3(),
+      TOOLS.tokenProvider
+    );
+    return ok(Void);
+  }
+
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3()) return this.deployArtifactsV3(inputs);
     else return this.deployArtifactsV2(inputs);
@@ -724,6 +773,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
+    inputs.env = environmentManager.getLocalEnvName();
     if (isV3()) return this.localDebugV3(inputs);
     else return this.localDebugV2(inputs);
   }
@@ -733,13 +783,13 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
+    EnvInfoLoaderMW(!isConfigUnifyEnabled()),
     LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(true),
+    EnvInfoWriterMW(!isConfigUnifyEnabled()),
     LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -765,7 +815,8 @@ export class FxCore implements v3.ICore {
         ctx.contextV2,
         inputs,
         ctx.localSettings,
-        this.tools.tokenProvider
+        this.tools.tokenProvider,
+        ctx.envInfoV2
       );
       if (res.kind === "success") {
         ctx.localSettings = res.output;
@@ -963,9 +1014,9 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW,
+    SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -1271,7 +1322,10 @@ export class FxCore implements v3.ICore {
     projectSettings: ProjectSettings,
     inputs: Inputs
   ): Promise<Result<Void, FxError>> {
-    const appName = projectSettings.appName;
+    let appName = projectSettings.appName;
+    if (targetEnvName === environmentManager.getLocalEnvName()) {
+      appName = appName + "-local-debug";
+    }
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
@@ -1338,7 +1392,7 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
 
-    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
 
     if (envConfigs.isErr()) {
       return envConfigs;
@@ -1378,9 +1432,23 @@ export class FxCore implements v3.ICore {
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    const createEnvResult = await this.createEnvWithName("local", projectSettings, inputs);
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
+    }
+    if (isConfigUnifyEnabled()) {
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
+      }
     }
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
@@ -1407,6 +1475,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -1417,6 +1486,8 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     return this._addFeature(inputs, ctx);
   }
+
+  @hooks([QuestionModelMW])
   async _addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

@@ -892,8 +892,10 @@ async function doAddFeature(
   if (!selectedPlugin.addFeature) return ok(undefined);
   const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs);
   if (addFeatureRes && addFeatureRes.isErr()) {
+    ctx.logProvider.error(`${inputs.feature}: addFeature() failed!`);
     return err(addFeatureRes.error);
   }
+  ctx.logProvider.info(`${inputs.feature}: addFeature() success!`);
   if (addFeatureRes.value) {
     for (const template of addFeatureRes.value) {
       if (template.kind === "bicep") {
@@ -922,8 +924,10 @@ async function doAddFeature(
           ],
         });
         if (notifyRes.isErr()) {
+          ctx.logProvider.error(`${pluginName}: afterOtherFeaturesAdded() failed!`);
           return err(notifyRes.error);
         }
+        ctx.logProvider.info(`${pluginName}: afterOtherFeaturesAdded() success!`);
         if (notifyRes.value) {
           for (const template of notifyRes.value) {
             if (template.kind === "bicep") {
@@ -959,7 +963,7 @@ async function persistBicepTemplates(
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(projectaPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectaPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }

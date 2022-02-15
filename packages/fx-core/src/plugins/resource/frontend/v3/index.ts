@@ -130,7 +130,6 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
@@ -194,7 +193,6 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {
       Reference: {
         endpoint: FrontendOutputBicepSnippet.Endpoint,

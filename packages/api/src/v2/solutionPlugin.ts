@@ -123,7 +123,8 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ) => Promise<FxResult<Json, FxError>>;
 
   /**

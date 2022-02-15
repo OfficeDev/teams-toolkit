@@ -18,10 +18,12 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
   if (!target.innerError) return;
 
   const statusCode = target.innerError.response?.status;
-  if (statusCode && statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
-    target.errorType = ErrorType.User;
-  } else {
-    target.errorType = ErrorType.System;
+  if (statusCode) {
+    if (statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
+      target.errorType = ErrorType.User;
+    } else {
+      target.errorType = ErrorType.System;
+    }
   }
 
   const errorCode = target.innerError.response?.data?.error?.code;

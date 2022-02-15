@@ -8,6 +8,7 @@ import {
   EnvConfig,
   err,
   FxError,
+  Inputs,
   ok,
   Result,
   TokenProvider,
@@ -79,7 +80,9 @@ import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solu
 export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.bot;
   displayName = "NodeJS Bot";
-
+  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok([BuiltInFeaturePluginNames.identity]);
+  }
   getProgrammingLanguage(ctx: v2.Context): ProgrammingLanguage {
     const rawProgrammingLanguage = ctx.projectSetting.programmingLanguage;
     if (

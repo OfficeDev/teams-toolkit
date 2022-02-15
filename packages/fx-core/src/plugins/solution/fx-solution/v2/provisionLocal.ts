@@ -91,7 +91,7 @@ export async function provisionLocalResource(
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
-      if (updatedPlugins.indexOf(plugin.name) >= 0) {
+      if (isConfigUnifyEnabled() && updatedPlugins.indexOf(plugin.name) >= 0) {
         if (!envInfo!.state[plugin.name]) {
           envInfo!.state[plugin.name] = {};
         }
@@ -190,7 +190,7 @@ export async function provisionLocalResource(
   const configureLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureLocalResource))
     .map((plugin) => {
-      if (updatedPlugins.indexOf(plugin.name) >= 0) {
+      if (isConfigUnifyEnabled() && updatedPlugins.indexOf(plugin.name) >= 0) {
         return {
           pluginName: `${plugin.name}`,
           taskName: "configureResource",

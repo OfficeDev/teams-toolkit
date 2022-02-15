@@ -77,11 +77,7 @@ export class GitHubProvider extends CICDProvider {
         targetTemplateUrl,
         localTemplatePath
       );
-      // const renderedContent = Mustache.render(templateContent, replacements);
-      let renderedContent = templateContent;
-      Object.keys(replacements).forEach((key, index, arr) => {
-        renderedContent = renderedContent.replace(`{{${key}}}`, replacements[index]);
-      });
+      const renderedContent = Mustache.render(templateContent, replacements);
       try {
         await fs.writeFile(targetTemplatePath, renderedContent);
       } catch (e) {

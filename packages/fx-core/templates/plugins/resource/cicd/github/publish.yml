@@ -1,3 +1,4 @@
+{{=<% %>=}}
 # This is just an example workflow for publishing Teams app.
 # You should customize it to meet your own requirements.
 name: 'Publish Teams App'
@@ -13,7 +14,7 @@ jobs:
       M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
       M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
       # To specify the env name for multi-env feature.
-      TEAMSFX_ENV_NAME: {{env_name}}
+      TEAMSFX_ENV_NAME: <%env_name%>
 
     steps:
       # Setup environment.

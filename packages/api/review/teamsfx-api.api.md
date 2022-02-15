@@ -1532,7 +1532,7 @@ export interface Solution {
 // @public (undocumented)
 interface SolutionAddFeatureInputs extends InputsWithProjectPath {
     // (undocumented)
-    feature: string;
+    features: string[];
 }
 
 // @public (undocumented)

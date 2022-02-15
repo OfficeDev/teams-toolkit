@@ -99,7 +99,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const pluginCtx = { plugins: inputs.pluginsAfterAdd };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),

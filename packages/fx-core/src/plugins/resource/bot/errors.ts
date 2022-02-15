@@ -17,18 +17,17 @@ export enum ErrorType {
 function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>): void {
   if (!target.innerError) return;
 
-  const errorCode = target.innerError.response?.data?.error?.code;
-  if (!errorCode) return;
-
-  const helpLink = helpLinkMap.get(errorCode);
-  if (helpLink) target.helpLink = helpLink;
-
   const statusCode = target.innerError.response?.status;
-  if (!statusCode) return;
-  if (statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
+  if (statusCode && statusCode >= Constants.statusCodeUserError && statusCode < Constants.statusCodeServerError) {
     target.errorType = ErrorType.User;
   } else {
     target.errorType = ErrorType.System;
+  }
+
+  const errorCode = target.innerError.response?.data?.error?.code;
+  if (errorCode) {
+    const helpLink = helpLinkMap.get(errorCode);
+    if (helpLink) target.helpLink = helpLink;
   }
 }
 

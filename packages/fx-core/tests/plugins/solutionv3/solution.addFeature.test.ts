@@ -45,28 +45,33 @@ describe("SolutionV3 - addFeature", () => {
     const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudio, "loadManifest")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath
-        ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> => {
-          return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
-        }
-      );
-    sandbox
-      .stub<any, any>(appStudio, "saveManifest")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
-        ): Promise<Result<any, FxError>> => {
-          return ok({ local: {}, remote: {} });
-        }
-      );
+      .resolves(ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() }));
+    sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok({ local: {}, remote: {} }));
+    sandbox.stub<any, any>(appStudio, "addCapabilities").resolves(ok(undefined));
   });
   afterEach(async () => {
     sandbox.restore();
+  });
+  it("getQuestionsForAddFeature", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: ["Tab"],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const res = await getQuestionsForAddFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
   });
   it("addFeature: frontend", async () => {
     const projectSettings: ProjectSettings = {
@@ -202,28 +207,7 @@ describe("SolutionV3 - addFeature", () => {
     });
     deleteFolder(projectPath);
   });
-  it("getQuestionsForAddFeature", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
-        version: "3.0.0",
-        capabilities: ["Tab"],
-        hostType: "Azure",
-        azureResources: [],
-        modules: [{ capabilities: ["Tab"] }],
-        activeResourcePlugins: [],
-      },
-    };
-    const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), randomAppName()),
-    };
-    const res = await getQuestionsForAddFeature(ctx, inputs);
-    assert.isTrue(res.isOk());
-  });
+
   it("addFeature: keyvault", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

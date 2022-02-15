@@ -66,7 +66,7 @@ enum Checker {
   Backend = "backend",
   Bot = "bot",
   M365Account = "M365 Account",
-  LocalCertificate = "Local Certificate",
+  LocalCertificate = "Development certification for localhost",
   AzureFunctionsExtension = "Azure Functions Extension",
   Ports = "Ports",
 }
@@ -391,7 +391,7 @@ async function checkNode(
   prefix: string
 ): Promise<CheckResult> {
   try {
-    VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${DepsDisplayName[nodeDep]} ...`);
+    VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
     const nodeStatus = (
       await depsManager.ensureDependencies([nodeDep], {
         fastFail: false,
@@ -628,7 +628,7 @@ async function checkNpmInstall(
     checker: component,
     result: result,
     successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
-    failureMsg: doctorConstant.NpmInstallFailue.split("@app").join(appName),
+    failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
     error: error,
   };
 }

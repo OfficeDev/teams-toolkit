@@ -20,7 +20,7 @@ describe("teamsfx provision manifest command", function () {
     const createAppResult = await execAsync(`teamsfx provision manifest --path ${testAppPkgPath}`);
     const createAppMatchResult = createAppResult.stdout.match(createAppReg);
 
-    chai.assert.isTrue(createAppMatchResult !== undefined && createAppMatchResult.length > 1);
+    chai.assert.isTrue(createAppMatchResult !== undefined && createAppMatchResult!.length > 1);
     const teamsAppId = createAppMatchResult![1];
     chai.assert.isTrue(teamsAppId.length > 0);
 
@@ -31,7 +31,7 @@ describe("teamsfx provision manifest command", function () {
     const updateAppResult = await execAsync(`teamsfx provision manifest --path ${testAppPkgPath}`);
     const updateAppMatchResult = updateAppResult.stdout.match(updateAppReg);
 
-    chai.assert.isTrue(updateAppMatchResult !== undefined && updateAppMatchResult.length > 1);
+    chai.assert.isTrue(updateAppMatchResult !== undefined && updateAppMatchResult!.length > 1);
     const updatedTeamsAppId = updateAppMatchResult![1];
     chai.assert.equal(updatedTeamsAppId, teamsAppId);
 

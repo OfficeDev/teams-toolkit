@@ -272,7 +272,7 @@ export class SPFxPluginImpl {
       SPOClient.setBaseUrl(tenant.value);
 
       //const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
-      const spoToken = "";
+      const spoToken = "TODO";
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }

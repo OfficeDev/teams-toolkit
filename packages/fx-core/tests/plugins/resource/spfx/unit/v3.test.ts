@@ -27,6 +27,7 @@ import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { SPFxPlugin } from "../../../../../src/plugins/resource/spfx/v3/index";
 import { ProgressHelper } from "../../../../../src/plugins/resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
+import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
 
 describe("SPFx plugin v3", () => {
   beforeEach(async () => {
@@ -107,7 +108,7 @@ describe("SPFx plugin v3", () => {
     chai.assert.isTrue(addCapabilities.calledOnce);
   });
 
-  it("Scaffold", async () => {
+  it("Scaffold-none framework", async () => {
     const componentId = uuid.v4();
     ctx.projectSetting.solutionSettings!.capabilities = [];
     const appManifestProvider: AppManifestProvider = {
@@ -153,5 +154,85 @@ describe("SPFx plugin v3", () => {
       const filePath = path.join(testFolder, subFolderName, file);
       chai.expect(await fs.pathExists(filePath), `${filePath} must exist.`).to.eq(true);
     }
+  });
+
+  it("Scaffold-react framework", async () => {
+    const componentId = uuid.v4();
+    ctx.projectSetting.solutionSettings!.capabilities = [];
+    const appManifestProvider: AppManifestProvider = {
+      loadManifest: async (): Promise<Result<JSON, FxError>> => {
+        return ok({ local: {}, remote: {} } as unknown as JSON);
+      },
+      saveManifest: async (): Promise<Result<Void, FxError>> => {
+        return ok(Void);
+      },
+      addCapabilities: async (): Promise<Result<Void, FxError>> => {
+        return ok(Void);
+      },
+    };
+    const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
+    inputs[SPFXQuestionNames.webpart_name] = "helloworld";
+    inputs[SPFXQuestionNames.webpart_desp] = "test";
+    inputs[SPFXQuestionNames.framework_type] = "react";
+
+    const result = await pluginImplV3.scaffold(ctxV3, inputs, componentId);
+
+    chai.expect(result.isOk()).to.eq(true);
+    // check specified files
+    const files: string[] = [
+      "config/config.json",
+      "config/copy-assets.json",
+      "config/deploy-azure-storage.json",
+      "config/package-solution.json",
+      "config/serve.json",
+      "config/write-manifests.json",
+      "src/webparts/helloworld/HelloworldWebPart.manifest.json",
+      "src/webparts/helloworld/HelloworldWebPart.ts",
+      "src/webparts/helloworld/loc/en-us.js",
+      "src/webparts/helloworld/loc/mystrings.d.ts",
+      "src/index.ts",
+      ".gitignore",
+      "gulpfile.js",
+      "package.json",
+      "README.md",
+      "tsconfig.json",
+      "tslint.json",
+    ];
+    for (const file of files) {
+      const filePath = path.join(testFolder, subFolderName, file);
+      chai.expect(await fs.pathExists(filePath), `${filePath} must exist.`).to.eq(true);
+    }
+  });
+
+  it("buildSharepointPackage", async () => {
+    Sinon.stub(ProgressHelper, "startPreDeployProgressHandler");
+    Sinon.stub(ProgressHelper, "endPreDeployProgress");
+    Sinon.stub(Utils, "execute");
+    Sinon.stub(SPFxPluginImpl.prototype, "getPackage" as any);
+    Sinon.stub(fs, "pathExists").resolves(true);
+    Sinon.stub(path, "normalize").returns("");
+    Sinon.stub(path, "parse").returns({ root: "", dir: "", base: "", ext: "", name: "" });
+    inputs.platform = Platform.CLI;
+
+    const build = await pluginImplV3.buildSPPackage(ctx, inputs);
+
+    chai.expect(build.isOk()).to.be.true;
+  });
+
+  it("deploy", async () => {
+    Sinon.stub(SPFxPluginImpl.prototype, "buildSPPackage" as any).returns(ok(undefined));
+    Sinon.stub(SPFxPluginImpl.prototype, "getTenant" as any).returns(ok("TENANT_URL"));
+    Sinon.stub(SPFxPluginImpl.prototype, "getPackage" as any);
+    Sinon.stub(SPFxPluginImpl.prototype, "getAppID" as any);
+    Sinon.stub(SPOClient, "getAppCatalogSite").resolves("APP_CATALOG");
+    Sinon.stub(SPOClient, "uploadAppPackage").resolves();
+    Sinon.stub(SPOClient, "deployAppPackage").resolves();
+    Sinon.stub(fs, "pathExists").resolves(true);
+    Sinon.stub(path, "parse").returns({ root: "", dir: "", base: "", ext: "", name: "" });
+    Sinon.stub(fs, "readFile").resolves("" as any);
+
+    const result = await pluginImplV3.deploy(ctx, inputs);
+
+    chai.assert.isTrue(result.isOk());
   });
 });

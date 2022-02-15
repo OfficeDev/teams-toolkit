@@ -49,7 +49,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should success with consent scope", async function () {
-    sinon.stub(PublicClientApplication.prototype, <any>"getAccountByUsername").returns(null);
     sinon
       .stub(PublicClientApplication.prototype, <any>"acquireTokenSilent")
       .callsFake(async (): Promise<AuthenticationResult> => {
@@ -81,8 +80,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should throw UiRequiredError with unconsent scope", async function () {
-    sinon.stub(PublicClientApplication.prototype, <any>"acquireTokenSilent").throws("error");
-    sinon.stub(PublicClientApplication.prototype, <any>"ssoSilent").throws("error");
     const credential: TeamsUserCredential = new TeamsUserCredential();
     await expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)

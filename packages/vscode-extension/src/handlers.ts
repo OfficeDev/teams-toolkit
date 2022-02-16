@@ -2010,14 +2010,40 @@ export async function openConfigStateFile(args: any[]) {
   }
 
   if (!(await fs.pathExists(sourcePath))) {
-    const noEnvError = new UserError(
-      isConfig ? ExtensionErrors.EnvConfigNotFoundError : ExtensionErrors.EnvStateNotFoundError,
-      util.format(StringResources.vsc.handlers.findEnvFailed, env),
-      ExtensionSource
-    );
-    showError(noEnvError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
-    return err(noEnvError);
+    if (isConfig) {
+      const noEnvError = new UserError(
+        ExtensionErrors.EnvConfigNotFoundError,
+        util.format(StringResources.vsc.handlers.findEnvFailed, envName.value),
+        ExtensionSource
+      );
+      showError(noEnvError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
+      return err(noEnvError);
+    } else {
+      const noEnvError = new UserError(
+        ExtensionErrors.EnvStateNotFoundError,
+        util.format(StringResources.vsc.handlers.stateFileNotFound, envName.value),
+        ExtensionSource
+      );
+      const provision = {
+        title: StringResources.vsc.commandsTreeViewProvider.provisionTitleNew,
+        run: async (): Promise<void> => {
+          Correlator.run(provisionHandler, [TelemetryTiggerFrom.Other]);
+        },
+      };
+
+      const errorCode = `${noEnvError.source}.${noEnvError.name}`;
+      const notificationMessage = noEnvError.notificationMessage ?? noEnvError.message;
+      window
+        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
+        .then((selection) => {
+          if (selection?.title === StringResources.vsc.commandsTreeViewProvider.provisionTitleNew) {
+            selection.run();
+          }
+        });
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
+      return err(noEnvError);
+    }
   }
 
   workspace.openTextDocument(sourcePath).then((document) => {

@@ -67,7 +67,7 @@ enum Checker {
   Bot = "bot",
   M365Account = "M365 Account",
   LocalCertificate = "Development certification for localhost",
-  AzureFunctionsExtension = "Azure Functions Binding Extension",
+  AzureFunctionsExtension = "Azure Functions binding extension",
   Ports = "Ports",
 }
 
@@ -77,7 +77,7 @@ const DepsDisplayName = {
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
-  [DepsType.FuncCoreTools]: "Azure Function Core Tool",
+  [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
 };
 
 interface CheckResult {

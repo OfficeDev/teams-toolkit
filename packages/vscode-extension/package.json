@@ -810,7 +810,7 @@
               },
               "funcCoreTools": {
                 "type": "boolean",
-                "description": "Ensure Azure Function Core Tools is installed."
+                "description": "Ensure Azure Functions Core Tools is installed."
               },
               "bicep": {
                 "type": "boolean",

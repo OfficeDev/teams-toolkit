@@ -442,7 +442,9 @@ async function checkDependencies(
         results.push({
           checker: dep.name,
           result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
-          successMsg: `${dep.name} (installed at ${dep.details.binFolders?.[0]})`,
+          successMsg: dep.details.binFolders
+            ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
+            : dep.name,
           error: handleDepsCheckerError(dep.error, dep),
         });
       }

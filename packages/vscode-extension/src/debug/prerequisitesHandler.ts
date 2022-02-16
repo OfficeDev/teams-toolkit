@@ -66,7 +66,7 @@ enum Checker {
   Backend = "backend",
   Bot = "bot",
   M365Account = "M365 Account",
-  LocalCertificate = "Development certification for localhost",
+  LocalCertificate = "Development certificate for localhost",
   AzureFunctionsExtension = "Azure Functions binding extension",
   Ports = "Ports",
 }
@@ -501,7 +501,7 @@ async function resolveLocalCertificate(
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
       error = returnUserError(
-        new Error("Skip trusting local certificate."),
+        new Error("Skip trusting development certificate for localhost."),
         ExtensionSource,
         "SkipTrustDevCertError",
         trustDevCertHelpLink

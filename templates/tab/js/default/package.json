@@ -15,7 +15,8 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "env-cmd": "^10.1.0"
+    "env-cmd": "^10.1.0",
+    "react-error-overlay": "6.0.9"
   },
   "scripts": {
     "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",

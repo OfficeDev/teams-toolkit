@@ -1225,7 +1225,6 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW,
     ContextInjectorMW,
   ])
   async listCollaboratorV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

@@ -20,13 +20,15 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
-import { AadOwner } from "../../../../common/permissionInterface";
+import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { IUserList } from "../../appstudio/interfaces/IAppDefinition";
 import { AadAppClient } from "../aadAppClient";
 import {
   ConfigKeys,
+  Constants,
   Messages,
   Plugins,
   ProgressDetail,
@@ -323,6 +325,101 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       objectId
     );
     ctx.logProvider.info(Messages.EndListCollaborator.log);
-    return ResultFactory.Success(owners);
+    return ok(owners || []);
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async checkPermission(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    ctx.logProvider.info(Messages.StartCheckPermission.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          Utils.getPermissionErrorMessage(
+            GetConfigError.message(
+              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+            ),
+            false
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const userObjectId = userInfo.aadId;
+    const isAadOwner = await AadAppClient.checkPermission(
+      Messages.EndCheckPermission.telemetry,
+      objectId,
+      userObjectId
+    );
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        resourceId: objectId,
+      },
+    ];
+    ctx.logProvider.info(Messages.EndCheckPermission.log);
+    return ok(result);
+  }
+
+  async grantPermission(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    ctx.logProvider.info(Messages.StartGrantPermission.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          Utils.getPermissionErrorMessage(
+            GetConfigError.message(
+              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+            ),
+            true
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const userObjectId = userInfo.aadId;
+    await AadAppClient.grantPermission(ctx, objectId, userObjectId);
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: [Constants.permissions.owner],
+        resourceId: objectId,
+      },
+    ];
+    ctx.logProvider.info(Messages.EndGrantPermission.log);
+    return ok(result);
   }
 }

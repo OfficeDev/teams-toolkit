@@ -274,7 +274,6 @@ export class AadAppForTeamsImpl {
 
     const userObjectId = userInfo.aadId;
     const isAadOwner = await AadAppClient.checkPermission(
-      ctx,
       Messages.EndCheckPermission.telemetry,
       config.objectId!,
       userObjectId
@@ -312,7 +311,6 @@ export class AadAppForTeamsImpl {
     }
 
     const owners = await AadAppClient.listCollaborator(
-      ctx,
       Messages.EndListCollaborator.telemetry,
       objectId
     );

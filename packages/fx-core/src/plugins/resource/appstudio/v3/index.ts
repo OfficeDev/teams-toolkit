@@ -43,9 +43,10 @@ import {
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
 import { AppStudioPluginImpl } from "./plugin";
-import { TeamsAppAdmin } from "../../../../common/permissionInterface";
+import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permissionInterface";
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
+import { IUserList } from "../interfaces/IAppDefinition";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -291,5 +292,87 @@ export class AppStudioPluginV3 {
       });
 
     return ok(teamsAppAdmin);
+  }
+
+  async checkPermission(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    appStudioTokenProvider: AppStudioTokenProvider,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+
+    const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+    if (!teamsAppId) {
+      return err(
+        new UserError(
+          "GetConfigError",
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
+          Constants.PLUGIN_NAME
+        )
+      );
+    }
+
+    const teamsAppRoles = await AppStudioClient.checkPermission(
+      teamsAppId,
+      appStudioToken as string,
+      userInfo.aadId
+    );
+
+    const result: ResourcePermission[] = [
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: [teamsAppRoles as string],
+        type: Constants.PERMISSIONS.type,
+        resourceId: teamsAppId,
+      },
+    ];
+
+    return ok(result);
+  }
+
+  public async grantPermission(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    appStudioTokenProvider: AppStudioTokenProvider,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+
+    const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+    if (!teamsAppId) {
+      return err(
+        new UserError(
+          AppStudioError.GrantPermissionFailedError.name,
+          AppStudioError.GrantPermissionFailedError.message(
+            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
+          ),
+          Constants.PLUGIN_NAME
+        )
+      );
+    }
+
+    try {
+      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
+    } catch (error: any) {
+      return err(
+        new UserError(
+          AppStudioError.GrantPermissionFailedError.name,
+          AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId),
+          Constants.PLUGIN_NAME
+        )
+      );
+    }
+    const result: ResourcePermission[] = [
+      {
+        name: Constants.PERMISSIONS.name,
+        roles: [Constants.PERMISSIONS.admin],
+        type: Constants.PERMISSIONS.type,
+        resourceId: teamsAppId,
+      },
+    ];
+    return ok(result);
   }
 }

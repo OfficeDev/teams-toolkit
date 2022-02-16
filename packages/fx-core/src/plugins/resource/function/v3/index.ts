@@ -284,7 +284,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
 
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.configuraitonTemplateFileName
+      FunctionBicepFile.configurationTemplateFileName
     );
     const provisionOrchestration = await generateBicepFromFile(
       provisionTemplateFilePath,
@@ -328,7 +328,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.configuraitonTemplateFileName
+      FunctionBicepFile.configurationTemplateFileName
     );
     const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
 

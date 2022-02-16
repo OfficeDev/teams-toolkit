@@ -32,8 +32,8 @@
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/function @eriolchan @hund030 @IvanJobs
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @IvanJobs
-/packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
-/packages/cli/tests/e2e/scaffold @hund030 @eriolchan @YitongFeng-git @IvanJobs
+/packages/cli/tests/e2e/bot @IvanJobs @eriolchan
+/packages/cli/tests/e2e/scaffold @hund030 @eriolchan @IvanJobs
 /packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
@@ -66,12 +66,12 @@
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
-/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
+/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan 
+/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan 
 
-/templates/bot @YitongFeng-git @IvanJobs @eriolchan
-/templates/bot-msgext @YitongFeng-git @IvanJobs @eriolchan
-/templates/msgext @YitongFeng-git @IvanJobs @eriolchan
+/templates/bot @IvanJobs @eriolchan
+/templates/bot-msgext @IvanJobs @eriolchan
+/templates/msgext @IvanJobs @eriolchan
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs

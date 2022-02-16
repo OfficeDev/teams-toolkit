@@ -499,7 +499,7 @@ async function resolveLocalCertificate(
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
       error = returnUserError(
-        new Error("Skip trusting development certificate for localdebug."),
+        new Error("Skip trusting development certificate for localhost."),
         ExtensionSource,
         "SkipTrustDevCertError",
         trustDevCertHelpLink

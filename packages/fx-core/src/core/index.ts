@@ -56,6 +56,7 @@ import {
   BuiltInSolutionNames,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
+import { listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
 import {
@@ -1186,6 +1187,11 @@ export class FxCore implements v3.ICore {
     );
   }
 
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    if (isV3()) return this.listCollaboratorV3(inputs);
+    else return this.listCollaboratorV2(inputs);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1197,7 +1203,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async listCollaboratorV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
     const projectPath = inputs.projectPath;
@@ -1210,6 +1216,35 @@ export class FxCore implements v3.ICore {
       ctx!.envInfoV2!,
       this.tools.tokenProvider
     );
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async listCollaboratorV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listCollaborator;
+    inputs.stage = Stage.listCollaborator;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await listCollaborator(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
   @hooks([

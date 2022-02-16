@@ -67,7 +67,7 @@ enum Checker {
   Bot = "bot",
   M365Account = "M365 Account",
   LocalCertificate = "Development certification for localhost",
-  AzureFunctionsExtension = "Azure Functions Extension",
+  AzureFunctionsExtension = "Azure Functions Binding Extension",
   Ports = "Ports",
 }
 
@@ -105,10 +105,10 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.AzureFunctionsExtension]: `Installing ${Checker.AzureFunctionsExtension}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
-  [Checker.SPFx]: `Executing NPM Install for ${NpmInstallDisplayName.SPFx}`,
-  [Checker.Frontend]: `Executing NPM Install for ${NpmInstallDisplayName.Frontend}`,
-  [Checker.Bot]: `Executing NPM Install for ${NpmInstallDisplayName.Bot}`,
-  [Checker.Backend]: `Executing NPM Install for ${NpmInstallDisplayName.Backend}`,
+  [Checker.SPFx]: `Checking and installing NPM packages for ${NpmInstallDisplayName.SPFx}`,
+  [Checker.Frontend]: `Checking and installing NPM packages for ${NpmInstallDisplayName.Frontend}`,
+  [Checker.Bot]: `Checking and installing NPM packages for ${NpmInstallDisplayName.Bot}`,
+  [Checker.Backend]: `Checking and installing NPM packages for ${NpmInstallDisplayName.Backend}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
@@ -711,7 +711,7 @@ function outputCheckResultError(result: CheckResult, output: vscode.OutputChanne
 }
 
 async function checkFailure(checkResults: CheckResult[], progressHelper: ProgressHelper) {
-  if (checkResults.some((r) => !r.result)) {
+  if (checkResults.some((r) => r.result == ResultStatus.failed)) {
     await handleCheckResults(checkResults, progressHelper);
   }
 }

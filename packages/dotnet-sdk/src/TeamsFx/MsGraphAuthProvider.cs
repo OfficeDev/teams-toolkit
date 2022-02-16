@@ -81,7 +81,7 @@ public class MsGraphAuthProvider : IAuthenticationProvider
     /// <exception cref="ExceptionCode.InternalError">When get access token failed due to empty token or unknown other problems.</exception>
     /// <exception cref="ExceptionCode.TokenExpiredError">When SSO token has already expired.</exception>
     /// <exception cref="ExceptionCode.UiRequiredError">When need user consent to get access token.</exception>
-    /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from simple auth or AAD server.</exception>
+    /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from AAD server.</exception>
     public async Task<string> GetAccessTokenAsync()
     {
         _logger?.LogInformation($"Get Graph Access token with {_scopes}");

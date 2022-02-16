@@ -249,7 +249,17 @@ export class TestHelper {
 
   static mockedBotUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker.stub(botPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok({});
+      const res: ArmTemplateResult = {
+        Configuration: {
+          Modules: {
+            botConfig: TestFileContent.botConfigUpdateModule,
+          },
+        },
+        Reference: {
+          botOutputKey: TestFileContent.botReferenceValue,
+        },
+      };
+      return ok(res);
     });
   }
 

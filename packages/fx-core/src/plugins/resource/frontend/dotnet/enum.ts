@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export enum DotnetConfigKey {
   /* Config from solution */
   resourceGroupName = "resourceGroupName",

@@ -38,12 +38,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
     generateResourceTemplate;
 
-  provisionResources: (
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: EnvInfoV2,
-    tokenProvider: TokenProvider
-  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = provisionResource;
+  provisionResources = provisionResource;
 
   deploy?: (
     ctx: v2.Context,
@@ -62,7 +57,8 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ) => Promise<v2.FxResult<Json, FxError>> = provisionLocalResource;
 
   getQuestionsForScaffolding?: (

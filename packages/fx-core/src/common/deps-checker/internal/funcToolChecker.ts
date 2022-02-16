@@ -47,7 +47,9 @@ export class FuncToolChecker implements DepsChecker {
       isLinuxSupported: false,
       installVersion: installVersion,
       supportedVersions: supportedVersions,
-      binFolders: this.getPortableFuncBinFolders(),
+      binFolders: (await this.isPortableFuncInstalled())
+        ? this.getPortableFuncBinFolders()
+        : undefined,
       details: new Map<string, string>(),
     });
   }

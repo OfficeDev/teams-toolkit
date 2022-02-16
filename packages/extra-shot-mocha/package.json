@@ -1,0 +1,42 @@
+{
+  "name": "@microsoft/extra-shot-mocha",
+  "version": "0.0.1",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "private": "true",
+  "scripts": {
+    "build": "npx tsc -p ./",
+    "lint:staged": "lint-staged",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged",
+    "test:unit": "nyc mocha \"tests/**/*.test.ts\""
+  },
+  "peerDependencies": {
+    "mocha": "^9.2.0",
+    "mochawesome": "^7.0.1"
+  },
+  "dependencies": {
+    "mocha": "^9.2.0",
+    "mochawesome": "^7.0.1"
+  },
+  "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/chai": "^4.2.14",
+    "@types/mocha": "^9.1.0",
+    "@types/mochawesome": "^6.2.1",
+    "@types/node": "^17.0.16",
+    "chai": "^4.2.0",
+    "lint-staged": "^12.3.3",
+    "nyc": "^15.1.0",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
+  }
+}

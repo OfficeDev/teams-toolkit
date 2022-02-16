@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -40,21 +40,18 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
-  const azureSettings: AzureSolutionSettings =
-    projectSettings.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedV2ResourcePlugins(projectSettings);
-  azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
-  return plugins;
+  return getActivatedV2ResourcePlugins(projectSettings);
 }
 
-export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings {
-  return ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings | undefined {
+  return ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
 }
 
-export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
-  return HostTypeOptionAzure.id === azureSettings.hostType;
+export function isAzureProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
@@ -205,11 +202,15 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
-  appStudioToken?: Record<string, unknown>
+  appStudioToken?: Record<string, unknown>,
+  envInfo?: EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
       localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      if (isConfigUnifyEnabled()) {
+        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
+      }
       return ok(Void);
     }
   );
@@ -274,11 +275,7 @@ export function fillInSolutionSettings(
 }
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
-  return (
-    config[GLOBAL_CONFIG] &&
-    config[GLOBAL_CONFIG]["output"] &&
-    config[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED]
-  );
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }
 
 export function getPluginAndContextArray(

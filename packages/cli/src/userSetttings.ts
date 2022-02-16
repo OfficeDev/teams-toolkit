@@ -19,7 +19,7 @@ export enum CliConfigOptions {
   EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
   EnvCheckerValidateNode = "validate-node",
   EnvCheckerValidateNgrok = "validate-ngrok",
-  TrustDevCert = "trust-development-certification",
+  TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
   Interactive = "interactive",
   // TODO: enable this config

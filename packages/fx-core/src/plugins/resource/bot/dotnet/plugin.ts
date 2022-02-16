@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getTemplatesFolder } from "../../../../folder";
 import { Bicep, ConstantString } from "../../../../common/constants";
@@ -53,7 +53,7 @@ export class DotnetBotImpl extends TeamsBotImpl {
 
   // Overwrite below lifecycle for dotnet scenario
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
+    return ResultFactory.Success({} as ArmTemplateResult);
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

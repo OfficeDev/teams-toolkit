@@ -90,11 +90,11 @@ describe("API V2 adapter", () => {
       ["k2", "v2"],
     ]);
     const provisionOutputs: Json = {
-      plugin1: { output: { k1: "", k2: "" }, secrets: {} },
-      plugin2: { output: { k2: "v2" }, secrets: {} },
+      plugin1: { k1: "", k2: "" },
+      plugin2: { k2: "v2" },
     };
     setStateV2ByConfigMapInc("plugin1", provisionOutputs, config);
-    assert.deepEqual(provisionOutputs["plugin1"]["output"], { k1: "v1", k2: "v2" });
+    assert.deepEqual(provisionOutputs["plugin1"], { k1: "v1", k2: "v2" });
   });
 
   it("provisionResourceAdapter", async () => {

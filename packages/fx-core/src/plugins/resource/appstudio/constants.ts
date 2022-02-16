@@ -223,10 +223,28 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
   },
 ];
 
+export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
+  {
+    entityId: "index",
+    name: "Personal Tab",
+    contentUrl: "{{{config.manifest.tabContentUrl}}}",
+    websiteUrl: "{{{config.manifest.tabWebsiteUrl}}}",
+    scopes: ["personal"],
+  },
+];
+
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
     configurationUrl:
       "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{{config.manifest.tabConfigurationUrl}}}",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -304,6 +322,22 @@ export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
     ],
   },
 ];
+
+export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
+  {
+    botId: "{{config.manifest.botId}}",
+    commands: [],
+    messageHandlers: [
+      {
+        type: "link",
+        value: {
+          domains: ["*.botframework.com"],
+        },
+      },
+    ],
+  },
+];
+
 export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
   {
     botId: "{{state.fx-resource-bot.botId}}",
@@ -323,6 +357,21 @@ export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
             description: "Learn about Adaptive Card and Bot Command",
           },
         ],
+      },
+    ],
+  },
+];
+
+export const BOTS_TPL_EXISTING_APP: IBot[] = [
+  {
+    botId: "{{config.manifest.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [],
       },
     ],
   },

@@ -38,12 +38,6 @@ export class AadDefaultValues {
 export class QuestionConstants {
   public static readonly namespace: string = "fx-solution-azure/fx-resource-apim";
   public static readonly VSCode = class {
-    public static readonly Apim = class {
-      public static readonly questionName: string = "vsc-apim-service";
-      public static readonly description: string = "Select API Management service";
-      public static readonly createNewApimOption: string = "+ Create a new API Management service";
-    };
-
     public static readonly OpenApiDocument = class {
       public static readonly questionName: string = "vsc-open-api-document";
       public static readonly funcName: string = "open-api-document-option";
@@ -77,17 +71,6 @@ export class QuestionConstants {
   };
 
   public static readonly CLI = class {
-    public static readonly ApimResourceGroup = class {
-      public static readonly questionName: string = "apim-resource-group";
-      public static readonly description: string = "The name of resource group.";
-    };
-
-    public static readonly ApimServiceName = class {
-      public static readonly questionName: string = "apim-service-name";
-      public static readonly description: string =
-        "The name of the API Management service instance.";
-    };
-
     public static readonly OpenApiDocument = class {
       public static readonly questionName: string = "open-api-document";
       public static readonly description: string = "The Open API document file path.";
@@ -115,20 +98,6 @@ export class QuestionConstants {
 export class ValidationConstants {
   public static readonly defaultMinLength = 1;
   public static readonly defaultMaxLength = 256;
-
-  // https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftresources
-  public static readonly resourceGroupValidPattern = {
-    regex: /^[-\w\._\(\)]+$/,
-    message:
-      "The value can include alphanumeric, underscore, parentheses, hyphen, period (except at end), and unicode characters that match the allowed characters.",
-  };
-
-  // https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftapimanagement
-  public static readonly serviceIdValidPattern = {
-    regex: /^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
-    message:
-      "The value can contain only letters, numbers and hyphens. The first character must be a letter and last character must be a letter or a number.",
-  };
 
   public static readonly resourceIdValidPattern = {
     regex: /^[0-9a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
@@ -169,10 +138,6 @@ export class ApimPathInfo {
 }
 
 export class ApimPluginConfigKeys {
-  public static readonly resourceGroupName: string = "resourceGroupName";
-  public static readonly serviceName: string = "serviceName";
-  public static readonly productId: string = "productId";
-  public static readonly oAuthServerId: string = "oAuthServerId";
   public static readonly apimClientAADObjectId: string = "apimClientAADObjectId";
   public static readonly apimClientAADClientId: string = "apimClientAADClientId";
   public static readonly apimClientAADClientSecret: string = "apimClientAADClientSecret";
@@ -250,10 +215,6 @@ export const ConfigRetryOperations: {
     [SolutionConfigKeys.location]: RetryOperation.Provision,
   },
   [TeamsToolkitComponent.ApimPlugin]: {
-    [ApimPluginConfigKeys.resourceGroupName]: RetryOperation.Provision,
-    [ApimPluginConfigKeys.serviceName]: RetryOperation.Provision,
-    [ApimPluginConfigKeys.productId]: RetryOperation.Provision,
-    [ApimPluginConfigKeys.oAuthServerId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,
@@ -278,7 +239,6 @@ export enum PluginLifeCycle {
   UpdateArmTemplates = "update-arm-templates",
   PostProvision = "post-provision",
   Deploy = "deploy",
-  GetQuestionsForUserTask = "get-questions-for-user-task",
 }
 
 export enum ProgressStep {
@@ -298,7 +258,6 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.UpdateArmTemplates]: ProgressStep.None,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
-  [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,
 };
 
 export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string } } = {
@@ -311,7 +270,6 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
     CreateAad: "Create client AAD app registration",
   },
   [ProgressStep.PostProvision]: {
-    ConfigApim: "Configure API Management service",
     ConfigClientAad: "Configure client AAD app registration",
     ConfigAppAad: `Update AAD app for Teams app`,
   },

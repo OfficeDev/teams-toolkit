@@ -36,10 +36,6 @@ export const LocalSettingsFrontendKeys = Object.freeze({
 export const LocalSettingsBackendKeys = Object.freeze({
   FunctionEndpoint: "functionEndpoint",
   FunctionName: "functionName",
-  SqlEndpoint: "sqlEndpoint",
-  SqlDatabaseName: "sqlDatabaseName",
-  SqlUserName: "sqlUserName",
-  SqlPassword: "sqlPassword",
 });
 
 export const LocalSettingsBotKeys = Object.freeze({

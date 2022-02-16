@@ -3,14 +3,12 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  ConfigMap,
   EnvInfo,
   err,
   FxError,
   Inputs,
   Json,
   ok,
-  Platform,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -44,7 +42,6 @@ import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
-import { mapToJson } from "../../common";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 
 const newTargetEnvNameOption = "+ new environment";
@@ -353,7 +350,7 @@ async function getQuestionsForTargetEnv(
     return err(NoProjectOpenedError());
   }
 
-  const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
@@ -384,7 +381,7 @@ async function getQuestionsForNewEnv(
   const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   group.addChild(newEnvNameNode);
 
-  const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

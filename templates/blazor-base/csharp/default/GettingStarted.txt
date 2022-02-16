@@ -1,0 +1,40 @@
+Welcome to the Teams Toolkit! Here are some tips to get started building your app.
+
+
+Quick start
+----------
+
+Select 'Debug > Start Debugging' or press F5. After press F5, in the browser, click Add to add your app to Teams.
+
+Learn more about developing Teams applications with Blazor at https://aka.ms/blazor-teams-app-dev.
+
+
+Building your app UI
+--------------------
+
+Fluent UI is a front-end framework designed to build experiences that fit seamlessly into a broad range of Microsoft products. To make it simpler for you to build applications that fit seamlessly into Microsoft Teams, this template showcases Fluent UI Blazor components that are part of the Microsoft.Fast.Components.FluentUI package. 
+
+Learn more about these components here: https://github.com/microsoft/fast-blazor
+
+
+Deploy your first Teams app on Azure
+------------------------------------
+
+Select 'Project > Teams Toolkit > Provision in the Cloud' to create resources in Azure and Microsoft 365 for your app, but no code is copied to the resources.
+
+Select 'Project > Teams Toolkit > Deploy to the Cloud', this step copies the code for your app to the resources you created during the provision step. It is common to deploy multiple times without provisioning new resources. Since the provision step can take some time to complete, it is separate from the deployment step.
+
+Once the provisioning and deployment steps are complete: Select 'Project > Teams Toolkit > Preview Teams app' to launch your app - now running remotely from Azure!
+
+
+Report an issue
+---------------
+
+If you meet any problem when you are using out Toolkit or building your own Teams app. You can create an issue in our GitHub repository: https://github.com/OfficeDev/TeamsFx/issues
+
+
+Q&A
+---------------
+
+1. How to request more permissions and scopes in Graph call?
+   If you have selected Personal Tab capability and you want to change the scope in Graph call, you can first change the parameter _scope in Components/Graph.razor. Then go to Azure Portal -> Azure Active Directory -> App Registrations, find the AAD application Toolkit created for you (default name is the same as the project name), under Manage, select API Permissions. Select Add a permission > Microsoft Graph > Delegated permissions, then add the permissions you want.

@@ -11,8 +11,6 @@ import {
   PluginContext,
   TeamsAppManifest,
   LogProvider,
-  IComposeExtension,
-  IBot,
   AppPackageFolderName,
   BuildFolderName,
   ArchiveFolderName,
@@ -20,17 +18,7 @@ import {
   ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
-import {
-  IAppDefinition,
-  IMessagingExtension,
-  IAppDefinitionBot,
-  ITeamCommand,
-  IPersonalCommand,
-  IGroupChatCommand,
-  IUserList,
-  ILanguage,
-} from "./interfaces/IAppDefinition";
-import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
 import {
   BotOptionItem,
   MessageExtensionItem,
@@ -92,10 +80,10 @@ import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
 import {
-  checkAndConfig,
   getCustomizedKeys,
-  getLocalAppName,
   replaceConfigValue,
+  convertToAppDefinitionBots,
+  convertToAppDefinitionMessagingExtensions,
 } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
@@ -1103,70 +1091,6 @@ export class AppStudioPluginImpl {
     return config;
   }
 
-  private convertToAppDefinitionMessagingExtensions(
-    appManifest: TeamsAppManifest
-  ): IMessagingExtension[] {
-    const messagingExtensions: IMessagingExtension[] = [];
-
-    if (appManifest.composeExtensions) {
-      appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
-        const me: IMessagingExtension = {
-          botId: ext.botId,
-          canUpdateConfiguration: true,
-          commands: ext.commands,
-          messageHandlers: ext.messageHandlers ?? [],
-        };
-
-        messagingExtensions.push(me);
-      });
-    }
-
-    return messagingExtensions;
-  }
-
-  private convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
-    const bots: IAppDefinitionBot[] = [];
-    if (appManifest.bots) {
-      appManifest.bots.forEach((manBot: IBot) => {
-        const teamCommands: ITeamCommand[] = [];
-        const groupCommands: IGroupChatCommand[] = [];
-        const personalCommands: IPersonalCommand[] = [];
-
-        manBot?.commandLists?.forEach((list: ICommandList) => {
-          list.commands.forEach((command: ICommand) => {
-            teamCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-
-            groupCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-
-            personalCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-          });
-        });
-
-        const bot: IAppDefinitionBot = {
-          botId: manBot.botId,
-          isNotificationOnly: manBot.isNotificationOnly ?? false,
-          supportsFiles: manBot.supportsFiles ?? false,
-          scopes: manBot.scopes,
-          teamCommands: teamCommands,
-          groupChatCommands: groupCommands,
-          personalCommands: personalCommands,
-        };
-
-        bots.push(bot);
-      });
-    }
-    return bots;
-  }
-
   private async reloadManifest(manifestPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     try {
       const manifest = await fs.readJson(manifestPath);
@@ -1349,8 +1273,8 @@ export class AppStudioPluginImpl {
     appDefinition.staticTabs = appManifest.staticTabs;
     appDefinition.configurableTabs = appManifest.configurableTabs;
 
-    appDefinition.bots = this.convertToAppDefinitionBots(appManifest);
-    appDefinition.messagingExtensions = this.convertToAppDefinitionMessagingExtensions(appManifest);
+    appDefinition.bots = convertToAppDefinitionBots(appManifest);
+    appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
     appDefinition.connectors = appManifest.connectors;
     appDefinition.devicePermissions = appManifest.devicePermissions;

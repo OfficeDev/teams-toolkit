@@ -49,16 +49,16 @@ export const errorDetail = `
 **Error detail**
 `;
 
-export enum SideloadingHintStateKeys {
-  DoNotShowAgain = "sideloadingHint/doNotShowAgain",
-}
-
 export enum PortWarningStateKeys {
   DoNotShowAgain = "localDebugPortWarning/doNotShowAgain",
 }
 
-export const localDebugFAQUrl =
-  "https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#what-to-do-if-teams-shows-app-not-found-when-the-teams-web-client-is-opened";
-
 export const localDebugHelpDoc = "https://aka.ms/teamsfx-localdebug";
 export const portInUseHelpLink = "https://aka.ms/teamsfx-port-in-use";
+export const skipNgrokHelpLink = "https://aka.ms/teamsfx-skip-ngrok";
+export const trustDevCertHelpLink = "https://aka.ms/teamsfx-trust-dev-cert";
+
+export const skipNgrokRetiredNotification =
+  "Property 'skipNgrok' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.ngrok' in VSCode settings instead.";
+export const trustDevCertRetiredNotification =
+  "Property 'trustDevCert' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.devCert' in VSCode settings instead.";

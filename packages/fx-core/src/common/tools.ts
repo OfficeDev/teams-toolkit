@@ -378,6 +378,10 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+export function isConfigUnifyEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {
@@ -616,10 +620,12 @@ export function getAllowedAppIds(): string[] {
   return [
     TeamsClientId.MobileDesktop,
     TeamsClientId.Web,
+    OfficeClientId.Desktop,
     OfficeClientId.Web1,
     OfficeClientId.Web2,
     OutlookClientId.Desktop,
-    OutlookClientId.Web,
+    OutlookClientId.Web1,
+    OutlookClientId.Web2,
   ];
 }
 

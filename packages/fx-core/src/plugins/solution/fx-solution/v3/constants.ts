@@ -6,19 +6,17 @@ export const BuiltInSolutionNames = {
   azure: TeamsFxAzureSolutionNameV3,
   spfx: "fx-solution-spfx",
 };
-export const BuiltInResourcePluginNames = {
+export const BuiltInFeaturePluginNames = {
   appStudio: "fx-resource-appstudio",
   aad: "fx-resource-aad-app-for-teams",
   bot: "fx-resource-bot",
   function: "fx-resource-function",
-  webApp: "fx-resource-azure-web-app",
-  storage: "fx-resource-azure-storage",
+  frontend: "fx-resource-frontend-hosting",
+  dotnet: "fx-resource-dotnet",
   spfx: "fx-resource-spfx",
   simpleAuth: "fx-resource-simple-auth",
-};
-export const BuiltInScaffoldPluginNames = {
-  blazor: "fx-scaffold-blazor",
-  tab: "fx-scaffold-react-tab",
-  spfx: "fx-scaffold-spfx",
-  bot: "fx-scaffold-bot",
+  identity: "fx-resource-identity",
+  apim: "fx-resource-apim",
+  keyVault: "fx-resource-key-vault",
+  sql: "fx-resource-azure-sql",
 };

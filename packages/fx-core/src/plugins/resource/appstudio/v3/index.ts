@@ -6,19 +6,16 @@ import {
   Result,
   err,
   v2,
-  IComposeExtension,
-  IBot,
-  IConfigurableTab,
-  IStaticTab,
   TeamsAppManifest,
   PluginContext,
   ok,
   Json,
   TokenProvider,
   Void,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { convert2PluginContext } from "../../utils4v2";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
@@ -40,12 +37,15 @@ import {
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../constants";
-import { TelemetryUtils, TelemetryEventName } from "../utils/telemetry";
+import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
+import { AppStudioPluginImpl } from "./plugin";
 
-@Service(BuiltInResourcePluginNames.appStudio)
+@Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
+
+  private appStudioPluginImpl = new AppStudioPluginImpl();
 
   /**
    * Generate initial manifest template file, for both local debug & remote
@@ -80,15 +80,7 @@ export class AppStudioPluginV3 {
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    capabilities: (
-      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-      | {
-          name: "MessageExtension";
-          snippet?: { local: IComposeExtension; remote: IComposeExtension };
-        }
-    )[]
+    capabilities: v3.ManifestCapability[]
   ): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.addCapability);
@@ -189,19 +181,42 @@ export class AppStudioPluginV3 {
     return await capabilityExceedLimit(pluginContext.root, capability);
   }
 
-  /**
-   *
-   * @param ctx
-   * @param inputs
-   * @param localSettings
-   * @param tokenProvider
-   * @returns
-   */
-  async configureLocalResource(
+  async registerTeamsApp(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    localSettings: Json,
+    envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
+  ): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
+    const result = await this.appStudioPluginImpl.createTeamsApp(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider
+    );
+    if (result.isOk()) {
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.appId] = result.value;
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provisionManifest);
+    } else {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.provisionManifest, result.error);
+    }
+    return result;
+  }
+
+  async updateTeamsApp(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+
+  async publishTeamsApp(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

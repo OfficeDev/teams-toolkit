@@ -22,7 +22,7 @@ describe("teamsfx provision manifest command", function () {
 
   before(async () => {
     AppStudioValidator.setE2ETestProvider();
-    if (AppStudioValidator.checkWetherAppExists(testTeamsAppId)) {
+    if (await AppStudioValidator.checkWetherAppExists(testTeamsAppId)) {
       await AppStudioValidator.deleteApp(testTeamsAppId);
       console.log(`Teams App ${testTeamsAppId} has been deleted`);
     }
@@ -45,7 +45,7 @@ describe("teamsfx provision manifest command", function () {
 
     console.log(`extracted teamsApp: ${teamsAppId}`);
     AppStudioValidator.setE2ETestProvider();
-    await AppStudioValidator.getApp(teamsAppId);
+    chai.assert.isTrue(await AppStudioValidator.checkWetherAppExists(teamsAppId));
 
     // Since app has been created, the second run should update the app
     const updateAppResult = await execAsync(
@@ -63,5 +63,6 @@ describe("teamsfx provision manifest command", function () {
     chai.assert.equal(updatedTeamsAppId, teamsAppId);
 
     await AppStudioValidator.deleteApp(teamsAppId);
+    console.log(`Teams App ${teamsAppId} has been deleted`);
   });
 });

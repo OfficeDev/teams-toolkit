@@ -5,29 +5,46 @@ import { TeamsAppManifest, IStaticTab, IConfigurableTab } from "@microsoft/teams
 import * as fs from "fs-extra";
 
 export class Manifest {
+  private manifest: TeamsAppManifest;
+
+  constructor(manifest?: TeamsAppManifest) {
+    if (manifest) {
+      this.manifest = manifest;
+    } else {
+      this.manifest = new TeamsAppManifest();
+    }
+  }
+
+  static async initWithAppName(appName: string): Promise<Manifest> {
+    const manifest = new TeamsAppManifest();
+    manifest.name.short = appName;
+    manifest.name.full = appName;
+    return new Manifest(manifest);
+  }
   /**
    * Load manifest from manifest.json
    * @param filePath path to the manifest.json file
    * @throws FileNotFoundError - when file not found
    * @throws InvalidManifestError - when file is not a valid json or can not be parsed to TeamsAppManifest
    */
-  static async load(filePath: string): Promise<TeamsAppManifest> {
-    return new TeamsAppManifest();
+  static async loadFromPath(filePath: string): Promise<Manifest> {
+    const manifest = await fs.readJson(filePath);
+    return new Manifest(manifest);
   }
 
   /**
    * Save manifest to .json file
    * @param filePath path to the manifest.json file
-   * @param manifest
    */
-  static async save(filePath: string, manifest: TeamsAppManifest): Promise<void> {}
+  async save(filePath: string): Promise<void> {
+    await fs.writeFile(filePath, JSON.stringify(this.manifest, null, 4));
+  }
 
   /**
    * Validate manifest against json schema
-   * @param manifest
    * @returns {string[]} An array of error string
    */
-  static async validate(manifest: TeamsAppManifest): Promise<string[]> {
+  async validate(): Promise<string[]> {
     return [];
   }
 
@@ -45,22 +62,16 @@ export class Manifest {
   /// strech goal
 
   /**
-   * Provide an initial manifest file, without capabilities
-   * @param filePath path to the manifest.json file
-   */
-  static async init(filePath: string): Promise<void> {}
-
-  /**
    * Add static tab to manifest
-   * @param manifest
+   * @param tab
    */
-  static async addStaticTab(manfiest: TeamsAppManifest, tab: IStaticTab): Promise<void> {}
+  async addStaticTab(tab: IStaticTab): Promise<void> {}
 
   /**
    * Add configurable tab to manifest
-   * @param manifest
+   * @param tab
    */
-  static async addConfigurableTab(manfiest: TeamsAppManifest, tab: IConfigurableTab): Promise<void> {}
+  async addConfigurableTab( tab: IConfigurableTab): Promise<void> {}
 
   /**
    * Publish a Teams app to Teams app catalog

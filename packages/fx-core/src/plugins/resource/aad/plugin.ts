@@ -333,12 +333,7 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const userObjectId = userInfo.aadId;
-    await AadAppClient.grantPermission(
-      ctx,
-      Messages.EndCheckPermission.telemetry,
-      config.objectId!,
-      userObjectId
-    );
+    await AadAppClient.grantPermission(ctx, config.objectId!, userObjectId);
 
     const result = [
       {

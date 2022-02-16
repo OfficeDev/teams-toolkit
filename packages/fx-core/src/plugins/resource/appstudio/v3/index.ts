@@ -13,6 +13,8 @@ import {
   TokenProvider,
   Void,
   v3,
+  AppStudioTokenProvider,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -32,13 +34,18 @@ import fs from "fs-extra";
 import {
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   COLOR_TEMPLATE,
+  Constants,
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
+  ErrorMessages,
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
 import { AppStudioPluginImpl } from "./plugin";
+import { TeamsAppAdmin } from "../../../../common/permissionInterface";
+import isUUID from "validator/lib/isUUID";
+import { AppStudioClient } from "../appStudio";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -219,5 +226,70 @@ export class AppStudioPluginV3 {
     envInfo: v3.EnvInfoV3
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
+  }
+
+  private async getTeamsAppId(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<string> {
+    let teamsAppId = "";
+    // User may manually update id in manifest template file, rather than configuration file
+    // The id in manifest template file should override configurations
+    const manifestResult = await this.loadManifest(ctx, inputs);
+    if (manifestResult.isOk()) {
+      teamsAppId = manifestResult.value.remote.id;
+    }
+    if (!isUUID(teamsAppId)) {
+      teamsAppId = (envInfo.state[this.name] as v3.TeamsAppResource).teamsAppId;
+    }
+    return teamsAppId;
+  }
+
+  async listCollaborator(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    appStudioTokenProvider: AppStudioTokenProvider
+  ): Promise<Result<TeamsAppAdmin[], FxError>> {
+    const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+    if (!teamsAppId) {
+      return err(
+        new UserError(
+          "GetConfigError",
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
+          Constants.PLUGIN_NAME
+        )
+      );
+    }
+
+    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+    let userLists;
+    try {
+      userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      if (!userLists) {
+        return ok([]);
+      }
+    } catch (error: any) {
+      if (error.name === 404) {
+        error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
+      }
+      throw error;
+    }
+
+    const teamsAppAdmin: TeamsAppAdmin[] = userLists
+      .filter((userList) => {
+        return userList.isAdministrator;
+      })
+      .map((userList) => {
+        return {
+          userObjectId: userList.aadId,
+          displayName: userList.displayName,
+          userPrincipalName: userList.userPrincipalName,
+          resourceId: teamsAppId,
+        };
+      });
+
+    return ok(teamsAppAdmin);
   }
 }

@@ -279,7 +279,6 @@ export class AadAppClient {
   }
 
   public static async listCollaborator(
-    ctx: PluginContext,
     stage: string,
     objectId: string
   ): Promise<AadOwner[] | undefined> {

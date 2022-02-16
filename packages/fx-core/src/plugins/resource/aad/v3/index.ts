@@ -9,6 +9,7 @@ import {
   ok,
   ProjectSettings,
   Result,
+  SystemError,
   TeamsAppManifest,
   TokenProvider as TokenProviderInAPI,
   UserError,
@@ -19,12 +20,20 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
+import { AadOwner } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AadAppClient } from "../aadAppClient";
-import { Messages, Plugins, ProgressDetail, ProgressTitle, Telemetry } from "../constants";
-import { AppIdUriInvalidError } from "../errors";
+import {
+  ConfigKeys,
+  Messages,
+  Plugins,
+  ProgressDetail,
+  ProgressTitle,
+  Telemetry,
+} from "../constants";
+import { AppIdUriInvalidError, ConfigErrorMessages, GetConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { AadAppForTeamsImpl } from "../plugin";
 import { ResultFactory } from "../results";
@@ -35,7 +44,7 @@ import {
   SetApplicationInContextConfig,
 } from "../utils/configs";
 import { DialogUtils } from "../utils/dialog";
-import { TokenProvider } from "../utils/tokenProvider";
+import { TokenAudience, TokenProvider } from "../utils/tokenProvider";
 
 const permissionFile = "permissions.json";
 
@@ -278,5 +287,42 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
       config.applicationIdUri;
     return ok(Void);
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async listCollaborator(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI
+  ): Promise<Result<AadOwner[], FxError>> {
+    ctx.logProvider.info(Messages.StartListCollaborator.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          GetConfigError.message(
+            ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const owners = await AadAppClient.listCollaborator(
+      Messages.EndListCollaborator.telemetry,
+      objectId
+    );
+    ctx.logProvider.info(Messages.EndListCollaborator.log);
+    return ResultFactory.Success(owners);
   }
 }

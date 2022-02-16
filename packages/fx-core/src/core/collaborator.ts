@@ -89,9 +89,16 @@ export async function listCollaborator(
     : false;
   const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
-  const appStudioRes = ok([]); //await appStudio.listCollaborator(...);
+  const appStudioRes = await appStudio.listCollaborator(
+    ctx,
+    inputs,
+    envInfo,
+    tokenProvider.appStudioToken
+  );
   const teamsAppOwners: TeamsAppAdmin[] = appStudioRes.isErr() ? [] : appStudioRes.value;
-  const aadRes = ok([]); //awaut aadPlugin?.listCollaborator(...);
+  const aadRes = isAadActivated
+    ? await aadPlugin.listCollaborator(ctx, envInfo, tokenProvider)
+    : ok([]);
   const aadOwners: AadOwner[] = aadRes.isErr() ? [] : aadRes.value;
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";

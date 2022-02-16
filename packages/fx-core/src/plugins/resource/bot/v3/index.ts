@@ -515,6 +515,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
+    await handler?.end(true);
     ctx.logProvider.info(Messages.SuccessfullyDeployedBot);
 
     return ok(Void);

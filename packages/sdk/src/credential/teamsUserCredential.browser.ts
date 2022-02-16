@@ -305,6 +305,7 @@ export class TeamsUserCredential implements TokenCredential {
       const params = {} as authentication.AuthTokenRequestParameters;
       let token: string;
       try {
+        await app.initialize();
         token = await authentication.getAuthToken(params);
       } catch (err: unknown) {
         const errorMsg = "Get SSO token failed with error: " + (err as Error).message;

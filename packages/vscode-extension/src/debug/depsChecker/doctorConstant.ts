@@ -11,7 +11,7 @@ export const doctorConstant = {
   WhiteSpace: "   ",
   Check:
     "Teams Toolkit is checking if all required prerequisites are installed and will install them if not, if you wish to bypass checking and installing any prerequisistes, you can disable them in Visual Studio Code settings. A summary will be generated for your reference.",
-  CheckNumber: "We are checking total {@number} of prerequisites for you.",
+  CheckNumber: "We are checking total @number of prerequisites for you.",
   Summary: "Prerequisites Check Summary:",
   RestartVSCode:
     "Restart all your Visual Studio Code instances after the installation is finished.",
@@ -22,7 +22,8 @@ export const doctorConstant = {
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certificate for localhost is installed",
-  NpmInstallSuccess: "NPM Install for @app is executed",
+  CertSuccess: "Development certification for localhost is installed",
+  NpmInstallSuccess: "NPM packages for @app are installed",
   NpmInstallFailure: "NPM Install for @app",
   LaunchServices:
     "Services will be launched locally, please check your terminal window for details.",

@@ -671,9 +671,9 @@ export class FxCore implements v3.ICore {
   /**
    * Only used to provision Teams app with user provided app package
    * @param inputs
-   * @returns
+   * @returns teamsAppId on provision success
    */
-  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
     if (!inputs.appPackagePath) {
       return err(InvalidInputError("appPackagePath is not defined", inputs));
     }
@@ -690,13 +690,12 @@ export class FxCore implements v3.ICore {
       projectSetting: projectSettings,
     };
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    await appStudioV3.registerTeamsApp(
+    return appStudioV3.registerTeamsApp(
       context,
       inputs as v2.InputsWithProjectPath,
       newEnvInfoV3(),
       TOOLS.tokenProvider
     );
-    return ok(Void);
   }
 
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {

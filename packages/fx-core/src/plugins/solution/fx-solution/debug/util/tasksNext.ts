@@ -41,11 +41,12 @@ export function generateTasks(
 
   if (includeFrontend) {
     tasks.push(startFrontend());
-    if (includeBackend) {
-      tasks.push(startBackend(programmingLanguage));
-      if (programmingLanguage === ProgrammingLanguage.typescript) {
-        tasks.push(watchBackend());
-      }
+  }
+
+  if (includeBackend) {
+    tasks.push(startBackend(programmingLanguage));
+    if (programmingLanguage === ProgrammingLanguage.typescript) {
+      tasks.push(watchBackend());
     }
   }
 

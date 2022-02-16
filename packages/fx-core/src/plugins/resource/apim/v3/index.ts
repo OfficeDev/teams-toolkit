@@ -199,6 +199,8 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ProgressMessages[ProgressStep.Provision].CreateAad
     );
     await aadManager.provision(apimConfig, appName);
+
+    await this.progressBar.close(ProgressStep.Provision, true);
     return ok(Void);
   }
 

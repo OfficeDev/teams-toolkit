@@ -22,7 +22,7 @@ export const doctorConstant = {
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certification for localhost is installed",
-  NpmInstallSuccess: "NPM Install for @app is executed",
+  NpmInstallSuccess: "NPM packages for @app are installed",
   NpmInstallFailure: "NPM Install for @app",
   LaunchServices:
     "Services will be launched locally, please check your terminal window for details.",

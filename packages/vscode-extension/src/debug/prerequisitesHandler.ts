@@ -711,7 +711,7 @@ function outputCheckResultError(result: CheckResult, output: vscode.OutputChanne
 }
 
 async function checkFailure(checkResults: CheckResult[], progressHelper: ProgressHelper) {
-  if (checkResults.some((r) => r.result == ResultStatus.failed)) {
+  if (checkResults.some((r) => r.result === ResultStatus.failed)) {
     await handleCheckResults(checkResults, progressHelper);
   }
 }

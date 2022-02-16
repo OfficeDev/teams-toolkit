@@ -22,13 +22,15 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
-  isSPFxProject,
+  getStrings,
   PermissionsResult,
   ResourcePermission,
 } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
+  AzureRoleAssignmentsHelpLink,
   PluginNames,
+  SharePointManageSiteAdminHelpLink,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -42,12 +44,15 @@ import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
   getActivatedResourcePlugins,
   getActivatedV2ResourcePlugins,
+  ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
+import * as util from "util";
+import { Container } from "typedi";
 
 async function grantPermissionImpl(
   param: CollabApiParam,
@@ -64,7 +69,10 @@ async function grantPermissionImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const progressBar = ui?.createProgressBar("Granting permission", 1);
+  const progressBar = ui?.createProgressBar(
+    getStrings().solution.Collaboration.GrantingPermission,
+    1
+  );
   try {
     const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
     if (result.isErr()) {
@@ -96,7 +104,7 @@ async function grantPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.GrantPermission,
           returnUserError(
-            new Error("Collaborator's email cannot be null or same as current user"),
+            new Error(getStrings().solution.Collaboration.EmailCannotBeEmptyOrSame),
             SolutionSource,
             SolutionError.EmailCannotBeEmptyOrSame
           ),
@@ -112,9 +120,7 @@ async function grantPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.GrantPermission,
           returnUserError(
-            new Error(
-              "Cannot find user in current tenant, please check whether your email address is correct"
-            ),
+            new Error(getStrings().solution.Collaboration.CannotFindUserInCurrentTenant),
             SolutionSource,
             SolutionError.CannotFindUserInCurrentTenant
           ),
@@ -124,7 +130,7 @@ async function grantPermissionImpl(
     }
 
     progressBar?.start();
-    progressBar?.next(`Grant permission for user ${email}`);
+    progressBar?.next(getStrings().solution.Collaboration.GrantPermissionForUser + ` ${email}`);
 
     if (platform === Platform.CLI) {
       const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
@@ -133,7 +139,7 @@ async function grantPermissionImpl(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.GrantPermission,
             returnSystemError(
-              new Error("Failed to get env name."),
+              new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
               SolutionSource,
               SolutionError.FailedToGetEnvName
             ),
@@ -143,14 +149,17 @@ async function grantPermissionImpl(
       }
 
       const message = [
-        { content: `Account to grant permission: `, color: Colors.BRIGHT_WHITE },
+        {
+          content: getStrings().solution.Collaboration.AccountToGrantPermission,
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
         {
-          content: `Starting grant permission for environment: `,
+          content: getStrings().solution.Collaboration.StartingGrantPermission,
           color: Colors.BRIGHT_WHITE,
         },
         { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-        { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+        { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
 
@@ -170,7 +179,7 @@ async function grantPermissionImpl(
 
     let errorMsg = "";
     if (errors.length > 0) {
-      errorMsg += `Failed to grant permission for the below resources to user: ${email}.\n Resource details: \n`;
+      errorMsg += util.format(getStrings().solution.Collaboration.FailedToGrantPermission, email);
       for (const fxError of errors) {
         errorMsg += fxError.error.message + "\n";
       }
@@ -180,9 +189,15 @@ async function grantPermissionImpl(
       for (const permission of permissions) {
         const message = [
           { content: `${permission.roles?.join(",")} `, color: Colors.BRIGHT_MAGENTA },
-          { content: "permission has been granted to ", color: Colors.BRIGHT_WHITE },
+          {
+            content: getStrings().solution.Collaboration.PermissionHasBeenGrantTo,
+            color: Colors.BRIGHT_WHITE,
+          },
           { content: permission.name, color: Colors.BRIGHT_MAGENTA },
-          { content: ", Resource ID: ", color: Colors.BRIGHT_WHITE },
+          {
+            content: getStrings().solution.Collaboration.GrantPermissionResourceId,
+            color: Colors.BRIGHT_WHITE,
+          },
           { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
         ];
 
@@ -192,13 +207,13 @@ async function grantPermissionImpl(
       if (CollaborationUtil.isSpfxProject(param.ctx)) {
         ui?.showMessage(
           "info",
-          `\nIf added user is not a SharePoint App Catalog site admin, you need to handle that via SharePoint admin center, please refer to this link for more details: https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators`,
+          getStrings().solution.Collaboration.SharePointTip + SharePointManageSiteAdminHelpLink,
           false
         );
       } else {
         ui?.showMessage(
           "info",
-          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal,  please refer to this link for more details: https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current`,
+          getStrings().solution.Collaboration.AzureTip + AzureRoleAssignmentsHelpLink,
           false
         );
       }
@@ -265,7 +280,10 @@ export async function grantPermission(
     if (!configMap) {
       return err(
         returnSystemError(
-          new Error(`failed to convert profile ${JSON.stringify(param.envInfo.state)}`),
+          new Error(
+            getStrings().solution.Collaboration.FailedToConvertProfile +
+              JSON.stringify(param.envInfo.state)
+          ),
           PluginNames.SOLUTION,
           SolutionError.InternelError
         )
@@ -342,8 +360,13 @@ async function executeGrantPermissionsV2(
   tokenProvider: TokenProvider,
   userInfo: IUserList
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
-  const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
+  const plugins: v2.ResourcePlugin[] = [
+    Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
+  ];
 
+  if (CollaborationUtil.AadResourcePluginsActivated(ctx)) {
+    plugins.push(Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin));
+  }
   const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !!plugin.grantPermission)
     .map((plugin) => {

@@ -120,8 +120,15 @@ jobs:
       - name: sync up templates deps with sdk version for RC
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
-          node sdk-sync-up-version.js
+          node sdk-sync-up-version.js sdk
         working-directory: ./.github/scripts
+
+      - name: sync up fx-core with templates version for RC
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          node .github/scripts/fxcore-sync-up-version.js
+          git add packages/fx-core/.
+          git commit -m "chore: update templates version"
       
       - name: generate templates
         run: |
@@ -132,7 +139,7 @@ jobs:
         uses: richardsimko/update-tag@v1
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
         with:
-          tag_name: "templates@0.0.0-alpha"
+          tag_name: "templates-0.0.0-alpha"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
@@ -142,7 +149,7 @@ jobs:
         with:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
-          tag: "templates@0.0.0-alpha"
+          tag: "templates-0.0.0-alpha"
           artifacts: ./*.zip
           allowUpdates: true
       
@@ -176,7 +183,7 @@ jobs:
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates@ > ./template-tags.txt
+        run: git tag | grep templates > ./template-tags.txt
 
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

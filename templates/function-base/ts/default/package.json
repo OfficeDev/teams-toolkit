@@ -2,6 +2,9 @@
     "name": "teamsfx-template-api",
     "version": "1.0.0",
     "scripts": {
+        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
+        "dev": "func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
+        "watch:teamsfx": "tsc --watch",
         "build": "tsc",
         "watch": "tsc -w",
         "prestart": "npm run build",
@@ -14,6 +17,7 @@
         "isomorphic-fetch": "^3.0.0"
     },
     "devDependencies": {
+        "env-cmd": "^10.1.0",
         "typescript": "^3.3.3"
     }
 }

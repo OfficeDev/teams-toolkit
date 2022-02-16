@@ -22,12 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import {
-  Correlator,
-  isMultiEnvEnabled,
-  isRemoteCollaborateEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -35,6 +30,7 @@ import {
   isTeamsfx,
   syncFeatureFlags,
   isValidNode,
+  delay,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -45,10 +41,10 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -92,6 +88,22 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
+      const targetUri = await Correlator.run(handlers.getNewProjectHandler, args);
+      if (targetUri.isOk()) {
+        await ExtTelemetry.dispose();
+        await delay(2000);
+        return { openFolder: targetUri.value };
+      }
+    })
+  );
+
+  const openReadMeCmd = vscode.commands.registerCommand("fx-extension.openReadMe", (...args) =>
+    Correlator.run(handlers.openReadMeHandler, args)
+  );
+  context.subscriptions.push(openReadMeCmd);
 
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
@@ -158,6 +170,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  // Referenced by tasks.json
+  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
+    Correlator.run(handlers.getFuncPathHandler)
+  );
+  context.subscriptions.push(getFuncPathCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
@@ -410,12 +428,6 @@ export async function activate(context: vscode.ExtensionContext) {
     await canUpgradeToArmAndMultiEnv(workspacePath)
   );
 
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isRemoteCollaborateEnabled",
-    isRemoteCollaborateEnabled() && isValidProject(workspacePath)
-  );
-
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const userDataSelector = {
@@ -526,6 +538,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   openWelcomePageAfterExtensionInstallation();
+
+  showDebugChangesNotification();
 }
 
 // this method is called when your extension is deactivated

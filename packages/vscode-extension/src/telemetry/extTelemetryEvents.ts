@@ -88,9 +88,12 @@ export enum TelemetryEvent {
   DebugPrerequisites = "debug-prerequisites",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
-  DebugFAQ = "debug-faq",
   DebugNpmInstallStart = "debug-npm-install-start",
   DebugNpmInstall = "debug-npm-install",
+
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
+  ClickDisableAutomaticNpmInstall = "click-disable-automatic-npm-install",
 
   Survey = "survey",
   SurveyData = "survey-data",
@@ -117,9 +120,6 @@ export enum TelemetryEvent {
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
-
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
 
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
@@ -174,7 +174,6 @@ export enum TelemetryProperty {
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
   DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
-  DebugFAQSelection = "debug-faq-selection",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

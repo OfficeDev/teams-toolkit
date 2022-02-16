@@ -8,7 +8,6 @@
 import { expect } from "chai";
 import path from "path";
 import * as fs from "fs-extra";
-import { isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
 import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
@@ -27,9 +26,6 @@ describe("Collaboration", function () {
   let appId: string;
 
   it("Collaboration: CLI with permission status and permission grant - spfx", async function () {
-    if (!isRemoteCollaborateEnabled()) {
-      return;
-    }
     // new a project
     await execAsync(
       `teamsfx new --interactive false --capabilities tab-spfx --app-name ${appName}`,
@@ -103,13 +99,11 @@ describe("Collaboration", function () {
 
   after(async () => {
     // clean up
-    if (isRemoteCollaborateEnabled()) {
-      if (projectPath) {
-        await cleanUpLocalProject(projectPath);
-      }
-      if (appId) {
-        await cleanupSharePointPackage(appId);
-      }
+    if (projectPath) {
+      await cleanUpLocalProject(projectPath);
+    }
+    if (appId) {
+      await cleanupSharePointPackage(appId);
     }
   });
 });

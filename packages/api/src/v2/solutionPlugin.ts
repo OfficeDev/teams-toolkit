@@ -65,17 +65,15 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - system inputs
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
+   * @param {EnvInfoV2} envInfo - model for config.${env}.json, in which, user can customize some inputs for provision
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {EnvProfile} the state (persist by core as `state.${env}.json`) containing provision outputs, which will be used for deploy and publish
    */
   provisionResources: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the values returned by {@link provisionResources}.
@@ -125,7 +123,8 @@ export interface SolutionPlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ) => Promise<FxResult<Json, FxError>>;
 
   /**
@@ -170,13 +169,6 @@ export interface SolutionPlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<Json, FxError>>;
   listCollaborator?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
-
-  listAllCollaborators?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV2>,

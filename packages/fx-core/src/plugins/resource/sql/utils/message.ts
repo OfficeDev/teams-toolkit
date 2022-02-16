@@ -13,28 +13,15 @@ export class Message {
   public static readonly endPostProvision = `[${Constants.pluginName}] end postProvision`;
   public static readonly endGetQuestions = `[${Constants.pluginName}] end getQuestions`;
 
-  public static readonly checkProvider = `[${Constants.pluginName}] check SQL resource provider`;
-  public static readonly provisionSql = `[${Constants.pluginName}] provision SQL`;
-  public static readonly provisionDatabase = `[${Constants.pluginName}] provision database`;
-
-  public static readonly checkSql = `[${Constants.pluginName}] check SQL server`;
-  public static readonly checkDatabase = `[${Constants.pluginName}] check database`;
   public static readonly checkAadAdmin = `[${Constants.pluginName}] check aad admin`;
-  public static readonly checkDatabaseUser = `[${Constants.pluginName}] check database user`;
   public static readonly connectDatabase = `[${Constants.pluginName}] connect database`;
 
-  public static readonly skipCheckProvider = `[${Constants.pluginName}] skip checking SQL resource provider`;
-  public static readonly skipProvisionSql = `[${Constants.pluginName}] skip provisioning existing SQL`;
-  public static readonly skipProvisionDatabase = `[${Constants.pluginName}] skip provisioning existing database`;
   public static readonly skipAddAadAdmin = `[${Constants.pluginName}] skip adding existing aad admin`;
   public static readonly skipAddUser = `[${Constants.pluginName}] skip adding user`;
 
   public static readonly addFirewall = `[${Constants.pluginName}] add firewall`;
   public static readonly addSqlAadAdmin = `[${Constants.pluginName}] add SQL aad admin`;
   public static readonly addTable = `[${Constants.pluginName}] add table`;
-
-  public static readonly registerResourceProviderFailed = (message: string) =>
-    `[${Constants.pluginName}] Failed to register SQL resource provider. Reason: ${message}.`;
 
   public static readonly addDatabaseUser = (name: string) =>
     `[${Constants.pluginName}] add database user ${name}`;

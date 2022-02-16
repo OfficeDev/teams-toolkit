@@ -31,6 +31,9 @@ export enum TelemetryEvent {
   ProvisionStart = "provision-start",
   Provision = "provision",
 
+  ProvisionManifestStart = "provision-manifest-start",
+  ProvisionManifest = "provision-manifest",
+
   DeployStart = "deploy-start",
   Deploy = "deploy",
 
@@ -52,6 +55,9 @@ export enum TelemetryEvent {
   PreviewSideloading = "preview-sideloading",
   PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
   PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
+
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",

@@ -11,8 +11,6 @@ import {
   PluginContext,
   TeamsAppManifest,
   LogProvider,
-  IComposeExtension,
-  IBot,
   AppPackageFolderName,
   BuildFolderName,
   ArchiveFolderName,
@@ -20,17 +18,7 @@ import {
   ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
-import {
-  IAppDefinition,
-  IMessagingExtension,
-  IAppDefinitionBot,
-  ITeamCommand,
-  IPersonalCommand,
-  IGroupChatCommand,
-  IUserList,
-  ILanguage,
-} from "./interfaces/IAppDefinition";
-import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
+import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
 import {
   BotOptionItem,
   MessageExtensionItem,
@@ -92,19 +80,25 @@ import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
 import {
-  checkAndConfig,
   getCustomizedKeys,
-  getLocalAppName,
   replaceConfigValue,
+  convertToAppDefinitionBots,
+  convertToAppDefinitionMessagingExtensions,
 } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
-import localdebug from "../localdebug";
+import Ajv from "ajv-draft-04";
+import axios from "axios";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
+  private readonly ajv;
+
+  constructor() {
+    this.ajv = new Ajv({ formats: { uri: true } });
+  }
 
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
@@ -340,7 +334,6 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<string[], FxError>> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
@@ -358,11 +351,16 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
     }
-    const errors: string[] = await AppStudioClient.validateManifest(
-      manifestString,
-      appStudioToken!
-    );
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
+
+    let errors: string[];
+    const res = await this.validateManifestAgainstSchema(manifest);
+    if (res.isOk()) {
+      errors = res.value;
+    } else {
+      return err(res.error);
+    }
+
     const appDirectory = await getAppDirectory(ctx.root);
     if (manifest.icons.outline) {
       if (
@@ -946,10 +944,10 @@ export class AppStudioPluginImpl {
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists
-      .filter((userList, index) => {
+      .filter((userList) => {
         return userList.isAdministrator;
       })
-      .map((userList, index) => {
+      .map((userList) => {
         return {
           userObjectId: userList.aadId,
           displayName: userList.displayName,
@@ -1007,14 +1005,13 @@ export class AppStudioPluginImpl {
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");
-      const validationResult = await AppStudioClient.validateManifest(
-        manifestString!,
-        (await ctx.appStudioToken?.getAccessToken())!
-      );
-      if (validationResult.length > 0) {
+      const validationResult = await this.validateManifestAgainstSchema(manifest);
+      if (validationResult.isErr()) {
+        throw validationResult.error;
+      } else if (validationResult.value.length > 0) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message(validationResult)
+          AppStudioError.ValidationFailedError.message(validationResult.value)
         );
       }
 
@@ -1092,70 +1089,6 @@ export class AppStudioPluginImpl {
     }
 
     return config;
-  }
-
-  private convertToAppDefinitionMessagingExtensions(
-    appManifest: TeamsAppManifest
-  ): IMessagingExtension[] {
-    const messagingExtensions: IMessagingExtension[] = [];
-
-    if (appManifest.composeExtensions) {
-      appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
-        const me: IMessagingExtension = {
-          botId: ext.botId,
-          canUpdateConfiguration: true,
-          commands: ext.commands,
-          messageHandlers: ext.messageHandlers ?? [],
-        };
-
-        messagingExtensions.push(me);
-      });
-    }
-
-    return messagingExtensions;
-  }
-
-  private convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
-    const bots: IAppDefinitionBot[] = [];
-    if (appManifest.bots) {
-      appManifest.bots.forEach((manBot: IBot) => {
-        const teamCommands: ITeamCommand[] = [];
-        const groupCommands: IGroupChatCommand[] = [];
-        const personalCommands: IPersonalCommand[] = [];
-
-        manBot?.commandLists?.forEach((list: ICommandList) => {
-          list.commands.forEach((command: ICommand) => {
-            teamCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-
-            groupCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-
-            personalCommands.push({
-              title: command.title,
-              description: command.description,
-            });
-          });
-        });
-
-        const bot: IAppDefinitionBot = {
-          botId: manBot.botId,
-          isNotificationOnly: manBot.isNotificationOnly ?? false,
-          supportsFiles: manBot.supportsFiles ?? false,
-          scopes: manBot.scopes,
-          teamCommands: teamCommands,
-          groupChatCommands: groupCommands,
-          personalCommands: personalCommands,
-        };
-
-        bots.push(bot);
-      });
-    }
-    return bots;
   }
 
   private async reloadManifest(manifestPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -1340,8 +1273,8 @@ export class AppStudioPluginImpl {
     appDefinition.staticTabs = appManifest.staticTabs;
     appDefinition.configurableTabs = appManifest.configurableTabs;
 
-    appDefinition.bots = this.convertToAppDefinitionBots(appManifest);
-    appDefinition.messagingExtensions = this.convertToAppDefinitionMessagingExtensions(appManifest);
+    appDefinition.bots = convertToAppDefinitionBots(appManifest);
+    appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
     appDefinition.connectors = appManifest.connectors;
     appDefinition.devicePermissions = appManifest.devicePermissions;
@@ -1548,6 +1481,44 @@ export class AppStudioPluginImpl {
       }
       throw e;
     }
+  }
+
+  private async validateManifestAgainstSchema(
+    manifest: TeamsAppManifest
+  ): Promise<Result<string[], FxError>> {
+    const errors: string[] = [];
+    if (manifest.$schema) {
+      const instance = axios.create();
+      try {
+        const res = await instance.get(manifest.$schema);
+        const validate = this.ajv.compile(res.data);
+        const valid = validate(manifest);
+        if (!valid) {
+          validate.errors?.map((error) => {
+            errors.push(`${error.instancePath} ${error.message}`);
+          });
+        }
+      } catch (e: any) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              `Failed to get schema from ${manifest.$schema}, message: ${e.message}`,
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    } else {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message(["Manifest schema is not defined"]),
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
+    return ok(errors);
   }
 
   private async getAppDefinitionAndManifest(

@@ -125,3 +125,7 @@ export function DependencyCheckerFailed(): SystemError {
     "DependencyCheckerFailed"
   );
 }
+
+export function NpmInstallFailed(): UserError {
+  return returnUserError(new Error("Npm install failed."), constants.cliSource, "NpmInstallFailed");
+}

@@ -23,7 +23,9 @@ import {
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
+import * as LaunchNext from "./util/launchNext";
 import * as Tasks from "./util/tasks";
+import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
@@ -136,26 +138,36 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = Launch.generateConfigurations(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          isMigrateFromV1
-        );
-        const launchCompounds = Launch.generateCompounds(
-          includeFrontend,
-          includeBackend,
-          includeBot
-        );
+        const launchConfigurations =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+            : Launch.generateConfigurations(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                isMigrateFromV1
+              );
+        const launchCompounds =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+            : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-        const tasks = Tasks.generateTasks(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          includeSimpleAuth,
-          isMigrateFromV1,
-          programmingLanguage
-        );
+        const tasks =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? TasksNext.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                programmingLanguage
+              )
+            : Tasks.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeSimpleAuth,
+                isMigrateFromV1,
+                programmingLanguage
+              );
 
         //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
@@ -275,4 +287,19 @@ async function scaffoldLocalSettingsJson(
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
   return localSettings;
+}
+
+async function useNewTasks(projectPath?: string): Promise<boolean> {
+  // for new project or project with "validate-local-prerequisites", use new tasks content
+  const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
+  if (await fs.pathExists(tasksJsonPath)) {
+    try {
+      const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
+      return tasksContent.includes("fx-extension.validate-local-prerequisites");
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
 }

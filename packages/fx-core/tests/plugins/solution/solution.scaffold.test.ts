@@ -70,7 +70,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     TestHelper.mockScaffoldThatAlwaysSucceed(localdebugPlugin);
     TestHelper.mockScaffoldThatAlwaysSucceed(appStudioPlugin);
     TestHelper.mockScaffoldThatAlwaysSucceed(botPlugin);
-    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
+    mocker.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["default"]));
+    mocker.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["default", "local"]));
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
     TestHelper.mockedAadGenerateArmTemplates(mocker);
@@ -121,7 +122,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
       activeResourcePlugins: [
         aadPlugin.name,
         fehostPlugin.name,
-        simpleAuthPlugin.name,
         identityPlugin.name,
         botPlugin.name,
       ],

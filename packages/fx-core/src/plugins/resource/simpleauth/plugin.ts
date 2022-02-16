@@ -13,7 +13,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { isMultiEnvEnabled } from "../../../common";
-import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
+import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
@@ -27,7 +27,10 @@ export class SimpleAuthPluginImpl {
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
     if (isMultiEnvEnabled()) {
-      ctx.localSettings?.auth?.set(LocalSettingsAuthKeys.SimpleAuthFilePath, simpleAuthFilePath);
+      ctx.localSettings?.auth?.set(
+        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
+        simpleAuthFilePath
+      );
     } else {
       ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
     }
@@ -51,7 +54,7 @@ export class SimpleAuthPluginImpl {
 
     if (isMultiEnvEnabled()) {
       ctx.localSettings?.auth?.set(
-        LocalSettingsAuthKeys.SimpleAuthEnvironmentVariableParams,
+        LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
         configArray.join(" ")
       );
     } else {

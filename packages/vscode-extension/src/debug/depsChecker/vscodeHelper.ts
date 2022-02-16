@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
-import { getSkipNgrokConfig, hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
+import { hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
 
 const configurationPrefix = "fx-extension";
 
@@ -17,15 +17,23 @@ class VSCodeHelper {
   }
 
   public isDotnetCheckerEnabled(): boolean {
-    return this.checkerEnabled("validateDotnetSdk");
+    return this.checkerEnabled("prerequisiteCheck.dotnetSdk");
   }
 
   public isFuncCoreToolsEnabled(): boolean {
-    return this.checkerEnabled("validateFuncCoreTools");
+    return this.checkerEnabled("prerequisiteCheck.funcCoreTools");
   }
 
   public isNodeCheckerEnabled(): boolean {
-    return this.checkerEnabled("validateNode");
+    return this.checkerEnabled("prerequisiteCheck.node");
+  }
+
+  public isNgrokCheckerEnabled(): boolean {
+    return this.checkerEnabled("prerequisiteCheck.ngrok");
+  }
+
+  public isTrustDevCertEnabled(): boolean {
+    return this.checkerEnabled("prerequisiteCheck.devCert");
   }
 
   public async hasFunction(): Promise<boolean> {
@@ -34,10 +42,6 @@ class VSCodeHelper {
 
   public async hasBot(): Promise<boolean> {
     return await hasTeamsfxBot();
-  }
-
-  public async hasNgrok(): Promise<boolean> {
-    return !(await getSkipNgrokConfig());
   }
 
   public checkerEnabled(key: string): boolean {

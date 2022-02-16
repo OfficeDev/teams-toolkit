@@ -24,6 +24,7 @@ import {
   EnvStateFiles,
   FxCore,
   PathNotExistError,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
 import Resource, {
@@ -51,6 +52,7 @@ import { expect } from "../utils";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import * as path from "path";
+import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 
 describe("Resource Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -62,6 +64,7 @@ describe("Resource Command Tests", function () {
   let logs: string[] = [];
   let allArguments = new Map<string, any>();
   const envs = ["dev"];
+  const allEnvs = ["dev", "local"];
   const params = {
     "apim-resource-group": {},
     "apim-service-name": {},
@@ -118,6 +121,15 @@ describe("Resource Command Tests", function () {
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
+    sandbox.stub(FxCore.prototype, "getProjectConfig").callsFake(async (inputs: Inputs) => {
+      if (inputs.projectPath?.includes("real")) {
+        return ok({});
+      } else {
+        return err(NotSupportedProjectType());
+      }
+    });
+    sandbox.stub(ProjectSettingsHelper, "includeBackend").returns(false);
+    sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").callsFake(async () => {});
     sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
       allArguments.set(key, value);
     });
@@ -125,10 +137,19 @@ describe("Resource Command Tests", function () {
       logs.push(message);
     });
     sandbox
-      .stub(environmentManager, "listEnvConfigs")
+      .stub(environmentManager, "listRemoteEnvConfigs")
       .callsFake(async function (projectPath: string): Promise<Result<string[], FxError>> {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(envs);
+        } else {
+          return err(PathNotExistError(projectPath));
+        }
+      });
+    sandbox
+      .stub(environmentManager, "listAllEnvConfigs")
+      .callsFake(async function (projectPath: string): Promise<Result<string[], FxError>> {
+        if (path.normalize(projectPath).endsWith("real")) {
+          return ok(allEnvs);
         } else {
           return err(PathNotExistError(projectPath));
         }

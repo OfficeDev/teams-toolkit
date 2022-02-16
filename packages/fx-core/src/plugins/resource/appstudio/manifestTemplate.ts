@@ -8,11 +8,8 @@ import {
   Result,
   err,
   ok,
-  IComposeExtension,
-  IBot,
-  IConfigurableTab,
-  IStaticTab,
   AppPackageFolderName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
@@ -25,13 +22,19 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
   STATIC_TABS_TPL_LOCAL_DEBUG,
+  STATIC_TABS_TPL_EXISTING_APP,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
+  CONFIGURABLE_TABS_TPL_EXISTING_APP,
   BOTS_TPL_FOR_MULTI_ENV,
   BOTS_TPL_LOCAL_DEBUG,
+  BOTS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
+  COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
+  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
 } from "./constants";
+import { replaceConfigValue } from "./utils/utils";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -41,15 +44,22 @@ export async function getManifestTemplatePath(
   return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
 }
 
-export async function init(projectRoot: string): Promise<Result<any, FxError>> {
+export async function init(projectRoot: string, appName: string): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  const localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+  let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+  const suffix = "-local-debug";
+  let localAppName = appName;
+  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+    localAppName = localAppName + suffix;
+  }
+  localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
   const localManifest = JSON.parse(localManifestString);
   await saveManifest(projectRoot, localManifest, true);
 
-  const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  let remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  remoteManifestString = replaceConfigValue(remoteManifestString, "appName", appName);
   const remoteManifest = JSON.parse(remoteManifestString);
   await saveManifest(projectRoot, remoteManifest, false);
 
@@ -163,15 +173,7 @@ export async function capabilityExceedLimit(
 
 export async function addCapabilities(
   projectRoot: string,
-  capabilities: (
-    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-    | {
-        name: "MessageExtension";
-        snippet?: { local: IComposeExtension; remote: IComposeExtension };
-      }
-  )[]
+  capabilities: v3.ManifestCapability[]
 ): Promise<Result<any, FxError>> {
   const localManifestRes = await loadManifest(projectRoot, true);
   if (localManifestRes.isErr()) {
@@ -200,12 +202,24 @@ export async function addCapabilities(
           localManifest.staticTabs!.push(capability.snippet.local);
           remoteManifest.staticTabs!.push(capability.snippet.remote);
         } else {
-          STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
-          STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
-          localManifest.staticTabs = localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
-          remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
-            STATIC_TABS_TPL_FOR_MULTI_ENV
-          );
+          if (capability.existingApp) {
+            STATIC_TABS_TPL_EXISTING_APP[0].entityId = "index" + staticTabIndex;
+            localManifest.staticTabs = localManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_EXISTING_APP
+            );
+            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
+            STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
+            localManifest.staticTabs = localManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_LOCAL_DEBUG
+            );
+            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_FOR_MULTI_ENV
+            );
+          }
           staticTabIndex++;
         }
         break;
@@ -220,12 +234,21 @@ export async function addCapabilities(
           localManifest.configurableTabs!.push(capability.snippet.local);
           remoteManifest.configurableTabs!.push(capability.snippet.remote);
         } else {
-          localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-            CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
-          );
-          remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
-            CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
-          );
+          if (capability.existingApp) {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_EXISTING_APP
+            );
+            remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
+            );
+            remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
+            );
+          }
         }
         break;
       case "Bot":
@@ -239,8 +262,13 @@ export async function addCapabilities(
           localManifest.bots!.push(capability.snippet.local);
           remoteManifest.bots!.push(capability.snippet.remote);
         } else {
-          localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
-          remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+          if (capability.existingApp) {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
+            remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
+          } else {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
+            remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+          }
         }
         break;
       case "MessageExtension":
@@ -254,12 +282,21 @@ export async function addCapabilities(
           localManifest.composeExtensions!.push(capability.snippet.local);
           remoteManifest.composeExtensions!.push(capability.snippet.remote);
         } else {
-          localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-            COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
-          );
-          remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
-            COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
-          );
+          if (capability.existingApp) {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
+            );
+            remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
+            );
+            remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+            );
+          }
         }
         break;
     }

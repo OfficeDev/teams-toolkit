@@ -5,7 +5,7 @@
 
 import { SharepointTokenProvider, UserError } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
-import { CodeFlowLogin } from "./codeFlowLogin";
+import { checkIsOnline, CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
 import { CryptoCachePlugin } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
@@ -167,7 +167,15 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
         const tokenJson = await this.getJsonObject();
         return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
       } else {
-        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+        if (await checkIsOnline()) {
+          return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+        } else {
+          return Promise.resolve({
+            status: signedIn,
+            token: undefined,
+            accountInfo: { upn: this.graphCodeFlowInstance.account?.username },
+          });
+        }
       }
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });

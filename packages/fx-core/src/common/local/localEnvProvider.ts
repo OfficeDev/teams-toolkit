@@ -16,7 +16,7 @@ export interface LocalEnvs {
 export const EnvKeysFrontend = Object.freeze({
   Browser: "BROWSER",
   Https: "HTTPS",
-  Port: "Port",
+  Port: "PORT",
   SslCrtFile: "SSL_CRT_FILE",
   SslKeyFile: "SSL_KEY_FILE",
   TeamsFxEndpoint: "REACT_APP_TEAMSFX_ENDPOINT",

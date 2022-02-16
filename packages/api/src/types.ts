@@ -170,7 +170,7 @@ export interface ProjectSettings {
   projectId: string;
   programmingLanguage?: string;
   defaultFunctionName?: string;
-  solutionSettings: SolutionSettings;
+  solutionSettings?: SolutionSettings;
   isFromSample?: boolean;
   /**
    * pluginSettings is used for plugin settings irrelevant to environments
@@ -231,6 +231,20 @@ export interface Inputs extends Json {
   env?: string;
   projectId?: string;
   existingResources?: string[];
+  existingAppConfig?: ExistingAppConfig;
+}
+
+// configs for existing app building
+export interface ExistingAppConfig {
+  isCreatedFromExistingApp: boolean;
+  newAppTypes: ExistingTeamsAppType[];
+}
+
+export enum ExistingTeamsAppType {
+  StaticTab, // scopes: personal tab
+  ConfigurableTab, // scopes: team/group chat
+  Bot,
+  MessageExtension,
 }
 
 export interface ProjectConfig {

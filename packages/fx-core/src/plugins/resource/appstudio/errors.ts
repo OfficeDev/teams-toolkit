@@ -37,6 +37,12 @@ export class AppStudioError {
       `Failed to create localDebug teams app id in app studio, due to ${error?.name}, ${error?.message}`,
   };
 
+  public static readonly TeamsAppCreateFailedError = {
+    name: "TeamsAppCreateFailed",
+    message: (error?: any) =>
+      `Failed to create teams app in app studio, due to ${error?.name}, ${error?.message}.`,
+  };
+
   public static readonly LocalAppIdUpdateFailedError = {
     name: "LocalAppIdUpdateFailed",
     message: (error?: any) =>

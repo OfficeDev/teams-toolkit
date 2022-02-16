@@ -22,7 +22,10 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
-import { HostTypeOptionAzure } from "../../../src/plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+} from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
@@ -389,7 +392,7 @@ describe("grantPermission() for Teamsfx projects", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
+        hostType: HostTypeOptionSPFx.id,
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [
@@ -453,6 +456,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     if (result.isErr()) {
       chai.assert.fail("result is error");
     }
-    expect(result.value.permissions!.length).equal(2);
+    expect(result.value.permissions!.length).equal(1);
   });
 });

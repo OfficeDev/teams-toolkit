@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
+import {
+  EnvConfig,
+  GraphTokenProvider,
+  LogProvider,
+  PluginContext,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
 import { GetSkipAppConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
@@ -45,24 +53,62 @@ export class Utils {
       : message;
   }
 
-  public static getConfigFileName(ctx: PluginContext, isLocalDebug: boolean): string {
-    if (isLocalDebug) {
+  public static getConfigFileName(envName?: string): string {
+    if (!envName) {
       return ConfigFilePath.LocalSettings;
     } else {
-      return ConfigFilePath.State(ctx.envInfo.envName);
+      return ConfigFilePath.State(envName);
     }
   }
 
-  public static getInputFileName(ctx: PluginContext): string {
-    return ConfigFilePath.Input(ctx.envInfo.envName);
+  public static getInputFileName(envName: string): string {
+    return ConfigFilePath.Input(envName);
   }
 
-  public static async getCurrentTenantId(ctx: PluginContext): Promise<string> {
-    const tokenObject = await ctx.graphTokenProvider?.getJsonObject();
-    const tenantId: string = (tokenObject as any).tid;
+  public static async getCurrentTenantId(graphTokenProvider?: GraphTokenProvider): Promise<string> {
+    const tokenObject = await graphTokenProvider?.getJsonObject();
+    const tenantId: string = (tokenObject as any)?.tid;
     return tenantId;
   }
 
+  public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
+    const envConfig: EnvConfig = envInfo.config as EnvConfig;
+    const envState: v3.AADApp = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const objectId = envConfig.auth?.objectId;
+    const clientId = envConfig.auth?.clientId;
+    const clientSecret = envConfig.auth?.clientSecret;
+    const oauth2PermissionScopeId = envConfig.auth?.accessAsUserScopeId;
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      envState.objectId = objectId;
+      envState.clientId = clientId;
+      envState.clientSecret = clientSecret;
+      envState.oauth2PermissionScopeId = oauth2PermissionScopeId;
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(Utils.getInputFileName(envInfo.envName))
+      );
+    } else {
+      return false;
+    }
+  }
+  public static skipCreateAadForLocalProvision(localSettings: v2.LocalSettings): boolean {
+    const objectId = localSettings.auth?.objectId;
+    const clientId = localSettings.auth?.clientId;
+    const clientSecret = localSettings.auth?.clientSecret;
+    const oauth2PermissionScopeId = localSettings.auth?.oauth2PermissionScopeId;
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(ConfigFilePath.LocalSettings)
+      );
+    } else {
+      return false;
+    }
+  }
   public static skipAADProvision(ctx: PluginContext, isLocalDebug = false): boolean {
     const objectId = isLocalDebug
       ? ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, true)
@@ -92,7 +138,7 @@ export class Utils {
     } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
       throw ResultFactory.UserError(
         GetSkipAppConfigError.name,
-        GetSkipAppConfigError.message(Utils.getInputFileName(ctx))
+        GetSkipAppConfigError.message(Utils.getInputFileName(ctx.envInfo.envName))
       );
     } else {
       return false;

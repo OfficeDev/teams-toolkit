@@ -312,6 +312,16 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           treeItem.label += " ";
           tools.treeProvider?.refresh([treeItem]);
         }
+      } else if (accountInfo !== undefined) {
+        const treeItem = {
+          commandId: "fx-extension.signinM365",
+          label: (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
+          callback: signinM365Callback,
+          parent: TreeCategory.Account,
+          contextValue: "signedinM365",
+          icon: "M365",
+        };
+        tools.treeProvider?.refresh([treeItem]);
       }
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([
@@ -344,10 +354,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     }
     return Promise.resolve();
   };
-
-  tools.tokenProvider.appStudioToken?.setStatusChangeMap("tree-view", m365AccountCallback);
-  tools.tokenProvider.sharepointTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
-  tools.tokenProvider.graphTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
 
   tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
     "tree-view",
@@ -463,6 +469,10 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       specifySubscriptionTreeItem,
     ]);
   }
+
+  tools.tokenProvider.appStudioToken?.setStatusChangeMap("tree-view", m365AccountCallback);
+  tools.tokenProvider.sharepointTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
+  tools.tokenProvider.graphTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
 
   return ok(Void);
 }

@@ -269,7 +269,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: {}, secrets: {} },
+        solution: {},
       },
     };
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
@@ -302,12 +302,49 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: { provisionSucceeded: true }, secrets: {} },
+        solution: { provisionSucceeded: true },
       },
     };
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
+  });
+
+  it("shouldn't return error if no resource is selected to deploy on VS", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
+      },
+      // Whether this project is on VS platform is determined by programmingLanguage
+      programmingLanguage: "csharp",
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
+    const mockedInputs: Inputs = {
+      platform: Platform.VS,
+      projectPath: "mock",
+    };
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        solution: { provisionSucceeded: true },
+      },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
+    expect(result.isOk()).to.be.true;
   });
 
   it("should return ok on happy path", async () => {
@@ -338,7 +375,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       envName: "default",
       config: {},
       state: {
-        solution: { output: { provisionSucceeded: true }, secrets: {} },
+        solution: { provisionSucceeded: true },
       },
     };
     mockDeployThatAlwaysSucceed(fehostPlugin);

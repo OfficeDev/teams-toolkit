@@ -239,7 +239,7 @@ export async function provisionLocalResource(
 }
 
 // TODO delete me later
-function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
+export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.auth.clientId = envInfo.state[ResourcePlugins.Aad].clientId;
   localSettings.auth.clientSecret = envInfo.state[ResourcePlugins.Aad].clientSecret;
   localSettings.auth.objectId = envInfo.state[ResourcePlugins.Aad].objectId;
@@ -253,6 +253,6 @@ function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.teamsApp.teamsAppId = envInfo.state.solution.teamsAppId;
 }
 
-function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
+export function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.auth.applicationIdUris = envInfo.state[ResourcePlugins.Aad].applicationIdUris;
 }

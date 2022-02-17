@@ -148,6 +148,12 @@ export class UserInput implements IUserInput {
     return await window.showOpenDialog(options);
   }
 
+  /**
+   * @deprecated
+   * vscode.openFolder command will cause telemetry loss issue. Please ensure your code well handler the telemetry issue before invoking it.
+   * @param uri the path of folder
+   * @returns
+   */
   public async openFolder(uri: Uri): Promise<string | undefined> {
     await commands.executeCommand("vscode.openFolder", uri);
     return uri.fsPath;

@@ -1,4 +1,4 @@
-import { loadConfiguration, ResourceType, LogLevel, setLogLevel, setLogFunction } from "@microsoft/teamsfx";
+import { LogLevel, setLogLevel, setLogFunction } from "@microsoft/teamsfx";
 import { useData } from "./useData";
 import { useTeams } from "msteams-react-base-component";
 
@@ -17,21 +17,6 @@ export function useTeamsFx() {
         setLogLevel(LogLevel.Verbose);
         setLogFunction((level, message) => { console.log(message); });
       }
-      loadConfiguration({
-        authentication: {
-          initiateLoginEndpoint: startLoginPageUrl,
-          clientId: clientId,
-        },
-        resources: [
-          {
-            type: ResourceType.API,
-            name: "default",
-            properties: {
-              endpoint: functionEndpoint,
-            },
-          },
-        ],
-      });
       initialized = true;
     }
   });

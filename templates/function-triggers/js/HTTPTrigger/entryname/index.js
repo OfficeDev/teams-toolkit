@@ -5,7 +5,7 @@
 
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require("isomorphic-fetch");
-const teamsfx = require("@microsoft/teamsfx");
+const teamsfxSdk = require("@microsoft/teamsfx");
 
 /**
  * This function handles requests from teamsfx client.
@@ -38,19 +38,6 @@ module.exports = async function (context, req, teamsfxContext) {
   // Put an echo into response body.
   res.body.receivedHTTPRequestBody = req.body || "";
 
-  // Set default configuration for teamsfx SDK.
-  try {
-    teamsfx.loadConfiguration();
-  } catch (e) {
-    context.log.error(e);
-    return {
-      status: 500,
-      body: {
-        error: "Failed to load app configuration.",
-      },
-    };
-  }
-
   // Prepare access token.
   const accessToken = teamsfxContext["AccessToken"];
   if (!accessToken) {
@@ -63,9 +50,9 @@ module.exports = async function (context, req, teamsfxContext) {
   }
 
   // Construct credential.
-  let credential;
+  let teamsfx;
   try {
-    credential = new teamsfx.OnBehalfOfUserCredential(accessToken);
+    teamsfx = new teamsfxSdk.TeamsFx().setSsoToken(accessToken);
   } catch (e) {
     context.log.error(e);
     return {
@@ -80,7 +67,7 @@ module.exports = async function (context, req, teamsfxContext) {
 
   // Query user's information from the access token.
   try {
-    const currentUser = credential.getUserInfo();
+    const currentUser = await teamsfx.getUserInfo();
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {
@@ -98,7 +85,7 @@ module.exports = async function (context, req, teamsfxContext) {
 
   // Create a graph client to access user's Microsoft 365 data after user has consented.
   try {
-    const graphClient = teamsfx.createMicrosoftGraphClient(credential, [".default"]);
+    const graphClient = teamsfxSdk.createMicrosoftGraphClient(teamsfx, [".default"]);
     const profile = await graphClient.api("/me").get();
     res.body.graphClientMessage = profile;
   } catch (e) {

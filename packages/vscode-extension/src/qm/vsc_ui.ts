@@ -133,13 +133,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
-      if (option.step && option.step > 1) {
-        quickPick.title = option.title
-          ? option.title + StringResources.vsc.qm.backKeyboard
-          : StringResources.vsc.qm.backKeyboard;
-      } else {
-        quickPick.title = option.title;
-      }
+      quickPick.title = option.title;
       if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
@@ -223,13 +217,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick<FxQuickPickItem>();
-      if (option.step && option.step > 1) {
-        quickPick.title = option.title
-          ? option.title + StringResources.vsc.qm.backKeyboard
-          : StringResources.vsc.qm.backKeyboard;
-      } else {
-        quickPick.title = option.title;
-      }
+      quickPick.title = option.title;
       if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder
@@ -339,13 +327,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
-      if (option.step && option.step > 1) {
-        inputBox.title = option.title
-          ? option.title + StringResources.vsc.qm.backKeyboard
-          : StringResources.vsc.qm.backKeyboard;
-      } else {
-        inputBox.title = option.title;
-      }
+      inputBox.title = option.title;
       if (option.step && option.step > 1) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.placeholder = option.placeholder;
@@ -438,13 +420,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
-      if (config.step && config.step > 1) {
-        quickPick.title = config.title
-          ? config.title + StringResources.vsc.qm.backKeyboard
-          : StringResources.vsc.qm.backKeyboard;
-      } else {
-        quickPick.title = config.title;
-      }
+      quickPick.title = config.title;
       if (config.step && config.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.ignoreFocusOut = true;

@@ -31,6 +31,9 @@ export enum TelemetryEvent {
   ProvisionStart = "provision-start",
   Provision = "provision",
 
+  ProvisionManifestStart = "provision-manifest-start",
+  ProvisionManifest = "provision-manifest",
+
   DeployStart = "deploy-start",
   Deploy = "deploy",
 

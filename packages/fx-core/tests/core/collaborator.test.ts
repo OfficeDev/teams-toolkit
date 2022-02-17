@@ -18,7 +18,7 @@ import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { CollaborationState, SolutionError } from "../../src";
-import { listCollaborator } from "../../src/core/collaborator";
+import { checkPermission, listCollaborator } from "../../src/core/collaborator";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import {
@@ -125,7 +125,6 @@ describe("Collaborator APIs for V3", () => {
         name: "fake_name",
       });
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-      const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox
         .stub(appStudio, "listCollaborator")
         .resolves(
@@ -137,16 +136,6 @@ describe("Collaborator APIs for V3", () => {
             )
           )
         );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
-        ok([
-          {
-            userObjectId: "fake-aad-user-object-id",
-            resourceId: "fake-resource-id",
-            displayName: "fake-display-name",
-            userPrincipalName: "fake-user-principal-name",
-          },
-        ])
-      );
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
@@ -212,7 +201,6 @@ describe("Collaborator APIs for V3", () => {
       ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
         "fx-resource-frontend-hosting",
         "fx-resource-identity",
-        "fx-resource-aad-app-for-teams",
       ];
 
       const envInfo: v3.EnvInfoV3 = {
@@ -243,6 +231,133 @@ describe("Collaborator APIs for V3", () => {
       );
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.collaborators!.length === 1);
+    });
+  });
+
+  describe("checkPermission", () => {
+    it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
+      sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
+        tenantId: "fake_tid",
+        aadId: "fake_oid",
+        userPrincipalName: "fake_unique_name",
+        displayName: "displayName",
+        isAdministrator: true,
+      });
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: { solution: {} },
+        config: {},
+      };
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.state === CollaborationState.NotProvisioned);
+    });
+
+    it("should return error if cannot get user info", async () => {
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: { solution: { provisionSucceeded: true } },
+        config: {},
+      };
+      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves(undefined);
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
+    });
+
+    it("should return M365TenantNotMatch state if tenant is not match", async () => {
+      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      });
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: { provisionSucceeded: true },
+          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+        },
+        config: {},
+      };
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.state === CollaborationState.M365TenantNotMatch);
+    });
+
+    it("should return error if check permission failed", async () => {
+      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
+        tid: "mock_project_tenant_id",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      });
+      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      sandbox
+        .stub(appStudio, "checkPermission")
+        .resolves(
+          err(
+            new UserError(
+              SolutionError.FailedToCheckPermission,
+              "List collaborator failed.",
+              "AppStudioPlugin"
+            )
+          )
+        );
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: { provisionSucceeded: true },
+          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+        },
+        config: {},
+      };
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToCheckPermission);
+    });
+    it("happy path", async () => {
+      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
+        "fx-resource-frontend-hosting",
+        "fx-resource-identity",
+        "fx-resource-aad-app-for-teams",
+      ];
+
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: { provisionSucceeded: true },
+          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+        },
+        config: {},
+      };
+
+      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
+        tid: "mock_project_tenant_id",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      });
+      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+      sandbox.stub(appStudio, "checkPermission").resolves(
+        ok([
+          {
+            name: "teams_app",
+            resourceId: "fake_teams_app_resource_id",
+            roles: ["Administrator"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "checkPermission").resolves(
+        ok([
+          {
+            name: "aad_app",
+            resourceId: "fake_aad_app_resource_id",
+            roles: ["Owner"],
+            type: "M365",
+          },
+        ])
+      );
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
   });
 });

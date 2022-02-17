@@ -304,43 +304,46 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-        let url: string;
-        if (validNpmInstallLogInfo) {
-          url = `${issueLink}title=new+bug+report: Task '${
-            task.name
-          }' failed&body=${issueTemplate}${errorDetail}${JSON.stringify(
-            npmInstallLogInfo,
-            undefined,
-            4
-          )}`;
-        } else {
-          url = issueChooseLink;
-        }
-        const issue = {
-          title: StringResources.vsc.handlers.reportIssue,
-          run: async (): Promise<void> => {
-            vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
-          },
-        };
-        vscode.window
-          .showErrorMessage(
+        // Do not show this hint message for prerequisites check and automatic npm install
+        if (taskId === undefined) {
+          let url: string;
+          if (validNpmInstallLogInfo) {
+            url = `${issueLink}title=new+bug+report: Task '${
+              task.name
+            }' failed&body=${issueTemplate}${errorDetail}${JSON.stringify(
+              npmInstallLogInfo,
+              undefined,
+              4
+            )}`;
+          } else {
+            url = issueChooseLink;
+          }
+          const issue = {
+            title: StringResources.vsc.handlers.reportIssue,
+            run: async (): Promise<void> => {
+              vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
+            },
+          };
+          vscode.window
+            .showErrorMessage(
+              util.format(
+                StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+                task.name,
+                task.name
+              ),
+              issue
+            )
+            .then(async (button) => {
+              await button?.run();
+            });
+          await VsCodeLogInstance.error(
             util.format(
               StringResources.vsc.localDebug.npmInstallFailedHintMessage,
               task.name,
               task.name
-            ),
-            issue
-          )
-          .then(async (button) => {
-            await button?.run();
-          });
-        await VsCodeLogInstance.error(
-          util.format(
-            StringResources.vsc.localDebug.npmInstallFailedHintMessage,
-            task.name,
-            task.name
-          )
-        );
+            )
+          );
+        }
         terminateAllRunningTeamsfxTasks();
       }
     } catch {

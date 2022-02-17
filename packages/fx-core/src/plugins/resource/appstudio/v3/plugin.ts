@@ -84,10 +84,11 @@ export class AppStudioPluginImpl {
         appStudioToken!,
         ctx.logProvider
       );
+      ctx.userInteraction?.showMessage("info", `Teams app created: ${appDefinition.appId}`, false);
       return ok(appDefinition.appId!);
     } catch (e: any) {
       // Teams app already exists, will update it
-      if (e.name === "409") {
+      if (e.name === 409) {
         const zipEntries = new AdmZip(archivedFile).getEntries();
 
         const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
@@ -106,11 +107,11 @@ export class AppStudioPluginImpl {
         const colorIconContent = zipEntries
           .find((x) => x.entryName === manifest.icons.color)
           ?.getData()
-          .toString();
+          .toString("base64");
         const outlineIconContent = zipEntries
           .find((x) => x.entryName === manifest.icons.outline)
           ?.getData()
-          .toString();
+          .toString("base64");
 
         try {
           const app = await AppStudioClient.updateApp(
@@ -122,12 +123,17 @@ export class AppStudioPluginImpl {
             outlineIconContent
           );
 
+          ctx.userInteraction?.showMessage(
+            "info",
+            `Teams app updated: ${appDefinition.appId}`,
+            false
+          );
           return ok(app.teamsAppId!);
         } catch (e: any) {
           return err(
             AppStudioResultFactory.SystemError(
               AppStudioError.TeamsAppUpdateFailedError.name,
-              AppStudioError.TeamsAppUpdateFailedError.message(e)
+              AppStudioError.TeamsAppUpdateFailedError.message(manifest.id)
             )
           );
         }

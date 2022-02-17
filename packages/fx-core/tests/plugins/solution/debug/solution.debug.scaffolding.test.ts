@@ -58,14 +58,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 5,
+        numTasks: 6,
         numLocalEnvs: 21,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
+        numTasks: 7,
         numLocalEnvs: 21,
       },
     ];
@@ -117,14 +117,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 4,
+        numTasks: 5,
         numLocalEnvs: 7,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 4,
+        numTasks: 5,
         numLocalEnvs: 7,
       },
     ];
@@ -252,14 +252,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 5,
+        numTasks: 6,
         numLocalEnvs: 12,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 5,
+        numTasks: 6,
         numLocalEnvs: 12,
       },
     ];
@@ -305,14 +305,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 7,
+        numTasks: 8,
         numLocalEnvs: 33,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 8,
+        numTasks: 9,
         numLocalEnvs: 33,
       },
     ];
@@ -364,14 +364,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
+        numTasks: 7,
         numLocalEnvs: 19,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
+        numTasks: 7,
         numLocalEnvs: 19,
       },
     ];
@@ -660,7 +660,7 @@ describe("solution.debug.scaffolding", () => {
         version: "2.0.0",
         tasks: [
           {
-            label: "Pre Debug Check",
+            label: "Pre Debug Check & Start All",
             dependsOn: "validate local prerequisites",
           },
           {
@@ -696,7 +696,7 @@ describe("solution.debug.scaffolding", () => {
       //assert output tasks.json
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
-      chai.assert.equal(tasks.length, 6);
+      chai.assert.equal(tasks.length, 7);
 
       await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
@@ -707,7 +707,7 @@ describe("solution.debug.scaffolding", () => {
         version: "2.0.0",
         tasks: [
           {
-            label: "Pre Debug Check",
+            label: "Pre Debug Check & Start All",
             dependsOn: "dependency check",
           },
           {

@@ -5,7 +5,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { createMicrosoftGraphClient, TeamsFx } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
-import { getSSOToken, SSOToken } from "../helper.browser";
+import { getGraphToken, getSSOToken, SSOToken } from "../helper.browser";
 import * as sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 
@@ -25,6 +25,18 @@ describe("MsGraphClientProvider Tests - Browser", () => {
         return new Promise((resolve) => {
           resolve({
             token: ssoToken.token!,
+            expiresOnTimestamp: ssoToken.expire_time!,
+          });
+        });
+      });
+
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"getToken")
+      .callsFake(async (scopes: string | string[]): Promise<AccessToken | null> => {
+        const graphToken = await getGraphToken(ssoToken, scopes);
+        return new Promise((resolve) => {
+          resolve({
+            token: graphToken,
             expiresOnTimestamp: ssoToken.expire_time!,
           });
         });

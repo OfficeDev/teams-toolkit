@@ -27,7 +27,7 @@ let timeout: NodeJS.Timeout | undefined = undefined;
 const interval = setInterval(() => {
   if (wss.clients.size === 0) {
     if (timeout === undefined) {
-      timeout = setTimeout(() => wss.close(), 10 * 60 * 1000); // 10 minutes
+      timeout = setTimeout(() => wss.close(), 3 * 60 * 1000); // 3 minutes
     }
   } else {
     if (timeout) {

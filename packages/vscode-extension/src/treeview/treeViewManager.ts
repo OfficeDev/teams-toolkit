@@ -167,15 +167,6 @@ class TreeViewManager {
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
-        "fx-extension.openAppManagement",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "developerPortal", custom: true }
-      ),
-      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsTitle,
         StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsDescription,
         "fx-extension.addCICDWorkflows",
@@ -183,6 +174,15 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "sync", custom: false }
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
+        "fx-extension.openAppManagement",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "developerPortal", custom: true }
       ),
     ];
 

@@ -40,13 +40,19 @@ export class CICDImpl {
       hosting_type_contains_spfx: hostType == "SPFx",
       hosting_type_contains_azure: hostType == "Azure",
     };
+    const progressBar = context.userInteraction.createProgressBar(
+      "Scaffolding workflow automation files",
+      1
+    );
+    await progressBar.start("Scaffolding workflow automation files.");
     //  3.2 Call scaffold.
     await providerInstance.scaffold(projectPath, templateNames, replacements);
+    await progressBar.end(true);
 
     // 4. Notification & Preview scaffolded readme.
     context.userInteraction.showMessage(
       "info",
-      `Pre-cooked workflows are scaffolded successfully for ${providerName}.`,
+      `Workflow automation files for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`,
       false
     );
     return ResultFactory.Success();

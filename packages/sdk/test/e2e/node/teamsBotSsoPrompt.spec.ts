@@ -192,7 +192,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     assert.strictEqual(activity.attachments![0].content.buttons[0].title, "Teams SSO Sign In");
     assert.strictEqual(
       activity.attachments![0].content.tokenExchangeResource.uri,
-      process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE
+      `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`
     );
 
     assert.strictEqual(

@@ -34,7 +34,7 @@ export async function getAccessToken(
   if (scope) {
     scopes = [scope];
   } else {
-    const defaultScope = process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE;
+    const defaultScope = `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`;
     scopes = [defaultScope!];
   }
   const pca = new msal.PublicClientApplication(msalConfig);
@@ -48,14 +48,14 @@ export async function getAccessToken(
 }
 
 /**
- * process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
+ * process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
  * This function mocks the sso token get from Teams
  * @returns SSO token got from mocked Teams
  */
 export async function getSsoTokenFromTeams(): Promise<string> {
   const missingConfigurations: string[] = [];
-  if (!process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID) {
-    missingConfigurations.push("SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID");
+  if (!process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID");
   }
   if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME) {
     missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_NAME");
@@ -66,19 +66,16 @@ export async function getSsoTokenFromTeams(): Promise<string> {
   if (!process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID) {
     missingConfigurations.push("SDK_INTEGRATION_TEST_AAD_TENANT_ID");
   }
-  if (!process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE) {
-    missingConfigurations.push("SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE");
-  }
 
   if (missingConfigurations.length != 0) {
     throw new Error("Environment variables are missing: " + missingConfigurations.join(", "));
   }
   return await getAccessToken(
-    process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID!,
+    process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID!,
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
     process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!,
-    process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE!
+    `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`
   );
 }
 
@@ -94,7 +91,7 @@ export function MockEnvironmentVariable(): () => void {
     M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
     M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
     INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI,
+    M365_APPLICATION_ID_URI: `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}`,
 
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE_NAME: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,

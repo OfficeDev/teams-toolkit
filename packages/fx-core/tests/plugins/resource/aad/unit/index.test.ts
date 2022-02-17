@@ -70,10 +70,6 @@ const projectSettings: ProjectSettings = {
   },
 };
 const ctx = new MockedV2Context(projectSettings);
-const inputs: v2.InputsWithProjectPath = {
-  platform: Platform.VSCode,
-  projectPath: path.join(os.tmpdir(), randomAppName()),
-};
 const tokenProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   appStudioToken: new MockedAppStudioTokenProvider(),

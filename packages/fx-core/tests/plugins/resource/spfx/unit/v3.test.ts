@@ -9,6 +9,7 @@ import {
   v2,
   v3,
   Void,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   BuiltInFeaturePluginNames,
@@ -18,7 +19,13 @@ import * as uuid from "uuid";
 import { MockedLogProvider, MockedV2Context } from "../../../solution/util";
 import path from "path";
 import * as os from "os";
-import { randomAppName } from "../../../../core/utils";
+import {
+  MockAppStudioTokenProvider,
+  MockAzureAccountProvider,
+  MockGraphTokenProvider,
+  MockSharepointTokenProvider,
+  randomAppName,
+} from "../../../../core/utils";
 import { AppManifestProvider, ContextWithManifestProvider } from "@microsoft/teamsfx-api/build/v3";
 import Sinon from "sinon";
 import { SPFxPluginImpl } from "../../../../../src/plugins/resource/spfx/v3/plugin";
@@ -61,6 +68,12 @@ describe("SPFx plugin v3", () => {
   const inputs: v2.InputsWithProjectPath = {
     platform: Platform.VSCode,
     projectPath: testFolder,
+  };
+  const tokenProvider: TokenProvider = {
+    azureAccountProvider: new MockAzureAccountProvider(),
+    graphTokenProvider: new MockGraphTokenProvider(),
+    appStudioToken: new MockAppStudioTokenProvider(),
+    sharepointTokenProvider: new MockSharepointTokenProvider(),
   };
 
   it("getQuestionsForAddFeature", async () => {
@@ -230,8 +243,11 @@ describe("SPFx plugin v3", () => {
     Sinon.stub(fs, "pathExists").resolves(true);
     Sinon.stub(path, "parse").returns({ root: "", dir: "", base: "", ext: "", name: "" });
     Sinon.stub(fs, "readFile").resolves("" as any);
+    Sinon.stub(MockSharepointTokenProvider.prototype, "getAccessToken").resolves(
+      "fakedAccessToken"
+    );
 
-    const result = await pluginImplV3.deploy(ctx, inputs);
+    const result = await pluginImplV3.deploy(ctx, inputs, tokenProvider);
 
     chai.assert.isTrue(result.isOk());
   });

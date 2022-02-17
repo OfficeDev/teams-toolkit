@@ -159,15 +159,6 @@ export class HelpParamGenerator {
     }
     const root = this.getQuestionRootNodeForHelp(stage);
 
-    // Change which_platform to platform for addCICDWorkflows.
-    if (stage === "addCICDWorkflows") {
-      root?.children?.forEach((part, index, theArray) => {
-        if (part.data.name === "which_platform") {
-          theArray[index].data.name = "platform";
-        }
-      });
-    }
-
     let nodes: QTreeNode[] = [];
     if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {

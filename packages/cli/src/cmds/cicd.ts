@@ -28,8 +28,6 @@ export default class CICD extends YargsCommand {
   }
 
   public modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
-    args["platform"] = args["which_platform"];
-    delete args["platform"];
     return args;
   }
 

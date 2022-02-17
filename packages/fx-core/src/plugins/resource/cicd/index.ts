@@ -14,6 +14,8 @@ import {
   ok,
   QTreeNode,
   ProjectSettings,
+  SingleSelectQuestion,
+  Platform,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -94,19 +96,26 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
-    Logger.debug(`inputs.projectPath: ${inputs.projectPath}`);
-    const res = await getQuestionsForTargetEnv(inputs);
-    if (res.isErr()) {
-      return err(res.error);
+    if (inputs.platform != Platform.CLI_HELP) {
+      const res = await getQuestionsForTargetEnv(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+
+      if (!res.value) {
+        return FxCICDPluginResultFactory.SystemError(
+          "UnknownError",
+          "get questions for target env failed."
+        );
+      }
+
+      res.value.children?.pop();
+      res.value.data.name = "CICDTargetEnv";
+      (res.value.data as SingleSelectQuestion).skipSingleOption = false;
+
+      cicdWorkflowQuestions.addChild(res.value);
     }
 
-    if (!res.value) {
-      return FxCICDPluginResultFactory.SystemError("UnknownError", "get questions for target env failed.");
-    }
-
-    res.value.children?.pop();
-    res.value.data.name = "CICDTargetEnv";
-    cicdWorkflowQuestions.addChild(res.value);
     cicdWorkflowQuestions.addChild(whichProvider);
     cicdWorkflowQuestions.addChild(whichTemplate);
 

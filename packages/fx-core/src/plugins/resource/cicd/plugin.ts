@@ -41,10 +41,14 @@ export class CICDImpl {
       hosting_type_contains_azure: hostType == "Azure",
     };
     //  3.2 Call scaffold.
-    const res = await providerInstance.scaffold(projectPath, templateNames, replacements);
+    await providerInstance.scaffold(projectPath, templateNames, replacements);
 
     // 4. Notification & Preview scaffolded readme.
-
+    context.userInteraction.showMessage(
+      "info",
+      `Pre-cooked workflows are scaffolded successfully for ${providerName}.`,
+      false
+    );
     return ResultFactory.Success();
   }
 }

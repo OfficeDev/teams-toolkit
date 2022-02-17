@@ -39,8 +39,6 @@ export class GitHubProvider extends CICDProvider {
     templateName: string,
     replacements: any
   ): Promise<Result<boolean, FxError>> {
-    
-
     // 1. Ensure the target path is existing.
     const targetPath = path.join(projectPath, this.targetPath);
     try {
@@ -52,7 +50,7 @@ export class GitHubProvider extends CICDProvider {
     // 2. Read README from remote or local.
     const targetReadMePath = path.join(targetPath, "README.md");
     if (!(await fs.pathExists(targetReadMePath))) {
-      const targetReadMeUrl = `${URLPrefixes.CICD_READMES}/github/README.md`;
+      const targetReadMeUrl = `${URLPrefixes.CICD_TEMPLATES}/github/README.md`;
       const localReadMePath = path.join(
         getTemplatesFolder(),
         "plugins",

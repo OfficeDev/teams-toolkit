@@ -85,11 +85,13 @@ export async function listCollaborator(
     envInfo,
     tokenProvider.appStudioToken
   );
-  const teamsAppOwners: TeamsAppAdmin[] = appStudioRes.isErr() ? [] : appStudioRes.value;
+  if (appStudioRes.isErr()) return err(appStudioRes.error);
+  const teamsAppOwners = appStudioRes.value;
   const aadRes = isAadActivated
     ? await aadPlugin.listCollaborator(ctx, envInfo, tokenProvider)
     : ok([]);
-  const aadOwners: AadOwner[] = aadRes.isErr() ? [] : aadRes.value;
+  if (aadRes.isErr()) return err(aadRes.error);
+  const aadOwners: AadOwner[] = aadRes.value;
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";

@@ -401,9 +401,6 @@ export class FxCore implements v3.ICore {
         return err(initRes.error);
       }
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-      if (ctx.projectSettings?.solutionSettings) {
-        ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
-      }
       const projectSettingsPath = getProjectSettingsPath(projectPath);
       await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
       // addFeature

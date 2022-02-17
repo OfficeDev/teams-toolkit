@@ -301,43 +301,37 @@ export class TeamsUserCredential implements TokenCredential {
       }
     }
 
-    if (this.checkInTeams()) {
-      const params = {} as authentication.AuthTokenRequestParameters;
-      let token: string;
-      try {
-        await app.initialize();
-        token = await authentication.getAuthToken(params);
-      } catch (err: unknown) {
-        const errorMsg = "Get SSO token failed with error: " + (err as Error).message;
-        internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
-      }
-
-      if (!token) {
-        const errorMsg = "Get empty SSO token from Teams";
-        internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
-      }
-
-      const tokenObject = parseJwt(token);
-      if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
-        const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
-        internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
-      }
-
-      const ssoToken: AccessToken = {
-        token,
-        expiresOnTimestamp: tokenObject.exp * 1000,
-      };
-
-      this.ssoToken = ssoToken;
-      return ssoToken;
-    } else {
-      const errorMsg = "Initialize teams sdk failed due to not running inside Teams";
+    const params = {} as authentication.AuthTokenRequestParameters;
+    let token: string;
+    try {
+      await app.initialize();
+      token = await authentication.getAuthToken(params);
+    } catch (err: unknown) {
+      const errorMsg = "Get SSO token failed with error: " + (err as Error).message;
       internalLogger.error(errorMsg);
       throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
     }
+
+    if (!token) {
+      const errorMsg = "Get empty SSO token from Teams";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+    }
+
+    const tokenObject = parseJwt(token);
+    if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
+      const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+    }
+
+    const ssoToken: AccessToken = {
+      token,
+      expiresOnTimestamp: tokenObject.exp * 1000,
+    };
+
+    this.ssoToken = ssoToken;
+    return ssoToken;
   }
 
   /**

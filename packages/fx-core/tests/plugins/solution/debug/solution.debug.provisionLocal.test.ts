@@ -7,8 +7,14 @@ import { MockedV2Context } from "../util";
 import {
   setupLocalDebugSettings,
   configLocalDebugSettings,
+  setupLocalEnvironment,
 } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
+import {
+  setDataForLocal,
+  setPostDataForLocal,
+} from "../../../../src/plugins/solution/fx-solution/v2/provisionLocal";
+
 chai.use(chaiAsPromised);
 
 describe("solution.debug.provisionLocal", () => {
@@ -93,6 +99,75 @@ describe("solution.debug.provisionLocal", () => {
         backend: {},
       });
       chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("setupLocalEnvironment", () => {
+    it("happy path", async () => {
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          activeResourcePlugins: [],
+          azureResources: ["function"],
+          capabilities: ["Tab", "Bot", "MessagingExtension"],
+        },
+        programmingLanguage: "typescript",
+      };
+      const inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
+        checkerInfo: { skipNgrok: true },
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const envInfo = {
+        envName: "default",
+        config: {},
+        state: {
+          solution: {},
+          "fx-resource-bot": {
+            siteEndPoint: "https://www.test.com",
+          },
+        },
+      };
+      const result = await setupLocalEnvironment(v2Context, inputs, envInfo);
+      chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("setDataForLocal", () => {
+    it("happy path", async () => {
+      const envInfo = {
+        envName: "default",
+        config: {},
+        state: {
+          solution: {},
+          "fx-resource-bot": {
+            siteEndPoint: "https://www.test.com",
+          },
+          "fx-resource-aad-app-for-teams": {
+            clientId: "id",
+          },
+          "fx-resource-frontend-hosting": {},
+        },
+      };
+
+      const localSettings = {
+        auth: {
+          clientId: "id",
+        },
+        frontend: {},
+        teamsApp: {},
+      };
+      setDataForLocal(envInfo, localSettings);
+      setPostDataForLocal(envInfo, localSettings);
+      chai.assert.equal(
+        localSettings.auth.clientId,
+        envInfo.state["fx-resource-aad-app-for-teams"].clientId
+      );
     });
   });
 });

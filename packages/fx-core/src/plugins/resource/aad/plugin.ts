@@ -52,6 +52,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { isConfigUnifyEnabled } from "../../..";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -70,10 +71,15 @@ export class AadAppForTeamsImpl {
     await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     // Move objectId etc. from input to output.
-    const skip = Utils.skipAADProvision(ctx, isLocalDebug);
+    const skip = Utils.skipAADProvision(
+      ctx,
+      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
+    );
     DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
-    let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
+    let config: ProvisionConfig = new ProvisionConfig(
+      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
+    );
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(
       config.permissionRequest as string,
@@ -89,7 +95,11 @@ export class AadAppForTeamsImpl {
           config.objectId,
           config.password,
           ctx.graphTokenProvider,
-          isLocalDebug ? undefined : ctx.envInfo.envName
+          isLocalDebug
+            ? isConfigUnifyEnabled()
+              ? ctx.envInfo.envName
+              : undefined
+            : ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
@@ -154,11 +164,16 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip = Utils.skipAADProvision(ctx, isLocalDebug);
+    const skip = Utils.skipAADProvision(
+      ctx,
+      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
+    );
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
     await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
-    const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
+    const config: PostProvisionConfig = new PostProvisionConfig(
+      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
+    );
     config.restoreConfigFromContext(ctx);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);

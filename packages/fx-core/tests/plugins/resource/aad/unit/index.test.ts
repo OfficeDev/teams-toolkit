@@ -259,7 +259,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
       config: {},
     };
     const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
-    const resolves = await plugin.grantPermission(ctx, envInfo, tokenProvider, userList);
+    const res = await plugin.grantPermission(ctx, envInfo, tokenProvider, userList);
     chai.assert.isTrue(res.isOk());
   });
 

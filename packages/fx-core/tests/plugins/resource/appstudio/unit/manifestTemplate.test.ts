@@ -6,7 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import path from "path";
-import { v2, Platform, IStaticTab } from "@microsoft/teamsfx-api";
+import { v2, Platform, IStaticTab, IConfigurableTab } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -201,6 +201,18 @@ describe("Update capability", () => {
       chai.assert.equal(result.error.name, AppStudioError.StaticTabNotExistError.name);
     }
   });
+
+  it("Update configurable tab should succeed", async () => {
+    const tab: IConfigurableTab = {
+      configurationUrl: "endpoint",
+      scopes: ["team", "groupchat"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "configurableTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isOk());
+  });
 });
 
 describe("Delete capability", () => {
@@ -262,5 +274,12 @@ describe("Delete capability", () => {
     if (result.isErr()) {
       chai.assert.equal(result.error.name, AppStudioError.StaticTabNotExistError.name);
     }
+  });
+
+  it("Delete configurable tab should succeed", async () => {
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "configurableTab",
+    });
+    chai.assert.isTrue(result.isOk());
   });
 });

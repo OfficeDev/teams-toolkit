@@ -448,6 +448,7 @@ describe("Collaborator APIs for V3", () => {
         },
         config: {},
       };
+      inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(
         result.isErr() && result.error.name === SolutionError.CannotFindUserInCurrentTenant
@@ -511,6 +512,7 @@ describe("Collaborator APIs for V3", () => {
             )
           )
         );
+      inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToGrantPermission);
     });
@@ -570,6 +572,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
+      inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
@@ -616,6 +619,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
+      inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });

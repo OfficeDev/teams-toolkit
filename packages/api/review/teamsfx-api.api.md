@@ -153,6 +153,35 @@ interface AzureIdentity extends AzureResource {
 // @public (undocumented)
 type AzureResource = CloudResource;
 
+// @public (undocumented)
+interface AzureResourcePlugin {
+    // (undocumented)
+    addInstance: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<string[], FxError>>;
+    // (undocumented)
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    description?: string;
+    displayName?: string;
+    // (undocumented)
+    generateBicep?: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<Bicep[], FxError>>;
+    // (undocumented)
+    generateCode?: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    getQuestionsForAddInstance?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    name: string;
+    // (undocumented)
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Bicep[], FxError>>;
+    // (undocumented)
+    updateCode?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Void, FxError>>;
+}
+
 // @public
 interface AzureSolutionConfig extends Json {
     // (undocumented)
@@ -210,6 +239,28 @@ export interface BaseQuestion {
     title?: string;
     totalSteps?: number;
     value?: unknown;
+}
+
+// @public (undocumented)
+interface Bicep extends Record<any, unknown> {
+    // (undocumented)
+    Configuration?: {
+        Orchestration?: string;
+        Modules?: {
+            [moduleFileName: string]: string;
+        };
+    };
+    // (undocumented)
+    Parameters?: Record<string, string>;
+    // (undocumented)
+    Provision?: {
+        Orchestration?: string;
+        Modules?: {
+            [moduleFileName: string]: string;
+        };
+    };
+    // (undocumented)
+    Reference?: Record<string, unknown>;
 }
 
 // @public (undocumented)
@@ -638,6 +689,12 @@ class FxSuccess<T> {
     kind: "success";
     // (undocumented)
     output: T;
+}
+
+// @public (undocumented)
+interface GenerateInputs extends InputsWithProjectPath {
+    // (undocumented)
+    allPlugins: string[];
 }
 
 // @public (undocumented)
@@ -1933,6 +1990,12 @@ export class UnknownError extends SystemError {
 }
 
 // @public (undocumented)
+interface UpdateInputs extends GenerateInputs {
+    // (undocumented)
+    newPlugins: string[];
+}
+
+// @public (undocumented)
 export const UserCancelError: UserError;
 
 // @public
@@ -2029,6 +2092,10 @@ declare namespace v3 {
         AddFeatureInputs,
         OtherFeaturesAddedInputs,
         FeaturePlugin,
+        Bicep,
+        GenerateInputs,
+        UpdateInputs,
+        AzureResourcePlugin,
         SolutionAddFeatureInputs,
         ISolution,
         ICore,

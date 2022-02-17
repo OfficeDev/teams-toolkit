@@ -148,3 +148,112 @@ export interface FeaturePlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 }
+
+export interface Bicep extends Record<any, unknown> {
+  Provision?: {
+    /*
+    Content of this property will be appended to templates/azure/provision.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of each modules will be appended to templates/azure/provision/${moduleFileName}.bicep
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  Configuration?: {
+    /*
+    Content of this property will be appended to templates/azure/config.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of this property override each templates/azure/teamsFx/${moduleFileName}.bicep file
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  /*
+  The reference values you provided here will be resolved by other resource plugins in run time
+  You always need to provide full reference value list in generateArmTemplate/updateArmTemplate function call
+  */
+  Reference?: Record<string, unknown>;
+  /*
+  The parameters will be merged to .fx/configs/azure.parameters.{env}.json
+  All environments will be updated when you provides this parameter
+  */
+  Parameters?: Record<string, string>;
+}
+
+export interface GenerateInputs extends InputsWithProjectPath {
+  allPlugins: string[];
+}
+export interface UpdateInputs extends GenerateInputs {
+  newPlugins: string[];
+}
+
+export interface AzureResourcePlugin {
+  /**
+   * unique identifier for plugin in IoC container
+   */
+  name: string;
+  /**
+   * display name for the plugin
+   */
+  displayName?: string;
+  /**
+   * resource description
+   */
+  description?: string;
+  getQuestionsForAddInstance?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  addInstance: (
+    ctx: ContextWithManifestProvider,
+    inputs: GenerateInputs
+  ) => Promise<Result<string[], FxError>>;
+  generateCode?: (
+    ctx: ContextWithManifestProvider,
+    inputs: GenerateInputs
+  ) => Promise<Result<Void, FxError>>;
+  updateCode?: (
+    ctx: ContextWithManifestProvider,
+    inputs: UpdateInputs
+  ) => Promise<Result<Void, FxError>>;
+  generateBicep?: (
+    ctx: ContextWithManifestProvider,
+    inputs: GenerateInputs
+  ) => Promise<Result<Bicep[], FxError>>;
+  updateBicep?: (
+    ctx: ContextWithManifestProvider,
+    inputs: UpdateInputs
+  ) => Promise<Result<Bicep[], FxError>>;
+  getQuestionsForProvision?: (
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  provisionResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: EnvInfoV3,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+  configureResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: EnvInfoV3,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+  getQuestionsForDeploy?: (
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  deploy?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+}

@@ -182,10 +182,10 @@ export interface Bicep extends Record<any, unknown> {
   Parameters?: Record<string, string>;
 }
 
-export interface GenerateInputs extends InputsWithProjectPath {
-  allPlugins: string[];
-}
-export interface UpdateInputs extends GenerateInputs {
+export interface UpdateInputs extends AddFeatureInputs {
+  /**
+   * newly added plugins
+   */
   newPlugins: string[];
 }
 
@@ -202,54 +202,105 @@ export interface AzureResourcePlugin {
    * resource description
    */
   description?: string;
+
+  /**
+   * questions asked when the resource is selected to add
+   */
   getQuestionsForAddInstance?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * triggered when the resource is added,
+   * in this API, plugin is supposed to:
+   * 1. register itself in project settings
+   * 2. add/update capabilities in manifest
+   */
   addInstance: (
     ctx: ContextWithManifestProvider,
-    inputs: GenerateInputs
+    inputs: AddFeatureInputs
   ) => Promise<Result<string[], FxError>>;
+
+  /**
+   * triggered when the resource is added,
+   * in this API, plugin is supposed to generate source code
+   */
   generateCode?: (
     ctx: ContextWithManifestProvider,
-    inputs: GenerateInputs
+    inputs: AddFeatureInputs
   ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * triggered when some other resource(s) is(are) added,
+   * in this API, plugin is supposed to update the source code according to the updated context
+   */
   updateCode?: (
     ctx: ContextWithManifestProvider,
     inputs: UpdateInputs
   ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * triggered when the resource is added,
+   * in this API, plugin is supposed to generate bicep template for the resource provisioning
+   */
   generateBicep?: (
     ctx: ContextWithManifestProvider,
-    inputs: GenerateInputs
+    inputs: AddFeatureInputs
   ) => Promise<Result<Bicep[], FxError>>;
+
+  /**
+   * triggered when some other resource(s) is(are) added,
+   * in this API, plugin is supposed to update bicep template according to the updated context
+   */
   updateBicep?: (
     ctx: ContextWithManifestProvider,
     inputs: UpdateInputs
   ) => Promise<Result<Bicep[], FxError>>;
+
+  /**
+   * questions to ask for provision
+   */
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * this API is for some tasks that can not be finished using arm templates
+   * The API will be kept until all provision tasks can be done by template driven method
+   */
   provisionResource?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: EnvInfoV3,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
+  /**
+   * configuration of resources after provisioning finished
+   */
   configureResource?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: EnvInfoV3,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * questions to collect answers before deployment
+   */
   getQuestionsForDeploy?: (
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * deploy bits to the cloud
+   */
   deploy?: (
     ctx: Context,
     inputs: InputsWithProjectPath,

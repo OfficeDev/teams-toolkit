@@ -155,30 +155,19 @@ type AzureResource = CloudResource;
 
 // @public (undocumented)
 interface AzureResourcePlugin {
-    // (undocumented)
-    addInstance: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<string[], FxError>>;
-    // (undocumented)
+    addInstance: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<string[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     description?: string;
     displayName?: string;
-    // (undocumented)
-    generateBicep?: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<Bicep[], FxError>>;
-    // (undocumented)
-    generateCode?: (ctx: ContextWithManifestProvider, inputs: GenerateInputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
+    generateBicep?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Bicep[], FxError>>;
+    generateCode?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Void, FxError>>;
     getQuestionsForAddInstance?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
     getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     name: string;
-    // (undocumented)
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
     updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Bicep[], FxError>>;
-    // (undocumented)
     updateCode?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Void, FxError>>;
 }
 
@@ -689,12 +678,6 @@ class FxSuccess<T> {
     kind: "success";
     // (undocumented)
     output: T;
-}
-
-// @public (undocumented)
-interface GenerateInputs extends InputsWithProjectPath {
-    // (undocumented)
-    allPlugins: string[];
 }
 
 // @public (undocumented)
@@ -1990,8 +1973,7 @@ export class UnknownError extends SystemError {
 }
 
 // @public (undocumented)
-interface UpdateInputs extends GenerateInputs {
-    // (undocumented)
+interface UpdateInputs extends AddFeatureInputs {
     newPlugins: string[];
 }
 
@@ -2093,7 +2075,6 @@ declare namespace v3 {
         OtherFeaturesAddedInputs,
         FeaturePlugin,
         Bicep,
-        GenerateInputs,
         UpdateInputs,
         AzureResourcePlugin,
         SolutionAddFeatureInputs,

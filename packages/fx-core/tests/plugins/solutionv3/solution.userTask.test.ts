@@ -57,12 +57,17 @@ describe("SolutionV3 - executeUserTask", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("getQuestionsForUserTask", async () => {
+  it("getQuestionsForAddResource", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -79,7 +84,7 @@ describe("SolutionV3 - executeUserTask", () => {
     const res = await getQuestionsForUserTask(
       ctx,
       inputs,
-      { namespace: "", method: "aa" },
+      { namespace: "", method: "addResource" },
       { envName: "dev", config: {}, state: { solution: {} } },
       mockedTokenProvider
     );

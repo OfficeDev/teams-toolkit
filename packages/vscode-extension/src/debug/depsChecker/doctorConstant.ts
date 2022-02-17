@@ -21,7 +21,7 @@ export const doctorConstant = {
   NodeSuccess: `Supported Node.js version (@Version) is installed`,
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   Cert: "Development certificate for localhost",
-  CertSuccess: "Development certification for localhost is installed",
+  CertSuccess: "Development certificate for localhost is installed",
   NpmInstallSuccess: "NPM packages for @app are installed",
   NpmInstallFailure: "NPM Install for @app",
   LaunchServices:

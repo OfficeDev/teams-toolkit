@@ -20,9 +20,13 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
+import { ArmTemplateResult } from "../../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
+import { getTemplatesFolder } from "../../../../folder";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { IUserList } from "../../appstudio/interfaces/IAppDefinition";
 import { AadAppClient } from "../aadAppClient";
@@ -34,6 +38,7 @@ import {
   ProgressDetail,
   ProgressTitle,
   Telemetry,
+  TemplatePathInfo,
 } from "../constants";
 import { AppIdUriInvalidError, ConfigErrorMessages, GetConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
@@ -103,6 +108,29 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   resourceType = "Azure AD App";
   description = "Azure AD App provide single-sign-on feature for Teams App";
 
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.aad,
+        eventName: "generate-arm-templates",
+      },
+    }),
+  ])
+  async generateResourceTemplate(): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    const result: ArmTemplateResult = {
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(
+            getTemplatesFolder(),
+            TemplatePathInfo.BicepTemplateRelativeDir,
+            Bicep.ParameterFileName
+          ),
+          ConstantString.UTF8Encoding
+        )
+      ),
+    };
+    return ok([{ kind: "bicep", template: result }]);
+  }
   /**
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
@@ -110,8 +138,12 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.aad } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    ensureSolutionSettings(ctx.projectSetting);
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const armRes = await this.generateResourceTemplate();
+    if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
     const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
@@ -122,7 +154,9 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
     };
     await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
-    return ok([]);
+    if (!solutionSettings.activeResourcePlugins.includes(this.name))
+      solutionSettings.activeResourcePlugins.push(this.name);
+    return ok(armRes.value);
   }
 
   @hooks([
@@ -150,10 +184,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     });
 
     //init aad part in local settings or env state
-    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
-      envInfo.state[BuiltInFeaturePluginNames.aad] = {
-        secretFields: ["clientSecret"],
-      };
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad].secretFields) {
+      envInfo.state[BuiltInFeaturePluginNames.aad].secretFields = ["clientSecret"];
     }
     // Move objectId etc. from input to output.
     const skip = Utils.skipCreateAadForProvision(envInfo);

@@ -59,6 +59,7 @@
     "onCommand:fx-extension.openBotManagement",
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.getNewProjectPath",
+    "onCommand:fx-extension.openReadMe",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -628,6 +629,11 @@
         "command": "fx-extension.getNewProjectPath",
         "title": "Teams: Get Path",
         "enablement": "never"
+      },
+      {
+        "command": "fx-extension.openReadMe",
+        "title": "Teams: Open Read Me",
+        "enablement": "never"
       }
     ],
     "taskDefinitions": [
@@ -810,7 +816,7 @@
               },
               "funcCoreTools": {
                 "type": "boolean",
-                "description": "Ensure Azure Function Core Tools is installed."
+                "description": "Ensure Azure Functions Core Tools is installed."
               },
               "bicep": {
                 "type": "boolean",
@@ -942,7 +948,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README.md](https://aka.ms/teamsfx-arm-templates)",
+            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:toSide:fx-extension.openReadMe?%5B%22Webview%22%5D)",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"

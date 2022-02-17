@@ -329,9 +329,8 @@ class EnvironmentManager {
     const userData = userDataResult.value;
 
     if (!(await fs.pathExists(envFiles.envState))) {
-      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
-
-      return ok(data);
+      if (isV3) return ok({ solution: {} });
+      return ok(new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]));
     }
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
@@ -404,6 +403,10 @@ class EnvironmentManager {
   ): Result<Record<string, string>, FxError> {
     for (const secretKey of Object.keys(secrets)) {
       if (!dataNeedEncryption(secretKey)) {
+        continue;
+      }
+      if (!secrets[secretKey]) {
+        delete secrets[secretKey];
         continue;
       }
       const encryptedSecret = cryptoProvider.encrypt(secrets[secretKey]);

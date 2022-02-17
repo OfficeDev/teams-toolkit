@@ -408,53 +408,30 @@ export class FxCore implements v3.ICore {
       // set solution in context
       ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
       // addFeature
+      const features: string[] = [BuiltInFeaturePluginNames.aad]; // AAD is added by default
       if (inputs.platform === Platform.VS) {
-        const addFeatureInputs: v2.InputsWithProjectPath = {
-          ...inputs,
-          projectPath: projectPath,
-          feature: BuiltInFeaturePluginNames.dotnet, //TODO
-        };
-        const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-        if (addFeatureRes.isErr()) {
-          return err(addFeatureRes.error);
-        }
+        features.push(BuiltInFeaturePluginNames.dotnet);
       } else {
         if (capabilities.includes(TabOptionItem.id)) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.frontend,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.frontend);
         } else if (capabilities.includes(TabSPFxItem.id)) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.spfx,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.spfx);
         }
         if (
           capabilities.includes(BotOptionItem.id) ||
           capabilities.includes(MessageExtensionItem.id)
         ) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.bot,
-            capabilities: capabilities,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.bot);
         }
+      }
+      const addFeatureInputs: v3.SolutionAddFeatureInputs = {
+        ...inputs,
+        projectPath: projectPath,
+        features: features,
+      };
+      const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
+      if (addFeatureRes.isErr()) {
+        return err(addFeatureRes.error);
       }
       if (ctx.projectSettings?.solutionSettings) {
         ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;

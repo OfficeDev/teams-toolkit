@@ -41,7 +41,9 @@ export async function installExtension(
     }
   } catch (error) {
     await logger.printDetailLog();
-    await logger.error(`Failed to run backend extension install: error = '${error}'`);
+    await logger.error(
+      `Failed to run Azure Functions binding extension install: error = '${error}'`
+    );
 
     if (error.message.includes("NETSDK1045")) {
       // refer to https://docs.microsoft.com/en-us/dotnet/core/tools/sdk-errors/netsdk1045
@@ -55,7 +57,7 @@ export async function installExtension(
       throw error;
     } else {
       throw new BackendExtensionsInstallError(
-        `Failed to run backend extension install: error = '${error}'`,
+        `Failed to run Azure Functions binding extension install: error = '${error}'`,
         defaultHelpLink
       );
     }
@@ -66,9 +68,11 @@ export async function installExtension(
 
 async function checkCommand(command: string, logger: DepsLogger) {
   if (command === "") {
-    await logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
+    await logger.error(
+      `Failed to run Azure Functions binding extension install, .NET SDK executable not found`
+    );
     throw new BackendExtensionsInstallError(
-      "Failed to run backend extension install, .NET SDK executable not found",
+      "Failed to run Azure Functions binding extension install, .NET SDK executable not found",
       defaultHelpLink
     );
   }

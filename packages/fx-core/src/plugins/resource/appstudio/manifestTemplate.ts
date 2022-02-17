@@ -329,7 +329,7 @@ export async function updateCapability(
       // find the corresponding static Tab with entity id
       const entityId = (capability.snippet!.remote as IStaticTab).entityId;
       const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
-      if (index && index != -1) {
+      if (index !== undefined && index !== -1) {
         manifest.staticTabs![index] = capability.snippet!.remote;
       } else {
         return err(
@@ -402,7 +402,7 @@ export async function deleteCapability(
       // find the corresponding static Tab with entity id
       const entityId = (capability.snippet!.remote as IStaticTab).entityId;
       const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
-      if (index && index != -1) {
+      if (index !== undefined && index !== -1) {
         manifest.staticTabs!.slice(index, 1);
       } else {
         return err(

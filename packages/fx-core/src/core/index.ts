@@ -428,8 +428,10 @@ export class FxCore implements v3.ICore {
         ...inputs,
         projectPath: projectPath,
         features: features,
+        solutionV3: ctx.solutionV3, // pass solutionV3 to questionModel middleware
+        contextV2: createV2Context(ctx.projectSettings!), // pass contextV2 to questionModel middleware
       };
-      const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
+      const addFeatureRes = await this._addFeature(addFeatureInputs);
       if (addFeatureRes.isErr()) {
         return err(addFeatureRes.error);
       }

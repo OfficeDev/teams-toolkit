@@ -83,8 +83,10 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       "executeUserTaskV3",
     ].includes(method || "")
   ) {
-    const solutionV3 = ctx.solutionV3;
-    const contextV2 = ctx.contextV2;
+    const solutionV3 = ctx.solutionV3 || inputs.solutionV3;
+    const contextV2 = ctx.contextV2 || inputs.contextV2;
+    delete inputs["solutionV3"];
+    delete inputs["contextV2"];
     if (solutionV3 && contextV2) {
       if (method === "addFeature" || method === "_addFeature") {
         getQuestionRes = await core._getQuestionsForAddFeature(

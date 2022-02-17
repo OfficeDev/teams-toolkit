@@ -6,7 +6,8 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import path from "path";
-import { v2, Platform, IStaticTab, IConfigurableTab } from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
+import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -213,6 +214,21 @@ describe("Update capability", () => {
     });
     chai.assert.isTrue(result.isOk());
   });
+
+  it("Update bot should failed", async () => {
+    const bot: IBot = {
+      botId: uuid.v4(),
+      scopes: ["team", "groupchat"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "Bot",
+      snippet: { local: bot, remote: bot },
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
+    }
+  });
 });
 
 describe("Delete capability", () => {
@@ -281,5 +297,15 @@ describe("Delete capability", () => {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isOk());
+  });
+
+  it("Delete bot should failed", async () => {
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "Bot",
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
+    }
   });
 });

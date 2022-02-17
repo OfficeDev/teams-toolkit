@@ -341,7 +341,7 @@ export async function updateCapability(
       }
       break;
     case "configurableTab":
-      if (manifest.configurableTabs) {
+      if (manifest.configurableTabs && manifest.configurableTabs.length) {
         manifest.configurableTabs[0] = capability.snippet!.remote;
       } else {
         return err(
@@ -353,7 +353,7 @@ export async function updateCapability(
       }
       break;
     case "Bot":
-      if (manifest.bots) {
+      if (manifest.bots && manifest.bots.length > 0) {
         manifest.bots[0] = capability.snippet!.remote;
       } else {
         return err(
@@ -365,7 +365,7 @@ export async function updateCapability(
       }
       break;
     case "MessageExtension":
-      if (manifest.composeExtensions) {
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
         manifest.composeExtensions[0] = capability.snippet!.remote;
       } else {
         return err(
@@ -414,7 +414,7 @@ export async function deleteCapability(
       }
       break;
     case "configurableTab":
-      if (manifest.configurableTabs) {
+      if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
         manifest.configurableTabs = [];
       } else {
         return err(
@@ -426,7 +426,7 @@ export async function deleteCapability(
       }
       break;
     case "Bot":
-      if (manifest.bots) {
+      if (manifest.bots && manifest.bots.length > 0) {
         manifest.bots = [];
       } else {
         return err(
@@ -438,7 +438,7 @@ export async function deleteCapability(
       }
       break;
     case "MessageExtension":
-      if (manifest.composeExtensions) {
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
         manifest.composeExtensions = [];
       } else {
         return err(

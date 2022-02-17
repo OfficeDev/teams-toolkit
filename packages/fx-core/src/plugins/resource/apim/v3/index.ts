@@ -19,6 +19,7 @@ import {
 import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../../common/constants";
 import { generateBicepFromFile } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
@@ -39,7 +40,7 @@ import {
 import { AssertNotEmpty } from "../error";
 import { Factory } from "../factory";
 import { ProgressBar } from "../utils/progressBar";
-
+import fs from "fs-extra";
 @Service(BuiltInFeaturePluginNames.apim)
 export class ApimPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.apim;
@@ -101,17 +102,40 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
+      pluginCtx
+    );
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
+      pluginCtx
+    );
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
       pluginCtx
     );
     const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { apim: provisionModules },
+      },
+      Configuration: {
+        Orchestration: configOrchestration,
+        Modules: { apim: configModules },
+      },
       Reference: {
         serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
-      Configuration: {
-        Modules: { apim: configModules },
-      },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
     return ok([{ kind: "bicep", template: result }]);
   }
@@ -199,6 +223,8 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ProgressMessages[ProgressStep.Provision].CreateAad
     );
     await aadManager.provision(apimConfig, appName);
+
+    await this.progressBar.close(ProgressStep.Provision, true);
     return ok(Void);
   }
 

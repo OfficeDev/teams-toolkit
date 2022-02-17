@@ -352,7 +352,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       // Create and register progress bar for cleanup.
       const handler = await ProgressBarFactory.newProgressBar(
         ProgressBarConstants.PROVISION_TITLE,
-        ProgressBarConstants.PROVISION_STEPS_NUM,
+        1,
         ctx
       );
       await handler?.start(ProgressBarConstants.PROVISION_STEP_START);
@@ -371,6 +371,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       // 1. Do bot registration.
       await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
       await this.createOrGetBotAppRegistration(ctx, envInfo, tokenProvider);
+      await handler?.end(true);
     }
     return ok(Void);
   }
@@ -514,6 +515,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
+    await handler?.end(true);
     ctx.logProvider.info(Messages.SuccessfullyDeployedBot);
 
     return ok(Void);

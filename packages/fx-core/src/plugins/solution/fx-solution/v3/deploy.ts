@@ -7,6 +7,7 @@ import {
   FxError,
   Json,
   ok,
+  OptionItem,
   QTreeNode,
   Result,
   TokenProvider,
@@ -31,24 +32,34 @@ export async function getQuestionsForDeploy(
   const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];
   if (pluginNames.length === 0) return ok(undefined);
   const rootNode = new QTreeNode(selectMultiPluginsQuestion);
+  const deployOptions: OptionItem[] = [];
+  const pluginPrefix = "fx-resource-";
   for (const pluginName of pluginNames) {
     if (pluginName) {
       const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-      if (plugin.deploy && plugin.getQuestionsForDeploy) {
-        const res = await plugin.getQuestionsForDeploy(ctx, inputs, envInfo, tokenProvider);
-        if (res.isErr()) {
-          return res;
-        }
-        if (res.value) {
-          const node = res.value;
-          if (node && node.data) {
-            node.condition = { contains: pluginName };
-            rootNode.addChild(node);
+      if (plugin.deploy) {
+        deployOptions.push({
+          id: pluginName,
+          label: plugin.displayName || pluginName,
+          cliName: plugin.name.replace(pluginPrefix, ""),
+        });
+        if (plugin.getQuestionsForDeploy) {
+          const res = await plugin.getQuestionsForDeploy(ctx, inputs, envInfo, tokenProvider);
+          if (res.isErr()) {
+            return res;
+          }
+          if (res.value) {
+            const node = res.value;
+            if (node && node.data) {
+              node.condition = { contains: pluginName };
+              rootNode.addChild(node);
+            }
           }
         }
       }
     }
   }
+  selectMultiPluginsQuestion.staticOptions = deployOptions;
   return ok(rootNode);
 }
 export async function deploy(

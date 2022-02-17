@@ -24,7 +24,7 @@ export interface TeamsFxConfiguration {
    * @returns instance implements TokenCredential interface.
    * @beta
    */
-  get Credential(): TokenCredential;
+  getCredential(): TokenCredential;
 
   /**
    * Get user information.

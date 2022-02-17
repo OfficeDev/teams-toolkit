@@ -409,7 +409,7 @@ export class TeamsBotSsoPrompt extends Dialog {
       } else {
         const ssoToken = context.activity.value.token;
         this.teamsfx.setSsoToken(ssoToken);
-        const credential = this.teamsfx.Credential;
+        const credential = this.teamsfx.getCredential();
         let exchangedToken: AccessToken | null;
         try {
           exchangedToken = await credential.getToken(this.settings.scopes);

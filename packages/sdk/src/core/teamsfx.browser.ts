@@ -36,7 +36,8 @@ export class TeamsFx implements TeamsFxConfiguration {
 
   private loadFromEnv(): void {
     let env: any;
-    if (window) {
+    if (window && (window as any).__env__) {
+      // testing purpose
       env = (window as any).__env__;
     } else {
       env = process.env;
@@ -60,7 +61,7 @@ export class TeamsFx implements TeamsFxConfiguration {
     });
   }
 
-  public get Credential(): TokenCredential {
+  public getCredential(): TokenCredential {
     if (!this.teamsUserCredential) {
       this.teamsUserCredential = new TeamsUserCredential(Object.fromEntries(this.configuration));
     }
@@ -68,11 +69,11 @@ export class TeamsFx implements TeamsFxConfiguration {
   }
 
   public async getUserInfo(): Promise<UserInfo> {
-    return await (this.Credential as TeamsUserCredential).getUserInfo();
+    return await (this.getCredential() as TeamsUserCredential).getUserInfo();
   }
 
   public async login(scopes: string | string[]): Promise<void> {
-    await (this.Credential as TeamsUserCredential).login(scopes);
+    await (this.getCredential() as TeamsUserCredential).login(scopes);
   }
 
   public setSsoToken(ssoToken: string): TeamsFx {

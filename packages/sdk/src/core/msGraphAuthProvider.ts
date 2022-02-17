@@ -63,7 +63,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    */
   public async getAccessToken(): Promise<string> {
     internalLogger.info(`Get Graph Access token with scopes: '${this.scopes}'`);
-    const accessToken = await this.teamsfx.Credential.getToken(this.scopes);
+    const accessToken = await this.teamsfx.getCredential().getToken(this.scopes);
 
     return new Promise<string>((resolve, reject) => {
       if (accessToken) {

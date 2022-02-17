@@ -49,7 +49,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    * @returns instance implements TokenCredential interface.
    * @beta
    */
-  public get Credential(): TokenCredential {
+  public getCredential(): TokenCredential {
     if (this.identityType === IdentityType.User) {
       if (this.oboUserCredential) {
         return this.oboUserCredential;
@@ -78,7 +78,7 @@ export class TeamsFx implements TeamsFxConfiguration {
       internalLogger.error(errorMsg);
       throw new ErrorWithCode(errorMsg, ErrorCode.IdentityTypeNotSupported);
     }
-    return Promise.resolve((this.Credential as OnBehalfOfUserCredential).getUserInfo());
+    return Promise.resolve((this.getCredential() as OnBehalfOfUserCredential).getUserInfo());
   }
 
   /**

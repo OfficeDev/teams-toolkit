@@ -26,7 +26,6 @@ export declare class TeamsFx implements TeamsFxConfiguration
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [Credential](./teamsfx.teamsfx.credential.md) |  | TokenCredential | <b><i>(BETA)</i></b> Credential instance according to identity type choice. |
 |  [identityType](./teamsfx.teamsfx.identitytype.md) |  | [IdentityType](./teamsfx.identitytype.md) | <b><i>(BETA)</i></b> Identity type set by user. |
 
 ## Methods
@@ -35,6 +34,7 @@ export declare class TeamsFx implements TeamsFxConfiguration
 |  --- | --- | --- |
 |  [getConfig(key)](./teamsfx.teamsfx.getconfig.md) |  | <b><i>(BETA)</i></b> Usually used by service plugins to retrieve specific config |
 |  [getConfigs()](./teamsfx.teamsfx.getconfigs.md) |  | <b><i>(BETA)</i></b> Get all configurations. |
+|  [getCredential()](./teamsfx.teamsfx.getcredential.md) |  | <b><i>(BETA)</i></b> Credential instance according to identity type choice. |
 |  [getUserInfo()](./teamsfx.teamsfx.getuserinfo.md) |  | <b><i>(BETA)</i></b> Get user information. |
 |  [hasConfig(key)](./teamsfx.teamsfx.hasconfig.md) |  | <b><i>(BETA)</i></b> Check the value of specific key. |
 |  [login(scopes)](./teamsfx.teamsfx.login.md) |  | <b><i>(BETA)</i></b> Popup login page to get user's access token with specific scopes. |

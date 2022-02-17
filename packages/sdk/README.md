@@ -183,7 +183,7 @@ Use `axios` library to make HTTP request to Azure Function.
 
 ```ts
 const teamsfx = new TeamsFx();
-const token = teamsfx.Credential.getToken(""); // Get SSO token for the user
+const token = teamsfx.getCredential().getToken(""); // Get SSO token for the user
 // Call API hosted in Azure Functions on behalf of user
 const apiEndpoint = teamsfx.getConfig("apiEndpoint");
 const response = await axios.default.get(apiEndpoint + "api/httptrigger1", {
@@ -231,7 +231,7 @@ const teamsfx = new TeamsFx(IdentityType.App);
 teamsfx.setCustomeConfig({
   certificateContent: "The content of a PEM-encoded public/private key certificate"
 });
-const token = teamsfx.Credential.getToken();
+const token = teamsfx.getCredential().getToken();
 ```
 
 ### Use Graph API in Bot application

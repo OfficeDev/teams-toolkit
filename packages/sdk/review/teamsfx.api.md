@@ -136,9 +136,9 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 // @beta
 export class TeamsFx implements TeamsFxConfiguration {
     constructor(identityType?: IdentityType);
-    get Credential(): TokenCredential;
     getConfig(key: string): string;
     getConfigs(): Record<string, string>;
+    getCredential(): TokenCredential;
     getUserInfo(): Promise<UserInfo>;
     hasConfig(key: string): boolean;
     identityType: IdentityType;

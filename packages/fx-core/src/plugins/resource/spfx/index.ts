@@ -19,13 +19,9 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
+import { SPFXQuestionNames } from "./utils/questions";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import "./v2";
-export enum SPFXQuestionNames {
-  framework_type = "spfx-framework-type",
-  webpart_name = "spfx-webpart-name",
-  webpart_desp = "spfx-webpart-desp",
-}
 
 @Service(ResourcePlugins.SpfxPlugin)
 export class SpfxPlugin implements Plugin {

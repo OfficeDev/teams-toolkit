@@ -31,7 +31,7 @@ import Sinon from "sinon";
 import { SPFxPluginImpl } from "../../../../../src/plugins/resource/spfx/v3/plugin";
 import fs from "fs-extra";
 import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
-import { SPFxPlugin } from "../../../../../src/plugins/resource/spfx/v3/index";
+import { SPFxPluginV3 } from "../../../../../src/plugins/resource/spfx/v3/index";
 import { ProgressHelper } from "../../../../../src/plugins/resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
 import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
@@ -50,7 +50,7 @@ describe("SPFx plugin v3", () => {
 
   const testFolder = path.resolve("./tmp");
   const subFolderName = "SPFx";
-  const pluginV3 = new SPFxPlugin();
+  const pluginV3 = new SPFxPluginV3();
   const pluginImplV3 = new SPFxPluginImpl();
   const projectSettings: ProjectSettings = {
     appName: "my app",

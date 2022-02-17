@@ -33,7 +33,7 @@ import { ManifestTemplate } from "../utils/constants";
 import * as util from "util";
 
 @Service(BuiltInFeaturePluginNames.spfx)
-export class SPFxPlugin implements v3.FeaturePlugin {
+export class SPFxPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.spfx;
   displayName = "SPFx";
   description = "SharePoint Framework (SPFx)";

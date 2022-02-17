@@ -1,6 +1,5 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  AzureAccountProvider,
   AzureSolutionSettings,
   err,
   FxError,
@@ -10,6 +9,7 @@ import {
   ok,
   QTreeNode,
   Result,
+  TokenProvider,
   v2,
   v3,
   Void,
@@ -147,12 +147,12 @@ export class SPFxPlugin implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const buildRes = await this.spfxPluginImpl.buildSPPackage(ctx, inputs);
     if (buildRes.isErr()) {
       return buildRes;
     }
-    return await this.spfxPluginImpl.deploy(ctx, inputs);
+    return await this.spfxPluginImpl.deploy(ctx, inputs, tokenProvider);
   }
 }

@@ -29,6 +29,7 @@ import {
   ok,
   Platform,
   Result,
+  TokenProvider,
   UserCancelError,
   v2,
   v3,
@@ -261,18 +262,21 @@ export class SPFxPluginImpl {
     }
   }
 
-  async deploy(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+  async deploy(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    tokenProvider: TokenProvider
+  ): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx.userInteraction);
     let success = false;
     try {
-      const tenant = await this.getTenant(ctx);
+      const tenant = await this.getTenant(tokenProvider);
       if (tenant.isErr()) {
         return tenant;
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      //const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
-      const spoToken = "TODO";
+      const spoToken = await tokenProvider.sharepointTokenProvider?.getAccessToken();
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -380,15 +384,13 @@ export class SPFxPluginImpl {
     return appID;
   }
 
-  private async getTenant(ctx: v2.Context): Promise<Result<string, FxError>> {
-    const graphToken = "";
-    //const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+  private async getTenant(tokenProvider: TokenProvider): Promise<Result<string, FxError>> {
+    const graphToken = await tokenProvider.graphTokenProvider?.getAccessToken();
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = "";
-    // const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const tokenJson = await tokenProvider.graphTokenProvider?.getJsonObject();
     const username = (tokenJson as any).unique_name;
 
     const instance = axios.create({

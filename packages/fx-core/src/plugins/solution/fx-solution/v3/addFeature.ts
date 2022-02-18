@@ -71,6 +71,30 @@ export async function getQuestionsForAddFeature(
 }
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
+  async updateCapability(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: v3.ManifestCapability
+  ): Promise<Result<Void, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    return await appStudioV3.updateCapability(ctx, inputs, capability);
+  }
+  async deleteCapability(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: v3.ManifestCapability
+  ): Promise<Result<Void, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    return await appStudioV3.deleteCapability(ctx, inputs, capability);
+  }
+  async capabilityExceedLimit(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
+  ): Promise<Result<boolean, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    return await appStudioV3.capabilityExceedLimit(ctx, inputs, capability);
+  }
   async loadManifest(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath

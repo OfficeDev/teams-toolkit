@@ -141,6 +141,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
+
+    ctx.appManifestProvider.addCapabilities(ctx, inputs);
     const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
     if (loadRes.isErr()) return err(loadRes.error);
     const manifest = loadRes.value;

@@ -25,6 +25,8 @@ import {
   loadManifest,
   saveManifest,
   capabilityExceedLimit,
+  updateCapability,
+  deleteCapability,
 } from "../manifestTemplate";
 import { getTemplatesFolder } from "../../../../folder";
 import * as path from "path";
@@ -109,6 +111,34 @@ export class AppStudioPluginV3 {
   }
 
   /**
+   * Update existing manifest template
+   * @param ctx
+   * @param inputs
+   * @param capability
+   */
+  async updateCapability(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: v3.ManifestCapability
+  ): Promise<Result<any, FxError>> {
+    return await updateCapability(inputs.projectPath, capability);
+  }
+
+  /**
+   * Delete existing manifest template
+   * @param ctx
+   * @param inputs
+   * @param capability
+   */
+  async deleteCapability(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: v3.ManifestCapability
+  ): Promise<Result<any, FxError>> {
+    return await deleteCapability(inputs.projectPath, capability);
+  }
+
+  /**
    * Should conside both local and remote
    * @returns
    */
@@ -175,7 +205,7 @@ export class AppStudioPluginV3 {
   async capabilityExceedLimit(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
   ): Promise<Result<boolean, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     return await capabilityExceedLimit(pluginContext.root, capability);

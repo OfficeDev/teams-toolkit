@@ -41,6 +41,7 @@ import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName }
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
+import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -146,6 +147,9 @@ describe("Core basic APIs for v3", () => {
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+      [SPFXQuestionNames.framework_type]: "react",
+      [SPFXQuestionNames.webpart_name]: "helloworld",
+      [SPFXQuestionNames.webpart_desp]: "helloworld",
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);

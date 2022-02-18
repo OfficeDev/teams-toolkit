@@ -112,30 +112,38 @@ export async function addFeature(
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const existingResources = new Set<string>();
-  const allResources = new Set<string>();
+  const existingPlugins = new Set<string>();
+  const newPlugins = new Set<string>();
   const pluginNames = solutionSettings.activeResourcePlugins;
   pluginNames.forEach((p) => {
-    existingResources.add(p);
-    allResources.add(p);
+    existingPlugins.add(p);
   });
   inputs.features.forEach((f) => {
-    allResources.add(f);
+    newPlugins.add(f);
   });
+
   const contextWithManifestProvider: v3.ContextWithManifestProvider = {
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
+
+  for (const name of newPlugins) {
+    const plugin = Container.get<v3.PluginV3>(name);
+    if (plugin.addInstance) {
+      const res = await plugin.addInstance(contextWithManifestProvider, inputs);
+    }
+  }
+
   const resolveRes = await resolveResourceDependencies(
     contextWithManifestProvider,
     inputs,
     allResources
   );
   if (resolveRes.isErr()) return err(resolveRes.error);
-  const existingPluginNames: string[] = Array.from(existingResources);
+  const existingPluginNames: string[] = Array.from(existingPlugins);
   const addedPluginNames: string[] = [];
   for (const pluginName of allResources.values()) {
-    if (!existingResources.has(pluginName)) {
+    if (!existingPlugins.has(pluginName)) {
       addedPluginNames.push(pluginName);
     }
   }
@@ -155,12 +163,14 @@ export async function addFeature(
 async function resolveResourceDependencies(
   ctx: v3.ContextWithManifestProvider,
   inputs: Inputs,
-  resourceNameSet: Set<string>
+  existingSet: Set<string>,
+  newSet: Set<string>
 ): Promise<Result<undefined, FxError>> {
   while (true) {
-    const size1 = resourceNameSet.size;
-    for (const name of resourceNameSet) {
-      const plugin = Container.get<v3.PluginV3>(name);
+    const size1 = existingSet.size;
+    const nextNewSet = new Set<string>();
+    for (const pluginName of newSet) {
+      const plugin = Container.get<v3.PluginV3>(pluginName);
       if (plugin.pluginDependencies || plugin.addInstance) {
         const depRes = plugin.pluginDependencies
           ? await plugin.pluginDependencies(ctx, inputs)
@@ -169,11 +179,14 @@ async function resolveResourceDependencies(
           return err(depRes.error);
         }
         for (const dep of depRes.value) {
-          resourceNameSet.add(dep);
+          if (!existingSet.has(dep)) {
+            nextNewSet.add(dep);
+          }
         }
       }
+      existingSet.add(pluginName);
     }
-    const size2 = resourceNameSet.size;
+    const size2 = existingSet.size;
     if (size1 === size2) break;
   }
   return ok(undefined);

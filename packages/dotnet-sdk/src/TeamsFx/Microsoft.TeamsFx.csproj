@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Microsoft.TeamsFx.Test</_Parameter1>
     </AssemblyAttribute>

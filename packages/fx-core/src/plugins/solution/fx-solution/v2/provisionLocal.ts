@@ -24,6 +24,7 @@ import { PermissionRequestFileProvider } from "../../../../core/permissionReques
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import {
   configLocalDebugSettings,
+  configLocalEnvironment,
   setupLocalDebugSettings,
   setupLocalEnvironment,
 } from "../debug/provisionLocal";
@@ -180,6 +181,14 @@ export async function provisionLocalResource(
 
   if (debugConfigResult.isErr()) {
     return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
+  }
+
+  if (isConfigUnifyEnabled()) {
+    const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
+
+    if (localConfigResult.isErr()) {
+      return new v2.FxPartialSuccess(envInfo!, localConfigResult.error);
+    }
   }
 
   return new v2.FxSuccess(localSettings);

@@ -113,29 +113,27 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
       }
     );
 
-    const update = await ctx.appManifestProvider.addCapabilities(
+    const addCapRes = await ctx.appManifestProvider.addCapabilities(
       ctx,
       inputs,
       capabilitiesToAddManifest
     );
-    if (update.isErr()) return err(update.error);
+    if (addCapRes.isErr()) return err(addCapRes.error);
 
-    const manifestRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
-    if (manifestRes.isErr()) {
-      return err(LoadManifestError());
-    }
-
-    if (manifestRes.value.webApplicationInfo) {
-      manifestRes.value.webApplicationInfo = {
+    const webAppInfo: v3.ManifestCapability = {
+      name: "WebApplicationInfo",
+      snippet: {
         resource: ManifestTemplate.WEB_APP_INFO_RESOURCE,
         id: ManifestTemplate.WEB_APP_INFO_ID,
-      };
-    }
+      },
+    };
 
-    const save = await ctx.appManifestProvider.saveManifest(ctx, inputs, manifestRes.value);
-    if (save.isErr()) {
-      return err(SaveManifestError());
-    }
+    const updateWebAppInfoRes = await ctx.appManifestProvider.updateCapability(
+      ctx,
+      inputs,
+      webAppInfo
+    );
+    if (updateWebAppInfoRes.isErr()) return err(updateWebAppInfoRes.error);
 
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);

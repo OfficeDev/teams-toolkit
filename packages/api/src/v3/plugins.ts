@@ -3,7 +3,6 @@
 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { AppManifest } from "../manifest";
 import { QTreeNode } from "../qm/question";
 import { Inputs, Void } from "../types";
 import { TokenProvider } from "../utils/login";

@@ -146,14 +146,19 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
-    const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
-    if (loadRes.isErr()) return err(loadRes.error);
-    const manifest = loadRes.value;
-    (manifest as TeamsAppManifest).webApplicationInfo = {
-      id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
-      resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
+    const webAppInfo: v3.ManifestCapability = {
+      name: "WebApplicationInfo",
+      snippet: {
+        id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
+        resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
+      },
     };
-    await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
+    const updateWebAppInfoRes = await ctx.appManifestProvider.updateCapability(
+      ctx,
+      inputs,
+      webAppInfo
+    );
+    if (updateWebAppInfoRes.isErr()) return err(updateWebAppInfoRes.error);
     if (!solutionSettings.activeResourcePlugins.includes(this.name))
       solutionSettings.activeResourcePlugins.push(this.name);
     return ok(armRes.value);

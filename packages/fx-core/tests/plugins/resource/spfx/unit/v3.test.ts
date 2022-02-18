@@ -35,6 +35,7 @@ import { SPFxPluginV3 } from "../../../../../src/plugins/resource/spfx/v3/index"
 import { ProgressHelper } from "../../../../../src/plugins/resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
 import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
+import { DefaultManifestProvider } from "../../../../../src/plugins/solution/fx-solution/v3/addFeature";
 
 describe("SPFx plugin v3", () => {
   beforeEach(async () => {
@@ -83,16 +84,12 @@ describe("SPFx plugin v3", () => {
   });
 
   it("AddFeature- spfx already added", async () => {
-    const appManifestProvider: AppManifestProvider = {
-      loadManifest: async (): Promise<Result<JSON, FxError>> => {
-        return ok({ local: {}, remote: {} } as unknown as JSON);
-      },
-      saveManifest: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
-      addCapabilities: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
+    const appManifestProvider = new DefaultManifestProvider();
+    appManifestProvider.addCapabilities = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
+    };
+    appManifestProvider.updateCapability = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
     };
     const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
     const addFeature = await pluginV3.addFeature(ctxV3, inputs);
@@ -101,16 +98,12 @@ describe("SPFx plugin v3", () => {
 
   it("AddFeature- spfx added first time", async () => {
     ctx.projectSetting.solutionSettings!.capabilities = [];
-    const appManifestProvider: AppManifestProvider = {
-      loadManifest: async (): Promise<Result<JSON, FxError>> => {
-        return ok({ local: {}, remote: {} } as unknown as JSON);
-      },
-      saveManifest: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
-      addCapabilities: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
+    const appManifestProvider = new DefaultManifestProvider();
+    appManifestProvider.addCapabilities = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
+    };
+    appManifestProvider.updateCapability = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
     };
     const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
     Sinon.stub(SPFxPluginImpl.prototype, "scaffold").resolves(ok(undefined));
@@ -124,16 +117,12 @@ describe("SPFx plugin v3", () => {
   it("Scaffold-none framework", async () => {
     const componentId = uuid.v4();
     ctx.projectSetting.solutionSettings!.capabilities = [];
-    const appManifestProvider: AppManifestProvider = {
-      loadManifest: async (): Promise<Result<JSON, FxError>> => {
-        return ok({ local: {}, remote: {} } as unknown as JSON);
-      },
-      saveManifest: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
-      addCapabilities: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
+    const appManifestProvider = new DefaultManifestProvider();
+    appManifestProvider.addCapabilities = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
+    };
+    appManifestProvider.updateCapability = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
     };
     const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
     inputs[SPFXQuestionNames.webpart_name] = "helloworld";
@@ -172,16 +161,12 @@ describe("SPFx plugin v3", () => {
   it("Scaffold-react framework", async () => {
     const componentId = uuid.v4();
     ctx.projectSetting.solutionSettings!.capabilities = [];
-    const appManifestProvider: AppManifestProvider = {
-      loadManifest: async (): Promise<Result<JSON, FxError>> => {
-        return ok({ local: {}, remote: {} } as unknown as JSON);
-      },
-      saveManifest: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
-      addCapabilities: async (): Promise<Result<Void, FxError>> => {
-        return ok(Void);
-      },
+    const appManifestProvider = new DefaultManifestProvider();
+    appManifestProvider.addCapabilities = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
+    };
+    appManifestProvider.updateCapability = async (): Promise<Result<Void, FxError>> => {
+      return ok(Void);
     };
     const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
     inputs[SPFXQuestionNames.webpart_name] = "helloworld";

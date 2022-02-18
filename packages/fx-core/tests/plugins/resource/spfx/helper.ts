@@ -24,7 +24,7 @@ import {
   FxError,
   Colors,
 } from "@microsoft/teamsfx-api";
-import { SPFXQuestionNames } from "../../../../src/plugins/resource/spfx";
+import { SPFXQuestionNames } from "../../../../src/plugins/resource/spfx/utils/questions";
 import faker from "faker";
 import sinon from "sinon";
 

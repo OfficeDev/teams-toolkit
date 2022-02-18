@@ -18,7 +18,7 @@ import {
 import { Container } from "typedi";
 import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { selectSingleFeatureQuestion } from "../../utils/questions";
+import { selectMultipleFeaturesQuestion } from "../../utils/questions";
 import arm from "../arm";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
@@ -42,7 +42,7 @@ export async function getQuestionsForAddFeature(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
-  const featureNode = new QTreeNode(selectSingleFeatureQuestion);
+  const featureNode = new QTreeNode(selectMultipleFeaturesQuestion);
   if (!ctx.projectSetting.solutionSettings?.programmingLanguage) {
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     node.addChild(programmingLanguage);
@@ -57,12 +57,12 @@ export async function getQuestionsForAddFeature(
       const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
-        childNode.value.condition = { equals: plugin.name };
+        childNode.value.condition = { contains: plugin.name };
         featureNode.addChild(childNode.value);
       }
     }
   }
-  selectSingleFeatureQuestion.staticOptions = staticOptions;
+  selectMultipleFeaturesQuestion.staticOptions = staticOptions;
   node.addChild(featureNode);
   return ok(node);
 }
@@ -98,7 +98,8 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     capabilities: v3.ManifestCapability[]
   ): Promise<Result<Void, FxError>> {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.addCapabilities(ctx, inputs, []);
+    const res = await appStudioV3.addCapabilities(ctx, inputs, capabilities);
+    if (res.isErr()) return err(res.error);
     return ok(Void);
   }
 }
@@ -117,24 +118,30 @@ export async function addFeature(
     existingResources.add(p);
     allResources.add(p);
   });
-  allResources.add(inputs.feature);
+  inputs.features.forEach((f) => {
+    allResources.add(f);
+  });
   const resolveRes = await resolveResourceDependencies(ctx, inputs, allResources);
   if (resolveRes.isErr()) return err(resolveRes.error);
+  const existingPluginNames: string[] = Array.from(existingResources);
+  const addedPluginNames: string[] = [];
+  for (const pluginName of allResources.values()) {
+    if (!existingResources.has(pluginName)) {
+      addedPluginNames.push(pluginName);
+    }
+  }
   const contextWithManifestProvider: v3.ContextWithManifestProvider = {
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
-  for (const resource of allResources.values()) {
-    if (!existingResources.has(resource) || resource === inputs.feature) {
-      const armInputs: v3.SolutionAddFeatureInputs = {
-        ...inputs,
-        feature: resource,
-      };
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, armInputs);
-      if (generateArmRes.isErr()) {
-        return err(generateArmRes.error);
-      }
-    }
+  const addFeatureRes = await arm.addFeature(
+    contextWithManifestProvider,
+    inputs,
+    addedPluginNames,
+    existingPluginNames
+  );
+  if (addFeatureRes.isErr()) {
+    return err(addFeatureRes.error);
   }
   return ok(Void);
 }

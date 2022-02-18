@@ -192,7 +192,7 @@ jobs:
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter @mochajs/json-file-reporter $file --parallel
+            npx mocha --reporter mochawesome $file --parallel
           fi
 
       - name: get job id
@@ -211,13 +211,13 @@ jobs:
         with:
           name: ${{ steps.get-job-id.outputs.job_id}}.json
           path: |
-            ./packages/cli/tests/e2e/report.json
+            ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
       - name: Sync to Azure DevOps Test Plan
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/report.json cli $version
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
   report:
     if: ${{ always() && github.event_name == 'schedule' }}

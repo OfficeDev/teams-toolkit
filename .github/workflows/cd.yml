@@ -116,7 +116,7 @@ jobs:
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
-
+      
       - name: sync up templates deps with sdk version for RC
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
@@ -129,11 +129,11 @@ jobs:
           node .github/scripts/fxcore-sync-up-version.js
           git add packages/fx-core/.
           git commit -m "chore: update templates version"
-
+      
       - name: generate templates
         run: |
           curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-          .github/scripts/template-zip-autogen.sh ~/teamsfx_templates
+          .github/scripts/template-zip-autogen.sh
 
       - name: update tag
         uses: richardsimko/update-tag@v1
@@ -150,9 +150,9 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates-0.0.0-alpha"
-          artifacts: ~/teamsfx_templates/*.zip
+          artifacts: ./*.zip
           allowUpdates: true
-
+      
       - name: update tag
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
@@ -168,14 +168,14 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ~/teamsfx_templates/*.zip
+          artifacts: ./*.zip
           allowUpdates: true
 
       - name: Create Templates Stable Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
-          artifacts: ~/teamsfx_templates/*.zip
+          artifacts: ./*.zip
           name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
@@ -183,19 +183,19 @@ jobs:
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates > ~/template-tags.txt
+        run: git tag | grep templates > ./template-tags.txt
 
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
-          artifacts: ~/template-tags.txt
+          artifacts: ./template-tags.txt
           name: 'Template Tag List'
           body: 'Release to maintain template tag list.'
           token: ${{ secrets.github_token }}
           tag: 'template-tag-list'
-          allowUpdates: true
-
+          allowUpdates: true  
+    
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
 
@@ -204,7 +204,7 @@ jobs:
         uses: Azure/pipelines@v1
         with:
           azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
-          azure-pipeline-name: 'Build Function Extension Release Artifacts'
+          azure-pipeline-name: 'Build Function Extension Release Artifacts' 
           azure-devops-token: '${{ secrets.ADO_PAT }}'
 
       - name: trigger simpleauth azure build pipeline for stable release
@@ -212,9 +212,9 @@ jobs:
         uses: Azure/pipelines@v1
         with:
           azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
-          azure-pipeline-name: 'Build Simple Auth Release Artifacts'
+          azure-pipeline-name: 'Build Simple Auth Release Artifacts' 
           azure-devops-token: '${{ secrets.ADO_PAT }}'
-
+      
       - name: check build status and download assets for stable release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
@@ -223,17 +223,17 @@ jobs:
           asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
           curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip" -L -O -u :${{ secrets.ADO_PAT }}
           if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
-
+      
       - name: build SimpleAuth on prerelease
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
         run: |
           dotnet build --configuration Release
           zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Release/*
-        working-directory: ./packages/simpleauth
+        working-directory: ./packages/simpleauth  
 
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2
-        with:
+        with: 
           timeout_minutes: 10
           max_attempts: 10
           retry_on: error
@@ -279,7 +279,7 @@ jobs:
           file: ./packages/vscode-extension/package.json
           field: aiKey
           value: ${{ secrets.EXT_PUBLIC_AIKEY }}
-
+      
       - name: commit change on local
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
         run: |
@@ -326,7 +326,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
           prerelease: true
-
+      
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3

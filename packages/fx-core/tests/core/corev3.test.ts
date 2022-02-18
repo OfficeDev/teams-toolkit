@@ -84,7 +84,29 @@ describe("Core basic APIs for v3", () => {
     sandbox.restore();
     deleteFolder(projectPath);
   });
-
+  it("create + provision (VSC, Tab)", async () => {
+    appName = randomAppName();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
+    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
+    const provisionRes = await core.provisionResources({
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      env: "dev",
+    });
+    assert.isTrue(provisionRes.isOk());
+  });
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
@@ -98,14 +120,6 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
-    const provisionRes = await core.provisionResources({
-      platform: Platform.VSCode,
-      projectPath: projectPath,
-    });
-    assert.isTrue(provisionRes.isOk());
   });
   it("create from new (VS, Tab+Bot)", async () => {
     appName = randomAppName();

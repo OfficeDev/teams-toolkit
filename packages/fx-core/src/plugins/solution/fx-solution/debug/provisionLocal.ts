@@ -406,3 +406,135 @@ export async function configLocalDebugSettings(
   TelemetryUtils.sendSuccessEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
   return ok(Void);
 }
+
+export async function configLocalEnvironment(
+  ctx: v2.Context,
+  inputs: Inputs,
+  envInfo: EnvInfoV2
+): Promise<Result<Void, FxError>> {
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+  let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
+
+  const telemetryProperties = {
+    platform: inputs.platform as string,
+    frontend: includeFrontend ? "true" : "false",
+    function: includeBackend ? "true" : "false",
+    bot: includeBot ? "true" : "false",
+    auth: "false",
+    "trust-development-certificate": trustDevCert + "",
+    v1: isMigrateFromV1 ? "true" : "false",
+  };
+  TelemetryUtils.init(ctx.telemetryReporter);
+  TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
+
+  try {
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
+      const frontendEnvs = includeFrontend
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
+        : undefined;
+      const backendEnvs = includeBackend
+        ? await localEnvProvider.loadBackendLocalEnvs()
+        : undefined;
+      const botEnvs = includeBot
+        ? await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1)
+        : undefined;
+
+      // get config for local debug
+      const clientId = envInfo.state[ResourcePlugins.Aad]?.clientId;
+      const clientSecret = envInfo.state[ResourcePlugins.Aad]?.clientSecret;
+      const applicationIdUri = envInfo.state[ResourcePlugins.Aad]?.applicationIdUris;
+      const teamsAppTenantId = envInfo.state.solution?.teamsAppTenantId;
+      const localTabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting]?.endpoint;
+      const localFuncEndpoint = envInfo.state[ResourcePlugins.Function]?.functionEndpoint;
+
+      if (includeFrontend) {
+        if (!isMigrateFromV1) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        }
+
+        if (includeAAD) {
+          frontendEnvs!.teamsfxLocalEnvs[
+            EnvKeysFrontend.LoginUrl
+          ] = `${localTabEndpoint}/auth-start.html`;
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeBackend) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncEndpoint] = localFuncEndpoint;
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = ctx.projectSetting
+            .defaultFunctionName as string;
+
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.FuncWorkerRuntime] = "node";
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = clientId;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientSecret] = clientSecret;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.AuthorityHost] =
+            "https://login.microsoftonline.com";
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.TenantId] = teamsAppTenantId;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApplicationIdUri] = applicationIdUri;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.AllowedAppIds] =
+            getAllowedAppIds().join(";");
+        }
+
+        // setup local certificate
+        try {
+          if (trustDevCert === undefined) {
+            trustDevCert = true;
+          }
+
+          const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
+
+          const localCert = await certManager.setupCertificate(trustDevCert);
+          if (localCert) {
+            envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile = localCert.certPath;
+            envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile = localCert.keyPath;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] = localCert.keyPath;
+          }
+        } catch (error) {
+          // do not break if cert error
+        }
+      }
+
+      if (includeBot) {
+        const botId = envInfo.state[ResourcePlugins.Bot]?.botId as string;
+        const botPassword = envInfo.state[ResourcePlugins.Bot]?.botPassword as string;
+        if (isMigrateFromV1) {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotId] = botId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotPassword] = botPassword;
+        } else {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
+            "https://login.microsoftonline.com";
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+            envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
+          }/auth-start.html`;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+        }
+
+        if (includeBackend) {
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApiEndpoint] = localFuncEndpoint;
+        }
+      }
+
+      // save .env.teamsfx.local
+      await localEnvProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
+    }
+  } catch (error: any) {
+    const systemError = ConfigLocalDebugSettingsError(error);
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.configLocalDebugSettings, systemError);
+    return err(systemError);
+  }
+  TelemetryUtils.sendSuccessEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
+  return ok(Void);
+}

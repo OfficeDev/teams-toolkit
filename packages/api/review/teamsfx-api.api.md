@@ -1303,6 +1303,9 @@ export type PluginIdentity = string;
 type PluginName = string;
 
 // @public (undocumented)
+type PluginV3 = FeaturePlugin & AzureResourcePlugin;
+
+// @public (undocumented)
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
@@ -2077,6 +2080,7 @@ declare namespace v3 {
         Bicep,
         UpdateInputs,
         AzureResourcePlugin,
+        PluginV3,
         SolutionAddFeatureInputs,
         ISolution,
         ICore,

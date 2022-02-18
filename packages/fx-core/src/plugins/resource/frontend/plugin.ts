@@ -184,11 +184,12 @@ export class FrontendPluginImpl implements PluginImpl {
       ctx.envInfo.state
         .get(PluginInfo.PluginName)
         ?.set(FRONTEND_INDEX_PATH, Constants.FrontendIndexPath);
+    } else {
+      ctx.localSettings?.frontend?.set(
+        LocalSettingsFrontendKeys.TabIndexPath,
+        Constants.FrontendIndexPath
+      );
     }
-    ctx.localSettings?.frontend?.set(
-      LocalSettingsFrontendKeys.TabIndexPath,
-      Constants.FrontendIndexPath
-    );
     return ok(undefined);
   }
 

@@ -101,20 +101,20 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
-  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
-
-  if (debugProvisionResult.isErr()) {
-    return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
-  }
-
   if (isConfigUnifyEnabled()) {
     const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo!);
 
     if (localEnvSetupResult.isErr()) {
-      return new v2.FxPartialSuccess(localSettings, localEnvSetupResult.error);
+      return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
     }
 
     setDataForLocal(envInfo!, localSettings);
+  } else {
+    const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+
+    if (debugProvisionResult.isErr()) {
+      return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
+    }
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -177,24 +177,24 @@ export async function provisionLocalResource(
     return new v2.FxFailure(configureResourceResult.error);
   }
 
-  const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
-
-  if (debugConfigResult.isErr()) {
-    return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
-  }
-
   if (isConfigUnifyEnabled()) {
     const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
     if (localConfigResult.isErr()) {
       return new v2.FxPartialSuccess(envInfo!, localConfigResult.error);
     }
+  } else {
+    const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
+
+    if (debugConfigResult.isErr()) {
+      return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
+    }
   }
 
   return new v2.FxSuccess(localSettings);
 }
 
-// TODO:ty delete me later, this is used to set localSettings using envInfo.state value
+// TODO: delete me later, this is used to set localSettings using envInfo.state value
 export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.auth.clientId = envInfo.state[ResourcePlugins.Aad].clientId;
   localSettings.auth.clientSecret = envInfo.state[ResourcePlugins.Aad].clientSecret;
@@ -205,8 +205,8 @@ export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.auth.oauthHost = envInfo.state[ResourcePlugins.Aad].oauthHost;
 
   localSettings.frontend.tabIndexPath = envInfo.state[ResourcePlugins.FrontendHosting].indexPath;
-
-  localSettings.teamsApp.teamsAppId = envInfo.state.solution.teamsAppId;
+  localSettings.frontend.tabDomain = envInfo.state[ResourcePlugins.FrontendHosting].domain;
+  localSettings.frontend.tabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting].endpoint;
 }
 
 export function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {

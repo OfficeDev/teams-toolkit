@@ -53,6 +53,33 @@ export function hasAAD(projectSetting: ProjectSettings): boolean {
   return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad);
 }
 
+export function hasSPFx(projectSetting: ProjectSettings): boolean {
+  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  if (!solutionSettings) return false;
+  return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.spfx);
+}
+
+export function hasAzureResource(projectSetting: ProjectSettings): boolean {
+  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  if (!solutionSettings) return false;
+  const azurePlugins = [
+    BuiltInFeaturePluginNames.aad,
+    BuiltInFeaturePluginNames.apim,
+    BuiltInFeaturePluginNames.bot,
+    BuiltInFeaturePluginNames.dotnet,
+    BuiltInFeaturePluginNames.frontend,
+    BuiltInFeaturePluginNames.function,
+    BuiltInFeaturePluginNames.identity,
+    BuiltInFeaturePluginNames.keyVault,
+    BuiltInFeaturePluginNames.simpleAuth,
+    BuiltInFeaturePluginNames.sql,
+  ];
+  for (const pluginName of solutionSettings.activeResourcePlugins) {
+    if (azurePlugins.includes(pluginName)) return true;
+  }
+  return false;
+}
+
 export async function listCollaborator(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
@@ -433,16 +460,16 @@ export async function grantPermission(
           },
           { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
         ];
-
         ctx.userInteraction.showMessage("info", message, false);
       }
-      if (!isAadActivated) {
+      if (hasSPFx(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getStrings().solution.Collaboration.SharePointTip + SharePointManageSiteAdminHelpLink,
           false
         );
-      } else {
+      }
+      if (hasAzureResource(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getStrings().solution.Collaboration.AzureTip + AzureRoleAssignmentsHelpLink,

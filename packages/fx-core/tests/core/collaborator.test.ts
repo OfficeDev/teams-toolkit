@@ -18,7 +18,14 @@ import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { CollaborationState, SolutionError } from "../../src";
-import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
+import {
+  checkPermission,
+  grantPermission,
+  hasAAD,
+  hasAzureResource,
+  hasSPFx,
+  listCollaborator,
+} from "../../src/core/collaborator";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import {
@@ -64,6 +71,54 @@ describe("Collaborator APIs for V3", () => {
   afterEach(() => {
     sandbox.restore();
   });
+
+  describe("plugin check", () => {
+    it("hasAAD: yes", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [
+        BuiltInFeaturePluginNames.aad,
+        BuiltInFeaturePluginNames.frontend,
+      ];
+      assert.isTrue(hasAAD(projectSettings));
+    });
+
+    it("hasAAD: no", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [
+        BuiltInFeaturePluginNames.frontend,
+        BuiltInFeaturePluginNames.identity,
+      ];
+      assert.isFalse(hasAAD(projectSettings));
+    });
+
+    it("hasSPFx: yes", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [
+        BuiltInFeaturePluginNames.spfx,
+        BuiltInFeaturePluginNames.aad,
+      ];
+      assert.isTrue(hasSPFx(projectSettings));
+    });
+
+    it("hasSPFx: no", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [
+        BuiltInFeaturePluginNames.frontend,
+      ];
+      assert.isFalse(hasSPFx(projectSettings));
+    });
+
+    it("hasAzureResource: yes", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [
+        BuiltInFeaturePluginNames.spfx,
+        BuiltInFeaturePluginNames.aad,
+        BuiltInFeaturePluginNames.frontend,
+      ];
+      assert.isTrue(hasAzureResource(projectSettings));
+    });
+
+    it("hasAzureResource: no", async () => {
+      projectSettings.solutionSettings!.activeResourcePlugins = [BuiltInFeaturePluginNames.spfx];
+      assert.isFalse(hasAAD(projectSettings));
+    });
+  });
+
   describe("listCollaborator", () => {
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({

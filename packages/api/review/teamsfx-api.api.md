@@ -155,7 +155,7 @@ type AzureResource = CloudResource;
 
 // @public (undocumented)
 interface AzureResourcePlugin {
-    addInstance?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<string[], FxError>>;
+    addInstance?: (ctx: ContextWithManifestProvider, inputs: Inputs) => Promise<Result<string[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     description?: string;

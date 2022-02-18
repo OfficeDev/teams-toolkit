@@ -219,7 +219,7 @@ export interface AzureResourcePlugin {
    */
   addInstance?: (
     ctx: ContextWithManifestProvider,
-    inputs: AddFeatureInputs
+    inputs: Inputs
   ) => Promise<Result<string[], FxError>>;
 
   /**

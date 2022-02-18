@@ -12,22 +12,6 @@ import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3, ManifestCapability } from "./types";
 
 export interface AppManifestProvider {
-  /**
-   * @deprecated
-   */
-  loadManifest: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<AppManifest, FxError>>;
-  /**
-   * @deprecated
-   */
-  saveManifest: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    manifest: AppManifest
-  ) => Promise<Result<Void, FxError>>;
-
   addCapabilities: (
     ctx: Context,
     inputs: InputsWithProjectPath,

@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureAccountProvider, FxError, ok, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  FxError,
+  ok,
+  Result,
+  TokenProvider,
+  v2,
+  v3,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 
 export const MockFeaturePluginNames = {
@@ -30,7 +39,7 @@ export class MockTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

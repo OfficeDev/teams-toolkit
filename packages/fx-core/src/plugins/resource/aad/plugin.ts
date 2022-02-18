@@ -289,7 +289,6 @@ export class AadAppForTeamsImpl {
 
     const userObjectId = userInfo.aadId;
     const isAadOwner = await AadAppClient.checkPermission(
-      ctx,
       Messages.EndCheckPermission.telemetry,
       config.objectId!,
       userObjectId
@@ -327,7 +326,6 @@ export class AadAppForTeamsImpl {
     }
 
     const owners = await AadAppClient.listCollaborator(
-      ctx,
       Messages.EndListCollaborator.telemetry,
       objectId
     );
@@ -350,12 +348,7 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const userObjectId = userInfo.aadId;
-    await AadAppClient.grantPermission(
-      ctx,
-      Messages.EndCheckPermission.telemetry,
-      config.objectId!,
-      userObjectId
-    );
+    await AadAppClient.grantPermission(ctx, config.objectId!, userObjectId);
 
     const result = [
       {

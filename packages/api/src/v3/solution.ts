@@ -10,7 +10,7 @@ import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3 } from "./types";
 
 export interface SolutionAddFeatureInputs extends InputsWithProjectPath {
-  feature: string;
+  features: string[];
 }
 
 export interface ISolution {

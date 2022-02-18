@@ -259,12 +259,9 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -312,8 +309,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs,
-    envInfo?: v3.EnvInfoV3
+    inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -322,10 +318,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
       "function",
       "bicep"
     );
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
       FunctionBicepFile.configuraitonTemplateFileName
@@ -346,7 +339,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
@@ -538,7 +531,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
@@ -598,7 +591,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
         FunctionConfigKey.functionLanguage
       );
       const credential = this.checkAndGet(
-        await tokenProvider.getAccountCredentialAsync(),
+        await tokenProvider.azureAccountProvider.getAccountCredentialAsync(),
         FunctionConfigKey.credential
       );
 

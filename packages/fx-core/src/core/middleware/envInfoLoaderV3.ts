@@ -66,6 +66,7 @@ async function loadEnvInfoV3(
   // in pre-multi-env case, envInfo is always loaded.
   if (ignoreEnvInfo) {
     envInfo = newEnvInfoV3();
+    envInfo.envName = "";
   } else {
     // ensure backwards compatibility:
     // project id will be generated for previous TeamsFx project.

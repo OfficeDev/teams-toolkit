@@ -10,6 +10,7 @@ import {
   ok,
   AppPackageFolderName,
   v3,
+  IStaticTab,
 } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
@@ -117,7 +118,7 @@ export async function saveManifest(
 
 export async function capabilityExceedLimit(
   projectRoot: string,
-  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
 ): Promise<Result<boolean, FxError>> {
   const localManifest = await loadManifest(projectRoot, true);
   if (localManifest.isErr()) {
@@ -161,6 +162,8 @@ export async function capabilityExceedLimit(
         remoteManifest.value.composeExtensions !== undefined &&
         remoteManifest.value.composeExtensions!.length >= 1;
       return ok(localExceed || remoteExceed);
+    case "WebApplicationInfo":
+      return ok(false);
     default:
       return err(
         AppStudioResultFactory.SystemError(
@@ -306,6 +309,151 @@ export async function addCapabilities(
     return err(res.error);
   }
   res = await saveManifest(projectRoot, remoteManifest, false);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  return ok(undefined);
+}
+
+export async function updateCapability(
+  projectRoot: string,
+  capability: v3.ManifestCapability
+): Promise<Result<any, FxError>> {
+  const manifestRes = await loadManifest(projectRoot, false);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  switch (capability.name) {
+    case "staticTab":
+      // find the corresponding static Tab with entity id
+      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
+      if (index !== undefined && index !== -1) {
+        manifest.staticTabs![index] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.StaticTabNotExistError.name,
+            AppStudioError.StaticTabNotExistError.message(entityId)
+          )
+        );
+      }
+      break;
+    case "configurableTab":
+      if (manifest.configurableTabs && manifest.configurableTabs.length) {
+        manifest.configurableTabs[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "Bot":
+      if (manifest.bots && manifest.bots.length > 0) {
+        manifest.bots[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "MessageExtension":
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+        manifest.composeExtensions[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "WebApplicationInfo":
+      manifest.webApplicationInfo = capability.snippet;
+      break;
+  }
+
+  const res = await saveManifest(projectRoot, manifest, false);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  return ok(undefined);
+}
+
+export async function deleteCapability(
+  projectRoot: string,
+  capability: v3.ManifestCapability
+): Promise<Result<any, FxError>> {
+  const manifestRes = await loadManifest(projectRoot, false);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  switch (capability.name) {
+    case "staticTab":
+      // find the corresponding static Tab with entity id
+      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
+      if (index !== undefined && index !== -1) {
+        manifest.staticTabs!.slice(index, 1);
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.StaticTabNotExistError.name,
+            AppStudioError.StaticTabNotExistError.message(entityId)
+          )
+        );
+      }
+      break;
+    case "configurableTab":
+      if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+        manifest.configurableTabs = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "Bot":
+      if (manifest.bots && manifest.bots.length > 0) {
+        manifest.bots = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "MessageExtension":
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+        manifest.composeExtensions = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "WebApplicationInfo":
+      manifest.webApplicationInfo = undefined;
+      break;
+  }
+  const res = await saveManifest(projectRoot, manifest, false);
   if (res.isErr()) {
     return err(res.error);
   }

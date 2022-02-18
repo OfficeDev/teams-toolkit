@@ -24,7 +24,7 @@ export enum FuncVersion {
 }
 
 const funcPackageName = "azure-functions-core-tools";
-const funcToolName = "Azure Function Core Tool";
+const funcToolName = "Azure Functions Core Tools";
 
 const installVersion = FuncVersion.v3;
 const supportedVersions = [FuncVersion.v3];

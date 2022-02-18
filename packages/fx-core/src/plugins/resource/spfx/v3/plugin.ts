@@ -1,56 +1,57 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-import {
-  PluginContext,
-  FxError,
-  Result,
-  ok,
-  Platform,
-  Colors,
-  err,
-  UserCancelError,
-} from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
-import lodash from "lodash";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { SPFXQuestionNames } from "./utils/questions";
-import { Utils, sleep } from "./utils/utils";
-import {
-  Constants,
-  DeployProgressMessage,
-  PlaceHolders,
-  PreDeployProgressMessage,
-} from "./utils/constants";
+import { getAppDirectory, getStrings, getTemplatesFolder } from "../../../..";
+import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../appstudio/constants";
 import {
   BuildSPPackageError,
   CreateAppCatalogFailedError,
   GetGraphTokenFailedError,
   GetSPOTokenFailedError,
+  GetTenantFailedError,
+  InsufficientPermissionError,
   NoSPPackageError,
   ScaffoldError,
-  GetTenantFailedError,
   UploadAppPackageFailedError,
-  InsufficientPermissionError,
-} from "./error";
+} from "../error";
+import {
+  Constants,
+  DeployProgressMessage,
+  PlaceHolders,
+  PreDeployProgressMessage,
+} from "../utils/constants";
+import lodash from "lodash";
+import { SPFXQuestionNames } from "../utils/questions";
+import { sleep, Utils } from "../utils/utils";
+import path from "path";
+import fs from "fs-extra";
+import {
+  Colors,
+  err,
+  FxError,
+  ok,
+  Platform,
+  Result,
+  TokenProvider,
+  UserCancelError,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
+import { ProgressHelper } from "../utils/progress-helper";
 import * as util from "util";
-import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
-import { getTemplatesFolder } from "../../..";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
+import { SPOClient } from "../spoClient";
 import axios from "axios";
-import { SPOClient } from "./spoClient";
 
 export class SPFxPluginImpl {
-  public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+  async scaffold(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v2.InputsWithProjectPath,
+    componentId: string
+  ): Promise<Result<any, FxError>> {
     try {
-      const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
+      const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = lodash.camelCase(componentName);
-      const componentId = uuid.v4();
       const componentClassName = `${componentName}WebPart`;
       const componentStrings = componentClassName + "Strings";
-      const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
+      const libraryName = lodash.kebabCase(ctx.projectSetting?.appName);
       let componentAlias = componentClassName;
       if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
         componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
@@ -70,7 +71,7 @@ export class SPFxPluginImpl {
         }
       }
 
-      const outputFolderPath = `${ctx.root}/SPFx`;
+      const outputFolderPath = `${inputs.projectPath}/SPFx`;
       await fs.mkdir(outputFolderPath);
 
       // teams folder
@@ -96,7 +97,7 @@ export class SPFxPluginImpl {
         `${srcDir}/index.ts`
       );
 
-      switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
+      switch (inputs[SPFXQuestionNames.framework_type] as string) {
         case Constants.FRAMEWORK_NONE:
           fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
             recursive: true,
@@ -188,32 +189,31 @@ export class SPFxPluginImpl {
       replaceMap.set(PlaceHolders.componentAlias, componentAlias);
       replaceMap.set(
         PlaceHolders.componentDescription,
-        ctx.answers![SPFXQuestionNames.webpart_desp] as string
+        inputs[SPFXQuestionNames.webpart_desp] as string
       );
       replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
       replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-      const appDirectory = await getAppDirectory(ctx.root);
+      const appDirectory = await getAppDirectory(inputs.projectPath);
       await Utils.configure(outputFolderPath, replaceMap);
-      if (isMultiEnvEnabled()) {
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
-      } else {
-        await Utils.configure(path.join(appDirectory, REMOTE_MANIFEST), replaceMap);
-      }
+      await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
+      await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
       return ok(undefined);
     } catch (error) {
-      return err(ScaffoldError(error));
+      return err(ScaffoldError(error as Error));
     }
   }
 
-  private async buildSPPackage(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx.ui);
-    if (ctx.answers?.platform === Platform.VSCode) {
+  async buildSPPackage(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<any, FxError>> {
+    const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx.userInteraction);
+    if (inputs.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
     }
     try {
-      const workspacePath = `${ctx.root}/SPFx`;
+      const workspacePath = `${inputs.projectPath}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
       await Utils.execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
       const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
@@ -235,14 +235,14 @@ export class SPFxPluginImpl {
       );
       await ProgressHelper.endPreDeployProgress(true);
 
-      const sharepointPackage = await this.getPackage(ctx.root);
+      const sharepointPackage = await this.getPackage(inputs.projectPath);
       if (!(await fs.pathExists(sharepointPackage))) {
         throw NoSPPackageError(sharepointPackage);
       }
 
       const dir = path.normalize(path.parse(sharepointPackage).dir);
 
-      if (ctx.answers?.platform === Platform.CLI) {
+      if (inputs.platform === Platform.CLI) {
         const guidance = [
           {
             content: "Success: SharePoint package successfully built at ",
@@ -250,33 +250,33 @@ export class SPFxPluginImpl {
           },
           { content: dir, color: Colors.BRIGHT_MAGENTA },
         ];
-        ctx.ui?.showMessage("info", guidance, false);
+        ctx.userInteraction.showMessage("info", guidance, false);
       } else {
         const guidance = util.format(getStrings().plugins.SPFx.buildNotice, dir);
-        ctx.ui?.showMessage("info", guidance, false, "OK");
+        ctx.userInteraction?.showMessage("info", guidance, false, "OK");
       }
       return ok(undefined);
     } catch (error) {
       await ProgressHelper.endPreDeployProgress(false);
-      return err(BuildSPPackageError(error));
+      return err(BuildSPPackageError(error as Error));
     }
   }
 
-  public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.buildSPPackage(ctx);
-  }
-
-  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx.ui);
+  async deploy(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    tokenProvider: TokenProvider
+  ): Promise<Result<any, FxError>> {
+    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx.userInteraction);
     let success = false;
     try {
-      const tenant = await this.getTenant(ctx);
+      const tenant = await this.getTenant(tokenProvider);
       if (tenant.isErr()) {
         return tenant;
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+      const spoToken = await tokenProvider.sharepointTokenProvider?.getAccessToken();
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -285,7 +285,7 @@ export class SPFxPluginImpl {
       if (appCatalogSite) {
         SPOClient.setBaseUrl(appCatalogSite);
       } else {
-        const res = await ctx.ui?.showMessage(
+        const res = await ctx.userInteraction?.showMessage(
           "warn",
           util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
           true,
@@ -326,14 +326,14 @@ export class SPFxPluginImpl {
             }
             break;
           case Constants.READ_MORE:
-            ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
+            ctx.userInteraction?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
             return ok(UserCancelError);
           default:
             return ok(undefined);
         }
       }
 
-      const appPackage = await this.getPackage(ctx.root);
+      const appPackage = await this.getPackage(inputs.projectPath);
       if (!(await fs.pathExists(appPackage))) {
         return err(NoSPPackageError(appPackage));
       }
@@ -345,7 +345,7 @@ export class SPFxPluginImpl {
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
       } catch (e: any) {
         if (e.response?.status === 403) {
-          ctx.ui?.showMessage(
+          ctx.userInteraction?.showMessage(
             "error",
             util.format(getStrings().plugins.SPFx.deployFailedNotice, appCatalogSite!),
             false,
@@ -357,7 +357,7 @@ export class SPFxPluginImpl {
         }
       }
 
-      const appID = await this.getAppID(ctx.root);
+      const appID = await this.getAppID(inputs.projectPath);
       await SPOClient.deployAppPackage(spoToken, appID);
 
       const guidance = util.format(
@@ -366,10 +366,10 @@ export class SPFxPluginImpl {
         appCatalogSite,
         appCatalogSite
       );
-      if (ctx.answers?.platform === Platform.CLI) {
-        ctx.ui?.showMessage("info", guidance, false);
+      if (inputs.platform === Platform.CLI) {
+        ctx.userInteraction?.showMessage("info", guidance, false);
       } else {
-        ctx.ui?.showMessage("info", guidance, false, "OK");
+        ctx.userInteraction?.showMessage("info", guidance, false, "OK");
       }
       success = true;
       return ok(undefined);
@@ -378,13 +378,19 @@ export class SPFxPluginImpl {
     }
   }
 
-  private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+  private async getAppID(root: string): Promise<string> {
+    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
+    const appID = solutionConfig["solution"]["id"];
+    return appID;
+  }
+
+  private async getTenant(tokenProvider: TokenProvider): Promise<Result<string, FxError>> {
+    const graphToken = await tokenProvider.graphTokenProvider?.getAccessToken();
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const tokenJson = await tokenProvider.graphTokenProvider?.getJsonObject();
     const username = (tokenJson as any).unique_name;
 
     const instance = axios.create({
@@ -406,18 +412,6 @@ export class SPFxPluginImpl {
     return ok(tenant);
   }
 
-  private async getPackage(root: string): Promise<string> {
-    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
-    const sharepointPackage = `${root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-    return sharepointPackage;
-  }
-
-  private async getAppID(root: string): Promise<string> {
-    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
-    const appID = solutionConfig["solution"]["id"];
-    return appID;
-  }
-
   private static async findGulpCommand(rootPath: string): Promise<string> {
     let gulpCommand: string;
     const platform = process.platform;
@@ -435,5 +429,11 @@ export class SPFxPluginImpl {
       gulpCommand = "gulp";
     }
     return gulpCommand;
+  }
+
+  private async getPackage(root: string): Promise<string> {
+    const solutionConfig = await fs.readJson(`${root}/SPFx/config/package-solution.json`);
+    const sharepointPackage = `${root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+    return sharepointPackage;
   }
 }

@@ -686,7 +686,9 @@ async function handleCheckResults(
   if (shouldStop) {
     await progressHelper.stop(false);
     throw returnUserError(
-      new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
+      new Error(
+        `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
+      ),
       ExtensionSource,
       ExtensionErrors.PrerequisitesValidationError
     );

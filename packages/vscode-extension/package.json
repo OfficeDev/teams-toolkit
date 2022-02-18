@@ -824,7 +824,7 @@
               },
               "ngrok": {
                 "type": "boolean",
-                "description": "Ensure Ngrok is installed."
+                "description": "Ensure Ngrok is installed and started."
               },
               "devCert": {
                 "type": "boolean",

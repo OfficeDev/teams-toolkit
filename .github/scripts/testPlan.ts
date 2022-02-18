@@ -152,7 +152,6 @@ class ADOTestPlanClient {
     cases: MochaTest[]
   ): Promise<boolean> {
     const points = await this.AllTestPoints(planID);
-    console.log(points.length);
 
     let suitePoints: Map<number, TestPoint[]> = new Map();
     for (const point of points) {
@@ -177,8 +176,6 @@ class ADOTestPlanClient {
             point.results = { outcome: TestPointOutCome.failed };
             break;
         }
-
-        console.log(point);
 
         if (suitePoints.has(point.testSuite.id)) {
           suitePoints.get(point.testSuite.id)!.push(point);
@@ -279,7 +276,6 @@ class ADOTestPlanClient {
     testCases: TestCase[]
   ): Promise<boolean> {
     try {
-      console.log(JSON.stringify(testCases, null, 4));
       const response = await ADOTestPlanClient.client.patch(
         `/Plans/${planID}/Suites/${suiteID}/TestCase`,
         testCases,
@@ -288,7 +284,6 @@ class ADOTestPlanClient {
           data: testCases,
         }
       );
-      console.log(response.data.value[0].workItem.workItemFields[2]);
       return true;
     } catch (error) {
       console.log(error);
@@ -522,13 +517,11 @@ async function SyncToTestPlan() {
         }
       }
     }
-    console.log(cases);
 
     const testPlan = await ADOTestPlanClient.GetCurrentTestPlan(
       process.argv[4].trim() as TestPlanType,
       process.argv[5].trim()
     );
-    console.log(testPlan);
 
     ADOTestPlanClient.reportTestResult(testPlan.id, cases);
   } catch (error) {

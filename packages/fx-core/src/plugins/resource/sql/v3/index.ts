@@ -130,7 +130,7 @@ export class SqlPluginV3 implements v3.PluginV3 {
     return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<string[], FxError>> {

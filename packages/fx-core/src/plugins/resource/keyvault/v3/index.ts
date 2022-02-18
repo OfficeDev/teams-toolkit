@@ -54,7 +54,7 @@ export class KeyVaultPluginV3 implements v3.PluginV3 {
     return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<string[], FxError>> {

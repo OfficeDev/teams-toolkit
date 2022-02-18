@@ -113,6 +113,7 @@ export async function provisionResources(
   );
   if (registerTeamsAppRes.isErr()) return err(registerTeamsAppRes.error);
   const teamsAppId = registerTeamsAppRes.value;
+  teamsAppResource.teamsAppId = teamsAppId;
   solutionGlobalVars.TeamsAppId = teamsAppId;
 
   if (solutionSetting) {

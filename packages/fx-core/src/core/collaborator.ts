@@ -17,6 +17,7 @@ import {
   Inputs,
   DynamicPlatforms,
   QTreeNode,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import {
@@ -27,7 +28,6 @@ import {
   ListCollaboratorResult,
   PermissionsResult,
   ResourcePermission,
-  TeamsAppAdmin,
 } from "../common/permissionInterface";
 import { getHashedEnv, getStrings } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
@@ -46,6 +46,12 @@ import { IUserList } from "../plugins/resource/appstudio/interfaces/IAppDefiniti
 import { CoreSource } from "./error";
 import { TOOLS } from ".";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
+
+export function hasAAD(projectSetting: ProjectSettings): boolean {
+  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  if (!solutionSettings) return false;
+  return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad);
+}
 
 export async function listCollaborator(
   ctx: v2.Context,
@@ -71,12 +77,7 @@ export async function listCollaborator(
       message: stateResult.message,
     });
   }
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  const isAadActivated = solutionSettings?.activeResourcePlugins?.includes(
-    BuiltInFeaturePluginNames.aad
-  )
-    ? true
-    : false;
+  const hasAad = hasAAD(ctx.projectSetting);
   const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
   const appStudioRes = await appStudio.listCollaborator(
@@ -87,9 +88,7 @@ export async function listCollaborator(
   );
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
-  const aadRes = isAadActivated
-    ? await aadPlugin.listCollaborator(ctx, envInfo, tokenProvider)
-    : ok([]);
+  const aadRes = hasAad ? await aadPlugin.listCollaborator(ctx, envInfo, tokenProvider) : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
   const collaborators: Collaborator[] = [];
@@ -135,7 +134,7 @@ export async function listCollaborator(
       { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
     ];
 
-    if (isAadActivated) {
+    if (hasAad) {
       message.push(
         { content: getStrings().solution.Collaboration.SsoAadAppId, color: Colors.BRIGHT_WHITE },
         { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
@@ -152,7 +151,7 @@ export async function listCollaborator(
         { content: `. `, color: Colors.BRIGHT_WHITE }
       );
 
-      if (isAadActivated && !collaborator.isAadOwner) {
+      if (hasAad && !collaborator.isAadOwner) {
         message.push({
           content: getStrings().solution.Collaboration.NotOwnerOfSsoAadApp,
           color: Colors.BRIGHT_YELLOW,
@@ -165,16 +164,11 @@ export async function listCollaborator(
     if (inputs.platform === Platform.CLI) {
       ctx.userInteraction.showMessage("info", message, false);
     } else if (inputs.platform === Platform.VSCode) {
-      const hasSPFx = solutionSettings?.activeResourcePlugins?.includes(
-        BuiltInFeaturePluginNames.aad
-      )
-        ? true
-        : false;
       ctx.userInteraction.showMessage(
         "info",
         util.format(
           getStrings().solution.Collaboration.ListCollaboratorsSuccess,
-          hasSPFx ? "" : getStrings().solution.Collaboration.WithAadApp
+          hasAad ? getStrings().solution.Collaboration.WithAadApp : ""
         ),
         false
       );
@@ -269,12 +263,6 @@ export async function checkPermission(
     ctx.userInteraction.showMessage("info", message, false);
   }
 
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  const isAadActivated = solutionSettings?.activeResourcePlugins?.includes(
-    BuiltInFeaturePluginNames.aad
-  )
-    ? true
-    : false;
   const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
   const appStudioRes = await appStudio.checkPermission(
@@ -288,6 +276,7 @@ export async function checkPermission(
     return err(appStudioRes.error);
   }
   const permissions = appStudioRes.value;
+  const isAadActivated = hasAAD(ctx.projectSetting);
   if (isAadActivated) {
     const aadRes = await aadPlugin.checkPermission(ctx, envInfo, tokenProvider, result.value);
     if (aadRes.isErr()) return err(aadRes.error);
@@ -408,14 +397,7 @@ export async function grantPermission(
 
       ctx.userInteraction.showMessage("info", message, false);
     }
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const isAadActivated = solutionSettings?.activeResourcePlugins?.includes(
-      BuiltInFeaturePluginNames.aad
-    )
-      ? true
-      : false;
+    const isAadActivated = hasAAD(ctx.projectSetting);
     const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
     const appStudioRes = await appStudio.grantPermission(
@@ -454,12 +436,7 @@ export async function grantPermission(
 
         ctx.userInteraction.showMessage("info", message, false);
       }
-      const hasSPFx = solutionSettings?.activeResourcePlugins?.includes(
-        BuiltInFeaturePluginNames.aad
-      )
-        ? true
-        : false;
-      if (hasSPFx) {
+      if (!isAadActivated) {
         ctx.userInteraction.showMessage(
           "info",
           getStrings().solution.Collaboration.SharePointTip + SharePointManageSiteAdminHelpLink,

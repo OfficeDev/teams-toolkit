@@ -33,6 +33,7 @@ function getAllFeaturePlugins(): v3.FeaturePlugin[] {
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.keyVault),
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.identity),
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.sql),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx),
   ];
 }
 

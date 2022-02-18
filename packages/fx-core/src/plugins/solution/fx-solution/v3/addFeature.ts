@@ -10,7 +10,6 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  TeamsAppManifest,
   v2,
   v3,
   Void,
@@ -95,30 +94,6 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     return await appStudioV3.capabilityExceedLimit(ctx, inputs, capability);
   }
-  async loadManifest(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<AppManifest, FxError>> {
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.loadManifest(ctx, inputs);
-    if (res.isErr()) return err(res.error);
-    return ok(res.value.remote);
-  }
-
-  async saveManifest(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    manifest: AppManifest
-  ): Promise<Result<Void, FxError>> {
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.saveManifest(ctx, inputs, {
-      local: manifest as TeamsAppManifest,
-      remote: manifest as TeamsAppManifest,
-    });
-    if (res.isErr()) return err(res.error);
-    return ok(Void);
-  }
-
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

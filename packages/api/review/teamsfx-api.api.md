@@ -65,9 +65,11 @@ interface AppManifestProvider {
     // (undocumented)
     addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
+    capabilityExceedLimit: (ctx: Context_2, inputs: InputsWithProjectPath, capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo") => Promise<Result<boolean, FxError>>;
     // (undocumented)
-    saveManifest: (ctx: Context_2, inputs: InputsWithProjectPath, manifest: AppManifest) => Promise<Result<Void, FxError>>;
+    deleteCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    updateCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

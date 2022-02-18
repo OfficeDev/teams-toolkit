@@ -2,43 +2,41 @@
 // Licensed under the MIT license.
 
 import {
-  FxError,
   ok,
   Platform,
   ProjectSettings,
-  Result,
   TeamsAppManifest,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
+import sinon from "sinon";
+import { Container } from "typedi";
 import * as uuid from "uuid";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
+import {
+  AzureResourceApim,
+  AzureResourceFunction,
+  AzureResourceKeyVault,
+  AzureResourceSQL,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+} from "../../../src/plugins/solution/fx-solution/question";
+import {
+  addFeature,
+  getQuestionsForAddFeature,
+} from "../../../src/plugins/solution/fx-solution/v3/addFeature";
 import {
   BuiltInFeaturePluginNames,
   TeamsFxAzureSolutionNameV3,
 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, randomAppName } from "../../core/utils";
 import { MockedV2Context } from "../solution/util";
-import { MockFeaturePluginNames } from "./mockPlugins";
-import sinon from "sinon";
-import { Container } from "typedi";
-import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
-import {
-  addFeature,
-  getQuestionsForAddFeature,
-} from "../../../src/plugins/solution/fx-solution/v3/addFeature";
-import {
-  AzureResourceApim,
-  AzureResourceFunction,
-  AzureResourceKeyVault,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  AzureResourceSQL,
-} from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -46,8 +44,9 @@ describe("SolutionV3 - addFeature", () => {
     sandbox
       .stub<any, any>(appStudio, "loadManifest")
       .resolves(ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() }));
-    sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok({ local: {}, remote: {} }));
-    sandbox.stub<any, any>(appStudio, "addCapabilities").resolves(ok(undefined));
+    sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok(Void));
+    sandbox.stub<any, any>(appStudio, "addCapabilities").resolves(ok(Void));
+    sandbox.stub<any, any>(appStudio, "updateCapability").resolves(ok(Void));
   });
   afterEach(async () => {
     sandbox.restore();

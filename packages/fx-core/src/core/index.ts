@@ -56,6 +56,7 @@ import {
   BuiltInSolutionNames,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
 import {
@@ -925,11 +926,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<unknown, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) return this.executeUserTaskV3(func, inputs);
     else return this.executeUserTaskV2(func, inputs);
   }
@@ -1106,7 +1103,10 @@ export class FxCore implements v3.ICore {
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
-
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.grantPermissionV3(inputs);
+    else return this.grantPermissionV2(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1118,7 +1118,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async grantPermissionV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
     inputs.stage = Stage.grantPermission;
     const projectPath = inputs.projectPath;
@@ -1139,12 +1139,46 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async grantPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.grantPermission;
+    inputs.stage = Stage.grantPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await grantPermission(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.checkPermissionV3(inputs);
+    else return this.checkPermissionV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async checkPermissionV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
     inputs.stage = Stage.checkPermission;
     const projectPath = inputs.projectPath;
@@ -1162,6 +1196,39 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+  ])
+  async checkPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.checkPermission;
+    inputs.stage = Stage.checkPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await checkPermission(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.listCollaboratorV3(inputs);
+    else return this.listCollaboratorV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
@@ -1170,7 +1237,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async listCollaboratorV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
     const projectPath = inputs.projectPath;
@@ -1183,6 +1250,34 @@ export class FxCore implements v3.ICore {
       ctx!.envInfoV2!,
       this.tools.tokenProvider
     );
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+  ])
+  async listCollaboratorV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listCollaborator;
+    inputs.stage = Stage.listCollaborator;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await listCollaborator(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
   @hooks([

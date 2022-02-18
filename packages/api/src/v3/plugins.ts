@@ -155,7 +155,7 @@ export interface FeaturePlugin {
   ) => Promise<Result<Void, FxError>>;
 }
 
-export interface Bicep extends Record<any, unknown> {
+export interface BicepTemplate extends Record<any, unknown> {
   Provision?: {
     /*
     Content of this property will be appended to templates/azure/provision.bicep
@@ -225,7 +225,7 @@ export interface AzureResourcePlugin {
    */
   addInstance?: (
     ctx: ContextWithManifestProvider,
-    inputs: Inputs
+    inputs: InputsWithProjectPath
   ) => Promise<Result<string[], FxError>>;
 
   /**
@@ -253,7 +253,7 @@ export interface AzureResourcePlugin {
   generateBicep?: (
     ctx: ContextWithManifestProvider,
     inputs: AddFeatureInputs
-  ) => Promise<Result<Bicep[], FxError>>;
+  ) => Promise<Result<BicepTemplate[], FxError>>;
 
   /**
    * triggered when some other resource(s) is(are) added,
@@ -262,7 +262,7 @@ export interface AzureResourcePlugin {
   updateBicep?: (
     ctx: ContextWithManifestProvider,
     inputs: UpdateInputs
-  ) => Promise<Result<Bicep[], FxError>>;
+  ) => Promise<Result<BicepTemplate[], FxError>>;
 
   /**
    * questions to ask for provision
@@ -315,4 +315,4 @@ export interface AzureResourcePlugin {
   ) => Promise<Result<Void, FxError>>;
 }
 
-export type PluginV3 = FeaturePlugin & AzureResourcePlugin;
+export type PluginV3 = AzureResourcePlugin;

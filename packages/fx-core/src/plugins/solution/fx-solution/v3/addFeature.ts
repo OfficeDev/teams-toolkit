@@ -52,10 +52,8 @@ export async function getQuestionsForAddFeature(
       id: plugin.name,
       label: plugin.description || "",
     });
-    if (plugin.getQuestionsForAddFeature || plugin.getQuestionsForAddInstance) {
-      const childNode = plugin.getQuestionsForAddFeature
-        ? await plugin.getQuestionsForAddFeature(ctx, inputs)
-        : await plugin.getQuestionsForAddInstance!(ctx, inputs);
+    if (plugin.getQuestionsForAddInstance) {
+      const childNode = await plugin.getQuestionsForAddInstance(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
         childNode.value.condition = { contains: plugin.name };
@@ -112,82 +110,113 @@ export async function addFeature(
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const existingPlugins = new Set<string>();
-  const newPlugins = new Set<string>();
-  const pluginNames = solutionSettings.activeResourcePlugins;
-  pluginNames.forEach((p) => {
-    existingPlugins.add(p);
+  const existingSet = new Set<string>();
+  let newSet = new Set<string>();
+  solutionSettings.activeResourcePlugins.forEach((p) => {
+    existingSet.add(p);
   });
   inputs.features.forEach((f) => {
-    newPlugins.add(f);
+    newSet.add(f);
   });
 
   const contextWithManifestProvider: v3.ContextWithManifestProvider = {
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
-
-  for (const name of newPlugins) {
-    const plugin = Container.get<v3.PluginV3>(name);
-    if (plugin.addInstance) {
-      const res = await plugin.addInstance(contextWithManifestProvider, inputs);
-    }
-  }
-
   const resolveRes = await resolveResourceDependencies(
     contextWithManifestProvider,
     inputs,
-    allResources
+    existingSet,
+    newSet
   );
   if (resolveRes.isErr()) return err(resolveRes.error);
-  const existingPluginNames: string[] = Array.from(existingPlugins);
-  const addedPluginNames: string[] = [];
-  for (const pluginName of allResources.values()) {
-    if (!existingPlugins.has(pluginName)) {
-      addedPluginNames.push(pluginName);
+  newSet = resolveRes.value;
+
+  const existingArray: string[] = Array.from(existingSet);
+  const newArray: string[] = Array.from(newSet);
+  const allPluginsAfterAdd = existingArray.concat(newArray);
+
+  const addFeatureInputs: v3.AddFeatureInputs = {
+    ...inputs,
+    allPluginsAfterAdd: allPluginsAfterAdd,
+  };
+  for (const pluginName of newArray) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.generateCode) {
+      const res = await plugin.generateCode(contextWithManifestProvider, addFeatureInputs);
+      if (res.isErr()) return err(res.error);
     }
   }
-
-  const addFeatureRes = await arm.addFeature(
+  const updateInputs: v3.UpdateInputs = {
+    ...addFeatureInputs,
+    newPlugins: newArray,
+  };
+  for (const pluginName of existingArray) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.updateCode) {
+      const res = await plugin.updateCode(contextWithManifestProvider, updateInputs);
+      if (res.isErr()) return err(res.error);
+    }
+  }
+  const bicepRes = await arm.generateBicep(
     contextWithManifestProvider,
     inputs,
-    addedPluginNames,
-    existingPluginNames
+    newArray,
+    existingArray
   );
-  if (addFeatureRes.isErr()) {
-    return err(addFeatureRes.error);
+  if (bicepRes.isErr()) {
+    return err(bicepRes.error);
   }
   return ok(Void);
 }
 
+/**
+ * make sure all dependencies in the dependency chain are collected
+ * make sure all newly added dependencies's addInstance method are called once
+ * @param existingSet existing set
+ * @param addedSet set to add
+ * @returns new added set (include resolved dependencies in the chain)
+ */
 async function resolveResourceDependencies(
   ctx: v3.ContextWithManifestProvider,
-  inputs: Inputs,
+  inputs: v2.InputsWithProjectPath,
   existingSet: Set<string>,
-  newSet: Set<string>
-): Promise<Result<undefined, FxError>> {
+  addedSet: Set<string>
+): Promise<Result<Set<string>, FxError>> {
+  const originalSet = new Set<string>();
+  const all = new Set<string>();
+  const calledSet = new Set<string>();
+  existingSet.forEach((s) => {
+    originalSet.add(s);
+    all.add(s);
+    calledSet.add(s);
+  });
+  addedSet.forEach((s) => {
+    all.add(s);
+  });
   while (true) {
-    const size1 = existingSet.size;
-    const nextNewSet = new Set<string>();
-    for (const pluginName of newSet) {
+    const size1 = all.size;
+    for (const pluginName of all.values()) {
       const plugin = Container.get<v3.PluginV3>(pluginName);
-      if (plugin.pluginDependencies || plugin.addInstance) {
-        const depRes = plugin.pluginDependencies
-          ? await plugin.pluginDependencies(ctx, inputs)
-          : await plugin.addInstance!(ctx, inputs);
+      if (plugin.addInstance && !calledSet.has(pluginName)) {
+        const depRes = await plugin.addInstance(ctx, inputs);
         if (depRes.isErr()) {
           return err(depRes.error);
         }
+        calledSet.add(pluginName);
         for (const dep of depRes.value) {
-          if (!existingSet.has(dep)) {
-            nextNewSet.add(dep);
-          }
+          all.add(dep);
         }
       }
-      existingSet.add(pluginName);
     }
-    const size2 = existingSet.size;
+    const size2 = all.size;
     if (size1 === size2) break;
   }
-  return ok(undefined);
+  const netSet = new Set<string>();
+  for (const pluginName of all.values()) {
+    if (!originalSet.has(pluginName)) {
+      netSet.add(pluginName);
+    }
+  }
+  return ok(netSet);
 }

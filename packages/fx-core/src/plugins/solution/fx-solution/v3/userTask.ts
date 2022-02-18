@@ -102,10 +102,8 @@ export async function getQuestionsForAddResource(
     const pluginName = pair[0];
     const resourceName = pair[1];
     const plugin = Container.get<v3.PluginV3>(pluginName);
-    if (plugin.getQuestionsForAddFeature || plugin.getQuestionsForAddInstance) {
-      const res = plugin.getQuestionsForAddFeature
-        ? await plugin.getQuestionsForAddFeature(ctx, inputs)
-        : await plugin.getQuestionsForAddInstance!(ctx, inputs);
+    if (plugin.getQuestionsForAddInstance) {
+      const res = await plugin.getQuestionsForAddInstance(ctx, inputs);
       if (res.isErr()) return res;
       if (res.value) {
         const node = res.value as QTreeNode;

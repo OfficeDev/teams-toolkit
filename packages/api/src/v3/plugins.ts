@@ -217,7 +217,7 @@ export interface AzureResourcePlugin {
    * 1. register itself in project settings
    * 2. add/update capabilities in manifest
    */
-  addInstance: (
+  addInstance?: (
     ctx: ContextWithManifestProvider,
     inputs: AddFeatureInputs
   ) => Promise<Result<string[], FxError>>;

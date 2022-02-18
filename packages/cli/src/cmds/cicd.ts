@@ -49,6 +49,7 @@ export default class CICD extends YargsCommand {
       };
 
       inputs = getSystemInputs(rootFolder, args.env as any);
+      inputs.ignoreEnvInfo = true;
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(

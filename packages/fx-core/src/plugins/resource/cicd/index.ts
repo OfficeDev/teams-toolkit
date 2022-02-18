@@ -110,7 +110,7 @@ export class CICDPluginV2 implements ResourcePlugin {
 
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
-        name: "CICDTargetEnvName",
+        name: questionNames.Environment,
         title: "Select an environment",
         staticOptions: [],
         skipSingleOption: false,

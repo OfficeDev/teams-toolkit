@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Context, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { Inputs, v2, Result, FxError } from "@microsoft/teamsfx-api";
+import { Inputs, v2, Result, FxError, Platform } from "@microsoft/teamsfx-api";
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
@@ -20,7 +20,12 @@ export class CICDImpl {
       throw new InternalError("Project path is undefined.");
     }
     const projectPath = inputs.projectPath;
-    const envName = envInfo.envName;
+    // By default(VSC), get env name from plugin's own `target-env` question.
+    let envName = inputs[questionNames.Environment];
+    if (inputs.platform == Platform.CLI) {
+      // In CLI, get env name from the default `env` question.
+      envName = envInfo.envName;
+    }
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length == 0) {

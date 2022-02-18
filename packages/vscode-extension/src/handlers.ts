@@ -577,7 +577,7 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
     params: {},
   };
 
-  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, false);
+  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, true);
   if (!res.isOk()) {
     showError(res.error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCICDWorkflows, res.error);

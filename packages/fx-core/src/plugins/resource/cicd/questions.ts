@@ -45,4 +45,5 @@ export const publishOption: OptionItem = {
 export enum questionNames {
   Provider = "provider",
   Template = "template",
+  Environment = "target-env",
 }

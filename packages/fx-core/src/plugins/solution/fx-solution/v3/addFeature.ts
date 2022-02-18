@@ -24,15 +24,15 @@ import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 
-function getAllFeaturePlugins(): v3.FeaturePlugin[] {
+function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.frontend),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.aad),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.function),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.apim),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.keyVault),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.identity),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.sql),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.frontend),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.aad),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.function),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.apim),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.keyVault),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.identity),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.sql),
   ];
 }
 
@@ -53,8 +53,10 @@ export async function getQuestionsForAddFeature(
       id: plugin.name,
       label: plugin.description || "",
     });
-    if (plugin.getQuestionsForAddFeature) {
-      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
+    if (plugin.getQuestionsForAddFeature || plugin.getQuestionsForAddInstance) {
+      const childNode = plugin.getQuestionsForAddFeature
+        ? await plugin.getQuestionsForAddFeature(ctx, inputs)
+        : await plugin.getQuestionsForAddInstance!(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
         childNode.value.condition = { contains: plugin.name };
@@ -154,9 +156,11 @@ async function resolveResourceDependencies(
   while (true) {
     const size1 = resourceNameSet.size;
     for (const name of resourceNameSet) {
-      const plugin = Container.get<v3.FeaturePlugin>(name);
-      if (plugin.pluginDependencies) {
-        const depRes = await plugin.pluginDependencies(ctx, inputs);
+      const plugin = Container.get<v3.PluginV3>(name);
+      if (plugin.pluginDependencies || plugin.addInstance) {
+        const depRes = plugin.pluginDependencies
+          ? await plugin.pluginDependencies(ctx, inputs)
+          : plugin.addInstance!(ctx, inputs);
         if (depRes.isErr()) {
           return err(depRes.error);
         }

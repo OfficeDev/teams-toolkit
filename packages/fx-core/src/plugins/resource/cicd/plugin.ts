@@ -23,6 +23,9 @@ export class CICDImpl {
     const envName = envInfo.envName;
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
+    if (!envName || !providerName || templateNames.length == 0) {
+      throw new InternalError("Some preconditions of inputs are not met.");
+    }
 
     // 2. Call factory to get provider instance.
     const providerInstance = CICDProviderFactory.create(providerName as ProviderKind);
@@ -36,17 +39,21 @@ export class CICDImpl {
     const replacements = {
       env_name: envName,
       build_script: generateBuildScript(capabilities, programmingLanguage),
-      ut_script: "echo nothing",
       hosting_type_contains_spfx: hostType == "SPFx",
       hosting_type_contains_azure: hostType == "Azure",
     };
     const progressBar = context.userInteraction.createProgressBar(
       "Scaffolding workflow automation files",
-      1
+      templateNames.length
     );
-    await progressBar.start("Scaffolding workflow automation files.");
+    await progressBar.start(`Scaffolding workflow file for ${templateNames[0]}.`);
     //  3.2 Call scaffold.
-    await providerInstance.scaffold(projectPath, templateNames, replacements);
+    for (let i = 0; i < templateNames.length; i += 1) {
+      await providerInstance.scaffold(projectPath, templateNames[i], replacements);
+      if (i < templateNames.length) {
+        await progressBar.next(`Scaffolding workflow file for ${templateNames[0]}.`);
+      }
+    }
     await progressBar.end(true);
 
     // 4. Notification & Preview scaffolded readme.

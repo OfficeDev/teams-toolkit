@@ -13,16 +13,16 @@ export class CICDProvider {
   public targetPath = "";
   public async scaffold(
     projectPath: string,
-    templateNames: string[],
+    templateName: string,
     replacements: any
   ): Promise<Result<boolean, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       throw new InternalError(`${projectPath} not found.`);
     }
 
-    // if (!Object.values(TemplateKind).includes(templateName as TemplateKind)) {
-    //     throw new InternalError(`${templateName} as template kind was not recognized.`);
-    // }
+    if (!Object.values<string>(TemplateKind).includes(templateName)) {
+      throw new InternalError(`${templateName} as template kind was not recognized.`);
+    }
     return ok(true);
   }
 

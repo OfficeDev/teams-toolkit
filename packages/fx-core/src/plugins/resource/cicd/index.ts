@@ -40,7 +40,7 @@ import {
   questionNames,
 } from "./questions";
 import { Logger } from "./logger";
-import { getQuestionsForTargetEnv } from "../../../core/middleware";
+import { environmentManager } from "../../..";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -97,23 +97,26 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     if (inputs.platform != Platform.CLI_HELP) {
-      const res = await getQuestionsForTargetEnv(inputs);
-      if (res.isErr()) {
-        return err(res.error);
-      }
-
-      if (!res.value) {
-        return FxCICDPluginResultFactory.SystemError(
-          "UnknownError",
-          "get questions for target env failed."
+      if (!inputs.projectPath) {
+        throw new InternalError(
+          "No project opened, you can create a new project or open an existing one."
         );
       }
 
-      res.value.children?.pop();
-      res.value.data.name = "CICDTargetEnv";
-      (res.value.data as SingleSelectQuestion).skipSingleOption = false;
+      const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+      if (envProfilesResult.isErr()) {
+        throw new InternalError("List env failed.", envProfilesResult.error);
+      }
 
-      cicdWorkflowQuestions.addChild(res.value);
+      const whichEnvironment: SingleSelectQuestion = {
+        type: "singleSelect",
+        name: "CICDTargetEnvName",
+        title: "Select an environment",
+        staticOptions: [],
+        skipSingleOption: false,
+      };
+      whichEnvironment.staticOptions = envProfilesResult.value;
+      cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
     }
 
     cicdWorkflowQuestions.addChild(whichProvider);

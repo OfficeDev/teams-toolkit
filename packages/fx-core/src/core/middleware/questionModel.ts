@@ -381,7 +381,7 @@ export async function getQuestionsForCreateProjectV3(
     }
   }
   const spfxPlugin = Container.get<SPFxPluginV3>(BuiltInFeaturePluginNames.spfx);
-  const spfxRes = await spfxPlugin.getQuestionsForAddFeature(context, inputs);
+  const spfxRes = await spfxPlugin.getQuestionsForAddInstance(context, inputs);
   if (spfxRes.isOk()) {
     if (spfxRes.value?.data) {
       spfxRes.value.condition = { contains: TabSPFxItem.id };

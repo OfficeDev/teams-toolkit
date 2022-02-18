@@ -150,7 +150,7 @@ export class UserInput implements IUserInput {
 
   /**
    * @deprecated
-   * vscode.openFolder command will cause telemetry loss issue. Please ensure your code well handler the telemetry issue before invoking it.
+   * vscode.openFolder command will cause telemetry loss issue. Please ensure the telemetry issue was well-handled before invoking this API.
    * @param uri the path of folder
    * @returns
    */

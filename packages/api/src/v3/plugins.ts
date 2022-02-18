@@ -308,3 +308,5 @@ export interface AzureResourcePlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 }
+
+export type PluginV3 = FeaturePlugin & AzureResourcePlugin;

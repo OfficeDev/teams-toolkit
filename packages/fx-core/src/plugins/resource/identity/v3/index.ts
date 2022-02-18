@@ -2,10 +2,9 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { AzureSolutionSettings, err, FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import { generateBicepFromFile } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
@@ -15,16 +14,16 @@ import { IdentityConfig } from "../config";
 import { IdentityBicep, IdentityBicepFile } from "../constants";
 
 @Service(BuiltInFeaturePluginNames.identity)
-export class IdentityPluginV3 implements v3.FeaturePlugin {
+export class IdentityPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.identity;
   displayName = "Microsoft Identity";
   description = "Microsoft Identity";
   config: IdentityConfig = new IdentityConfig();
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
-  async generateResourceTemplate(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -41,7 +40,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
       path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
       pluginCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { identity: provisionModules },
@@ -53,26 +52,24 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
         identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const armRes = await this.generateResourceTemplate(ctx, inputs);
-    if (armRes.isErr()) return err(armRes.error);
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(armRes.value);
+    return ok([]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
-  async afterOtherFeaturesAdded(
+  async updateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const result: ArmTemplateResult = {
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const result: v3.BicepTemplate = {
       Reference: {
         identityName: IdentityBicep.identityName,
         identityClientId: IdentityBicep.identityClientId,
@@ -80,6 +77,6 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
         identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
 }

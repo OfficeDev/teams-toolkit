@@ -26,6 +26,7 @@ import fs from "fs-extra";
 import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
+import { getQuestionsForGrantPermission } from "../collaborator";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -124,6 +125,8 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
         );
       }
     }
+  } else if (method === "grantPermissionV3") {
+    getQuestionRes = await getQuestionsForGrantPermission(inputs);
   } else {
     if (ctx.solutionV2 && ctx.contextV2) {
       const solution = ctx.solutionV2;
@@ -170,7 +173,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             ctx.envInfoV2
           );
-        } else if (method === "grantPermission") {
+        } else if (method === "grantPermissionV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,

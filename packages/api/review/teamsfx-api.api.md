@@ -1126,6 +1126,10 @@ type ManifestCapability = {
         remote: IComposeExtension;
     };
     existingApp?: boolean;
+} | {
+    name: "WebApplicationInfo";
+    snippet?: IWebApplicationInfo;
+    existingApp?: boolean;
 };
 
 // @public (undocumented)

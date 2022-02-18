@@ -128,7 +128,11 @@ export async function addFeature(
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
-  const resolveRes = await resolveResourceDependencies(ctx, inputs, allResources);
+  const resolveRes = await resolveResourceDependencies(
+    contextWithManifestProvider,
+    inputs,
+    allResources
+  );
   if (resolveRes.isErr()) return err(resolveRes.error);
   const existingPluginNames: string[] = Array.from(existingResources);
   const addedPluginNames: string[] = [];

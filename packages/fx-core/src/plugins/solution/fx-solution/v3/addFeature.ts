@@ -33,6 +33,7 @@ function getAllFeaturePlugins(): v3.PluginV3[] {
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.keyVault),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.identity),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.sql),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.spfx),
   ];
 }
 
@@ -123,6 +124,10 @@ export async function addFeature(
   inputs.features.forEach((f) => {
     allResources.add(f);
   });
+  const contextWithManifestProvider: v3.ContextWithManifestProvider = {
+    ...ctx,
+    appManifestProvider: new DefaultManifestProvider(),
+  };
   const resolveRes = await resolveResourceDependencies(ctx, inputs, allResources);
   if (resolveRes.isErr()) return err(resolveRes.error);
   const existingPluginNames: string[] = Array.from(existingResources);
@@ -132,10 +137,7 @@ export async function addFeature(
       addedPluginNames.push(pluginName);
     }
   }
-  const contextWithManifestProvider: v3.ContextWithManifestProvider = {
-    ...ctx,
-    appManifestProvider: new DefaultManifestProvider(),
-  };
+
   const addFeatureRes = await arm.addFeature(
     contextWithManifestProvider,
     inputs,
@@ -149,7 +151,7 @@ export async function addFeature(
 }
 
 async function resolveResourceDependencies(
-  ctx: v2.Context,
+  ctx: v3.ContextWithManifestProvider,
   inputs: Inputs,
   resourceNameSet: Set<string>
 ): Promise<Result<undefined, FxError>> {
@@ -160,7 +162,7 @@ async function resolveResourceDependencies(
       if (plugin.pluginDependencies || plugin.addInstance) {
         const depRes = plugin.pluginDependencies
           ? await plugin.pluginDependencies(ctx, inputs)
-          : plugin.addInstance!(ctx, inputs);
+          : await plugin.addInstance!(ctx, inputs);
         if (depRes.isErr()) {
           return err(depRes.error);
         }

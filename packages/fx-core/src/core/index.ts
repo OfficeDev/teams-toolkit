@@ -90,7 +90,10 @@ import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  ProjectSettingsLoaderMW,
+} from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import {
   getQuestionsForAddFeature,
@@ -337,14 +340,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
-  @hooks([
-    ErrorHandlerMW,
-    SupportV1ConditionMW(true),
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(true),
-  ])
+  @hooks([ErrorHandlerMW, SupportV1ConditionMW(true), QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -405,10 +401,13 @@ export class FxCore implements v3.ICore {
         return err(initRes.error);
       }
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-      // set solution in context
-      ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+      const projectSettingsPath = getProjectSettingsPath(projectPath);
+      await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
       // addFeature
-      const features: string[] = [BuiltInFeaturePluginNames.aad]; // AAD is added by default
+      const features: string[] = [];
+      if (!capabilities.includes(TabSPFxItem.id)) {
+        features.push(BuiltInFeaturePluginNames.aad);
+      }
       if (inputs.platform === Platform.VS) {
         features.push(BuiltInFeaturePluginNames.dotnet);
       } else {
@@ -429,12 +428,9 @@ export class FxCore implements v3.ICore {
         projectPath: projectPath,
         features: features,
       };
-      const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
+      const addFeatureRes = await this.addFeature(addFeatureInputs);
       if (addFeatureRes.isErr()) {
         return err(addFeatureRes.error);
-      }
-      if (ctx.projectSettings?.solutionSettings) {
-        ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -1439,7 +1435,13 @@ export class FxCore implements v3.ICore {
     await appStudioV3.init(context, inputs);
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -1449,6 +1451,7 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
     EnvInfoLoaderMW_V3(false),
@@ -1463,7 +1466,6 @@ export class FxCore implements v3.ICore {
     return this._addFeature(inputs, ctx);
   }
 
-  @hooks([QuestionModelMW])
   async _addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

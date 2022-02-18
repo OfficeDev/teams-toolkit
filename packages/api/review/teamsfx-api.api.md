@@ -157,19 +157,19 @@ type AzureResource = CloudResource;
 
 // @public (undocumented)
 interface AzureResourcePlugin {
-    addInstance?: (ctx: ContextWithManifestProvider, inputs: Inputs) => Promise<Result<string[], FxError>>;
+    addInstance?: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<string[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     description?: string;
     displayName?: string;
-    generateBicep?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Bicep[], FxError>>;
+    generateBicep?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
     generateCode?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Void, FxError>>;
     getQuestionsForAddInstance?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     name: string;
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Bicep[], FxError>>;
+    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
     updateCode?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Void, FxError>>;
 }
 
@@ -233,7 +233,13 @@ export interface BaseQuestion {
 }
 
 // @public (undocumented)
-interface Bicep extends Record<any, unknown> {
+type BicepTemplate = {
+    kind: "bicep";
+    template: Record<string, unknown>;
+};
+
+// @public (undocumented)
+interface BicepTemplate_2 extends Record<any, unknown> {
     // (undocumented)
     Configuration?: {
         Orchestration?: string;
@@ -253,12 +259,6 @@ interface Bicep extends Record<any, unknown> {
     // (undocumented)
     Reference?: Record<string, unknown>;
 }
-
-// @public (undocumented)
-type BicepTemplate = {
-    kind: "bicep";
-    template: Record<string, unknown>;
-};
 
 // @public (undocumented)
 export const BuildFolderName = "build";
@@ -1309,7 +1309,7 @@ export type PluginIdentity = string;
 type PluginName = string;
 
 // @public (undocumented)
-type PluginV3 = FeaturePlugin & AzureResourcePlugin;
+type PluginV3 = AzureResourcePlugin;
 
 // @public (undocumented)
 export const ProductName = "teamsfx";
@@ -2083,7 +2083,7 @@ declare namespace v3 {
         AddFeatureInputs,
         OtherFeaturesAddedInputs,
         FeaturePlugin,
-        Bicep,
+        BicepTemplate_2 as BicepTemplate,
         UpdateInputs,
         AzureResourcePlugin,
         PluginV3,

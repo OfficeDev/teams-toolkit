@@ -51,7 +51,7 @@ export async function getQuestionsForProvision(
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
-    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+    const plugin = Container.get<v3.PluginV3>(pluginName);
     if (plugin.getQuestionsForProvision) {
       const res = await plugin.getQuestionsForProvision(ctx, inputs, envInfo, tokenProvider);
       if (res.isErr()) {
@@ -159,12 +159,10 @@ export async function provisionResources(
     }
 
     // collect plugins and provisionResources
-    const plugins = solutionSetting.activeResourcePlugins.map((p) =>
-      Container.get<v3.FeaturePlugin>(p)
-    );
+    const plugins = solutionSetting.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p));
     const provisionThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.provisionResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.provisionResource))
+      .map((plugin: v3.PluginV3) => {
         return {
           pluginName: `${plugin.name}`,
           taskName: "provisionResource",
@@ -210,8 +208,8 @@ export async function provisionResources(
 
     // collect plugins and call configureResource
     const configureResourceThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.configureResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.configureResource))
+      .map((plugin: v3.PluginV3) => {
         if (!envInfo.state[plugin.name]) {
           envInfo.state[plugin.name] = {};
         }

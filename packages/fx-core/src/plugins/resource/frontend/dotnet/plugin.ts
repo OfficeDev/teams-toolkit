@@ -46,6 +46,7 @@ import { ArmTemplateResult } from "../../../../common/armInterface";
 import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
+import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -123,6 +124,13 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (
+      ctx.answers?.existingCapabilities?.includes(BotOptionItem.id) ||
+      ctx.answers?.existingCapabilities?.includes(TabOptionItem.id)
+    ) {
+      return ok({} as ArmTemplateResult);
+    }
+
     Logger.info(Messages.StartGenerateArmTemplates);
 
     const bicepTemplateDirectory = PathInfo.bicepTemplateFolder(getTemplatesFolder());

@@ -1,4 +1,4 @@
-﻿@page "/teamsfx-authorize-start"
+﻿@page "/auth-start"
 
 <!DOCTYPE html>
 
@@ -38,7 +38,7 @@
                 response_type: "code",
                 response_mode: "fragment",
                 scope: scope,
-                redirect_uri: window.location.origin + "/teamsfx-authorize-end.html",
+                redirect_uri: window.location.origin + "/auth-end.html",
                 nonce: _guid(),
                 state: state,
                 login_hint: context.loginHint,

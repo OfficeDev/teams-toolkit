@@ -1451,6 +1451,7 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
     EnvInfoLoaderMW_V3(false),

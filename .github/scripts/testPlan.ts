@@ -14,12 +14,26 @@ import * as semver from "semver";
 dotenv.config();
 
 /**
- * Mocha json test reporter result.
+ * Mochawesome reporter result.
+ * {@link https://github.com/adamgruber/mochawesome}
  */
+enum MochaTestState {
+  passed = "passed",
+  pending = "pending",
+  failed = "failed",
+}
+
+interface MochaTestContext {
+  testPlanCaseId?: number;
+}
+
 interface MochaTest {
   title: string;
   fullTitle: string;
   err: any;
+  context: string;
+  extractedContext?: MochaTestContext;
+  state: MochaTestState;
 }
 
 /**
@@ -53,6 +67,16 @@ interface TestPoint {
   };
   results?: {
     outcome: TestPointOutCome;
+  };
+}
+
+interface TestCase {
+  testPlan: TestPlan;
+  testSuite: TestSuite;
+  workItem: {
+    id: number;
+    name: string;
+    workItemFields: Record<string, any>[];
   };
 }
 
@@ -125,50 +149,47 @@ class ADOTestPlanClient {
 
   public static async reportTestResult(
     planID: number,
-    passes: MochaTest[],
-    failures: MochaTest[]
+    cases: MochaTest[]
   ): Promise<boolean> {
-    let passSet = new Set();
-    let failurSet = new Set();
-    for (let i in passes) {
-      passSet.add(passes[i].title.trim());
-    }
-
-    for (let i in failures) {
-      failurSet.add(failures[i].title.trim());
-    }
-
     const points = await this.AllTestPoints(planID);
-    if (points.length == 0) {
-      return false;
-    }
+    console.log(points.length);
 
     let suitePoints: Map<number, TestPoint[]> = new Map();
-    for (let i in points) {
-      const suiteID = points[i].testSuite.id;
-      let flag = false;
-      if (passSet.has(points[i].testCaseReference.name.trim())) {
-        points[i].results = { outcome: TestPointOutCome.passed };
-        flag = true;
-      }
+    for (const point of points) {
+      for (const c of cases) {
+        if (
+          !c.extractedContext ||
+          c.extractedContext.testPlanCaseId !== point.testCaseReference.id
+        ) {
+          continue;
+        }
 
-      if (failurSet.has(points[i].testCaseReference.name.trim())) {
-        points[i].results = { outcome: TestPointOutCome.failed };
-        flag = true;
-      }
-      if (!flag) {
-        continue;
-      }
-      if (!suitePoints.has(suiteID)) {
-        suitePoints.set(suiteID, [points[i]]);
-      } else {
-        suitePoints.get(suiteID)!.push(points[i]);
+        switch (c.state) {
+          case MochaTestState.passed: {
+            point.results = { outcome: TestPointOutCome.passed };
+            break;
+          }
+          case MochaTestState.failed: {
+            point.results = { outcome: TestPointOutCome.failed };
+            break;
+          }
+          default:
+            point.results = { outcome: TestPointOutCome.failed };
+            break;
+        }
+
+        console.log(point);
+
+        if (suitePoints.has(point.testSuite.id)) {
+          suitePoints.get(point.testSuite.id)!.push(point);
+        } else {
+          suitePoints.set(point.testSuite.id, [point]);
+        }
       }
     }
 
-    console.log(JSON.stringify(suitePoints));
-    for (let [k, v] of suitePoints) {
-      await this.updateTestPoint(planID, k, v);
+    for (let [suite, points] of suitePoints) {
+      await this.updateTestPoints(planID, suite, points);
     }
 
     return true;
@@ -210,6 +231,68 @@ class ADOTestPlanClient {
       return {
         success: false,
       };
+    }
+  }
+
+  public static async AllTestCases(planID: number): Promise<TestCase[]> {
+    const suites = await this.AllTestSuites(planID);
+    let points: TestCase[] = [];
+    for (let i in suites) {
+      const result = await this.ListTestCases(planID, suites[i].id);
+      if (result.success) {
+        points.push(...result.v!);
+      }
+    }
+    return points;
+  }
+
+  private static async ListTestCases(
+    planID: number,
+    suiteID: number,
+    continuationToken?: string
+  ) {
+    try {
+      const response = await ADOTestPlanClient.client.get(
+        `/Plans/${planID}/Suites/${suiteID}/TestCase`,
+        {
+          params: {
+            continuationtoken: continuationToken,
+          },
+        }
+      );
+      return {
+        success: true,
+        v: response.data["value"],
+        continuationToken: response.headers["x-ms-continuationtoken"],
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+      };
+    }
+  }
+
+  public static async updateTestCases(
+    planID: number,
+    suiteID: number,
+    testCases: TestCase[]
+  ): Promise<boolean> {
+    try {
+      console.log(JSON.stringify(testCases, null, 4));
+      const response = await ADOTestPlanClient.client.patch(
+        `/Plans/${planID}/Suites/${suiteID}/TestCase`,
+        testCases,
+        {
+          params: testCases,
+          data: testCases,
+        }
+      );
+      console.log(response.data.value[0].workItem.workItemFields[2]);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   }
 
@@ -263,7 +346,7 @@ class ADOTestPlanClient {
     }
   }
 
-  private static async updateTestPoint(
+  private static async updateTestPoints(
     planID: number,
     suiteID: number,
     testPoints: TestPoint[]
@@ -421,19 +504,33 @@ async function SyncToTestPlan() {
   }
 
   try {
-    const results = await fs.readJson(process.argv[3]);
-    console.log(results);
+    const results = (await fs.readJson(process.argv[3])).results;
+    const cases: MochaTest[] = [];
+
+    for (const result of results) {
+      for (const suite of result.suites) {
+        for (const test of suite.tests) {
+          if (test.context) {
+            try {
+              const c: MochaTestContext = JSON.parse(JSON.parse(test.context));
+              test.extractedContext = c;
+            } catch {
+              continue;
+            }
+          }
+          cases.push(test);
+        }
+      }
+    }
+    console.log(cases);
 
     const testPlan = await ADOTestPlanClient.GetCurrentTestPlan(
       process.argv[4].trim() as TestPlanType,
       process.argv[5].trim()
     );
+    console.log(testPlan);
 
-    ADOTestPlanClient.reportTestResult(
-      testPlan.id,
-      results.passes,
-      results.failures
-    );
+    ADOTestPlanClient.reportTestResult(testPlan.id, cases);
   } catch (error) {
     throw error;
   }
@@ -491,6 +588,9 @@ async function main() {
           throw err;
         });
       break;
+    }
+    default: {
+      throw new Error(`unknow command: ${process.argv[2]}`);
     }
   }
 }

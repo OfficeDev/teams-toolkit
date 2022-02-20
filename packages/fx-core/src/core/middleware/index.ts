@@ -11,4 +11,3 @@ export * from "./projectSettingsLoader";
 export * from "./projectSettingsWriter";
 export * from "./questionModel";
 export * from "./solutionLoader";
-export * from "./telemetrySender";

@@ -8,13 +8,13 @@ import "mocha";
 import { CoreHookContext, newProjectSettings } from "../../../src";
 import { ContextInjectorMW } from "../../../src/core/middleware";
 import { SolutionLoaderMW_V3 } from "../../../src/core/middleware/solutionLoaderV3";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 
 describe("Middleware - SolutionLoaderMW_V3", () => {
   const MockProjectSettingsMW = async (ctx: CoreHookContext, next: NextFunction) => {
     ctx.projectSettings = newProjectSettings();
     ctx.projectSettings.solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
+      name: BuiltInSolutionNames.azure,
       version: "3.0.0",
       capabilities: [],
       azureResources: [],

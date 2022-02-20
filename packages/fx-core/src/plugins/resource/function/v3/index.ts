@@ -96,7 +96,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     return path.join(projectPath, FunctionPluginPathInfo.solutionFolderName);
   }
 
-  async getQuestionsForAddFeature(
+  async getQuestionsForAddInstance(
     ctx: v2.Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {

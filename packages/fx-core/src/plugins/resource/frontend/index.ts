@@ -46,11 +46,11 @@ export class FrontendPlugin implements Plugin {
   dotnetPluginImpl = new DotnetPluginImpl();
 
   private getImpl(ctx: PluginContext): PluginImpl {
-    return isVSProject(ctx.projectSettings) ? this.dotnetPluginImpl : this.frontendPluginImpl;
+    return isVSProject(ctx.projectSettings!) ? this.dotnetPluginImpl : this.frontendPluginImpl;
   }
 
   private static setContext(ctx: PluginContext): void {
-    const component = isVSProject(ctx.projectSettings)
+    const component = isVSProject(ctx.projectSettings!)
       ? DotnetPluginInfo.pluginName
       : FrontendPluginInfo.PluginName;
     Logger.setLogger(ctx.logProvider, component);

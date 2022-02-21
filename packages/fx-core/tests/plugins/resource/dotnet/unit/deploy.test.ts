@@ -30,7 +30,7 @@ describe("WebappPlugin", () => {
       pluginContext.config.set(ConfigInfo.appServicePlanName, "ut");
       pluginContext!.projectSettings!.pluginSettings = { projectFilePath: "./ut" };
 
-      sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
+      sinon.stub(WebappPlugin, <any>"isVSProject").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
       sinon.stub(Utils, "execute").resolves("");
       sinon.stub(fs, "pathExists").resolves(true);

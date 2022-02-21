@@ -238,7 +238,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in .NET scenario", async () => {
-    sinon.stub(TeamsBot, <any>"isVsPlatform").returns(true);
+    sinon.stub(TeamsBot, <any>"isVSProject").returns(true);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.FrontendHosting,

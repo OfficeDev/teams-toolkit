@@ -134,7 +134,7 @@ describe("WebappPlugin", () => {
   beforeEach(() => {
     plugin = new WebappPlugin();
     pluginContext = TestHelper.getFakePluginContext();
-    sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
+    sinon.stub(WebappPlugin, <any>"isVSProject").returns(true);
   });
 
   afterEach(() => {

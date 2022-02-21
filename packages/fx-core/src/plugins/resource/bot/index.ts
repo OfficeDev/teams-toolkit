@@ -40,7 +40,7 @@ export class TeamsBot implements Plugin {
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
 
   public getImpl(context: PluginContext): PluginImpl {
-    return isVSProject(context.projectSettings) ? this.dotnetBotImpl : this.teamsBotImpl;
+    return isVSProject(context.projectSettings!) ? this.dotnetBotImpl : this.teamsBotImpl;
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

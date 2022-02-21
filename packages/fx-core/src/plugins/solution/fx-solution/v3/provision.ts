@@ -37,6 +37,7 @@ import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import { TabSPFxItem } from "../question";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
@@ -115,7 +116,12 @@ export async function provisionResources(
   const teamsAppId = registerTeamsAppRes.value;
   solutionGlobalVars.TeamsAppId = teamsAppId;
 
-  if (solutionSetting) {
+  if (
+    solutionSetting &&
+    !(ctx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+      TabSPFxItem.id
+    )
+  ) {
     if (envInfo.envName === "local") {
       // TODO for local debug
       const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, envInfo);
@@ -252,11 +258,7 @@ export async function provisionResources(
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = util.format(
-        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-        ctx.projectSetting.appName
-      );
-      ctx.logProvider.info(msg);
+      const msg = getStrings().solution.ProvisionSuccessAzure;
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -274,6 +276,14 @@ export async function provisionResources(
   const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo);
   if (updateTeamsAppRes.isErr()) {
     return err(updateTeamsAppRes.error);
+  }
+  if (envInfo.envName !== "local") {
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
+    );
+    ctx.userInteraction.showMessage("info", msg, false);
+    ctx.logProvider.info(msg);
   }
   return ok(envInfo);
 }

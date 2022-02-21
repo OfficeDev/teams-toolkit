@@ -401,6 +401,7 @@ export class FxCore implements v3.ICore {
         return err(initRes.error);
       }
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+      ctx.projectSettings!.isFromSample = false;
       const projectSettingsPath = getProjectSettingsPath(projectPath);
       await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
       // addFeature

@@ -25,6 +25,8 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
+import { it } from "../../commonlib/it";
+
 describe("Provision", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -32,7 +34,7 @@ describe("Provision", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
-  it(`Provision Resource: project with new bot - Test Plan ID 9729265`, async function () {
+  it("Provision Resource: project with new bot", { testPlanCaseId: 9729265 }, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
       cwd: testFolder,
       env: process.env,

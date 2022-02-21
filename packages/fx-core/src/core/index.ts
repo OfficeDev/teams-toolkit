@@ -45,7 +45,7 @@ import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { getRootDirectory, mapToJson } from "../common/tools";
+import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   HostTypeOptionAzure,
@@ -56,6 +56,7 @@ import {
   BuiltInSolutionNames,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
 import {
@@ -90,7 +91,10 @@ import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  ProjectSettingsLoaderMW,
+} from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import {
   getQuestionsForAddFeature,
@@ -291,6 +295,17 @@ export class FxCore implements v3.ICore {
           return err(createEnvResult.error);
         }
 
+        if (isConfigUnifyEnabled()) {
+          const createLocalEnvResult = await this.createEnvWithName(
+            environmentManager.getLocalEnvName(),
+            projectSettings,
+            inputs
+          );
+          if (createLocalEnvResult.isErr()) {
+            return err(createLocalEnvResult.error);
+          }
+        }
+
         const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
@@ -326,14 +341,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
-  @hooks([
-    ErrorHandlerMW,
-    SupportV1ConditionMW(true),
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(true),
-  ])
+  @hooks([ErrorHandlerMW, SupportV1ConditionMW(true), QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -394,59 +402,36 @@ export class FxCore implements v3.ICore {
         return err(initRes.error);
       }
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-      // set solution in context
-      ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+      const projectSettingsPath = getProjectSettingsPath(projectPath);
+      await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
       // addFeature
+      const features: string[] = [];
+      if (!capabilities.includes(TabSPFxItem.id)) {
+        features.push(BuiltInFeaturePluginNames.aad);
+      }
       if (inputs.platform === Platform.VS) {
-        const addFeatureInputs: v2.InputsWithProjectPath = {
-          ...inputs,
-          projectPath: projectPath,
-          feature: BuiltInFeaturePluginNames.dotnet, //TODO
-        };
-        const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-        if (addFeatureRes.isErr()) {
-          return err(addFeatureRes.error);
-        }
+        features.push(BuiltInFeaturePluginNames.dotnet);
       } else {
         if (capabilities.includes(TabOptionItem.id)) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.frontend,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.frontend);
         } else if (capabilities.includes(TabSPFxItem.id)) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.spfx,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.spfx);
         }
         if (
           capabilities.includes(BotOptionItem.id) ||
           capabilities.includes(MessageExtensionItem.id)
         ) {
-          const addFeatureInputs: v2.InputsWithProjectPath = {
-            ...inputs,
-            projectPath: projectPath,
-            feature: BuiltInFeaturePluginNames.bot,
-            capabilities: capabilities,
-          };
-          const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
-          if (addFeatureRes.isErr()) {
-            return err(addFeatureRes.error);
-          }
+          features.push(BuiltInFeaturePluginNames.bot);
         }
       }
-      if (ctx.projectSettings?.solutionSettings) {
-        ctx.projectSettings.solutionSettings.hostType = HostTypeOptionAzure.id;
+      const addFeatureInputs: v3.SolutionAddFeatureInputs = {
+        ...inputs,
+        projectPath: projectPath,
+        features: features,
+      };
+      const addFeatureRes = await this.addFeature(addFeatureInputs);
+      if (addFeatureRes.isErr()) {
+        return err(addFeatureRes.error);
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -660,9 +645,9 @@ export class FxCore implements v3.ICore {
   /**
    * Only used to provision Teams app with user provided app package
    * @param inputs
-   * @returns
+   * @returns teamsAppId on provision success
    */
-  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
     if (!inputs.appPackagePath) {
       return err(InvalidInputError("appPackagePath is not defined", inputs));
     }
@@ -679,13 +664,12 @@ export class FxCore implements v3.ICore {
       projectSetting: projectSettings,
     };
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    await appStudioV3.registerTeamsApp(
+    return appStudioV3.registerTeamsApp(
       context,
       inputs as v2.InputsWithProjectPath,
       newEnvInfoV3(),
       TOOLS.tokenProvider
     );
-    return ok(Void);
   }
 
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -762,6 +746,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
+    inputs.env = environmentManager.getLocalEnvName();
     if (isV3()) return this.localDebugV3(inputs);
     else return this.localDebugV2(inputs);
   }
@@ -771,13 +756,13 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
+    EnvInfoLoaderMW(!isConfigUnifyEnabled()),
     LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(true),
+    EnvInfoWriterMW(!isConfigUnifyEnabled()),
     LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -803,7 +788,8 @@ export class FxCore implements v3.ICore {
         ctx.contextV2,
         inputs,
         ctx.localSettings,
-        this.tools.tokenProvider
+        this.tools.tokenProvider,
+        ctx.envInfoV2
       );
       if (res.kind === "success") {
         ctx.localSettings = res.output;
@@ -940,11 +926,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<unknown, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) return this.executeUserTaskV3(func, inputs);
     else return this.executeUserTaskV2(func, inputs);
   }
@@ -1121,7 +1103,10 @@ export class FxCore implements v3.ICore {
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
-
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.grantPermissionV3(inputs);
+    else return this.grantPermissionV2(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1133,7 +1118,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async grantPermissionV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
     inputs.stage = Stage.grantPermission;
     const projectPath = inputs.projectPath;
@@ -1154,12 +1139,46 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW,
+    ContextInjectorMW,
+  ])
+  async grantPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.grantPermission;
+    inputs.stage = Stage.grantPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await grantPermission(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.checkPermissionV3(inputs);
+    else return this.checkPermissionV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async checkPermissionV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
     inputs.stage = Stage.checkPermission;
     const projectPath = inputs.projectPath;
@@ -1177,6 +1196,39 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+  ])
+  async checkPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.checkPermission;
+    inputs.stage = Stage.checkPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await checkPermission(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+    if (isV3()) return this.listCollaboratorV3(inputs);
+    else return this.listCollaboratorV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
@@ -1185,7 +1237,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async listCollaboratorV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
     const projectPath = inputs.projectPath;
@@ -1198,6 +1250,34 @@ export class FxCore implements v3.ICore {
       ctx!.envInfoV2!,
       this.tools.tokenProvider
     );
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+  ])
+  async listCollaboratorV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    currentStage = Stage.listCollaborator;
+    inputs.stage = Stage.listCollaborator;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const res = await listCollaborator(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
   @hooks([
@@ -1309,7 +1389,10 @@ export class FxCore implements v3.ICore {
     projectSettings: ProjectSettings,
     inputs: Inputs
   ): Promise<Result<Void, FxError>> {
-    const appName = projectSettings.appName;
+    let appName = projectSettings.appName;
+    if (targetEnvName === environmentManager.getLocalEnvName()) {
+      appName = appName + "-local-debug";
+    }
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
@@ -1376,7 +1459,7 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
 
-    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
 
     if (envConfigs.isErr()) {
       return envConfigs;
@@ -1416,9 +1499,23 @@ export class FxCore implements v3.ICore {
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    const createEnvResult = await this.createEnvWithName("local", projectSettings, inputs);
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
+    }
+    if (isConfigUnifyEnabled()) {
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
+      }
     }
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
@@ -1433,7 +1530,13 @@ export class FxCore implements v3.ICore {
     await appStudioV3.init(context, inputs);
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -1443,6 +1546,7 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
     EnvInfoLoaderMW_V3(false),
@@ -1457,7 +1561,6 @@ export class FxCore implements v3.ICore {
     return this._addFeature(inputs, ctx);
   }
 
-  @hooks([QuestionModelMW])
   async _addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

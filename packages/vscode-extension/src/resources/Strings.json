@@ -99,6 +99,7 @@
       "editSecretTitle": "Edit the decrypted secret value",
       "decryptFailed": "Failed to decrypt secret.",
       "findEnvFailed": "Can not find project environment %s.",
+      "stateFileNotFound": "State file not found in environment %s. You must run 'Provision in the cloud' first to generate related state file.",
       "resourceInfoNotFound": "Can not load %s info for environment %s.",
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
@@ -217,7 +218,6 @@
       "emptySelection": "select option is empty",
       "ok": "ok (Enter)",
       "selectFileOrFolder": "Select file/folder",
-      "backKeyboard": " (Alt + LeftArrow to previous step)",
       "multiSelectKeyboard": " (Space key to check/uncheck)"
     },
     "webview": {

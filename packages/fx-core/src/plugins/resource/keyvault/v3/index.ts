@@ -34,12 +34,9 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -72,7 +69,7 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);

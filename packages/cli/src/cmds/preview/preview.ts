@@ -26,6 +26,7 @@ import {
   ProjectSettingsHelper,
   TaskDefinition,
   ProgrammingLanguage,
+  isConfigUnifyEnabled,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -183,10 +184,14 @@ export default class Preview extends YargsCommand {
 
     const skipNgrok = !(await isNgrokCheckerEnabled());
     const trustDevCert = await isTrustDevCertEnabled();
+    let ignoreEnvInfo = true;
+    if (isConfigUnifyEnabled()) {
+      ignoreEnvInfo = false;
+    }
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
-      ignoreEnvInfo: true, // local debug does not require environments
+      ignoreEnvInfo: ignoreEnvInfo, // local debug does not require environments
       checkerInfo: {
         skipNgrok: skipNgrok,
         trustDevCert: trustDevCert,

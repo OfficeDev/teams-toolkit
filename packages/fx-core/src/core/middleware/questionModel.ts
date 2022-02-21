@@ -23,9 +23,17 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import { Container } from "typedi";
 import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
+import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
+import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import {
+  BuiltInFeaturePluginNames,
+  BuiltInSolutionNames,
+} from "../../plugins/solution/fx-solution/v3/constants";
+import { getQuestionsForGrantPermission } from "../collaborator";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -124,6 +132,8 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
         );
       }
     }
+  } else if (method === "grantPermissionV3") {
+    getQuestionRes = await getQuestionsForGrantPermission(inputs);
   } else {
     if (ctx.solutionV2 && ctx.contextV2) {
       const solution = ctx.solutionV2;
@@ -170,7 +180,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             ctx.envInfoV2
           );
-        } else if (method === "grantPermission") {
+        } else if (method === "grantPermissionV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -360,16 +370,22 @@ export async function getQuestionsForCreateProjectV3(
   const capQuestion = createCapabilityQuestion();
   const capNode = new QTreeNode(capQuestion);
   createNew.addChild(capNode);
-  const globalSolutions = getGlobalSolutionsV3();
+  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
-  for (const solution of globalSolutions) {
-    if (solution.getQuestionsForInit) {
-      const res = await solution.getQuestionsForInit(context, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        if (solutionNode.data) capNode.addChild(solutionNode);
-      }
+  if (solution.getQuestionsForInit) {
+    const res = await solution.getQuestionsForInit(context, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      if (solutionNode.data) capNode.addChild(solutionNode);
+    }
+  }
+  const spfxPlugin = Container.get<SPFxPluginV3>(BuiltInFeaturePluginNames.spfx);
+  const spfxRes = await spfxPlugin.getQuestionsForAddFeature(context, inputs);
+  if (spfxRes.isOk()) {
+    if (spfxRes.value?.data) {
+      spfxRes.value.condition = { contains: TabSPFxItem.id };
+      capNode.addChild(spfxRes.value);
     }
   }
   // Language

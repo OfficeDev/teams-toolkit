@@ -5,12 +5,11 @@
     "types": "build/index.d.ts",
     "license": "MIT",
     "dependencies": {
-        "@microsoft/teamsfx-api": "^0.14.0"
+        "fs-extra": "^9.1.0"
     },
     "devDependencies": {
         "rimraf": "^3.0.0",
-        "typescript": "^4.2.3",
-        "fs-extra": "^9.1.0"
+        "typescript": "^4.2.3"
     },
     "scripts": {
         "build": "rimraf build && npx tsc -p ./"

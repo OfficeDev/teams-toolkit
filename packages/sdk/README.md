@@ -37,7 +37,45 @@ npm install @microsoft/teamsfx
 
 To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides several credential classes to choose that meets various requirements.
 
-By default the SDK will use environment variables, you can also override it when creating instances.
+#### Using Teams App User Credential (User Identity)
+
+Use the snippet below:
+
+**Note:** You can only use this credential class in browser application like Teams Tab App.
+
+```ts
+// Equivalent to:
+// const teamsfx = new TeamsFx(IdentityType.User);
+// teamsfx.setCustomConfig({
+//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+//   clientId: process.env.REACT_APP_CLIENT_ID,
+// });
+const teamsfx = new TeamsFx();
+const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
+const profile = await graphClient.api("/me").get();
+```
+
+#### Using Microsoft 365 Tenant Credential (App Identity)
+
+It doesn't require the interaction with Teams App user. You can call Microsoft Graph as application.
+Use the snippet below:
+
+```ts
+// Equivalent to:
+// const teamsfx = new TeamsFx(IdentityType.App);
+// teamsfx.setCustomConfig({
+//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+//   clientId: process.env.REACT_APP_CLIENT_ID,
+// });
+const teamsfx = new TeamsFx(IdentityType.App);
+const graphClient = createMicrosoftGraphClient(teamsfx);
+const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
+```
+
+## Core Concepts & Code Structure
+
+### TeamsFx class
+`TeamsFx` class instance holds all TeamsFx settings from environment variables by default. Developers can also set customized configuration or override the default values.
 
 - In browser environment, the scaffolded React project has provided environment variables to use.
   * REACT_APP_AUTHORITY_HOST
@@ -61,42 +99,9 @@ By default the SDK will use environment variables, you can also override it when
   * SQL_DATABASE_NAME
   * IDENTITY_ID
 
-#### Using Teams App User Credential
-
-Use the snippet below:
-
-**Note:** You can only use this credential class in browser application like Teams Tab App.
-
-```ts
-// Equivalent to:
-// const teamsfx = new TeamsFx(IdentityType.User);
-// teamsfx.setCustomConfig({
-//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-//   clientId: process.env.REACT_APP_CLIENT_ID,
-// });
-const teamsfx = new TeamsFx();
-const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
-const profile = await graphClient.api("/me").get();
-```
-
-#### Using Microsoft 365 Tenant Credential
-
-It doesn't require the interaction with Teams App user. You can call Microsoft Graph as application.
-Use the snippet below:
-
-```ts
-// Equivalent to:
-// const teamsfx = new TeamsFx(IdentityType.App);
-// teamsfx.setCustomConfig({
-//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-//   clientId: process.env.REACT_APP_CLIENT_ID,
-// });
-const teamsfx = new TeamsFx(IdentityType.App);
-const graphClient = createMicrosoftGraphClient(teamsfx);
-const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
-```
-
-## Core Concepts & Code Structure
+`TeamsFx:getCredential()` provides credential instances automatically corresponding to identity type:
+- User Identity: It means that you can access resources on behalf of current Teams user.
+- App Identity: It means that you are acting as a managed app identity which usually need admin consent for resources.
 
 ### Credential
 
@@ -316,6 +321,15 @@ setLogFunction((level: LogLevel, message: string) => {
   }
 });
 ```
+
+
+### loadConfiguration is missing
+`loadConfiguration()` is used to configure settings in a global variable of TeamsFx SDK and is removed now.
+Please use `TeamsFx` instead and pass the instance to helper functions.
+`new TeamsUserCredential();` is equivalent to `new TeamsFx().getCredential();`.
+`new M365TenantCredential();` is equivalent to `new TeamsFx(IdentityType.App).getCredential();`.
+
+Also see [TeamsFx class](#teamsfx-class).
 
 ## Next steps
 

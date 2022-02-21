@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import { CICDProvider } from "./provider";
 
 export class JenkinsProvider extends CICDProvider {
@@ -8,6 +7,14 @@ export class JenkinsProvider extends CICDProvider {
   static getInstance() {
     if (!JenkinsProvider.instance) {
       JenkinsProvider.instance = new JenkinsProvider();
+      JenkinsProvider.instance.scaffoldTo = ".jenkins/pipelines";
+      JenkinsProvider.instance.providerName = "jenkins";
+      JenkinsProvider.instance.sourceTemplateName = (templateName: string) => {
+        return `Jenkinsfile.${templateName}`;
+      };
+      JenkinsProvider.instance.targetTemplateName = (templateName: string, envName: string) => {
+        return `Jenkinsfile.${templateName}.${envName}`;
+      };
     }
     return JenkinsProvider.instance;
   }

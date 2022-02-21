@@ -8,6 +8,14 @@ export class AzDoProvider extends CICDProvider {
   static getInstance() {
     if (!AzDoProvider.instance) {
       AzDoProvider.instance = new AzDoProvider();
+      AzDoProvider.instance.scaffoldTo = ".azure/pipelines";
+      AzDoProvider.instance.providerName = "azdo";
+      AzDoProvider.instance.sourceTemplateName = (templateName: string) => {
+        return `${templateName}.yml`;
+      };
+      AzDoProvider.instance.targetTemplateName = (templateName: string, envName: string) => {
+        return `${templateName}.${envName}.yml`;
+      };
     }
     return AzDoProvider.instance;
   }

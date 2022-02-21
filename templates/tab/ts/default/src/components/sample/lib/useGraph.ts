@@ -1,17 +1,18 @@
 import { useData } from "./useData";
 import { TeamsUserCredential, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/teamsfx";
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
+import { Providers, ProviderState } from '@microsoft/mgt-element';
 
 export function useGraph<T>(
-  asyncFunc: (graph: Client) => Promise<T>,
-  options?: { scope: string | string[] }
+  asyncFunc: (graph: Client, credential: TeamsUserCredential, scope: string[]) => Promise<T>,
+  options?: { scope: string[] }
 ) {
   const { scope } = { scope: ["User.Read"], ...options };
   const initial = useData(async () => {
     try {
       const credential = new TeamsUserCredential();
       const graph = createMicrosoftGraphClient(credential, scope);
-      return await asyncFunc(graph);
+      return await asyncFunc(graph, credential, scope);
     } catch (err: unknown) {
       if (err instanceof GraphError && err.code?.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
@@ -28,7 +29,9 @@ export function useGraph<T>(
         await credential.login(scope);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
         const graph = createMicrosoftGraphClient(credential, scope);
-        return await asyncFunc(graph);
+        const result = await asyncFunc(graph, credential, scope);
+        Providers.globalProvider.setState(ProviderState.SignedIn);
+        return result;
       } catch (err: unknown) {
         if (err instanceof ErrorWithCode && err.message?.includes("CancelledByUser")) {
           const helpLink = "https://aka.ms/teamsfx-auth-code-flow";

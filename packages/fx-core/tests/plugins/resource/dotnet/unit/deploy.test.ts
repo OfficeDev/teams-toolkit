@@ -9,6 +9,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
 import { FrontendPlugin as WebappPlugin } from "../../../../../src/plugins/resource/frontend";
+import * as core from "../../../../../../fx-core/src/core";
 import { TestHelper } from "../helper";
 import { DotnetConfigInfo as ConfigInfo } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend/dotnet/utils/azure-client";
@@ -30,7 +31,7 @@ describe("WebappPlugin", () => {
       pluginContext.config.set(ConfigInfo.appServicePlanName, "ut");
       pluginContext!.projectSettings!.pluginSettings = { projectFilePath: "./ut" };
 
-      sinon.stub(WebappPlugin, <any>"isVSProject").returns(true);
+      sinon.stub(core, <any>"isVSProject").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
       sinon.stub(Utils, "execute").resolves("");
       sinon.stub(fs, "pathExists").resolves(true);

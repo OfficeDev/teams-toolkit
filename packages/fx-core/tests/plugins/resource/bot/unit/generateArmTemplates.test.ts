@@ -11,6 +11,7 @@ import {
   ResourcePlugins,
 } from "../../util";
 import { TeamsBot } from "../../../../../src";
+import * as core from "../../../../../../fx-core/src/core";
 import * as testUtils from "./utils";
 import path from "path";
 import fs from "fs-extra";
@@ -238,7 +239,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in .NET scenario", async () => {
-    sinon.stub(TeamsBot, <any>"isVSProject").returns(true);
+    sinon.stub(core, <any>"isVSProject").returns(true);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.FrontendHosting,

@@ -370,9 +370,11 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  if (isConfigUnifyEnabled() && envInfo && envInfo.state[plugin.name]) {
+  if (isConfigUnifyEnabled() && envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
@@ -399,9 +401,11 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  if (isConfigUnifyEnabled() && envInfo && envInfo.state[plugin.name]) {
+  if (isConfigUnifyEnabled() && envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;

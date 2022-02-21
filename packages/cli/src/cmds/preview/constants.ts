@@ -48,14 +48,18 @@ export const gulpServeTitle = "gulp serve";
 export const gulpServeStartMessage = `executing 'gulp serve' under ${FolderName.SPFx} folder.`;
 export const frontendInstallStartMessage = `executing 'npm install' under ${FolderName.Frontend} folder.`;
 export const frontendStartStartMessage = `executing 'react-scripts start' under ${FolderName.Frontend} folder.`;
+export const frontendStartStartMessageNext = `executing 'npm run dev:teamsfx' under ${FolderName.Frontend} folder.`;
 export const authStartStartMessage = "starting auth service.";
 export const backendInstallStartMessage = `executing 'npm install' under ${FolderName.Function} folder.`;
 export const backendExtensionsInstallStartMessage =
   "installing Azure Functions binding extensions.";
 export const backendStartStartMessage = `executing 'func start' under ${FolderName.Function} folder.`;
+export const backendStartStartMessageNext = `executing 'npm run dev:teamsfx' under ${FolderName.Function} folder.`;
 export const backendWatchStartMessage = `executing 'tsc --watch' under ${FolderName.Function} folder.`;
+export const backendWatchStartMessageNext = `executing 'npm run watch:teamsfx' under ${FolderName.Function} folder.`;
 export const botInstallStartMessage = `executing 'npm install' under ${FolderName.Bot} folder.`;
 export const botStartStartMessage = "starting bot.";
+export const botStartStartMessageNext = `executing 'npm run dev:teamsfx' under ${FolderName.Bot} folder.`;
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
 
 export const previewTitle = "preview";

@@ -96,14 +96,14 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
-    if (inputs.platform != Platform.CLI_HELP) {
+    if (inputs.platform != Platform.CLI_HELP && inputs.platform != Platform.CLI) {
       if (!inputs.projectPath) {
         throw new InternalError(
           "No project opened, you can create a new project or open an existing one."
         );
       }
 
-      const envProfilesResult = await environmentManager.listEnvConfigs(inputs.projectPath);
+      const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
         throw new InternalError("List env failed.", envProfilesResult.error);
       }

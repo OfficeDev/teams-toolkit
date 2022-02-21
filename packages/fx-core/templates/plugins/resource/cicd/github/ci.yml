@@ -1,3 +1,4 @@
+{{=<% %>=}}
 # This is just an example workflow for continuous integration.
 # You should customize it to meet your own requirements.
 name: 'Continuous Integration'
@@ -24,7 +25,7 @@ jobs:
       # 'npm ci' is prefered to be used here to install dependencies and it depends on package-lock.json.
       # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
       - name: Build the project
-        run: {{build_script}}
+        run: <%build_script%>
 
       # Run unit test.
       # Currently, no opinionated solution for unit test provided during scaffolding, so,

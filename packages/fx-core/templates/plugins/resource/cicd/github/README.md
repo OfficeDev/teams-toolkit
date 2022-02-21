@@ -1,4 +1,4 @@
-# How to use these pre-cooked workflows on GitHub
+# How to use pre-cooked workflows on GitHub
 
 ## Prerequisites
 - Teams app projects are version controlled by GitHub.
@@ -7,8 +7,8 @@
 
 ## Steps
 After the pre-cooked workflows are scaffolded successfully, the following steps are expected to be performed:
-1. Configure necessary GitHub secrets per your workflows.
-2. Add the scaffolded yml files into GitHub by `git add`,`git commit` and `git push`.
+1. Configure necessary GitHub secrets for your workflows.
+1. Add the scaffolded yml files into GitHub by `git add`,`git commit` and `git push`.
 
 ## GitHub Secrets 
 Steps to create secrets by environment in GitHub:
@@ -34,9 +34,9 @@ To provision and deploy resources targeting Azure inside CI/CD, you must create 
 
 Briefly, the steps include:
 1. Register an Azure AD application in single tenant, and it requires sufficient permissions in your Azure AD tenant.
-2. Assign a role to your Azure AD application to access your Azure subscription, and `Contributor` role is recommended. 
-3. Create a new Azure AD application secret.
-4. Grab your tenant id, application id(AZURE_SERVICE_PRINCIPAL_NAME), and the secret(AZURE_SERVICE_PRINCIPAL_PASSWORD) for use.
+1. Assign a role to your Azure AD application to access your Azure subscription, and `Contributor` role is recommended. 
+1. Create a new Azure AD application secret.
+1. Grab your tenant id, application id(AZURE_SERVICE_PRINCIPAL_NAME), and the secret(AZURE_SERVICE_PRINCIPAL_PASSWORD) for use.
 
 For detailed guidelines, refer to [the official document](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). There're three ways to create service principal, [Azure portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [PowerShell](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-authenticate-service-principal-powershell), [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), and you can choose the way you like.
 

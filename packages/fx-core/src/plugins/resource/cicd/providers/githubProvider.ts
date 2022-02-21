@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { CICDProvider } from "./provider";
-import { Result, FxError, ok, IProgressHandler } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 import * as fs from "fs-extra";
 import { InternalError } from "../errors";

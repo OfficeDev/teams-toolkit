@@ -14,9 +14,9 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  *
  * @beta
  */
-export class M365TenantCredential implements TokenCredential {
+export class AppCredential implements TokenCredential {
   /**
-   * Constructor of M365TenantCredential.
+   * Constructor of AppCredential.
    *
    * @remarks
    * Only works in in server side.
@@ -24,7 +24,7 @@ export class M365TenantCredential implements TokenCredential {
    */
   constructor(authConfig: AuthenticationConfiguration) {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "M365TenantCredential"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "AppCredential"),
       ErrorCode.RuntimeNotSupported
     );
   }
@@ -41,7 +41,7 @@ export class M365TenantCredential implements TokenCredential {
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "M365TenantCredential"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "AppCredential"),
       ErrorCode.RuntimeNotSupported
     );
   }

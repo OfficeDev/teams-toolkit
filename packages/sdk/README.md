@@ -112,7 +112,7 @@ Credential classes implements `TokenCredential` interface that is broadly used i
 The credential classes represents different identity under certain scenarios.
 
 `TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time. It is automatically used when developer choose "User" identity in browser scenario.
-`M365TenantCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job. It is automatically used when developer choose "App" identity in NodeJS scenario.
+`AppCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job. It is automatically used when developer choose "App" identity in NodeJS scenario.
 `OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios. It is automatically used when developer choose "User" identity in NodeJS scenario.
 
 ### Bot

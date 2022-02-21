@@ -34,7 +34,7 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
     assert.strictEqual(profile.userPrincipalName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
   });
 
-  it("call graph API should failed when M365TenantCredential credential do not have admin permission", async function () {
+  it("call graph API should failed when AppCredential credential do not have admin permission", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const teamsfx = new TeamsFx(IdentityType.App);
     const graphClient: any = createMicrosoftGraphClient(teamsfx, scopes);

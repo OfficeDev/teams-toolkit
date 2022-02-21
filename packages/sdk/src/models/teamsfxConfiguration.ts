@@ -19,7 +19,7 @@ export interface TeamsFxConfiguration {
    *
    * @remarks If user identity is chose, will return {@link TeamsUserCredential}
    * in browser environment and {@link OnBehalfOfUserCredential} in NodeJS. If app
-   * identity is chose, will return {@link M365TenantCredential}.
+   * identity is chose, will return {@link AppCredential}.
    *
    * @returns instance implements TokenCredential interface.
    * @beta

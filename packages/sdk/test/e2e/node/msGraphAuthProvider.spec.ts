@@ -41,7 +41,7 @@ describe("MsGraphAuthProvider Tests - Node", () => {
     assert.isTrue(decodedToken.scp!.indexOf(scopes) >= 0);
   });
 
-  it("getAccessToken should success with M365TenantCredential", async function () {
+  it("getAccessToken should success with AppCredential", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const teamsfx = new TeamsFx(IdentityType.App);
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(teamsfx, scopes);

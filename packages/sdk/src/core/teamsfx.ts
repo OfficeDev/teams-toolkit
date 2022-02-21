@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { TokenCredential } from "@azure/identity";
-import { M365TenantCredential } from "../credential/m365TenantCredential";
+import { AppCredential } from "../credential/appCredential";
 import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential";
 import { IdentityType } from "../models/identityType";
 import { UserInfo } from "../models/userinfo";
@@ -18,7 +18,7 @@ import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;
   private oboUserCredential?: OnBehalfOfUserCredential;
-  private appCredential?: M365TenantCredential;
+  private appCredential?: AppCredential;
   /**
    * Identity type set by user.
    */
@@ -44,7 +44,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    *
    * @remarks If user identity is chose, will return {@link TeamsUserCredential}
    * in browser environment and {@link OnBehalfOfUserCredential} in NodeJS. If app
-   * identity is chose, will return {@link M365TenantCredential}.
+   * identity is chose, will return {@link AppCredential}.
    *
    * @returns instance implements TokenCredential interface.
    * @beta
@@ -57,7 +57,7 @@ export class TeamsFx implements TeamsFxConfiguration {
       throw new Error();
     } else {
       if (!this.appCredential) {
-        this.appCredential = new M365TenantCredential(Object.fromEntries(this.configuration));
+        this.appCredential = new AppCredential(Object.fromEntries(this.configuration));
       }
       return this.appCredential;
     }

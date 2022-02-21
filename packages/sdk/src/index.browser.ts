@@ -3,7 +3,7 @@
 
 export { ErrorWithCode, ErrorCode } from "./core/errors";
 
-export { M365TenantCredential } from "./credential/m365TenantCredential.browser";
+export { AppCredential } from "./credential/appCredential.browser";
 export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential.browser";
 export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";
 

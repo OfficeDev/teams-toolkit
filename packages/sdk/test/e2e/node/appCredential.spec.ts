@@ -3,7 +3,7 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import { AuthenticationConfiguration, M365TenantCredential } from "../../../src";
+import { AuthenticationConfiguration, AppCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import jwtDecode from "jwt-decode";
 import {
@@ -13,7 +13,7 @@ import {
 } from "../helper";
 
 chaiUse(chaiPromises);
-describe("M365TenantCredential Tests - Node", () => {
+describe("AppCredential Tests - Node", () => {
   const fake_client_secret = "fake_client_secret";
   const defaultGraphScope = ["https://graph.microsoft.com/.default"];
   let authConfig: AuthenticationConfiguration;
@@ -22,8 +22,8 @@ describe("M365TenantCredential Tests - Node", () => {
     authConfig = MockAuthenticationConfiguration();
   });
 
-  it("create M365TenantCredential instance should success with valid configuration", function () {
-    const credential: any = new M365TenantCredential(authConfig);
+  it("create AppCredential instance should success with valid configuration", function () {
+    const credential: any = new AppCredential(authConfig);
 
     assert.strictEqual(credential.msalClient.config.auth.clientId, authConfig.clientId);
     assert.strictEqual(
@@ -34,7 +34,7 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should success with .default scope when authority host has tailing slash", async function () {
-    const credential = new M365TenantCredential({
+    const credential = new AppCredential({
       ...authConfig,
       authorityHost: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST + "/",
     });
@@ -47,7 +47,7 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should success with .default scope for Client Secret", async function () {
-    const credential = new M365TenantCredential(authConfig);
+    const credential = new AppCredential(authConfig);
     const token = await credential.getToken(defaultGraphScope);
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(token!.token);
@@ -57,7 +57,7 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should success with .default scope for Client Certificate", async function () {
-    const credential = new M365TenantCredential({
+    const credential = new AppCredential({
       clientId: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
       certificateContent: convertCertificateContent(
         process.env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT!
@@ -74,7 +74,7 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should throw ServiceError with invalid secret", async function () {
-    const credential = new M365TenantCredential({
+    const credential = new AppCredential({
       ...authConfig,
       clientSecret: fake_client_secret,
     });

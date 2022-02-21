@@ -16,6 +16,12 @@ import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 
 // @beta
+export class AppCredential implements TokenCredential {
+    constructor(authConfig: AuthenticationConfiguration);
+    getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
+}
+
+// @beta
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -83,12 +89,6 @@ export enum LogLevel {
     Info = 1,
     Verbose = 0,
     Warn = 2
-}
-
-// @beta
-export class M365TenantCredential implements TokenCredential {
-    constructor(authConfig: AuthenticationConfiguration);
-    getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
 
 // @beta

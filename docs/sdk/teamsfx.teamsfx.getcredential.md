@@ -22,5 +22,5 @@ instance implements TokenCredential interface.
 
 ## Remarks
 
-If user identity is chose, will return [TeamsUserCredential](./teamsfx.teamsusercredential.md) in browser environment and [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) in NodeJS. If app identity is chose, will return [M365TenantCredential](./teamsfx.m365tenantcredential.md)<!-- -->.
+If user identity is chose, will return [TeamsUserCredential](./teamsfx.teamsusercredential.md) in browser environment and [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) in NodeJS. If app identity is chose, will return [AppCredential](./teamsfx.appcredential.md)<!-- -->.
 

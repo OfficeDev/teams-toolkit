@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Yitong Feng <yitong.feng@microsoft.com>
+ * @author Ivan He <ruhe@microsoft.com>
  */
 
 import fs from "fs-extra";

@@ -21,6 +21,7 @@ steps:
     M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
     M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
     M365_TENANT_ID: $(M365_TENANT_ID)
+    CI_ENABLED: 'true'
 <%/hosting_type_contains_spfx%>
     TEAMSFX_ENV_NAME: <%env_name%>
   inputs:

@@ -366,6 +366,7 @@ export default class Preview extends YargsCommand {
       constants.gulpServePattern,
       gulpServeTask.startCb,
       gulpServeTask.stopCb,
+      undefined,
       this.serviceLogWriter,
       cliLogger
     );
@@ -533,6 +534,7 @@ export default class Preview extends YargsCommand {
       constants.ngrokStartPattern,
       ngrokStartTask.startCb,
       ngrokStartTask.stopCb,
+      undefined,
       this.serviceLogWriter
     );
     if (result.isErr()) {
@@ -687,30 +689,35 @@ export default class Preview extends YargsCommand {
         constants.frontendStartPattern,
         frontendStartTask.startCb,
         frontendStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       authStartTask?.task.waitFor(
         constants.authStartPattern,
         authStartTask.startCb,
         authStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       backendStartTask?.task.waitFor(
         constants.backendStartPattern,
         backendStartTask.startCb,
         backendStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       backendWatchTask?.task.waitFor(
         constants.backendWatchPattern,
         backendWatchTask.startCb,
         backendWatchTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       botStartTask?.task.waitFor(
         constants.botStartPattern,
         botStartTask.startCb,
         botStartTask.stopCb,
+        30000,
         this.serviceLogWriter
       ),
     ]);
@@ -879,8 +886,7 @@ export default class Preview extends YargsCommand {
   private prepareTaskNext(
     taskDefinition: ITaskDefinition,
     startMessage: string,
-    isWatchTask: boolean,
-    env?: { [key: string]: string }
+    isWatchTask: boolean
   ): {
     task: Task;
     startCb: (taskTitle: string, background: boolean) => Promise<void>;
@@ -891,7 +897,7 @@ export default class Preview extends YargsCommand {
       serviceLogWriter?: ServiceLogWriter
     ) => Promise<FxError | null>;
   } {
-    const taskEnv = env ?? taskDefinition.env;
+    const taskEnv = taskDefinition.env;
     const task = new Task(
       taskDefinition.name,
       taskDefinition.isBackground,

@@ -930,7 +930,6 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
-    await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }

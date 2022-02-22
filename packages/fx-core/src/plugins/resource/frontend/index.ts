@@ -8,8 +8,6 @@ import {
   SystemError,
   UserError,
   AzureSolutionSettings,
-  ok,
-  Func,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -26,6 +24,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isVSProject } from "../../../core";
 import "./v2";
 import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
@@ -45,19 +44,15 @@ export class FrontendPlugin implements Plugin {
   dotnetPluginImpl = new DotnetPluginImpl();
 
   private getImpl(ctx: PluginContext): PluginImpl {
-    return FrontendPlugin.isVsPlatform(ctx) ? this.dotnetPluginImpl : this.frontendPluginImpl;
+    return isVSProject(ctx.projectSettings!) ? this.dotnetPluginImpl : this.frontendPluginImpl;
   }
 
   private static setContext(ctx: PluginContext): void {
-    const component = this.isVsPlatform(ctx)
+    const component = isVSProject(ctx.projectSettings!)
       ? DotnetPluginInfo.pluginName
       : FrontendPluginInfo.PluginName;
     Logger.setLogger(ctx.logProvider, component);
     TelemetryHelper.setContext(ctx, component);
-  }
-
-  private static isVsPlatform(ctx: PluginContext): boolean {
-    return ctx.projectSettings?.programmingLanguage === TabLanguage.CSharp;
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -106,16 +101,6 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.LocalDebug, () =>
       this.getImpl(ctx).localDebug(ctx)
-    );
-  }
-
-  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(
-      ctx,
-      TelemetryEvent.ExecuteUserTask,
-      () => this.getImpl(ctx).executeUserTask(func, ctx),
-      { method: func.method }
     );
   }
 

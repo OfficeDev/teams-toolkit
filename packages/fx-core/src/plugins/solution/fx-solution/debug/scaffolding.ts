@@ -14,10 +14,8 @@ import {
   ok,
   Platform,
   Result,
-  SolutionContext,
   TelemetryReporter,
   v2,
-  Void,
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
@@ -28,7 +26,7 @@ import * as Tasks from "./util/tasks";
 import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
-import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
+import { ScaffoldLocalDebugSettingsError } from "./error";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -47,22 +45,6 @@ export async function scaffoldLocalDebugSettings(
   );
 }
 
-export async function scaffoldLocalDebugSettingsV1(
-  ctx: SolutionContext
-): Promise<Result<Void, FxError>> {
-  if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
-    return err(ScaffoldLocalDebugSettingsV1Error());
-  }
-  await _scaffoldLocalDebugSettings(
-    ctx.projectSettings,
-    ctx.answers,
-    ctx.telemetryReporter,
-    ctx.logProvider,
-    ctx.cryptoProvider
-  );
-  return ok(Void);
-}
-
 export async function _scaffoldLocalDebugSettings(
   projectSetting: ProjectSettings,
   inputs: Inputs,
@@ -72,7 +54,6 @@ export async function _scaffoldLocalDebugSettings(
   localSettings?: Json
 ): Promise<Result<Json, FxError>> {
   const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSetting);
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
@@ -138,36 +119,27 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations =
-          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
-            ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
-            : Launch.generateConfigurations(
-                includeFrontend,
-                includeBackend,
-                includeBot,
-                isMigrateFromV1
-              );
-        const launchCompounds =
-          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
-            ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
-            : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
+        const launchConfigurations = (await useNewTasks(inputs.projectPath))
+          ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+          : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
+        const launchCompounds = (await useNewTasks(inputs.projectPath))
+          ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+          : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-        const tasks =
-          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
-            ? TasksNext.generateTasks(
-                includeFrontend,
-                includeBackend,
-                includeBot,
-                programmingLanguage
-              )
-            : Tasks.generateTasks(
-                includeFrontend,
-                includeBackend,
-                includeBot,
-                includeSimpleAuth,
-                isMigrateFromV1,
-                programmingLanguage
-              );
+        const tasks = (await useNewTasks(inputs.projectPath))
+          ? TasksNext.generateTasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              programmingLanguage
+            )
+          : Tasks.generateTasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              includeSimpleAuth,
+              programmingLanguage
+            );
 
         //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
@@ -245,6 +217,14 @@ export async function _scaffoldLocalDebugSettings(
           spaces: 4,
           EOL: os.EOL,
         }
+      );
+    } else if (inputs.platform === Platform.VS) {
+      // generate localSettings.json
+      localSettings = await scaffoldLocalSettingsJson(
+        projectSetting,
+        inputs,
+        cryptoProvider,
+        localSettings
       );
     }
   } catch (error: any) {

@@ -33,6 +33,7 @@ function getAllFeaturePlugins(): v3.FeaturePlugin[] {
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.keyVault),
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.identity),
     Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.sql),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx),
   ];
 }
 
@@ -68,30 +69,30 @@ export async function getQuestionsForAddFeature(
 }
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
-  async loadManifest(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<AppManifest, FxError>> {
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.loadManifest(ctx, inputs);
-    if (res.isErr()) return err(res.error);
-    return ok(res.value.remote);
-  }
-
-  async saveManifest(
+  async updateCapability(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    manifest: AppManifest
+    capability: v3.ManifestCapability
   ): Promise<Result<Void, FxError>> {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    const res = await appStudioV3.saveManifest(ctx, inputs, {
-      local: manifest as TeamsAppManifest,
-      remote: manifest as TeamsAppManifest,
-    });
-    if (res.isErr()) return err(res.error);
-    return ok(Void);
+    return await appStudioV3.updateCapability(ctx, inputs, capability);
   }
-
+  async deleteCapability(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: v3.ManifestCapability
+  ): Promise<Result<Void, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    return await appStudioV3.deleteCapability(ctx, inputs, capability);
+  }
+  async capabilityExceedLimit(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
+  ): Promise<Result<boolean, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    return await appStudioV3.capabilityExceedLimit(ctx, inputs, capability);
+  }
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

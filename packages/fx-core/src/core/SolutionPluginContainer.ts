@@ -58,6 +58,6 @@ export function getSolutionPluginByName(name: string): Solution | undefined {
 export function getGlobalSolutionsV3(): v3.ISolution[] {
   return [
     Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
-    Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
+    // Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
   ];
 }

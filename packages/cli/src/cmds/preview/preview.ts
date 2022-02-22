@@ -22,6 +22,7 @@ import {
   FolderName,
   FxCore,
   ITaskDefinition,
+  loadTeamsFxDevScript,
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
@@ -144,7 +145,7 @@ export default class Preview extends YargsCommand {
           }
           const spWorkbenchHttpsUrl = new URL("_layouts/workbench.aspx", spSite);
           this.sharepointSiteUrl = spWorkbenchHttpsUrl.toString();
-        } catch (error) {
+        } catch (error: any) {
           throw errors.InvalidSharePointSiteURL(error);
         }
       }
@@ -164,7 +165,7 @@ export default class Preview extends YargsCommand {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return ok(null);
-    } catch (error) {
+    } catch (error: any) {
       cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
       await this.terminateTasks();
       return err(error);
@@ -365,6 +366,7 @@ export default class Preview extends YargsCommand {
       constants.gulpServePattern,
       gulpServeTask.startCb,
       gulpServeTask.stopCb,
+      undefined,
       this.serviceLogWriter,
       cliLogger
     );
@@ -532,6 +534,7 @@ export default class Preview extends YargsCommand {
       constants.ngrokStartPattern,
       ngrokStartTask.startCb,
       ngrokStartTask.stopCb,
+      undefined,
       this.serviceLogWriter
     );
     if (result.isErr()) {
@@ -608,21 +611,27 @@ export default class Preview extends YargsCommand {
     includeBackend: boolean,
     includeBot: boolean,
     depsChecker: CliDepsChecker,
-    includeAuth?: boolean
+    includeSimpleAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
 
     const frontendStartTask = includeFrontend
-      ? this.prepareTask(
-          TaskDefinition.frontendStart(workspaceFolder),
-          constants.frontendStartStartMessage,
-          commonUtils.getFrontendLocalEnv(localEnv)
-        )
+      ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Frontend))) !== undefined
+        ? this.prepareTaskNext(
+            TaskDefinition.frontendStart(workspaceFolder),
+            constants.frontendStartStartMessageNext,
+            false
+          )
+        : this.prepareTask(
+            TaskDefinition.frontendStart(workspaceFolder),
+            constants.frontendStartStartMessage,
+            commonUtils.getFrontendLocalEnv(localEnv)
+          )
       : undefined;
 
     const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
     const authStartTask =
-      includeFrontend && includeAuth
+      includeFrontend && includeSimpleAuth
         ? this.prepareTask(
             TaskDefinition.authStart(dotnet.command, commonUtils.getAuthServicePath(localEnv)),
             constants.authStartStartMessage,
@@ -633,27 +642,46 @@ export default class Preview extends YargsCommand {
     const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
     const funcCommand = func.command;
     const backendStartTask = includeBackend
-      ? this.prepareTask(
-          TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, false),
-          constants.backendStartStartMessage,
-          commonUtils.getBackendLocalEnv(localEnv)
-        )
+      ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !== undefined
+        ? this.prepareTaskNext(
+            TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
+            constants.backendStartStartMessageNext,
+            false
+          )
+        : this.prepareTask(
+            TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
+            constants.backendStartStartMessage,
+            commonUtils.getBackendLocalEnv(localEnv)
+          )
       : undefined;
     const backendWatchTask =
       includeBackend && programmingLanguage === ProgrammingLanguage.typescript
-        ? this.prepareTask(
-            TaskDefinition.backendWatch(workspaceFolder),
-            constants.backendWatchStartMessage,
-            commonUtils.getBackendLocalEnv(localEnv)
-          )
+        ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !==
+          undefined
+          ? this.prepareTaskNext(
+              TaskDefinition.backendWatch(workspaceFolder),
+              constants.backendWatchStartMessageNext,
+              true
+            )
+          : this.prepareTask(
+              TaskDefinition.backendWatch(workspaceFolder),
+              constants.backendWatchStartMessage,
+              commonUtils.getBackendLocalEnv(localEnv)
+            )
         : undefined;
 
     const botStartTask = includeBot
-      ? this.prepareTask(
-          TaskDefinition.botStart(workspaceFolder, programmingLanguage, false),
-          constants.botStartStartMessage,
-          commonUtils.getBotLocalEnv(localEnv)
-        )
+      ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined
+        ? this.prepareTaskNext(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessageNext,
+            false
+          )
+        : this.prepareTask(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessage,
+            commonUtils.getBotLocalEnv(localEnv)
+          )
       : undefined;
 
     const results = await Promise.all([
@@ -661,30 +689,35 @@ export default class Preview extends YargsCommand {
         constants.frontendStartPattern,
         frontendStartTask.startCb,
         frontendStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       authStartTask?.task.waitFor(
         constants.authStartPattern,
         authStartTask.startCb,
         authStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       backendStartTask?.task.waitFor(
         constants.backendStartPattern,
         backendStartTask.startCb,
         backendStartTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
       backendWatchTask?.task.waitFor(
         constants.backendWatchPattern,
         backendWatchTask.startCb,
         backendWatchTask.stopCb,
+        undefined,
         this.serviceLogWriter
       ),
-      await botStartTask?.task.waitFor(
+      botStartTask?.task.waitFor(
         constants.botStartPattern,
         botStartTask.startCb,
         botStartTask.stopCb,
+        30000,
         this.serviceLogWriter
       ),
     ]);
@@ -832,6 +865,43 @@ export default class Preview extends YargsCommand {
       taskDefinition.name,
       taskDefinition.isBackground,
       taskDefinition.command,
+      taskDefinition.args,
+      {
+        shell: taskDefinition.execOptions.needCmd
+          ? "cmd.exe"
+          : taskDefinition.execOptions.needShell,
+        cwd: taskDefinition.cwd,
+        env: taskEnv ? commonUtils.mergeProcessEnv(taskEnv) : undefined,
+      }
+    );
+    const bar = CLIUIInstance.createProgressBar(taskDefinition.name, 1);
+    const startCb = commonUtils.createTaskStartCb(bar, startMessage, this.telemetryProperties);
+    const stopCb = commonUtils.createTaskStopCb(bar, this.telemetryProperties);
+    if (taskDefinition.isBackground) {
+      this.backgroundTasks.push(task);
+    }
+    return { task: task, startCb: startCb, stopCb: stopCb };
+  }
+
+  private prepareTaskNext(
+    taskDefinition: ITaskDefinition,
+    startMessage: string,
+    isWatchTask: boolean
+  ): {
+    task: Task;
+    startCb: (taskTitle: string, background: boolean) => Promise<void>;
+    stopCb: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult,
+      serviceLogWriter?: ServiceLogWriter
+    ) => Promise<FxError | null>;
+  } {
+    const taskEnv = taskDefinition.env;
+    const task = new Task(
+      taskDefinition.name,
+      taskDefinition.isBackground,
+      isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx",
       taskDefinition.args,
       {
         shell: taskDefinition.execOptions.needCmd

@@ -206,10 +206,7 @@ function cleanPlugins(solution: TeamsAppSolution, mocker: sinon.SinonSandbox) {
     return false;
   });
   mocker.stub(solution.FrontendPlugin, "activate").callsFake((): boolean => {
-    return true;
-  });
-  mocker.stub(solution.FrontendPlugin, "executeUserTask").callsFake(() => {
-    return ok(undefined);
+    return false;
   });
   mocker.stub(solution.FunctionPlugin, "activate").callsFake((): boolean => {
     return true;

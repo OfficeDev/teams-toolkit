@@ -97,7 +97,7 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-  getTeamsAppIdByEnv,
+  getTeamsAppTelemetryInfoByEnv,
   isSPFxProject,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
@@ -830,7 +830,11 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    if (appInfo) {
+      envProperty[TelemetryProperty.AapId] = appInfo.appId;
+      envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
+    }
   }
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;

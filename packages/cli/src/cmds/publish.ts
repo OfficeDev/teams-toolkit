@@ -7,7 +7,7 @@ import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Platform, Func, Stage, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { argsToInputs, getTeamsAppIdByEnv } from "../utils";
+import { argsToInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -58,9 +58,10 @@ export default class Publish extends YargsCommand {
     if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
       properties[TelemetryProperty.AppId] = answers["teams-app-id"];
     } else if (answers.projectPath && answers.env) {
-      const appId = getTeamsAppIdByEnv(answers.projectPath, answers.env);
-      if (appId) {
-        properties[TelemetryProperty.AppId] = appId;
+      const appInfo = getTeamsAppTelemetryInfoByEnv(answers.projectPath, answers.env);
+      if (appInfo) {
+        properties[TelemetryProperty.AppId] = appInfo.appId;
+        properties[TelemetryProperty.TenantId] = appInfo.tenantId;
       }
     }
 

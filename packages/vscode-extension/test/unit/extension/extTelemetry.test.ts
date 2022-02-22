@@ -50,11 +50,6 @@ suite("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CreateProject);
     });
 
-    test("Stage.migrateV1", () => {
-      const stage = Stage.migrateV1;
-      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.MigrateV1Project);
-    });
-
     test("Stage.update", () => {
       const stage = Stage.update;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.AddResource);

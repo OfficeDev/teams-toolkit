@@ -1466,7 +1466,7 @@ export class AppStudioPluginImpl {
         outlineIconContent
       );
 
-      if (app.updatedAt && !isLocalDebug && isConfigUnifyEnabled()) {
+      if (app.updatedAt && (!isLocalDebug || isConfigUnifyEnabled())) {
         const time = new Date(app.updatedAt).getTime();
         ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
       }

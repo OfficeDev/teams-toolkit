@@ -14,8 +14,6 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 Enhancement:
 - Improved local debug experience, more light weighted and more graceful.
-- Improved the Teams app authentication support.
-- Integrate Graph Toolkit with Teams Toolkit.
 
 ## 3.3.0 - Feb 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

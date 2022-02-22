@@ -50,6 +50,18 @@ export default class Publish extends YargsCommand {
       return err(result.error);
     }
 
+    const core = result.value;
+    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
+      answers.platform = Platform.VS;
+      const func: Func = {
+        namespace: "fx-solution-azure",
+        method: "VSpublish",
+      };
+      result = await core.executeUserTask!(func, answers);
+    } else {
+      result = await core.publishApplication(answers);
+    }
+
     // For VS, use appid from `answers['teams-app-id']`, for other cases, use appid from config files in projectPath
     const properties: { [key: string]: string } = {};
     if (answers.env) {
@@ -65,17 +77,6 @@ export default class Publish extends YargsCommand {
       }
     }
 
-    const core = result.value;
-    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
-      answers.platform = Platform.VS;
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "VSpublish",
-      };
-      result = await core.executeUserTask!(func, answers);
-    } else {
-      result = await core.publishApplication(answers);
-    }
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error, properties);
       return err(result.error);

@@ -4,8 +4,6 @@
 import { HookContext, hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
-  ArchiveFolderName,
-  ArchiveLogFileName,
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
@@ -48,10 +46,7 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/tools";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
-import {
-  HostTypeOptionAzure,
-  MessageExtensionItem,
-} from "../plugins/solution/fx-solution/question";
+import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -61,19 +56,15 @@ import { checkPermission, grantPermission, listCollaborator } from "./collaborat
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
 import {
-  ArchiveProjectError,
-  ArchiveUserFileError,
   CopyFileError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
-  MigrateNotImplementError,
   NonExistEnvNameError,
   ObjectIsUndefinedError,
   OperationNotSupportedForExistingAppError,
   ProjectFolderExistError,
   ProjectFolderInvalidError,
-  ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
@@ -90,7 +81,6 @@ import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
-import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import {
   getProjectSettingsPath,
@@ -103,7 +93,6 @@ import {
   getQuestionsForCreateProjectV3,
   getQuestionsForDeploy,
   getQuestionsForInit,
-  getQuestionsForMigrateV1Project,
   getQuestionsForProvision,
   getQuestionsForPublish,
   getQuestionsForUserTaskV2,
@@ -113,25 +102,18 @@ import {
 } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
-import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import {
   BotOptionItem,
   CoreQuestionNames,
-  DefaultAppNameFunc,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionV1AppName,
   ScratchOptionNo,
   TabOptionItem,
   TabSPFxItem,
 } from "./question";
-import {
-  getAllSolutionPlugins,
-  getAllSolutionPluginsV2,
-  getSolutionPluginV2ByName,
-} from "./SolutionPluginContainer";
-import { newEnvInfo, newEnvInfoV3 } from "./tools";
+import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
+import { newEnvInfoV3 } from "./tools";
 import { isCreatedFromExistingApp, isPureExistingApp } from "./utils";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
@@ -210,7 +192,6 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    SupportV1ConditionMW(true),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -342,7 +323,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
-  @hooks([ErrorHandlerMW, SupportV1ConditionMW(true), QuestionModelMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -442,127 +423,6 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
-  @hooks([
-    ErrorHandlerMW,
-    SupportV1ConditionMW(true),
-    MigrateConditionHandlerMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW(true),
-  ])
-  async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    currentStage = Stage.migrateV1;
-    inputs.stage = Stage.migrateV1;
-    const globalStateDescription = "openReadme";
-
-    const appName = (inputs[DefaultAppNameFunc.name] ?? inputs[QuestionV1AppName.name]) as string;
-    if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
-
-    const validateResult = jsonschema.validate(appName, {
-      pattern: ProjectNamePattern,
-    });
-    if (validateResult.errors && validateResult.errors.length > 0) {
-      return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
-    }
-
-    const projectPath = inputs.projectPath;
-
-    if (!projectPath || !(await fs.pathExists(projectPath))) {
-      return err(ProjectFolderNotExistError(projectPath ?? ""));
-    }
-
-    const solution = await getAllSolutionPlugins()[0];
-    const projectSettings: ProjectSettings = {
-      appName: appName,
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: solution.name,
-        version: "1.0.0",
-        migrateFromV1: true,
-      },
-    };
-
-    const solutionContext: SolutionContext = {
-      projectSettings: projectSettings,
-      envInfo: newEnvInfo(),
-      root: projectPath,
-      ...this.tools,
-      ...this.tools.tokenProvider,
-      answers: inputs,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    };
-
-    const archiveResult = await this.archive(projectPath);
-    if (archiveResult.isErr()) {
-      return err(archiveResult.error);
-    }
-
-    await fs.ensureDir(projectPath);
-    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-
-    const createResult = await createBasicFolderStructure(inputs);
-    if (createResult.isErr()) {
-      return err(createResult.error);
-    }
-
-    if (!solution.migrate) {
-      return err(MigrateNotImplementError(projectPath));
-    }
-    const migrateV1Res = await solution.migrate(solutionContext);
-    if (migrateV1Res.isErr()) {
-      return migrateV1Res;
-    }
-
-    ctx!.solution = solution;
-    ctx!.solutionContext = solutionContext;
-    ctx!.projectSettings = projectSettings;
-
-    if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(globalStateDescription, true);
-    }
-    this._setEnvInfoV2(ctx);
-    return ok(projectPath);
-  }
-
-  async archive(projectPath: string): Promise<Result<Void, FxError>> {
-    try {
-      const archiveFolderPath = path.join(projectPath, ArchiveFolderName);
-      await fs.ensureDir(archiveFolderPath);
-
-      const fileNames = await fs.readdir(projectPath);
-      const archiveLog = async (projectPath: string, message: string): Promise<void> => {
-        await fs.appendFile(
-          path.join(projectPath, ArchiveLogFileName),
-          `[${new Date().toISOString()}] ${message}\n`
-        );
-      };
-
-      await archiveLog(projectPath, `Start to move files into '${ArchiveFolderName}' folder.`);
-      for (const fileName of fileNames) {
-        if (fileName === ArchiveFolderName || fileName === ArchiveLogFileName) {
-          continue;
-        }
-
-        try {
-          await fs.move(path.join(projectPath, fileName), path.join(archiveFolderPath, fileName), {
-            overwrite: true,
-          });
-        } catch (e: any) {
-          await archiveLog(projectPath, `Failed to move '${fileName}'. ${e.message}`);
-          return err(ArchiveUserFileError(fileName, e.message));
-        }
-
-        await archiveLog(
-          projectPath,
-          `'${fileName}' has been moved to '${ArchiveFolderName}' folder.`
-        );
-      }
-      return ok(Void);
-    } catch (e: any) {
-      return err(ArchiveProjectError(e.message));
-    }
-  }
 
   /**
    * switch to different versions of provisionResources
@@ -578,7 +438,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -610,7 +469,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -682,7 +540,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -723,7 +580,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -755,7 +611,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(!isConfigUnifyEnabled()),
@@ -810,7 +665,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     LocalSettingsLoaderMW,
@@ -862,7 +716,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -895,7 +748,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -935,7 +787,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -982,7 +833,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -1027,7 +877,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW,
@@ -1059,7 +908,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW,
@@ -1085,7 +933,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -1112,7 +959,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -1138,7 +984,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -1172,7 +1017,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -1198,7 +1042,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -1231,7 +1074,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -1257,7 +1099,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
@@ -1299,7 +1140,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1317,7 +1157,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1339,7 +1178,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     EnvInfoLoaderMW(true),
@@ -1445,7 +1283,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
@@ -1578,7 +1415,6 @@ export class FxCore implements v3.ICore {
   _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
   _getQuestionsForUserTask = getQuestionsForUserTaskV2;
   _getQuestions = getQuestionsV2;
-  _getQuestionsForMigrateV1Project = getQuestionsForMigrateV1Project;
   //v3 questions
   _getQuestionsForAddFeature = getQuestionsForAddFeature;
   _getQuestionsForProvision = getQuestionsForProvision;
@@ -1623,8 +1459,6 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
         `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
         `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
         ".DS_Store",
-        `${ArchiveFolderName}`,
-        `${ArchiveLogFileName}`,
         ".env.teamsfx.local",
         "subscriptionInfo.json",
         BuildFolderName,

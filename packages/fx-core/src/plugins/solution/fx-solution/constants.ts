@@ -193,9 +193,6 @@ export enum SolutionTelemetryEvent {
   CreateStart = "create-start",
   Create = "create",
 
-  MigrateStart = "migrate-start",
-  Migrate = "migrate",
-
   AddResourceStart = "add-resource-start",
   AddResource = "add-resource",
 

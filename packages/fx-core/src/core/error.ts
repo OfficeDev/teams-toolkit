@@ -24,14 +24,6 @@ export function ProjectFolderExistError(path: string): UserError {
   );
 }
 
-export function ProjectFolderNotExistError(path: string): UserError {
-  return new UserError(
-    "ProjectFolderNotExistError",
-    `Path ${path} does not exist. Select a different folder.`,
-    CoreSource
-  );
-}
-
 export function ProjectFolderInvalidError(path: string): UserError {
   return new UserError(
     "ProjectFolderInvalidError",
@@ -40,32 +32,8 @@ export function ProjectFolderInvalidError(path: string): UserError {
   );
 }
 
-export function ArchiveUserFileError(path: string, reason: string): UserError {
-  return new UserError(
-    "ArchiveUserFileError",
-    `Failed to archive path '${path}'. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
-    CoreSource
-  );
-}
-
-export function ArchiveProjectError(reason: string): UserError {
-  return new UserError(
-    "ArchiveProjectError",
-    `Failed to archive the project. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
-    CoreSource
-  );
-}
-
 export function EmptyProjectFolderError(): SystemError {
   return new SystemError("EmptyProjectFolderError", "Project path is empty", CoreSource);
-}
-
-export function MigrateNotImplementError(path: string): SystemError {
-  return new SystemError(
-    "MigrateNotImplemented",
-    `Migrate V1 Project is not implemented.`,
-    CoreSource
-  );
 }
 
 export function WriteFileError(e: Error): SystemError {
@@ -90,22 +58,6 @@ export function NoProjectOpenedError(): UserError {
   return new UserError(
     "NoProjectOpened",
     "No project opened, you can create a new project or open an existing one.",
-    CoreSource
-  );
-}
-
-export function InvalidV1ProjectError(message?: string) {
-  return new UserError(
-    "InvalidV1Project",
-    `The project is not a valid Teams Toolkit V1 project. ${message}`,
-    CoreSource
-  );
-}
-
-export function V1ProjectNotSupportedError(message?: string) {
-  return new UserError(
-    "V1ProjectNotSupported",
-    `Command is not supported in the project migrated from Teams Toolkit V1`,
     CoreSource
   );
 }

@@ -5,7 +5,6 @@ export * from "./envInfoWriter";
 export * from "./errorHandler";
 export * from "./localSettingsLoader";
 export * from "./localSettingsWriter";
-export * from "./migrateConditionHandler";
 export * from "./projectMigrator";
 export * from "./projectSettingsLoader";
 export * from "./projectSettingsWriter";

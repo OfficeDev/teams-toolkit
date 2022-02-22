@@ -84,11 +84,6 @@ export class MockCore implements Core {
     return ok(ciphertext);
   }
 
-  // TODO: remove it after remove migrateV1Project in core
-  async migrateV1Project(systemInputs: Inputs): Promise<Result<string, FxError>> {
-    return ok("");
-  }
-
   async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }

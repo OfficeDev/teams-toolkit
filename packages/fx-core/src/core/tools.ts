@@ -1,6 +1,4 @@
 import {
-  AppPackageFolderName,
-  ArchiveFolderName,
   ConfigFolderName,
   ConfigMap,
   EnvConfig,
@@ -9,12 +7,10 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   SolutionContext,
-  V1ManifestFileName,
   v3,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ConstantString } from "../common/constants";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
 import crypto from "crypto";
@@ -44,56 +40,7 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-// TODO: add an async version
-export async function validateV1Project(
-  workspacePath: string | undefined
-): Promise<string | undefined> {
-  if (!workspacePath) {
-    return "The workspace path cannot be empty.";
-  }
-
-  const v2ConfigFolder = path.resolve(workspacePath, `.${ConfigFolderName}`);
-  if (await fs.pathExists(v2ConfigFolder)) {
-    return `Folder '.${ConfigFolderName}' already exists.`;
-  }
-
-  const packageJsonPath = path.resolve(workspacePath, "package.json");
-  let packageSettings: any | undefined;
-
-  try {
-    packageSettings = await fs.readJson(packageJsonPath);
-  } catch (error: any) {
-    return `Cannot read 'package.json'. ${error?.message}`;
-  }
-
-  if (!packageSettings?.msteams) {
-    return "Teams Toolkit V1 settings cannot be found in 'package.json'.";
-  }
-
-  const manifestPath = path.resolve(workspacePath, AppPackageFolderName, V1ManifestFileName);
-  if (!(await fs.pathExists(manifestPath))) {
-    return "The project should be created after version 1.2.0";
-  }
-
-  try {
-    // Exclude Bot SSO project
-    const envFilePath = path.resolve(workspacePath, ".env");
-    const envFileContent = await fs.readFile(envFilePath, ConstantString.UTF8Encoding);
-    if (envFileContent.includes("connectionName")) {
-      return `Bot sso project has not been supported.`;
-    }
-  } catch (e: any) {
-    // If the project does not contain a valid .env file, it is still a valid v1 project
-  }
-
-  const archiveFolder = path.resolve(workspacePath, ArchiveFolderName);
-  if (await fs.pathExists(archiveFolder)) {
-    return `Archive folder '${ArchiveFolderName}' already exists. Rollback the project or remove '${ArchiveFolderName}' folder.`;
-  }
-
-  return undefined;
-}
-
+// TODO: used to show migrate v1 retired notification
 export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {

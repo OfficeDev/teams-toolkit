@@ -5,7 +5,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { createMicrosoftGraphClient, loadConfiguration } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
-import { getSSOToken, SSOToken } from "../helper.browser";
+import { getGraphToken, getSSOToken, SSOToken } from "../helper.browser";
 import * as sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 
@@ -30,10 +30,21 @@ describe("MsGraphClientProvider Tests - Browser", () => {
         });
       });
 
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"getToken")
+      .callsFake(async (scopes: string | string[]): Promise<AccessToken | null> => {
+        const graphToken = await getGraphToken(ssoToken, scopes);
+        return new Promise((resolve) => {
+          resolve({
+            token: graphToken,
+            expiresOnTimestamp: ssoToken.expire_time!,
+          });
+        });
+      });
+
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: "fake_login_url",
-        simpleAuthEndpoint: "http://localhost:5000",
         clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
       },
     });

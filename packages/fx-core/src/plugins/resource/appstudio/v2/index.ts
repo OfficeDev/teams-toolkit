@@ -22,6 +22,7 @@ import {
 import {
   Context,
   DeepReadonly,
+  EnvInfoV2,
   ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
@@ -84,14 +85,16 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,
       tokenProvider,
-      this.plugin
+      this.plugin,
+      envInfo
     );
   }
 

@@ -6,7 +6,7 @@
 import path from "path";
 import { Argv } from "yargs";
 
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { getSystemInputs, setSubscriptionId } from "../utils";
@@ -20,11 +20,61 @@ import {
 import HelpParamGenerator from "../helpParamGenerator";
 import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
 
+export class ProvisionManifest extends YargsCommand {
+  public readonly commandHead = "manifest";
+  public readonly command = this.commandHead;
+  public readonly description =
+    "Provision a Teams App in Teams Developer portal with corresponding information specified in the given manifest file";
+
+  public readonly filePathParam = "file-path";
+
+  builder(yargs: Argv): Argv<any> {
+    yargs.option(this.filePathParam, {
+      require: true,
+      description: "Path to the Teams App manifest zip package",
+      type: "string",
+    });
+    return yargs.version(false);
+  }
+
+  async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
+      TelemetryEvent.ProvisionManifestStart
+    );
+
+    const manifestFilePath = args[this.filePathParam];
+    const inputs = getSystemInputs(rootFolder, args.env);
+    inputs["appPackagePath"] = manifestFilePath;
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ProvisionManifest, result.error);
+      return err(result.error);
+    }
+
+    const core = result.value;
+    const provisionResult = await core.provisionTeamsAppForCLI(inputs);
+    if (provisionResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ProvisionManifest, provisionResult.error);
+
+      return err(provisionResult.error);
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionManifest, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.AppId]: provisionResult.value,
+    });
+    return ok(Void);
+  }
+}
+
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly resourceGroupParam = "resource-group";
+  public readonly subCommands = [new ProvisionManifest()];
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
@@ -32,6 +82,10 @@ export default class Provision extends YargsCommand {
       require: false,
       description: "The name of an existing resource group",
       type: "string",
+      global: false,
+    });
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
     return yargs.version(false).options(this.params);
   }

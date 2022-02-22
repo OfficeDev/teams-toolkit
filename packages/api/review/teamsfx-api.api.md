@@ -34,6 +34,12 @@ interface AADApp extends AzureResource {
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
+interface AddFeatureInputs extends InputsWithProjectPath {
+    // (undocumented)
+    allPluginsAfterAdd: string[];
+}
+
+// @public (undocumented)
 interface APIM extends AzureResource {
     // (undocumented)
     apimClientAADClientId: string;
@@ -57,27 +63,13 @@ export type AppManifest = Json;
 // @public (undocumented)
 interface AppManifestProvider {
     // (undocumented)
-    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
-        name: "staticTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "configurableTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "Bot";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "MessageExtension";
-        snippet?: Json;
-        existing?: boolean;
-    })[]) => Promise<Result<Void, FxError>>;
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
+    capabilityExceedLimit: (ctx: Context_2, inputs: InputsWithProjectPath, capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo") => Promise<Result<boolean, FxError>>;
     // (undocumented)
-    saveManifest: (ctx: Context_2, inputs: InputsWithProjectPath, manifest: AppManifest) => Promise<Result<Void, FxError>>;
+    deleteCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    updateCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -550,10 +542,10 @@ export interface ExpServiceProvider {
 
 // @public (undocumented)
 interface FeaturePlugin {
-    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2[], FxError>>;
+    addFeature: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
     afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     description?: string;
     displayName?: string;
     getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1096,6 +1088,10 @@ type ManifestCapability = {
         remote: IComposeExtension;
     };
     existingApp?: boolean;
+} | {
+    name: "WebApplicationInfo";
+    snippet?: IWebApplicationInfo;
+    existingApp?: boolean;
 };
 
 // @public (undocumented)
@@ -1168,9 +1164,9 @@ export interface OptionItem {
 }
 
 // @public (undocumented)
-interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
+interface OtherFeaturesAddedInputs extends AddFeatureInputs {
     // (undocumented)
-    features: {
+    addedPlugins: {
         name: string;
         value: ResourceTemplate_2[];
     }[];
@@ -1371,7 +1367,7 @@ interface ResourcePlugin {
     activate(projectSettings: ProjectSettings): boolean;
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
-    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -1391,7 +1387,7 @@ interface ResourcePlugin {
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1542,7 +1538,7 @@ export interface Solution {
 // @public (undocumented)
 interface SolutionAddFeatureInputs extends InputsWithProjectPath {
     // (undocumented)
-    feature: string;
+    features: string[];
 }
 
 // @public (undocumented)
@@ -1588,7 +1584,7 @@ interface SolutionPlugin {
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<FxResult<Json, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<FxResult<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -2036,6 +2032,7 @@ declare namespace v3 {
         TeamsFxAzureResourceStates,
         AppManifestProvider,
         ContextWithManifestProvider,
+        AddFeatureInputs,
         OtherFeaturesAddedInputs,
         FeaturePlugin,
         SolutionAddFeatureInputs,

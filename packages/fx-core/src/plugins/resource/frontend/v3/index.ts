@@ -128,13 +128,9 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   ])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.BicepTemplateRelativeDir
@@ -162,7 +158,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
@@ -194,7 +190,6 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {
       Reference: {
         endpoint: FrontendOutputBicepSnippet.Endpoint,
@@ -310,7 +305,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.StartDeploy(this.name));
     const progress = ctx.userInteraction.createProgressBar(
@@ -318,7 +313,10 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
       Object.entries(DeployProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
-    const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);
+    const frontendConfigRes = await this.buildFrontendConfig(
+      envInfo,
+      tokenProvider.azureAccountProvider
+    );
     if (frontendConfigRes.isErr()) {
       return err(frontendConfigRes.error);
     }

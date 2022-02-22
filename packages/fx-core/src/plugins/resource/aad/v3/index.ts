@@ -9,6 +9,7 @@ import {
   ok,
   ProjectSettings,
   Result,
+  SystemError,
   TeamsAppManifest,
   TokenProvider as TokenProviderInAPI,
   UserError,
@@ -19,12 +20,27 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
+import { ArmTemplateResult } from "../../../../common/armInterface";
+import { Bicep, ConstantString } from "../../../../common/constants";
+import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
+import { getTemplatesFolder } from "../../../../folder";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { IUserList } from "../../appstudio/interfaces/IAppDefinition";
 import { AadAppClient } from "../aadAppClient";
-import { Messages, Plugins, ProgressDetail, ProgressTitle, Telemetry } from "../constants";
-import { AppIdUriInvalidError } from "../errors";
+import {
+  ConfigKeys,
+  Constants,
+  Messages,
+  Plugins,
+  ProgressDetail,
+  ProgressTitle,
+  Telemetry,
+  TemplatePathInfo,
+} from "../constants";
+import { AppIdUriInvalidError, ConfigErrorMessages, GetConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { AadAppForTeamsImpl } from "../plugin";
 import { ResultFactory } from "../results";
@@ -35,7 +51,7 @@ import {
   SetApplicationInContextConfig,
 } from "../utils/configs";
 import { DialogUtils } from "../utils/dialog";
-import { TokenProvider } from "../utils/tokenProvider";
+import { TokenAudience, TokenProvider } from "../utils/tokenProvider";
 
 const permissionFile = "permissions.json";
 
@@ -92,6 +108,29 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   resourceType = "Azure AD App";
   description = "Azure AD App provide single-sign-on feature for Teams App";
 
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.aad,
+        eventName: "generate-arm-templates",
+      },
+    }),
+  ])
+  async generateResourceTemplate(): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    const result: ArmTemplateResult = {
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(
+            getTemplatesFolder(),
+            TemplatePathInfo.BicepTemplateRelativeDir,
+            Bicep.ParameterFileName
+          ),
+          ConstantString.UTF8Encoding
+        )
+      ),
+    };
+    return ok([{ kind: "bicep", template: result }]);
+  }
   /**
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
@@ -99,19 +138,30 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.aad } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.AddFeatureInputs
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    ensureSolutionSettings(ctx.projectSetting);
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const armRes = await this.generateResourceTemplate();
+    if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
-    const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
-    if (loadRes.isErr()) return err(loadRes.error);
-    const manifest = loadRes.value;
-    (manifest as TeamsAppManifest).webApplicationInfo = {
-      id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
-      resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
+    const webAppInfo: v3.ManifestCapability = {
+      name: "WebApplicationInfo",
+      snippet: {
+        id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
+        resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
+      },
     };
-    await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
-    return ok([]);
+    const updateWebAppInfoRes = await ctx.appManifestProvider.updateCapability(
+      ctx,
+      inputs,
+      webAppInfo
+    );
+    if (updateWebAppInfoRes.isErr()) return err(updateWebAppInfoRes.error);
+    if (!solutionSettings.activeResourcePlugins.includes(this.name))
+      solutionSettings.activeResourcePlugins.push(this.name);
+    return ok(armRes.value);
   }
 
   @hooks([
@@ -139,10 +189,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     });
 
     //init aad part in local settings or env state
-    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
-      envInfo.state[BuiltInFeaturePluginNames.aad] = {
-        secretFields: ["clientSecret"],
-      };
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad].secretFields) {
+      envInfo.state[BuiltInFeaturePluginNames.aad].secretFields = ["clientSecret"];
     }
     // Move objectId etc. from input to output.
     const skip = Utils.skipCreateAadForProvision(envInfo);
@@ -278,5 +326,137 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
       config.applicationIdUri;
     return ok(Void);
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async listCollaborator(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI
+  ): Promise<Result<AadOwner[], FxError>> {
+    ctx.logProvider.info(Messages.StartListCollaborator.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          GetConfigError.message(
+            ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const owners = await AadAppClient.listCollaborator(
+      Messages.EndListCollaborator.telemetry,
+      objectId
+    );
+    ctx.logProvider.info(Messages.EndListCollaborator.log);
+    return ok(owners || []);
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async checkPermission(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    ctx.logProvider.info(Messages.StartCheckPermission.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          Utils.getPermissionErrorMessage(
+            GetConfigError.message(
+              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+            ),
+            false
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const userObjectId = userInfo.aadId;
+    const isAadOwner = await AadAppClient.checkPermission(
+      Messages.EndCheckPermission.telemetry,
+      objectId,
+      userObjectId
+    );
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
+        resourceId: objectId,
+      },
+    ];
+    ctx.logProvider.info(Messages.EndCheckPermission.log);
+    return ok(result);
+  }
+
+  async grantPermission(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI,
+    userInfo: IUserList
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    ctx.logProvider.info(Messages.StartGrantPermission.log);
+    await TokenProvider.init(
+      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
+      TokenAudience.Graph
+    );
+    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      return err(
+        new SystemError(
+          GetConfigError.name,
+          Utils.getPermissionErrorMessage(
+            GetConfigError.message(
+              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
+            ),
+            true
+          ),
+          Plugins.pluginNameShort
+        )
+      );
+    }
+
+    const userObjectId = userInfo.aadId;
+    await AadAppClient.grantPermission(ctx, objectId, userObjectId);
+
+    const result = [
+      {
+        name: Constants.permissions.name,
+        type: Constants.permissions.type,
+        roles: [Constants.permissions.owner],
+        resourceId: objectId,
+      },
+    ];
+    ctx.logProvider.info(Messages.EndGrantPermission.log);
+    return ok(result);
   }
 }

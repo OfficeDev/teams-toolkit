@@ -30,6 +30,8 @@ import {
   isTeamsfx,
   syncFeatureFlags,
   isValidNode,
+  delay,
+  isSupportAutoOpenAPI,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -44,6 +46,7 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
+import { version } from "os";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -87,6 +90,22 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
+      const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
+      if (targetUri.isOk()) {
+        await ExtTelemetry.dispose();
+        await delay(2000);
+        return { openFolder: targetUri.value };
+      }
+    })
+  );
+
+  const openReadMeCmd = vscode.commands.registerCommand("fx-extension.openReadMe", (...args) =>
+    Correlator.run(handlers.openReadMeHandler, args)
+  );
+  context.subscriptions.push(openReadMeCmd);
 
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
@@ -537,5 +556,11 @@ function initializeContextKey() {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
+  }
+
+  if (isSupportAutoOpenAPI()) {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", false);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", true);
   }
 }

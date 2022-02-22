@@ -21,7 +21,9 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isVSProject } from "../../../core";
 import "./v2";
+import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
@@ -38,11 +40,7 @@ export class TeamsBot implements Plugin {
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
 
   public getImpl(context: PluginContext): PluginImpl {
-    return TeamsBot.isVsPlatform(context) ? this.dotnetBotImpl : this.teamsBotImpl;
-  }
-
-  private static isVsPlatform(context: PluginContext): boolean {
-    return context.projectSettings?.programmingLanguage === ProgrammingLanguage.Csharp;
+    return isVSProject(context.projectSettings!) ? this.dotnetBotImpl : this.teamsBotImpl;
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

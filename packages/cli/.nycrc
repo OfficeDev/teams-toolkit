@@ -5,6 +5,10 @@
   "exclude": [
     "src/cmds/preview/depsChecker/**/*",
     "src/cmds/preview/preview.ts",
+    "src/cmds/preview/npmInstallHandler.ts",
+    "src/commonlib/*Login.ts",
+    "src/commonlib/*LoginCI.ts",
+    "src/commonlib/*LoginUserPassword.ts",
     "src/index.ts",
     "cli.js",
     ".eslintrc.js",

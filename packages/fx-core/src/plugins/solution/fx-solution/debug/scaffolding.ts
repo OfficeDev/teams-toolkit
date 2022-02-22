@@ -23,6 +23,7 @@ import {
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
+import * as LaunchNext from "./util/launchNext";
 import * as Tasks from "./util/tasks";
 import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
@@ -137,17 +138,19 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = Launch.generateConfigurations(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          isMigrateFromV1
-        );
-        const launchCompounds = Launch.generateCompounds(
-          includeFrontend,
-          includeBackend,
-          includeBot
-        );
+        const launchConfigurations =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+            : Launch.generateConfigurations(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                isMigrateFromV1
+              );
+        const launchCompounds =
+          !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+            : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
         const tasks =
           !isMigrateFromV1 && (await useNewTasks(inputs.projectPath))
@@ -242,6 +245,14 @@ export async function _scaffoldLocalDebugSettings(
           spaces: 4,
           EOL: os.EOL,
         }
+      );
+    } else if (inputs.platform === Platform.VS) {
+      // generate localSettings.json
+      localSettings = await scaffoldLocalSettingsJson(
+        projectSetting,
+        inputs,
+        cryptoProvider,
+        localSettings
       );
     }
   } catch (error: any) {

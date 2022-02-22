@@ -256,7 +256,7 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
           return `Cannot create an environment '${LocalEnvironmentName}'`;
         }
 
-        const envConfigs = await environmentManager.listEnvConfigs(projectPath);
+        const envConfigs = await environmentManager.listRemoteEnvConfigs(projectPath);
         if (envConfigs.isErr()) {
           return `Failed to list env configs`;
         }

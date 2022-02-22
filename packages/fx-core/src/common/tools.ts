@@ -378,6 +378,10 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+export function isConfigUnifyEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {
@@ -435,31 +439,12 @@ export function getAppStudioEndpoint(): string {
   }
 }
 
+// TODO: remove copy files after https://github.com/OfficeDev/TeamsFx/pull/3998 is merged
 export async function copyFiles(
   srcPath: string,
   distPath: string,
   excludeFileList: { fileName: string; recursive: boolean }[] = []
-): Promise<void> {
-  await fs.ensureDir(distPath);
-
-  const excludeFileNames = excludeFileList.map((file) => file.fileName);
-  const recursiveExcludeFileNames = excludeFileList
-    .filter((file) => file.recursive)
-    .map((file) => file.fileName);
-
-  const fileNames = await fs.readdir(srcPath);
-  for (const fileName of fileNames) {
-    if (excludeFileNames.includes(fileName)) {
-      continue;
-    }
-    await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
-      overwrite: false,
-      errorOnExist: true,
-      filter: (src: string, dest: string): boolean =>
-        !recursiveExcludeFileNames.includes(path.basename(src)),
-    });
-  }
-}
+): Promise<void> {}
 
 export function getStorageAccountNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(
@@ -616,10 +601,12 @@ export function getAllowedAppIds(): string[] {
   return [
     TeamsClientId.MobileDesktop,
     TeamsClientId.Web,
+    OfficeClientId.Desktop,
     OfficeClientId.Web1,
     OfficeClientId.Web2,
     OutlookClientId.Desktop,
-    OutlookClientId.Web,
+    OutlookClientId.Web1,
+    OutlookClientId.Web2,
   ];
 }
 

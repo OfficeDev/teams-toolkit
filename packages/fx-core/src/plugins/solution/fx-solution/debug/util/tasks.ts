@@ -42,13 +42,9 @@ export function generateTasks(
   tasks.push(prepareDevEnv(includeFrontend, includeBackend), prepareLocalEnvironment());
   if (includeFrontend) {
     tasks.push(startFrontend(includeAuth), frontendNpmInstall());
-    if (includeBackend) {
-      tasks.push(
-        startBackend(programmingLanguage),
-        backendExtensionsInstall(),
-        backendNpmInstall()
-      );
-    }
+  }
+  if (includeBackend) {
+    tasks.push(startBackend(programmingLanguage), backendExtensionsInstall(), backendNpmInstall());
   }
   if (includeBot) {
     tasks.push(startBot(), botNpmInstall());
@@ -172,9 +168,9 @@ function prepareDevEnv(includeFrontend: boolean, includeBackend: boolean): Recor
   };
   if (includeFrontend) {
     result.dependsOn.push("frontend npm install");
-    if (includeBackend) {
-      result.dependsOn.push("backend npm install");
-    }
+  }
+  if (includeBackend) {
+    result.dependsOn.push("backend npm install");
   }
   return result;
 }

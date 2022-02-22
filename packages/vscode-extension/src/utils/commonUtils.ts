@@ -22,6 +22,7 @@ import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 import { execSync } from "child_process";
+import * as versionUtil from "./versionUtil";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -396,4 +397,8 @@ export function isValidNode(): boolean {
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function isSupportAutoOpenAPI(): boolean {
+  return versionUtil.compare(vscode.version, "1.64.2") > 0;
 }

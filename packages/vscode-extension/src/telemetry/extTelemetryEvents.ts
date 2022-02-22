@@ -155,7 +155,7 @@ export enum TelemetryProperty {
   Component = "component",
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
-  AapId = "appid",
+  AppId = "appid",
   TenantId = "tenant-id",
   UserId = "hashed-userid",
   AccountType = "account-type",

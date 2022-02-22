@@ -832,7 +832,7 @@ async function processResult(
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
     const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
     if (appInfo) {
-      envProperty[TelemetryProperty.AapId] = appInfo.appId;
+      envProperty[TelemetryProperty.AppId] = appInfo.appId;
       envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
     }
   }

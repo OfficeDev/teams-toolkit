@@ -13,9 +13,6 @@ import {
   LogProvider,
   AppPackageFolderName,
   BuildFolderName,
-  ArchiveFolderName,
-  V1ManifestFileName,
-  ConfigMap,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
@@ -28,7 +25,6 @@ import {
   REMOTE_AAD_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
-  LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
@@ -205,52 +201,6 @@ export class AppStudioPluginImpl {
     );
 
     return teamsAppId;
-  }
-
-  /**
-   * generate app manifest template according to existing manifest
-   * @param settings
-   * @returns
-   */
-  public async createV1Manifest(ctx: PluginContext): Promise<TeamsAppManifest> {
-    const archiveManifestPath = path.join(
-      ctx.root,
-      ArchiveFolderName,
-      AppPackageFolderName,
-      V1ManifestFileName
-    );
-    const manifestSourceRes = await this.reloadManifest(archiveManifestPath);
-    if (manifestSourceRes.isErr()) {
-      throw manifestSourceRes.error;
-    }
-    const manifestSource = manifestSourceRes.value;
-
-    let manifestString = (await fs.readFile(archiveManifestPath)).toString();
-    manifestString = this.replaceExistingValueToPlaceholder(
-      manifestString,
-      manifestSource.developer.websiteUrl,
-      "{{{localSettings.frontend.tabEndpoint}}}"
-    );
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
-    manifest.validDomains = [];
-
-    const includeBot = (
-      ctx.projectSettings?.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins?.includes(PluginNames.BOT);
-    if (includeBot) {
-      if (manifest.bots !== undefined && manifest.bots.length > 0) {
-        for (let index = 0; index < manifest.bots.length; ++index) {
-          manifest.bots[index].botId = "{{localSettings.bot.botId}}";
-        }
-      }
-      if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
-        for (let index = 0; index < manifest.composeExtensions.length; ++index) {
-          manifest.composeExtensions[index].botId = "{{localSettings.bot.botId}}";
-        }
-      }
-    }
-    return manifest;
   }
 
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
@@ -543,59 +493,6 @@ export class AppStudioPluginImpl {
     }
   }
 
-  public async migrateV1Project(ctx: PluginContext): Promise<{ enableAuth: boolean }> {
-    let manifest: TeamsAppManifest | undefined;
-    const archiveAppPackageFolder = path.join(ctx.root, ArchiveFolderName, AppPackageFolderName);
-    const archiveManifestPath = path.join(archiveAppPackageFolder, V1ManifestFileName);
-
-    // cannot use getAppDirectory before creating the manifest file
-    const newAppPackageFolder = `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`;
-
-    await fs.ensureDir(newAppPackageFolder);
-    if (await fs.pathExists(archiveManifestPath)) {
-      manifest = await this.createV1Manifest(ctx);
-
-      const resourcesDir = path.join(newAppPackageFolder, MANIFEST_RESOURCES);
-      await fs.ensureDir(resourcesDir);
-
-      if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
-        const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-        const existColorFile = await fs.pathExists(archiveColorFile);
-        const newColorFileName = existColorFile
-          ? path.basename(manifest.icons.color)
-          : DEFAULT_COLOR_PNG_FILENAME;
-        await fs.copyFile(
-          existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
-          path.join(resourcesDir, newColorFileName)
-        );
-        manifest.icons.color = `${MANIFEST_RESOURCES}/${newColorFileName}`;
-      }
-
-      if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
-        const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-        const existOutlineFile = await fs.pathExists(archiveOutlineFile);
-        const newOutlineFileName = existOutlineFile
-          ? path.basename(manifest.icons.outline)
-          : DEFAULT_OUTLINE_PNG_FILENAME;
-        await fs.copyFile(
-          existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
-          path.join(resourcesDir, newOutlineFileName)
-        );
-        manifest.icons.outline = `${MANIFEST_RESOURCES}/${newOutlineFileName}`;
-      }
-
-      await fs.writeFile(
-        path.join(newAppPackageFolder, MANIFEST_LOCAL),
-        JSON.stringify(manifest, null, 4)
-      );
-
-      return { enableAuth: !!manifest?.webApplicationInfo?.id };
-    } else {
-      await this.scaffold(ctx);
-      return { enableAuth: false };
-    }
-  }
-
   public async scaffold(ctx: PluginContext): Promise<any> {
     let manifest: TeamsAppManifest | undefined;
     const templatesFolder = getTemplatesFolder();
@@ -616,8 +513,7 @@ export class AppStudioPluginImpl {
         false,
         false,
         false,
-        true,
-        false
+        true
       );
       await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
     } else {
@@ -631,16 +527,14 @@ export class AppStudioPluginImpl {
         hasFrontend,
         hasBot,
         hasMessageExtension,
-        false,
-        !!solutionSettings?.migrateFromV1
+        false
       );
       const localDebugManifest = await createLocalManifest(
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
         hasMessageExtension,
-        false,
-        !!solutionSettings?.migrateFromV1
+        false
       );
       await fs.writeFile(
         `${appDir}/${MANIFEST_LOCAL}`,
@@ -1076,53 +970,6 @@ export class AppStudioPluginImpl {
       }
     } finally {
       await publishProgress?.end(true);
-    }
-  }
-
-  private replaceExistingValueToPlaceholder(
-    config: string,
-    value: string,
-    placeholderName: string
-  ): string {
-    if (config && value && placeholderName) {
-      config = config.split(value).join(placeholderName);
-    }
-
-    return config;
-  }
-
-  private async reloadManifest(manifestPath: string): Promise<Result<TeamsAppManifest, FxError>> {
-    try {
-      const manifest = await fs.readJson(manifestPath);
-      if (!manifest) {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message(`Failed to load manifest file`)
-          )
-        );
-      }
-      // Object.assign(ctx.app, manifest);
-      return ok(manifest);
-    } catch (e) {
-      if (e.stack && e.stack.startsWith("SyntaxError")) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message(
-              `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
-            )
-          )
-        );
-      }
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.ManifestLoadFailedError.name,
-          AppStudioError.ManifestLoadFailedError.message(
-            `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
-          )
-        )
-      );
     }
   }
 
@@ -1746,8 +1593,7 @@ export async function createLocalManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean,
-  migrateFromV1: boolean
+  isSPFx: boolean
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1776,9 +1622,6 @@ export async function createLocalManifest(
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
     }
-    if (migrateFromV1) {
-      manifest.webApplicationInfo = undefined;
-    }
     return manifest;
   }
 }
@@ -1788,8 +1631,7 @@ export async function createManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean,
-  migrateFromV1: boolean
+  isSPFx: boolean
 ): Promise<TeamsAppManifest | undefined> {
   if (!hasBot && !hasMessageExtension && !hasFrontend) {
     throw new Error(`Invalid capability`);
@@ -1806,10 +1648,6 @@ export async function createManifest(
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
-    }
-
-    if (migrateFromV1) {
-      manifest.webApplicationInfo = undefined;
     }
 
     return manifest;

@@ -506,7 +506,7 @@ describe("Utils Tests", function () {
     });
 
     it("Invalid State File", async () => {
-      const result = getTeamsAppTelemetryInfoByEnv(invalidProjectDir, env);
+      const result = getTeamsAppTelemetryInfoByEnv(invalidStateProjectDir, env);
       expect(result).equals(undefined);
     });
 

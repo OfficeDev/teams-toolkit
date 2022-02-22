@@ -22,7 +22,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("aadPermissionErrors", function () {
   let testFolder: string;
@@ -85,10 +85,6 @@ describe("aadPermissionErrors", function () {
 
   afterEach(async () => {
     // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath, true, false, false);
-    }
+    await cleanUp(appName, projectPath, true, false, false);
   });
 });

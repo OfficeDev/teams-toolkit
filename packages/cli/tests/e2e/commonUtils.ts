@@ -109,24 +109,16 @@ export function getAzureAccountObjectId() {
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
 
-function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
-  if (isMultiEnvEnabled) {
-    return path.join(
-      ".fx",
-      StatesFolderName,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
-    );
-  } else {
-    return envFilePathSuffix;
-  }
+function getEnvFilePathSuffix(envName: string) {
+  return path.join(
+    ".fx",
+    StatesFolderName,
+    EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
+  );
 }
 
-export function getConfigFileName(
-  appName: string,
-  isMultiEnvEnabled = false,
-  envName = "dev"
-): string {
-  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
+export function getConfigFileName(appName: string, envName = "dev"): string {
+  return path.resolve(testFolder, appName, getEnvFilePathSuffix(envName));
 }
 
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
@@ -223,10 +215,9 @@ export async function cleanUpAadApp(
   hasAadPlugin?: boolean,
   hasBotPlugin?: boolean,
   hasApimPlugin?: boolean,
-  isMultiEnvEnabled = false,
   envName = "dev"
 ) {
-  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
+  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(envName));
   if (!(await fs.pathExists(envFilePath))) {
     return;
   }
@@ -267,15 +258,11 @@ export async function cleanUpAadApp(
   return Promise.all(promises);
 }
 
-export async function cleanUpResourceGroup(
-  appName: string,
-  isMultiEnvEnabled: boolean,
-  envName?: string
-): Promise<boolean> {
+export async function cleanUpResourceGroup(appName: string, envName?: string): Promise<boolean> {
   if (!appName) {
     return false;
   }
-  const name = isMultiEnvEnabled ? `${appName}-${envName}-rg` : `${appName}-rg`;
+  const name = `${appName}-${envName}-rg`;
   return await deleteResourceGroupByName(name);
 }
 
@@ -313,7 +300,6 @@ export async function cleanUp(
   hasAadPlugin = true,
   hasBotPlugin = false,
   hasApimPlugin = false,
-  isMultiEnvEnabled = false,
   envName = "dev"
 ) {
   const cleanUpAadAppPromise = cleanUpAadApp(
@@ -321,14 +307,13 @@ export async function cleanUp(
     hasAadPlugin,
     hasBotPlugin,
     hasApimPlugin,
-    isMultiEnvEnabled,
     envName
   );
   return Promise.all([
     // delete aad app
     cleanUpAadAppPromise,
     // remove resouce group
-    cleanUpResourceGroup(appName, isMultiEnvEnabled, envName),
+    cleanUpResourceGroup(appName, envName),
     // remove project
     cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);

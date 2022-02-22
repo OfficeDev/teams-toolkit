@@ -401,7 +401,6 @@ export async function configLocalEnvironment(
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -411,7 +410,6 @@ export async function configLocalEnvironment(
     bot: includeBot ? "true" : "false",
     auth: "false",
     "trust-development-certificate": trustDevCert + "",
-    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
@@ -420,14 +418,12 @@ export async function configLocalEnvironment(
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
         : undefined;
-      const botEnvs = includeBot
-        ? await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1)
-        : undefined;
+      const botEnvs = includeBot ? await localEnvProvider.loadBotLocalEnvs() : undefined;
 
       // get config for local debug
       const clientId = envInfo.state[ResourcePlugins.Aad]?.clientId;
@@ -438,9 +434,7 @@ export async function configLocalEnvironment(
       const localFuncEndpoint = envInfo.state[ResourcePlugins.Function]?.functionEndpoint;
 
       if (includeFrontend) {
-        if (!isMigrateFromV1) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
-        }
+        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
         if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[
@@ -489,22 +483,17 @@ export async function configLocalEnvironment(
       if (includeBot) {
         const botId = envInfo.state[ResourcePlugins.Bot]?.botId as string;
         const botPassword = envInfo.state[ResourcePlugins.Bot]?.botPassword as string;
-        if (isMigrateFromV1) {
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotId] = botId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotPassword] = botPassword;
-        } else {
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
-            "https://login.microsoftonline.com";
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-            envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
-          }/auth-start.html`;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
-        }
+
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "https://login.microsoftonline.com";
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+          envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
+        }/auth-start.html`;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
 
         if (includeBackend) {
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;

@@ -234,20 +234,6 @@
       "samplePageTitle": "Samples",
       "surveyPageTitle": "Teams Toolkit Survey"
     },
-    "migrateV1": {
-      "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
-      "learnMore": {
-        "title": "Learn More",
-        "status": "learnMore"
-      },
-      "confirm": {
-        "title": "Migrate",
-        "status": "migrate"
-      },
-      "cancel": {
-        "status": "cancel"
-      }
-    },
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"

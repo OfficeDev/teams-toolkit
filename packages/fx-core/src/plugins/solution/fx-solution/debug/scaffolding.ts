@@ -246,6 +246,14 @@ export async function _scaffoldLocalDebugSettings(
           EOL: os.EOL,
         }
       );
+    } else if (inputs.platform === Platform.VS) {
+      // generate localSettings.json
+      localSettings = await scaffoldLocalSettingsJson(
+        projectSetting,
+        inputs,
+        cryptoProvider,
+        localSettings
+      );
     }
   } catch (error: any) {
     const systemError = ScaffoldLocalDebugSettingsError(error);

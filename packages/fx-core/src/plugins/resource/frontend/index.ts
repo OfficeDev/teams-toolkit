@@ -8,8 +8,6 @@ import {
   SystemError,
   UserError,
   AzureSolutionSettings,
-  ok,
-  Func,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -103,16 +101,6 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.LocalDebug, () =>
       this.getImpl(ctx).localDebug(ctx)
-    );
-  }
-
-  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(
-      ctx,
-      TelemetryEvent.ExecuteUserTask,
-      () => this.getImpl(ctx).executeUserTask(func, ctx),
-      { method: func.method }
     );
   }
 

@@ -423,11 +423,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
       // ignore telemetry error
     }
 
-    const extConfig: vscode.WorkspaceConfiguration =
-      vscode.workspace.getConfiguration("fx-extension");
-    if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
-      terminateAllRunningTeamsfxTasks();
-    }
+    terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
     if (allRunningDebugSessions.size == 0) {

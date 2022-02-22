@@ -75,10 +75,10 @@ export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInf
     if (isValidProject(ws)) {
       const result = environmentManager.getEnvStateFilesPath(env, ws);
       const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      const aadState = envJson[PluginNames.APPST];
+      const appstudioState = envJson[PluginNames.APPST];
       return {
-        appId: aadState.teamsAppId,
-        tenantId: aadState.tenantId,
+        appId: appstudioState.teamsAppId,
+        tenantId: appstudioState.tenantId,
       };
     }
   } catch (e) {

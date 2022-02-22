@@ -973,53 +973,6 @@ export class AppStudioPluginImpl {
     }
   }
 
-  private replaceExistingValueToPlaceholder(
-    config: string,
-    value: string,
-    placeholderName: string
-  ): string {
-    if (config && value && placeholderName) {
-      config = config.split(value).join(placeholderName);
-    }
-
-    return config;
-  }
-
-  private async reloadManifest(manifestPath: string): Promise<Result<TeamsAppManifest, FxError>> {
-    try {
-      const manifest = await fs.readJson(manifestPath);
-      if (!manifest) {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message(`Failed to load manifest file`)
-          )
-        );
-      }
-      // Object.assign(ctx.app, manifest);
-      return ok(manifest);
-    } catch (e) {
-      if (e.stack && e.stack.startsWith("SyntaxError")) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message(
-              `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
-            )
-          )
-        );
-      }
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.ManifestLoadFailedError.name,
-          AppStudioError.ManifestLoadFailedError.message(
-            `Failed to load manifest file from ${manifestPath}, due to ${e.message}`
-          )
-        )
-      );
-    }
-  }
-
   private async getConfigForCreatingManifest(
     ctx: PluginContext,
     localDebug: boolean

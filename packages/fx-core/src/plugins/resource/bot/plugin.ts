@@ -18,7 +18,6 @@ import {
   AzureConstants,
   PathInfo,
   BotBicep,
-  Alias,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -46,7 +45,6 @@ import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
-  copyFiles,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,

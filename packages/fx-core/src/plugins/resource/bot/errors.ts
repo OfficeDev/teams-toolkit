@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants } from "../aad/constants";
 import { GraphErrorCodes } from "../aad/errorCodes";
 import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
-import { CommonStrings } from "./resources/strings";
 import { FxBotPluginResultFactory } from "./result";
 
 export enum ErrorType {

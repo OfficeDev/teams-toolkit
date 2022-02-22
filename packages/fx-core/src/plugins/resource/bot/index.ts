@@ -7,8 +7,6 @@ import {
   UserError,
   SystemError,
   AzureSolutionSettings,
-  Func,
-  ok,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";

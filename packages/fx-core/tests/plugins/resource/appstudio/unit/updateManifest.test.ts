@@ -4,18 +4,22 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
+import * as fs from "fs-extra";
 import { GLOBAL_CONFIG, newEnvInfo, SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src";
-import { ConfigMap, PluginContext, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { AppStudioPluginImpl } from "../../../../../src/plugins/resource/appstudio/plugin";
 
 describe("Update manifest preview file", () => {
   let plugin: AppStudioPluginImpl;
   let ctx: PluginContext;
-  let manifest: TeamsAppManifest;
 
   beforeEach(async () => {
     sinon.restore();
+    const buildFolder = "../fx-core/tests/plugins/resource/appstudio/resources-multi-env/build";
+    if (await fs.pathExists(buildFolder)) {
+      await fs.remove(buildFolder);
+    }
     plugin = new AppStudioPluginImpl();
     ctx = {
       root: "../fx-core/tests/plugins/resource/appstudio/resources-multi-env",
@@ -27,14 +31,13 @@ describe("Update manifest preview file", () => {
       appName: "my app",
       projectId: "testid",
       solutionSettings: {
-        name: "azure",
+        name: "spfx",
         version: "1.0",
-        capabilities: ["Bot"],
+        capabilities: ["tab"],
         activeResourcePlugins: ["fx-resource-spfx"],
       },
     };
     ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-    manifest = new TeamsAppManifest();
   });
 
   it("Generate manifest first if already provisioned", async () => {
@@ -43,6 +46,7 @@ describe("Update manifest preview file", () => {
     try {
       await plugin.updateManifest(ctx, false);
     } catch (e) {}
-    chai.assert(buildTeamsPackage.calledOnce);
+    chai.expect(buildTeamsPackage.calledOnce).to.be.true;
+    sinon.restore();
   });
 });

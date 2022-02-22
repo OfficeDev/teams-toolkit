@@ -161,10 +161,6 @@ export async function provisionLocalResource(
       };
     });
 
-  if (isConfigUnifyEnabled()) {
-    setPostDataForLocal(envInfo!, localSettings);
-  }
-
   const configureResourceResult = await executeConcurrently(
     configureLocalResourceThunks,
     ctx.logProvider
@@ -178,6 +174,7 @@ export async function provisionLocalResource(
   }
 
   if (isConfigUnifyEnabled()) {
+    setPostDataForLocal(envInfo!, localSettings);
     const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
     if (localConfigResult.isErr()) {
@@ -211,4 +208,5 @@ export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
 
 export function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
   localSettings.auth.applicationIdUris = envInfo.state[ResourcePlugins.Aad].applicationIdUris;
+  localSettings.teamsApp.teamsAppId = envInfo.state[ResourcePlugins.AppStudio]?.teamsAppId;
 }

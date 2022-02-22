@@ -64,7 +64,8 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
-import { getAppDirectory, isSPFxProject } from "../../../common";
+
+import { getAppDirectory, isConfigUnifyEnabled, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -83,7 +84,7 @@ import {
 } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
-import { HelpLinks } from "../../../common/constants";
+import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
 import Ajv from "ajv-draft-04";
 import axios from "axios";
@@ -784,7 +785,13 @@ export class AppStudioPluginImpl {
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
-    ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(ResourcePlugins.AppStudio)
+        .set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    } else {
+      ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    }
     return ok(teamsAppId.value);
   }
 
@@ -1306,7 +1313,7 @@ export class AppStudioPluginImpl {
         outlineIconContent
       );
 
-      if (app.updatedAt && !isLocalDebug) {
+      if (app.updatedAt && (!isLocalDebug || isConfigUnifyEnabled())) {
         const time = new Date(app.updatedAt).getTime();
         ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
       }
@@ -1381,7 +1388,7 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
+    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug && !isConfigUnifyEnabled());
     const isProvisionSucceeded = !!(ctx.envInfo.state
       .get("solution")
       ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
@@ -1393,7 +1400,7 @@ export class AppStudioPluginImpl {
 
     if (botId) {
       if (!botDomain) {
-        if (isLocalDebug) {
+        if (isLocalDebug && !isConfigUnifyEnabled()) {
           return err(
             AppStudioResultFactory.SystemError(
               AppStudioError.GetLocalDebugConfigFailedError.name,
@@ -1467,17 +1474,26 @@ export class AppStudioPluginImpl {
           tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
-          clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-            : "{{localSettings.auth.clientId}}",
-          applicationIdUris: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-            : "{{{localSettings.auth.applicationIdUris}}}",
+          clientId:
+            isConfigUnifyEnabled() && aadId
+              ? aadId
+              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+              : "{{localSettings.auth.clientId}}",
+          applicationIdUris:
+            isConfigUnifyEnabled() && webApplicationInfoResource
+              ? webApplicationInfoResource
+              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+              : "{{{localSettings.auth.applicationIdUris}}}",
         },
         teamsApp: {
-          teamsAppId: ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-            ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-            : "{{localSettings.teamsApp.teamsAppId}}",
+          teamsAppId:
+            isConfigUnifyEnabled() && teamsAppId
+              ? teamsAppId
+              : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+              ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+              : "{{localSettings.teamsApp.teamsAppId}}",
         },
         bot: {
           botId: ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)

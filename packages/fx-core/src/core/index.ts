@@ -46,6 +46,7 @@ import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/tools";
+import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   HostTypeOptionAzure,
@@ -402,6 +403,7 @@ export class FxCore implements v3.ICore {
         return err(initRes.error);
       }
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+      ctx.projectSettings!.isFromSample = false;
       const projectSettingsPath = getProjectSettingsPath(projectPath);
       await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
       // addFeature
@@ -1391,7 +1393,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     let appName = projectSettings.appName;
     if (targetEnvName === environmentManager.getLocalEnvName()) {
-      appName = appName + "-local-debug";
+      appName = getLocalAppName(appName);
     }
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(

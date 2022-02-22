@@ -40,9 +40,14 @@ import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  isConfigUnifyEnabled,
+  IsSimpleAuthEnabled,
+} from "../../../common/tools";
 import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
 import { PluginImpl } from "./interface";
+import { FRONTEND_INDEX_PATH } from "../appstudio/constants";
 
 export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -162,10 +167,16 @@ export class FrontendPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-    ctx.localSettings?.frontend?.set(
-      LocalSettingsFrontendKeys.TabIndexPath,
-      Constants.FrontendIndexPath
-    );
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(PluginInfo.PluginName)
+        ?.set(FRONTEND_INDEX_PATH, Constants.FrontendIndexPath);
+    } else {
+      ctx.localSettings?.frontend?.set(
+        LocalSettingsFrontendKeys.TabIndexPath,
+        Constants.FrontendIndexPath
+      );
+    }
     return ok(undefined);
   }
 

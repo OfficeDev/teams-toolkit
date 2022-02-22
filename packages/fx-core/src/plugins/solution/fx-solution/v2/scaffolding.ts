@@ -24,8 +24,8 @@ import {
   getSelectedPlugins,
   fillInSolutionSettings,
   isAzureProject,
-  isVsPlatform,
 } from "./utils";
+import { isVSProject } from "../../../../core";
 import path from "path";
 import fs from "fs-extra";
 import {
@@ -90,7 +90,7 @@ export async function scaffoldSourceCode(
     if (scaffoldLocalDebugSettingsResult.isErr()) {
       return scaffoldLocalDebugSettingsResult;
     }
-    if (!isVsPlatform(ctx)) {
+    if (!isVSProject(ctx.projectSetting)) {
       await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
     }
     if (isAzureProject(solutionSettings)) {

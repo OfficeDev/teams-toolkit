@@ -47,18 +47,21 @@ export class CICDImpl {
       hosting_type_contains_spfx: hostType == "SPFx",
       hosting_type_contains_azure: hostType == "Azure",
     };
+
     const progressBar = context.userInteraction.createProgressBar(
       "Scaffolding workflow automation files",
       templateNames.length
     );
+
     await progressBar.start(`Scaffolding workflow file for ${templateNames[0]}.`);
+    await providerInstance.scaffold(projectPath, templateNames[0], replacements);
+
     //  3.2 Call scaffold.
-    for (let i = 0; i < templateNames.length; i += 1) {
-      await providerInstance.scaffold(projectPath, templateNames[i], replacements);
-      if (i < templateNames.length) {
-        await progressBar.next(`Scaffolding workflow file for ${templateNames[0]}.`);
-      }
+    for (const templateName of templateNames.slice(1)) {
+      await progressBar.next(`Scaffolding workflow file for ${templateName}.`);
+      await providerInstance.scaffold(projectPath, templateName, replacements);
     }
+
     await progressBar.end(true);
 
     // 4. Notification & Preview scaffolded readme.

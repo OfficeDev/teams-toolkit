@@ -8,8 +8,6 @@ import {
   SystemError,
   UserError,
   AzureSolutionSettings,
-  ok,
-  Func,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";

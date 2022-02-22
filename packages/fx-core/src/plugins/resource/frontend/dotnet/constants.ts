@@ -38,6 +38,9 @@ export class DotnetPathInfo {
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
   static readonly TemplateFolderName = "dotnet";
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
+
+  static readonly indexPath = ""; // Index path is '/', relational path is empty.
+  static readonly appSettingDevelopment = "appsettings.development.json";
 }
 
 export class DotnetCommands {

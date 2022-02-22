@@ -37,6 +37,7 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  isConfigUnifyEnabled,
 } from "../../../../common/tools";
 import { generateTemplateInfos } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
@@ -47,6 +48,8 @@ import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
+import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
+import { LocalSettingsFrontendKeys } from "../../../../common/localSettingsConstants";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -202,6 +205,37 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state.get(PluginInfo.pluginName)?.set(FRONTEND_INDEX_PATH, PathInfo.indexPath);
+    } else {
+      ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabIndexPath, PathInfo.indexPath);
+    }
+    return ok(undefined);
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
+    let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+    appSettings = appSettings.replace(
+      /\$clientId\$/g,
+      ctx.localSettings?.auth?.get("clientId") ?? "$clientId$"
+    );
+    appSettings = appSettings.replace(
+      /\$client-secret\$/g,
+      ctx.localSettings?.auth?.get("clientSecret") ?? "$client-secret$"
+    );
+    const tenantId = ctx.localSettings?.teamsApp?.get("tenantId") as string;
+    const oauthAuthority = tenantId ? "https://login.microsoftonline.com/" + tenantId : undefined;
+    appSettings = appSettings.replace(/\$oauthAuthority\$/g, oauthAuthority ?? "$oauthAuthority$");
+    appSettings = appSettings.replace(
+      /\$botId\$/g,
+      ctx.localSettings?.bot?.get("botId") ?? "$botId$"
+    );
+    appSettings = appSettings.replace(
+      /\$bot-password\$/g,
+      ctx.localSettings?.bot?.get("botPassword") ?? "$bot-password$"
+    );
+    await fs.writeFile(appSettingsPath, appSettings, "utf-8");
     return ok(undefined);
   }
 

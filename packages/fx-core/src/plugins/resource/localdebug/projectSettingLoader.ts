@@ -42,6 +42,4 @@ export class ProjectSettingLoader {
 
     return includeAad && (!this.includeFrontend(ctx) || includeSimpleAuth);
   }
-  public static isMigrateFromV1 = (ctx: PluginContext): boolean =>
-    !!ctx?.projectSettings?.solutionSettings?.migrateFromV1;
 }

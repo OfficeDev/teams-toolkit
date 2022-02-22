@@ -12,7 +12,6 @@ import {
   LocalEnvBackendKeys,
   LocalEnvAuthKeys,
   LocalEnvBotKeys,
-  LocalEnvBotKeysMigratedFromV1,
 } from "./constants";
 
 // Manage local envs for legacy project. For multi-env supported one, see `localEnvMulti.ts`.
@@ -26,19 +25,12 @@ export class LocalEnvProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    includeAuth: boolean,
-    isMigrateFromV1: boolean
+    includeAuth: boolean
   ): Promise<{ [name: string]: string }> {
     if (await fs.pathExists(this.localEnvFilePath)) {
       return dotenv.parse(await fs.readFile(this.localEnvFilePath));
     } else {
-      return this.initialLocalEnvs(
-        includeFrontend,
-        includeBackend,
-        includeBot,
-        includeAuth,
-        isMigrateFromV1
-      );
+      return this.initialLocalEnvs(includeFrontend, includeBackend, includeBot, includeAuth);
     }
   }
 
@@ -57,8 +49,7 @@ export class LocalEnvProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    includeAuth: boolean,
-    isMigrateFromV1: boolean
+    includeAuth: boolean
   ): { [name: string]: string } {
     const localEnvs: { [name: string]: string } = {};
     let keys: string[];
@@ -97,9 +88,7 @@ export class LocalEnvProvider {
     }
 
     if (includeBot) {
-      keys = isMigrateFromV1
-        ? Object.values(LocalEnvBotKeysMigratedFromV1)
-        : Object.values(LocalEnvBotKeys);
+      keys = Object.values(LocalEnvBotKeys);
       for (const key of keys) {
         // initial with empty string
         localEnvs[key] = "";

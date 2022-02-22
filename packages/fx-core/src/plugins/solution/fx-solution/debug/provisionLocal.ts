@@ -28,7 +28,6 @@ import { getNgrokHttpUrl } from "./util/ngrok";
 import {
   EnvKeysBackend,
   EnvKeysBot,
-  EnvKeysBotV1,
   EnvKeysFrontend,
   LocalEnvProvider,
 } from "../../../../common/local/localEnvProvider";
@@ -47,7 +46,6 @@ export async function setupLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -58,7 +56,6 @@ export async function setupLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
-    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -67,8 +64,8 @@ export async function setupLocalDebugSettings(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
-      const authPort = isMigrateFromV1 ? 5000 : 55000;
+      const frontendPort = 53000;
+      const authPort = 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -164,7 +161,6 @@ export async function configLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -174,7 +170,6 @@ export async function configLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
-    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
@@ -183,14 +178,12 @@ export async function configLocalDebugSettings(
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
         : undefined;
-      const botEnvs = includeBot
-        ? await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1)
-        : undefined;
+      const botEnvs = includeBot ? await localEnvProvider.loadBotLocalEnvs() : undefined;
 
       // get config for local debug
       const clientId = localSettings?.auth?.clientId as string;
@@ -204,9 +197,7 @@ export async function configLocalDebugSettings(
       const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
 
       if (includeFrontend) {
-        if (!isMigrateFromV1) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
-        }
+        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
         if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[
@@ -260,22 +251,16 @@ export async function configLocalDebugSettings(
       if (includeBot) {
         const botId = localSettings?.bot?.botId as string;
         const botPassword = localSettings?.bot?.botPassword as string;
-        if (isMigrateFromV1) {
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotId] = botId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotPassword] = botPassword;
-        } else {
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
-            "https://login.microsoftonline.com";
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-            localSettings?.bot?.botEndpoint as string
-          }/auth-start.html`;
-          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
-        }
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "https://login.microsoftonline.com";
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+          localSettings?.bot?.botEndpoint as string
+        }/auth-start.html`;
+        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
 
         if (includeBackend) {
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;

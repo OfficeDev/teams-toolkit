@@ -109,16 +109,6 @@ export class FrontendPlugin implements Plugin {
     );
   }
 
-  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(
-      ctx,
-      TelemetryEvent.ExecuteUserTask,
-      () => this.getImpl(ctx).executeUserTask(func, ctx),
-      { method: func.method }
-    );
-  }
-
   private async runWithErrorHandling(
     ctx: PluginContext,
     stage: string,

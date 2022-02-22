@@ -146,9 +146,6 @@ describe("Solution migrate()", async () => {
     expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings?.programmingLanguage;
     expect(lang).equals("javascript");
-    expect(fileContent.has("./.vscode/launch.json")).to.be.true;
-    expect(fileContent.has("./.vscode/tasks.json")).to.be.true;
-    expect(fileContent.has("./.fx/configs/localSettings.json")).to.be.true;
   });
 
   it("should succeed if projectSettings, solution settings and v1 capability are provided, language is typescript", async () => {
@@ -178,9 +175,6 @@ describe("Solution migrate()", async () => {
     expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).is.not.undefined;
     const lang = mockedSolutionCtx.projectSettings?.programmingLanguage;
     expect(lang).equals("typescript");
-    expect(fileContent.has("./.vscode/launch.json")).to.be.true;
-    expect(fileContent.has("./.vscode/tasks.json")).to.be.true;
-    expect(fileContent.has("./.fx/configs/localSettings.json")).to.be.true;
   });
 });
 

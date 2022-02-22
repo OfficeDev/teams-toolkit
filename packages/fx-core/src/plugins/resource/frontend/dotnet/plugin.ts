@@ -14,6 +14,7 @@ import {
   DotnetPathInfo as PathInfo,
   WebappBicepFile,
   WebappBicep,
+  AppSettingsPlaceholder,
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { scaffoldFromZipPackage } from "./ops/scaffold";
@@ -49,7 +50,12 @@ import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
 import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
-import { LocalSettingsFrontendKeys } from "../../../../common/localSettingsConstants";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../../../../common/localSettingsConstants";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -217,23 +223,28 @@ export class DotnetPluginImpl implements PluginImpl {
     const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
     let appSettings = await fs.readFile(appSettingsPath, "utf-8");
     appSettings = appSettings.replace(
-      /\$clientId\$/g,
-      ctx.localSettings?.auth?.get("clientId") ?? "$clientId$"
+      AppSettingsPlaceholder.clientId,
+      ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ?? AppSettingsPlaceholder
     );
     appSettings = appSettings.replace(
-      /\$client-secret\$/g,
-      ctx.localSettings?.auth?.get("clientSecret") ?? "$client-secret$"
+      AppSettingsPlaceholder.clientSecret,
+      ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) ??
+        AppSettingsPlaceholder.clientSecret
     );
-    const tenantId = ctx.localSettings?.teamsApp?.get("tenantId") as string;
+    const tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
     const oauthAuthority = tenantId ? "https://login.microsoftonline.com/" + tenantId : undefined;
-    appSettings = appSettings.replace(/\$oauthAuthority\$/g, oauthAuthority ?? "$oauthAuthority$");
     appSettings = appSettings.replace(
-      /\$botId\$/g,
-      ctx.localSettings?.bot?.get("botId") ?? "$botId$"
+      AppSettingsPlaceholder.oauthAuthority,
+      oauthAuthority ?? AppSettingsPlaceholder.oauthAuthority
     );
     appSettings = appSettings.replace(
-      /\$bot-password\$/g,
-      ctx.localSettings?.bot?.get("botPassword") ?? "$bot-password$"
+      AppSettingsPlaceholder.botId,
+      ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ?? AppSettingsPlaceholder.botId
+    );
+    appSettings = appSettings.replace(
+      AppSettingsPlaceholder.botPassword,
+      ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ??
+        AppSettingsPlaceholder.botPassword
     );
     await fs.writeFile(appSettingsPath, appSettings, "utf-8");
     return ok(undefined);

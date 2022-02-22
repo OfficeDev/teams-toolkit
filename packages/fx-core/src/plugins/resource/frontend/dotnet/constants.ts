@@ -87,3 +87,11 @@ export class WebappBicep {
     domainAsParam: WebappBicep.domainAsParam,
   };
 }
+
+export class AppSettingsPlaceholder {
+  static readonly clientId = "$clientId$";
+  static readonly clientSecret = "$client-secret$";
+  static readonly oauthAuthority = "$oauthAuthority$";
+  static readonly botId = "$botId$";
+  static readonly botPassword = "$bot-password$";
+}

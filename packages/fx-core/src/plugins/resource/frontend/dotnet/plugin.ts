@@ -222,6 +222,7 @@ export class DotnetPluginImpl implements PluginImpl {
   public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
     let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+
     appSettings = appSettings.replace(
       AppSettingsPlaceholder.clientId,
       ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ?? AppSettingsPlaceholder
@@ -232,7 +233,7 @@ export class DotnetPluginImpl implements PluginImpl {
         AppSettingsPlaceholder.clientSecret
     );
     const tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
-    const oauthAuthority = tenantId ? "https://login.microsoftonline.com/" + tenantId : undefined;
+    const oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : undefined;
     appSettings = appSettings.replace(
       AppSettingsPlaceholder.oauthAuthority,
       oauthAuthority ?? AppSettingsPlaceholder.oauthAuthority

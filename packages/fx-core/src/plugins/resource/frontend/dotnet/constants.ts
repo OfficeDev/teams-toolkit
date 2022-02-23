@@ -41,6 +41,8 @@ export class DotnetPathInfo {
 
   static readonly indexPath = ""; // Index path is '/', relational path is empty.
   static readonly appSettingDevelopment = "appsettings.development.json";
+  static readonly oauthHost = (tenantId: string): string =>
+    `https://login.microsoftonline.com/${tenantId}`;
 }
 
 export class DotnetCommands {

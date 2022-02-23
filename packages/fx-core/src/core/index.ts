@@ -11,6 +11,7 @@ import {
   CoreCallbackEvent,
   CoreCallbackFunc,
   err,
+  ExistingTeamsAppType,
   Func,
   FunctionRouter,
   FxError,
@@ -132,7 +133,7 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo, newEnvInfoV3 } from "./tools";
-import { isCreatedFromExistingApp, isPureExistingApp } from "./utils";
+import { isPureExistingApp } from "./utils";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -275,11 +276,41 @@ export class FxCore implements v3.ICore {
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
-      if (isCreatedFromExistingApp(inputs)) {
+      if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
         // there is no solution settings if created from existing app
-        //TODO create from existing Tab or Bot/ME
-        // 1. call App Studio V3 API to create manifest with placeholder
-        // 2. create config.local.json to store existing App information
+        // create default env
+        ctx.projectSettings = projectSettings;
+        const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
+        const writeEnvResult = await environmentManager.writeEnvConfig(
+          projectPath,
+          newEnvConfig,
+          environmentManager.getDefaultEnvName()
+        );
+        if (writeEnvResult.isErr()) {
+          return err(writeEnvResult.error);
+        }
+        // call App Studio V3 API to create manifest with placeholder
+        const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+        const contextV2 = createV2Context(projectSettings);
+        const initRes = await appStudio.init(contextV2, inputs as v2.InputsWithProjectPath);
+        if (initRes.isErr()) return err(initRes.error);
+        const manifestCaps: v3.ManifestCapability[] = [];
+        inputs.existingAppConfig.newAppTypes.forEach((t) => {
+          if (t === ExistingTeamsAppType.Bot) manifestCaps.push({ name: "Bot", existingApp: true });
+          else if (t === ExistingTeamsAppType.StaticTab)
+            manifestCaps.push({ name: "staticTab", existingApp: true });
+          else if (t === ExistingTeamsAppType.ConfigurableTab)
+            manifestCaps.push({ name: "configurableTab", existingApp: true });
+          else if (t === ExistingTeamsAppType.MessageExtension)
+            manifestCaps.push({ name: "MessageExtension", existingApp: true });
+        });
+        const addCapabilitiesRes = await appStudio.addCapabilities(
+          contextV2,
+          inputs as v2.InputsWithProjectPath,
+          manifestCaps
+        );
+        if (addCapabilitiesRes.isErr()) return err(addCapabilitiesRes.error);
+        // TODO how to generate launch.json, task.json for existing app?
       } else {
         projectSettings.solutionSettings = {
           name: "",

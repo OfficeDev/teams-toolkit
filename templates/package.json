@@ -12,6 +12,7 @@
       "@microsoft/teamsfx": "^0.5.0",
       "@microsoft/adaptivecards-tools": "^0.1.2"
     },
+    "syncup": false,
     "devDependencies": {
         "@shared/eslint-config": "file:../packages/eslint-config",
         "@shared/prettier-config": "file:../packages/prettier-config",

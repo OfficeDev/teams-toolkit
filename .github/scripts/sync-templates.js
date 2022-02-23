@@ -20,7 +20,12 @@ function recursivelyListPackageJsonFilePath(dir, list = []) {
 }
 
 const depPkgs = recursivelyListPackageJsonFilePath(templateDir);
-const templatesDeps = require(path.join(templateDir, 'packages.json')).dependencies
+const syncOption = require(path.join(templateDir, 'package.json')).syncup
+if(syncOption === false){
+    console.log("config no sync up, just return")
+    return
+}
+const templatesDeps = require(path.join(templateDir, 'package.json')).dependencies
 for(let file of depPkgs) {
     const pkg_ = fse.readJsonSync(file);
     const dep = pkg_.dependencies;

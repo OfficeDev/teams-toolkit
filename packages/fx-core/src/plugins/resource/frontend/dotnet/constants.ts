@@ -40,7 +40,7 @@ export class DotnetPathInfo {
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
 
   static readonly indexPath = ""; // Index path is '/', relational path is empty.
-  static readonly appSettingDevelopment = "appsettings.development.json";
+  static readonly appSettingDevelopment = "appsettings.Development.json";
   static readonly oauthHost = (tenantId: string): string =>
     `https://login.microsoftonline.com/${tenantId}`;
 }

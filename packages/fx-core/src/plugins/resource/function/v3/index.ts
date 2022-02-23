@@ -214,10 +214,10 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     throw new FetchConfigError(key);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
-  async scaffold(
+  async generateCode(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void | undefined, FxError>> {
+    inputs: v3.AddFeatureInputs
+  ): Promise<Result<Void, FxError>> {
     await this.syncConfigFromContext(ctx, inputs);
     const workingPath: string = this.getFunctionProjectRootPath(inputs.projectPath);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
@@ -259,6 +259,8 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
   ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok([]);
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

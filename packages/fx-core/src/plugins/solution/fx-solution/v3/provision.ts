@@ -284,6 +284,7 @@ export async function provisionResources(
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.logProvider.info(msg);
   }
+  solutionConfig.provisionSucceeded = true;
   return ok(envInfo);
 }
 

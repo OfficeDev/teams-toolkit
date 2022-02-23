@@ -62,15 +62,24 @@ export function isLinux() {
   return os.type() === "Linux";
 }
 
+export interface TeamsAppTelemetryInfo {
+  appId: string;
+  tenantId: string;
+}
+
 // Only used for telemetry when multi-env is enabled
-export function getTeamsAppIdByEnv(env: string) {
+export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInfo | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;
 
     if (isValidProject(ws)) {
       const result = environmentManager.getEnvStateFilesPath(env, ws);
       const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      return envJson[PluginNames.APPST].teamsAppId;
+      const appstudioState = envJson[PluginNames.APPST];
+      return {
+        appId: appstudioState.teamsAppId,
+        tenantId: appstudioState.tenantId,
+      };
     }
   } catch (e) {
     return undefined;

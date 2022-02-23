@@ -280,13 +280,14 @@ export class FxCore implements v3.ICore {
         // there is no solution settings if created from existing app
         // create default env
         ctx.projectSettings = projectSettings;
-        const createEnvResult = await this.createEnvWithName(
-          environmentManager.getDefaultEnvName(),
-          projectSettings,
-          inputs
+        const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
+        const writeEnvResult = await environmentManager.writeEnvConfig(
+          projectPath,
+          newEnvConfig,
+          environmentManager.getDefaultEnvName()
         );
-        if (createEnvResult.isErr()) {
-          return err(createEnvResult.error);
+        if (writeEnvResult.isErr()) {
+          return err(writeEnvResult.error);
         }
         // call App Studio V3 API to create manifest with placeholder
         const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);

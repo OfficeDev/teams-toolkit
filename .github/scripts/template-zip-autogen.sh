@@ -12,9 +12,6 @@ TEMPLATE_LIST=(
     blazor-base.default
 )
 
-# Copy bot code to msgext-bot, except readme and images
-rsync -az --recursive --exclude "*.md" --exclude "*images/*" ./templates/bot/ ./templates/bot-msgext/
-
 for LANGUAGE in ${LANGUAGE_LIST[@]}; do
     for TEMPLATE in ${TEMPLATE_LIST[@]}; do
         TEMPLATE=($(echo $TEMPLATE | tr "." "\n"))

@@ -14,9 +14,9 @@ export class telemetryHelper {
   ): void {
     properties[TelemetryKeys.Component] = PluginCICD.PLUGIN_NAME;
     properties[TelemetryKeys.AppId] =
-      (envInfo.state
-        .get(PluginSolution.PLUGIN_NAME)
-        ?.get(PluginSolution.REMOTE_TEAMS_APPID) as string) || "";
+      (envInfo.state?.[PluginSolution.PLUGIN_NAME]?.[
+        PluginSolution.REMOTE_TEAMS_APPID
+      ] as string) || "";
   }
 
   static sendStartEvent(

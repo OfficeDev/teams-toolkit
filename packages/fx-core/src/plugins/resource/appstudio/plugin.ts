@@ -113,7 +113,7 @@ export class AppStudioPluginImpl {
         return err(appDefinitionAndManifest.error);
       }
 
-      const localTeamsAppID = await this.getTeamsAppId(ctx, true);
+      const localTeamsAppID = await this.getTeamsAppId(ctx, !isConfigUnifyEnabled());
 
       let createIfNotExist = false;
       if (!localTeamsAppID) {
@@ -1496,9 +1496,12 @@ export class AppStudioPluginImpl {
               : "{{localSettings.teamsApp.teamsAppId}}",
         },
         bot: {
-          botId: ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-            ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-            : "{{localSettings.bot.botId}}",
+          botId:
+            isConfigUnifyEnabled() && botId
+              ? botId
+              : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+              ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+              : "{{localSettings.bot.botId}}",
         },
       },
     };

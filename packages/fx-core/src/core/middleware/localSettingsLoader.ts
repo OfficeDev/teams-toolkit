@@ -10,14 +10,14 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
-import { IsSimpleAuthEnabled } from "../../common/tools";
+import { isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
 import { isPureExistingApp } from "../utils";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (!shouldIgnored(ctx)) {
+  if (!shouldIgnored(ctx) && !isConfigUnifyEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());

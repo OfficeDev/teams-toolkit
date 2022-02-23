@@ -29,6 +29,7 @@ import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
+import { isConfigUnifyEnabled } from "../../../..";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -198,12 +199,14 @@ export async function _scaffoldLocalDebugSettings(
 
         // generate localSettings.json
 
-        localSettings = await scaffoldLocalSettingsJson(
-          projectSetting,
-          inputs,
-          cryptoProvider,
-          localSettings
-        );
+        if (!isConfigUnifyEnabled()) {
+          localSettings = await scaffoldLocalSettingsJson(
+            projectSetting,
+            inputs,
+            cryptoProvider,
+            localSettings
+          );
+        }
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;

@@ -98,6 +98,7 @@ import {
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
   isSPFxProject,
+  isTeamsfx,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -1129,7 +1130,36 @@ async function openMarkdownHandler() {
 }
 
 export async function openReadMeHandler(args: any[]) {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+  if (!(await isTeamsfx())) {
+    const createProject = {
+      title: StringResources.vsc.handlers.createProjectTitle,
+      run: async (): Promise<void> => {
+        createNewProjectHandler();
+      },
+    };
+
+    const openFolder = {
+      title: StringResources.vsc.handlers.openFolderTitle,
+      run: async (): Promise<void> => {
+        commands.executeCommand("vscode.openFolder");
+      },
+    };
+
+    vscode.window
+      .showInformationMessage(
+        StringResources.vsc.handlers.createProjectNotification,
+        createProject,
+        openFolder
+      )
+      .then((selection) => {
+        if (
+          selection?.title === StringResources.vsc.handlers.createProjectTitle ||
+          selection?.title == StringResources.vsc.handlers.openFolderTitle
+        ) {
+          selection.run();
+        }
+      });
+  } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -1155,7 +1185,7 @@ export async function openReadMeHandler(args: any[]) {
       : Uri.file(`${targetFolder}/README.md`);
 
     workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
   }

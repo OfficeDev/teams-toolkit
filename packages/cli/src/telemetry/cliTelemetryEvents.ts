@@ -106,6 +106,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {

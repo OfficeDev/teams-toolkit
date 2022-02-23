@@ -1,0 +1,9 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "rules": {
+        "quotes": [ "error", "single" ]
+    }
+}

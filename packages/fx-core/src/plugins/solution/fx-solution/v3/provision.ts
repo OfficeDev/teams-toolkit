@@ -37,6 +37,7 @@ import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import { TabSPFxItem } from "../question";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
@@ -51,7 +52,7 @@ export async function getQuestionsForProvision(
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
-    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+    const plugin = Container.get<v3.PluginV3>(pluginName);
     if (plugin.getQuestionsForProvision) {
       const res = await plugin.getQuestionsForProvision(ctx, inputs, envInfo, tokenProvider);
       if (res.isErr()) {
@@ -116,7 +117,12 @@ export async function provisionResources(
   teamsAppResource.teamsAppId = teamsAppId;
   solutionGlobalVars.TeamsAppId = teamsAppId;
 
-  if (solutionSetting) {
+  if (
+    solutionSetting &&
+    !(ctx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+      TabSPFxItem.id
+    )
+  ) {
     if (envInfo.envName === "local") {
       // TODO for local debug
       const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, envInfo);
@@ -159,12 +165,10 @@ export async function provisionResources(
     }
 
     // collect plugins and provisionResources
-    const plugins = solutionSetting.activeResourcePlugins.map((p) =>
-      Container.get<v3.FeaturePlugin>(p)
-    );
+    const plugins = solutionSetting.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p));
     const provisionThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.provisionResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.provisionResource))
+      .map((plugin: v3.PluginV3) => {
         return {
           pluginName: `${plugin.name}`,
           taskName: "provisionResource",
@@ -210,8 +214,8 @@ export async function provisionResources(
 
     // collect plugins and call configureResource
     const configureResourceThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.configureResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.configureResource))
+      .map((plugin: v3.PluginV3) => {
         if (!envInfo.state[plugin.name]) {
           envInfo.state[plugin.name] = {};
         }
@@ -253,11 +257,7 @@ export async function provisionResources(
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = util.format(
-        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-        ctx.projectSetting.appName
-      );
-      ctx.logProvider.info(msg);
+      const msg = getStrings().solution.ProvisionSuccessAzure;
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -275,6 +275,14 @@ export async function provisionResources(
   const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo);
   if (updateTeamsAppRes.isErr()) {
     return err(updateTeamsAppRes.error);
+  }
+  if (envInfo.envName !== "local") {
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
+    );
+    ctx.userInteraction.showMessage("info", msg, false);
+    ctx.logProvider.info(msg);
   }
   return ok(envInfo);
 }

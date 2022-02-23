@@ -8,8 +8,7 @@ import { LaunchBrowser } from "../constants";
 export function generateConfigurations(
   includeFrontend: boolean,
   includeBackend: boolean,
-  includeBot: boolean,
-  isMigrateFromV1: boolean
+  includeBot: boolean
 ): Record<string, unknown>[] {
   let edgeOrder = 2,
     chromeOrder = 1;
@@ -18,12 +17,10 @@ export function generateConfigurations(
     chromeOrder = 2;
   }
 
-  const launchConfigurations: Record<string, unknown>[] = isMigrateFromV1
-    ? []
-    : [
-        launchRemote(LaunchBrowser.edge, "Edge", edgeOrder),
-        launchRemote(LaunchBrowser.chrome, "Chrome", chromeOrder),
-      ];
+  const launchConfigurations: Record<string, unknown>[] = [
+    launchRemote(LaunchBrowser.edge, "Edge", edgeOrder),
+    launchRemote(LaunchBrowser.chrome, "Chrome", chromeOrder),
+  ];
 
   if (includeFrontend) {
     launchConfigurations.push(startAndAttachToFrontend(LaunchBrowser.edge, "Edge"));

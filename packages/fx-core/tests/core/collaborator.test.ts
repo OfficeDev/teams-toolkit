@@ -199,7 +199,7 @@ describe("Collaborator APIs for V3", () => {
         },
         config: {},
       };
-
+      inputs.platform = Platform.CLI;
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToListCollaborator);
     });
@@ -411,6 +411,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
+      inputs.platform = Platform.CLI;
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
@@ -628,6 +629,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.email = "your_collaborator@yourcompany.com";
+      inputs.platform = Platform.CLI;
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });

@@ -63,7 +63,6 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
-  isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -97,7 +96,7 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-  getTeamsAppIdByEnv,
+  getTeamsAppTelemetryInfoByEnv,
   isSPFxProject,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
@@ -366,21 +365,9 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
-export async function getNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
-  return result;
-}
-
-export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.MigrateV1ProjectStart,
-    getTriggerFromProperty(args)
-  );
-  const result = await runCommand(Stage.migrateV1);
-  if (result.isOk()) {
-    commands.executeCommand("workbench.action.reloadWindow", result.value);
-  }
   return result;
 }
 
@@ -611,18 +598,6 @@ export async function runCommand(
         }
         break;
       }
-      case Stage.migrateV1: {
-        const tmpResult = await core.migrateV1Project(inputs);
-        if (tmpResult.isErr()) {
-          result = err(tmpResult.error);
-        } else {
-          if (tmpResult?.value) {
-            const uri = Uri.file(tmpResult.value);
-            result = ok(uri);
-          }
-        }
-        break;
-      }
       case Stage.provision: {
         result = await core.provisionResources(inputs);
         break;
@@ -830,7 +805,11 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    if (appInfo) {
+      envProperty[TelemetryProperty.AppId] = appInfo.appId;
+      envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
+    }
   }
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
@@ -1123,9 +1102,7 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isMigrateFromV1Project(workspacePath)) {
-      targetFolder = workspacePath;
-    } else if (await isSPFxProject(workspacePath)) {
+    if (await isSPFxProject(workspacePath)) {
       showLocalDebugMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {

@@ -79,6 +79,7 @@ export enum TelemetryProperty {
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
   AppId = "appid",
+  TenantId = "tenant-id",
   UserId = "hashed-userid",
   AccountType = "account-type",
   Success = "success",

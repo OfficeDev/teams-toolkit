@@ -36,7 +36,7 @@ export async function getQuestionsForDeploy(
   const pluginPrefix = "fx-resource-";
   for (const pluginName of pluginNames) {
     if (pluginName) {
-      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+      const plugin = Container.get<v3.PluginV3>(pluginName);
       if (plugin.deploy) {
         deployOptions.push({
           id: pluginName,
@@ -72,7 +72,7 @@ export async function deploy(
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];
   const plugins = pluginNames
-    .map((name) => Container.get<v3.FeaturePlugin>(name))
+    .map((name) => Container.get<v3.PluginV3>(name))
     .filter((p) => p.deploy !== undefined);
   if (plugins.length === 0) return ok(Void);
   const thunks = plugins.map((plugin) => {

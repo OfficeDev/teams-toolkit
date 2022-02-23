@@ -70,7 +70,6 @@ export class MockCore implements Core {
 
   async getQuestionsForUserTask(
     router: FunctionRouter,
-
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));

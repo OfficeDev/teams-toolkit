@@ -85,12 +85,6 @@ export interface AppStudioTokenProvider {
 }
 
 // @public (undocumented)
-export const ArchiveFolderName = ".archive";
-
-// @public (undocumented)
-export const ArchiveLogFileName = ".archive.log";
-
-// @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
 
 // @public (undocumented)
@@ -2029,9 +2023,6 @@ export interface UserInteraction {
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
-
-// @public (undocumented)
-export const V1ManifestFileName = "manifest.json";
 
 declare namespace v2 {
     export {

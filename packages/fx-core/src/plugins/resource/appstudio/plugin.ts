@@ -15,7 +15,7 @@ import {
   BuildFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
-  ConfigMap,
+  validateManifest,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
@@ -28,7 +28,6 @@ import {
   REMOTE_AAD_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
-  LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
@@ -89,16 +88,11 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
-import Ajv from "ajv-draft-04";
-import axios from "axios";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
-  private readonly ajv;
 
-  constructor() {
-    this.ajv = new Ajv({ formats: { uri: true } });
-  }
+  constructor() {}
 
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
@@ -1486,18 +1480,10 @@ export class AppStudioPluginImpl {
   private async validateManifestAgainstSchema(
     manifest: TeamsAppManifest
   ): Promise<Result<string[], FxError>> {
-    const errors: string[] = [];
     if (manifest.$schema) {
-      const instance = axios.create();
       try {
-        const res = await instance.get(manifest.$schema);
-        const validate = this.ajv.compile(res.data);
-        const valid = validate(manifest);
-        if (!valid) {
-          validate.errors?.map((error) => {
-            errors.push(`${error.instancePath} ${error.message}`);
-          });
-        }
+        const result = await validateManifest(manifest);
+        return ok(result);
       } catch (e: any) {
         return err(
           AppStudioResultFactory.UserError(
@@ -1518,7 +1504,6 @@ export class AppStudioPluginImpl {
         )
       );
     }
-    return ok(errors);
   }
 
   private async getAppDefinitionAndManifest(

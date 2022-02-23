@@ -77,10 +77,18 @@ export class SomethingMissingError extends PreconditionError {
     super(Messages.SomethingIsMissing(something), [Messages.RetryTheCurrentStep]);
   }
 }
+
 export function CheckThrowSomethingMissing(name: string, value: any): void {
   if (!value) {
     throw new SomethingMissingError(name);
   }
+}
+
+export function CheckAndThrowIfMissing<T>(name: string, value: T | null | undefined): T {
+  if (!value) {
+    throw new SomethingMissingError(name);
+  }
+  return value;
 }
 
 export class UserInputsError extends PluginError {

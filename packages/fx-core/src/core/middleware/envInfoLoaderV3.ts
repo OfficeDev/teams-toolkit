@@ -2,7 +2,17 @@
 // Licensed under the MIT license.
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, ProjectSettings, Result, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  ProjectSettings,
+  Result,
+  Stage,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { newEnvInfoV3 } from "..";
 import { CoreHookContext } from "../..";
 import { LocalCrypto } from "../crypto";
@@ -30,6 +40,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     // make sure inputs.env always has value so telemetry can use it.
+    if (inputs.stage === Stage.debug) inputs.ignoreEnvInfo = false; // for local debug v3, envInfo should not be ignored
     const envRes = await getTargetEnvName(skip, inputs, ctx);
     if (envRes.isErr()) {
       ctx.result = err(envRes.error);

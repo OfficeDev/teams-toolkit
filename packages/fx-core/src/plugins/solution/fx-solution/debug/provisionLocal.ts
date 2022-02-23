@@ -271,6 +271,25 @@ export async function setupLocalEnvironment(
           }
         }
       }
+    } else if (inputs.platform === Platform.VS) {
+      if (includeFrontend) {
+        envInfo.state[ResourcePlugins.FrontendHosting] ??= {};
+        envInfo.state[ResourcePlugins.FrontendHosting].endpoint = "https://localhost:44302";
+        envInfo.state[ResourcePlugins.FrontendHosting].domain = "localhost";
+      }
+
+      if (includeBot) {
+        envInfo.state[ResourcePlugins.Bot] ??= {};
+        const ngrokHttpUrl = await getNgrokHttpUrl(2544);
+        if (!ngrokHttpUrl) {
+          const error = NgrokTunnelNotConnected();
+          TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
+          return err(error);
+        } else {
+          envInfo.state[ResourcePlugins.Bot].siteEndpoint = ngrokHttpUrl;
+          envInfo.state[ResourcePlugins.Bot].validDomain = ngrokHttpUrl.slice(8);
+        }
+      }
     }
   } catch (error: any) {
     const systemError = SetupLocalDebugSettingsError(error);

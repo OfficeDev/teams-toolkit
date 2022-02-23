@@ -54,6 +54,12 @@ export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
   static readonly resourceGroupName = "resourceGroupName";
+
+  public static readonly aadClientId: string = "clientId";
+  public static readonly aadClientSecret: string = "clientSecret";
+  public static readonly botId: string = "botId";
+  public static readonly botPassword: string = "botPassword";
+  public static readonly appTenantId: string = "tenantId";
 }
 
 export class DotnetConfigInfo {

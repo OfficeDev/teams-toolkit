@@ -11,6 +11,8 @@ import chaiAsPromised from "chai-as-promised";
 import { FrontendPlugin as WebappPlugin } from "../../../../../src/plugins/resource/frontend";
 import { TestHelper } from "../helper";
 import {
+  DependentPluginInfo,
+  DotnetConfigInfo as ConfigInfo,
   DotnetPathInfo as PathInfo,
   DotnetPluginInfo as PluginInfo,
 } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
@@ -21,13 +23,13 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { PathLike } from "fs";
-import { FRONTEND_INDEX_PATH } from "../../../../../src/plugins/resource/appstudio/constants";
 import { FeatureFlagName } from "../../../../../src/common/constants";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 
 chai.use(chaiAsPromised);
 
 const appSettingDevelopment =
-  '{TeamsFx": {"Authentication": {"ClientId": "$clientId$","ClientSecret": "$client-secret$","OAuthAuthority": "$oauthAuthority$"}';
+  '{TeamsFx": {"Authentication": {"ClientId": "$clientId$","ClientSecret": "$client-secret$","OAuthAuthority": "$oauthAuthority$"}, "BOT_ID": "$botId$", "BOT_PASSWORD": "$bot-password$"}}';
 
 const clientId = "clientId";
 const clientSecret = "clientSecret";
@@ -36,7 +38,7 @@ const botId = "botId";
 const botPassword = "botPassword";
 const expectedAppSettings = `{TeamsFx": {"Authentication": {"ClientId": "${clientId}","ClientSecret": "${clientSecret}","OAuthAuthority": "${PathInfo.oauthHost(
   tenantId
-)}"}`;
+)}"}, "BOT_ID": "${botId}", "BOT_PASSWORD": "${botPassword}"}}`;
 
 const env = Object.assign({}, process.env);
 
@@ -44,6 +46,14 @@ describe("WebappPlugin", () => {
   describe("config unify disabled", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;
+
+    before(() => {
+      process.env[FeatureFlagName.ConfigUnify] = "false";
+    });
+
+    after(() => {
+      process.env = env;
+    });
 
     beforeEach(async () => {
       plugin = new WebappPlugin();
@@ -103,7 +113,24 @@ describe("WebappPlugin", () => {
       pluginContext = TestHelper.getFakePluginContext();
       pluginContext.envInfo = {
         envName: "test",
-        state: new Map([[PluginInfo.pluginName, new Map([])]]),
+        state: new Map([
+          [PluginInfo.pluginName, new Map([])],
+          [
+            PluginNames.AAD,
+            new Map([
+              [DependentPluginInfo.aadClientId, clientId],
+              [DependentPluginInfo.aadClientSecret, clientSecret],
+            ]),
+          ],
+          [PluginNames.APPST, new Map([[DependentPluginInfo.appTenantId, tenantId]])],
+          [
+            PluginNames.BOT,
+            new Map([
+              [DependentPluginInfo.botId, botId],
+              [DependentPluginInfo.botPassword, botPassword],
+            ]),
+          ],
+        ]),
       } as EnvInfo;
     });
 
@@ -112,6 +139,20 @@ describe("WebappPlugin", () => {
     });
     it("local debug", async () => {
       const result = await plugin.localDebug(pluginContext);
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(
+        pluginContext.envInfo.state.get(PluginInfo.pluginName)?.get(ConfigInfo.indexPath),
+        PathInfo.indexPath
+      );
+    });
+
+    it("post local debug", async () => {
+      sinon.stub(fs, "readFile").resolves(appSettingDevelopment as any);
+      sinon.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+        chai.assert.equal(data, expectedAppSettings);
+      });
+
+      const result = await plugin.postLocalDebug(pluginContext);
       chai.assert.isTrue(result.isOk());
     });
   });

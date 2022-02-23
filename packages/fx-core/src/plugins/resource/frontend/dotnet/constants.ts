@@ -68,6 +68,7 @@ export class DotnetConfigInfo {
   static readonly webAppEndpoint = "endpoint";
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
+  static readonly indexPath = "indexPath";
 }
 
 export class Capability {

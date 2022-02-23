@@ -213,7 +213,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     if (isConfigUnifyEnabled()) {
-      ctx.envInfo.state.get(PluginInfo.pluginName)?.set(FRONTEND_INDEX_PATH, PathInfo.indexPath);
+      ctx.envInfo.state.get(PluginInfo.pluginName)?.set(ConfigInfo.indexPath, PathInfo.indexPath);
     } else {
       ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabIndexPath, PathInfo.indexPath);
     }

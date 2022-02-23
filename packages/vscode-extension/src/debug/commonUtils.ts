@@ -9,7 +9,7 @@ import * as constants from "./constants";
 import { ConfigFolderName, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { getTeamsAppIdByEnv } from "../utils/commonUtils";
+import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
 import { LocalEnvManager, FolderName } from "@microsoft/teamsfx-core";
@@ -130,8 +130,8 @@ export async function getDebugConfig(
       }
 
       // load env state
-      const remoteId = getTeamsAppIdByEnv(env!);
-      if (remoteId === undefined) {
+      const appInfo = getTeamsAppTelemetryInfoByEnv(env!);
+      if (appInfo === undefined) {
         throw new UserError({
           name: "MissingTeamsAppId",
           message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
@@ -139,7 +139,7 @@ export async function getDebugConfig(
         });
       }
 
-      return { appId: remoteId as string, env: env };
+      return { appId: appInfo.appId as string, env: env };
     }
   } catch (error: any) {
     showError(error);

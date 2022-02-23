@@ -18,13 +18,9 @@ import {
   Platform,
 } from "@microsoft/teamsfx-api";
 
-import {
-  FxResult,
-  FxCICDPluginResultFactory as ResultFactory,
-  FxCICDPluginResultFactory,
-} from "./result";
+import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { CICDImpl } from "./plugin";
-import { ErrorType, InternalError, PluginError } from "./errors";
+import { ErrorType, InternalError, NoProjectOpenedError, PluginError } from "./errors";
 import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -41,6 +37,7 @@ import {
 } from "./questions";
 import { Logger } from "./logger";
 import { environmentManager } from "../../..";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -61,6 +58,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     Logger.setLogger(context.logProvider);
     const result = await this.runWithExceptionCatching(
       context,
+      envInfo,
       () => this.cicdImpl.addCICDWorkflows(context, inputs, envInfo),
       true,
       LifecycleFuncNames.ADD_CICD_WORKFLOWS
@@ -96,16 +94,14 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
-    if (inputs.platform != Platform.CLI_HELP && inputs.platform != Platform.CLI) {
+    if (inputs.platform == Platform.VSCode) {
       if (!inputs.projectPath) {
-        throw new InternalError(
-          "No project opened, you can create a new project or open an existing one."
-        );
+        throw new NoProjectOpenedError();
       }
 
       const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
-        throw new InternalError("List env failed.", envProfilesResult.error);
+        throw new InternalError("Failed to list multi env.", envProfilesResult.error);
       }
 
       const whichEnvironment: SingleSelectQuestion = {
@@ -136,6 +132,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,
+        envInfo,
         () => this.addCICDWorkflows(ctx, inputs, envInfo),
         true,
         LifecycleFuncNames.ADD_CICD_WORKFLOWS
@@ -146,16 +143,20 @@ export class CICDPluginV2 implements ResourcePlugin {
 
   private async runWithExceptionCatching(
     context: Context,
+    envInfo: v2.EnvInfoV2,
     fn: () => Promise<FxResult>,
     sendTelemetry: boolean,
     name: string
   ): Promise<FxResult> {
     try {
+      sendTelemetry && telemetryHelper.sendStartEvent(context, envInfo, name);
       const res: FxResult = await fn();
+      sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, res);
       return res;
     } catch (e) {
       if (e instanceof UserError || e instanceof SystemError) {
         const res = err(e);
+        sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, res);
         return res;
       }
 
@@ -164,10 +165,22 @@ export class CICDPluginV2 implements ResourcePlugin {
           e.errorType === ErrorType.System
             ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
             : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+        sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, result);
         return result;
       } else {
         // Unrecognized Exception.
         const UnhandledErrorCode = "UnhandledError";
+        sendTelemetry &&
+          telemetryHelper.sendResultEvent(
+            context,
+            envInfo,
+            name,
+            ResultFactory.SystemError(
+              UnhandledErrorCode,
+              `Got an unhandled error: ${e.message}`,
+              e.innerError
+            )
+          );
         return ResultFactory.SystemError(UnhandledErrorCode, e.message, e);
       }
     }

@@ -6,8 +6,9 @@ import { FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
 import { questionNames } from "./questions";
-import { InternalError } from "./errors";
+import { InternalError, NoProjectOpenedError } from "./errors";
 import { generateBuildScript } from "./utils/buildScripts";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class CICDImpl {
   public async addCICDWorkflows(
@@ -17,7 +18,7 @@ export class CICDImpl {
   ): Promise<Result<any, FxError>> {
     // 1. Key inputs (envName, provider, template) x (hostingType, ).
     if (!inputs.projectPath) {
-      throw new InternalError("Project path is undefined.");
+      throw new NoProjectOpenedError();
     }
     const projectPath = inputs.projectPath;
     // By default(VSC), get env name from plugin's own `target-env` question.
@@ -31,6 +32,12 @@ export class CICDImpl {
     if (!envName || !providerName || templateNames.length == 0) {
       throw new InternalError("Some preconditions of inputs are not met.");
     }
+
+    telemetryHelper.sendSuccessEvent(context, envInfo, "collect-cicd-questions", {
+      env: envName,
+      provider: providerName,
+      template: templateNames.join(","),
+    });
 
     // 2. Call factory to get provider instance.
     const providerInstance = CICDProviderFactory.create(providerName as ProviderKind);

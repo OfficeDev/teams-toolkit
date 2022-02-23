@@ -50,3 +50,23 @@ export class InternalError extends PluginError {
     );
   }
 }
+
+export class NoProjectOpenedError extends PluginError {
+  constructor() {
+    super(ErrorType.User, ErrorNames.NO_PROJECT_OPENED_ERROR, "No project opened.", [
+      Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING,
+    ]);
+  }
+}
+
+export class FileSystemError extends PluginError {
+  constructor(details: string, innerError?: Error) {
+    super(
+      ErrorType.User,
+      ErrorNames.FILE_SYSTEM_ERROR,
+      details,
+      [Suggestions.CHECK_PERMISSION, Suggestions.RETRY_THE_CURRENT_STEP],
+      innerError
+    );
+  }
+}

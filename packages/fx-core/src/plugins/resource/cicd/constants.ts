@@ -7,6 +7,8 @@ export class LifecycleFuncNames {
 
 export class ErrorNames {
   public static readonly INTERNAL_ERROR = "InternalError";
+  public static readonly NO_PROJECT_OPENED_ERROR = "NoProjectOpenedError";
+  public static readonly FILE_SYSTEM_ERROR = "FileSystemError";
 }
 
 export class Alias {
@@ -41,6 +43,9 @@ export class PluginCICD {
 
 export class Suggestions {
   public static readonly RETRY_THE_CURRENT_STEP = "Please retry the current step.";
+  public static readonly CREATE_PROJECT_OR_OPEN_EXISTING =
+    "Create a new project or open an existing one.";
+  public static readonly CHECK_PERMISSION = "Please check if you got sufficient permission.";
 }
 
 export class URLPrefixes {

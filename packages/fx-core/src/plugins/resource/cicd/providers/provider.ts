@@ -5,7 +5,7 @@ import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
 import { sendRequestWithTimeout } from "../../../../common/template-utils/templatesUtils";
-import { InternalError } from "../errors";
+import { FileSystemError, InternalError, NoProjectOpenedError } from "../errors";
 import { TemplateKind } from "./enums";
 import { Logger } from "../logger";
 import path from "path";
@@ -25,7 +25,7 @@ export class CICDProvider {
   ): Promise<Result<boolean, FxError>> {
     // 0. Preconditions check.
     if (!(await fs.pathExists(projectPath))) {
-      throw new InternalError(`${projectPath} not found.`);
+      throw new NoProjectOpenedError();
     }
     if (!Object.values<string>(TemplateKind).includes(templateName)) {
       throw new InternalError(`${templateName} as template kind was not recognized.`);
@@ -39,7 +39,7 @@ export class CICDProvider {
     try {
       await fs.ensureDir(targetPath);
     } catch (e) {
-      throw new InternalError(`Fail to create path: ${targetPath}`, e as Error);
+      throw new FileSystemError(`Fail to create path: ${targetPath}`, e as Error);
     }
 
     // 2. Read README from remote or local.
@@ -58,7 +58,7 @@ export class CICDProvider {
       try {
         await fs.writeFile(targetReadMePath, readmeContent);
       } catch (e) {
-        throw new InternalError(`Fail to write file: ${targetReadMePath}`, e as Error);
+        throw new FileSystemError(`Fail to write file: ${targetReadMePath}`, e as Error);
       }
     }
 
@@ -87,7 +87,7 @@ export class CICDProvider {
       try {
         await fs.writeFile(targetTemplatePath, renderedContent);
       } catch (e) {
-        throw new InternalError(`Fail to write file: ${targetTemplatePath}`, e as Error);
+        throw new FileSystemError(`Fail to write file: ${targetTemplatePath}`, e as Error);
       }
     }
 
@@ -118,7 +118,7 @@ export class CICDProvider {
     try {
       return (await fs.readFile(localPath)).toString();
     } catch (e) {
-      throw new InternalError(`Fail to read file: ${localPath}`, e as Error);
+      throw new FileSystemError(`Fail to read file: ${localPath}`, e as Error);
     }
   }
 }

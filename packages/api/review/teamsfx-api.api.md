@@ -878,8 +878,6 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
-    ignoreLock?: boolean;
-    // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;

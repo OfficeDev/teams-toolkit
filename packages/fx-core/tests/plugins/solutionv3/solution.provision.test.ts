@@ -19,7 +19,7 @@ import "mocha";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import arm from "../../../src/plugins/solution/fx-solution/arm";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
   getQuestionsForProvision,
   provisionResources,
@@ -78,7 +78,7 @@ describe("SolutionV3 - provision", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",
@@ -142,7 +142,7 @@ describe("SolutionV3 - provision", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",

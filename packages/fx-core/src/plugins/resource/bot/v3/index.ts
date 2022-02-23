@@ -8,7 +8,6 @@ import {
   EnvConfig,
   err,
   FxError,
-  Inputs,
   ok,
   Result,
   TokenProvider,
@@ -18,7 +17,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import {
   generateBicepFromFile,
@@ -77,12 +75,9 @@ import {
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 
 @Service(BuiltInFeaturePluginNames.bot)
-export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
+export class NodeJSBotPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.bot;
   displayName = "NodeJS Bot";
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok([BuiltInFeaturePluginNames.identity]);
-  }
   getProgrammingLanguage(ctx: v2.Context): ProgrammingLanguage {
     const rawProgrammingLanguage = ctx.projectSetting.programmingLanguage;
     if (
@@ -106,12 +101,13 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
-  async scaffold(
+  async generateCode(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.ScaffoldingBot);
-
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok(Void);
     const handler = await ProgressBarFactory.newProgressBar(
       ProgressBarConstants.SCAFFOLD_TITLE,
       ProgressBarConstants.SCAFFOLD_STEPS_NUM,
@@ -155,10 +151,12 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     return ok(Void);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
-  async generateResourceTemplate(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok([]);
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
@@ -177,7 +175,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       pluginCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { bot: provisionModules },
@@ -198,28 +196,19 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
         )
       ),
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
     const newCapabilitySet = new Set<string>();
     capabilities.forEach((c: string) => newCapabilitySet.add(c));
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    let templates: v2.ResourceTemplate[] = [];
-    if (!activeResourcePlugins.includes(this.name)) {
-      // bot plugin is added for first time, scaffold and generate resource template
-      const scaffoldRes = await this.scaffold(ctx, inputs);
-      if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-      const armRes = await this.generateResourceTemplate(ctx, inputs);
-      if (armRes.isErr()) return err(armRes.error);
-      templates = armRes.value;
-    }
     const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
     const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
     if (capabilitiesAnswer.includes(BotOptionItem.id)) {
@@ -239,20 +228,20 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
 
     solutionSettings.capabilities = Array.from(newCapabilitySet);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(templates);
+    return ok([BuiltInFeaturePluginNames.identity]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
-  async afterOtherFeaturesAdded(
+  async updateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const configModule = await generateBicepFromFile(
       path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       pluginCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Reference: {
         resourceId: BotBicep.resourceId,
         hostName: BotBicep.hostName,
@@ -262,7 +251,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
         Modules: { bot: configModule },
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   private async getAzureAccountCredential(
     tokenProvider: AzureAccountProvider

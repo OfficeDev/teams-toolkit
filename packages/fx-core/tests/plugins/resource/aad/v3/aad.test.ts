@@ -27,7 +27,7 @@ import {
 } from "../../../../../src/plugins/resource/aad/v3";
 import {
   BuiltInFeaturePluginNames,
-  TeamsFxAzureSolutionNameV3,
+  BuiltInSolutionNames,
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
 import * as uuid from "uuid";
@@ -351,7 +351,7 @@ describe("AAD resource plugin V3", () => {
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
     projectSettings.solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
+      name: BuiltInSolutionNames.azure,
       version: "1.0.0",
       capabilities: ["Tab", "Bot"],
       azureResources: [],
@@ -395,7 +395,7 @@ describe("AAD resource plugin V3", () => {
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
     projectSettings.solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
+      name: BuiltInSolutionNames.azure,
       version: "1.0.0",
       capabilities: ["Tab", "Bot"],
       azureResources: [],
@@ -487,7 +487,7 @@ describe("AAD resource plugin V3", () => {
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
     projectSettings.solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
+      name: BuiltInSolutionNames.azure,
       version: "1.0.0",
       capabilities: ["Tab", "Bot"],
       azureResources: [],
@@ -536,7 +536,7 @@ describe("AAD resource plugin V3", () => {
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
     projectSettings.solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
+      name: BuiltInSolutionNames.azure,
       version: "1.0.0",
       capabilities: ["Tab", "Bot"],
       azureResources: [],

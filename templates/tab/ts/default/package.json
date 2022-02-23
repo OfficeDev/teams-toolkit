@@ -12,9 +12,9 @@
         "react-dom": "^16.14.0",
         "react-router-dom": "^5.1.2",
         "react-scripts": "^4.0.3",
-	    "@microsoft/mgt-react": "2.3.2-next.teamsfx.f5fc7d2",
-	    "@microsoft/mgt-element": "2.3.2-next.teamsfx.f5fc7d2",
-	    "@microsoft/mgt-teamsfx-provider": "2.3.2-next.teamsfx.f5fc7d2"
+        "@microsoft/mgt-react": "2.3.2-next.teamsfx.f5fc7d2",
+        "@microsoft/mgt-element": "2.3.2-next.teamsfx.f5fc7d2",
+        "@microsoft/mgt-teamsfx-provider": "2.3.2-next.teamsfx.f5fc7d2"
     },
     "devDependencies": {
         "@types/jest": "^26.0.15",

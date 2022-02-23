@@ -225,7 +225,6 @@ export interface Inputs extends Json {
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;
-  ignoreLock?: boolean;
   ignoreConfigPersist?: boolean;
   ignoreEnvInfo?: boolean;
   env?: string;

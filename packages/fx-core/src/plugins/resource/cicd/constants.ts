@@ -50,7 +50,7 @@ export class Suggestions {
 
 export class URLPrefixes {
   public static readonly CICD_TEMPLATES =
-    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/ruhe/cicd_scaffolding/packages/fx-core/templates/plugins/resource/cicd";
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/fx-core/templates/plugins/resource/cicd";
 }
 
 export class Retry {

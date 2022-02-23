@@ -8,8 +8,6 @@ TEMPLATE_LIST=(
     function-base.default
     function-triggers.HTTPTrigger
     tab.default
-    bot.default
-    msgext.default
     bot-msgext.default
     blazor-base.default
 )
@@ -39,12 +37,12 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
         fi        
         
         # Generate code from Mustache templates for js and ts
-        if [ ${SCOPE} == "bot" ] && [ ${LANGUAGE} != "csharp" ]; then           
-            IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
-        fi
-        if [ ${SCOPE} == "msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
-            IS_ME=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/messageExtensionBot.${LANGUAGE}
-        fi
+        # if [ ${SCOPE} == "bot" ] && [ ${LANGUAGE} != "csharp" ]; then           
+        #     IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
+        # fi
+        # if [ ${SCOPE} == "msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
+        #     IS_ME=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/messageExtensionBot.${LANGUAGE}
+        # fi
         if [ ${SCOPE} == "bot-msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
             IS_ME=true IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
         fi

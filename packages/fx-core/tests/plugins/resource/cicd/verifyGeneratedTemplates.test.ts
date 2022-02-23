@@ -14,6 +14,8 @@ import { CICDProviderFactory } from "../../../../src/plugins/resource/cicd/provi
 import { ProviderKind, TemplateKind } from "../../../../src/plugins/resource/cicd/providers/enums";
 import { sameContents } from "./utils";
 import { MockedV2Context } from "../../solution/util";
+import { generateBuildScript } from "../../../../src/plugins/resource/cicd/utils/buildScripts";
+import Mustache from "mustache";
 
 describe("Verify Generated Templates & README", () => {
   const cicdPlugin: CICDPluginV2 = new CICDPluginV2();
@@ -63,17 +65,41 @@ describe("Verify Generated Templates & README", () => {
 
         const provider = CICDProviderFactory.create(providerKind);
 
-        const res = await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
+        await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
         // Assert
         const filesToBeCompared = Object.values(TemplateKind).map((templateKind, index, arr) => {
           //return [actual, expected].
+          const solutionSettings = context.projectSetting.solutionSettings;
+          const hostType = solutionSettings?.hostType;
+          const capabilities = solutionSettings?.capabilities;
+          const programmingLanguage = solutionSettings?.programmingLanguage;
+          const replacements = {
+            env_name: envInfo.envName,
+            build_script: generateBuildScript(capabilities, programmingLanguage),
+            hosting_type_contains_spfx: hostType == "SPFx",
+            hosting_type_contains_azure: hostType == "Azure",
+          };
+          const sourceTemplatePath = path.join(
+            localTemplatePath,
+            provider.sourceTemplateName!(templateKind)
+          );
+          const renderedContent = Mustache.render(
+            fs.readFileSync(sourceTemplatePath).toString(),
+            replacements
+          );
+          const targetExpectedTemplatePath = path.join(
+            inputs.projectPath!,
+            provider.targetTemplateName!(templateKind, inputs["target-env"])
+          );
+          fs.writeFileSync(targetExpectedTemplatePath, renderedContent);
+
           return [
             path.join(
               inputs.projectPath!,
               provider.scaffoldTo,
               provider.targetTemplateName!(templateKind, inputs["target-env"])
             ),
-            path.join(localTemplatePath, provider.sourceTemplateName!(templateKind)),
+            targetExpectedTemplatePath,
           ];
         });
 
@@ -128,6 +154,30 @@ describe("Verify Generated Templates & README", () => {
             "cicd",
             providerKind
           );
+
+          const solutionSettings = context.projectSetting.solutionSettings;
+          const hostType = solutionSettings?.hostType;
+          const capabilities = solutionSettings?.capabilities;
+          const programmingLanguage = solutionSettings?.programmingLanguage;
+          const replacements = {
+            env_name: envInfo.envName,
+            build_script: generateBuildScript(capabilities, programmingLanguage),
+            hosting_type_contains_spfx: hostType == "SPFx",
+            hosting_type_contains_azure: hostType == "Azure",
+          };
+          const sourceTemplatePath = path.join(
+            localTemplatePath,
+            provider.sourceTemplateName!(templateKind)
+          );
+          const renderedContent = Mustache.render(
+            fs.readFileSync(sourceTemplatePath).toString(),
+            replacements
+          );
+          const targetExpectedTemplatePath = path.join(
+            inputs.projectPath!,
+            provider.targetTemplateName!(templateKind, inputs["target-env"])
+          );
+          fs.writeFileSync(targetExpectedTemplatePath, renderedContent);
           //return [actual, expected].
           return [
             path.join(
@@ -135,7 +185,7 @@ describe("Verify Generated Templates & README", () => {
               provider.scaffoldTo,
               provider.targetTemplateName!(templateKind, inputs["target-env"])
             ),
-            path.join(localTemplatePath, provider.sourceTemplateName!(templateKind)),
+            targetExpectedTemplatePath,
           ];
         });
       });

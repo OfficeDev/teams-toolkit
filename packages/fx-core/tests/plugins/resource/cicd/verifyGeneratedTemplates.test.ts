@@ -12,7 +12,6 @@ import path from "path";
 import { getTemplatesFolder } from "../../../../src";
 import { CICDProviderFactory } from "../../../../src/plugins/resource/cicd/providers/factory";
 import { ProviderKind, TemplateKind } from "../../../../src/plugins/resource/cicd/providers/enums";
-import { sameContents } from "./utils";
 import { MockedV2Context } from "../../solution/util";
 import { generateBuildScript } from "../../../../src/plugins/resource/cicd/utils/buildScripts";
 import Mustache from "mustache";
@@ -28,7 +27,7 @@ describe("Verify Generated Templates & README", () => {
 
   describe("Verify Templates for GitHub, AzDo, Jekinks separately", () => {
     it("Content of Templates & README should be expected", async () => {
-      for (const providerKind of Object.values(ProviderKind)) {
+      const providerPromises = Object.values(ProviderKind).map(async (providerKind) => {
         const projectSettings: ProjectSettings = {
           appName: "my app",
           projectId: "1232343534",
@@ -39,6 +38,7 @@ describe("Verify Generated Templates & README", () => {
             hostType: "Azure",
             azureResources: [],
             activeResourcePlugins: ["bot"],
+            programmingLanguage: "javascript",
           },
         };
         const context: Context = new MockedV2Context(projectSettings);
@@ -67,51 +67,62 @@ describe("Verify Generated Templates & README", () => {
 
         await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
         // Assert
-        const filesToBeCompared = Object.values(TemplateKind).map((templateKind, index, arr) => {
-          //return [actual, expected].
-          const solutionSettings = context.projectSetting.solutionSettings;
-          const hostType = solutionSettings?.hostType;
-          const capabilities = solutionSettings?.capabilities;
-          const programmingLanguage = solutionSettings?.programmingLanguage;
-          const replacements = {
-            env_name: envInfo.envName,
-            build_script: generateBuildScript(capabilities, programmingLanguage),
-            hosting_type_contains_spfx: hostType == "SPFx",
-            hosting_type_contains_azure: hostType == "Azure",
-          };
-          const sourceTemplatePath = path.join(
-            localTemplatePath,
-            provider.sourceTemplateName!(templateKind)
-          );
-          const renderedContent = Mustache.render(
-            fs.readFileSync(sourceTemplatePath).toString(),
-            replacements
-          );
-          const targetExpectedTemplatePath = path.join(
-            inputs.projectPath!,
-            provider.targetTemplateName!(templateKind, inputs["target-env"])
-          );
-          fs.writeFileSync(targetExpectedTemplatePath, renderedContent);
+        const contentsToBeComparedPromises = Object.values(TemplateKind).map(
+          async (templateKind, index, arr) => {
+            //return [actual, expected].
+            const solutionSettings = context.projectSetting.solutionSettings;
+            const hostType = solutionSettings?.hostType;
+            const capabilities = solutionSettings?.capabilities;
+            const programmingLanguage = solutionSettings?.programmingLanguage;
+            const replacements = {
+              env_name: envInfo.envName,
+              build_script: generateBuildScript(capabilities, programmingLanguage),
+              hosting_type_contains_spfx: hostType == "SPFx",
+              hosting_type_contains_azure: hostType == "Azure",
+            };
+            const sourceTemplatePath = path.join(
+              localTemplatePath,
+              provider.sourceTemplateName!(templateKind)
+            );
+            const renderedContent = Mustache.render(
+              (await fs.readFile(sourceTemplatePath)).toString(),
+              replacements
+            );
 
-          return [
-            path.join(
+            const actualTemplatePath = path.join(
               inputs.projectPath!,
               provider.scaffoldTo,
               provider.targetTemplateName!(templateKind, inputs["target-env"])
-            ),
-            targetExpectedTemplatePath,
-          ];
-        });
+            );
 
-        for (const filePair of filesToBeCompared) {
-          chai.assert(sameContents(filePair[0], filePair[1]));
+            return [(await fs.readFile(actualTemplatePath)).toString(), renderedContent];
+          }
+        );
+
+        // Add Promises for README.
+        contentsToBeComparedPromises.push(
+          Promise.resolve([
+            (
+              await fs.readFile(path.join(inputs.projectPath!, provider.scaffoldTo, "README.md"))
+            ).toString(),
+            (await fs.readFile(path.join(localTemplatePath, "README.md"))).toString(),
+          ])
+        );
+
+        return contentsToBeComparedPromises;
+      });
+
+      // Assert
+      for (const contentsToBeComparedPromises of await Promise.all(providerPromises)) {
+        for (const contents of await Promise.all(contentsToBeComparedPromises)) {
+          chai.assert(contents[0] == contents[1]);
         }
       }
     });
   });
 
   describe("Verify Incremental Cases", () => {
-    it("Add GitHub then Jenkins, Content of Templates & README should be expected", async () => {
+    it("Add GitHub then Jenkins, Content of Templates should be expected", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: "1232343534",
@@ -122,6 +133,7 @@ describe("Verify Generated Templates & README", () => {
           hostType: "Azure",
           azureResources: [],
           activeResourcePlugins: ["bot"],
+          programmingLanguage: "javascript",
         },
       };
       const context: Context = new MockedV2Context(projectSettings);
@@ -144,8 +156,8 @@ describe("Verify Generated Templates & README", () => {
       await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
 
       // Assert
-      const filesToBeCompared = Object.values(TemplateKind).map((templateKind) => {
-        return [ProviderKind.GitHub, ProviderKind.Jenkins].map((providerKind) => {
+      const templatePromises = Object.values(TemplateKind).map(async (templateKind) => {
+        return [ProviderKind.GitHub, ProviderKind.Jenkins].map(async (providerKind) => {
           const provider = CICDProviderFactory.create(providerKind);
           const localTemplatePath = path.join(
             getTemplatesFolder(),
@@ -173,26 +185,19 @@ describe("Verify Generated Templates & README", () => {
             fs.readFileSync(sourceTemplatePath).toString(),
             replacements
           );
-          const targetExpectedTemplatePath = path.join(
+          const actualTemplatePath = path.join(
             inputs.projectPath!,
+            provider.scaffoldTo,
             provider.targetTemplateName!(templateKind, inputs["target-env"])
           );
-          fs.writeFileSync(targetExpectedTemplatePath, renderedContent);
           //return [actual, expected].
-          return [
-            path.join(
-              inputs.projectPath!,
-              provider.scaffoldTo,
-              provider.targetTemplateName!(templateKind, inputs["target-env"])
-            ),
-            targetExpectedTemplatePath,
-          ];
+          return [(await fs.readFile(actualTemplatePath)).toString(), renderedContent];
         });
       });
 
-      for (const templateFiles of filesToBeCompared) {
-        for (const filePair of templateFiles) {
-          chai.assert(sameContents(filePair[0], filePair[1]));
+      for (const templateResult of await Promise.all(templatePromises)) {
+        for (const contents of await Promise.all(templateResult)) {
+          chai.assert(contents[0] == contents[1]);
         }
       }
     });

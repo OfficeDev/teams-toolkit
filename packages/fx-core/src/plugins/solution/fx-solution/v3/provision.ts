@@ -121,11 +121,6 @@ export async function provisionResources(
   );
   if (registerTeamsAppRes.isErr()) return err(registerTeamsAppRes.error);
   const teamsAppId = registerTeamsAppRes.value;
-  if (!teamsAppId) {
-    return err(
-      new SystemError("RegisterTeamsAppError", "Failed to register teams app", "Solution")
-    );
-  }
   teamsAppResource.teamsAppId = teamsAppId;
   solutionGlobalVars.TeamsAppId = teamsAppId;
 

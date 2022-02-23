@@ -762,11 +762,17 @@ export class TeamsAppSolution implements Solution {
         // causes 2 M365 logins before the token caching in common lib takes effect.
         const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
 
-        const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+        const checkM365 = await checkM365Tenant(
+          { version: 1, data: ctx.envInfo },
+          appStudioTokenJson as object
+        );
         if (checkM365.isErr()) {
           return checkM365;
         }
-        const checkAzure = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider!);
+        const checkAzure = await checkSubscription(
+          { version: 1, data: ctx.envInfo },
+          ctx.azureAccountProvider!
+        );
         if (checkAzure.isErr()) {
           return checkAzure;
         }
@@ -878,7 +884,10 @@ export class TeamsAppSolution implements Solution {
     try {
       const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
 
-      const checkM365 = await checkM365Tenant(ctx.envInfo, appStudioTokenJson as object);
+      const checkM365 = await checkM365Tenant(
+        { version: 1, data: ctx.envInfo },
+        appStudioTokenJson as object
+      );
       if (checkM365.isErr()) {
         return checkM365;
       }
@@ -1468,7 +1477,10 @@ export class TeamsAppSolution implements Solution {
                 )
               );
             }
-            const res = await checkSubscription(ctx.envInfo, ctx.azureAccountProvider);
+            const res = await checkSubscription(
+              { version: 1, data: ctx.envInfo },
+              ctx.azureAccountProvider
+            );
             if (res.isOk()) {
               const sub = res.value;
               inputs.subscriptionId = sub.subscriptionId;

@@ -4,10 +4,11 @@
 import { TeamsAppManifest } from "./manifest";
 import fs from "fs-extra";
 import Ajv from "ajv-draft-04";
-import { JSONSchemaType, Schema } from "ajv"; 
+import { JSONSchemaType } from "ajv"; 
 import axios, { AxiosResponse } from "axios";
 
 export * from "./manifest";
+export type TeamsAppManifestJSONSchema = JSONSchemaType<TeamsAppManifest>;
 
 /**
  * Loads the manifest from the given path without validating its schema.
@@ -38,9 +39,9 @@ export async function writeToPath(path: string, manifest: TeamsAppManifest): Pro
  * 
  * @param manifest - Manifest object to be validated
  * @param schema - teams-app-manifest schema
- * @returns An empty array if validation succeeds, or an array of error string otherwise. 
+ * @returns An empty array if it passes validation, or an array of error string otherwise. 
  */
-export async function validateManifestAgainstSchema(manifest: TeamsAppManifest, schema: JSONSchemaType<TeamsAppManifest>): Promise<string[]> {
+export async function validateManifestAgainstSchema(manifest: TeamsAppManifest, schema: TeamsAppManifestJSONSchema): Promise<string[]> {
   const ajv = new Ajv({ formats: { uri: true } });
   const validate = ajv.compile(schema);
   const valid = validate(manifest);
@@ -57,7 +58,10 @@ export async function validateManifestAgainstSchema(manifest: TeamsAppManifest, 
  * Validate manifest against {@link TeamsAppManifest#$schema}.
  * 
  * @param manifest - Manifest object to be validated
- * @returns An empty array if validation succeeds, or an array of error string otherwise. 
+ * @throws Will throw if {@link TeamsAppManifest#$schema} is undefined, not valid 
+ *         or there is any network failure when getting the schema.
+ * 
+ * @returns An empty array if schema validation passes, or an array of error string otherwise. 
  */
 export async function validateManifest(manifest: TeamsAppManifest): Promise<string[]> {
   if (!manifest.$schema) {
@@ -78,6 +82,7 @@ export async function validateManifest(manifest: TeamsAppManifest): Promise<stri
   return validateManifestAgainstSchema(manifest, result.data);
 }
 
+// The following two requrie auth, which will not ne implemented.
 /**
  * Register a Teams app or update the existing Teams app
  * @param filePath path to the zip file, with manifest and icons

@@ -194,7 +194,6 @@ export interface AzureSolutionSettings extends SolutionSettings {
   capabilities: string[];
   azureResources: string[];
   activeResourcePlugins: string[];
-  migrateFromV1?: boolean;
 }
 
 /**

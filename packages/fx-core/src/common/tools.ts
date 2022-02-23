@@ -439,13 +439,6 @@ export function getAppStudioEndpoint(): string {
   }
 }
 
-// TODO: remove copy files after https://github.com/OfficeDev/TeamsFx/pull/3998 is merged
-export async function copyFiles(
-  srcPath: string,
-  distPath: string,
-  excludeFileList: { fileName: string; recursive: boolean }[] = []
-): Promise<void> {}
-
 export function getStorageAccountNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(
     /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,

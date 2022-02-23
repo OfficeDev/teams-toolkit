@@ -307,7 +307,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
-    if (!isSPFxProject(projectSettings) && !projectSettings?.solutionSettings?.migrateFromV1) {
+    if (!isSPFxProject(projectSettings)) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
@@ -586,14 +586,11 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
-    migrateFromV1,
   } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(
-    localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
-  );
+  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
 
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
@@ -603,36 +600,34 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
   await ensureProjectSettings(projectSettings, envDefaultFilePath);
 
   const appName = await getAppName(projectSettings);
-  if (!migrateFromV1) {
-    //config.dev.json
-    const configDev = getConfigDevJson(appName);
+  //config.dev.json
+  const configDev = getConfigDevJson(appName);
 
-    // migrate skipAddingSqlUser
-    const envDefault = await fs.readJson(envDefaultFilePath);
+  // migrate skipAddingSqlUser
+  const envDefault = await fs.readJson(envDefaultFilePath);
 
-    if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
-      configDev["skipAddingSqlUser"] =
-        envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+  if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
+    configDev["skipAddingSqlUser"] =
+      envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+  }
+  if (envDefault[ResourcePlugins.Aad]?.[EnvConfigName.AadSkipProvision] === "true") {
+    configDev.auth = {};
+    if (envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId]) {
+      configDev.auth!.accessAsUserScopeId =
+        envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId];
     }
-    if (envDefault[ResourcePlugins.Aad]?.[EnvConfigName.AadSkipProvision] === "true") {
-      configDev.auth = {};
-      if (envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId]) {
-        configDev.auth!.accessAsUserScopeId =
-          envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId];
-      }
-      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId]) {
-        configDev.auth!.objectId = envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId];
-      }
-      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId]) {
-        configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
-      }
-      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]) {
-        await globalStateUpdate(
-          AADClientSecretFlag,
-          envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]
-        );
-        configDev.auth!.clientSecret = AadSecret;
-      }
+    if (envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId]) {
+      configDev.auth!.objectId = envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId];
+    }
+    if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId]) {
+      configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
+    }
+    if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]) {
+      await globalStateUpdate(
+        AADClientSecretFlag,
+        envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]
+      );
+      configDev.auth!.clientSecret = AadSecret;
     }
 
     await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
@@ -644,11 +639,9 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
   const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
   // generate manifest.remote.template.json
-  if (!migrateFromV1) {
-    const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
-    const remoteManifest = await generateRemoteTemplate(JSON.stringify(manifest));
-    await fs.writeFile(targetRemoteManifestFile, JSON.stringify(remoteManifest, null, 4));
-  }
+  const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
+  const remoteManifest = await generateRemoteTemplate(JSON.stringify(manifest));
+  await fs.writeFile(targetRemoteManifestFile, JSON.stringify(remoteManifest, null, 4));
 
   // generate manifest.local.template.json
   const localManifest: TeamsAppManifest = await generateLocalTemplate(
@@ -752,7 +745,6 @@ async function queryProjectStatus(fx: string): Promise<any> {
   );
   const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
-  const migrateFromV1 = !!solutionSettings.migrateFromV1;
   return {
     hasFrontend,
     hasBackend,
@@ -761,7 +753,6 @@ async function queryProjectStatus(fx: string): Promise<any> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
-    migrateFromV1,
   };
 }
 

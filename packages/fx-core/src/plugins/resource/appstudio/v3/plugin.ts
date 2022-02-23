@@ -17,9 +17,10 @@ import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
-import { getAppDirectory } from "../../../../common";
+import { getAppDirectory, compileHandlebarsTemplateString } from "../../../../common";
 import { Constants } from "../constants";
 import { convertToAppDefinition } from "../utils/utils";
+import { loadManifest } from "../manifestTemplate";
 
 export class AppStudioPluginImpl {
   public async createTeamsApp(
@@ -49,8 +50,6 @@ export class AppStudioPluginImpl {
       const manifest: TeamsAppManifest = appDefinitionRes.value[1];
       manifest.bots = undefined;
       manifest.composeExtensions = undefined;
-
-      return ok("");
 
       const appDirectory = await getAppDirectory(inputs.projectPath);
       const colorFile = `${appDirectory}/${manifest.icons.color}`;
@@ -157,8 +156,22 @@ export class AppStudioPluginImpl {
     envInfo: v3.EnvInfoV3
   ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
     // Read template
+    const manifestTemplateRes = await loadManifest(projectPath, false);
+    if (manifestTemplateRes.isErr()) {
+      return err(manifestTemplateRes.error);
+    }
+    let manifestString = JSON.stringify(manifestTemplateRes.value);
 
     // Render mustache template with state and config
-    return ok([{ appName: "appName" }, new TeamsAppManifest()]);
+    const view = {
+      config: envInfo.config,
+      state: envInfo.state,
+    };
+    manifestString = compileHandlebarsTemplateString(manifestString, view);
+
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    const appDefinition = convertToAppDefinition(manifest);
+
+    return ok([appDefinition, manifest]);
   }
 }

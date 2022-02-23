@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AppManifest,
   err,
   FxError,
   Json,
@@ -10,7 +9,6 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  TeamsAppManifest,
   v2,
   v3,
   Void,
@@ -23,17 +21,22 @@ import arm from "../arm";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { HostTypeOptionAzure, HostTypeOptionSPFx } from "../question";
+import { isSPFxProject } from "../../../../common";
+import { hasAzureResource, hasSPFx } from "../../../../core/collaborator";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+import { cloneDeep } from "lodash";
 
-function getAllFeaturePlugins(): v3.FeaturePlugin[] {
+function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.frontend),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.aad),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.function),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.apim),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.keyVault),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.identity),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.sql),
-    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.frontend),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.aad),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.function),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.apim),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.keyVault),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.identity),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.sql),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.spfx),
   ];
 }
 
@@ -54,8 +57,8 @@ export async function getQuestionsForAddFeature(
       id: plugin.name,
       label: plugin.description || "",
     });
-    if (plugin.getQuestionsForAddFeature) {
-      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
+    if (plugin.getQuestionsForAddInstance) {
+      const childNode = await plugin.getQuestionsForAddInstance(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
         childNode.value.condition = { contains: plugin.name };
@@ -111,63 +114,150 @@ export async function addFeature(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const existingResources = new Set<string>();
-  const allResources = new Set<string>();
-  const pluginNames = solutionSettings.activeResourcePlugins;
-  pluginNames.forEach((p) => {
-    existingResources.add(p);
-    allResources.add(p);
+  let solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const existingSet = new Set<string>();
+  let newSet = new Set<string>();
+  solutionSettings.activeResourcePlugins.forEach((p) => {
+    existingSet.add(p);
   });
   inputs.features.forEach((f) => {
-    allResources.add(f);
+    newSet.add(f);
   });
-  const resolveRes = await resolveResourceDependencies(ctx, inputs, allResources);
-  if (resolveRes.isErr()) return err(resolveRes.error);
-  const existingPluginNames: string[] = Array.from(existingResources);
-  const addedPluginNames: string[] = [];
-  for (const pluginName of allResources.values()) {
-    if (!existingResources.has(pluginName)) {
-      addedPluginNames.push(pluginName);
-    }
-  }
+
   const contextWithManifestProvider: v3.ContextWithManifestProvider = {
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
-  const addFeatureRes = await arm.addFeature(
+  const projectSettingsOld = cloneDeep(ctx.projectSetting);
+  const resolveRes = await resolveResourceDependencies(
     contextWithManifestProvider,
     inputs,
-    addedPluginNames,
-    existingPluginNames
+    existingSet,
+    newSet
   );
-  if (addFeatureRes.isErr()) {
-    return err(addFeatureRes.error);
+  const projectSettingsNew = ctx.projectSetting;
+  if (resolveRes.isErr()) return err(resolveRes.error);
+  newSet = resolveRes.value;
+  newSet.forEach((s) => {
+    existingSet.delete(s);
+  });
+  const existingArray: string[] = Array.from(existingSet);
+  const newArray: string[] = Array.from(newSet);
+  const allPluginsAfterAdd = existingArray.concat(newArray);
+
+  const addFeatureInputs: v3.AddFeatureInputs = {
+    ...inputs,
+    allPluginsAfterAdd: allPluginsAfterAdd,
+  };
+  contextWithManifestProvider.projectSetting = projectSettingsOld;
+  for (const pluginName of newArray) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.generateCode) {
+      const res = await plugin.generateCode(contextWithManifestProvider, addFeatureInputs);
+      if (res.isErr()) return err(res.error);
+    }
   }
+  const updateInputs: v3.UpdateInputs = {
+    ...addFeatureInputs,
+    newPlugins: newArray,
+  };
+  for (const pluginName of existingArray) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.updateCode) {
+      const res = await plugin.updateCode(contextWithManifestProvider, updateInputs);
+      if (res.isErr()) return err(res.error);
+    }
+  }
+  const bicepRes = await arm.generateBicep(
+    contextWithManifestProvider,
+    inputs,
+    newArray,
+    existingArray
+  );
+  if (bicepRes.isErr()) {
+    return err(bicepRes.error);
+  }
+
+  ctx.projectSetting = projectSettingsNew;
+  solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+
+  if (hasAzureResource(ctx.projectSetting)) {
+    solutionSettings.hostType = HostTypeOptionAzure.id;
+  } else if (hasSPFx(ctx.projectSetting)) {
+    solutionSettings.hostType = HostTypeOptionSPFx.id;
+  }
+
+  const scaffoldRes = await scaffoldLocalDebugSettings(ctx, inputs, undefined, false);
+  if (scaffoldRes.isErr()) return err(scaffoldRes.error);
+
   return ok(Void);
 }
 
+/**
+ * make sure all dependencies in the dependency chain are collected
+ * make sure all newly added dependencies's addInstance method are called once
+ * @param existingSet existing set
+ * @param addedSet set to add
+ * @returns new added set (include resolved dependencies in the chain)
+ */
 async function resolveResourceDependencies(
-  ctx: v2.Context,
-  inputs: Inputs,
-  resourceNameSet: Set<string>
-): Promise<Result<undefined, FxError>> {
+  ctx: v3.ContextWithManifestProvider,
+  inputs: v2.InputsWithProjectPath,
+  existingSet: Set<string>,
+  addedSet: Set<string>
+): Promise<Result<Set<string>, FxError>> {
+  const originalSet = new Set<string>();
+  const all = new Set<string>();
+  const calledSet = new Set<string>();
+  existingSet.forEach((s) => {
+    originalSet.add(s);
+    all.add(s);
+    calledSet.add(s);
+  });
+  addedSet.forEach((s) => {
+    all.add(s);
+  });
+  // call addInstance APIs for a plugins in addedSet
+  for (const pluginName of addedSet.values()) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.addInstance) {
+      const depRes = await plugin.addInstance(ctx, inputs);
+      if (depRes.isErr()) {
+        return err(depRes.error);
+      }
+      calledSet.add(pluginName);
+      for (const dep of depRes.value) {
+        all.add(dep);
+      }
+    }
+  }
+  // check all to make all dependencies are resolved
   while (true) {
-    const size1 = resourceNameSet.size;
-    for (const name of resourceNameSet) {
-      const plugin = Container.get<v3.FeaturePlugin>(name);
-      if (plugin.pluginDependencies) {
-        const depRes = await plugin.pluginDependencies(ctx, inputs);
+    const size1 = all.size;
+    for (const pluginName of all.values()) {
+      const plugin = Container.get<v3.PluginV3>(pluginName);
+      if (plugin.addInstance && !calledSet.has(pluginName)) {
+        const depRes = await plugin.addInstance(ctx, inputs);
         if (depRes.isErr()) {
           return err(depRes.error);
         }
+        calledSet.add(pluginName);
         for (const dep of depRes.value) {
-          resourceNameSet.add(dep);
+          all.add(dep);
         }
       }
     }
-    const size2 = resourceNameSet.size;
+    const size2 = all.size;
     if (size1 === size2) break;
   }
-  return ok(undefined);
+  const netSet = new Set<string>();
+  for (const pluginName of all.values()) {
+    if (!originalSet.has(pluginName)) {
+      netSet.add(pluginName);
+    }
+  }
+  addedSet.forEach((s) => {
+    netSet.add(s);
+  });
+  return ok(netSet);
 }

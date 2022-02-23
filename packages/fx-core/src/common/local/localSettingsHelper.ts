@@ -25,7 +25,6 @@ import {
   LocalEnvBotKeys,
   LocalEnvCertKeys,
   LocalEnvFrontendKeys,
-  LocalEnvBotKeysMigratedFromV1,
 } from "./constants";
 import { LocalEnvProvider } from "./localEnvProvider";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
@@ -61,7 +60,6 @@ export async function convertToLocalEnvs(
   const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
   const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
   // prepare config maps
   const authConfigs = ConfigMap.fromJSON(localSettings?.auth);
@@ -92,9 +90,7 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.Https
     ) as string;
-    if (!isMigrateFromV1) {
-      localEnvs[LocalEnvFrontendKeys.Port] = "53000";
-    }
+    localEnvs[LocalEnvFrontendKeys.Port] = "53000";
 
     if (includeAAD) {
       // frontend local envs
@@ -147,27 +143,18 @@ export async function convertToLocalEnvs(
 
   if (includeBot) {
     // bot local env
-    if (ProjectSettingsHelper.isMigrateFromV1(projectSettings)) {
-      localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = botConfigs?.get(
-        LocalSettingsBotKeys.BotId
-      ) as string;
-      localEnvs[LocalEnvBotKeysMigratedFromV1.BotPassword] = botConfigs?.get(
-        LocalSettingsBotKeys.BotPassword
-      ) as string;
-    } else {
-      localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(LocalSettingsBotKeys.BotId) as string;
-      localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
-        LocalSettingsBotKeys.BotPassword
-      ) as string;
-      localEnvs[LocalEnvBotKeys.ClientId] = clientId;
-      localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
-      localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-      localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-      localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
-        botConfigs?.get(LocalSettingsBotKeys.BotEndpoint) as string
-      }/auth-start.html`;
-      localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
-    }
+    localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(LocalSettingsBotKeys.BotId) as string;
+    localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
+      LocalSettingsBotKeys.BotPassword
+    ) as string;
+    localEnvs[LocalEnvBotKeys.ClientId] = clientId;
+    localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
+    localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
+    localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
+    localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
+      botConfigs?.get(LocalSettingsBotKeys.BotEndpoint) as string
+    }/auth-start.html`;
+    localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
 
     if (includeBackend) {
       localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
@@ -178,9 +165,8 @@ export async function convertToLocalEnvs(
   try {
     const localEnvProvider = new LocalEnvProvider(projectPath);
     if (includeFrontend) {
-      const customEnvs = (
-        await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
-      ).customizedLocalEnvs;
+      const customEnvs = (await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD))
+        .customizedLocalEnvs;
       appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
     }
     if (includeBackend) {
@@ -188,8 +174,7 @@ export async function convertToLocalEnvs(
       appendEnvWithPrefix(customEnvs, localEnvs, "BACKEND_");
     }
     if (includeBot) {
-      const customEnvs = (await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1))
-        .customizedLocalEnvs;
+      const customEnvs = (await localEnvProvider.loadBotLocalEnvs()).customizedLocalEnvs;
       appendEnvWithPrefix(customEnvs, localEnvs, "BOT_");
     }
   } catch (error) {

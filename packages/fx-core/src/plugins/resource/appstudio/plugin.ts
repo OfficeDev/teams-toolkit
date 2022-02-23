@@ -397,14 +397,20 @@ export class AppStudioPluginImpl {
       (isLocalDebug ? "local" : ctx.envInfo.envName) +
       `.json`;
     if (!(await fs.pathExists(manifestFileName))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestFileName) +
-            " Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision.",
-          HelpLinks.WhyNeedProvision
-        )
-      );
+      const isProvisionSucceeded = !!(ctx.envInfo.state
+        .get("solution")
+        ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+      if (!isProvisionSucceeded) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.FileNotFoundError.name,
+            AppStudioError.FileNotFoundError.message(manifestFileName) +
+              " Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision.",
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+      await this.buildTeamsAppPackage(ctx, isLocalDebug);
     }
     const existingManifest = await fs.readJSON(manifestFileName);
     delete manifest.id;

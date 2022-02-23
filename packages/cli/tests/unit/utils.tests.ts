@@ -34,7 +34,7 @@ import {
   sleep,
   toLocaleLowerCase,
   toYargsOptions,
-  getTeamsAppIdByEnv,
+  getTeamsAppTelemetryInfoByEnv,
 } from "../../src/utils";
 import * as utils from "../../src/utils";
 import { expect } from "./utils";
@@ -446,7 +446,7 @@ describe("Utils Tests", function () {
     });
   });
 
-  describe("getTeamsAppIdByEnv", async () => {
+  describe("getTeamsAppTelemetryInfoByEnv", async () => {
     const sandbox = sinon.createSandbox();
     const env = "dev";
     const invalidProjectDir = "invaldProjectDir";
@@ -467,6 +467,7 @@ describe("Utils Tests", function () {
       programmingLanguage: "javascript",
     };
     const teamsAppId = "teamsAppId";
+    const tenantId = "tenantId";
 
     before(() => {
       sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
@@ -484,6 +485,7 @@ describe("Utils Tests", function () {
           return JSON.stringify({
             [PluginNames.APPST]: {
               teamsAppId: teamsAppId,
+              tenantId: tenantId,
             },
           });
         } else if (file.includes(invalidStateProjectDir) && file.includes(`state.${env}.json`)) {
@@ -499,18 +501,18 @@ describe("Utils Tests", function () {
     });
 
     it("Invalid Project Dir", async () => {
-      const result = getTeamsAppIdByEnv(invalidProjectDir, env);
+      const result = getTeamsAppTelemetryInfoByEnv(invalidProjectDir, env);
       expect(result).equals(undefined);
     });
 
     it("Invalid State File", async () => {
-      const result = getTeamsAppIdByEnv(invalidProjectDir, env);
+      const result = getTeamsAppTelemetryInfoByEnv(invalidStateProjectDir, env);
       expect(result).equals(undefined);
     });
 
     it("Valid State File", async () => {
-      const result = getTeamsAppIdByEnv(validProjectDir, env);
-      expect(result).equals(teamsAppId);
+      const result = getTeamsAppTelemetryInfoByEnv(validProjectDir, env);
+      expect(result).deep.equals({ appId: teamsAppId, tenantId: tenantId });
     });
   });
 

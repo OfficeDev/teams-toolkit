@@ -3,7 +3,7 @@
 
 import { PluginContext, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
-import { PluginNames } from "../../../solution/fx-solution/constants";
+import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -14,6 +14,7 @@ export enum TelemetryPropertyKey {
   updateExistingApp = "update",
   success = "success",
   appId = "appid",
+  tenantId = "tenant-id",
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
 }
@@ -60,6 +61,12 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
+    const tenantId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_TENANT_ID);
+    if (tenantId) {
+      properties[TelemetryPropertyKey.tenantId] = tenantId;
+    }
     const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;
@@ -83,6 +90,12 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
+    const tenantId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_TENANT_ID);
+    if (tenantId) {
+      properties[TelemetryPropertyKey.tenantId] = tenantId;
+    }
     const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;
@@ -111,6 +124,12 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
+    const tenantId = (this.ctx as PluginContext).envInfo?.state
+      .get(PluginNames.SOLUTION)
+      ?.get(REMOTE_TEAMS_APP_TENANT_ID);
+    if (tenantId) {
+      properties[TelemetryPropertyKey.tenantId] = tenantId;
+    }
     const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;

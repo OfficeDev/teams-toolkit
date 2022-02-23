@@ -6,17 +6,20 @@
 
 <div>
     <h2>Get the user's profile photo</h2>
-    <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
-    <FluentButton Appearance="Appearance.Accent" Disabled="@IsLoading" hidden="@(Profile != null)" @onclick="Reload">Authorize</FluentButton>
+    @if (NeedConsent)
+    {
+        <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
+        <FluentButton Appearance="Appearance.Accent" Disabled="@IsLoading" @onclick="ConsentAndShow">Authorize</FluentButton>
+    }
     @if (IsLoading)
     {
         <ProfileCard IsLoading="true" />
     }
-    else if (!IsLoading && !string.IsNullOrEmpty(@ErrorMessage))
+    else if (!string.IsNullOrEmpty(@ErrorMessage))
     {
         <div class="error">@ErrorMessage</div>
     }
-    else if (!IsLoading && Profile != null)
+    else if (Profile != null)
     {
         <ProfileCard IsLoading="false" Profile="@Profile" UserPhotoUri="@UserPhotoUri" />
     }
@@ -27,37 +30,24 @@
     public string ErrorMessage { get; set; }
 
     public bool IsLoading { get; set; }
+    public bool NeedConsent { get; set; }
     public User Profile { get; set; }
     public string UserPhotoUri { get; set; }
 
     private readonly string _scope = "User.Read";
 
-    private async Task Reload()
+    protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-
-        try
+        if (await HasPermission(_scope))
         {
-            await teamsUserCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new System.Threading.CancellationToken());
+            await ShowProfile();
         }
-        catch (ExceptionWithCode e)
-        {
-            if(e.Code == ExceptionCode.UiRequiredError)
-            {
-                if (!await GetConsent())
-                {
-                    IsLoading = false;
-                    ErrorMessage = e.Message;
-                    return;   
-                }
-            }
-            else{
-                IsLoading = false;
-                ErrorMessage = e.Message;
-                return;
-            }
-        }
+    }
 
+    private async Task ShowProfile()
+    {
+        IsLoading = true;
         var graph = GetGraphServiceClient();
 
         Profile = await graph.Me.Request().GetAsync();
@@ -67,18 +57,42 @@
         ErrorMessage = string.Empty;
     }
 
-    private async Task<bool> GetConsent()
+    private async Task ConsentAndShow()
     {
         try
         {
             await teamsUserCredential.LoginAsync(_scope);
+            NeedConsent = false;
+            await ShowProfile();
+        }
+        catch (ExceptionWithCode e)
+        {
+            ErrorMessage = e.Message;
+        }
+    }
+
+    private async Task<bool> HasPermission(string scope)
+    {
+        IsLoading = true;
+        try
+        {
             await teamsUserCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new System.Threading.CancellationToken());
             return true;
         }
-        catch (ExceptionWithCode)
+        catch (ExceptionWithCode e)
         {
-            return false;
+            if (e.Code == ExceptionCode.UiRequiredError)
+            {
+                NeedConsent = true;
+            }
+            else
+            {
+                ErrorMessage = e.Message;
+            }
+
         }
+        IsLoading = false;
+        return false;
     }
     
     private GraphServiceClient GetGraphServiceClient()

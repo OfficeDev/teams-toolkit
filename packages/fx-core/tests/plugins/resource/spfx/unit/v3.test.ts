@@ -78,7 +78,7 @@ describe("SPFx plugin v3", () => {
   };
 
   it("getQuestionsForAddFeature", async () => {
-    const questions = await pluginV3.getQuestionsForAddFeature!(ctx, inputs);
+    const questions = await pluginV3.getQuestionsForAddInstance(ctx, inputs);
 
     chai.assert.isTrue(questions.isOk());
   });
@@ -92,7 +92,7 @@ describe("SPFx plugin v3", () => {
       return ok(Void);
     };
     const ctxV3: ContextWithManifestProvider = { ...ctx, appManifestProvider };
-    const addFeature = await pluginV3.addFeature(ctxV3, inputs);
+    const addFeature = await pluginV3.addInstance(ctxV3, inputs);
     chai.assert.isTrue(addFeature.isErr());
   });
 
@@ -109,7 +109,7 @@ describe("SPFx plugin v3", () => {
     Sinon.stub(SPFxPluginImpl.prototype, "scaffold").resolves(ok(undefined));
     const addCapabilities = Sinon.stub(appManifestProvider, "addCapabilities");
 
-    await pluginV3.addFeature(ctxV3, inputs);
+    await pluginV3.addInstance(ctxV3, inputs);
 
     chai.assert.isTrue(addCapabilities.calledOnce);
   });

@@ -1152,12 +1152,7 @@ export async function openReadMeHandler(args: any[]) {
         openFolder
       )
       .then((selection) => {
-        if (
-          selection?.title === StringResources.vsc.handlers.createProjectTitle ||
-          selection?.title == StringResources.vsc.handlers.openFolderTitle
-        ) {
-          selection.run();
-        }
+        selection?.run();
       });
   } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];

@@ -27,6 +27,7 @@ import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
 
 const PackageJson = require("@npmcli/package-json");
 

@@ -1,5 +1,6 @@
 import { useData } from "./useData";
 import { TeamsUserCredential, createMicrosoftGraphClient } from "@microsoft/teamsfx";
+import { Providers, ProviderState } from '@microsoft/mgt-element';
 
 export function useGraph(asyncFunc, options) {
   const { scope } = { scope: ["User.Read"], ...options };
@@ -7,7 +8,7 @@ export function useGraph(asyncFunc, options) {
     try {
       const credential = new TeamsUserCredential();
       const graph = createMicrosoftGraphClient(credential, scope);
-      return await asyncFunc(graph);
+      return await asyncFunc(graph, credential, scope);
     } catch (err) {
       if (err.code.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
@@ -24,7 +25,9 @@ export function useGraph(asyncFunc, options) {
         await credential.login(scope);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
         const graph = createMicrosoftGraphClient(credential, scope);
-        return await asyncFunc(graph);
+        const result = await asyncFunc(graph, credential, scope);
+        Providers.globalProvider.setState(ProviderState.SignedIn);
+        return result;
       } catch (err) {
         if (err.message?.includes("CancelledByUser")) {
           const helpLink = "https://aka.ms/teamsfx-auth-code-flow";

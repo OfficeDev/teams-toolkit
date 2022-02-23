@@ -291,7 +291,16 @@ export class FxCore implements v3.ICore {
           manifestCaps
         );
         if (addCapabilitiesRes.isErr()) return err(addCapabilitiesRes.error);
-        // TODO how to generate launch.json, task.json for existing app?
+        if (isConfigUnifyEnabled()) {
+          const createLocalEnvResult = await this.createEnvWithName(
+            environmentManager.getLocalEnvName(),
+            projectSettings,
+            inputs
+          );
+          if (createLocalEnvResult.isErr()) {
+            return err(createLocalEnvResult.error);
+          }
+        }
       } else {
         projectSettings.solutionSettings = {
           name: "",
@@ -414,38 +423,41 @@ export class FxCore implements v3.ICore {
       if (initRes.isErr()) {
         return err(initRes.error);
       }
+      // persist projectSettings.json
       ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
       ctx.projectSettings!.isFromSample = false;
       const projectSettingsPath = getProjectSettingsPath(projectPath);
-      await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4)); // persist project settings
-      // addFeature
-      const features: string[] = [];
-      if (!capabilities.includes(TabSPFxItem.id)) {
-        features.push(BuiltInFeaturePluginNames.aad);
-      }
-      if (inputs.platform === Platform.VS) {
-        features.push(BuiltInFeaturePluginNames.dotnet);
-      } else {
-        if (capabilities.includes(TabOptionItem.id)) {
-          features.push(BuiltInFeaturePluginNames.frontend);
-        } else if (capabilities.includes(TabSPFxItem.id)) {
-          features.push(BuiltInFeaturePluginNames.spfx);
+      await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4));
+      if (!inputs.existingAppConfig?.isCreatedFromExistingApp) {
+        // addFeature
+        const features: string[] = [];
+        if (!capabilities.includes(TabSPFxItem.id)) {
+          features.push(BuiltInFeaturePluginNames.aad);
         }
-        if (
-          capabilities.includes(BotOptionItem.id) ||
-          capabilities.includes(MessageExtensionItem.id)
-        ) {
-          features.push(BuiltInFeaturePluginNames.bot);
+        if (inputs.platform === Platform.VS) {
+          features.push(BuiltInFeaturePluginNames.dotnet);
+        } else {
+          if (capabilities.includes(TabOptionItem.id)) {
+            features.push(BuiltInFeaturePluginNames.frontend);
+          } else if (capabilities.includes(TabSPFxItem.id)) {
+            features.push(BuiltInFeaturePluginNames.spfx);
+          }
+          if (
+            capabilities.includes(BotOptionItem.id) ||
+            capabilities.includes(MessageExtensionItem.id)
+          ) {
+            features.push(BuiltInFeaturePluginNames.bot);
+          }
         }
-      }
-      const addFeatureInputs: v3.SolutionAddFeatureInputs = {
-        ...inputs,
-        projectPath: projectPath,
-        features: features,
-      };
-      const addFeatureRes = await this.addFeature(addFeatureInputs);
-      if (addFeatureRes.isErr()) {
-        return err(addFeatureRes.error);
+        const addFeatureInputs: v3.SolutionAddFeatureInputs = {
+          ...inputs,
+          projectPath: projectPath,
+          features: features,
+        };
+        const addFeatureRes = await this.addFeature(addFeatureInputs);
+        if (addFeatureRes.isErr()) {
+          return err(addFeatureRes.error);
+        }
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -636,7 +648,7 @@ export class FxCore implements v3.ICore {
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
-    if (isV3()) return this.localDebugV3(inputs);
+    if (isV3()) return this.provisionResourcesV3(inputs);
     else return this.localDebugV2(inputs);
   }
   @hooks([
@@ -691,42 +703,6 @@ export class FxCore implements v3.ICore {
     } else {
       return ok(Void);
     }
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectSettingsLoaderMW,
-    LocalSettingsLoaderMW,
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    LocalSettingsWriterMW,
-  ])
-  async localDebugV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    currentStage = Stage.debug;
-    inputs.stage = Stage.debug;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.provisionResources
-    ) {
-      const res = await ctx.solutionV3.provisionResources(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      if (res.isOk()) {
-        ctx.localSettings = res.value;
-      }
-      return res;
-    }
-    return ok(Void);
   }
 
   _setEnvInfoV2(ctx?: CoreHookContext) {
@@ -1359,6 +1335,7 @@ export class FxCore implements v3.ICore {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
+    // validate app name
     const appName = inputs[QuestionAppName.name] as string;
     const validateResult = jsonschema.validate(appName, {
       pattern: ProjectNamePattern,
@@ -1366,38 +1343,79 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+
+    // create ProjectSettings
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    const createEnvResult = await this.createEnvWithName(
-      environmentManager.getDefaultEnvName(),
-      projectSettings,
-      inputs
-    );
-    if (createEnvResult.isErr()) {
-      return err(createEnvResult.error);
-    }
-    if (isConfigUnifyEnabled()) {
-      const createLocalEnvResult = await this.createEnvWithName(
-        environmentManager.getLocalEnvName(),
-        projectSettings,
-        inputs
-      );
-      if (createLocalEnvResult.isErr()) {
-        return err(createLocalEnvResult.error);
-      }
-    }
+
+    // create folder structure
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
     const basicFolderRes = await createBasicFolderStructure(inputs);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
     }
+
+    // create contextV2
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
 
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    await appStudioV3.init(context, inputs);
+
+    // init manifest
+    const manifestInitRes = await appStudioV3.init(context, inputs);
+    if (manifestInitRes.isErr()) return err(manifestInitRes.error);
+
+    if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
+      const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
+      const writeEnvResult = await environmentManager.writeEnvConfig(
+        inputs.projectPath,
+        newEnvConfig,
+        environmentManager.getDefaultEnvName()
+      );
+      if (writeEnvResult.isErr()) {
+        return err(writeEnvResult.error);
+      }
+      // call App Studio V3 API to create manifest with placeholder
+      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const contextV2 = createV2Context(projectSettings);
+      const initRes = await appStudio.init(contextV2, inputs as v2.InputsWithProjectPath);
+      if (initRes.isErr()) return err(initRes.error);
+      const manifestCaps: v3.ManifestCapability[] = [];
+      inputs.existingAppConfig.newAppTypes.forEach((t) => {
+        if (t === ExistingTeamsAppType.Bot) manifestCaps.push({ name: "Bot", existingApp: true });
+        else if (t === ExistingTeamsAppType.StaticTab)
+          manifestCaps.push({ name: "staticTab", existingApp: true });
+        else if (t === ExistingTeamsAppType.ConfigurableTab)
+          manifestCaps.push({ name: "configurableTab", existingApp: true });
+        else if (t === ExistingTeamsAppType.MessageExtension)
+          manifestCaps.push({ name: "MessageExtension", existingApp: true });
+      });
+      const addCapabilitiesRes = await appStudio.addCapabilities(
+        contextV2,
+        inputs as v2.InputsWithProjectPath,
+        manifestCaps
+      );
+      if (addCapabilitiesRes.isErr()) return err(addCapabilitiesRes.error);
+    } else {
+      const createEnvResult = await this.createEnvWithName(
+        environmentManager.getDefaultEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createEnvResult.isErr()) {
+        return err(createEnvResult.error);
+      }
+    }
+    const createLocalEnvResult = await this.createEnvWithName(
+      environmentManager.getLocalEnvName(),
+      projectSettings,
+      inputs
+    );
+    if (createLocalEnvResult.isErr()) {
+      return err(createLocalEnvResult.error);
+    }
     return ok(Void);
   }
   @hooks([

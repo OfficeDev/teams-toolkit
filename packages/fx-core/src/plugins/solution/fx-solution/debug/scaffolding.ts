@@ -33,7 +33,8 @@ const PackageJson = require("@npmcli/package-json");
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
-  localSettings?: Json
+  localSettings?: Json,
+  generateLocalSettingsFile = true
 ): Promise<Result<Json, FxError>> {
   return await _scaffoldLocalDebugSettings(
     ctx.projectSetting,
@@ -41,7 +42,8 @@ export async function scaffoldLocalDebugSettings(
     ctx.telemetryReporter,
     ctx.logProvider,
     ctx.cryptoProvider,
-    localSettings
+    localSettings,
+    generateLocalSettingsFile
   );
 }
 
@@ -51,7 +53,8 @@ export async function _scaffoldLocalDebugSettings(
   telemetryReporter: TelemetryReporter,
   logProvider: LogProvider,
   cryptoProvider: CryptoProvider,
-  localSettings?: Json
+  localSettings?: Json,
+  generateLocalSettingsFile = true
 ): Promise<Result<Json, FxError>> {
   const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
@@ -170,12 +173,9 @@ export async function _scaffoldLocalDebugSettings(
 
         // generate localSettings.json
 
-        localSettings = await scaffoldLocalSettingsJson(
-          projectSetting,
-          inputs,
-          cryptoProvider,
-          localSettings
-        );
+        localSettings = generateLocalSettingsFile
+          ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
+          : undefined;
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -220,12 +220,9 @@ export async function _scaffoldLocalDebugSettings(
       );
     } else if (inputs.platform === Platform.VS) {
       // generate localSettings.json
-      localSettings = await scaffoldLocalSettingsJson(
-        projectSetting,
-        inputs,
-        cryptoProvider,
-        localSettings
-      );
+      localSettings = generateLocalSettingsFile
+        ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
+        : undefined;
     }
   } catch (error: any) {
     const systemError = ScaffoldLocalDebugSettingsError(error);

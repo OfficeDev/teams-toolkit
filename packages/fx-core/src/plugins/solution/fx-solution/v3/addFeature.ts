@@ -21,6 +21,11 @@ import arm from "../arm";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { HostTypeOptionAzure, HostTypeOptionSPFx } from "../question";
+import { isSPFxProject } from "../../../../common";
+import { hasAzureResource, hasSPFx } from "../../../../core/collaborator";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+import { cloneDeep } from "lodash";
 
 function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
@@ -109,7 +114,7 @@ export async function addFeature(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  let solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingSet = new Set<string>();
   let newSet = new Set<string>();
   solutionSettings.activeResourcePlugins.forEach((p) => {
@@ -123,15 +128,19 @@ export async function addFeature(
     ...ctx,
     appManifestProvider: new DefaultManifestProvider(),
   };
+  const projectSettingsOld = cloneDeep(ctx.projectSetting);
   const resolveRes = await resolveResourceDependencies(
     contextWithManifestProvider,
     inputs,
     existingSet,
     newSet
   );
+  const projectSettingsNew = ctx.projectSetting;
   if (resolveRes.isErr()) return err(resolveRes.error);
   newSet = resolveRes.value;
-
+  newSet.forEach((s) => {
+    existingSet.delete(s);
+  });
   const existingArray: string[] = Array.from(existingSet);
   const newArray: string[] = Array.from(newSet);
   const allPluginsAfterAdd = existingArray.concat(newArray);
@@ -140,6 +149,7 @@ export async function addFeature(
     ...inputs,
     allPluginsAfterAdd: allPluginsAfterAdd,
   };
+  contextWithManifestProvider.projectSetting = projectSettingsOld;
   for (const pluginName of newArray) {
     const plugin = Container.get<v3.PluginV3>(pluginName);
     if (plugin.generateCode) {
@@ -167,6 +177,19 @@ export async function addFeature(
   if (bicepRes.isErr()) {
     return err(bicepRes.error);
   }
+
+  ctx.projectSetting = projectSettingsNew;
+  solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+
+  if (hasAzureResource(ctx.projectSetting)) {
+    solutionSettings.hostType = HostTypeOptionAzure.id;
+  } else if (hasSPFx(ctx.projectSetting)) {
+    solutionSettings.hostType = HostTypeOptionSPFx.id;
+  }
+
+  const scaffoldRes = await scaffoldLocalDebugSettings(ctx, inputs, undefined, false);
+  if (scaffoldRes.isErr()) return err(scaffoldRes.error);
+
   return ok(Void);
 }
 
@@ -194,6 +217,21 @@ async function resolveResourceDependencies(
   addedSet.forEach((s) => {
     all.add(s);
   });
+  // call addInstance APIs for a plugins in addedSet
+  for (const pluginName of addedSet.values()) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.addInstance) {
+      const depRes = await plugin.addInstance(ctx, inputs);
+      if (depRes.isErr()) {
+        return err(depRes.error);
+      }
+      calledSet.add(pluginName);
+      for (const dep of depRes.value) {
+        all.add(dep);
+      }
+    }
+  }
+  // check all to make all dependencies are resolved
   while (true) {
     const size1 = all.size;
     for (const pluginName of all.values()) {
@@ -218,5 +256,8 @@ async function resolveResourceDependencies(
       netSet.add(pluginName);
     }
   }
+  addedSet.forEach((s) => {
+    netSet.add(s);
+  });
   return ok(netSet);
 }

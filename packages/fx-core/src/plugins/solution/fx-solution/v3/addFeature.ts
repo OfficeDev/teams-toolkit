@@ -217,6 +217,21 @@ async function resolveResourceDependencies(
   addedSet.forEach((s) => {
     all.add(s);
   });
+  // call addInstance APIs for a plugins in addedSet
+  for (const pluginName of addedSet.values()) {
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.addInstance) {
+      const depRes = await plugin.addInstance(ctx, inputs);
+      if (depRes.isErr()) {
+        return err(depRes.error);
+      }
+      calledSet.add(pluginName);
+      for (const dep of depRes.value) {
+        all.add(dep);
+      }
+    }
+  }
+  // check all to make all dependencies are resolved
   while (true) {
     const size1 = all.size;
     for (const pluginName of all.values()) {

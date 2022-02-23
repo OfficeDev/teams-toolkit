@@ -129,7 +129,11 @@ export async function addCapability(
     telemetryProps[SolutionTelemetryProperty.Capabilities] = capabilitiesAnswer.join(";");
   }
   const vsProject = isVSProject(ctx.projectSetting);
-  const features: string[] = [BuiltInFeaturePluginNames.aad]; // AAD is added by default
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const features: string[] = [];
+  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    features.push(BuiltInFeaturePluginNames.aad);
+  }
   if (vsProject) {
     features.push(BuiltInFeaturePluginNames.dotnet);
   } else {

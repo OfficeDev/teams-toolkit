@@ -8,7 +8,7 @@
 import path from "path";
 
 import { AadValidator, FunctionValidator } from "../../commonlib";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
   getSubscriptionId,

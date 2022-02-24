@@ -1,6 +1,6 @@
 # TeamsFx SDK for TypeScript/JavaScript
 
-TeamsFx aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".
+TeamsFx aims to reduce the developer tasks of leveraging Teams SSO and access to cloud resources down to single-line statements with "zero configuration".
 
 Use the library to:
 
@@ -23,7 +23,7 @@ Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/package
 
 - Node.js version 10.x.x or higher
 - A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
-- If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.9.3`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
+- If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.15.0`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
 
 ### Install the `@microsoft/teamsfx` package
 
@@ -33,15 +33,20 @@ Install the TeamsFx SDK for TypeScript/JavaScript with `npm`:
 npm install @microsoft/teamsfx
 ```
 
+### Scenarios
+
+TeamsFx SDK is built to be used in browser and NodeJS environment. Common scenarios include:
+- Teams tab application
+- Azure Function
+- Teams bot
+
 ### Create and authenticate a service like `MicrosoftGraphClient`
 
-To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides several credential classes to choose that meets various requirements.
+To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides APIs to configure for developers. Please choose the proper identity type and follow below steps:
 
-#### Using Teams App User Credential (User Identity)
+#### Invoke Graph API on behalf of Teams User (User Identity)
 
 Use the snippet below:
-
-**Note:** You can only use this credential class in browser application like Teams Tab App.
 
 ```ts
 // Equivalent to:
@@ -52,12 +57,12 @@ Use the snippet below:
 // });
 const teamsfx = new TeamsFx();
 const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
-const profile = await graphClient.api("/me").get();
+const profile = await graphClient.api("/me").get(); // Get the profile of current user
 ```
 
-#### Using Microsoft 365 Tenant Credential (App Identity)
+#### Invoke Graph API without user (Application Identity)
 
-It doesn't require the interaction with Teams App user. You can call Microsoft Graph as application.
+It doesn't require the interaction with Teams user. You can call Microsoft Graph as application identity.
 Use the snippet below:
 
 ```ts
@@ -69,35 +74,24 @@ Use the snippet below:
 // });
 const teamsfx = new TeamsFx(IdentityType.App);
 const graphClient = createMicrosoftGraphClient(teamsfx);
-const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
+const profile = await graphClient.api("/users/{object_id_of_another_people}").get(); // Get the profile of certain user
 ```
 
 ## Core Concepts & Code Structure
 
 ### TeamsFx class
-`TeamsFx` class instance holds all TeamsFx settings from environment variables by default. Developers can also set customized configuration or override the default values.
+`TeamsFx` class instance reads all TeamsFx settings from environment variables by default. You can also set customized configuration values to override the default values. Please check [Override configuration](#override-configuration) for details.
 
-- In browser environment, the scaffolded React project has provided environment variables to use.
-  * REACT_APP_AUTHORITY_HOST
-  * REACT_APP_TENANT_ID
-  * REACT_APP_CLIENT_ID
-  * REACT_APP_TEAMSFX_ENDPOINT
-  * REACT_APP_START_LOGIN_PAGE_URL
-  * M365_APPLICATION_ID_URI
+When creating a TeamsFx instance, you also need to specify the identity type. There are 2 identity types:
 
-- In NodeJS environment like Azure Function, following variables are provided as environment variables.
-  * M365_AUTHORITY_HOST
-  * M365_TENANT_ID
-  * M365_CLIENT_ID
-  * M365_CLIENT_SECRET
-  * INITIATE_LOGIN_ENDPOINT
-  * M365_APPLICATION_ID_URI
-  * API_ENDPOINT
-  * SQL_ENDPOINT
-  * SQL_USER_NAME
-  * SQL_PASSWORD
-  * SQL_DATABASE_NAME
-  * IDENTITY_ID
+#### User Identity
+Using `new TeamsFx(IdentityType.User)` means the application will be authenticated as current Teams user. This one is the default choice. You need to call `TeamsFx:setSsoToken()` when you use user identity in NodeJS environment(without browser).
+
+You can use `TeamsFx:getUserInfo()` to get user's basic information.
+`TeamsFx:login()` is used to let user perform consent process if you want to use SSO to get access token for certain OAuth scopes.
+
+#### Application Identity
+Using `new TeamsFx(IdentityType.App)` means the application will be authenticated as an application. The permission usually need administrator's approval.
 
 `TeamsFx:getCredential()` provides credential instances automatically corresponding to identity type:
 - User Identity: It means that you can access resources on behalf of current Teams user.
@@ -105,25 +99,50 @@ const profile = await graphClient.api("/users/{object_id_of_another_people}").ge
 
 ### Credential
 
-Developers should choose identity type when initializing TeamsFx. SDK provides 2 types: User and App. SDK will use different credentials to represent the identity and get access token by corresponding auth flow.
+//Developers should choose identity type when initializing TeamsFx. SDK provides 2 types: User and App.
+After developer has specified the identity type when initializing TeamsFx, SDK uses different kinds of credential class to represent the identity and get access token by corresponding auth flow.
 
 There are 3 credential classes that are used to help simplifying authentication. They are located under [credential](src/credential) folder.
-Credential classes implements `TokenCredential` interface that is broadly used in Azure library APIs. They are designed to provide access token for specific scopes.
-The credential classes represents different identity under certain scenarios.
+Credential classes implements `TokenCredential` interface that is broadly used in Azure library APIs. They are designed to provide access token for specific scopes. Other APIs that relies on credential call `TeamsFx:getCredential()` to get an instance of `TokenCredential`.
 
-`TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time. It is automatically used when developer choose "User" identity in browser scenario.
-`AppCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job. It is automatically used when developer choose "App" identity in NodeJS scenario.
-`OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios. It is automatically used when developer choose "User" identity in NodeJS scenario.
+Here's the corresponding scenarios that each credential class targets.
 
-### Bot
+#### User Identity in browser environment
+`TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time. It leverages the Teams SSO and On-Behalf-Of flow to do token exchange. SDK uses this credential when developer choose "User" identity in browser environment.
+
+Required configuration: initiateLoginEndpoint, clientId.
+
+#### User Identity in NodeJS environment
+`OnBehalfOfUserCredential` uses On-Behalf-Of flow and need Teams ssoToken. It's designed to be used in Azure Function or Bot scenarios. SDK uses this credential when developer choose "User" identity in NodeJS environment.
+
+Required configuration: authorityHost, tenantId, clientId, clientSecret / certificateContent.
+
+#### Application Identity in NodeJS environment
+`AppCredential` represents the application identity. It is usually used when user is not involved like time-triggered automation job. SDK uses this credential when developer choose "App" identity in NodeJS environment.
+
+Required configuration: tenantId, clientId, clientSecret / certificateContent.
+
+### Bot SSO
 
 Bot related classes are stored under [bot](src/bot) folder.
 
-`TeamsBotSsoPrompt` has a good integration with Bot framework. It simplifies the authentication process when you develops bot application.
+`TeamsBotSsoPrompt` has a good integration with Bot framework. It simplifies the authentication process when you develops bot application and want to leverage the Bot SSO.
+
+Required configuration: initiateLoginEndpoint, tenantId, clientId, applicationIdUri.
 
 ### Helper Function
 
-TeamsFx SDK provides helper functions to ease the configuration for third-party libraries. They are located under [core](src/core) folder.
+TeamsFx SDK provides several helper functions to ease the configuration for third-party libraries. They are located under [core](src/core) folder.
+
+#### Microsoft Graph Service
+`createMicrosoftGraphClient` and `MsGraphAuthProvider` help to create authenticated Graph instance.
+
+#### SQL
+`getTediousConnectionConfig` returns a tedious connection config.
+
+Required configuration:
+- sqlServerEndpoint, sqlUsername, sqlPassword if you want to use user identity
+- sqlServerEndpoint, sqlIdentityId if you want to use MSI identity
 
 ### Error Handling
 
@@ -277,7 +296,7 @@ dialogs.add(
 );
 ```
 
-## Troubleshooting
+## Advanced Customization
 
 ### Configure log
 
@@ -323,13 +342,42 @@ setLogFunction((level: LogLevel, message: string) => {
 ```
 
 
-### loadConfiguration is missing
-`loadConfiguration()` is used to configure settings in a global variable of TeamsFx SDK and is removed now.
-Please use `TeamsFx` instead and pass the instance to helper functions.
-`new TeamsUserCredential();` is equivalent to `new TeamsFx().getCredential();`.
-`new M365TenantCredential();` is equivalent to `new TeamsFx(IdentityType.App).getCredential();`.
+### Override configuration
+You can use `TeamsFx:setCustomConfig()` to override default configuration or set required fields when environment variables are missing.
 
-Also see [TeamsFx class](#teamsfx-class).
+- If you have created tab project using VS Code toolkit, the following config values will be used from pre-configured environment variables:
+  * authorityHost (REACT_APP_AUTHORITY_HOST)
+  * tenantId (REACT_APP_TENANT_ID)
+  * clientId (REACT_APP_CLIENT_ID)
+  * initiateLoginEndpoint (REACT_APP_START_LOGIN_PAGE_URL)
+  * applicationIdUri (REACT_APP_START_LOGIN_PAGE_URL)
+  * apiEndpoint (REACT_APP_FUNC_ENDPOINT)
+  * apiName (REACT_APP_FUNC_NAME)
+
+- If you have created Azure Function / Bot project using VS Code toolkit, the following config values will be used from pre-configured environment variables:
+  * initiateLoginEndpoint (INITIATE_LOGIN_ENDPOINT)
+  * authorityHost (M365_AUTHORITY_HOST)
+  * tenantId (M365_TENANT_ID)
+  * clientId (M365_CLIENT_ID)
+  * clientSecret (M365_CLIENT_SECRET)
+  * applicationIdUri (M365_APPLICATION_ID_URI)
+  * apiEndpoint (API_ENDPOINT)
+  * sqlServerEndpoint (SQL_ENDPOINT)
+  * sqlUsername (SQL_USER_NAME)
+  * sqlPassword (SQL_PASSWORD)
+  * sqlDatabaseName (SQL_DATABASE_NAME)
+  * sqlIdentityId (IDENTITY_ID)
+
+## How to fix the breaking change if upgraded from previous SDK version
+
+If you are using the version of SDK that has `loadConfiguration()`, you can follow these steps to upgrade to the latest SDK version.
+1. Remove `loadConfiguration()` and pass customized settings using `TeamsFx:setCustomConfig()`.
+2. Replace `new TeamsUserCredential()` with `new TeamsFx()`.
+3. Replace `new M365TenantCredential()` with `new TeamsFx(IdentityType.App)`.
+4. Replace `new OnBehalfOfUserCredential(ssoToken)` with `new TeamsFx().setSsoToken(ssoToken)`.
+5. Pass the instance of `TeamsFx` to helper functions to replace credential instance.
+
+Also see [TeamsFx class](#teamsfx-class) for furthur description.
 
 ## Next steps
 

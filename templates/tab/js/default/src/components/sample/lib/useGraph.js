@@ -25,9 +25,7 @@ export function useGraph(asyncFunc, options) {
         await credential.login(scope);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
         const graph = createMicrosoftGraphClient(credential, scope);
-        const result = await asyncFunc(graph, credential, scope);
-        Providers.globalProvider.setState(ProviderState.SignedIn);
-        return result;
+        return await asyncFunc(graph, credential, scope);
       } catch (err) {
         if (err.message?.includes("CancelledByUser")) {
           const helpLink = "https://aka.ms/teamsfx-auth-code-flow";

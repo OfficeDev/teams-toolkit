@@ -87,10 +87,6 @@ export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
   permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
-  if (solutionSettings.migrateFromV1) {
-    return ok(Void);
-  }
-
   if (!isAzureProject(solutionSettings)) {
     return err(
       returnUserError(

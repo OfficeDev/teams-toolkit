@@ -63,7 +63,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
           hasFrontend,
           hasBackend,
           hasBot,
-          false,
           hasSimpleAuth,
           hasAAD
         );
@@ -78,7 +77,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
             hasFrontend,
             hasBackend,
             hasBot,
-            false,
             hasSimpleAuth,
             hasAAD
           );

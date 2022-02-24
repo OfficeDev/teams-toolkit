@@ -48,6 +48,7 @@ export class ResourcePlugins {
   static readonly Identity = "fx-resource-identity";
   static readonly Apim = "fx-resource-apim";
   static readonly SPFx = "fx-resource-spfx";
+  static readonly AppStudio = "fx-resource-appstudio";
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";

@@ -15,7 +15,7 @@ npm install --save-dev @microsoft/extra-shot-mocha
 
 ### it
 
-Sometimes, we're gonna add extra data to our test cases and be able to show it in the report. You can use this "it" to replace mocha.it.
+Sometimes, we're gonna add extra data to our test cases and show it in the report. You can use this "it" to replace mocha.it.
 
 (Currently, this depends on [Mochawesome](https://github.com/adamgruber/mochawesome) as reporter. We'll develop a new reporter later.)
 

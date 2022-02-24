@@ -352,7 +352,7 @@ export namespace AppStudioClient {
             response.data.error?.message || response.data.errorMessage
           );
         } else {
-          return response.data.id;
+          return response.data.teamsAppId;
         }
       } else {
         throw AppStudioResultFactory.SystemError(

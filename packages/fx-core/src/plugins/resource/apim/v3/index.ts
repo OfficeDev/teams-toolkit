@@ -3,9 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  AzureAccountProvider,
   AzureSolutionSettings,
-  err,
   FxError,
   Inputs,
   ok,
@@ -42,7 +40,7 @@ import { Factory } from "../factory";
 import { ProgressBar } from "../utils/progressBar";
 import fs from "fs-extra";
 @Service(BuiltInFeaturePluginNames.apim)
-export class ApimPluginV3 implements v3.FeaturePlugin {
+export class ApimPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.apim;
   displayName = "API Management";
   private progressBar: ProgressBar = new ProgressBar();
@@ -69,10 +67,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
-  async scaffold(
+  async generateCode(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void | undefined, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const apimConfig = new ApimPluginConfig({}, "");
     const answer = buildAnswer(inputs);
     const scaffoldManager = await Factory.buildScaffoldManager(
@@ -85,7 +83,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     }
     answer.save(PluginLifeCycle.Scaffold, apimConfig);
     await scaffoldManager.scaffold(appName, inputs.projectPath);
-    return ok(undefined);
+    return ok(Void);
   }
 
   @hooks([
@@ -96,10 +94,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       },
     }),
   ])
-  async generateResourceTemplate(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
@@ -118,7 +116,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
       pluginCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { apim: provisionModules },
@@ -137,41 +135,36 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
         )
       ),
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const scaffoldRes = await this.scaffold(ctx, inputs);
-    if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-    const armRes = await this.generateResourceTemplate(ctx, inputs);
-    if (armRes.isErr()) return err(armRes.error);
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     const azureResources = solutionSettings.azureResources;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     if (!azureResources.includes(AzureResourceApim.id)) azureResources.push(AzureResourceApim.id);
-    return ok(armRes.value);
+    return ok([]);
   }
   @hooks([
     CommonErrorHandlerMW({
       telemetry: { component: BuiltInFeaturePluginNames.apim, eventName: "update-arm-templates" },
     }),
   ])
-  async afterOtherFeaturesAdded(
+  async updateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
     const configModules = await generateBicepFromFile(
       path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
       pluginCtx
     );
-
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Reference: {
         serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
@@ -179,7 +172,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
         Modules: { apim: configModules },
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async provisionResource(

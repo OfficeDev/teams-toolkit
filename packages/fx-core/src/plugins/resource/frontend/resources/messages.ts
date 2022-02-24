@@ -48,8 +48,6 @@ export class Messages {
   static readonly StartUpdateArmTemplates = (name: string) => `Updating ARM templates '${name}'.`;
   static readonly EndUpdateTemplates = (name: string) =>
     `Successfully updated ARM templates '${name}'.`;
-  static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;
-  static readonly EndMigrateV1Project = (name: string) => `Successfully migrated '${name}'.`;
   static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
 
   static readonly SkipBuild =

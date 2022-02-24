@@ -15,5 +15,4 @@ export interface PluginImpl {
   postProvision(ctx: PluginContext): Promise<FxResult>;
   preDeploy(ctx: PluginContext): Promise<FxResult>;
   deploy(ctx: PluginContext): Promise<FxResult>;
-  migrateV1Project(ctx: PluginContext): Promise<FxResult>;
 }

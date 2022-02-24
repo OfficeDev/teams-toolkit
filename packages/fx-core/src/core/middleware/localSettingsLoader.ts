@@ -11,7 +11,6 @@ import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { IsSimpleAuthEnabled } from "../../common/tools";
-import { isPureExistingApp } from "../utils";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -63,7 +62,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
           hasFrontend,
           hasBackend,
           hasBot,
-          false,
           hasSimpleAuth,
           hasAAD
         );
@@ -78,7 +76,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
             hasFrontend,
             hasBackend,
             hasBot,
-            false,
             hasSimpleAuth,
             hasAAD
           );

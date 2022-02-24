@@ -110,11 +110,6 @@ export enum TelemetryEvent {
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
 
-  MigrateV1ProjectStart = "migrate-v1-project-start",
-  MigrateV1Project = "migrate-v1-project",
-  MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
-  MigrateV1ProjectNotification = "migrate-v1-project-notification",
-
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
@@ -155,7 +150,8 @@ export enum TelemetryProperty {
   Component = "component",
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
-  AapId = "appid",
+  AppId = "appid",
+  TenantId = "tenant-id",
   UserId = "hashed-userid",
   AccountType = "account-type",
   TriggerFrom = "trigger-from",

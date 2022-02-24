@@ -19,7 +19,7 @@ import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHan
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { TabSPFxItem } from "../../../solution/fx-solution/question";
-import { LoadManifestError, SaveManifestError, SPFxAlreadyExistError } from "./error";
+import { SPFxAlreadyExistError } from "./error";
 import * as uuid from "uuid";
 import {
   frameworkQuestion,
@@ -33,14 +33,14 @@ import { ManifestTemplate } from "../utils/constants";
 import * as util from "util";
 
 @Service(BuiltInFeaturePluginNames.spfx)
-export class SPFxPluginV3 implements v3.FeaturePlugin {
+export class SPFxPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.spfx;
   displayName = "SPFx";
   description = "SharePoint Framework (SPFx)";
 
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
 
-  async getQuestionsForAddFeature(
+  async getQuestionsForAddInstance(
     ctx: v2.Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -61,10 +61,10 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.spfx } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
@@ -74,7 +74,6 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
 
     const componentId = uuid.v4();
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-    const templates: v2.ResourceTemplate[] = [];
     // spfx is added for first time, scaffold and generate resource template
     const scaffoldRes = await this.spfxPluginImpl.scaffold(ctx, inputs, componentId);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
@@ -113,33 +112,31 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
       }
     );
 
-    const update = await ctx.appManifestProvider.addCapabilities(
+    const addCapRes = await ctx.appManifestProvider.addCapabilities(
       ctx,
       inputs,
       capabilitiesToAddManifest
     );
-    if (update.isErr()) return err(update.error);
+    if (addCapRes.isErr()) return err(addCapRes.error);
 
-    const manifestRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
-    if (manifestRes.isErr()) {
-      return err(LoadManifestError());
-    }
-
-    if (manifestRes.value.webApplicationInfo) {
-      manifestRes.value.webApplicationInfo = {
+    const webAppInfo: v3.ManifestCapability = {
+      name: "WebApplicationInfo",
+      snippet: {
         resource: ManifestTemplate.WEB_APP_INFO_RESOURCE,
         id: ManifestTemplate.WEB_APP_INFO_ID,
-      };
-    }
+      },
+    };
 
-    const save = await ctx.appManifestProvider.saveManifest(ctx, inputs, manifestRes.value);
-    if (save.isErr()) {
-      return err(SaveManifestError());
-    }
+    const updateWebAppInfoRes = await ctx.appManifestProvider.updateCapability(
+      ctx,
+      inputs,
+      webAppInfo
+    );
+    if (updateWebAppInfoRes.isErr()) return err(updateWebAppInfoRes.error);
 
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(templates);
+    return ok([]);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.spfx } })])

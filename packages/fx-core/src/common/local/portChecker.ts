@@ -17,7 +17,6 @@ import {
   TelemetryEvent,
 } from "../telemetry";
 
-const frontendPortsV1 = [3000];
 const frontendPorts = [53000];
 const simpleAuthPorts = [55000];
 const backendDebugPortRegex = /--inspect[\s]*=[\s"']*9229/im;
@@ -59,12 +58,7 @@ export async function getPortsInUse(
 
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
   if (includeFrontend) {
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
-    if (!migrateFromV1) {
-      ports.push(...frontendPorts);
-    } else {
-      ports.push(...frontendPortsV1);
-    }
+    ports.push(...frontendPorts);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
     if (includeSimpleAuth) {
       ports.push(...simpleAuthPorts);

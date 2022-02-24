@@ -6,7 +6,6 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ArchiveFolderName,
   AzureSolutionSettings,
   combine,
   ConfigMap,
@@ -21,7 +20,6 @@ import {
   Platform,
   Plugin,
   PluginContext,
-  ProjectSettings,
   QTreeNode,
   Result,
   returnSystemError,
@@ -29,15 +27,12 @@ import {
   Solution,
   SolutionConfig,
   SolutionContext,
-  SolutionSettings,
   Stage,
   SubscriptionInfo,
   SystemError,
   TeamsAppManifest,
   UserError,
-  v2,
 } from "@microsoft/teamsfx-api";
-import axios from "axios";
 import * as fs from "fs-extra";
 import Mustache from "mustache";
 import path from "path";
@@ -52,7 +47,6 @@ import {
   getResourceGroupInPortal,
   getStrings,
   isCheckAccountError,
-  isConfigUnifyEnabled,
   isMultiEnvEnabled,
   isUserCancelError,
   redactObject,
@@ -111,7 +105,6 @@ import {
   BotOptionItem,
   createAddAzureResourceQuestion,
   createCapabilityQuestion,
-  createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
   MessageExtensionItem,
@@ -147,7 +140,6 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
-import { scaffoldLocalDebugSettingsV1 } from "./debug/scaffolding";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -216,56 +208,6 @@ export class TeamsAppSolution implements Solution {
     return ok(settings);
   }
 
-  async fillInV1SolutionSettings(
-    ctx: SolutionContext
-  ): Promise<Result<AzureSolutionSettings, FxError>> {
-    const assertList: [
-      Result<Inputs, FxError>,
-      Result<ProjectSettings, FxError>,
-      Result<SolutionSettings, FxError>
-    ] = [
-      this.assertSettingsNotEmpty<Inputs>(ctx.answers, "answers"),
-      this.assertSettingsNotEmpty<ProjectSettings>(ctx.projectSettings, "projectSettings"),
-      this.assertSettingsNotEmpty<SolutionSettings>(
-        ctx?.projectSettings?.solutionSettings,
-        "solutionSettings"
-      ),
-    ];
-    const assertRes = combine(assertList);
-    if (assertRes.isErr()) {
-      return err(assertRes.error);
-    }
-    const [answers, projectSettings, solutionSettingsSource] = assertRes.value;
-
-    const isTypescriptProject = await fs.pathExists(
-      path.join(ctx.root, ArchiveFolderName, "tsconfig.json")
-    );
-    projectSettings.programmingLanguage = isTypescriptProject ? "typescript" : "javascript";
-
-    const capability = answers[AzureSolutionQuestionNames.V1Capability] as string;
-    if (!capability) {
-      return err(
-        returnSystemError(
-          new Error("capabilities is empty"),
-          SolutionSource,
-          SolutionError.InternelError
-        )
-      );
-    }
-
-    const solutionSettings: AzureSolutionSettings = {
-      name: solutionSettingsSource.name,
-      version: solutionSettingsSource.version,
-      hostType: HostTypeOptionAzure.id,
-      capabilities: [capability],
-      azureResources: [],
-      activeResourcePlugins: [],
-      migrateFromV1: solutionSettingsSource?.migrateFromV1,
-    };
-    projectSettings.solutionSettings = solutionSettings;
-    return ok(solutionSettings);
-  }
-
   /**
    * create
    */
@@ -313,71 +255,6 @@ export class TeamsAppSolution implements Solution {
           ctx.projectSettings?.programmingLanguage ?? "",
       });
     }
-    return ok(Void);
-  }
-
-  // Migrate
-  async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.MigrateStart, {
-      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    });
-
-    // ensure that global namespace is present
-    if (!ctx.envInfo.state.has(GLOBAL_CONFIG)) {
-      ctx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
-    }
-
-    const settingsRes = await this.fillInV1SolutionSettings(ctx);
-    if (settingsRes.isErr()) {
-      return err(
-        sendErrorTelemetryThenReturnError(
-          SolutionTelemetryEvent.Migrate,
-          settingsRes.error,
-          ctx.telemetryReporter
-        )
-      );
-    }
-
-    const solutionSettings = settingsRes.value;
-    const selectedPlugins = await this.reloadPlugins(solutionSettings);
-
-    const scaffoldLocalDebugSettingResult = await scaffoldLocalDebugSettingsV1(ctx);
-    if (scaffoldLocalDebugSettingResult.isErr()) {
-      return scaffoldLocalDebugSettingResult;
-    }
-
-    const results: Result<any, FxError>[] = await Promise.all<Result<any, FxError>>(
-      selectedPlugins.map<Promise<Result<any, FxError>>>((migratePlugin) => {
-        return this.executeUserTask(
-          {
-            namespace: `${PluginNames.SOLUTION}/${migratePlugin.name}`,
-            method: "migrateV1Project",
-            params: {},
-          },
-          ctx
-        );
-      })
-    );
-
-    const errorResult = results.find((result) => {
-      return result.isErr();
-    });
-
-    if (errorResult) {
-      return errorResult;
-    }
-
-    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .capabilities;
-    const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .azureResources;
-    await scaffoldReadme(capabilities, azureResources, ctx.root, true);
-
-    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
-      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-    });
-
     return ok(Void);
   }
 
@@ -1032,10 +909,6 @@ export class TeamsAppSolution implements Solution {
           capNode.addChild(botGroup);
         }
       }
-    } else if (stage == Stage.migrateV1) {
-      const capQuestion = createV1CapabilityQuestion();
-      const capNode = new QTreeNode(capQuestion);
-      node.addChild(capNode);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);

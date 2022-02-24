@@ -4,9 +4,6 @@ export class CommonStrings {
   public static readonly BOT_WORKING_DIR_NAME = "bot";
   public static readonly DEFAULT_FILE_ENCODING = "utf-8";
 
-  // for the use of migrating v1 project
-  public static readonly NODE_PACKAGE_FOLDER_NAME = "node_modules";
-
   public static readonly APP_SERVICE_PLAN = "App Service plan";
   public static readonly AZURE_WEB_APP = "Azure Web App";
   public static readonly BOT_CHANNEL_REGISTRATION = "Azure Bot Service channel registration";

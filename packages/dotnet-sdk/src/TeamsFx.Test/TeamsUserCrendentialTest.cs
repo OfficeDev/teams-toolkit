@@ -68,7 +68,6 @@ public class TeamsUserCrendentialTest
             {
                 ClientId = fakeClientId,
                 ClientSecret = fakeClientSecret,
-                InitiateLoginEndpoint = fakeLoginUrl,
                 OAuthAuthority = fakeOauthAuthority
             });
     }

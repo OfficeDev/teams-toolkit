@@ -4,11 +4,9 @@ import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import {
   ConfigFolderName,
-  ConfigMap,
   InputConfigsFolderName,
   Inputs,
   Platform,
-  PluginContext,
   v2,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
@@ -16,8 +14,6 @@ import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
 import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
-import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
-import { MockCryptoProvider } from "../../../core/utils";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;
@@ -574,56 +570,6 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.isFalse(fs.existsSync(expectedTasksFile));
       chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
       chai.assert.isFalse(fs.existsSync(expectedLocalEnvFile));
-    });
-
-    const parameters6: TestParameter[] = [
-      {
-        programmingLanguage: "javascript",
-        numConfigurations: 2,
-        numCompounds: 2,
-        numTasks: 5,
-        numLocalEnvs: 4,
-      },
-      {
-        programmingLanguage: "typescript",
-        numConfigurations: 2,
-        numCompounds: 2,
-        numTasks: 5,
-        numLocalEnvs: 4,
-      },
-    ];
-    parameters6.forEach((parameter: TestParameter) => {
-      it(`happy path: tab migrate from v1 (${parameter.programmingLanguage})`, async () => {
-        const projectSetting = {
-          appName: "",
-          projectId: uuid.v4(),
-          solutionSettings: {
-            name: "",
-            version: "",
-            hostType: "Azure",
-            capabilities: ["Tab"],
-            migrateFromV1: true,
-          },
-          programmingLanguage: parameter.programmingLanguage,
-        };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
-        chai.assert.isTrue(result.isOk());
-
-        //assert output launch.json
-        const launch = fs.readJSONSync(expectedLaunchFile);
-        const configurations: [] = launch["configurations"];
-        const compounds: [] = launch["compounds"];
-        chai.assert.equal(configurations.length, parameter.numConfigurations);
-        chai.assert.equal(compounds.length, parameter.numCompounds);
-
-        //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
-        chai.assert.equal(tasks.length, parameter.numTasks);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
-      });
     });
 
     it("multi env", async () => {

@@ -273,7 +273,23 @@ export class AppStudioPluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return ok(Void);
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
+    const result = await this.appStudioPluginImpl.publishTeamsApp(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider
+    );
+    if (result.isOk()) {
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.publishedAppId] = result.value.publishedAppId;
+      properties[TelemetryPropertyKey.updateExistingApp] = String(result.value.update);
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
+    } else {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, result.error);
+    }
+    return result;
   }
 
   private async getTeamsAppId(

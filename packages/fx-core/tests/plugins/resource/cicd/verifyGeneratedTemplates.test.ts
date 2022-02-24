@@ -70,13 +70,10 @@ describe("Verify Generated Templates & README", () => {
         const contentsToBeComparedPromises = Object.values(TemplateKind).map(
           async (templateKind, index, arr) => {
             //return [actual, expected].
-            const solutionSettings = context.projectSetting.solutionSettings;
-            const hostType = solutionSettings?.hostType;
-            const capabilities = solutionSettings?.capabilities;
-            const programmingLanguage = solutionSettings?.programmingLanguage;
+            const hostType = context.projectSetting.solutionSettings?.hostType;
             const replacements = {
               env_name: envInfo.envName,
-              build_script: generateBuildScript(capabilities, programmingLanguage),
+              build_script: generateBuildScript(context.projectSetting),
               hosting_type_contains_spfx: hostType == "SPFx",
               hosting_type_contains_azure: hostType == "Azure",
             };
@@ -167,13 +164,10 @@ describe("Verify Generated Templates & README", () => {
             providerKind
           );
 
-          const solutionSettings = context.projectSetting.solutionSettings;
-          const hostType = solutionSettings?.hostType;
-          const capabilities = solutionSettings?.capabilities;
-          const programmingLanguage = solutionSettings?.programmingLanguage;
+          const hostType = context.projectSetting.solutionSettings?.hostType;
           const replacements = {
             env_name: envInfo.envName,
-            build_script: generateBuildScript(capabilities, programmingLanguage),
+            build_script: generateBuildScript(context.projectSetting),
             hosting_type_contains_spfx: hostType == "SPFx",
             hosting_type_contains_azure: hostType == "Azure",
           };

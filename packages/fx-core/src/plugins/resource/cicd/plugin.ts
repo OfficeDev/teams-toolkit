@@ -44,13 +44,10 @@ export class CICDImpl {
 
     // 3. Call instance.scaffold(template, replacements: any).
     //  3.1 Construct replacements.
-    const solutionSettings = context.projectSetting.solutionSettings;
-    const hostType = solutionSettings?.hostType;
-    const capabilities = solutionSettings?.capabilities;
-    const programmingLanguage = solutionSettings?.programmingLanguage;
+    const hostType = context.projectSetting.solutionSettings?.hostType;
     const replacements = {
       env_name: envName,
-      build_script: generateBuildScript(capabilities, programmingLanguage),
+      build_script: generateBuildScript(context.projectSetting),
       hosting_type_contains_spfx: hostType == "SPFx",
       hosting_type_contains_azure: hostType == "Azure",
     };

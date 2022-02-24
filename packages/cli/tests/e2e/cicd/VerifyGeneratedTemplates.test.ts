@@ -10,7 +10,6 @@ import "mocha";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import { generateBuildScript } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/utils/buildScripts";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core/src";
 import Mustache from "@microsoft/teamsfx-core/node_modules/@types/mustache";
 import { CICDProviderFactory } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/providers/factory";
@@ -49,7 +48,7 @@ describe("Verify generated templates & readme", function () {
       const templatePromises = ["ci", "cd", "provision", "publish"].map(async (template) => {
         const replacements = {
           env_name: "dev",
-          build_script: generateBuildScript(["bot"], "javascript"),
+          build_script: "cd bot; npm install; cd -;",
           hosting_type_contains_spfx: false,
           hosting_type_contains_azure: true,
         };

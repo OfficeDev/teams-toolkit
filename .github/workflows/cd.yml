@@ -298,8 +298,8 @@ jobs:
         run: |
           npx lerna publish from-package --yes
 
-      - name: pack server visx
-        if: ${{ contains(steps.version-change.outputs.CHANGE, '@microsoft/teamsfx-server') }}
+      - name: pack server bits
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

@@ -1,6 +1,5 @@
 import { useData } from "./useData";
 import { TeamsUserCredential, createMicrosoftGraphClient } from "@microsoft/teamsfx";
-import { Providers, ProviderState } from '@microsoft/mgt-element';
 
 export function useGraph(asyncFunc, options) {
   const { scope } = { scope: ["User.Read"], ...options };

@@ -1501,18 +1501,19 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
         )
       );
     }
-    await fs.writeFile(
-      path.join(inputs.projectPath!, `.gitignore`),
-      [
-        "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-        ".DS_Store",
-        ".env.teamsfx.local",
-        "subscriptionInfo.json",
-        BuildFolderName,
-      ].join("\n")
-    );
+    const gitIgnoreContent = [
+      "node_modules",
+      `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+      `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
+      ".DS_Store",
+      ".env.teamsfx.local",
+      "subscriptionInfo.json",
+      BuildFolderName,
+    ];
+    if (inputs.platform === Platform.VS) {
+      gitIgnoreContent.push("appsettings.Development.json");
+    }
+    await fs.writeFile(path.join(inputs.projectPath!, `.gitignore`), gitIgnoreContent.join("\n"));
   } catch (e) {
     return err(WriteFileError(e));
   }

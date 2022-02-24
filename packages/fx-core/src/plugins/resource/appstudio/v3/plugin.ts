@@ -247,7 +247,11 @@ export class AppStudioPluginImpl {
     zip.writeZip(zipFileName);
 
     const manifestFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${envInfo.envName}.json`;
+    if (await fs.pathExists(manifestFileName)) {
+      await fs.chmod(manifestFileName, 0o777);
+    }
     await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
+    await fs.chmod(manifestFileName, 0o444);
 
     return ok(zipFileName);
   }

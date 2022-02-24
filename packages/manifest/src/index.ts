@@ -81,24 +81,3 @@ export async function validateManifest(manifest: TeamsAppManifest): Promise<stri
 
   return validateManifestAgainstSchema(manifest, result.data);
 }
-
-// The following two requrie auth, which will not ne implemented.
-/**
- * Register a Teams app or update the existing Teams app
- * @param filePath path to the zip file, with manifest and icons
- * @param accessToken Access token with https://dev.teams.microsoft.com/AppDefinitions.ReadWrite scope
- * @returns {string} Teams app id
- */
-export async function deploy(filePath: string, accessToken: string): Promise<string> {
-  throw new Error("Method not implemented.");
-}
-
-/**
- * Publish a Teams app to Teams app catalog
- * @param filePath path to the zip file, with manifest and icons
- * @param accessToken Access token with https://dev.teams.microsoft.com/AppDefinitions.ReadWrite scope
- * @returns {string} Published Teams app id, which is different from Teams app id in Developer Portal
- */
-export async function publish(filePath: string, accessToken: string): Promise<string> {
-  throw new Error("Method not implemented.");
-}

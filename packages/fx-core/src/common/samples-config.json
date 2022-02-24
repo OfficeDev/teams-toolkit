@@ -132,7 +132,7 @@
             "title": "Hello World Tab",
             "shortDescription": "A simple Microsft Teams Tab application displays static content",
             "fullDescription": "This is a simple static tab application with tutorial to include single sign on features.",
-            "tags": ["TAB", "TS"],
+            "tags": ["Tab", "TS"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
             "suggested": false

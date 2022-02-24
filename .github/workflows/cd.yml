@@ -308,7 +308,7 @@ jobs:
           command: |
             sleep 20
             cd ./packages/server
-            npx vsce package
+            npm run package
 
       - name: release daily server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.ref == 'refs/heads/dev'  }}

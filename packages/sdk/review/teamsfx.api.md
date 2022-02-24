@@ -139,6 +139,7 @@ export class TeamsFx implements TeamsFxConfiguration {
     getConfig(key: string): string;
     getConfigs(): Record<string, string>;
     getCredential(): TokenCredential;
+    getIdentityType(): IdentityType;
     getUserInfo(): Promise<UserInfo>;
     hasConfig(key: string): boolean;
     login(scopes: string | string[]): Promise<void>;

@@ -135,15 +135,13 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 
 // @beta
 export class TeamsFx implements TeamsFxConfiguration {
-    constructor(identityType?: IdentityType);
+    constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
     getConfig(key: string): string;
     getConfigs(): Record<string, string>;
     getCredential(): TokenCredential;
     getUserInfo(): Promise<UserInfo>;
     hasConfig(key: string): boolean;
-    identityType: IdentityType;
     login(scopes: string | string[]): Promise<void>;
-    setCustomConfig(customConfig: Record<string, string>): TeamsFx;
     setSsoToken(ssoToken: string): TeamsFx;
 }
 

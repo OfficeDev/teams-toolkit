@@ -20,13 +20,7 @@ export declare class TeamsFx implements TeamsFxConfiguration
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(identityType)](./teamsfx.teamsfx._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsFx |
-
-## Properties
-
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [identityType](./teamsfx.teamsfx.identitytype.md) |  | [IdentityType](./teamsfx.identitytype.md) | <b><i>(BETA)</i></b> Identity type set by user. |
+|  [(constructor)(identityType, customConfig)](./teamsfx.teamsfx._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsFx |
 
 ## Methods
 
@@ -38,6 +32,5 @@ export declare class TeamsFx implements TeamsFxConfiguration
 |  [getUserInfo()](./teamsfx.teamsfx.getuserinfo.md) |  | <b><i>(BETA)</i></b> Get user information. |
 |  [hasConfig(key)](./teamsfx.teamsfx.hasconfig.md) |  | <b><i>(BETA)</i></b> Check the value of specific key. |
 |  [login(scopes)](./teamsfx.teamsfx.login.md) |  | <b><i>(BETA)</i></b> Popup login page to get user's access token with specific scopes. |
-|  [setCustomConfig(customConfig)](./teamsfx.teamsfx.setcustomconfig.md) |  | <b><i>(BETA)</i></b> Set customized configuration to override default values. |
 |  [setSsoToken(ssoToken)](./teamsfx.teamsfx.setssotoken.md) |  | <b><i>(BETA)</i></b> Set SSO token when using user identity in NodeJS. |
 

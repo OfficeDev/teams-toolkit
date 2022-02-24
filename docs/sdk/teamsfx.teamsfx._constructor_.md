@@ -12,7 +12,7 @@ Constructor of TeamsFx
 <b>Signature:</b>
 
 ```typescript
-constructor(identityType?: IdentityType);
+constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
 ```
 
 ## Parameters
@@ -20,6 +20,7 @@ constructor(identityType?: IdentityType);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  identityType | [IdentityType](./teamsfx.identitytype.md) | Choose user or app identity |
+|  customConfig | Record&lt;string, string&gt; | key/value pairs of customized configuration that overrides default ones. |
 
 ## Exceptions
 

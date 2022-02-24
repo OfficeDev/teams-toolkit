@@ -8,6 +8,7 @@ import {
   ErrorCode,
   ErrorWithCode,
   TeamsFx,
+  IdentityType,
 } from "../../../src/index.browser";
 
 chaiUse(chaiPromises);
@@ -18,8 +19,7 @@ describe("MsGraphClientProvider Tests - Browser", () => {
   const scopes = "fake_scope";
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
-  const teamsfx = new TeamsFx();
-  teamsfx.setCustomConfig({
+  const teamsfx = new TeamsFx(IdentityType.User, {
     initiateLoginEndpoint: loginUrl,
     simpleAuthEndpoint: authEndpoint,
     clientId: clientId,

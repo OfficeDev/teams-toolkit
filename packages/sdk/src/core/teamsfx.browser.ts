@@ -19,7 +19,7 @@ export class TeamsFx implements TeamsFxConfiguration {
   private teamsUserCredential?: TeamsUserCredential;
   public identityType: IdentityType;
 
-  constructor(identityType?: IdentityType) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
     this.identityType = identityType ?? IdentityType.User;
     if (this.identityType !== IdentityType.User) {
       const errorMsg = formatString(
@@ -32,6 +32,14 @@ export class TeamsFx implements TeamsFxConfiguration {
     }
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
+    if (customConfig) {
+      for (const key of Object.keys(customConfig)) {
+        const value = customConfig[key];
+        if (value) {
+          this.configuration.set(key, value);
+        }
+      }
+    }
   }
 
   private loadFromEnv(): void {
@@ -61,6 +69,10 @@ export class TeamsFx implements TeamsFxConfiguration {
     });
   }
 
+  getIdentityType(): IdentityType {
+    return this.identityType;
+  }
+
   public getCredential(): TokenCredential {
     if (!this.teamsUserCredential) {
       this.teamsUserCredential = new TeamsUserCredential(Object.fromEntries(this.configuration));
@@ -77,17 +89,6 @@ export class TeamsFx implements TeamsFxConfiguration {
   }
 
   public setSsoToken(ssoToken: string): TeamsFx {
-    return this;
-  }
-
-  public setCustomConfig(customConfig: Record<string, string>): TeamsFx {
-    for (const key of Object.keys(customConfig)) {
-      const value = customConfig[key];
-      if (value) {
-        this.configuration.set(key, value);
-      }
-    }
-    this.teamsUserCredential = undefined;
     return this;
   }
 

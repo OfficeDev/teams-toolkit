@@ -19,24 +19,40 @@ export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;
   private oboUserCredential?: OnBehalfOfUserCredential;
   private appCredential?: AppCredential;
-  /**
-   * Identity type set by user.
-   */
-  public identityType: IdentityType;
+  private identityType: IdentityType;
 
   /**
    * Constructor of TeamsFx
    *
    * @param {IdentityType} identityType - Choose user or app identity
+   * @param customConfig - key/value pairs of customized configuration that overrides default ones.
    *
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
    *
    * @beta
    */
-  constructor(identityType?: IdentityType) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
     this.identityType = identityType ?? IdentityType.User;
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
+    if (customConfig) {
+      for (const key of Object.keys(customConfig)) {
+        const value = customConfig[key];
+        if (value) {
+          this.configuration.set(key, value);
+        }
+      }
+    }
+  }
+
+  /**
+   * Identity type set by user.
+   *
+   * @returns identity type.
+   * @beta
+   */
+  getIdentityType(): IdentityType {
+    return this.identityType;
   }
 
   /**
@@ -54,7 +70,9 @@ export class TeamsFx implements TeamsFxConfiguration {
       if (this.oboUserCredential) {
         return this.oboUserCredential;
       }
-      throw new Error();
+      const errorMsg = "SSO token is required to user identity. Please use setSsoToken().";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
     } else {
       if (!this.appCredential) {
         this.appCredential = new AppCredential(Object.fromEntries(this.configuration));
@@ -124,24 +142,6 @@ export class TeamsFx implements TeamsFxConfiguration {
       ssoToken,
       Object.fromEntries(this.configuration)
     );
-    return this;
-  }
-
-  /**
-   * Set customized configuration to override default values.
-   * @param customConfig - key/value pairs.
-   * @returns this instance.
-   * @beta
-   */
-  public setCustomConfig(customConfig: Record<string, string>): TeamsFx {
-    for (const key of Object.keys(customConfig)) {
-      const value = customConfig[key];
-      if (value) {
-        this.configuration.set(key, value);
-      }
-    }
-    this.oboUserCredential = undefined;
-    this.appCredential = undefined;
     return this;
   }
 

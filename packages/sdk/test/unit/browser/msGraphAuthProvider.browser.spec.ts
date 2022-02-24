@@ -6,6 +6,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import {
   TeamsFx,
+  IdentityType,
   MsGraphAuthProvider,
   TeamsUserCredential,
   ErrorWithCode,
@@ -22,8 +23,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
   const accessToken = "fake_access_token";
-  const teamsfx = new TeamsFx();
-  teamsfx.setCustomConfig({
+  const teamsfx = new TeamsFx(IdentityType.User, {
     initiateLoginEndpoint: loginUrl,
     simpleAuthEndpoint: authEndpoint,
     clientId: clientId,

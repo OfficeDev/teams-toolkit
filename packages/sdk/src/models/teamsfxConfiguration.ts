@@ -11,8 +11,11 @@ import { IdentityType, UserInfo } from "..";
 export interface TeamsFxConfiguration {
   /**
    * Identity type set by user.
+   *
+   * @returns identity type.
+   * @beta
    */
-  identityType: IdentityType;
+  getIdentityType(): IdentityType;
 
   /**
    * Credential instance according to identity type choice.
@@ -64,14 +67,6 @@ export interface TeamsFxConfiguration {
    * @beta
    */
   setSsoToken(ssoToken: string): TeamsFxConfiguration;
-
-  /**
-   * Set customized configuration to override default values.
-   * @param customConfig - key/value pairs.
-   * @returns this instance.
-   * @beta
-   */
-  setCustomConfig(customConfig: Record<string, string>): TeamsFxConfiguration;
 
   /**
    * Usually used by service plugins to retrieve specific config

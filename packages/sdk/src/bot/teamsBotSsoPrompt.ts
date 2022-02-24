@@ -266,10 +266,10 @@ export class TeamsBotSsoPrompt extends Dialog {
   }
 
   private loadAndValidateConfig() {
-    if (this.teamsfx.identityType !== IdentityType.User) {
+    if (this.teamsfx.getIdentityType() !== IdentityType.User) {
       const errorMsg = formatString(
         ErrorMessage.IdentityTypeNotSupported,
-        this.teamsfx.identityType.toString(),
+        this.teamsfx.getIdentityType().toString(),
         "TeamsBotSsoPrompt"
       );
       internalLogger.error(errorMsg);

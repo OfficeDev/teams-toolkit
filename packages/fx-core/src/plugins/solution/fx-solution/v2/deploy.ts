@@ -9,6 +9,8 @@ import {
   returnUserError,
   v2,
   Void,
+  returnSystemError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
@@ -60,6 +62,14 @@ export async function deploy(
     if (checkM365.isErr()) {
       return checkM365;
     }
+  } else {
+    return err(
+      new SystemError(
+        SolutionError.NoAppStudioToken,
+        "App Studio json is undefined",
+        SolutionSource
+      )
+    );
   }
 
   if (isAzureProject(getAzureSolutionSettings(ctx))) {

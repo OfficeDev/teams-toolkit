@@ -214,8 +214,8 @@ export class AppStudioPluginImpl {
       return err(appDefinitionRes.error);
     }
     const manifest: TeamsAppManifest = appDefinitionRes.value[1];
-    manifest.bots = undefined;
-    manifest.composeExtensions = undefined;
+    // manifest.bots = undefined;
+    // manifest.composeExtensions = undefined;
 
     const appDirectory = await getAppDirectory(projectPath);
     const colorFile = `${appDirectory}/${manifest.icons.color}`;
@@ -245,6 +245,9 @@ export class AppStudioPluginImpl {
 
     const zipFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${envInfo.envName}.zip`;
     zip.writeZip(zipFileName);
+
+    const manifestFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${envInfo.envName}.json`;
+    await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
 
     return ok(zipFileName);
   }

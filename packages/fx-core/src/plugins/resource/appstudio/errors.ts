@@ -14,11 +14,6 @@ export class AppStudioError {
     message: (directoryPath: string) => `${directoryPath} is not a directory.`,
   };
 
-  public static readonly ParamUndefinedError = {
-    name: "ParamUndefined",
-    message: (param: string) => `${param} is undefined.`,
-  };
-
   public static readonly RemoteAppIdCreateFailedError = {
     name: "RemoteAppIdCreateFailed",
     message: (error?: any) =>
@@ -99,11 +94,6 @@ export class AppStudioError {
       `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
   };
 
-  public static readonly InternalError = {
-    name: "InternalError",
-    message: "Select either Bot or Messaging Extension.",
-  };
-
   public static readonly TeamsAppUpdateFailedError = {
     name: "TeamsAppUpdateFailed",
     message: (teamsAppId: string) => `Failed to update Teams app with ID ${teamsAppId}.`,
@@ -143,20 +133,9 @@ export class AppStudioError {
     message: "UnhandledError",
   };
 
-  public static readonly PluginNotFound = {
-    name: "PluginNotFound",
-    message: (name: string) => `Plugin name ${name} is not valid`,
-  };
-
   public static readonly ScaffoldFailedError = {
     name: "ScaffoldFailed",
     message: (error: any) => (error.message ? error.message : "Teams app scaffold failed!"),
-  };
-
-  public static readonly MigrateV1ProjectFailedError = {
-    name: "MigrateV1ProjectFailed",
-    message: (error: any) =>
-      error.message ? error.message : "Migrate Teams Toolkit V1 project failed!",
   };
 
   public static readonly CheckPermissionFailedError = {
@@ -199,5 +178,16 @@ export class AppStudioError {
   public static readonly CapabilityExceedLimitError = {
     name: "CapabilityExceedLimitError",
     message: (capability: string) => `Cannot add capability ${capability}, it reaches the limit.`,
+  };
+
+  public static readonly StaticTabNotExistError = {
+    name: "StaticTabNotExist",
+    message: (index: string) => `Cannot find statib tab with entity id ${index}, failed to update.`,
+  };
+
+  public static readonly CapabilityNotExistError = {
+    name: "CapabilityNotExist",
+    message: (capability: string) =>
+      `Capability ${capability} does not exist in manifest, failed to update.`,
   };
 }

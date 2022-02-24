@@ -43,11 +43,3 @@ export function InvalidLocalBotEndpointFormat(localBotEndpoint: string): UserErr
     "InvalidLocalBotEndpointFormat"
   );
 }
-
-export function ScaffoldLocalDebugSettingsV1Error(): SystemError {
-  return returnSystemError(
-    new Error("Failed to convert api v1 context to v2 context."),
-    SolutionSource,
-    "ScaffoldLocalDebugSettingsV1Error"
-  );
-}

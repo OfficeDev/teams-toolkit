@@ -75,8 +75,4 @@ export class DotnetBotImpl extends TeamsBotImpl {
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     return ResultFactory.Success();
   }
-
-  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
-  }
 }

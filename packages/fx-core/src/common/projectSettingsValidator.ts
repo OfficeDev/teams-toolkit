@@ -6,6 +6,7 @@ import {
   BotOptionItem,
   MessageExtensionItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
@@ -20,6 +21,7 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     TabOptionItem.id,
     BotOptionItem.id,
     MessageExtensionItem.id,
+    TabSPFxItem.id,
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;

@@ -94,13 +94,7 @@ describe("LocalSettings provider APIs", () => {
       hasBackend = false;
       hasBot = false;
 
-      const localSettings = localSettingsProvider.init(
-        hasFrontend,
-        hasBackend,
-        hasBot,
-        false,
-        true
-      );
+      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot, true);
       assertLocalSettings(localSettings, hasFrontend, hasBackend, hasBot, true);
     });
   });
@@ -163,7 +157,7 @@ describe("LocalSettings provider APIs", () => {
 
   describe("load localSettings", () => {
     it("should load after save", async () => {
-      const localSettings = localSettingsProvider.init(true, true, true, false, true);
+      const localSettings = localSettingsProvider.init(true, true, true, true);
       const updateValue = "http://localhost:55000";
       localSettings.auth?.set(LocalSettingsSimpleAuthKeys.SimpleAuthServiceEndpoint, updateValue);
 

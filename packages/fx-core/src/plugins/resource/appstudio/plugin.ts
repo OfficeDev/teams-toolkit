@@ -113,7 +113,7 @@ export class AppStudioPluginImpl {
         return err(appDefinitionAndManifest.error);
       }
 
-      const localTeamsAppID = await this.getTeamsAppId(ctx, !isConfigUnifyEnabled());
+      const localTeamsAppID = await this.getTeamsAppId(ctx, true);
 
       let createIfNotExist = false;
       if (!localTeamsAppID) {
@@ -1077,6 +1077,7 @@ export class AppStudioPluginImpl {
     return applicationIdUris;
   }
 
+  // TODO: remove isLocalDebug later after merging local and remote configs
   private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
     let teamsAppId = "";
 
@@ -1087,9 +1088,10 @@ export class AppStudioPluginImpl {
       teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
-      teamsAppId = isLocalDebug
-        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-        : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+      teamsAppId =
+        isLocalDebug && !isConfigUnifyEnabled()
+          ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+          : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
     }
     return teamsAppId;
   }

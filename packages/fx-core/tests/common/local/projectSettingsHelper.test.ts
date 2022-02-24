@@ -28,7 +28,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isFalse(isSpfx);
     chai.assert.isTrue(includeFrontend);
@@ -36,7 +35,6 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isTrue(includeBot);
     chai.assert.isTrue(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
   });
 
   it("Azure All with Simple Auth", () => {
@@ -58,7 +56,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isFalse(isSpfx);
     chai.assert.isTrue(includeFrontend);
@@ -66,7 +63,6 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isTrue(includeBot);
     chai.assert.isTrue(includeAAD);
     chai.assert.isTrue(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
   });
 
   it("SPFx", () => {
@@ -85,7 +81,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isTrue(isSpfx);
     chai.assert.isFalse(includeFrontend);
@@ -93,35 +88,6 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isFalse(includeBot);
     chai.assert.isFalse(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
-  });
-
-  it("Migrate V1", () => {
-    const projectSettings = {
-      appName: "unit-test",
-      projectId: "11111111-1111-1111-1111-111111111111",
-      solutionSettings: {
-        name: "fx-solution-azure",
-        capabilities: ["Tab"],
-        migrateFromV1: true,
-      },
-    } as ProjectSettings;
-
-    const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
-    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
-    const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
-    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
-
-    chai.assert.isFalse(isSpfx);
-    chai.assert.isFalse(includeFrontend);
-    chai.assert.isFalse(includeBackend);
-    chai.assert.isFalse(includeBot);
-    chai.assert.isFalse(includeAAD);
-    chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isTrue(migrateFromV1);
   });
 
   it("Partial Settings", () => {
@@ -143,7 +109,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isFalse(isSpfx);
     chai.assert.isTrue(includeFrontend);
@@ -151,7 +116,6 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isFalse(includeBot);
     chai.assert.isTrue(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
   });
 
   it("Partial Settings without AAD plugin", () => {
@@ -172,7 +136,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isFalse(isSpfx);
     chai.assert.isTrue(includeFrontend);
@@ -180,7 +143,6 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isFalse(includeBot);
     chai.assert.isFalse(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
   });
 
   it("Invalid Settings", () => {
@@ -201,7 +163,6 @@ describe("ProjectSettingsHelper", () => {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
     chai.assert.isFalse(isSpfx);
     chai.assert.isFalse(includeFrontend);
@@ -209,6 +170,5 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isFalse(includeBot);
     chai.assert.isFalse(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
-    chai.assert.isFalse(migrateFromV1);
   });
 });

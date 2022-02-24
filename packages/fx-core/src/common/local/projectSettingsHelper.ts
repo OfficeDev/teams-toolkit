@@ -46,5 +46,6 @@ export class ProjectSettingsHelper {
     );
 
   public static includeSimpleAuth = (projectSettings: ProjectSettings | undefined): boolean =>
+    // TODO: update this when retiring simple auth service
     !!IsSimpleAuthEnabled(projectSettings);
 }

@@ -315,7 +315,7 @@ jobs:
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
-          tag: 'vscode-extension-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
+          tag: '@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
       

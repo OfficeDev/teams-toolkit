@@ -163,7 +163,6 @@ export async function setupLocalEnvironment(
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
-  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -174,7 +173,6 @@ export async function setupLocalEnvironment(
     bot: includeBot ? "true" : "false",
     auth: "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
-    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -183,8 +181,8 @@ export async function setupLocalEnvironment(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
-      const authPort = isMigrateFromV1 ? 5000 : 55000;
+      const frontendPort = 53000;
+      const authPort = 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;

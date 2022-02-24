@@ -69,31 +69,6 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
-export const QuestionV1AppName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.AppName,
-  title: "Application name",
-  validation: {
-    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const schema = {
-        pattern: ProjectNamePattern,
-        maxLength: 30,
-      };
-      const appName = input as string;
-      const validateResult = jsonschema.validate(appName, schema);
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        if (validateResult.errors[0].name === "pattern") {
-          return "Application name must start with a letter and can only contain letters and digits.";
-        } else {
-          return "Application name length must be shorter than 30.";
-        }
-      }
-      return undefined;
-    },
-  },
-  placeholder: "Application name",
-};
-
 export const DefaultAppNameFunc: FuncQuestion = {
   type: "func",
   name: CoreQuestionNames.DefaultAppNameFunc,

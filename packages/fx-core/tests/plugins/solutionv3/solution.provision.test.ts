@@ -125,7 +125,7 @@ describe("SolutionV3 - provision", () => {
           return ok("Provision");
         }
       );
-    sandbox.stub(AppStudioPluginImpl.prototype, "createTeamsApp").resolves(ok(uuid.v4()));
+    sandbox.stub(AppStudioPluginImpl.prototype, "createOrUpdateTeamsApp").resolves(ok(uuid.v4()));
 
     const envInfoV3: v3.EnvInfoV3 = {
       envName: "dev",

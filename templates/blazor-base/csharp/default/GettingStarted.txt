@@ -1,12 +1,25 @@
 Welcome to the Teams Toolkit! Here are some tips to get started building your app.
 
+Prerequisites
+----------
+
+If the project contains Bot capability, you will need to setup Ngrok(https://ngrok.com/) in order to tunnel from the Teams client to localhost.
+
+After install Ngrok please run the command in Command Prompt: ngrok http 2544
+
 
 Quick start
 ----------
 
-Select 'Debug > Start Debugging' or press F5. After press F5, in the browser, click Add to add your app to Teams.
+Before you run or Start Debugging for the first time, follow these steps:
 
-Learn more about developing Teams applications with Blazor at https://aka.ms/blazor-teams-app-dev.
+1. If the project contains Bot capability, check the Ngrok is running in your local environment. If the project only contains Tab capability, it doesn't need Ngrok.
+
+2. Select the Project > TeamsFx > Configure Microsoft Teams app. When prompted, sign in your M365 account. You can find the log in Output window.
+ 
+3. Select Debug > Start Debugging or press F5.
+
+4. After press F5, in the browser, click Add to add your app to Teams.
 
 
 Building your app UI
@@ -38,3 +51,9 @@ Q&A
 
 1. How to request more permissions and scopes in Graph call?
    If you have selected Personal Tab capability and you want to change the scope in Graph call, you can first change the parameter _scope in Components/Graph.razor. Then go to Azure Portal -> Azure Active Directory -> App Registrations, find the AAD application Toolkit created for you (default name is the same as the project name), under Manage, select API Permissions. Select Add a permission > Microsoft Graph > Delegated permissions, then add the permissions you want.
+
+2. Why is my bot not worked in Teams?
+   Please check if the ngrok is running correctly in your local environment, the Free plan's Ngrok will be expired in 2 hours and you need to restart it. After the restart, the endpoint will change, you need to click the command Project > TeamsFx > Configure Microsoft Teams app to update the new endpoint.
+
+3. Why the command Configure Microsoft Teams app show the ngrok is not running correctly?
+   We only support the ngrok is running in its default setting, please make sure the ngrok web interface is http://127.0.0.1:4040.

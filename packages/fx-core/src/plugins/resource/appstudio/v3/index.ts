@@ -227,7 +227,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
-    const result = await this.appStudioPluginImpl.createTeamsApp(
+    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
       ctx,
       inputs,
       envInfo,
@@ -246,15 +246,32 @@ export class AppStudioPluginV3 {
   async updateTeamsApp(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
+  ): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
+    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider
+    );
+    if (result.isOk()) {
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.appId] = result.value;
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.updateManifest);
+    } else {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.updateManifest, result.error);
+    }
+    return result;
   }
 
   async publishTeamsApp(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

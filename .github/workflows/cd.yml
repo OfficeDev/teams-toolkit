@@ -110,6 +110,8 @@ jobs:
           echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
           echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
           echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
+          echo "::set-output name=SERVER_VERSION_NUM::$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)"
+          echo "::set-output name=SERVER_VERSION::$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)"
           echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
           echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
           if git tag --points-at HEAD | grep templates | grep rc;
@@ -296,8 +298,46 @@ jobs:
         run: |
           npx lerna publish from-package --yes
 
+      - name: pack server visx
+        if: ${{ contains(steps.version-change.outputs.CHANGE, '@microsoft/teamsfx-server') }}
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            sleep 20
+            cd ./packages/server
+            npx vsce package
+
+      - name: release daily VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.ref == 'refs/heads/dev'  }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: 'vscode-extension-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
+          artifacts: ./packages/server/lib/*.exe
+          prerelease: true
+      
+      - name: release RC VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
+          artifacts: ./packages/server/lib/*.exe
+          prerelease: true
+      
+      - name: release stable VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
+          artifacts: ./packages/server/lib/*.exe
+
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

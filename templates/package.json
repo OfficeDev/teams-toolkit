@@ -6,13 +6,12 @@
     "scripts": {
         "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
         "precommit": "npm run check-sensitive && lint-staged",
-        "version": "../.github/scripts/pkg-version.sh core-template"
+        "version": "bash ../.github/scripts/pkg-version.sh template-sync && ../.github/scripts/pkg-version.sh core-template"
     },
     "dependencies": {
-      "@microsoft/teamsfx": "^0.5.0",
-      "@microsoft/adaptivecards-tools": "^0.1.2"
+        "@microsoft/adaptivecards-tools": "^0.1.2",
+        "@microsoft/teamsfx": "^0.5.1"
     },
-    "syncup": false,
     "devDependencies": {
         "@shared/eslint-config": "file:../packages/eslint-config",
         "@shared/prettier-config": "file:../packages/prettier-config",

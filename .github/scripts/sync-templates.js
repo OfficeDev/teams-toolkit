@@ -20,20 +20,18 @@ function recursivelyListPackageJsonFilePath(dir, list = []) {
 }
 
 const depPkgs = recursivelyListPackageJsonFilePath(templateDir);
-const syncOption = require(path.join(templateDir, 'package.json')).syncup
-if(syncOption === false){
-    console.log("config no sync up, just return")
-    return
-}
 const templatesDeps = require(path.join(templateDir, 'package.json')).dependencies
 for(let file of depPkgs) {
     const pkg_ = fse.readJsonSync(file);
-    const dep = pkg_.dependencies;
-    for(let templateDep of templatesDeps){
-        if(dep && dep[templateDep]){
-            dep[templateDep] = templatesDeps[templateDep];
+    const dep_ = pkg_.dependencies;
+    for(let templateDep in templatesDeps){
+        for(let subTempDep in dep_) {
+            let minVersion = semver.minVersion(dep_[subTempDep])
+            if(templateDep === subTempDep && semver.prerelease(minVersion)){
+                dep_[subTempDep] = templatesDeps[templateDep] 
+            }
         }
     }
-    pkg_.dependencies = dep;
+    pkg_.dependencies = dep_;
     fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
 }

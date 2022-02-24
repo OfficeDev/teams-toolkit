@@ -21,14 +21,6 @@ const scenrioSupportedLanguages = new Map([
     ["js", "ts", "csharp"],
   ],
   [
-    ["bot", "default", "bot"],
-    ["js", "ts", "csharp"],
-  ],
-  [
-    ["msgext", "default", "bot"],
-    ["js", "ts"],
-  ],
-  [
     ["bot-msgext", "default", "bot"],
     ["js", "ts", "csharp"],
   ],

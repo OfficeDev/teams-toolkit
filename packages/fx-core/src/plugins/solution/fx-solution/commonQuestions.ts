@@ -24,6 +24,7 @@ import {
   UserError,
   Void,
   Err,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -94,16 +95,22 @@ export class CommonQuestions {
  *
  */
 export async function checkSubscription(
-  envInfo: v2.EnvInfoV2,
+  envInfo: { version: 1; data: EnvInfo } | { version: 2; data: v2.EnvInfoV2 },
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<SubscriptionInfo, FxError>> {
-  const subscriptionId = envInfo.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID);
-  if (!isMultiEnvEnabled() || !subscriptionId) {
+  const subscriptionId =
+    envInfo.version === 1
+      ? envInfo.data.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_ID)
+      : envInfo.data.state[PluginNames.SOLUTION][SUBSCRIPTION_ID];
+  if (!subscriptionId) {
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     return ok(askSubRes!);
   }
 
-  let subscriptionName = envInfo.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME) ?? "";
+  let subscriptionName =
+    (envInfo.version === 1
+      ? envInfo.data.state?.get(PluginNames.SOLUTION)?.get(SUBSCRIPTION_NAME)
+      : envInfo.data.state[PluginNames.SOLUTION][SUBSCRIPTION_NAME]) ?? "";
   if (subscriptionName.length > 0) {
     subscriptionName = `(${subscriptionName})`;
   }
@@ -118,10 +125,10 @@ export async function checkSubscription(
       new UserError(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
-          envInfo.envName
+          envInfo.data.envName
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
-          envInfo.envName
+          envInfo.data.envName
         )}' file.`,
         SolutionSource
       )
@@ -135,20 +142,21 @@ export async function checkSubscription(
  *
  */
 export async function checkM365Tenant(
-  envInfo: v2.EnvInfoV2,
+  envInfo: { version: 1; data: EnvInfo } | { version: 2; data: v2.EnvInfoV2 },
   appStudioJson: object
 ): Promise<Result<Void, FxError>> {
-  const m365TenantId = envInfo.state
-    ?.get(PluginNames.SOLUTION)
-    ?.get(SolutionPlugin.TeamsAppTenantId);
-  if (!isMultiEnvEnabled() || !m365TenantId) {
+  const m365TenantId =
+    envInfo.version === 1
+      ? envInfo.data.state?.get(PluginNames.SOLUTION)?.get(SolutionPlugin.TeamsAppTenantId)
+      : envInfo.data.state[PluginNames.SOLUTION][SolutionPlugin.TeamsAppTenantId];
+  if (!m365TenantId) {
     return ok(Void);
   }
   if ((appStudioJson as any).tid && (appStudioJson as any).tid != m365TenantId) {
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.data.envName}' environment. Please sign out and sign in with the correct M365 account.`,
         "Solution"
       )
     );
@@ -380,7 +388,10 @@ async function askCommonQuestions(
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await checkSubscription(ctx.envInfo, azureAccountProvider);
+  const subscriptionResult = await checkSubscription(
+    { version: 1, data: ctx.envInfo },
+    azureAccountProvider
+  );
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }

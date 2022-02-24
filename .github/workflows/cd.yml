@@ -310,7 +310,7 @@ jobs:
             cd ./packages/server
             npx vsce package
 
-      - name: release daily VSCode extension to github
+      - name: release daily server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.ref == 'refs/heads/dev'  }}
         uses: ncipollo/release-action@v1.7.3
         with:
@@ -319,7 +319,7 @@ jobs:
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
       
-      - name: release RC VSCode extension to github
+      - name: release RC server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
         uses: ncipollo/release-action@v1.7.3
         with:
@@ -328,7 +328,7 @@ jobs:
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
       
-      - name: release stable VSCode extension to github
+      - name: release stable server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
@@ -337,7 +337,7 @@ jobs:
           artifacts: ./packages/server/lib/*.exe
 
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

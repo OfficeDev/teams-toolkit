@@ -591,6 +591,9 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
     return err(res.error);
   }
 
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
   return ok(null);
 }
 

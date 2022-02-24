@@ -49,7 +49,7 @@
       "publishTitle": "Publish to Teams",
       "publishDescription": "Publish to Teams",
       "addCICDWorkflowsTitle": "Add CI/CD Workflows",
-      "addCICDWorkflowsDescription": "Add CI/CD Workflows",
+      "addCICDWorkflowsDescription": "Create workflow automation templates for Github, Azure DevOps and Jenkins",
       "teamsDevCenterTitle": "TEAMS DEV CENTER",
       "teamsDevCenterDescription": "Get started with Teamsfx",
       "appManagementTitle": "Manage Teams App",

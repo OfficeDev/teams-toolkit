@@ -40,6 +40,11 @@ export class TeamsFx implements TeamsFxConfiguration {
         }
       }
     }
+    if (this.configuration.size === 0) {
+      internalLogger.warn(
+        "No configuration is loaded, please pass required configs to TeamsFx constructor"
+      );
+    }
   }
 
   private loadFromEnv(): void {
@@ -48,9 +53,12 @@ export class TeamsFx implements TeamsFxConfiguration {
       // testing purpose
       env = (window as any).__env__;
     } else {
-      env = process.env;
+      env = process && process.env;
     }
     if (!env) {
+      internalLogger.warn(
+        "Cannot read process.env, please use webpack if you want to support environment variables."
+      );
       return;
     }
     this.configuration.set("authorityHost", env.REACT_APP_AUTHORITY_HOST);

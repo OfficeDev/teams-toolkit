@@ -2,26 +2,31 @@ const path = require('path')
 const semver = require('semver')
 const fse = require('fs-extra')
 
+const repoRoot = path.join(__dirname, "../..");
 const templateDir = path.join(__dirname, "../../templates");
+const templateDirs = require(path.join(templateDir, "package.json")).templates
 let depPkgs  = [];
-function ThroughDirectory(Directory) {
-    fse.readdirSync(Directory).forEach(File => {
-        const Absolute = path.join(Directory, File);
-        if (fse.statSync(Absolute).isDirectory() && File != "node_modules") return ThroughDirectory(Absolute);
-        else if(File === "package.json") return depPkgs.push(Absolute);
-    });
+for(let subTempDir of templateDirs){
+    const subTempPath = path.join(templateDir, subTempDir, "package.json")
+    if(fse.existsSync(subTempPath)){
+        depPkgs.push(subTempPath)
+    }
 }
-ThroughDirectory(templateDir)
-
-const templatesDeps = require(path.join(templateDir, 'package.json')).dependencies
-
+const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
+let templatesDeps = {};
+for(let pkgDir of pkgDirs) {
+    const pkgPath = path.join(repoRoot, pkgDir, "package.json");
+    const pkgName = require(pkgPath).name;
+    const pkgVersion = require(pkgPath).version;
+    templatesDeps[`${pkgName}`] = pkgVersion;
+}
 for(let file of depPkgs) {
     const pkg_ = fse.readJsonSync(file);
     const dep_ = pkg_.dependencies;
     let fileChange = false;
     for(let [key,value] of Object.entries(templatesDeps)){
         if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            dep_[key]=value;
+            dep_[key] = `^${value}`;
             fileChange = true;
         }
     }

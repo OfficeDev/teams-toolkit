@@ -44,6 +44,6 @@ elif [ $1 == 'template-adaptive-card' ]; then
     fi
     git add ../../templates
 elif [ $1 == 'template-sync' ]; then
-    subTempUpdate=$(node ../.github/scripts/sync-templates.js)
+    node ../.github/scripts/sync-templates.js
     git add .
 fi

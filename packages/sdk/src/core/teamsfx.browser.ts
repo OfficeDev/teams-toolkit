@@ -48,33 +48,33 @@ export class TeamsFx implements TeamsFxConfiguration {
   }
 
   private loadFromEnv(): void {
-    let env: any;
     if (window && (window as any).__env__) {
       // testing purpose
-      env = (window as any).__env__;
+      const env = (window as any).__env__;
+      this.configuration.set("authorityHost", env.REACT_APP_AUTHORITY_HOST);
+      this.configuration.set("tenantId", env.REACT_APP_TENANT_ID);
+      this.configuration.set("clientId", env.REACT_APP_CLIENT_ID);
+      this.configuration.set("initiateLoginEndpoint", env.REACT_APP_START_LOGIN_PAGE_URL);
+      this.configuration.set("applicationIdUri", env.M365_APPLICATION_ID_URI);
+      this.configuration.set("apiEndpoint", env.REACT_APP_FUNC_ENDPOINT);
+      this.configuration.set("apiName", env.REACT_APP_FUNC_NAME);
     } else {
-      env = process && process.env;
-    }
-    if (!env) {
-      internalLogger.warn(
-        "Cannot read process.env, please use webpack if you want to support environment variables."
-      );
-      return;
-    }
-    this.configuration.set("authorityHost", env.REACT_APP_AUTHORITY_HOST);
-    this.configuration.set("tenantId", env.REACT_APP_TENANT_ID);
-    this.configuration.set("clientId", env.REACT_APP_CLIENT_ID);
-    this.configuration.set("initiateLoginEndpoint", env.REACT_APP_START_LOGIN_PAGE_URL);
-    this.configuration.set("applicationIdUri", env.M365_APPLICATION_ID_URI);
-    this.configuration.set("apiEndpoint", env.REACT_APP_FUNC_ENDPOINT);
-    this.configuration.set("apiName", env.REACT_APP_FUNC_NAME);
-
-    Object.keys(env).forEach((key: string) => {
-      const value = env[key];
-      if (key.startsWith("TEAMSFX_") && value) {
-        this.configuration.set(key.substring(8), value);
+      // TODO: support common environment variable name
+      try {
+        this.configuration.set("authorityHost", process.env.REACT_APP_AUTHORITY_HOST);
+        this.configuration.set("tenantId", process.env.REACT_APP_TENANT_ID);
+        this.configuration.set("clientId", process.env.REACT_APP_CLIENT_ID);
+        this.configuration.set("initiateLoginEndpoint", process.env.REACT_APP_START_LOGIN_PAGE_URL);
+        this.configuration.set("applicationIdUri", process.env.M365_APPLICATION_ID_URI);
+        this.configuration.set("apiEndpoint", process.env.REACT_APP_FUNC_ENDPOINT);
+        this.configuration.set("apiName", process.env.REACT_APP_FUNC_NAME);
+      } catch (_) {
+        internalLogger.warn(
+          "Cannot read process.env, please use webpack if you want to use environment variables."
+        );
+        return;
       }
-    });
+    }
   }
 
   getIdentityType(): IdentityType {

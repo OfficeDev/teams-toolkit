@@ -172,20 +172,12 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
       doctorConstant.CheckNumber.split("@number").join(`${totalSteps}`)
     );
 
-    // Get project settings
-    const workspacePath = ext.workspaceUri.fsPath;
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
-
+    const node: DepsType = await detectNodeDepsType();
     // node
     const checkResults: CheckResult[] = [];
     const nodeResult = await checkNode(
-      await getOrderedCheckers(projectSettings, localEnvManager),
+      [node],
       depsManager,
       `(${currentStep++}/${totalSteps})`,
       undefined
@@ -285,7 +277,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     await checkFailure(checkResults, progressHelper);
 
     // login checker
-    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`);
+    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`, true);
     await progressHelper.end(Checker.M365Account);
     checkResults.push(accountResult);
 
@@ -411,7 +403,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   return ok(null);
 }
 
-async function checkM365Account(prefix: string, showLoginPage = true): Promise<CheckResult> {
+async function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
   let result = ResultStatus.success;
   let error = undefined;
   const failureMsg = Checker.M365Account;
@@ -844,6 +836,24 @@ async function getOrderedCheckers(
   }
   checkers.push(Checker.Ports);
   return checkers;
+}
+
+async function detectNodeDepsType(): Promise<DepsType> {
+  try {
+    const workspacePath = ext.workspaceUri.fsPath;
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+    return (
+      getNodeDep(await getOrderedCheckers(projectSettings, localEnvManager)) ?? DepsType.AzureNode
+    );
+  } catch (error) {
+    // not a teamsfx project
+    return DepsType.AzureNode;
+  }
 }
 
 function getDeps(checkerOrDeps: (Checker | DepsType)[]): DepsType[] {

@@ -1,20 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AccessToken, AuthenticationError, ClientSecretCredential } from "@azure/identity";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import mockedEnv from "mocked-env";
-import { loadConfiguration, M365TenantCredential } from "../../../src";
+import { AppCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
-import * as fs from "fs";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
 chaiUse(chaiPromises);
-let mockedEnvRestore: () => void;
 
-describe("M365TenantCredential Tests - Node", () => {
+describe("AppCredential Tests - Node", () => {
   const scopes = "fake_scope";
   const clientId = "fake_client_id";
   const tenantId = "fake_tenant_id";
@@ -27,24 +23,16 @@ fakeCert
 -----END CERTIFICATE-----`;
   const authorityHost = "https://fake_authority_host";
   const fakeToken = "fake_token";
-
-  beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost,
-    });
-    loadConfiguration();
-  });
-
-  afterEach(function () {
-    mockedEnvRestore();
-  });
+  const authConfig = {
+    clientId: clientId,
+    clientSecret: clientSecret,
+    tenantId: tenantId,
+    authorityHost: authorityHost,
+  };
 
   it("getToken should throw InvalidParameter error with invalid scopes", async function () {
     const invalidScopes: any = [new Error()];
-    const credential = new M365TenantCredential();
+    const credential = new AppCredential(authConfig);
     const errorResult = await expect(
       credential.getToken(invalidScopes)
     ).to.eventually.be.rejectedWith(ErrorWithCode);
@@ -55,27 +43,21 @@ fakeCert
     );
   });
 
-  it("create M365TenantCredential instance should success with valid config for Client Secret", function () {
-    loadConfiguration();
-
-    const credential: any = new M365TenantCredential();
+  it("create AppCredential instance should success with valid config for Client Secret", function () {
+    const credential: any = new AppCredential(authConfig);
 
     assert.strictEqual(credential.msalClient.config.auth.clientId, clientId);
     assert.strictEqual(credential.msalClient.config.auth.authority, authorityHost + "/" + tenantId);
     assert.strictEqual(credential.msalClient.config.auth.clientSecret, clientSecret);
   });
 
-  it("create M365TenantCredential instance should success with valid config for Client Certificate", function () {
-    loadConfiguration({
-      authentication: {
-        clientId: clientId,
-        certificateContent: certificateContent,
-        authorityHost: authorityHost,
-        tenantId: tenantId,
-      },
+  it("create AppCredential instance should success with valid config for Client Certificate", function () {
+    const credential: any = new AppCredential({
+      clientId: clientId,
+      certificateContent: certificateContent,
+      authorityHost: authorityHost,
+      tenantId: tenantId,
     });
-
-    const credential: any = new M365TenantCredential();
 
     assert.strictEqual(credential.msalClient.config.auth.clientId, clientId);
     assert.strictEqual(credential.msalClient.config.auth.authority, authorityHost + "/" + tenantId);
@@ -86,34 +68,23 @@ fakeCert
     assert.strictEqual(credential.msalClient.config.auth.clientSecret, "");
   });
 
-  it("create M365TenantCredential instance should success and respect certificateContent when both Client Secret and Client Certificate are set", function () {
-    loadConfiguration({
-      authentication: {
-        clientId: clientId,
-        clientSecret: clientSecret,
-        certificateContent: certificateContent,
-        authorityHost: authorityHost,
-        tenantId: tenantId,
-      },
+  it("create AppCredential instance should success and respect certificateContent when both Client Secret and Client Certificate are set", function () {
+    const credential: any = new AppCredential({
+      clientId: clientId,
+      clientSecret: clientSecret,
+      certificateContent: certificateContent,
+      authorityHost: authorityHost,
+      tenantId: tenantId,
     });
-
-    const credential: any = new M365TenantCredential();
 
     // certificateContent has higher priority than clientSecret
     assert.exists(credential.msalClient);
     assert.notExists(credential.clientSecretCredential);
   });
 
-  it("create M365TenantCredential instance should throw InvalidConfiguration when configuration is not valid", function () {
-    delete process.env.M365_CLIENT_ID;
-    delete process.env.M365_TENANT_ID;
-    delete process.env.M365_CLIENT_SECRET;
-    delete process.env.M365_AUTHORITY_HOST;
-
-    loadConfiguration();
-
+  it("create AppCredential instance should throw InvalidConfiguration when configuration is not valid", function () {
     expect(() => {
-      new M365TenantCredential();
+      new AppCredential({});
     })
       .to.throw(
         ErrorWithCode,
@@ -121,11 +92,8 @@ fakeCert
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
-    process.env.M365_CLIENT_ID = clientId;
-    loadConfiguration();
-
     expect(() => {
-      new M365TenantCredential();
+      new AppCredential({ clientId: clientId });
     })
       .to.throw(
         ErrorWithCode,
@@ -133,11 +101,8 @@ fakeCert
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
-    process.env.M365_TENANT_ID = tenantId;
-    loadConfiguration();
-
     expect(() => {
-      new M365TenantCredential();
+      new AppCredential({ tenantId: tenantId });
     })
       .to.throw(
         ErrorWithCode,
@@ -146,18 +111,14 @@ fakeCert
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
-  it("create M365TenantCredential instance should throw InvalidCertificate with invalid certificate", async function () {
-    loadConfiguration({
-      authentication: {
+  it("create AppCredential instance should throw InvalidCertificate with invalid certificate", async function () {
+    expect(() => {
+      new AppCredential({
         clientId: clientId,
         certificateContent: "invalid_certificate_content",
         authorityHost: authorityHost,
         tenantId: tenantId,
-      },
-    });
-
-    expect(() => {
-      new M365TenantCredential();
+      });
     })
       .to.throw(
         ErrorWithCode,
@@ -188,7 +149,7 @@ fakeCert
         });
       });
 
-    const credential = new M365TenantCredential();
+    const credential = new AppCredential(authConfig);
     const token = await credential.getToken(scopes);
     assert.isNotNull(token);
     if (token) {
@@ -220,16 +181,12 @@ fakeCert
         });
       });
 
-    loadConfiguration({
-      authentication: {
-        clientId: clientId,
-        certificateContent: certificateContent,
-        authorityHost: authorityHost,
-        tenantId: tenantId,
-      },
+    const credential = new AppCredential({
+      clientId: clientId,
+      certificateContent: certificateContent,
+      authorityHost: authorityHost,
+      tenantId: tenantId,
     });
-
-    const credential = new M365TenantCredential();
     const token = await credential.getToken(scopes);
     assert.isNotNull(token);
     if (token) {
@@ -246,7 +203,7 @@ fakeCert
         throw new Error("Authentication failed");
       });
 
-    const credential = new M365TenantCredential();
+    const credential = new AppCredential(authConfig);
 
     const errorResult = await expect(credential.getToken(scopes)).to.eventually.be.rejectedWith(
       ErrorWithCode
@@ -267,7 +224,7 @@ fakeCert
         });
       });
 
-    const credential = new M365TenantCredential();
+    const credential = new AppCredential(authConfig);
 
     await expect(credential.getToken(scopes))
       .to.eventually.be.rejectedWith(ErrorWithCode)

@@ -209,6 +209,8 @@ export class AppStudioPluginImpl {
     projectPath: string,
     envInfo: v3.EnvInfoV3
   ): Promise<Result<string, FxError>> {
+    const buildFolderPath = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}`;
+    await fs.ensureDir(buildFolderPath);
     const appDefinitionRes = await this.getAppDefinitionAndManifest(projectPath, envInfo);
     if (appDefinitionRes.isErr()) {
       return err(appDefinitionRes.error);
@@ -243,10 +245,10 @@ export class AppStudioPluginImpl {
     zip.addLocalFile(colorFile);
     zip.addLocalFile(outlineFile);
 
-    const zipFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${envInfo.envName}.zip`;
+    const zipFileName = `${buildFolderPath}/appPackage.${envInfo.envName}.zip`;
     zip.writeZip(zipFileName);
 
-    const manifestFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${envInfo.envName}.json`;
+    const manifestFileName = `${buildFolderPath}/manifest.${envInfo.envName}.json`;
     if (await fs.pathExists(manifestFileName)) {
       await fs.chmod(manifestFileName, 0o777);
     }

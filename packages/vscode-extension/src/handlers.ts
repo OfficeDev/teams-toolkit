@@ -916,6 +916,17 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 }
 
 /**
+ * Check required prerequisites in Get Started Page.
+ */
+export async function validateGetStartedPrerequisitesHandler(): Promise<string | undefined> {
+  const result = await localPrerequisites.checkPrerequisitesForGetStarted();
+  if (result.isErr()) {
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+}
+
+/**
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {

@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export const TeamsFxAzureSolutionNameV3 = "fx-solution-azure-v3";
 export const BuiltInSolutionNames = {
-  azure: TeamsFxAzureSolutionNameV3,
+  azure: "fx-solution-azure",
   spfx: "fx-solution-spfx",
 };
 export const BuiltInFeaturePluginNames = {

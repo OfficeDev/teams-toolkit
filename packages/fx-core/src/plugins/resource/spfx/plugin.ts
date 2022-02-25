@@ -14,7 +14,7 @@ import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { SPFXQuestionNames } from ".";
+import { SPFXQuestionNames } from "./utils/questions";
 import { Utils, sleep } from "./utils/utils";
 import {
   Constants,
@@ -208,7 +208,7 @@ export class SPFxPluginImpl {
   }
 
   private async buildSPPackage(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
+    const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx.ui);
     if (ctx.answers?.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
     }
@@ -267,7 +267,7 @@ export class SPFxPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
+    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx.ui);
     let success = false;
     try {
       const tenant = await this.getTenant(ctx);

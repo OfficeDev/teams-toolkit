@@ -158,9 +158,6 @@ export class IdentityPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, context: PluginContext): Promise<Result> {
-    if (func.method === "migrateV1Project") {
-      return ok(undefined); // Not need to do anything when migrate V1 project
-    }
     return ok(undefined);
   }
 

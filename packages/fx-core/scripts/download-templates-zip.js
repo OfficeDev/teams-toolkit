@@ -7,15 +7,33 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
-const languages = ["js", "ts"];
-const templates = [
-  ["function-base", "default", "function"],
-  ["function-triggers", "HTTPTrigger", "function"],
-  ["tab", "default", "frontend"],
-  ["bot", "default", "bot"],
-  ["msgext", "default", "bot"],
-  ["bot-msgext", "default", "bot"],
-];
+const scenrioSupportedLanguages = new Map([
+  [
+    ["function-base", "default", "function"],
+    ["js", "ts"],
+  ],
+  [
+    ["function-triggers", "HTTPTrigger", "function"],
+    ["js", "ts"],
+  ],
+  [
+    ["tab", "default", "frontend"],
+    ["js", "ts", "csharp"],
+  ],
+  [
+    ["bot", "default", "bot"],
+    ["js", "ts", "csharp"],
+  ],
+  [
+    ["msgext", "default", "bot"],
+    ["js", "ts"],
+  ],
+  [
+    ["bot-msgext", "default", "bot"],
+    ["js", "ts", "csharp"],
+  ],
+  [["blazor-base", "default", "dotnet"], ["csharp"]],
+]);
 
 let stepId = 0;
 
@@ -36,14 +54,14 @@ async function downloadTemplates(version) {
   const tag = config.tagPrefix + version;
   console.log(`Start to download templates with tag: ${tag}`);
 
-  for (let lang of languages) {
-    for (let template of templates) {
-      const fileName = `${template[0]}.${lang}.${template[1]}.zip`;
+  for (let scenrio of Array.from(scenrioSupportedLanguages.keys())) {
+    for (let lang of scenrioSupportedLanguages.get(scenrio)) {
+      const fileName = `${scenrio[0]}.${lang}.${scenrio[1]}.zip`;
       step(`Download ${config.templateDownloadBaseURL}/${tag}/${fileName}`, async () => {
         const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${fileName}`, {
           responseType: "arraybuffer",
         });
-        const folder = path.join(__dirname, "..", "templates", "plugins", "resource", template[2]);
+        const folder = path.join(__dirname, "..", "templates", "plugins", "resource", scenrio[2]);
         await fs.ensureDir(folder);
         await fs.writeFile(path.join(folder, `${fileName}`), res.data);
       });

@@ -141,7 +141,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       workspaceFolder,
       commonUtils.getBackendLocalEnv(localEnv),
       definition,
-      problemMatchers || constants.frontendProblemMatcher,
+      problemMatchers || constants.backendProblemMatcher,
       true
     );
   }

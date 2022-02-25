@@ -35,7 +35,6 @@ export interface Solution {
 
   executeUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<any, FxError>>;
 
-  migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
   /**
    * For grant and check permission in remote collaboration
    */

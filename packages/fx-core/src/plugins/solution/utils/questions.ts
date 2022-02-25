@@ -6,14 +6,14 @@ import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../fx-soluti
 
 export enum SolutionV3QuestionNames {
   capabilities = "capabilities",
-  feature = "feature",
+  features = "features",
   plugins = "plugins",
 }
 
-export const selectSingleFeatureQuestion: SingleSelectQuestion = {
-  name: SolutionV3QuestionNames.feature,
-  title: "Select a feature to add",
-  type: "singleSelect",
+export const selectMultipleFeaturesQuestion: MultiSelectQuestion = {
+  name: SolutionV3QuestionNames.features,
+  title: "Select features to add",
+  type: "multiSelect",
   staticOptions: [],
 };
 

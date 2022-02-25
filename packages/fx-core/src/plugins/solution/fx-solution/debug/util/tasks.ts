@@ -11,7 +11,6 @@ export function generateTasks(
   includeBackend: boolean,
   includeBot: boolean,
   includeAuth: boolean,
-  isMigrateFromV1: boolean,
   programmingLanguage: string
 ): Record<string, unknown>[] {
   /**
@@ -31,10 +30,8 @@ export function generateTasks(
    *   - backend extensions install
    *   - bot npm install
    */
-  const tasks: Record<string, unknown>[] = [preDebugCheck(includeBot, isMigrateFromV1)];
-  if (!isMigrateFromV1) {
-    tasks.push(dependencyCheck());
-  }
+  const tasks: Record<string, unknown>[] = [preDebugCheck(includeBot)];
+  tasks.push(dependencyCheck());
 
   if (includeBot) {
     tasks.push(startNgrok());
@@ -42,13 +39,9 @@ export function generateTasks(
   tasks.push(prepareDevEnv(includeFrontend, includeBackend), prepareLocalEnvironment());
   if (includeFrontend) {
     tasks.push(startFrontend(includeAuth), frontendNpmInstall());
-    if (includeBackend) {
-      tasks.push(
-        startBackend(programmingLanguage),
-        backendExtensionsInstall(),
-        backendNpmInstall()
-      );
-    }
+  }
+  if (includeBackend) {
+    tasks.push(startBackend(programmingLanguage), backendExtensionsInstall(), backendNpmInstall());
   }
   if (includeBot) {
     tasks.push(startBot(), botNpmInstall());
@@ -142,15 +135,11 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
   ];
 }
 
-function preDebugCheck(includeBot: boolean, isMigrateFromV1: boolean): Record<string, unknown> {
+function preDebugCheck(includeBot: boolean): Record<string, unknown> {
   return {
     label: "Pre Debug Check",
     dependsOn: includeBot
-      ? isMigrateFromV1
-        ? ["start ngrok", "prepare dev env"]
-        : ["dependency check", "start ngrok", "prepare dev env"]
-      : isMigrateFromV1
-      ? ["prepare dev env"]
+      ? ["dependency check", "start ngrok", "prepare dev env"]
       : ["dependency check", "prepare dev env"],
     dependsOrder: "sequence",
   };
@@ -172,9 +161,9 @@ function prepareDevEnv(includeFrontend: boolean, includeBackend: boolean): Recor
   };
   if (includeFrontend) {
     result.dependsOn.push("frontend npm install");
-    if (includeBackend) {
-      result.dependsOn.push("backend npm install");
-    }
+  }
+  if (includeBackend) {
+    result.dependsOn.push("backend npm install");
   }
   return result;
 }

@@ -22,7 +22,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import * as util from "util";
-import { getStrings } from "../../../../common/tools";
+import { getStrings, isFeatureFlagEnabled } from "../../../../common/tools";
 import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
@@ -71,10 +71,14 @@ export async function getQuestionsForAddResource(
     if (!settings) {
       return err(new OperationNotSupportedForExistingAppError("addResource"));
     }
-    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
-    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
-    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    const alreadyHaveFunction = settings.activeResourcePlugins.includes(
+      BuiltInFeaturePluginNames.function
+    );
+    const alreadyHaveSQL = settings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.sql);
+    const alreadyHaveAPIM = settings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.apim);
+    const alreadyHaveKeyVault = settings.activeResourcePlugins.includes(
+      BuiltInFeaturePluginNames.keyVault
+    );
     addQuestion = createAddAzureResourceQuestion(
       alreadyHaveFunction,
       alreadyHaveSQL,
@@ -97,9 +101,9 @@ export async function getQuestionsForAddResource(
   for (const pair of pluginsWithResources) {
     const pluginName = pair[0];
     const resourceName = pair[1];
-    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-    if (plugin.getQuestionsForAddFeature) {
-      const res = await plugin.getQuestionsForAddFeature(ctx, inputs);
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.getQuestionsForAddInstance) {
+      const res = await plugin.getQuestionsForAddInstance(ctx, inputs);
       if (res.isErr()) return res;
       if (res.value) {
         const node = res.value as QTreeNode;
@@ -125,46 +129,48 @@ export async function addCapability(
     telemetryProps[SolutionTelemetryProperty.Capabilities] = capabilitiesAnswer.join(";");
   }
   const vsProject = isVSProject(ctx.projectSetting);
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const features: string[] = [];
+  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    features.push(BuiltInFeaturePluginNames.aad);
+  }
   if (vsProject) {
+    features.push(BuiltInFeaturePluginNames.dotnet);
+  } else {
+    if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+      features.push(BuiltInFeaturePluginNames.frontend);
+    }
+    if (
+      capabilitiesAnswer.includes(BotOptionItem.id) ||
+      capabilitiesAnswer.includes(MessageExtensionItem.id)
+    ) {
+      features.push(BuiltInFeaturePluginNames.bot);
+    }
+  }
+  if (features.length > 0) {
     const addFeatureInputs: v3.SolutionAddFeatureInputs = {
       ...inputs,
       projectPath: inputs.projectPath,
-      feature: BuiltInFeaturePluginNames.dotnet,
+      features: features,
     };
     const addFeatureRes = await addFeature(ctx, addFeatureInputs);
-    if (addFeatureRes.isErr()) return err(addFeatureRes.error);
-  } else {
-    for (const capability of capabilitiesAnswer) {
-      let resourcePluginName: string | undefined;
-      if (capability === TabOptionItem.id) {
-        resourcePluginName = BuiltInFeaturePluginNames.frontend;
-      } else if (capability === BotOptionItem.id || capability === MessageExtensionItem.id) {
-        resourcePluginName = BuiltInFeaturePluginNames.bot;
-      }
-      if (resourcePluginName) {
-        const addFeatureInputs: v3.SolutionAddFeatureInputs = {
-          ...inputs,
-          projectPath: inputs.projectPath,
-          feature: resourcePluginName,
-        };
-        const addFeatureRes = await addFeature(ctx, addFeatureInputs);
-        if (addFeatureRes.isErr()) return err(addFeatureRes.error);
-      }
+    if (addFeatureRes.isErr()) {
+      return err(addFeatureRes.error);
     }
-  }
-  if (capabilitiesAnswer.length > 0) {
-    const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
-    const single = capabilitiesAnswer.length === 1;
-    const template =
-      inputs.platform === Platform.CLI
-        ? single
-          ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
-          : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
-        : single
-        ? getStrings().solution.addCapability.AddCapabilityNotice
-        : getStrings().solution.addCapability.AddCapabilitiesNotice;
-    const msg = util.format(template, addNames);
-    ctx.userInteraction.showMessage("info", msg, false);
+    if (capabilitiesAnswer.length > 0) {
+      const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
+      const single = capabilitiesAnswer.length === 1;
+      const template =
+        inputs.platform === Platform.CLI
+          ? single
+            ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
+            : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
+          : single
+          ? getStrings().solution.addCapability.AddCapabilityNotice
+          : getStrings().solution.addCapability.AddCapabilitiesNotice;
+      const msg = util.format(template, addNames);
+      ctx.userInteraction.showMessage("info", msg, false);
+    }
   }
   return ok(Void);
 }
@@ -182,39 +188,38 @@ export async function addResource(
   if (telemetryProps) {
     telemetryProps[SolutionTelemetryProperty.Resources] = addResourcesAnswer.join(";");
   }
+  const addFeatureInputs: v3.SolutionAddFeatureInputs = {
+    ...inputs,
+    projectPath: inputs.projectPath,
+    features: [],
+  };
   for (const resource of addResourcesAnswer) {
-    let resourcePluginName: string | undefined;
     if (resource === AzureResourceSQL.id) {
-      resourcePluginName = BuiltInFeaturePluginNames.sql;
+      addFeatureInputs.features.push(BuiltInFeaturePluginNames.sql);
     } else if (resource === AzureResourceApim.id) {
-      resourcePluginName = BuiltInFeaturePluginNames.apim;
+      addFeatureInputs.features.push(BuiltInFeaturePluginNames.apim);
     } else if (resource === AzureResourceFunction.id) {
-      resourcePluginName = BuiltInFeaturePluginNames.function;
+      addFeatureInputs.features.push(BuiltInFeaturePluginNames.function);
     } else if (resource === AzureResourceKeyVault.id) {
-      resourcePluginName = BuiltInFeaturePluginNames.keyVault;
-    }
-    if (resourcePluginName) {
-      const addFeatureInputs: v3.SolutionAddFeatureInputs = {
-        ...inputs,
-        projectPath: inputs.projectPath,
-        feature: resourcePluginName,
-      };
-      const addFeatureRes = await addFeature(ctx, addFeatureInputs);
-      if (addFeatureRes.isErr()) return err(addFeatureRes.error);
+      addFeatureInputs.features.push(BuiltInFeaturePluginNames.keyVault);
     }
   }
-  if (addResourcesAnswer.length > 0) {
-    const addNames = addResourcesAnswer.join(" and ");
-    const single = addResourcesAnswer.length === 1;
-    const template =
-      inputs.platform === Platform.CLI
-        ? single
-          ? getStrings().solution.addResource.AddResourceNoticeForCli
-          : getStrings().solution.addResource.AddResourcesNoticeForCli
-        : single
-        ? getStrings().solution.addResource.AddResourceNotice
-        : getStrings().solution.addResource.AddResourcesNotice;
-    ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
+  if (addFeatureInputs.features.length > 0) {
+    const addFeatureRes = await addFeature(ctx, addFeatureInputs);
+    if (addFeatureRes.isErr()) return err(addFeatureRes.error);
+    if (addResourcesAnswer.length > 0) {
+      const addNames = addResourcesAnswer.join(" and ");
+      const single = addResourcesAnswer.length === 1;
+      const template =
+        inputs.platform === Platform.CLI
+          ? single
+            ? getStrings().solution.addResource.AddResourceNoticeForCli
+            : getStrings().solution.addResource.AddResourcesNoticeForCli
+          : single
+          ? getStrings().solution.addResource.AddResourceNotice
+          : getStrings().solution.addResource.AddResourcesNotice;
+      ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
+    }
   }
   return ok(Void);
 }

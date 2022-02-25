@@ -4,7 +4,14 @@
 import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  PluginContext,
+  ProjectSettings,
+  TokenProvider,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import {
   mockTokenProviderAzure,
@@ -22,6 +29,23 @@ import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import faker from "faker";
 import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
+import {
+  BuiltInFeaturePluginNames,
+  BuiltInSolutionNames,
+} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { Container } from "typedi";
+import * as uuid from "uuid";
+import {
+  MockedAppStudioTokenProvider,
+  MockedAzureAccountProvider,
+  MockedGraphTokenProvider,
+  MockedSharepointProvider,
+  MockedV2Context,
+} from "../../../solution/util";
+import * as path from "path";
+import { randomAppName } from "../../../../core/utils";
+import os from "os";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -33,7 +57,25 @@ const userList: IUserList = {
   userPrincipalName: "userPrincipalName",
   isAdministrator: true,
 };
-
+const projectSettings: ProjectSettings = {
+  appName: "my app",
+  projectId: uuid.v4(),
+  solutionSettings: {
+    name: BuiltInSolutionNames.azure,
+    version: "3.0.0",
+    capabilities: ["Tab"],
+    hostType: "Azure",
+    azureResources: [],
+    activeResourcePlugins: [],
+  },
+};
+const ctx = new MockedV2Context(projectSettings);
+const tokenProvider: TokenProvider = {
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  appStudioToken: new MockedAppStudioTokenProvider(),
+  graphTokenProvider: mockTokenProviderGraph(),
+  sharepointTokenProvider: new MockedSharepointProvider(),
+};
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsPlugin;
   let context: PluginContext;
@@ -167,6 +209,26 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(checkPermission.isOk());
   });
 
+  it("check permission V3", async function () {
+    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
+      "fx-resource-frontend-hosting",
+      "fx-resource-identity",
+      "fx-resource-aad-app-for-teams",
+    ];
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: {
+        solution: { provisionSucceeded: true },
+        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
+        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+      },
+      config: {},
+    };
+    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+    const res = await plugin.checkPermission(ctx, envInfo, tokenProvider, userList);
+    chai.assert.isTrue(res.isOk());
+  });
+
   it("grant permission", async function () {
     const config = new Map();
     config.set(ConfigKeys.objectId, faker.datatype.uuid());
@@ -175,6 +237,26 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const grantPermission = await plugin.grantPermission(context, userList);
     chai.assert.isTrue(grantPermission.isOk());
+  });
+
+  it("grant permission V3", async function () {
+    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
+      "fx-resource-frontend-hosting",
+      "fx-resource-identity",
+      "fx-resource-aad-app-for-teams",
+    ];
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: {
+        solution: { provisionSucceeded: true },
+        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
+        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+      },
+      config: {},
+    };
+    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+    const res = await plugin.grantPermission(ctx, envInfo, tokenProvider, userList);
+    chai.assert.isTrue(res.isOk());
   });
 
   it("list collaborator", async function () {
@@ -188,6 +270,29 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(listCollaborator.isOk());
     if (listCollaborator.isOk()) {
       chai.assert.equal(listCollaborator.value[0].userObjectId, "id");
+    }
+  });
+
+  it("list collaborator V3", async function () {
+    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
+      "fx-resource-frontend-hosting",
+      "fx-resource-identity",
+      "fx-resource-aad-app-for-teams",
+    ];
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: {
+        solution: { provisionSucceeded: true },
+        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
+        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+      },
+      config: {},
+    };
+    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+    const res = await plugin.listCollaborator(ctx, envInfo, tokenProvider);
+    chai.assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      chai.assert.equal(res.value[0].userObjectId, "id");
     }
   });
 });

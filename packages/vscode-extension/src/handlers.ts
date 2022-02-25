@@ -63,7 +63,6 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
-  isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -97,8 +96,9 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-  getTeamsAppIdByEnv,
+  getTeamsAppTelemetryInfoByEnv,
   isSPFxProject,
+  isTeamsfx,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -366,21 +366,9 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
-export async function getNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
-  return result;
-}
-
-export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.MigrateV1ProjectStart,
-    getTriggerFromProperty(args)
-  );
-  const result = await runCommand(Stage.migrateV1);
-  if (result.isOk()) {
-    commands.executeCommand("workbench.action.reloadWindow", result.value);
-  }
   return result;
 }
 
@@ -611,18 +599,6 @@ export async function runCommand(
         }
         break;
       }
-      case Stage.migrateV1: {
-        const tmpResult = await core.migrateV1Project(inputs);
-        if (tmpResult.isErr()) {
-          result = err(tmpResult.error);
-        } else {
-          if (tmpResult?.value) {
-            const uri = Uri.file(tmpResult.value);
-            result = ok(uri);
-          }
-        }
-        break;
-      }
       case Stage.provision: {
         result = await core.provisionResources(inputs);
         break;
@@ -830,7 +806,11 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    if (appInfo) {
+      envProperty[TelemetryProperty.AppId] = appInfo.appId;
+      envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
+    }
   }
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
@@ -930,7 +910,6 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
-    await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -1123,9 +1102,7 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isMigrateFromV1Project(workspacePath)) {
-      targetFolder = workspacePath;
-    } else if (await isSPFxProject(workspacePath)) {
+    if (await isSPFxProject(workspacePath)) {
       showLocalDebugMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {
@@ -1150,6 +1127,63 @@ async function openMarkdownHandler() {
 
     workspace.openTextDocument(uri).then(() => {
       const PreviewMarkdownCommand = "markdown.showPreview";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
+  }
+}
+
+export async function openReadMeHandler(args: any[]) {
+  if (!(await isTeamsfx())) {
+    const createProject = {
+      title: StringResources.vsc.handlers.createProjectTitle,
+      run: async (): Promise<void> => {
+        createNewProjectHandler();
+      },
+    };
+
+    const openFolder = {
+      title: StringResources.vsc.handlers.openFolderTitle,
+      run: async (): Promise<void> => {
+        commands.executeCommand("vscode.openFolder");
+      },
+    };
+
+    vscode.window
+      .showInformationMessage(
+        StringResources.vsc.handlers.createProjectNotification,
+        createProject,
+        openFolder
+      )
+      .then((selection) => {
+        selection?.run();
+      });
+  } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    let targetFolder: string | undefined;
+    if (await isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
+    } else {
+      const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
+      const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
+      if (tabFolder && botFolder) {
+        targetFolder = workspacePath;
+      } else if (tabFolder) {
+        targetFolder = tabFolder;
+      } else {
+        targetFolder = botFolder;
+      }
+    }
+    // When tab and bot coexist, readme file would reside in project root folder.
+    // Naming it README.md could accidently overwrite our users' own readme file.
+    // So we name it README-auto-generated.md here.
+    const autoGeneratedReadmePath = `${targetFolder}/${AutoGeneratedReadme}`;
+    const uri = (await fs.pathExists(autoGeneratedReadmePath))
+      ? Uri.file(autoGeneratedReadmePath)
+      : Uri.file(`${targetFolder}/README.md`);
+
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
   }
@@ -1977,14 +2011,40 @@ export async function openConfigStateFile(args: any[]) {
   }
 
   if (!(await fs.pathExists(sourcePath))) {
-    const noEnvError = new UserError(
-      isConfig ? ExtensionErrors.EnvConfigNotFoundError : ExtensionErrors.EnvStateNotFoundError,
-      util.format(StringResources.vsc.handlers.findEnvFailed, env),
-      ExtensionSource
-    );
-    showError(noEnvError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
-    return err(noEnvError);
+    if (isConfig) {
+      const noEnvError = new UserError(
+        ExtensionErrors.EnvConfigNotFoundError,
+        util.format(StringResources.vsc.handlers.findEnvFailed, envName.value),
+        ExtensionSource
+      );
+      showError(noEnvError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
+      return err(noEnvError);
+    } else {
+      const noEnvError = new UserError(
+        ExtensionErrors.EnvStateNotFoundError,
+        util.format(StringResources.vsc.handlers.stateFileNotFound, envName.value),
+        ExtensionSource
+      );
+      const provision = {
+        title: StringResources.vsc.commandsTreeViewProvider.provisionTitleNew,
+        run: async (): Promise<void> => {
+          Correlator.run(provisionHandler, [TelemetryTiggerFrom.Other]);
+        },
+      };
+
+      const errorCode = `${noEnvError.source}.${noEnvError.name}`;
+      const notificationMessage = noEnvError.notificationMessage ?? noEnvError.message;
+      window
+        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
+        .then((selection) => {
+          if (selection?.title === StringResources.vsc.commandsTreeViewProvider.provisionTitleNew) {
+            selection.run();
+          }
+        });
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
+      return err(noEnvError);
+    }
   }
 
   workspace.openTextDocument(sourcePath).then((document) => {

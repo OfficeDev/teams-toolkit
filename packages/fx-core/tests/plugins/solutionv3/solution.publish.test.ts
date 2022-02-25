@@ -9,7 +9,7 @@ import {
   publishApplication,
   getQuestionsForPublish,
 } from "../../../src/plugins/solution/fx-solution/v3/publish";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockedAppStudioTokenProvider, MockedV2Context } from "../solution/util";
 import * as path from "path";
 import * as os from "os";
@@ -20,7 +20,7 @@ describe("SolutionV3 - publish", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -47,7 +47,7 @@ describe("SolutionV3 - publish", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
       },
     };
     const ctx = new MockedV2Context(projectSettings);

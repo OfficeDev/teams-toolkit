@@ -30,7 +30,7 @@ describe("Create single tab", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it("Create react app without Azure Function", async () => {

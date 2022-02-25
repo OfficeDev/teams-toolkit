@@ -54,7 +54,13 @@ import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
-import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
+import {
+  taskEndEventEmitter,
+  trackedTasks,
+  allRunningDebugSessions,
+  allRunningTeamsfxTasks,
+  terminateAllRunningTeamsfxTasks,
+} from "./teamsfxTaskHandler";
 import { trustDevCertHelpLink } from "./constants";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { ProgressHandler } from "../progressHandler";
@@ -66,8 +72,8 @@ enum Checker {
   Backend = "backend",
   Bot = "bot",
   M365Account = "M365 Account",
-  LocalCertificate = "Development certification for localhost",
-  AzureFunctionsExtension = "Azure Functions Binding Extension",
+  LocalCertificate = "Development certificate for localhost",
+  AzureFunctionsExtension = "Azure Functions binding extension",
   Ports = "Ports",
 }
 
@@ -77,7 +83,7 @@ const DepsDisplayName = {
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
-  [DepsType.FuncCoreTools]: "Azure Function Core Tool",
+  [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
 };
 
 interface CheckResult {
@@ -149,12 +155,30 @@ async function checkPort(
 }
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    return err(
+      returnUserError(
+        new Error("SKip debugging because there is already a debug session."),
+        ExtensionSource,
+        "SkipDebugging"
+      )
+    );
+  }
+
   let progressHelper: ProgressHelper | undefined;
   try {
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
     } catch {
       // ignore telemetry error
+    }
+
+    // terminate all running teamsfx tasks
+    if (allRunningTeamsfxTasks.size > 0) {
+      VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+      terminateAllRunningTeamsfxTasks();
     }
 
     // [node] => [account, certificate, deps] => [backend extension, npm install] => [port]
@@ -501,7 +525,7 @@ async function resolveLocalCertificate(
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
       error = returnUserError(
-        new Error("Skip trusting local certificate."),
+        new Error("Skip trusting development certificate for localhost."),
         ExtensionSource,
         "SkipTrustDevCertError",
         trustDevCertHelpLink
@@ -686,7 +710,9 @@ async function handleCheckResults(
   if (shouldStop) {
     await progressHelper.stop(false);
     throw returnUserError(
-      new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
+      new Error(
+        `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
+      ),
       ExtensionSource,
       ExtensionErrors.PrerequisitesValidationError
     );

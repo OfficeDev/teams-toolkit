@@ -5,7 +5,6 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
 }
 
-export const migrateV1DocUrl = "https://aka.ms/teamsfx-migrate-v1";
 export const AzurePortalUrl = "https://portal.azure.com";
 export const AzureAssignRoleHelpUrl = "https://aka.ms/teamsfx-azure-role-assignments-help-link";
 

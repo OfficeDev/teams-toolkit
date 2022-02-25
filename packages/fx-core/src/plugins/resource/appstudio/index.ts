@@ -234,30 +234,6 @@ export class AppStudioPlugin implements Plugin {
   }
 
   /**
-   * Migrate V1 project
-   */
-  public async migrateV1Project(ctx: PluginContext): Promise<Result<Void, FxError>> {
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.migrateV1Project);
-
-    try {
-      const v1ProjectProperties = await this.appStudioPluginImpl.migrateV1Project(ctx);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.migrateV1Project, {
-        enableAuth: v1ProjectProperties.enableAuth ? "true" : "false",
-      });
-      return ok(Void);
-    } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.migrateV1Project, error);
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.MigrateV1ProjectFailedError.name,
-          AppStudioError.MigrateV1ProjectFailedError.message(error)
-        )
-      );
-    }
-  }
-
-  /**
    * Update manifest file
    */
   public async updateManifest(
@@ -516,8 +492,6 @@ export class AppStudioPlugin implements Plugin {
           Links.ISSUE_LINK
         )
       );
-    } else if (func.method === "migrateV1Project") {
-      return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
       const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);

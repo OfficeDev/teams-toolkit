@@ -114,10 +114,16 @@ export class CliQuestionManager implements IQuestionManager {
       type: "group",
     });
 
-    const openApiDocumentQuestion = this.openApiDocumentQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(openApiDocumentQuestion));
-    const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apiPrefixQuestion));
+    if (!apimConfig?.apiDocumentPath) {
+      const openApiDocumentQuestion = this.openApiDocumentQuestion.getQuestion();
+      rootNode.addChild(new QTreeNode(openApiDocumentQuestion));
+    }
+
+    if (!apimConfig?.apiPrefix) {
+      const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
+      rootNode.addChild(new QTreeNode(apiPrefixQuestion));
+    }
+
     const apiVersionQuestion = this.apiVersionQuestion.getQuestion();
     rootNode.addChild(new QTreeNode(apiVersionQuestion));
     return rootNode;

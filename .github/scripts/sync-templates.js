@@ -26,8 +26,12 @@ for(let file of depPkgs) {
     let fileChange = false;
     for(let [key,value] of Object.entries(templatesDeps)){
         if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            dep_[key] = `^${value}`;
             fileChange = true;
+            if(semver.prerelease(value)){
+                dep_[key] = value;
+            } else {
+                dep_[key] = `^${value}`;
+            }
         }
     }
     if(fileChange) {

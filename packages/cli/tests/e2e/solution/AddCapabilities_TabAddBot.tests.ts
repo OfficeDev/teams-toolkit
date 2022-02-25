@@ -28,7 +28,7 @@ describe("Add capabilities", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 
   it("tab project can add bot capability and provision", async () => {

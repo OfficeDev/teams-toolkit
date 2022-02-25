@@ -14,6 +14,7 @@ import {
   DotnetPathInfo as PathInfo,
   WebappBicepFile,
   WebappBicep,
+  AppSettingsPlaceholder,
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { scaffoldFromZipPackage } from "./ops/scaffold";
@@ -37,6 +38,7 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  isConfigUnifyEnabled,
 } from "../../../../common/tools";
 import { generateTemplateInfos } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
@@ -47,6 +49,14 @@ import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
+import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../../../../common/localSettingsConstants";
+import { PluginNames } from "../../../solution/fx-solution/constants";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -202,6 +212,66 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state.get(PluginInfo.pluginName)?.set(ConfigInfo.indexPath, PathInfo.indexPath);
+    } else {
+      ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabIndexPath, PathInfo.indexPath);
+    }
+    return ok(undefined);
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
+    let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+
+    let clientId = AppSettingsPlaceholder.clientId;
+    let clientSecret = AppSettingsPlaceholder.clientSecret;
+    let tenantId = "";
+    let oauthAuthority = AppSettingsPlaceholder.oauthAuthority;
+    let botId = AppSettingsPlaceholder.botId;
+    let botPassword = AppSettingsPlaceholder.botPassword;
+
+    if (isConfigUnifyEnabled()) {
+      clientId =
+        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
+        AppSettingsPlaceholder.clientId;
+      clientSecret =
+        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
+        AppSettingsPlaceholder.clientSecret;
+      tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
+      oauthAuthority = tenantId
+        ? PathInfo.oauthHost(tenantId)
+        : AppSettingsPlaceholder.oauthAuthority;
+      botId =
+        ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botId) ??
+        AppSettingsPlaceholder.botId;
+      botPassword =
+        ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botPassword) ??
+        AppSettingsPlaceholder.botPassword;
+    } else {
+      clientId =
+        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ??
+        AppSettingsPlaceholder.clientId;
+      clientSecret =
+        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) ??
+        AppSettingsPlaceholder.clientSecret;
+      tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
+      oauthAuthority = tenantId
+        ? PathInfo.oauthHost(tenantId)
+        : AppSettingsPlaceholder.oauthAuthority;
+      botId =
+        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ?? AppSettingsPlaceholder.botId;
+      botPassword =
+        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ??
+        AppSettingsPlaceholder.botPassword;
+    }
+
+    appSettings = appSettings.replace(AppSettingsPlaceholder.clientId, clientId);
+    appSettings = appSettings.replace(AppSettingsPlaceholder.clientSecret, clientSecret);
+    appSettings = appSettings.replace(AppSettingsPlaceholder.oauthAuthority, oauthAuthority);
+    appSettings = appSettings.replace(AppSettingsPlaceholder.botId, botId);
+    appSettings = appSettings.replace(AppSettingsPlaceholder.botPassword, botPassword);
+    await fs.writeFile(appSettingsPath, appSettings, "utf-8");
     return ok(undefined);
   }
 

@@ -38,6 +38,11 @@ export class DotnetPathInfo {
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
   static readonly TemplateFolderName = "dotnet";
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
+
+  static readonly indexPath = ""; // Index path is '/', relational path is empty.
+  static readonly appSettingDevelopment = "appsettings.Development.json";
+  static readonly oauthHost = (tenantId: string): string =>
+    `https://login.microsoftonline.com/${tenantId}`;
 }
 
 export class DotnetCommands {
@@ -49,6 +54,12 @@ export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
   static readonly resourceGroupName = "resourceGroupName";
+
+  public static readonly aadClientId: string = "clientId";
+  public static readonly aadClientSecret: string = "clientSecret";
+  public static readonly botId: string = "botId";
+  public static readonly botPassword: string = "botPassword";
+  public static readonly appTenantId: string = "tenantId";
 }
 
 export class DotnetConfigInfo {
@@ -57,6 +68,7 @@ export class DotnetConfigInfo {
   static readonly webAppEndpoint = "endpoint";
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
+  static readonly indexPath = "indexPath";
 }
 
 export class Capability {
@@ -83,4 +95,12 @@ export class WebappBicep {
     endpointAsParam: WebappBicep.endpointAsParam,
     domainAsParam: WebappBicep.domainAsParam,
   };
+}
+
+export class AppSettingsPlaceholder {
+  static readonly clientId = "$clientId$";
+  static readonly clientSecret = "$client-secret$";
+  static readonly oauthAuthority = "$oauthAuthority$";
+  static readonly botId = "$botId$";
+  static readonly botPassword = "$bot-password$";
 }

@@ -5,7 +5,7 @@
  * @author Bowen Song <bowen.song@microsoft.com>
  */
 
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
 
@@ -37,11 +37,7 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    if (isMultiEnvEnabled()) {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      await setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     {
       // update permission
@@ -59,27 +55,15 @@ describe("Provision", function () {
     // Get context
     const expectedPermission =
       '[{"resourceAppId":"00000003-0000-0000-c000-000000000000","resourceAccess": [{"id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d","type": "Scope"},{"id": "a154be20-db9c-4678-8ab7-66f6cc099a59","type": "Scope"}]}]';
-    if (isMultiEnvEnabled()) {
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context);
-      await AadValidator.validate(aad, expectedPermission);
-    } else {
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      // Validate Aad App
-      const aad = AadValidator.init(context);
-      await AadValidator.validate(aad, expectedPermission);
-    }
+    // Validate Aad App
+    const aad = AadValidator.init(context);
+    await AadValidator.validate(aad, expectedPermission);
   });
 
   after(async () => {
     // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath, true, false, false);
-    }
+    await cleanUp(appName, projectPath, true, false, false);
   });
 });

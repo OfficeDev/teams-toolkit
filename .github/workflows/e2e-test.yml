@@ -227,6 +227,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Dateutils
+        run: |
+          sudo apt install dateutils
+
       - name: List jobs
         id: list-jobs
         working-directory: packages/cli
@@ -263,6 +267,10 @@ jobs:
               emails="$emails;$email"
             fi
 
+            started_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .started_at'`
+            completed_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .completed_at'`
+            duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
+
             author=""
             if [ -z "$email" ]; then
               author="N/A"
@@ -273,16 +281,16 @@ jobs:
             if [ "$status" == "success" ]; then
               passed=$((passed+1))
               label="<span style=\\\"background-color: green;\\\">PASSED</span>"
-              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr>"
+              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr>"
             else
               failed=$((failed+1))
               label="<span style=\\\"background-color: red;\\\">FAILED</span>"
-              lists="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> $lists"
+              lists="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr> $lists"
             fi
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}"
 
           total=$((passed+failed))
 

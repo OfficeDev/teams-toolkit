@@ -28,7 +28,7 @@ describe("Add capabilities", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 
   it("messaging extension project can add tab capability and provision", async () => {

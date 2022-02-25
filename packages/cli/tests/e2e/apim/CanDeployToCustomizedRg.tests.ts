@@ -35,7 +35,7 @@ describe("Deploy to customized resource group", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab project can deploy apim resource to customized resource group and successfully provision / deploy`, async function () {
@@ -75,7 +75,7 @@ describe("Deploy to customized resource group", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName, true));
+    const deployContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
 
     await deleteResourceGroupByName(customizedRgName);

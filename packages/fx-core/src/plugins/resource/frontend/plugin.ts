@@ -180,6 +180,10 @@ export class FrontendPluginImpl implements PluginImpl {
     return ok(undefined);
   }
 
+  public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
   private collectEnvs(ctx: PluginContext): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {

@@ -30,7 +30,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab + function + azure sql`, async function () {

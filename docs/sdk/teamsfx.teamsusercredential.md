@@ -24,7 +24,7 @@ Can only be used within Teams.
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)()](./teamsfx.teamsusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsUserCredential. |
+|  [(constructor)(authConfig)](./teamsfx.teamsusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsUserCredential. |
 
 ## Methods
 

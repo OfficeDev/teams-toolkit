@@ -9,7 +9,7 @@
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [
-        "blazor-base/default",
+        "blazor-base/csharp/default",
         "bot/csharp/default",
         "bot/js/default",
         "bot/ts/default",
@@ -17,8 +17,8 @@
         "bot-msgext/ts/default",
         "function-base/js/default",
         "function-base/ts/default",
-        "function-trigger/js/default",
-        "function-trigger/ts/default",
+        "function-trigger/js/HTTPTrigger",
+        "function-trigger/ts/HTTPTrigger",
         "msgext/js/default",
         "msgext/ts/default",
         "tab/csharp/default",

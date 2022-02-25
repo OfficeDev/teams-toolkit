@@ -22,8 +22,7 @@ export enum CliConfigOptions {
   TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
   Interactive = "interactive",
-  // TODO: enable this config
-  // AutomaticNpmInstall = "automatic-npm-install",
+  AutomaticNpmInstall = "automatic-npm-install",
 }
 
 export enum CliConfigTelemetry {

@@ -195,21 +195,21 @@ jobs:
             npx mocha --reporter mochawesome $file --parallel
           fi
 
-      - name: get job id
-        id: get-job-id
+      - name: get report name
+        id: get-report-name
         if: ${{ always() }}
         run: |
-          result=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }}\
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
-          job_id=`echo $result | jq -r '.jobs[] | select(.name | contains("${{ matrix.cases }}")).id'`
-          echo "::set-output name=job_id::$job_id"
+          name="${{ matrix.cases }}"
+          name="${name//'.tests.ts'/}"
+          name="${name//.\//}"
+          name="${name//\//_}"
+          echo "::set-output name=name::$name"
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: ${{ steps.get-job-id.outputs.job_id}}.json
+          name: ${{ steps.get-report-name.outputs.name }}.json
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
@@ -238,7 +238,9 @@ jobs:
 
           cases=`echo $result | jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
 
-          description="<tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr>"
+          lists=""
+          passed=0
+          failed=0
 
           emails="vsciotadt@microsoft.com"
           while IFS= read -r case;
@@ -259,13 +261,6 @@ jobs:
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
-            
-            label=""
-            if [ "$status" == "success" ]; then
-              label="<span style=\\\"background-color: green;\\\">success</span>"
-            else
-              label="<span style=\\\"background-color: red;\\\">failure</span>"
-            fi
 
             author=""
             if [ -z "$email" ]; then
@@ -274,11 +269,32 @@ jobs:
               author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
             fi
 
-            description="$description <tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> "
+            if [ "$status" == "success" ]; then
+              let passed++
+              label="<span style=\\\"background-color: green;\\\">PASSED</span>"
+              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr>"
+            else
+              let failed++
+              label="<span style=\\\"background-color: red;\\\">FAILED</span>"
+              lists="<tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> $lists"
+            fi
+
           done <<< $cases
 
-          echo "::set-output name=description::$description"
+          body="<table class=\"w3-table w3-striped w3-bordered\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}
+
+          let total=$passed+$failed
+          subject="TeamsFx E2E Test Report ($passed/$total)"
+          if [ $failed -gt 0 ]; then
+            subject="[FAILED] $subject"
+          else
+            subject="[PASSED] $subject"
+          fi
+
+          echo "::set-output name=body::$body"
+          echo "::set-output name=to::$emails"
           echo "::set-output name=emails::$emails"
+          echo "::set-output name=subject::$subject"
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master
@@ -287,8 +303,8 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-jobs.outputs.emails }}",
-              "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
-              "subject": "TeamsFx E2E Test Report",
+              "to": "${{ steps.list-jobs.outputs.to }}",
+              "body": "${{ steps.list-jobs.outputs.body }}"
+              "subject": "${{ steps.list-jobs.outputs.subject }}"
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

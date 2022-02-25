@@ -250,6 +250,7 @@ jobs:
             fi
 
             file="tests/e2e/$case"
+            elegant_path="${file//.\//}"
 
             email=""
             if grep -q "@author" $file; then
@@ -270,21 +271,22 @@ jobs:
             fi
 
             if [ "$status" == "success" ]; then
-              let passed++
+              passed=$((passed+1))
               label="<span style=\\\"background-color: green;\\\">PASSED</span>"
-              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr>"
+              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr>"
             else
-              let failed++
+              failed=$((failed+1))
               label="<span style=\\\"background-color: red;\\\">FAILED</span>"
-              lists="<tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> $lists"
+              lists="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> $lists"
             fi
 
           done <<< $cases
 
-          body="<table class=\"w3-table w3-striped w3-bordered\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}"
 
-          let total=$passed+$failed
-          subject="TeamsFx E2E Test Report ($passed/$total)"
+          total=$((passed+failed))
+
+          subject="TeamsFx E2E Test Report ($passed/$total Passed)"
           if [ $failed -gt 0 ]; then
             subject="[FAILED] $subject"
           else
@@ -293,7 +295,6 @@ jobs:
 
           echo "::set-output name=body::$body"
           echo "::set-output name=to::$emails"
-          echo "::set-output name=emails::$emails"
           echo "::set-output name=subject::$subject"
 
       - name: Send E-mail to the whole team
@@ -304,7 +305,7 @@ jobs:
           payload: |
             {
               "to": "${{ steps.list-jobs.outputs.to }}",
-              "body": "${{ steps.list-jobs.outputs.body }}"
-              "subject": "${{ steps.list-jobs.outputs.subject }}"
+              "body": "${{ steps.list-jobs.outputs.body }}",
+              "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

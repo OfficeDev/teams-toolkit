@@ -493,8 +493,8 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.validate-getStated-prerequisites",
-        "title": "Teams - Validate Get Stated Prerequisites",
+        "command": "fx-extension.validate-getStarted-prerequisites",
+        "title": "Teams - Validate Get Started Prerequisites",
         "enablement": "never"
       },
       {

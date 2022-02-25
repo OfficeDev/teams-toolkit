@@ -174,7 +174,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(validatePrerequisitesCmd);
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
-    "fx-extension.validate-getStated-prerequisites",
+    "fx-extension.validate-getStarted-prerequisites",
     () => Correlator.run(handlers.validateGetStartedPrerequisitesHandler)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);

@@ -4,12 +4,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosPromise,
-} from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosPromise } from "axios";
 
 import {
   writeToPath,
@@ -113,9 +108,7 @@ describe("Manifest manipulation", async () => {
       chai.expect(result).not.to.be.empty;
       chai.expect(result.length).equals(1);
       // 1.11 doesn't match 1.8, so it should return an error
-      chai
-        .expect(result[0])
-        .to.contain("manifestVersion must be equal to constant");
+      chai.expect(result[0]).to.contain("manifestVersion must be equal to constant");
     });
   });
 });
@@ -126,10 +119,7 @@ async function loadSchema(): Promise<TeamsAppManifestJSONSchema> {
 }
 
 function createMockedAxiosInstance(): AxiosInstance {
-  const mockAxiosInstance = (
-    url: string,
-    config?: AxiosRequestConfig
-  ): AxiosPromise => {
+  const mockAxiosInstance = (url: string, config?: AxiosRequestConfig): AxiosPromise => {
     throw new Error("Method not implemented.");
   };
   mockAxiosInstance.defaults = axios.defaults;

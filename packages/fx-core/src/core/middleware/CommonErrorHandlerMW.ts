@@ -4,7 +4,6 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import { assembleError, err, FxError, Result } from "@microsoft/teamsfx-api";
-import { FxError } from "@microsoft/teamsfx-api/build/error";
 import { kebabCase } from "lodash";
 import {
   sendTelemetryErrorEvent,

@@ -10,19 +10,17 @@ import {
   Void,
   err,
   AzureSolutionSettings,
-  Inputs,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../common/armInterface";
 import { BuiltInFeaturePluginNames } from "../../solution/fx-solution/v3/constants";
 import fs from "fs-extra";
 import { generateBicepFromFile } from "../../../common/tools";
 import { Site } from "@azure/arm-appservice/esm/models";
 import {
   BotOptionItem,
-  MessageExtensionItem,
   AzureSolutionQuestionNames,
+  TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks";
@@ -50,7 +48,7 @@ export interface DotnetPluginConfig {
 }
 
 @Service(BuiltInFeaturePluginNames.dotnet)
-export class DotnetPlugin implements v3.FeaturePlugin {
+export class DotnetPlugin implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.dotnet;
   displayName = "ASP.Net App";
   description = "ASP.Net App";
@@ -66,22 +64,16 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return (inputs[AzureSolutionQuestionNames.Capabilities] as string[]) ?? [];
   }
 
-  async pluginDependencies?(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+  pluginDependencies(): Result<string[], FxError> {
     return ok([BuiltInFeaturePluginNames.identity]);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
-
-    const scaffoldResult = await this.scaffold(ctx, inputs);
-    if (scaffoldResult.isErr()) return err(scaffoldResult.error);
-    const armResult = await this.generateResourceTemplate(ctx, inputs);
-    if (armResult.isErr()) return err(armResult.error);
-
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = this.getCapabilities(inputs);
     capabilities.forEach((cap) => {
@@ -89,46 +81,94 @@ export class DotnetPlugin implements v3.FeaturePlugin {
         solutionSettings.capabilities.push(cap);
       }
     });
+    // TODO: edit manifest
+    if (capabilities.includes(TabOptionItem.id)) {
+      const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [
+        { name: "staticTab" },
+      ]);
+      if (res.isErr()) return err(res.error);
+    }
+
+    if (capabilities.includes(BotOptionItem.id)) {
+      const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [{ name: "Bot" }]);
+      if (res.isErr()) return err(res.error);
+    }
+
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(armResult.value);
+    return this.pluginDependencies();
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async scaffold(
+  async generateCode(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void | undefined, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async generateBotServiceTemplate(pluginCtx: {
-    plugins: string[];
-    capabilities: string[];
-  }): Promise<v2.ResourceTemplate> {
-    const botTemplatePaths = [
-      PathInfo.botProvisionOrchestrationPath,
-      PathInfo.botProvisionModulePath,
-    ];
-    const bicepSnippets = await Promise.all(
-      botTemplatePaths.map((path) => generateBicepFromFile(path, pluginCtx))
-    );
+  async generateBicep(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.AddFeatureInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    // TODO: refactor the logger
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.startGenerateResourceTemplate}`);
+    const result: v3.BicepTemplate[] = [];
+    const newCap = this.getCapabilities(inputs);
 
-    const result: ArmTemplateResult = {
-      Provision: {
-        Orchestration: bicepSnippets[0],
-        Modules: { botservice: bicepSnippets[1] },
-      },
-      Parameters: JSON.parse(await fs.readFile(PathInfo.botParameterPath, "utf-8")),
+    if (!newCap?.length) {
+      return err(returnSystemError(new Error("no capability"), this.name, "NoCapability"));
+    }
+
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const currCap = solutionSettings.capabilities;
+    const pluginCtx = {
+      plugins: solutionSettings.activeResourcePlugins ?? [],
+      capabilities: [...currCap, ...newCap],
     };
-    return { kind: "bicep", template: result };
+
+    if (!currCap.includes(TabOptionItem.id) && !currCap.includes(BotOptionItem.id)) {
+      const webAppBicep = await this.generateWebAppBicep(pluginCtx);
+      result.push(webAppBicep);
+    }
+
+    if (newCap.includes(BotOptionItem.id) && currCap.includes(TabOptionItem.id)) {
+      const updateWebAppBicep = await this.updateWebAppBicep(pluginCtx);
+      result.push(updateWebAppBicep);
+    }
+
+    if (newCap.includes(BotOptionItem.id) && !currCap.includes(BotOptionItem.id)) {
+      const botBicep = await this.generateBotServiceBicep(pluginCtx);
+      result.push(botBicep);
+    }
+
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.endGenerateResourceTemplate(newCap)}.`);
+    return ok(result);
   }
 
-  async generateWebAppTemplate(pluginCtx: {
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
+  async updateBicep(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.startUpdateResourceTemplate}`);
+    const capabilities = this.getCapabilities(inputs);
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const pluginCtx = {
+      plugins: solutionSettings.activeResourcePlugins ?? [],
+      capabilities: capabilities,
+    };
+    const result = await this.updateWebAppBicep(pluginCtx);
+
+    ctx.logProvider.info(`[${this.name}] ${LogMessage.endUpdateResourceTemplate}`);
+    return ok([result]);
+  }
+
+  private async generateWebAppBicep(pluginCtx: {
     plugins: string[];
     capabilities: string[];
-  }): Promise<v2.ResourceTemplate> {
+  }): Promise<v3.BicepTemplate> {
     const webappTemplatePaths = [
       PathInfo.webappProvisionOrchestrationPath,
       PathInfo.webappProvisionModulePath,
@@ -139,7 +179,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       webappTemplatePaths.map((path) => generateBicepFromFile(path, pluginCtx))
     );
 
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: bicepSnippets[0],
         Modules: { webapp: bicepSnippets[1] },
@@ -150,71 +190,43 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       },
       Reference: WebappBicep.Reference,
     };
-    return { kind: "bicep", template: result };
+    return result;
   }
 
-  // TODO: need to cover add capability scenario
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async generateResourceTemplate(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    // TODO: refactor the logger
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.startGenerateResourceTemplate}`);
-    const result: v2.ResourceTemplate[] = [];
-    const capabilities = this.getCapabilities(inputs);
-
-    if (!capabilities?.length) {
-      return err(returnSystemError(new Error("no capability"), this.name, "NoCapability"));
-    }
-
-    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const pluginCtx = {
-      plugins: solutionSettings.activeResourcePlugins ?? [],
-      capabilities: capabilities,
-    };
-
-    const webAppBicep = await this.generateWebAppTemplate(pluginCtx);
-    result.push(webAppBicep);
-
-    if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id)) {
-      const botBicep = await this.generateBotServiceTemplate(pluginCtx);
-      result.push(botBicep);
-    }
-
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.endGenerateResourceTemplate(capabilities)}.`);
-    return ok(result);
-  }
-
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async afterOtherFeaturesAdded(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    return await this.updateResourceTemplate(ctx, inputs);
-  }
-
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.dotnet } })])
-  async updateResourceTemplate(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.startUpdateResourceTemplate}`);
-    const capabilities = this.getCapabilities(inputs);
-    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const pluginCtx = {
-      plugins: solutionSettings.activeResourcePlugins ?? [],
-      capabilities: capabilities,
-    };
+  private async updateWebAppBicep(pluginCtx: {
+    plugins: string[];
+    capabilities: string[];
+  }): Promise<v3.BicepTemplate> {
     const configModule = await generateBicepFromFile(PathInfo.webappConfigModulePath, pluginCtx);
-    const result: ArmTemplateResult = {
-      Reference: WebappBicep.Reference,
+    const result: v3.BicepTemplate = {
       Configuration: {
         Modules: { webapp: configModule },
       },
+      Reference: WebappBicep.Reference,
     };
+    return result;
+  }
 
-    ctx.logProvider.info(`[${this.name}] ${LogMessage.endUpdateResourceTemplate}`);
-    return ok([{ kind: "bicep", template: result }]);
+  private async generateBotServiceBicep(pluginCtx: {
+    plugins: string[];
+    capabilities: string[];
+  }): Promise<v3.BicepTemplate> {
+    const botTemplatePaths = [
+      PathInfo.botProvisionOrchestrationPath,
+      PathInfo.botProvisionModulePath,
+    ];
+    const bicepSnippets = await Promise.all(
+      botTemplatePaths.map((path) => generateBicepFromFile(path, pluginCtx))
+    );
+
+    const result: v3.BicepTemplate = {
+      Provision: {
+        Orchestration: bicepSnippets[0],
+        Modules: { botservice: bicepSnippets[1] },
+      },
+      Parameters: JSON.parse(await fs.readFile(PathInfo.botParameterPath, "utf-8")),
+      Reference: WebappBicep.Reference,
+    };
+    return result;
   }
 }

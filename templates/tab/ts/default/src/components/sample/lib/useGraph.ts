@@ -3,15 +3,15 @@ import { TeamsFx, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/t
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
 
 export function useGraph<T>(
-  asyncFunc: (graph: Client) => Promise<T>,
-  options?: { scope: string | string[] }
+  asyncFunc: (graph: Client, credential: TeamsUserCredential, scope: string[]) => Promise<T>,
+  options?: { scope: string[] }
 ) {
   const { scope } = { scope: ["User.Read"], ...options };
   const initial = useData(async () => {
     try {
       const teamsfx = new TeamsFx();
       const graph = createMicrosoftGraphClient(teamsfx, scope);
-      return await asyncFunc(graph);
+      return await asyncFunc(graph, teamsfx, scope);
     } catch (err: unknown) {
       if (err instanceof GraphError && err.code?.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
@@ -28,7 +28,7 @@ export function useGraph<T>(
         await teamsfx.login(scope);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
         const graph = createMicrosoftGraphClient(teamsfx, scope);
-        return await asyncFunc(graph);
+        return await asyncFunc(graph, teamsfx, scope);
       } catch (err: unknown) {
         if (err instanceof ErrorWithCode && err.message?.includes("CancelledByUser")) {
           const helpLink = "https://aka.ms/teamsfx-auth-code-flow";

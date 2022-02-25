@@ -30,7 +30,7 @@ describe("User can customize Bicep files", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it("user customized Bicep file is used when provision", async () => {

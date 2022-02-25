@@ -29,7 +29,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 
   it(`bot + tab`, async function () {

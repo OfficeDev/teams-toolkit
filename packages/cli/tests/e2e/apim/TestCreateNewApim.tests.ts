@@ -62,12 +62,12 @@ describe("Create a new API Management Service", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName, true));
+    const deployContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, true, true);
+    await cleanUp(appName, projectPath, true, false, true);
   });
 });

@@ -1,5 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+// eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
-import { exp } from "../exp";
+import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import { CommandsWebviewProvider } from "./commandsWebviewProvider";
 import { TreeContainerType } from "./treeContainerType";

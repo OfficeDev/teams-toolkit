@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install Win64
+      - name: Install wine64
         run: |
           sudo apt install wine64 -y
 

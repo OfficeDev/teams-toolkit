@@ -68,7 +68,7 @@ export class AppStudioPluginImpl {
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       // Teams app already exists, will update it
-      if (e.name === 409) {
+      if (e.name === 409 || e.name === 422) {
         const zipEntries = new AdmZip(archivedFile).getEntries();
 
         const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);

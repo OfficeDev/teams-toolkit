@@ -63,7 +63,6 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
-  isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -97,8 +96,9 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-  getTeamsAppIdByEnv,
+  getTeamsAppTelemetryInfoByEnv,
   isSPFxProject,
+  isTeamsfx,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -372,18 +372,6 @@ export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any
   return result;
 }
 
-export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.MigrateV1ProjectStart,
-    getTriggerFromProperty(args)
-  );
-  const result = await runCommand(Stage.migrateV1);
-  if (result.isOk()) {
-    commands.executeCommand("workbench.action.reloadWindow", result.value);
-  }
-  return result;
-}
-
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
   const result = await selectAndDebug();
@@ -611,18 +599,6 @@ export async function runCommand(
         }
         break;
       }
-      case Stage.migrateV1: {
-        const tmpResult = await core.migrateV1Project(inputs);
-        if (tmpResult.isErr()) {
-          result = err(tmpResult.error);
-        } else {
-          if (tmpResult?.value) {
-            const uri = Uri.file(tmpResult.value);
-            result = ok(uri);
-          }
-        }
-        break;
-      }
       case Stage.provision: {
         result = await core.provisionResources(inputs);
         break;
@@ -830,7 +806,11 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    if (appInfo) {
+      envProperty[TelemetryProperty.AppId] = appInfo.appId;
+      envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
+    }
   }
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
@@ -930,7 +910,6 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
-    await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -1123,9 +1102,7 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isMigrateFromV1Project(workspacePath)) {
-      targetFolder = workspacePath;
-    } else if (await isSPFxProject(workspacePath)) {
+    if (await isSPFxProject(workspacePath)) {
       showLocalDebugMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {
@@ -1156,7 +1133,31 @@ async function openMarkdownHandler() {
 }
 
 export async function openReadMeHandler(args: any[]) {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+  if (!(await isTeamsfx())) {
+    const createProject = {
+      title: StringResources.vsc.handlers.createProjectTitle,
+      run: async (): Promise<void> => {
+        createNewProjectHandler();
+      },
+    };
+
+    const openFolder = {
+      title: StringResources.vsc.handlers.openFolderTitle,
+      run: async (): Promise<void> => {
+        commands.executeCommand("vscode.openFolder");
+      },
+    };
+
+    vscode.window
+      .showInformationMessage(
+        StringResources.vsc.handlers.createProjectNotification,
+        createProject,
+        openFolder
+      )
+      .then((selection) => {
+        selection?.run();
+      });
+  } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
@@ -1182,7 +1183,7 @@ export async function openReadMeHandler(args: any[]) {
       : Uri.file(`${targetFolder}/README.md`);
 
     workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
   }

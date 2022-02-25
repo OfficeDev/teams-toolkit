@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -781,11 +781,6 @@
         "title": "General",
         "order": 1,
         "properties": {
-          "fx-extension.stopTeamsToolkitTasksPostDebug": {
-            "type": "boolean",
-            "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
-            "default": true
-          },
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
@@ -824,7 +819,7 @@
               },
               "ngrok": {
                 "type": "boolean",
-                "description": "Ensure Ngrok is installed."
+                "description": "Ensure Ngrok is installed and started."
               },
               "devCert": {
                 "type": "boolean",
@@ -950,7 +945,7 @@
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
             "media": {
               "svg": "media/openExtensionIcon.svg",
               "altText": "Deploy Teams apps"
@@ -959,7 +954,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:toSide:fx-extension.openReadMe?%5B%22Webview%22%5D)",
+            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:fx-extension.openReadMe?%5B%22Webview%22%5D)",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"
@@ -1080,12 +1075,12 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.14.0",
-    "@microsoft/teamsfx-core": "^1.3.0",
+    "@microsoft/teamsfx-api": "^0.15.0",
+    "@microsoft/teamsfx-core": "^1.4.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
-    "async-mutex": "^0.3.1",
     "ajv": "^8.5.0",
+    "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

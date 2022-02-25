@@ -32,11 +32,18 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { hasAzureResource } from "../../../../core/collaborator";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
-import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import {
+  configLocalDebugSettings,
+  configLocalEnvironment,
+  setupLocalDebugSettings,
+  setupLocalEnvironment,
+} from "../debug/provisionLocal";
+import { TabSPFxItem } from "../question";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
@@ -51,7 +58,7 @@ export async function getQuestionsForProvision(
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
-    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+    const plugin = Container.get<v3.PluginV3>(pluginName);
     if (plugin.getQuestionsForProvision) {
       const res = await plugin.getQuestionsForProvision(ctx, inputs, envInfo, tokenProvider);
       if (res.isErr()) {
@@ -75,7 +82,7 @@ export async function provisionResources(
   telemetryProps?: Json
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  // check M365 tenant match
+  // 1. check M365 tenant
   if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
     envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
   const teamsAppResource = envInfo.state[
@@ -83,6 +90,7 @@ export async function provisionResources(
   ] as v3.TeamsAppResource;
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
+  solutionConfig.provisionSucceeded = false;
   const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
@@ -103,7 +111,7 @@ export async function provisionResources(
     solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
 
-  // register teams app
+  // 2. register teams app
   const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const registerTeamsAppRes = await appStudioV3.registerTeamsApp(
     ctx,
@@ -117,13 +125,8 @@ export async function provisionResources(
   solutionGlobalVars.TeamsAppId = teamsAppId;
 
   if (solutionSetting) {
-    if (envInfo.envName === "local") {
-      // TODO for local debug
-      const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, envInfo);
-      if (debugProvisionResult.isErr()) {
-        return err(debugProvisionResult.error);
-      }
-    } else {
+    // 3. check Azure configs
+    if (hasAzureResource(ctx.projectSetting) && envInfo.envName !== "local") {
       // ask common question and fill in solution config
       const solutionConfigRes = await fillInAzureConfigs(
         ctx,
@@ -158,13 +161,11 @@ export async function provisionResources(
       }
     }
 
-    // collect plugins and provisionResources
-    const plugins = solutionSetting.activeResourcePlugins.map((p) =>
-      Container.get<v3.FeaturePlugin>(p)
-    );
+    // 4. collect plugins and provisionResources
+    const plugins = solutionSetting.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p));
     const provisionThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.provisionResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.provisionResource))
+      .map((plugin: v3.PluginV3) => {
         return {
           pluginName: `${plugin.name}`,
           taskName: "provisionResource",
@@ -189,29 +190,41 @@ export async function provisionResources(
       util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
     );
 
-    ctx.logProvider.info(
-      util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
-    );
-    const armRes = await arm.deployArmTemplates(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider.azureAccountProvider
-    );
-    if (armRes.isErr()) {
-      return err(armRes.error);
+    if (envInfo.envName === "local") {
+      //5.1 setup local env
+      const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo);
+      if (localEnvSetupResult.isErr()) {
+        return err(localEnvSetupResult.error);
+      }
+    } else {
+      //5.2 deploy arm templates for remote
+      ctx.logProvider.info(
+        util.format(
+          getStrings().solution.DeployArmTemplates.StartNotice,
+          PluginDisplayName.Solution
+        )
+      );
+      const armRes = await arm.deployArmTemplates(
+        ctx,
+        inputs,
+        envInfo,
+        tokenProvider.azureAccountProvider
+      );
+      if (armRes.isErr()) {
+        return err(armRes.error);
+      }
+      ctx.logProvider.info(
+        util.format(
+          getStrings().solution.DeployArmTemplates.SuccessNotice,
+          PluginDisplayName.Solution
+        )
+      );
     }
-    ctx.logProvider.info(
-      util.format(
-        getStrings().solution.DeployArmTemplates.SuccessNotice,
-        PluginDisplayName.Solution
-      )
-    );
 
-    // collect plugins and call configureResource
+    // 6. collect plugins and call configureResource
     const configureResourceThunks = plugins
-      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.configureResource))
-      .map((plugin: v3.FeaturePlugin) => {
+      .filter((plugin: v3.PluginV3) => !isUndefined(plugin.configureResource))
+      .map((plugin: v3.PluginV3) => {
         if (!envInfo.state[plugin.name]) {
           envInfo.state[plugin.name] = {};
         }
@@ -242,22 +255,19 @@ export async function provisionResources(
     }
 
     if (envInfo.envName === "local") {
-      // TODO config local debug settings
-      const configLocalDebugSettingsRes = await configLocalDebugSettings(ctx, inputs, envInfo);
-      if (configLocalDebugSettingsRes.isErr()) {
-        return err(configLocalDebugSettingsRes.error);
+      // 7.1 config local env
+      const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo);
+      if (localConfigResult.isErr()) {
+        return err(localConfigResult.error);
       }
     } else {
+      // 7.2 show message for remote azure provision
       const url = getResourceGroupInPortal(
         envStates.solution.subscriptionId,
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = util.format(
-        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-        ctx.projectSetting.appName
-      );
-      ctx.logProvider.info(msg);
+      const msg = getStrings().solution.ProvisionSuccessAzure;
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -272,10 +282,19 @@ export async function provisionResources(
     }
   }
   //update Teams App
-  const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo);
+  const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo, tokenProvider);
   if (updateTeamsAppRes.isErr()) {
     return err(updateTeamsAppRes.error);
   }
+  if (envInfo.envName !== "local") {
+    const msg = util.format(
+      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+      ctx.projectSetting.appName
+    );
+    ctx.userInteraction.showMessage("info", msg, false);
+    ctx.logProvider.info(msg);
+  }
+  solutionConfig.provisionSucceeded = true;
   return ok(envInfo);
 }
 

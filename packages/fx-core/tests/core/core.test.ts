@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AppPackageFolderName,
   err,
   Func,
   FxError,
@@ -12,7 +11,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  OptionItem,
   Platform,
   QTreeNode,
   Result,
@@ -23,7 +21,6 @@ import {
   Stage,
   TokenProvider,
   traverse,
-  V1ManifestFileName,
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -47,15 +44,12 @@ import {
   CoreQuestionNames,
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
-  SampleSelect,
-  ScratchOptionNoVSC,
   ScratchOptionYesVSC,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
-import fs from "fs-extra";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();
@@ -476,85 +470,5 @@ describe("Core basic APIs", () => {
         assert.equal("Select a programming language.", placeholder);
       }
     }
-  });
-  describe("migrateV1", () => {
-    afterEach(async () => {
-      await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
-    });
-    const migrateV1Params = [
-      {
-        description: "skip ask app name",
-        appName: appName,
-        projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
-        skipAppNameQuestion: true,
-      },
-      {
-        description: "ask app name",
-        appName: "v1projectname",
-        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}-errorname`),
-        skipAppNameQuestion: false,
-      },
-    ];
-    migrateV1Params.forEach((testParam) => {
-      it(`happy path: migrate v1 project ${testParam.description}`, async () => {
-        await fs.ensureDir(testParam.projectPath);
-        await fs.writeJSON(path.join(testParam.projectPath, "package.json"), {
-          msteams: { teamsAppId: "testappid" },
-        });
-        await fs.ensureDir(path.join(testParam.projectPath, AppPackageFolderName));
-        await fs.writeJSON(
-          path.join(testParam.projectPath, AppPackageFolderName, V1ManifestFileName),
-          {}
-        );
-        const expectedInputs: Inputs = {
-          platform: Platform.VSCode,
-          projectPath: testParam.projectPath,
-          stage: Stage.migrateV1,
-        };
-
-        if (testParam.skipAppNameQuestion) {
-          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = testParam.appName;
-        } else {
-          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = undefined;
-          expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
-        }
-
-        sandbox
-          .stub<any, any>(tools.ui, "inputText")
-          .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-            if (config.name === CoreQuestionNames.AppName) {
-              return ok({
-                type: "success",
-                result: expectedInputs[CoreQuestionNames.AppName] as string,
-              });
-            }
-            throw err(InvalidInputError("invalid question"));
-          });
-        sandbox
-          .stub<any, any>(tools.ui, "showMessage")
-          .callsFake(async (): Promise<Result<string, FxError>> => {
-            return ok("OK");
-          });
-        const core = new FxCore(tools);
-        {
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            projectPath: testParam.projectPath,
-          };
-          const res = await core.migrateV1Project(inputs);
-          assert.isTrue(res.isOk() && res.value === testParam.projectPath);
-          assert.deepEqual(expectedInputs, inputs);
-          inputs.projectPath = testParam.projectPath;
-
-          const projectSettingsResult = await loadProjectSettings(inputs, true);
-          if (projectSettingsResult.isErr()) {
-            assert.fail("failed to load project settings");
-          }
-          const projectSettings = projectSettingsResult.value;
-          const validSettingsResult = validateSettings(projectSettings);
-          assert.isTrue(validSettingsResult === undefined);
-        }
-      });
-    });
   });
 });

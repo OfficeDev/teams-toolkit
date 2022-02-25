@@ -23,8 +23,8 @@ import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
-const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
-const allRunningDebugSessions: Set<string> = new Set<string>();
+export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
+export const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
 
 /**
@@ -423,11 +423,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
       // ignore telemetry error
     }
 
-    const extConfig: vscode.WorkspaceConfiguration =
-      vscode.workspace.getConfiguration("fx-extension");
-    if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
-      terminateAllRunningTeamsfxTasks();
-    }
+    terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
     if (allRunningDebugSessions.size == 0) {

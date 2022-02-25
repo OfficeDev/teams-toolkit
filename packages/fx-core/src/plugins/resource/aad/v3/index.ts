@@ -10,7 +10,6 @@ import {
   ProjectSettings,
   Result,
   SystemError,
-  TeamsAppManifest,
   TokenProvider as TokenProviderInAPI,
   UserError,
   v2,
@@ -20,7 +19,6 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
@@ -102,7 +100,7 @@ export function isAadAdded(projectSetting: ProjectSettings): boolean {
 }
 
 @Service(Plugins.pluginNameComplex)
-export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
+export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
   name = Plugins.pluginNameComplex;
   type: "resource" = "resource";
   resourceType = "Azure AD App";
@@ -116,8 +114,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       },
     }),
   ])
-  async generateResourceTemplate(): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const result: ArmTemplateResult = {
+  async generateBicep(): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const result: v3.BicepTemplate = {
       Parameters: JSON.parse(
         await fs.readFile(
           path.join(
@@ -129,21 +127,19 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
         )
       ),
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   /**
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
    */
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.aad } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const armRes = await this.generateResourceTemplate();
-    if (armRes.isErr()) return err(armRes.error);
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
     const webAppInfo: v3.ManifestCapability = {
@@ -161,7 +157,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     if (updateWebAppInfoRes.isErr()) return err(updateWebAppInfoRes.error);
     if (!solutionSettings.activeResourcePlugins.includes(this.name))
       solutionSettings.activeResourcePlugins.push(this.name);
-    return ok(armRes.value);
+    return ok([]);
   }
 
   @hooks([

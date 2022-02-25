@@ -110,7 +110,7 @@ export async function generateArmTemplate(
   return result;
 }
 
-export async function addFeature(
+export async function generateBicep(
   ctx: v3.ContextWithManifestProvider,
   inputs: v2.InputsWithProjectPath,
   addedPlugins: string[],
@@ -121,7 +121,7 @@ export async function addFeature(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
   try {
-    result = await doAddFeature(ctx, inputs, addedPlugins, existingPlugins);
+    result = await doGenerateBicep(ctx, inputs, addedPlugins, existingPlugins);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -874,80 +874,71 @@ async function doGenerateArmTemplate(
   return ok(undefined); // Nothing to return when success
 }
 
-async function doAddFeature(
+async function doGenerateBicep(
   ctx: v3.ContextWithManifestProvider,
   inputs: v2.InputsWithProjectPath,
   addedPlugins: string[],
   existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
-  const allPlugins: string[] = [];
-  addedPlugins.forEach((p) => allPlugins.push(p));
-  existingPlugins.forEach((p) => allPlugins.push(p));
+  const allPlugins = addedPlugins.concat(existingPlugins);
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(allPlugins, baseName);
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
 
-  // add feature for selected plugin
-  const otherFeaturesAddedInputs: v3.OtherFeaturesAddedInputs = {
+  // generateBicep
+  const addFeatureInputs: v3.AddFeatureInputs = {
     ...inputs,
     allPluginsAfterAdd: allPlugins,
-    addedPlugins: [],
   };
   for (const pluginName of addedPlugins) {
-    const selectedPlugin = await Container.get<v3.FeaturePlugin>(pluginName);
-    if (!selectedPlugin.addFeature) continue;
-    const addFeatureInputs: v3.AddFeatureInputs = {
-      ...inputs,
-      allPluginsAfterAdd: allPlugins,
-    };
-    const addFeatureRes = await selectedPlugin.addFeature(ctx, addFeatureInputs);
-    if (addFeatureRes.isErr()) {
-      ctx.logProvider.error(`${pluginName}: addFeature() failed!`);
-      return err(addFeatureRes.error);
+    const selectedPlugin = await Container.get<v3.PluginV3>(pluginName);
+    if (!selectedPlugin.generateBicep) continue;
+    const res = await selectedPlugin.generateBicep(ctx, addFeatureInputs);
+    if (res.isErr()) {
+      ctx.logProvider.error(`${pluginName}: generateBicep() failed!`);
+      return err(res.error);
     }
-    otherFeaturesAddedInputs.addedPlugins.push({ name: pluginName, value: addFeatureRes.value });
-    if (addFeatureRes.value) {
-      for (const template of addFeatureRes.value) {
-        if (template.kind === "bicep") {
-          const armTemplate = template.template as ArmTemplateResult;
-          generateArmFromResult(
-            armTemplate,
-            bicepOrchestrationTemplate,
-            pluginName,
-            moduleProvisionFiles,
-            moduleConfigFiles
-          );
-        }
+    if (res.value) {
+      for (const template of res.value) {
+        const armTemplate = template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          pluginName,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
       }
     }
-    ctx.logProvider.info(`${pluginName}: addFeature() success!`);
+    ctx.logProvider.info(`${pluginName}: generateBicep() success!`);
   }
-
-  //notify existing plugins
+  //updateBicep
+  const updateInputs: v3.UpdateInputs = {
+    ...addFeatureInputs,
+    newPlugins: addedPlugins,
+  };
   for (const pluginName of existingPlugins) {
-    const existingPlugin = await Container.get<v3.FeaturePlugin>(pluginName);
-    if (!existingPlugin.afterOtherFeaturesAdded) continue;
-    const notifyRes = await existingPlugin.afterOtherFeaturesAdded(ctx, otherFeaturesAddedInputs);
-    if (notifyRes.isErr()) {
-      ctx.logProvider.error(`${pluginName}: afterOtherFeaturesAdded() failed!`);
-      return err(notifyRes.error);
+    const existingPlugin = await Container.get<v3.PluginV3>(pluginName);
+    if (!existingPlugin.updateBicep) continue;
+    const res = await existingPlugin.updateBicep(ctx, updateInputs);
+    if (res.isErr()) {
+      ctx.logProvider.error(`${pluginName}: updateBicep() failed!`);
+      return err(res.error);
     }
-    if (notifyRes.value) {
-      for (const template of notifyRes.value) {
-        if (template.kind === "bicep") {
-          const armTemplate = template.template as ArmTemplateResult;
-          generateArmFromResult(
-            armTemplate,
-            bicepOrchestrationTemplate,
-            pluginName,
-            moduleProvisionFiles,
-            moduleConfigFiles
-          );
-        }
+    if (res.value) {
+      for (const template of res.value) {
+        const armTemplate = template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          pluginName,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
       }
     }
-    ctx.logProvider.info(`${pluginName}: afterOtherFeaturesAdded() success!`);
+    ctx.logProvider.info(`${pluginName}: updateBicep() success!`);
   }
 
   await persistBicepTemplates(
@@ -964,16 +955,16 @@ async function persistBicepTemplates(
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
-  projectaPath: string
+  projectPath: string
 ) {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listRemoteEnvConfigs(projectaPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }
-    const parameterEnvFolderPath = path.join(projectaPath, configsFolder);
+    const parameterEnvFolderPath = path.join(projectPath, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envListResult.value) {
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
@@ -1026,7 +1017,7 @@ async function persistBicepTemplates(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
 
-    const templateFolderPath = path.join(projectaPath, templatesFolder);
+    const templateFolderPath = path.join(projectPath, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     // Generate provision.bicep and module provision bicep files
@@ -1554,13 +1545,13 @@ class ArmV2 {
 }
 
 class Arm {
-  async addFeature(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath,
     addedPlugins: string[],
     existingPlugins: string[]
   ): Promise<Result<any, FxError>> {
-    return addFeature(ctx, inputs, addedPlugins, existingPlugins);
+    return generateBicep(ctx, inputs, addedPlugins, existingPlugins);
   }
   async deployArmTemplates(
     ctx: v2.Context,

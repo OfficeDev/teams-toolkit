@@ -16,6 +16,12 @@ import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 
 // @beta
+export class AppCredential implements TokenCredential {
+    constructor(authConfig: AuthenticationConfiguration);
+    getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
+}
+
+// @beta
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -23,29 +29,20 @@ export interface AuthenticationConfiguration {
     readonly clientId?: string;
     readonly clientSecret?: string;
     readonly initiateLoginEndpoint?: string;
-    readonly simpleAuthEndpoint?: string;
     readonly tenantId?: string;
 }
 
+// Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
+//
 // @beta
-export interface Configuration {
-    readonly authentication?: AuthenticationConfiguration;
-    readonly resources?: ResourceConfiguration[];
-}
-
-// @beta
-export function createMicrosoftGraphClient(credential: TokenCredential, scopes?: string | string[]): Client;
-
-// @beta
-export class DefaultTediousConnectionConfiguration {
-    getConfig(databaseName?: string): Promise<ConnectionConfig>;
-}
+export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @beta
 export enum ErrorCode {
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",
+    IdentityTypeNotSupported = "IdentityTypeNotSupported",
     InternalError = "InternalError",
     InvalidCertificate = "InvalidCertificate",
     InvalidConfiguration = "InvalidConfiguration",
@@ -64,18 +61,16 @@ export class ErrorWithCode extends Error {
 }
 
 // @beta
-export function getAuthenticationConfiguration(): AuthenticationConfiguration | undefined;
-
-// @beta
 export function getLogLevel(): LogLevel | undefined;
 
 // @beta
-export function getResourceConfiguration(resourceType: ResourceType, resourceName?: string): {
-    [index: string]: any;
-};
+export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @beta
-export function loadConfiguration(configuration?: Configuration): void;
+export enum IdentityType {
+    App = "Application",
+    User = "User"
+}
 
 // @beta
 export type LogFunction = (level: LogLevel, message: string) => void;
@@ -97,37 +92,16 @@ export enum LogLevel {
 }
 
 // @beta
-export class M365TenantCredential implements TokenCredential {
-    constructor();
-    getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
-}
-
-// @beta
 export class MsGraphAuthProvider implements AuthenticationProvider {
-    constructor(credential: TokenCredential, scopes?: string | string[]);
+    constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
 }
 
 // @beta
 export class OnBehalfOfUserCredential implements TokenCredential {
-    constructor(ssoToken: string);
+    constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
-}
-
-// @beta
-export interface ResourceConfiguration {
-    readonly name: string;
-    readonly properties: {
-        [index: string]: any;
-    };
-    readonly type: ResourceType;
-}
-
-// @beta
-export enum ResourceType {
-    API = 1,
-    SQL = 0
 }
 
 // @beta
@@ -141,7 +115,7 @@ export function setLogLevel(level: LogLevel): void;
 
 // @beta
 export class TeamsBotSsoPrompt extends Dialog {
-    constructor(dialogId: string, settings: TeamsBotSsoPromptSettings);
+    constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
 }
@@ -160,8 +134,21 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 }
 
 // @beta
+export class TeamsFx implements TeamsFxConfiguration {
+    constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
+    getConfig(key: string): string;
+    getConfigs(): Record<string, string>;
+    getCredential(): TokenCredential;
+    getIdentityType(): IdentityType;
+    getUserInfo(): Promise<UserInfo>;
+    hasConfig(key: string): boolean;
+    login(scopes: string | string[]): Promise<void>;
+    setSsoToken(ssoToken: string): TeamsFx;
+}
+
+// @beta
 export class TeamsUserCredential implements TokenCredential {
-    constructor();
+    constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): Promise<UserInfo>;
     login(scopes: string | string[]): Promise<void>;

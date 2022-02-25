@@ -4,10 +4,10 @@
     "samples": [
         {
             "id": "hello-world-tab",
-            "title": "Hello World Tab",
+            "title": "Hello World Tab with SSO",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
-            "tags": ["Tab", "TS"],
+            "tags": ["Tab", "TS", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
             "suggested": true
@@ -125,6 +125,16 @@
             "tags": ["Messaging extension", "JS", "Outlook"],
             "time": "45min to run",
             "configuration": "Manual configurations required",
+            "suggested": false
+        },
+        {
+            "id": "hello-world-tab-without-sso",
+            "title": "Hello World Tab",
+            "shortDescription": "A simple Microsft Teams Tab application displays static content",
+            "fullDescription": "This is a simple static tab application with tutorial to include single sign on features.",
+            "tags": ["Tab", "TS"],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
             "suggested": false
         }
     ]

@@ -7,8 +7,8 @@ import {
   createMicrosoftGraphClient,
   ErrorCode,
   ErrorWithCode,
-  loadConfiguration,
-  TeamsUserCredential,
+  TeamsFx,
+  IdentityType,
 } from "../../../src/index.browser";
 
 chaiUse(chaiPromises);
@@ -19,49 +19,33 @@ describe("MsGraphClientProvider Tests - Browser", () => {
   const scopes = "fake_scope";
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
-
-  function loadDefaultConfig() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: loginUrl,
-        simpleAuthEndpoint: authEndpoint,
-        clientId: clientId,
-      },
-    });
-  }
-
-  beforeEach(function () {
-    loadDefaultConfig();
+  const teamsfx = new TeamsFx(IdentityType.User, {
+    initiateLoginEndpoint: loginUrl,
+    simpleAuthEndpoint: authEndpoint,
+    clientId: clientId,
   });
 
   it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {
-    const credential = new TeamsUserCredential();
     const invalidScopes: any = [10, 20];
     expect(() => {
-      createMicrosoftGraphClient(credential, invalidScopes);
+      createMicrosoftGraphClient(teamsfx, invalidScopes);
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("createMicrosoftGraphClient should success with given scopes", function () {
-    const credential = new TeamsUserCredential();
-    const graphClient: any = createMicrosoftGraphClient(credential, scopes);
+    const graphClient: any = createMicrosoftGraphClient(teamsfx, scopes);
     assert.strictEqual(graphClient.config.authProvider.scopes, scopes);
-    expect(graphClient.config.authProvider.credential).to.be.instanceOf(TeamsUserCredential);
   });
 
   it("createMicrosoftGraphClient should success with empty scope", function () {
-    const credential = new TeamsUserCredential();
-    const graphClient: any = createMicrosoftGraphClient(credential, emptyScope);
+    const graphClient: any = createMicrosoftGraphClient(teamsfx, emptyScope);
     assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
-    expect(graphClient.config.authProvider.credential).to.be.instanceOf(TeamsUserCredential);
   });
 
   it("createMicrosoftGraphClient should success without providing scope", function () {
-    const credential = new TeamsUserCredential();
-    const graphClient: any = createMicrosoftGraphClient(credential);
+    const graphClient: any = createMicrosoftGraphClient(teamsfx);
     assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
-    expect(graphClient.config.authProvider.credential).to.be.instanceOf(TeamsUserCredential);
   });
 });

@@ -34,7 +34,6 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false,
     includeSimpleAuth = false,
     includeAAD = true
   ): LocalSettings {
@@ -47,7 +46,7 @@ export class LocalSettingsProvider {
       teamsApp: teamsAppLocalConfig,
     };
 
-    if (!migrateFromV1 && includeAAD) {
+    if (includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth);
     }
 
@@ -73,7 +72,6 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false,
     includeSimpleAuth = false,
     includeAAD = true
   ): Json {
@@ -84,7 +82,7 @@ export class LocalSettingsProvider {
       },
     };
 
-    if (!migrateFromV1 && includeAAD) {
+    if (includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth).toJSON();
     }
 

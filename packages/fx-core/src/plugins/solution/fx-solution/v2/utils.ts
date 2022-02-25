@@ -54,10 +54,6 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function isVsPlatform(ctx: v2.Context): boolean {
-  return ctx.projectSetting.programmingLanguage === "csharp";
-}
-
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
   const ret: Record<v2.PluginName, T> = {};
   for (const record of records) {
@@ -91,10 +87,6 @@ export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
   permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
-  if (solutionSettings.migrateFromV1) {
-    return ok(Void);
-  }
-
   if (!isAzureProject(solutionSettings)) {
     return err(
       returnUserError(

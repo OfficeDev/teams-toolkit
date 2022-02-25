@@ -44,7 +44,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <param name="jsRuntime">JavaScript interop runtime.</param>
     /// <param name="logger">Logger of TeamsUserCredential Class.</param>
     /// <param name="identityClientAdapter">Global instance of adaptor to call MSAL.NET library</param>
-    /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, client secret, initiate login endpoint or OAuth authority is missing or invalid in config.</exception>
+    /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, client secret or OAuth authority is missing or invalid in config.</exception>
     public TeamsUserCredential(
         IOptions<AuthenticationOptions> authenticationOptions,
         IJSRuntime jsRuntime,
@@ -126,7 +126,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         try
         {
             var teamsSdk = await _teamsSdkTask.Value.ConfigureAwait(false);
-            var url = $"{_authenticationOptions.InitiateLoginEndpoint}?clientId={_authenticationOptions.ClientId}&scope={WebUtility.UrlEncode(scopes)}";
+            var url = $"auth-start?clientId={_authenticationOptions.ClientId}&scope={WebUtility.UrlEncode(scopes)}";
             var token = await teamsSdk.InvokeAsync<string>("authenticate", url).ConfigureAwait(false);
             if (string.IsNullOrEmpty(token))
             {

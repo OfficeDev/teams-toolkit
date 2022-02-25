@@ -1,12 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ArchiveFolderName,
-  ArchiveLogFileName,
-  AppPackageFolderName,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -24,7 +18,6 @@ import {
   AzureConstants,
   PathInfo,
   BotBicep,
-  Alias,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -33,7 +26,6 @@ import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
 import {
   CheckThrowSomethingMissing,
-  MigrateV1ProjectError,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
@@ -53,7 +45,6 @@ import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
-  copyFiles,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -449,36 +440,6 @@ export class TeamsBotImpl implements PluginImpl {
 
     this.config.saveConfigIntoContext(context);
 
-    return ResultFactory.Success();
-  }
-
-  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
-    try {
-      Logger.info(Messages.StartMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-      const handler = await ProgressBarFactory.newProgressBar(
-        ProgressBarConstants.MIGRATE_V1_PROJECT_TITLE,
-        ProgressBarConstants.MIGRATE_V1_PROJECT_STEPS_NUM,
-        ctx
-      );
-      await handler?.start();
-      await handler?.next(ProgressBarConstants.MIGRATE_V1_PROJECT_STEP_MIGRATE);
-
-      const sourceFolder = path.join(ctx.root, ArchiveFolderName);
-      const distFolder = path.join(ctx.root, CommonStrings.BOT_WORKING_DIR_NAME);
-      const excludeFiles = [
-        { fileName: ArchiveFolderName, recursive: false },
-        { fileName: ArchiveLogFileName, recursive: false },
-        { fileName: AppPackageFolderName, recursive: false },
-        { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
-      ];
-
-      await copyFiles(sourceFolder, distFolder, excludeFiles);
-
-      await handler?.end(true);
-      Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-    } catch (err) {
-      throw new MigrateV1ProjectError(err);
-    }
     return ResultFactory.Success();
   }
 

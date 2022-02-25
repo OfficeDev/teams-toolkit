@@ -14,6 +14,7 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import path from "path";
 import AdmZip from "adm-zip";
 import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
@@ -245,9 +246,13 @@ export class AppStudioPluginImpl {
     }
 
     const zip = new AdmZip();
-    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
-    zip.addLocalFile(colorFile);
-    zip.addLocalFile(outlineFile);
+    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
+
+    // outline.png & color.png, relative path
+    let dir = path.dirname(manifest.icons.color);
+    zip.addLocalFile(colorFile, dir === "." ? "" : dir);
+    dir = path.dirname(manifest.icons.outline);
+    zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
 
     const zipFileName = `${buildFolderPath}/appPackage.${envInfo.envName}.zip`;
     zip.writeZip(zipFileName);

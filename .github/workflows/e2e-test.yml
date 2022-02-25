@@ -280,11 +280,11 @@ jobs:
 
             if [ "$status" == "success" ]; then
               passed=$((passed+1))
-              label="<span style=\\\"background-color: green;\\\">PASSED</span>"
+              label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">PASSED</span>"
               lists="$lists <tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr>"
             else
               failed=$((failed+1))
-              label="<span style=\\\"background-color: red;\\\">FAILED</span>"
+              label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
               lists="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr> $lists"
             fi
 

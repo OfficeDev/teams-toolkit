@@ -31,7 +31,7 @@ describe("User can customize Bicep files", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 
   it("Regenerate Bicep will not affect user's customized Bicep code", async () => {

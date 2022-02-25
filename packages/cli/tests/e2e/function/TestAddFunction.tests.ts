@@ -43,7 +43,7 @@ describe("Test Add Function", function () {
   afterEach(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`Create Tab Then Add Function`, async function () {

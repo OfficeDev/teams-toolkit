@@ -32,7 +32,7 @@ describe("Deploy to customized resource group", function () {
   });
 
   afterEach(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab project can deploy sql resource to customized resource group and successfully provision`, async function () {

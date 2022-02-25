@@ -44,6 +44,6 @@ describe("teamsfx deploy frontend-hosting", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 });

@@ -5,22 +5,14 @@ import fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosPromise } from "axios";
-
-import {
-  writeToPath,
-  loadFromPath,
-  validateManifest,
-  validateManifestAgainstSchema,
-  TeamsAppManifest,
-  TeamsAppManifestJSONSchema,
-} from "../src";
+import { ManifestUtil, TeamsAppManifest, TeamsAppManifestJSONSchema } from "../src";
 chai.use(chaiAsPromised);
 
 describe("Manifest manipulation", async () => {
   describe("loadFromPath", async () => {
     it("should succeed when loading from a valid path", async () => {
       const filePath = path.join(__dirname, "manifest.json");
-      const manifest = await loadFromPath(filePath);
+      const manifest = await ManifestUtil.loadFromPath(filePath);
       chai.expect(manifest.id).equals("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
     });
 
@@ -28,7 +20,7 @@ describe("Manifest manipulation", async () => {
       const invalidPath = path.join(__dirname, "invalid.json");
       chai.expect(await fs.pathExists(invalidPath)).equals(false);
 
-      chai.expect(loadFromPath(invalidPath)).to.be.rejectedWith(Error);
+      chai.expect(ManifestUtil.loadFromPath(invalidPath)).to.be.rejectedWith(Error);
     });
   });
 
@@ -52,7 +44,7 @@ describe("Manifest manipulation", async () => {
       const manifest = new TeamsAppManifest();
       const fakeId = "some-fake-id";
       manifest.id = fakeId;
-      await writeToPath(filePath, manifest);
+      await ManifestUtil.writeToPath(filePath, manifest);
       chai.expect(fileContent.get(filePath)).is.not.undefined;
       chai.expect(JSON.parse(fileContent.get(filePath)!).id).equals(fakeId);
     });
@@ -79,13 +71,13 @@ describe("Manifest manipulation", async () => {
     it("should throw if $schema is undefiend", async () => {
       const manifest = new TeamsAppManifest();
       manifest.$schema = undefined;
-      chai.expect(validateManifest(manifest)).to.be.rejectedWith(Error);
+      chai.expect(ManifestUtil.validateManifest(manifest)).to.be.rejectedWith(Error);
     });
 
     it("should return empty arry when validation passes", async () => {
       const filePath = path.join(__dirname, "manifest.json");
-      const validManifest = await loadFromPath(filePath);
-      const result = await validateManifest(validManifest);
+      const validManifest = await ManifestUtil.loadFromPath(filePath);
+      const result = await ManifestUtil.validateManifest(validManifest);
       chai.expect(result).to.be.empty;
     });
   });
@@ -94,8 +86,8 @@ describe("Manifest manipulation", async () => {
     it("should return empty arry when validation passes", async () => {
       const schema = await loadSchema();
       const filePath = path.join(__dirname, "manifest.json");
-      const validManifest = await loadFromPath(filePath);
-      const result = await validateManifestAgainstSchema(validManifest, schema);
+      const validManifest = await ManifestUtil.loadFromPath(filePath);
+      const result = await ManifestUtil.validateManifestAgainstSchema(validManifest, schema);
       chai.expect(result).to.be.empty;
     });
 
@@ -104,7 +96,7 @@ describe("Manifest manipulation", async () => {
       const schema = await loadSchema();
       const manifest = new TeamsAppManifest();
       chai.expect(manifest.manifestVersion).equals("1.8");
-      const result = await validateManifestAgainstSchema(manifest, schema);
+      const result = await ManifestUtil.validateManifestAgainstSchema(manifest, schema);
       chai.expect(result).not.to.be.empty;
       chai.expect(result.length).equals(1);
       // 1.11 doesn't match 1.8, so it should return an error

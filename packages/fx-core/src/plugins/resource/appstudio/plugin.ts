@@ -13,7 +13,7 @@ import {
   LogProvider,
   AppPackageFolderName,
   BuildFolderName,
-  validateManifest,
+  ManifestUtil,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
@@ -1344,7 +1344,7 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string[], FxError>> {
     if (manifest.$schema) {
       try {
-        const result = await validateManifest(manifest);
+        const result = await ManifestUtil.validateManifest(manifest);
         return ok(result);
       } catch (e: any) {
         return err(

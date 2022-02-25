@@ -85,14 +85,14 @@ jobs:
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --ignore-scripts --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
         env:
           SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version rc npm packages to npmjs.org on hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --ignore-scripts --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
         env:
           SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
@@ -118,19 +118,6 @@ jobs:
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
-      
-      - name: sync up templates deps with sdk version for RC
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
-        run: |
-          node sdk-sync-up-version.js sdk
-        working-directory: ./.github/scripts
-
-      - name: sync up fx-core with templates version for RC
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
-        run: |
-          node .github/scripts/fxcore-sync-up-version.js
-          git add packages/fx-core/.
-          git commit -m "chore: update templates version"
       
       - name: generate templates
         run: |
@@ -201,38 +188,6 @@ jobs:
       - name: cleanup templates
         run: rm -rf ./*.zip && git clean -df
 
-      - name: just trigger function extension azure build pipeline for stable release
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'function-extension') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        uses: Azure/pipelines@v1
-        with:
-          azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
-          azure-pipeline-name: 'Build Function Extension Release Artifacts' 
-          azure-devops-token: '${{ secrets.ADO_PAT }}'
-
-      - name: trigger simpleauth azure build pipeline for stable release
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        uses: Azure/pipelines@v1
-        with:
-          azure-devops-project-url: 'https://dev.azure.com/mseng/VSIoT'
-          azure-pipeline-name: 'Build Simple Auth Release Artifacts' 
-          azure-devops-token: '${{ secrets.ADO_PAT }}'
-      
-      - name: check build status and download assets for stable release
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: |
-          output=$(./.github/scripts/simpleauth-azdo-pipelines.sh ${{ secrets.ADO_PAT }} 11303 >&1)
-          echo $output
-          asset_id=$(echo $output | rev |cut -d ' ' -f 1 | rev)
-          curl "https://dev.azure.com/mseng/_apis/resources/Containers/$asset_id/drop?itemPath=drop/Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip" -L -O -u :${{ secrets.ADO_PAT }}
-          if [ ! -f Microsoft.TeamsFx.*.zip ]; then exit 1; fi
-      
-      - name: build SimpleAuth on prerelease
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable') }}
-        run: |
-          dotnet build --configuration Release
-          zip -r -j ../../Microsoft.TeamsFx.SimpleAuth_${{ steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM }}.zip src/TeamsFxSimpleAuth/bin/Release/*
-        working-directory: ./packages/simpleauth  
-
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2
         with: 
@@ -240,26 +195,7 @@ jobs:
           max_attempts: 10
           retry_on: error
           command: |
-            if [ -f Microsoft.TeamsFx.SimpleAuth_*.zip ]; then
-              cp Microsoft.TeamsFx.SimpleAuth_*.zip packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
-            else
-              ./.github/scripts/download-simpleauth.sh
-            fi
-      - name: publish alpha simpleauth to github release page
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/dev' }}
-        uses: ncipollo/release-action@v1.7.3
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: 'simpleauth-${{steps.version-change.outputs.SIMPLEAUTH_VERSION_NUM}}'
-          artifacts: Microsoft.TeamsFx.SimpleAuth_*.zip
-
-      - name: publish simpleauth to github release page
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'simpleauth') && github.ref == 'refs/heads/main'}}
-        uses: ncipollo/release-action@v1.7.3
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SIMPLEAUTH_VERSION }}
-          artifacts: Microsoft.TeamsFx.SimpleAuth_*.zip
+            bash ./.github/scripts/download-simpleauth.sh
 
       - name: publish alpha release to npm org
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}

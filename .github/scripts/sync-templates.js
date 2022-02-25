@@ -14,17 +14,19 @@ function ThroughDirectory(Directory) {
 ThroughDirectory(templateDir)
 
 const templatesDeps = require(path.join(templateDir, 'package.json')).dependencies
+
 for(let file of depPkgs) {
     const pkg_ = fse.readJsonSync(file);
     const dep_ = pkg_.dependencies;
-    for(let templateDep in templatesDeps){
-        for(let subTempDep in dep_) {
-            let minVersion = semver.minVersion(dep_[subTempDep])
-            if(templateDep === subTempDep && semver.prerelease(minVersion)){
-                dep_[subTempDep] = templatesDeps[templateDep] 
-            }
+    let fileChange = false;
+    for(let [key,value] of Object.entries(templatesDeps)){
+        if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
+            dep_[key]=value;
+            fileChange = true;
         }
     }
-    pkg_.dependencies = dep_;
-    fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
+    if(fileChange) {
+        pkg_.dependencies = dep_;
+        fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
+    }
 }

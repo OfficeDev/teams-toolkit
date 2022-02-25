@@ -340,7 +340,7 @@ describe("SolutionV3 - addFeature", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
         version: "3.0.0",
         capabilities: [],
         hostType: "Azure",
@@ -354,7 +354,7 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VS,
       projectPath: projectPath,
-      feature: BuiltInFeaturePluginNames.dotnet,
+      features: [BuiltInFeaturePluginNames.dotnet],
       capabilities: [TabOptionItem.id, BotOptionItem.id],
     };
     const res = await addFeature(ctx, inputs);

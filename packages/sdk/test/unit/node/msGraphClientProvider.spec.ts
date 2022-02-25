@@ -5,14 +5,7 @@ import { expect, use as chaiUse } from "chai";
 import "isomorphic-fetch";
 import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
-import {
-  createMicrosoftGraphClient,
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  M365TenantCredential,
-  ErrorWithCode,
-  ErrorCode,
-} from "../../../src";
+import { TeamsFx, createMicrosoftGraphClient, ErrorWithCode, ErrorCode } from "../../../src";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -53,7 +46,6 @@ describe("createMicrosoftGraphClient Tests - node", () => {
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
     });
-    loadConfiguration();
   });
 
   afterEach(function () {
@@ -61,24 +53,19 @@ describe("createMicrosoftGraphClient Tests - node", () => {
   });
 
   it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const invalidScopes: any = [10, 20];
     expect(() => {
-      createMicrosoftGraphClient(oboCredential, invalidScopes);
+      createMicrosoftGraphClient(new TeamsFx().setSsoToken(ssoToken), invalidScopes);
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("createMicrosoftGraphClient should success with OnBehalfOfUserCredential", async function () {
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
-    const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
-    expect(graphClient.config.authProvider.credential).to.be.instanceOf(OnBehalfOfUserCredential);
-  });
-
-  it("createMicrosoftGraphClient should success with M365TenantCredential", async function () {
-    const m356Credential = new M365TenantCredential();
-    const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);
-    expect(graphClient.config.authProvider.credential).to.be.instanceOf(M365TenantCredential);
+  it("createMicrosoftGraphClient should success with TeamsFx", async function () {
+    const graphClient: any = createMicrosoftGraphClient(
+      new TeamsFx().setSsoToken(ssoToken),
+      scopes
+    );
+    expect(graphClient.config.authProvider.teamsfx).to.be.instanceOf(TeamsFx);
   });
 });

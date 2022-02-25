@@ -43,4 +43,7 @@ elif [ $1 == 'template-adaptive-card' ]; then
         node ../../.github/scripts/sdk-sync-up-version.js adaptivecards-tools-sdk
     fi
     git add ../../templates
+elif [ $1 == 'template-sync' ]; then
+    node ../.github/scripts/sync-templates.js
+    git add .
 fi

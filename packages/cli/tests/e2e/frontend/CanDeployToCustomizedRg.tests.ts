@@ -32,7 +32,7 @@ describe("Deploy to customized resource group", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`, async function () {

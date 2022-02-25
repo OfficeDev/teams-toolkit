@@ -18,6 +18,7 @@ import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-expor
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
+import NoneSSOTab from "../../media/hello-world-tab-without-sso.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -32,6 +33,7 @@ const imageMapping: { [p: string]: any } = {
   "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
   "hello-world-bot": HelloWorldBot,
   "bot-sso": BOTSSO,
+  "hello-world-tab-without-sso": NoneSSOTab,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

@@ -527,7 +527,10 @@ export class TeamsBotImpl implements PluginImpl {
       botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
       botAuthCreds.objectId = this.config.localDebug.localObjectId;
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
-    } else if (this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)) {
+    } else if (
+      isConfigUnifyEnabled() &&
+      this.ctx?.envInfo.state.get(ResourcePlugins.Bot)?.get(BOT_ID)
+    ) {
       botAuthCreds.clientId = this.ctx?.envInfo.state
         .get(ResourcePlugins.Bot)
         .get(PluginBot.BOT_ID);

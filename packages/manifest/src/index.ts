@@ -31,7 +31,7 @@ export async function loadFromPath(path: string): Promise<TeamsAppManifest> {
  * 
  */
 export async function writeToPath(path: string, manifest: TeamsAppManifest): Promise<void> {
-  return fs.writeJson(path, manifest)
+  return fs.writeJson(path, manifest, { spaces: 4 });
 }
 
 /**

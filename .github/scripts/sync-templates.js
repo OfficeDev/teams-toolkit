@@ -3,23 +3,16 @@ const semver = require('semver')
 const fse = require('fs-extra')
 
 const templateDir = path.join(__dirname, "../../templates");
-
-function recursivelyListPackageJsonFilePath(dir, list = []) {
-    const arr = fse.readdirSync(dir);
-    arr.forEach(function (item) {
-        if (item === "node_modules") return list;
-        const fullpath = path.join(dir, item);
-        const stats = fse.statSync(fullpath);
-        if (stats.isDirectory()) {
-            recursivelyListPackageJsonFilePath(fullpath, list);
-        } else if (item === "package.json") {
-            list.push(fullpath);
-        }
+let depPkgs  = [];
+function ThroughDirectory(Directory) {
+    fse.readdirSync(Directory).forEach(File => {
+        const Absolute = path.join(Directory, File);
+        if (fse.statSync(Absolute).isDirectory() && File != "node_modules") return ThroughDirectory(Absolute);
+        else if(File === "package.json") return depPkgs.push(Absolute);
     });
-    return list;
 }
+ThroughDirectory(templateDir)
 
-const depPkgs = recursivelyListPackageJsonFilePath(templateDir);
 const templatesDeps = require(path.join(templateDir, 'package.json')).dependencies
 for(let file of depPkgs) {
     const pkg_ = fse.readJsonSync(file);

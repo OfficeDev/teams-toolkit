@@ -38,7 +38,6 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
-import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -73,8 +72,8 @@ describe("Get AppDefinition and Update", () => {
         isAdministrator: true,
       },
     ],
-    outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-    colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+    outlineIcon: "resources/outline.png",
+    colorIcon: "resources/color.png",
   };
 
   let AAD_ConfigMap: ConfigMap;
@@ -90,45 +89,29 @@ describe("Get AppDefinition and Update", () => {
     manifest = new TeamsAppManifest();
     configOfOtherPlugins = new Map();
 
-    if (isMultiEnvEnabled()) {
-      localSettings = {
-        auth: new ConfigMap([
-          [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
-          [LocalSettingsAuthKeys.ClientId, localDebugClientId],
-        ]),
-        bot: new ConfigMap([
-          [LocalSettingsBotKeys.BotId, localDebugBotId],
-          [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
-        ]),
-        frontend: new ConfigMap([
-          [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
-          [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
-        ]),
-        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
-      };
-    }
+    localSettings = {
+      auth: new ConfigMap([
+        [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
+        [LocalSettingsAuthKeys.ClientId, localDebugClientId],
+      ]),
+      bot: new ConfigMap([
+        [LocalSettingsBotKeys.BotId, localDebugBotId],
+        [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
+      ]),
+      frontend: new ConfigMap([
+        [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
+        [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
+      ]),
+      teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
+    };
 
     AAD_ConfigMap = new ConfigMap();
     AAD_ConfigMap.set(REMOTE_AAD_ID, uuid.v4());
-    if (!isMultiEnvEnabled()) {
-      AAD_ConfigMap.set(LOCAL_DEBUG_AAD_ID, localDebugBotId);
-      AAD_ConfigMap.set(LOCAL_WEB_APPLICATION_INFO_SOURCE, localDebugApplicationIdUris);
-    }
     AAD_ConfigMap.set(WEB_APPLICATION_INFO_SOURCE, "web application info source");
 
     BOT_ConfigMap = new ConfigMap();
-    if (!isMultiEnvEnabled()) {
-      BOT_ConfigMap.set(LOCAL_BOT_ID, localDebugBotId);
-    }
     BOT_ConfigMap.set(BOT_ID, uuid.v4());
     BOT_ConfigMap.set(BOT_DOMAIN, "bot domain");
-
-    if (!isMultiEnvEnabled()) {
-      LDEBUG_ConfigMap = new ConfigMap();
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_ENDPOINT, localDebugTabEndpoint);
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_DOMAIN, localDebugTabDomain);
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_BOT_DOMAIN, localDebugBotDomain);
-    }
 
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
@@ -203,25 +186,14 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      if (isMultiEnvEnabled()) {
-        chai
-          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-          .includes("applicationIdUris");
-      } else {
-        chai
-          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-          .includes("webApplicationInfoResource");
-      }
+      chai
+        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
+        .includes("applicationIdUris");
     }
   });
 
   it("failed to get clientId from local config and should return error", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.auth?.delete(LocalSettingsAuthKeys.ClientId);
-    } else {
-      AAD_ConfigMap.delete(LOCAL_DEBUG_AAD_ID);
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    }
+    localSettings.auth?.delete(LocalSettingsAuthKeys.ClientId);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -244,25 +216,13 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      if (isMultiEnvEnabled()) {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("clientId");
-      } else {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{appClientId}");
-      }
+      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("clientId");
     }
   });
 
   it("failed to get tab endpoint and botId from local config and should return error", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
-      localSettings.bot?.delete(LocalSettingsBotKeys.BotId);
-    } else {
-      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
-      BOT_ConfigMap.delete(LOCAL_BOT_ID);
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    }
+    localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
+    localSettings.bot?.delete(LocalSettingsBotKeys.BotId);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -289,14 +249,7 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("failed to get bot domain from local config and should return error", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.bot?.delete(LocalSettingsBotKeys.BotDomain);
-    } else {
-      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_BOT_DOMAIN);
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    }
+    localSettings.bot?.delete(LocalSettingsBotKeys.BotDomain);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -326,14 +279,8 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("should work for bot only project local debug", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.frontend = undefined;
-      localSettings.teamsApp = undefined;
-    } else {
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    }
+    localSettings.frontend = undefined;
+    localSettings.teamsApp = undefined;
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -569,8 +516,8 @@ describe("Get AppDefinition and Update", () => {
           isAdministrator: true,
         },
       ],
-      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+      outlineIcon: "resources/outline.png",
+      colorIcon: "resources/color.png",
     };
 
     const fakeAxiosInstance = axios.create();

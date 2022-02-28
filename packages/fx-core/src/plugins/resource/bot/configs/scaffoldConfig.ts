@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
 import { CommonStrings, PluginBot } from "../resources/strings";
-import { isMultiEnvEnabled } from "../../../../common";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
@@ -26,10 +25,8 @@ export class ScaffoldConfig {
     this.botId = context.config.get(PluginBot.BOT_ID) as string;
     this.botPassword = context.config.get(PluginBot.BOT_PASSWORD) as string;
     this.objectId = context.config.get(PluginBot.OBJECT_ID) as string;
-    if (isMultiEnvEnabled()) {
-      this.botId = context.envInfo.config.bot?.appId ?? this.botId;
-      this.botPassword = context.envInfo.config.bot?.appPassword ?? this.botPassword;
-    }
+    this.botId = context.envInfo.config.bot?.appId ?? this.botId;
+    this.botPassword = context.envInfo.config.bot?.appPassword ?? this.botPassword;
 
     const rawProgrammingLanguage = context.projectSettings?.programmingLanguage;
     if (

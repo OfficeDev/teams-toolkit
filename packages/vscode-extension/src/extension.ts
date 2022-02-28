@@ -22,7 +22,12 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  globalStateUpdate,
+  isMultiEnvEnabled,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -32,6 +37,7 @@ import {
   isValidNode,
   delay,
   isSupportAutoOpenAPI,
+  isTriggerFromWalkThrough,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -47,6 +53,7 @@ import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 import { version } from "os";
+import { GlobalKey } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -95,6 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
       const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
       if (targetUri.isOk()) {
+        await handlers.updateGlobalKeyValue(args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: targetUri.value };

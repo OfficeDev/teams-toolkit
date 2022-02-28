@@ -234,7 +234,6 @@ export class FxCore implements v3.ICore {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
-    let globalStateDescription = "openReadme";
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
@@ -243,7 +242,6 @@ export class FxCore implements v3.ICore {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-      globalStateDescription = "openSampleReadme";
     } else {
       // create from new
       const appName = inputs[QuestionAppName.name] as string;
@@ -368,7 +366,6 @@ export class FxCore implements v3.ICore {
       }
     }
     if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(globalStateDescription, true);
       await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
@@ -391,7 +388,6 @@ export class FxCore implements v3.ICore {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
-    let globalStateDescription = "openReadme";
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
@@ -400,7 +396,6 @@ export class FxCore implements v3.ICore {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-      globalStateDescription = "openSampleReadme";
     } else {
       // create from new
       const appName = inputs[QuestionAppName.name] as string;
@@ -468,7 +463,6 @@ export class FxCore implements v3.ICore {
       }
     }
     if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(globalStateDescription, true);
       await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);

@@ -202,6 +202,8 @@ export enum TelemetryTiggerFrom {
   CodeLens = "CodeLens",
   EditorTitle = "EditorTitle",
   SideBar = "SideBar",
+  WalkThrough = "WalkThrough",
+  Notification = "Notification",
   Other = "Other",
   Unknow = "Unknow",
 }

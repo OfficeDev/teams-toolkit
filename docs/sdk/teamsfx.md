@@ -28,6 +28,7 @@
 
 |  Function | Description |
 |  --- | --- |
+|  [callApi(teamsfx, name, param, method)](./teamsfx.callapi.md) | <b><i>(BETA)</i></b> Call backend API with authentication of Teams. |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |

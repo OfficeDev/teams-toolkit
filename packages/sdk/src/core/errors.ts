@@ -84,6 +84,8 @@ export class ErrorMessage {
     "Missing resource configuration with type: {0}, name: {1}.";
   static readonly AuthenticationConfigurationNotExists =
     "Authentication configuration does not exist.";
+  static readonly InvalidApiConfiguration =
+    "Api endpoint/name is not found. It is required when invoking callApi().";
 
   // RuntimeNotSupported Error
   static readonly BrowserRuntimeNotSupported = "{0} is not supported in browser.";

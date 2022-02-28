@@ -10,6 +10,7 @@ export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";
 export { MsGraphAuthProvider } from "./core/msGraphAuthProvider";
 export { createMicrosoftGraphClient } from "./core/msGraphClientProvider";
 export { getTediousConnectionConfig } from "./core/defaultTediousConnectionConfiguration.browser";
+export { callApi } from "./core/callApi";
 
 export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt.browser";
 export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResponse";

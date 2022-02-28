@@ -35,6 +35,9 @@ export interface AuthenticationConfiguration {
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
 // @beta
+export function callApi(teamsfx: TeamsFxConfiguration, name?: string, param?: any, method?: "get" | "post"): Promise<any>;
+
+// @beta
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @beta

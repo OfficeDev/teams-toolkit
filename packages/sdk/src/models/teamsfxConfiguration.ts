@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import { TokenCredential } from "@azure/identity";
-import { IdentityType, UserInfo } from "..";
+import { UserInfo } from "../models/userinfo";
+import { IdentityType } from "../models/identityType";
 
 /**
  * TeamsFx interface that provides credential and configuration.

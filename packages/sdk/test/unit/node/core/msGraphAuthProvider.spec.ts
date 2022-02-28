@@ -10,7 +10,7 @@ import {
   MsGraphAuthProvider,
   ErrorWithCode,
   ErrorCode,
-} from "../../../src";
+} from "../../../../src";
 import * as sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 

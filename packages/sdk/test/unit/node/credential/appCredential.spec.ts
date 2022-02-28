@@ -4,8 +4,8 @@
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import { AppCredential } from "../../../src";
-import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
+import { AppCredential } from "../../../../src";
+import { ErrorCode, ErrorWithCode } from "../../../../src/core/errors";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
 chaiUse(chaiPromises);

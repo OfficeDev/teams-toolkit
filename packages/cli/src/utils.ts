@@ -319,12 +319,24 @@ export function isWorkspaceSupported(workspace: string): boolean {
   return true;
 }
 
-export function getTeamsAppIdByEnv(projectDir: string, env: string): string | undefined {
+export interface TeamsAppTelemetryInfo {
+  appId: string;
+  tenantId: string;
+}
+
+export function getTeamsAppTelemetryInfoByEnv(
+  projectDir: string,
+  env: string
+): TeamsAppTelemetryInfo | undefined {
   try {
     if (isWorkspaceSupported(projectDir)) {
       const result = environmentManager.getEnvStateFilesPath(env, projectDir);
       const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      return envJson[PluginNames.APPST].teamsAppId;
+      const appstudioState = envJson[PluginNames.APPST];
+      return {
+        appId: appstudioState.teamsAppId,
+        tenantId: appstudioState.tenantId,
+      };
     }
   } catch (e) {
     return undefined;

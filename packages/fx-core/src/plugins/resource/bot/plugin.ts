@@ -1,12 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ArchiveFolderName,
-  ArchiveLogFileName,
-  AppPackageFolderName,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -25,6 +19,7 @@ import {
   PathInfo,
   BotBicep,
   Alias,
+  ConfigKeys,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -33,7 +28,6 @@ import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
 import {
   CheckThrowSomethingMissing,
-  MigrateV1ProjectError,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
@@ -51,17 +45,17 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import {
-  copyFiles,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
 import { PluginImpl } from "./interface";
+import { BOT_ID } from "../appstudio/constants";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -441,54 +435,42 @@ export class TeamsBotImpl implements PluginImpl {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
 
-    CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
-
-    await this.updateMessageEndpointOnAppStudio(
-      `${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-    );
+    if (isConfigUnifyEnabled()) {
+      CheckThrowSomethingMissing(
+        ConfigNames.LOCAL_ENDPOINT,
+        context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)
+      );
+      await this.updateMessageEndpointOnAppStudio(
+        `${context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)}${
+          CommonStrings.MESSAGE_ENDPOINT_SUFFIX
+        }`
+      );
+    } else {
+      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
+      await this.updateMessageEndpointOnAppStudio(
+        `${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+      );
+    }
 
     this.config.saveConfigIntoContext(context);
 
     return ResultFactory.Success();
   }
 
-  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
-    try {
-      Logger.info(Messages.StartMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-      const handler = await ProgressBarFactory.newProgressBar(
-        ProgressBarConstants.MIGRATE_V1_PROJECT_TITLE,
-        ProgressBarConstants.MIGRATE_V1_PROJECT_STEPS_NUM,
-        ctx
-      );
-      await handler?.start();
-      await handler?.next(ProgressBarConstants.MIGRATE_V1_PROJECT_STEP_MIGRATE);
-
-      const sourceFolder = path.join(ctx.root, ArchiveFolderName);
-      const distFolder = path.join(ctx.root, CommonStrings.BOT_WORKING_DIR_NAME);
-      const excludeFiles = [
-        { fileName: ArchiveFolderName, recursive: false },
-        { fileName: ArchiveLogFileName, recursive: false },
-        { fileName: AppPackageFolderName, recursive: false },
-        { fileName: CommonStrings.NODE_PACKAGE_FOLDER_NAME, recursive: true },
-      ];
-
-      await copyFiles(sourceFolder, distFolder, excludeFiles);
-
-      await handler?.end(true);
-      Logger.info(Messages.EndMigrateV1Project(Alias.TEAMS_BOT_PLUGIN));
-    } catch (err) {
-      throw new MigrateV1ProjectError(err);
-    }
-    return ResultFactory.Success();
-  }
-
   private async updateMessageEndpointOnAppStudio(endpoint: string) {
     const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, this.config.localDebug.localBotId);
+    CheckThrowSomethingMissing(
+      ConfigNames.LOCAL_BOT_ID,
+      isConfigUnifyEnabled()
+        ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
+        : this.config.localDebug.localBotId
+    );
 
     const botReg: IBotRegistration = {
-      botId: this.config.localDebug.localBotId,
+      botId: isConfigUnifyEnabled()
+        ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
+        : this.config.localDebug.localBotId,
       name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
@@ -545,6 +527,20 @@ export class TeamsBotImpl implements PluginImpl {
       botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
       botAuthCreds.objectId = this.config.localDebug.localObjectId;
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
+    } else if (
+      isConfigUnifyEnabled() &&
+      this.ctx?.envInfo.state.get(ResourcePlugins.Bot)?.get(BOT_ID)
+    ) {
+      botAuthCreds.clientId = this.ctx?.envInfo.state
+        .get(ResourcePlugins.Bot)
+        .get(PluginBot.BOT_ID);
+      botAuthCreds.clientSecret = this.ctx?.envInfo.state
+        .get(ResourcePlugins.Bot)
+        .get(PluginBot.BOT_PASSWORD);
+      botAuthCreds.clientSecret = this.ctx?.envInfo.state
+        .get(ResourcePlugins.Bot)
+        .get(PluginBot.OBJECT_ID);
+      Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
     } else {
       Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
@@ -572,16 +568,28 @@ export class TeamsBotImpl implements PluginImpl {
     await AppStudio.createBotRegistration(appStudioToken!, botReg);
     Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
-    if (!this.config.localDebug.localBotId) {
-      this.config.localDebug.localBotId = botAuthCreds.clientId;
-    }
+    if (isConfigUnifyEnabled()) {
+      if (!this.config.scaffold.botId) {
+        this.config.scaffold.botId = botAuthCreds.clientId;
+      }
+      if (!this.config.scaffold.botPassword) {
+        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+      }
+      if (!this.config.scaffold.objectId) {
+        this.config.scaffold.objectId = botAuthCreds.objectId;
+      }
+    } else {
+      if (!this.config.localDebug.localBotId) {
+        this.config.localDebug.localBotId = botAuthCreds.clientId;
+      }
 
-    if (!this.config.localDebug.localBotPassword) {
-      this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
-    }
+      if (!this.config.localDebug.localBotPassword) {
+        this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
+      }
 
-    if (!this.config.localDebug.localObjectId) {
-      this.config.localDebug.localObjectId = botAuthCreds.objectId;
+      if (!this.config.localDebug.localObjectId) {
+        this.config.localDebug.localObjectId = botAuthCreds.objectId;
+      }
     }
   }
 

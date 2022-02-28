@@ -87,10 +87,6 @@ export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
   permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
-  if (solutionSettings.migrateFromV1) {
-    return ok(Void);
-  }
-
   if (!isAzureProject(solutionSettings)) {
     return err(
       returnUserError(
@@ -207,9 +203,10 @@ export function loadTeamsAppTenantIdForLocal(
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
-      localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
       if (isConfigUnifyEnabled()) {
         envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
+      } else {
+        localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
       }
       return ok(Void);
     }

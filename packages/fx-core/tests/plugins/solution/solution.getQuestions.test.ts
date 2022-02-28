@@ -115,20 +115,6 @@ describe("getQuestionsForScaffolding()", async () => {
     expect(result.isOk()).to.be.true;
   });
 
-  it("getQuestions - migrateV1", async () => {
-    const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedInputs: Inputs = {
-      platform: Platform.VSCode,
-      stage: Stage.migrateV1,
-    };
-    const result = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
-    assert.isTrue(result.isOk());
-    if (result.isOk()) {
-      const node = result.value;
-      assert.isTrue(node !== undefined && node.data !== undefined);
-    }
-  });
-
   it("getQuestions - provision", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {

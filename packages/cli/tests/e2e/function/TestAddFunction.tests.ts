@@ -8,7 +8,7 @@
 import path from "path";
 
 import { AadValidator, FunctionValidator } from "../../commonlib";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
   getSubscriptionId,
@@ -43,7 +43,7 @@ describe("Test Add Function", function () {
   afterEach(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`Create Tab Then Add Function`, async function () {

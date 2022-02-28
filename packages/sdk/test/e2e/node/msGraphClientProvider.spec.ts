@@ -4,12 +4,7 @@
 import { assert, expect, use as chaiUse } from "chai";
 import "isomorphic-fetch";
 import * as chaiPromises from "chai-as-promised";
-import {
-  createMicrosoftGraphClient,
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  M365TenantCredential,
-} from "../../../src";
+import { createMicrosoftGraphClient, TeamsFx, IdentityType } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
@@ -23,7 +18,6 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
   let ssoToken = "";
   beforeEach(async function () {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
 
     ssoToken = await getSsoTokenFromTeams();
   });
@@ -34,16 +28,16 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
 
   it("call graph API should success with OnBehalfOfUserCredential", async function () {
     const scopes = ["User.Read"];
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
-    const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
+    const teamsfx = new TeamsFx().setSsoToken(ssoToken);
+    const graphClient: any = createMicrosoftGraphClient(teamsfx, scopes);
     const profile = await graphClient.api("/me").get();
     assert.strictEqual(profile.userPrincipalName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
   });
 
-  it("call graph API should failed when M365TenantCredential credential do not have admin permission", async function () {
+  it("call graph API should failed when AppCredential credential do not have admin permission", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
-    const m356Credential = new M365TenantCredential();
-    const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);
+    const teamsfx = new TeamsFx(IdentityType.App);
+    const graphClient: any = createMicrosoftGraphClient(teamsfx, scopes);
 
     // Current test user does not have admin permission so application credential can not perform any request successfully.
     const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(

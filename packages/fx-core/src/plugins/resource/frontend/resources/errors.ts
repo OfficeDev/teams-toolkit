@@ -4,7 +4,7 @@
 import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
-import { ConfigFolderName, ArchiveFolderName, FxError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, FxError } from "@microsoft/teamsfx-api";
 
 export enum ErrorType {
   User,
@@ -31,7 +31,6 @@ export const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
-  migrateV1Project: `Rollback your project from '${ArchiveFolderName}' folder.`,
 };
 
 export class FrontendPluginError extends Error {
@@ -270,31 +269,9 @@ export class InvalidTabLanguageError extends FrontendPluginError {
   }
 }
 
-export class MigrateV1ProjectError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "MigrateV1ProjectError",
-      `Failed to migrate Teams Toolkit V1 project into '${FrontendPathInfo.WorkingDir}'.`,
-      [tips.migrateV1Project, tips.checkLog]
-    );
-  }
-}
-
 export class NotImplemented extends FrontendPluginError {
   constructor() {
     super(ErrorType.System, "NotImplemented", "Not Implemented", []);
-  }
-}
-
-export class UserTaskNotImplementedError extends FrontendPluginError {
-  constructor(taskName: string) {
-    super(
-      ErrorType.System,
-      "UserTaskNotImplementedError",
-      `User task '${taskName}' is not implemented.`,
-      []
-    );
   }
 }
 

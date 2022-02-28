@@ -62,6 +62,11 @@ export async function provisionResource(
       )
     );
   }
+  // Just to trigger M365 login before the concurrent execution of localDebug.
+  // Because concurrent execution of localDebug may getAccessToken() concurrently, which
+  // causes 2 M365 logins before the token caching in common lib takes effect.
+  await tokenProvider.appStudioToken.getAccessToken();
+
   const inputsNew: v2.InputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const projectPath: string = inputs.projectPath;
 

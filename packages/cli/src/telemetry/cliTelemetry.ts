@@ -11,7 +11,7 @@ import {
 } from "./cliTelemetryEvents";
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { getSettingsVersion, getTeamsAppIdByEnv } from "../utils";
+import { getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -20,9 +20,10 @@ export function makeEnvRelatedProperty(
   const properties: { [key: string]: string } = {};
   if (inputs.env) {
     properties[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    const appId = getTeamsAppIdByEnv(projectDir, inputs.env);
-    if (appId) {
-      properties[TelemetryProperty.AppId] = appId;
+    const appInfo = getTeamsAppTelemetryInfoByEnv(projectDir, inputs.env);
+    if (appInfo) {
+      properties[TelemetryProperty.AppId] = appInfo.appId;
+      properties[TelemetryProperty.TenantId] = appInfo.tenantId;
     }
   }
   return properties;

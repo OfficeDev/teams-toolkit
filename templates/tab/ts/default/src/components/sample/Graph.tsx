@@ -1,12 +1,23 @@
-import React from "react";
-import { Button } from "@fluentui/react-northstar";
+import "./Graph.css";
 import { useGraph } from "./lib/useGraph";
-import { ProfileCard } from "./ProfileCard";
+import { Providers, ProviderState } from '@microsoft/mgt-element';
+import { TeamsFxProvider } from '@microsoft/mgt-teamsfx-provider';
+import { Button } from "@fluentui/react-northstar";
+import { Design } from './Design';
+import { PersonCardFluentUI } from './PersonCardFluentUI';
+import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
 
 export function Graph() {
   const { loading, error, data, reload } = useGraph(
-    async (graph) => {
+    async (graph, credential, scope) => {
+      // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
+
+      // Initialize Graph Toolkit TeamsFx provider
+      const provider = new TeamsFxProvider(credential, scope);
+      Providers.globalProvider = provider;
+      Providers.globalProvider.setState(ProviderState.SignedIn);
+
       let photoUrl = "";
       try {
         const photo = await graph.api("/me/photo/$value").get();
@@ -21,16 +32,19 @@ export function Graph() {
 
   return (
     <div>
-      <h2>Get the user's profile photo</h2>
-      <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
-      <Button primary content="Authorize" disabled={loading} onClick={reload} />
-      {loading && ProfileCard(true)}
-      {!loading && error && (
-        <div className="error">
-          Failed to read your profile. Please try again later. <br /> Details: {error.toString()}
-        </div>
-      )}
-      {!loading && data && ProfileCard(false, data)}
+      <Design />
+      <h3>Example: Get the user's profile</h3>
+      <div className="section-margin">
+        <p>Click below to authorize button to grant permission to using Microsoft Graph.</p>
+        <pre>{`const credential = new TeamsUserCredential(); \nawait credential.login(scope);`}</pre>
+        <Button primary content="Authorize" disabled={loading} onClick={reload} />
+
+        <p>Below are two different implementations of retrieving profile photo for currently signed-in user using Fluent UI component and Graph Toolkit respectively.</p>
+        <h4>1. Display user profile using Fluent UI Component</h4>
+        <PersonCardFluentUI loading={loading} data={data} error={error} />
+        <h4>2. Display user profile using Graph Toolkit</h4>
+        <PersonCardGraphToolkit loading={loading} data={data} error={error} />
+      </div>
     </div>
   );
 }

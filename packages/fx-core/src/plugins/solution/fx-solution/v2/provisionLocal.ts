@@ -22,7 +22,12 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import {
+  configLocalDebugSettings,
+  configLocalEnvironment,
+  setupLocalDebugSettings,
+  setupLocalEnvironment,
+} from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
@@ -85,7 +90,8 @@ export async function provisionLocalResource(
         pluginName: `${plugin.name}`,
         taskName: "provisionLocalResource",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.provisionLocalResource!(ctx, inputs, localSettings, tokenProvider),
+        thunk: () =>
+          plugin.provisionLocalResource!(ctx, inputs, localSettings, tokenProvider, envInfo),
       };
     });
 
@@ -94,10 +100,18 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
-  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+  if (isConfigUnifyEnabled()) {
+    const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo!);
 
-  if (debugProvisionResult.isErr()) {
-    return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
+    if (localEnvSetupResult.isErr()) {
+      return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
+    }
+  } else {
+    const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+
+    if (debugProvisionResult.isErr()) {
+      return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
+    }
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -109,10 +123,12 @@ export async function provisionLocalResource(
         {
           namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
           method: "setApplicationInContext",
-          params: { isLocal: true },
+          params: { isLocal: isConfigUnifyEnabled() ? false : true },
         },
         localSettings,
-        { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
+        isConfigUnifyEnabled()
+          ? envInfo!
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
         tokenProvider
       );
       if (result.isErr()) {
@@ -137,7 +153,8 @@ export async function provisionLocalResource(
         pluginName: `${plugin.name}`,
         taskName: "configureLocalResource",
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.configureLocalResource!(ctx, inputs, localSettings, tokenProvider),
+        thunk: () =>
+          plugin.configureLocalResource!(ctx, inputs, localSettings, tokenProvider, envInfo),
       };
     });
 
@@ -153,10 +170,18 @@ export async function provisionLocalResource(
     return new v2.FxFailure(configureResourceResult.error);
   }
 
-  const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
+  if (isConfigUnifyEnabled()) {
+    const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
-  if (debugConfigResult.isErr()) {
-    return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
+    if (localConfigResult.isErr()) {
+      return new v2.FxPartialSuccess(envInfo!, localConfigResult.error);
+    }
+  } else {
+    const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
+
+    if (debugConfigResult.isErr()) {
+      return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
+    }
   }
 
   return new v2.FxSuccess(localSettings);

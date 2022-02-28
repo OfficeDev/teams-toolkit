@@ -45,6 +45,7 @@ import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
 import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
+import * as uuid from "uuid";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -77,8 +78,10 @@ export default class New extends YargsCommand {
 
     const core = result.value;
 
+    const inputs = getSystemInputs();
+    inputs.projectId = inputs.projectId ?? uuid.v4();
     {
-      const result = await core.createProject(getSystemInputs());
+      const result = await core.createProject(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
@@ -89,6 +92,7 @@ export default class New extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.NewProjectId]: inputs.projectId,
     });
     return ok(null);
   }
@@ -157,16 +161,15 @@ class NewTemplate extends YargsCommand {
     };
     inputs["samples"] = templateName;
     inputs["folder"] = folder;
+    inputs.projectId = inputs.projectId ?? uuid.v4();
     const result = await core.createProject(inputs);
-    if (inputs.projectId) {
-      properties[TelemetryProperty.ProjectId] = inputs.projectId;
-    }
     if (result.isErr()) {
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, properties);
       return err(result.error);
     }
 
+    properties[TelemetryProperty.NewProjectId] = inputs.projectId;
     const sampleAppFolder = result.value;
     CLILogProvider.necessaryLog(
       LogLevel.Info,

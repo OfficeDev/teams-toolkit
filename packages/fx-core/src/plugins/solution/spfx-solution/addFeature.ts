@@ -36,15 +36,6 @@ export async function addFeature(
   ctx: v2.Context,
   inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<Void, FxError>> {
-  const plugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx);
-  if (plugin.addFeature) {
-    const contextWithManifestProvider: v3.ContextWithManifestProvider = {
-      ...ctx,
-      appManifestProvider: new DefaultManifestProvider(),
-    };
-    const res = await plugin.addFeature(contextWithManifestProvider, inputs);
-    if (res.isErr()) return err(res.error);
-  }
   return ok(Void);
 }
 

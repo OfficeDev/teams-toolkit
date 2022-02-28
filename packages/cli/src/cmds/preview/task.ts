@@ -107,6 +107,7 @@ export class Task {
       background: boolean,
       result: TaskResult
     ) => Promise<FxError | null>,
+    timeout?: number,
     serviceLogWriter?: ServiceLogWriter,
     logProvider?: CLILogProvider
   ): Promise<Result<TaskResult, FxError>> {
@@ -119,6 +120,28 @@ export class Task {
     const stdout: string[] = [];
     const stderr: string[] = [];
     return new Promise((resolve) => {
+      if (timeout !== undefined) {
+        setTimeout(async () => {
+          if (!this.resolved) {
+            this.resolved = true;
+            const result: TaskResult = {
+              command: this.command,
+              options: this.options,
+              success: true,
+              stdout: stdout,
+              stderr: stderr,
+              exitCode: null,
+            };
+            const error = await stopCallback(this.taskTitle, this.background, result);
+            if (error) {
+              resolve(err(error));
+            } else {
+              resolve(ok(result));
+            }
+          }
+        }, timeout);
+      }
+
       this.task?.stdout?.on("data", async (data) => {
         const dataStr = data.toString();
         await serviceLogWriter?.write(this.taskTitle, dataStr);

@@ -19,7 +19,7 @@ import {
   readContextMultiEnv,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -83,24 +83,15 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     {
-      if (isMultiEnvEnabled()) {
-        // Get context
-        const context = await readContextMultiEnv(
-          projectPath,
-          environmentManager.getDefaultEnvName()
-        );
+      // Get context
+      const context = await readContextMultiEnv(
+        projectPath,
+        environmentManager.getDefaultEnvName()
+      );
 
-        // Only check Teams App existence
-        const appStudio = AppStudioValidator.init(context);
-        AppStudioValidator.validateTeamsAppExist(appStudio);
-      } else {
-        // Get context
-        const context = await readContext(projectPath);
-
-        // Only check Teams App existence
-        const appStudio = AppStudioValidator.init(context);
-        AppStudioValidator.validateTeamsAppExist(appStudio);
-      }
+      // Only check Teams App existence
+      const appStudio = AppStudioValidator.init(context);
+      AppStudioValidator.validateTeamsAppExist(appStudio);
     }
 
     // deploy

@@ -40,12 +40,11 @@ const expectedAppSettings = `{TeamsFx": {"Authentication": {"ClientId": "${clien
   tenantId
 )}"}, "BOT_ID": "${botId}", "BOT_PASSWORD": "${botPassword}"}}`;
 
-const env = Object.assign({}, process.env);
-
 describe("WebappPlugin", () => {
   describe("config unify disabled", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;
+    const env = Object.assign({}, process.env);
 
     before(() => {
       process.env[FeatureFlagName.ConfigUnify] = "false";
@@ -100,6 +99,7 @@ describe("WebappPlugin", () => {
   describe("config unify enabled", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;
+    const env = Object.assign({}, process.env);
 
     before(() => {
       process.env[FeatureFlagName.ConfigUnify] = "true";

@@ -41,7 +41,6 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled, newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import faker from "faker";
 import sinon from "sinon";
@@ -272,15 +271,13 @@ export function newPluginContext(): PluginContext {
         });
       },
     },
-    localSettings: isMultiEnvEnabled()
-      ? {
-          bot: new ConfigMap(),
-          teamsApp: new ConfigMap(),
-          auth: new ConfigMap(),
-          frontend: new ConfigMap(),
-          backend: new ConfigMap(),
-        }
-      : undefined,
+    localSettings: {
+      bot: new ConfigMap(),
+      teamsApp: new ConfigMap(),
+      auth: new ConfigMap(),
+      frontend: new ConfigMap(),
+      backend: new ConfigMap(),
+    },
   };
 }
 

@@ -413,9 +413,7 @@ describe("Teams Bot Resource Plugin", () => {
       const pluginContext = testUtils.newPluginContext();
       botPluginImpl.config.provision.siteEndpoint = "https://abc.azurewebsites.net";
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
-      if (isMultiEnvEnabled()) {
-        botPluginImpl.config.provision.botWebAppResourceId = "botWebAppResourceId";
-      }
+      botPluginImpl.config.provision.botWebAppResourceId = "botWebAppResourceId";
       pluginContext.root = rootDir;
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
       // Act
@@ -652,12 +650,10 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      if (isMultiEnvEnabled()) {
-        pluginContext.localSettings?.bot?.set(
-          LocalSettingsBotKeys.BotEndpoint,
-          "https://bot.local.endpoint"
-        );
-      }
+      pluginContext.localSettings?.bot?.set(
+        LocalSettingsBotKeys.BotEndpoint,
+        "https://bot.local.endpoint"
+      );
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 

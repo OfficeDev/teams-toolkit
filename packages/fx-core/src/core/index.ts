@@ -21,6 +21,7 @@ import {
   OptionItem,
   Platform,
   ProjectConfig,
+  ProjectConfigV3,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -76,7 +77,7 @@ import {
   EnvInfoLoaderMW,
   loadSolutionContext,
 } from "./middleware/envInfoLoader";
-import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -952,6 +953,39 @@ export class FxCore implements v3.ICore {
       config: ctx!.solutionContext?.envInfo.state,
       localSettings: ctx!.solutionContext?.localSettings,
     });
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  async getProjectConfigV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<ProjectConfigV3 | undefined, FxError>> {
+    if (!ctx || !ctx.projectSettings)
+      return err(new ObjectIsUndefinedError("getProjectConfigV3 input stuff"));
+    if (!inputs.projectPath) return ok(undefined);
+    inputs.stage = Stage.getProjectConfig;
+    currentStage = Stage.getProjectConfig;
+    const config: ProjectConfigV3 = {
+      projectSettings: ctx.projectSettings,
+      envInfos: {},
+    };
+    const envNamesRes = await environmentManager.listAllEnvConfigs(inputs.projectPath);
+    if (envNamesRes.isErr()) {
+      return err(envNamesRes.error);
+    }
+    for (const env of envNamesRes.value) {
+      const result = await loadEnvInfoV3(
+        inputs as v2.InputsWithProjectPath,
+        ctx.projectSettings,
+        env,
+        false
+      );
+      if (result.isErr()) {
+        return err(result.error);
+      }
+      config.envInfos[env] = result.value;
+    }
+    return ok(config);
   }
   async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
     if (isV3()) return this.grantPermissionV3(inputs);

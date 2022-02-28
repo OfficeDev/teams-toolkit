@@ -1145,6 +1145,16 @@ export interface ProjectConfig {
     settings?: ProjectSettings;
 }
 
+// @public (undocumented)
+export interface ProjectConfigV3 {
+    // (undocumented)
+    envInfos: {
+        [key: string]: EnvInfoV3;
+    };
+    // (undocumented)
+    projectSettings: ProjectSettings;
+}
+
 // @public
 export interface ProjectSettings {
     // (undocumented)

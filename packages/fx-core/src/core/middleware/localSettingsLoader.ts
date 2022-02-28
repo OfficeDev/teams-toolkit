@@ -11,7 +11,6 @@ import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { IsSimpleAuthEnabled } from "../../common/tools";
-import { isPureExistingApp } from "../utils";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -57,13 +56,15 @@ export const LocalSettingsLoaderMW: Middleware = async (
       }
       //load two versions to make sure compatible
       if (exists) {
-        ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
+        ctx.localSettings = await localSettingsProvider.loadV2(
+          ctx.contextV2?.cryptoProvider,
+          hasAAD
+        );
       } else {
         ctx.localSettings = localSettingsProvider.initV2(
           hasFrontend,
           hasBackend,
           hasBot,
-          false,
           hasSimpleAuth,
           hasAAD
         );
@@ -78,7 +79,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
             hasFrontend,
             hasBackend,
             hasBot,
-            false,
             hasSimpleAuth,
             hasAAD
           );

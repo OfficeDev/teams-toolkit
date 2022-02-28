@@ -118,7 +118,6 @@ export async function getDebugConfig(
       // select env
       if (env === undefined) {
         const inputs = getSystemInputs();
-        inputs.ignoreLock = true;
         inputs.ignoreConfigPersist = true;
         inputs.ignoreEnvInfo = false;
         const envRes = await core.getSelectedEnv(inputs);

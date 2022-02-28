@@ -48,7 +48,6 @@ export const TabSPFxItem: OptionItem = {
 
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
-  V1Capability = "v1-capability",
   TabScopes = "tab-scopes",
   HostType = "host-type",
   AzureResources = "azure-resources",
@@ -134,18 +133,6 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
       return currentSelectedIds;
     },
-  };
-}
-
-export function createV1CapabilityQuestion(): SingleSelectQuestion {
-  return {
-    name: AzureSolutionQuestionNames.V1Capability,
-    title: "Select capability",
-    type: "singleSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
-    default: TabOptionItem.id,
-    placeholder: "Select the same capability as your existing project",
-    validation: { minItems: 1 },
   };
 }
 

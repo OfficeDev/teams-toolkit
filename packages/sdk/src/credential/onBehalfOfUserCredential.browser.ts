@@ -3,6 +3,7 @@
 
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
+import { AuthenticationConfiguration } from "../models/configuration";
 import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
@@ -22,7 +23,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * Can Only works in in server side.
    * @beta
    */
-  constructor(ssoToken: string) {
+  constructor(ssoToken: string, config: AuthenticationConfiguration) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "OnBehalfOfUserCredential"),
       ErrorCode.RuntimeNotSupported

@@ -65,7 +65,7 @@ describe("commonUtils", () => {
           [automaticNpmInstallOption]: "others",
         })
       );
-      expect(getAutomaticNpmInstallSetting()).to.be.true;
+      expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
 
     it("none", () => {

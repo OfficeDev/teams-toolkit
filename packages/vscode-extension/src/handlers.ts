@@ -1108,6 +1108,8 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
     case TelemetryTiggerFrom.WalkThrough:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
+    case TelemetryTiggerFrom.Auto:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:

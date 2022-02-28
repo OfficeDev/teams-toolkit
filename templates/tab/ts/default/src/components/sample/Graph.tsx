@@ -9,12 +9,12 @@ import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
 
 export function Graph() {
   const { loading, error, data, reload } = useGraph(
-    async (graph, credential, scope) => {
+    async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
 
       // Initialize Graph Toolkit TeamsFx provider
-      const provider = new TeamsFxProvider(credential, scope);
+      const provider = new TeamsFxProvider(teamsfx.getCredential(), scope);
       Providers.globalProvider = provider;
       Providers.globalProvider.setState(ProviderState.SignedIn);
 

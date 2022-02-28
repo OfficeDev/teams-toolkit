@@ -56,7 +56,10 @@ export const LocalSettingsLoaderMW: Middleware = async (
       }
       //load two versions to make sure compatible
       if (exists) {
-        ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
+        ctx.localSettings = await localSettingsProvider.loadV2(
+          ctx.contextV2?.cryptoProvider,
+          hasAAD
+        );
       } else {
         ctx.localSettings = localSettingsProvider.initV2(
           hasFrontend,

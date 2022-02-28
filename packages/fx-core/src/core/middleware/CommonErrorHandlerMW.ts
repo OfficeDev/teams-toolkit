@@ -48,9 +48,19 @@ export function CommonErrorHandlerMW(option?: ErrorHandleOption): Middleware {
         const event = option.telemetry.eventName
           ? option.telemetry.eventName
           : kebabCase(ctx.method!);
-        option.telemetry.properties![TelemetryProperty.Success] = TelemetrySuccess.Yes;
+        const result = ctx.result as Result<any, FxError>;
+        option.telemetry.properties![TelemetryProperty.Success] = result.isOk()
+          ? TelemetrySuccess.Yes
+          : TelemetrySuccess.No;
         option.telemetry.properties![TelemetryProperty.AppId] = solutionGlobalVars.TeamsAppId || "";
-        sendTelemetryEvent(option.telemetry.component, event, option.telemetry.properties);
+        result.isOk()
+          ? sendTelemetryEvent(option.telemetry.component, event, option.telemetry.properties)
+          : sendTelemetryErrorEvent(
+              option.telemetry.component,
+              event,
+              result.error,
+              option.telemetry.properties
+            );
       }
     } catch (e) {
       const error = option?.error ? option.error : assembleError(e);

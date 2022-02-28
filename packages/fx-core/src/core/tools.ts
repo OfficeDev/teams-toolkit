@@ -40,20 +40,6 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-// TODO: used to show migrate v1 retired notification
-export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
-  if (!workspacePath) return false;
-  try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
-    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
-    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    if (validateSettings(projectSettings)) return false;
-    return !!projectSettings?.solutionSettings?.migrateFromV1;
-  } catch (e) {
-    return false;
-  }
-}
-
 export function newEnvInfo(
   envName?: string,
   config?: EnvConfig,

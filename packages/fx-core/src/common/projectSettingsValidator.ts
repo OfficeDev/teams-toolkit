@@ -30,6 +30,11 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
   if (validateRes) {
     return `solutionSettings.activeResourcePlugins validation failed: ${validateRes}`;
   }
+
+  if (projectSettings?.solutionSettings?.migrateFromV1) {
+    return "The project created before v2.0.0 is only supported in the Teams Toolkit before v3.4.0.";
+  }
+
   return undefined;
 }
 

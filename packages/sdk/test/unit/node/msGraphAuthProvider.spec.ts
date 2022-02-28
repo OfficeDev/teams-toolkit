@@ -5,9 +5,8 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import {
-  loadConfiguration,
+  TeamsFx,
   OnBehalfOfUserCredential,
-  M365TenantCredential,
   MsGraphAuthProvider,
   ErrorWithCode,
   ErrorCode,
@@ -56,7 +55,6 @@ describe("MsGraphAuthProvider Tests - Node", () => {
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
     });
-    loadConfiguration();
   });
 
   afterEach(function () {
@@ -64,25 +62,18 @@ describe("MsGraphAuthProvider Tests - Node", () => {
   });
 
   it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scopes", function () {
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const invalidScopes: any = [10, 20];
     expect(() => {
-      new MsGraphAuthProvider(oboCredential, invalidScopes);
+      new MsGraphAuthProvider(new TeamsFx(), invalidScopes);
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("create msGraphAuthProvider instance should success with OnBehalfOfUserCredential", function () {
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
-    const authProvider: any = new MsGraphAuthProvider(oboCredential, scopes);
-    expect(authProvider.credential).to.be.instanceOf(OnBehalfOfUserCredential);
-  });
-
-  it("create msGraphAuthProvider instance should success with M365TenantCredential", function () {
-    const m356Credential = new M365TenantCredential();
-    const authProvider: any = new MsGraphAuthProvider(m356Credential, scopes);
-    expect(authProvider.credential).to.be.instanceOf(M365TenantCredential);
+  it("create msGraphAuthProvider instance should success with TeamsFx", function () {
+    const teamsfx = new TeamsFx().setSsoToken(ssoToken);
+    const authProvider: any = new MsGraphAuthProvider(teamsfx, scopes);
+    expect(authProvider.teamsfx).to.be.instanceOf(TeamsFx);
   });
 
   it("create msGraphAuthProvider instance should throw UiRequiredError with unconsent scope with OnBehalfOfUserCredential", async function () {
@@ -95,8 +86,10 @@ describe("MsGraphAuthProvider Tests - Node", () => {
         );
       });
     const unconsentScopes = "unconsent_scope";
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
-    const authProvider = new MsGraphAuthProvider(oboCredential, unconsentScopes);
+    const authProvider = new MsGraphAuthProvider(
+      new TeamsFx().setSsoToken(ssoToken),
+      unconsentScopes
+    );
     await expect(authProvider.getAccessToken())
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.UiRequiredError);

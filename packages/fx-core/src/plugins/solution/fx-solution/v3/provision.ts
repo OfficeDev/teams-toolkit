@@ -282,7 +282,7 @@ export async function provisionResources(
     }
   }
   //update Teams App
-  const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo);
+  const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo, tokenProvider);
   if (updateTeamsAppRes.isErr()) {
     return err(updateTeamsAppRes.error);
   }

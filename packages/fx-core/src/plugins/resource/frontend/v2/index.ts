@@ -36,6 +36,7 @@ import {
   generateResourceTemplateAdapter,
   scaffoldSourceCodeAdapter,
   provisionLocalResourceAdapter,
+  configureLocalResourceAdapter,
 } from "../../utils4v2";
 import { TabLanguage } from "../resources/templateInfo";
 
@@ -96,6 +97,23 @@ export class FrontendPluginV2 implements ResourcePlugin {
     envInfo?: EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider,
+      this.plugin,
+      envInfo
+    );
+  }
+
+  async configureLocalResource(
+    ctx: Context,
+    inputs: Inputs,
+    localSettings: Json,
+    tokenProvider: TokenProvider,
+    envInfo?: v2.EnvInfoV2 | undefined
+  ): Promise<Result<Void, FxError>> {
+    return await configureLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,

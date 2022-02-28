@@ -479,7 +479,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 /**
  * Ask user to select environment, local is included
  */
-async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = getWorkspacePath();
   if (!isValidProject(projectPath)) {
     return err(InvalidProjectError());
@@ -796,7 +796,7 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
   }
 }
 
-async function processResult(
+export async function processResult(
   eventName: string | undefined,
   result: Result<null, FxError>,
   inputs?: Inputs
@@ -864,7 +864,7 @@ function wrapError(e: Error): Result<null, FxError> {
   return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError));
 }
 
-function checkCoreNotEmpty(): Result<null, SystemError> {
+export function checkCoreNotEmpty(): Result<null, SystemError> {
   if (!core) {
     return err(
       returnSystemError(
@@ -1069,7 +1069,7 @@ export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
 }
 
-function getTriggerFromProperty(args?: any[]) {
+export function getTriggerFromProperty(args?: any[]) {
   // if not args are not supplied, by default, it is trigger from "CommandPalette"
   // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
   // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".

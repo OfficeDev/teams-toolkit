@@ -14,6 +14,7 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import path from "path";
 import AdmZip from "adm-zip";
 import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
@@ -59,11 +60,15 @@ export class AppStudioPluginImpl {
         appStudioToken!,
         ctx.logProvider
       );
-      ctx.userInteraction?.showMessage("info", `Teams app created: ${appDefinition.appId}`, false);
-      return ok(appDefinition.appId!);
+      ctx.userInteraction?.showMessage(
+        "info",
+        `Teams app created: ${appDefinition.teamsAppId}`,
+        false
+      );
+      return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       // Teams app already exists, will update it
-      if (e.name === 409) {
+      if (e.name === 409 || e.name === 422) {
         const zipEntries = new AdmZip(archivedFile).getEntries();
 
         const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
@@ -209,6 +214,8 @@ export class AppStudioPluginImpl {
     projectPath: string,
     envInfo: v3.EnvInfoV3
   ): Promise<Result<string, FxError>> {
+    const buildFolderPath = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}`;
+    await fs.ensureDir(buildFolderPath);
     const appDefinitionRes = await this.getAppDefinitionAndManifest(projectPath, envInfo);
     if (appDefinitionRes.isErr()) {
       return err(appDefinitionRes.error);
@@ -239,14 +246,18 @@ export class AppStudioPluginImpl {
     }
 
     const zip = new AdmZip();
-    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
-    zip.addLocalFile(colorFile);
-    zip.addLocalFile(outlineFile);
+    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
 
-    const zipFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${envInfo.envName}.zip`;
+    // outline.png & color.png, relative path
+    let dir = path.dirname(manifest.icons.color);
+    zip.addLocalFile(colorFile, dir === "." ? "" : dir);
+    dir = path.dirname(manifest.icons.outline);
+    zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
+
+    const zipFileName = `${buildFolderPath}/appPackage.${envInfo.envName}.zip`;
     zip.writeZip(zipFileName);
 
-    const manifestFileName = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${envInfo.envName}.json`;
+    const manifestFileName = `${buildFolderPath}/manifest.${envInfo.envName}.json`;
     if (await fs.pathExists(manifestFileName)) {
       await fs.chmod(manifestFileName, 0o777);
     }

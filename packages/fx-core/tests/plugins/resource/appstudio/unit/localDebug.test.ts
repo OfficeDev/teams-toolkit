@@ -33,6 +33,7 @@ import {
   TeamsAppManifest,
   err,
   LocalSettings,
+  ManifestUtil,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import sinon from "sinon";
@@ -287,6 +288,7 @@ describe("Post Local Debug", () => {
 
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
 
     const postLocalDebugResult = await plugin.postLocalDebug(ctx);
 

@@ -77,13 +77,6 @@ export async function activate(context: vscode.ExtensionContext) {
       TreatmentVariables.EmbeddedSurvey,
       true
     )) as boolean | undefined;
-  TreatmentVariableValue.removeCreateFromSample = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.RemoveCreateFromSample,
-      true
-    )) as boolean | undefined;
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
@@ -172,6 +165,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-getStarted-prerequisites",
+    () => Correlator.run(handlers.validateGetStartedPrerequisitesHandler)
+  );
+  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
   // Referenced by tasks.json
   const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>

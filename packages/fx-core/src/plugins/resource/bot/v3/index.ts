@@ -336,6 +336,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
 
       await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_BOT_REG);
       await this.createOrGetBotAppRegistration(ctx, envInfo, tokenProvider);
+      await handler?.end(true);
     } else {
       ctx.logProvider.info(Messages.ProvisioningBot);
       // Create and register progress bar for cleanup.

@@ -629,9 +629,8 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
       );
       configDev.auth!.clientSecret = AadSecret;
     }
-
-    await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
+  await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
 
   // appPackage
   await copyManifest(projectPath, fx, templateAppPackage);

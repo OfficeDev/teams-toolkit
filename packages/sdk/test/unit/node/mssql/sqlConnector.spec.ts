@@ -7,11 +7,11 @@ import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import {
-  loadConfiguration,
-  DefaultTediousConnectionConfiguration,
+  getTediousConnectionConfig,
   ErrorWithCode,
   setLogLevel,
   LogLevel,
+  TeamsFx,
 } from "../../../../src";
 
 chaiUse(chaiPromises);
@@ -48,10 +48,9 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
-    loadConfiguration();
 
-    const sqlConnector = new DefaultTediousConnectionConfiguration();
-    const tediousConnectConfig = await sqlConnector.getConfig();
+    const teamsfx = new TeamsFx();
+    const tediousConnectConfig = await getTediousConnectionConfig(teamsfx);
 
     assert.isNotNull(tediousConnectConfig);
     assert.isNotNull(tediousConnectConfig.authentication);
@@ -68,7 +67,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_DATABASE: fakeSQLDataName,
       IDENTITY_ID: fakeSQLIdentityId,
     });
-    loadConfiguration();
 
     const identityManager_GetToken = sinon.stub(ManagedIdentityCredential.prototype, "getToken");
     identityManager_GetToken.callsFake(async () => {
@@ -80,8 +78,8 @@ describe("DefaultTediousConnection Tests - Node", () => {
       });
     });
 
-    const sqlConnector = new DefaultTediousConnectionConfiguration();
-    const tediousConnectConfig = await sqlConnector.getConfig();
+    const teamsfx = new TeamsFx();
+    const tediousConnectConfig = await getTediousConnectionConfig(teamsfx);
 
     assert.isNotNull(tediousConnectConfig);
     assert.isNotNull(tediousConnectConfig.authentication);
@@ -98,11 +96,10 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
-    loadConfiguration();
 
     const anotherSqlDatabaseName = "another database";
-    const sqlConnector = new DefaultTediousConnectionConfiguration();
-    const tediousConnectConfig = await sqlConnector.getConfig(anotherSqlDatabaseName);
+    const teamsfx = new TeamsFx();
+    const tediousConnectConfig = await getTediousConnectionConfig(teamsfx, anotherSqlDatabaseName);
 
     assert.isNotNull(tediousConnectConfig);
     assert.strictEqual(tediousConnectConfig.options?.database, anotherSqlDatabaseName);
@@ -114,10 +111,9 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
-    loadConfiguration();
 
-    const sqlConnector = new DefaultTediousConnectionConfiguration();
-    await expect(sqlConnector.getConfig())
+    const teamsfx = new TeamsFx();
+    await expect(getTediousConnectionConfig(teamsfx))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", INVALID_CONFIGURATION);
   });
@@ -127,10 +123,9 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
     });
-    loadConfiguration();
 
-    const sqlConnector = new DefaultTediousConnectionConfiguration();
-    await expect(sqlConnector.getConfig())
+    const teamsfx = new TeamsFx();
+    await expect(getTediousConnectionConfig(teamsfx))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", INVALID_CONFIGURATION);
   });

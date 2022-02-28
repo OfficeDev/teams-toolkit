@@ -23,15 +23,15 @@ Before you run or Start Debugging for the first time, follow these steps:
 
 5. Once Microsoft Teams is loaded, select the Add button to install your app in Teams.
 
-If you want to know more about SDK usage, please check the GitHub page(https://github.com/OfficeDev/TeamsFx/tree/dev/packages/dotnet-sdk).
+If you just want to launch the web app instead of Teams side-loading, first remove the 'launchUrl' in \Properties\launchSettings.json, then right click the solution, in Properties > Configuration Properties > Configuration, uncheck the 'Deploy' process and select 'OK'.
 
 
-Building your app UI
---------------------
+Building your Tab app
+----------------------
 
-Fluent UI is a front-end framework designed to build experiences that fit seamlessly into a broad range of Microsoft products. To make it simpler for you to build applications that fit seamlessly into Microsoft Teams, this template showcases Fluent UI Blazor components that are part of the Microsoft.Fast.Components.FluentUI package. 
+Fluent UI is a front-end framework designed to build experiences that fit seamlessly into a broad range of Microsoft products. To make it simpler for you to build applications that fit seamlessly into Microsoft Teams, this template showcases Fluent UI Blazor components that are part of the Microsoft.Fast.Components.FluentUI package. Learn more about these components here: https://github.com/microsoft/fast-blazor
 
-Learn more about these components here: https://github.com/microsoft/fast-blazor
+If you want to know more about SDK usage, please check the GitHub page: https://github.com/OfficeDev/TeamsFx/tree/dev/packages/dotnet-sdk
 
 
 Deploy your first Teams app on Azure

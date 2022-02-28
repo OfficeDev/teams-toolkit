@@ -87,11 +87,14 @@ export async function setupLocalDebugSettings(
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      if (includeSimpleAuth) {
+      if (includeAAD) {
         if (!localSettings.auth) {
           localSettings.auth = {};
         }
-        localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
+
+        if (includeSimpleAuth) {
+          localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
+        }
       }
 
       if (includeFrontend) {

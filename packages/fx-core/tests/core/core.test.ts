@@ -49,6 +49,7 @@ import {
   TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -133,6 +134,40 @@ describe("Core basic APIs", () => {
         appName
       );
       assert.isTrue(res.isOk() && res.value === projectPath);
+      mockedEnvRestore();
+    });
+    it("create from new (VSC, SPFx) and telemetry is sent", async () => {
+      let sendCreate = false;
+      sandbox
+        .stub<any, any>(tools.telemetryReporter, "sendTelemetryEvent")
+        .callsFake(
+          async (
+            eventName: string,
+            properties?: { [key: string]: string },
+            measurements?: { [key: string]: number }
+          ) => {
+            if (eventName === "create" && properties["host-type"] === "spfx") {
+              sendCreate = true;
+            }
+          }
+        );
+      appName = randomAppName();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        stage: Stage.create,
+        [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+        [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+        [SPFXQuestionNames.framework_type]: "react",
+        [SPFXQuestionNames.webpart_name]: "helloworld",
+        [SPFXQuestionNames.webpart_desp]: "helloworld",
+      };
+      const core = new FxCore(tools);
+      const res = await core.createProject(inputs);
+      assert.isTrue(res.isOk());
+      assert.isTrue(sendCreate);
+      projectPath = inputs.projectPath!;
       mockedEnvRestore();
     });
   });

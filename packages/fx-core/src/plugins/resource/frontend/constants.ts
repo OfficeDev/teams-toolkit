@@ -118,6 +118,7 @@ export class TelemetryEvent {
   static readonly ExecuteUserTask = "execute-user-task";
 
   static readonly LocalDebug = "local-debug";
+  static readonly PostLocalDebug = "post-local-debug";
 
   static readonly SaveEnvFile = "frontend-save-env-file";
   static readonly LoadEnvFile = "frontend-load-env-file";

@@ -30,7 +30,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, true, true);
+    await cleanUp(appName, projectPath, true, false, true);
   });
 
   it(`tab + apim`, async function () {

@@ -51,7 +51,7 @@ describe("solution.debug.provisionLocal", () => {
           hostType: "Azure",
           capabilities: ["Tab"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "typescript",
       };

@@ -6,8 +6,25 @@
     "scripts": {
         "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
         "precommit": "npm run check-sensitive && lint-staged",
-        "version": "../.github/scripts/pkg-version.sh core-template"
+        "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
+    "templates": [
+        "blazor-base/csharp/default",
+        "bot/csharp/default",
+        "bot/js/default",
+        "bot/ts/default",
+        "bot-msgext/js/default",
+        "bot-msgext/ts/default",
+        "function-base/js/default",
+        "function-base/ts/default",
+        "function-triggers/js/HTTPTrigger",
+        "function-triggers/ts/HTTPTrigger",
+        "msgext/js/default",
+        "msgext/ts/default",
+        "tab/csharp/default",
+        "tab/js/default",
+        "tab/ts/default"
+    ],
     "devDependencies": {
         "@shared/eslint-config": "file:../packages/eslint-config",
         "@shared/prettier-config": "file:../packages/prettier-config",

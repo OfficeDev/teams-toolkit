@@ -111,6 +111,15 @@ export class UploadZipError extends DotnetPluginError {
   }
 }
 
+export class FileIOError extends DotnetPluginError {
+  constructor(path: string) {
+    super(ErrorType.User, "FileIOError", `Failed to read/write ${path}.`, [
+      tips.checkFsPermissions,
+      tips.checkLog,
+    ]);
+  }
+}
+
 export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 

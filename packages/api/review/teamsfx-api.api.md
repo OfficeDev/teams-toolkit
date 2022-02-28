@@ -4,6 +4,11 @@
 
 ```ts
 
+import { IBot } from '@microsoft/teams-manifest';
+import { IComposeExtension } from '@microsoft/teams-manifest';
+import { IConfigurableTab } from '@microsoft/teams-manifest';
+import { IStaticTab } from '@microsoft/teams-manifest';
+import { IWebApplicationInfo } from '@microsoft/teams-manifest';
 import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
@@ -56,9 +61,6 @@ interface APIM extends AzureResource {
     // (undocumented)
     serviceResourceId: string;
 }
-
-// @public (undocumented)
-export type AppManifest = Json;
 
 // @public (undocumented)
 interface AppManifestProvider {
@@ -722,138 +724,11 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
 }
 
 // @public (undocumented)
-export interface IActivityType {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    templateText: string;
-    // (undocumented)
-    type: string;
-}
-
-// @public (undocumented)
-export interface IBot {
-    botId: string;
-    commandLists?: ICommandList[];
-    isNotificationOnly?: boolean;
-    needsChannelSelector?: boolean;
-    scopes: ("team" | "personal" | "groupchat")[];
-    supportsCalling?: boolean;
-    supportsFiles?: boolean;
-    supportsVideo?: boolean;
-}
-
-// @public (undocumented)
-export interface ICommand {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    title: string;
-}
-
-// @public (undocumented)
-export interface ICommandList {
-    // (undocumented)
-    commands: ICommand[];
-    // (undocumented)
-    scopes: ("team" | "personal" | "groupchat")[];
-}
-
-// @public (undocumented)
-export interface IComposeExtension {
-    botId: string;
-    canUpdateConfiguration?: boolean;
-    // (undocumented)
-    commands: IMessagingExtensionCommand[];
-    messageHandlers?: IComposeExtensionMessageHandler[];
-    // (undocumented)
-    objectId?: string;
-}
-
-// @public (undocumented)
-export interface IComposeExtensionMessageHandler {
-    type: "link";
-    // (undocumented)
-    value: {
-        domains?: string[];
-        [k: string]: unknown;
-    };
-}
-
-// @public (undocumented)
-export interface IConfigurableTab {
-    canUpdateConfiguration?: boolean;
-    configurationUrl: string;
-    context?: ("channelTab" | "privateChatTab" | "meetingChatTab" | "meetingDetailsTab" | "meetingSidePanel" | "meetingStage")[];
-    // (undocumented)
-    objectId?: string;
-    scopes: ("team" | "groupchat")[];
-    sharePointPreviewImage?: string;
-    supportedSharePointHosts?: ("sharePointFullPage" | "sharePointWebPart")[];
-}
-
-// @public (undocumented)
-export interface IConnector {
-    configurationUrl?: string;
-    connectorId: string;
-    scopes: "team"[];
-}
-
-// @public (undocumented)
 interface ICore extends Core {
     addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     init: (inputs: InputsWithProjectPath & {
         solution?: string;
     }) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
-export interface IDeveloper {
-    mpnId?: string;
-    name: string;
-    privacyUrl: string;
-    termsOfUseUrl: string;
-    websiteUrl: string;
-}
-
-// @public (undocumented)
-export interface IIcons {
-    // (undocumented)
-    color: string;
-    // (undocumented)
-    outline: string;
-}
-
-// @public (undocumented)
-export interface ILocalizationInfo {
-    // (undocumented)
-    additionalLanguages?: {
-        languageTag: string;
-        file: string;
-    }[];
-    defaultLanguageTag: string;
-}
-
-// @public (undocumented)
-export interface IMessagingExtensionCommand {
-    context?: ("compose" | "commandBox" | "message")[];
-    description?: string;
-    fetchTask?: boolean;
-    id: string;
-    initialRun?: boolean;
-    // (undocumented)
-    parameters?: IParameter[];
-    // (undocumented)
-    taskInfo?: ITaskInfo;
-    title: string;
-    type?: "query" | "action";
-}
-
-// @public (undocumented)
-export interface IName {
-    full?: string;
-    // (undocumented)
-    short: string;
 }
 
 // @public (undocumented)
@@ -929,19 +804,6 @@ export class InvalidProjectError extends UserError {
 }
 
 // @public (undocumented)
-export interface IParameter {
-    choices?: {
-        title: string;
-        value: string;
-    }[];
-    description?: string;
-    inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
-    name: string;
-    title: string;
-    value?: string;
-}
-
-// @public (undocumented)
 export interface IProgressHandler {
     end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
@@ -976,35 +838,6 @@ interface ISolution {
     provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
-export interface IStaticTab {
-    contentUrl?: string;
-    context?: ("personalTab" | "channelTab")[];
-    entityId: string;
-    name?: string;
-    // (undocumented)
-    objectId?: string;
-    scopes: ("team" | "personal")[];
-    searchUrl?: string;
-    websiteUrl?: string;
-}
-
-// @public (undocumented)
-export interface ITaskInfo {
-    height?: string;
-    title?: string;
-    url?: string;
-    width?: string;
-}
-
-// @public (undocumented)
-export interface IWebApplicationInfo {
-    // (undocumented)
-    applicationPermissions?: string[];
-    id: string;
-    resource?: string;
 }
 
 // @public (undocumented)
@@ -1310,6 +1143,16 @@ export interface ProjectConfig {
     localSettings?: LocalSettings | Json;
     // (undocumented)
     settings?: ProjectSettings;
+}
+
+// @public (undocumented)
+export interface ProjectConfigV3 {
+    // (undocumented)
+    envInfos: {
+        [key: string]: EnvInfoV3;
+    };
+    // (undocumented)
+    projectSettings: ProjectSettings;
 }
 
 // @public
@@ -1756,42 +1599,6 @@ export interface TaskGroupConfig {
     sequential?: boolean;
 }
 
-// @public
-export class TeamsAppManifest implements AppManifest {
-    // (undocumented)
-    $schema?: string;
-    accentColor: string;
-    // (undocumented)
-    activities?: {
-        activityTypes?: IActivityType[];
-    };
-    bots?: IBot[];
-    composeExtensions?: IComposeExtension[];
-    configurableTabs?: IConfigurableTab[];
-    connectors?: IConnector[];
-    // (undocumented)
-    description: IName;
-    // (undocumented)
-    developer: IDeveloper;
-    devicePermissions?: ("geolocation" | "media" | "notifications" | "midi" | "openExternal")[];
-    // (undocumented)
-    icons: IIcons;
-    id: string;
-    isFullScreen?: boolean;
-    // (undocumented)
-    localizationInfo?: ILocalizationInfo;
-    manifestVersion: string;
-    // (undocumented)
-    name: IName;
-    packageName?: string;
-    permissions?: ("identity" | "messageTeamMembers")[];
-    showLoadingIndicator?: boolean;
-    staticTabs?: IStaticTab[];
-    validDomains?: string[];
-    version: string;
-    webApplicationInfo?: IWebApplicationInfo;
-}
-
 // @public (undocumented)
 interface TeamsAppResource extends AzureResource {
     teamsAppId: string;
@@ -2126,6 +1933,7 @@ export class WriteFileError extends SystemError {
 }
 
 
+export * from "@microsoft/teams-manifest";
 export * from "neverthrow";
 
 // (No @packageDocumentation comment for this package)

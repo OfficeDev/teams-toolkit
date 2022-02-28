@@ -50,6 +50,6 @@ describe("Provision to Azure with SQL", function () {
   });
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 });

@@ -66,7 +66,8 @@
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
-    "neverthrow": "^3.2.0"
+    "neverthrow": "^3.2.0",
+    "@microsoft/teams-manifest": "^0.0.1"
   },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

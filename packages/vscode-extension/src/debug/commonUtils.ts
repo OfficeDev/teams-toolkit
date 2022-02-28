@@ -201,16 +201,20 @@ export async function loadPackageJson(path: string): Promise<any> {
 }
 
 // Helper functions for local debug correlation-id, only used for telemetry
-let localDebugCorrelationId: string | undefined = undefined;
+// Use a 2-element tuple to handle concurrent F5
+const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+let current = -1;
 export function startLocalDebugSession(): string {
-  localDebugCorrelationId = uuid.v4();
+  current = (current + 1) % 2;
+  localDebugCorrelationIds[current] = uuid.v4();
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationId = undefined;
+  localDebugCorrelationIds[current] = "no-session-id";
+  current = (current + 1) % 2;
 }
 
 export function getLocalDebugSessionId(): string {
-  return localDebugCorrelationId || "no-session-id";
+  return current >= 0 ? localDebugCorrelationIds[current] : "no-session-id";
 }

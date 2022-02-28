@@ -155,18 +155,6 @@ async function checkPort(
 }
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
-  // skip debugging if there is already a debug session
-  if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
-    return err(
-      returnUserError(
-        new Error("SKip debugging because there is already a debug session."),
-        ExtensionSource,
-        "SkipDebugging"
-      )
-    );
-  }
-
   let progressHelper: ProgressHelper | undefined;
   try {
     try {

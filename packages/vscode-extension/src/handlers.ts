@@ -111,7 +111,10 @@ import * as StringResources from "./resources/Strings.json";
 import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
-import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
+import {
+  allRunningDebugSessions,
+  terminateAllRunningTeamsfxTasks,
+} from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as envTree from "./envTree";
@@ -878,14 +881,37 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  } catch {
+    // ignore telemetry error
+  }
+
   const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve(deps);
 
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+      [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+    });
+  } catch {
+    // ignore telemetry error
+  }
+
   if (!shouldContinue) {
     await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -895,10 +921,34 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
 export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  } catch {
+    // ignore telemetry error
+  }
+
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
+
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+      [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+    });
+  } catch {
+    // ignore telemetry error
+  }
+
   if (!shouldContinue) {
     await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -908,8 +958,17 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -962,7 +1021,7 @@ export async function getFuncPathHandler(): Promise<string> {
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
     const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheckStart, {
       [TelemetryProperty.DebugAppId]: localAppId,
     });
   } catch {
@@ -981,6 +1040,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
       await debug.stopDebugging();
+      commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
       return "1";
     }
@@ -1007,6 +1067,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
       await debug.stopDebugging();
+      commonUtils.endLocalDebugSession();
       VS_CODE_UI.showMessage(
         "error",
         message,
@@ -1020,6 +1081,14 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       // return non-zero value to let task "exit ${command:xxx}" to exit
       return "1";
     }
+  }
+
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+  } catch {
+    // ignore telemetry error
   }
 }
 

@@ -217,6 +217,13 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
+      try {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
+          [TelemetryProperty.DebugServiceName]: task.name,
+        });
+      } catch {
+        // ignore telemetry error
+      }
     } else if (isNpmInstallTask(task)) {
       try {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
@@ -254,6 +261,14 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete(getTaskKey(task));
+    try {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
+        [TelemetryProperty.DebugServiceName]: task.name,
+        [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
+      });
+    } catch {
+      // ignore telemetry error
+    }
   } else if (isNpmInstallTask(task)) {
     try {
       activeNpmInstallTasks.delete(task.name);

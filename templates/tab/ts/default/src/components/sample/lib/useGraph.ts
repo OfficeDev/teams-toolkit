@@ -3,7 +3,7 @@ import { TeamsFx, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/t
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
 
 export function useGraph<T>(
-  asyncFunc: (graph: Client, credential: TeamsUserCredential, scope: string[]) => Promise<T>,
+  asyncFunc: (graph: Client, teamsfx: TeamsFx, scope: string[]) => Promise<T>,
   options?: { scope: string[] }
 ) {
   const { scope } = { scope: ["User.Read"], ...options };

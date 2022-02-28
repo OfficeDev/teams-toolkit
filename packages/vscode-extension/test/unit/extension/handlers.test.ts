@@ -80,7 +80,7 @@ suite("handlers", () => {
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
 
-      await handlers.createNewProjectHandler();
+      await handlers.createNewProjectHandler([]);
 
       chai.assert.isTrue(
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
@@ -445,7 +445,7 @@ suite("handlers", () => {
         return "";
       });
 
-      const result = await handlers.grantPermission("env");
+      const result = await handlers.grantPermission(["env"]);
 
       if (result.isErr()) {
         throw new Error("Unexpected error: " + result.error.message);
@@ -467,7 +467,7 @@ suite("handlers", () => {
         return "fake-tenant-id";
       });
 
-      await handlers.listCollaborator("env");
+      await handlers.listCollaborator(["env"]);
     });
 
     test("list collaborators with empty tenant id", async () => {
@@ -487,7 +487,7 @@ suite("handlers", () => {
         .callsFake((message: string): any => {
           chai.expect(message).equal(StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant);
         });
-      await handlers.listCollaborator("env");
+      await handlers.listCollaborator(["env"]);
 
       chai.expect(showWarningMessage.callCount).to.be.equal(1);
     });
@@ -544,6 +544,6 @@ suite("handlers", () => {
     await handlers.downloadSample(inputs);
 
     inputs.stage = Stage.create;
-    chai.assert.isTrue(createProject.calledOnceWith(inputs));
+    chai.assert.isTrue(createProject.calledOnceWith([], inputs));
   });
 });

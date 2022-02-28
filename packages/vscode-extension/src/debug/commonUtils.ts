@@ -111,7 +111,7 @@ export async function getDebugConfig(
   try {
     if (isV3()) {
       const inputs = getSystemInputs();
-      const getConfigRes = await core.getProjectConfigV3(inputs);
+      const getConfigRes = await core.getProjectConfigV3([], inputs);
       if (getConfigRes.isErr()) throw getConfigRes.error;
       const config = getConfigRes.value;
       if (!config)
@@ -127,7 +127,7 @@ export async function getDebugConfig(
           const inputs = getSystemInputs();
           inputs.ignoreConfigPersist = true;
           inputs.ignoreEnvInfo = false;
-          const envRes = await core.getSelectedEnv(inputs);
+          const envRes = await core.getSelectedEnv([], inputs);
           if (envRes.isErr()) {
             VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
             return undefined;
@@ -157,7 +157,7 @@ export async function getDebugConfig(
           const inputs = getSystemInputs();
           inputs.ignoreConfigPersist = true;
           inputs.ignoreEnvInfo = false;
-          const envRes = await core.getSelectedEnv(inputs);
+          const envRes = await core.getSelectedEnv([], inputs);
           if (envRes.isErr()) {
             VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
             return undefined;

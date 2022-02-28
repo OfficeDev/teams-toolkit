@@ -255,9 +255,10 @@ async function getIsFromSample() {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
-    await core.getProjectConfig(input);
-
-    return core.isFromSample;
+    const configRes = await core.getProjectConfigV3([], input);
+    if (configRes.isOk()) {
+      return configRes.value?.projectSettings.isFromSample === true;
+    }
   }
   return undefined;
 }
@@ -267,17 +268,10 @@ async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
-
-    // TODO: from the experience of 'is-from-sample':
-    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
-    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
-    // const projectConfig = await core.getProjectConfig(input);
-    // ignore errors for telemetry
-    // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.version;
-    // }
-    await core.getProjectConfig(input);
-    return core.settingsVersion;
+    const configRes = await core.getProjectConfigV3([], input);
+    if (configRes.isOk()) {
+      return configRes.value?.projectSettings.version;
+    }
   }
   return undefined;
 }
@@ -330,16 +324,11 @@ function registerCoreEvents() {
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
   const input = getSystemInputs();
   input.ignoreEnvInfo = true;
-  const projectConfigRes = await core.getProjectConfig(input);
+  const projectConfigRes = await core.getProjectConfigV3([], input);
 
   if (projectConfigRes?.isOk()) {
-    if (projectConfigRes.value) {
-      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
-    }
+    return projectConfigRes.value?.projectSettings?.solutionSettings as AzureSolutionSettings;
   }
-  // else {
-  //   showError(projectConfigRes.error);
-  // }
   return undefined;
 }
 
@@ -353,8 +342,8 @@ export function getSystemInputs(): Inputs {
   return answers;
 }
 
-export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  const result = await core.createProject(args);
+export async function createNewProjectHandler(args: any[]): Promise<Result<any, FxError>> {
+  const result = await core.createProject(args, getSystemInputs());
   if (result.isOk()) {
     await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
@@ -367,7 +356,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
 }
 
 export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
-  return await core.createProject(args);
+  return await core.createProject(args, getSystemInputs());
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -408,15 +397,15 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 }
 
 export async function addResourceHandler(args: any[]): Promise<Result<null, FxError>> {
-  return await core.addResource(args);
+  return await core.addResource(args, getSystemInputs());
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
-  return await core.addCapability(args);
+  return await core.addCapability(args, getSystemInputs());
 }
 
 export async function validateManifestHandler(args: any[]): Promise<Result<null, FxError>> {
-  return await core.validateManifest(args);
+  return await core.validateManifest(args, getSystemInputs());
 }
 
 /**
@@ -445,13 +434,11 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
 }
 
 export async function buildPackageHandler(args: any[]): Promise<Result<any, FxError>> {
-  return await core.build(args);
+  return await core.build(args, getSystemInputs());
 }
 
-export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.provision);
-
+export async function provisionHandler(args: any[]): Promise<Result<any, FxError>> {
+  const result = await core.provision(args, getSystemInputs());
   if (result.isErr() && isUserCancelError(result.error)) {
     return result;
   } else {
@@ -461,14 +448,12 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
   }
 }
 
-export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.deploy);
+export async function deployHandler(args?: any[]): Promise<Result<any, FxError>> {
+  return await core.deploy(args, getSystemInputs());
 }
 
-export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.publish);
+export async function publishHandler(args?: any[]): Promise<Result<any, FxError>> {
+  return await core.publish(args, getSystemInputs());
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
@@ -477,86 +462,6 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
   const cicdGuideLink = "https://aka.ms/teamsfx-cicd-insider-guide";
 
   return await env.openExternal(Uri.parse(cicdGuideLink));
-}
-
-export async function runCommand(
-  stage: Stage,
-  defaultInputs?: Inputs
-): Promise<Result<any, FxError>> {
-  const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<any, FxError> = ok(null);
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    inputs = defaultInputs ? defaultInputs : getSystemInputs();
-    inputs.stage = stage;
-
-    switch (stage) {
-      case Stage.create: {
-        if (TreatmentVariableValue.removeCreateFromSample) {
-          inputs["scratch"] = inputs["scratch"] ?? "yes";
-          inputs.projectId = inputs.projectId ?? uuid.v4();
-        }
-        const tmpResult = await core.createProject(inputs);
-        if (tmpResult.isErr()) {
-          result = err(tmpResult.error);
-        } else {
-          const uri = Uri.file(tmpResult.value);
-          result = ok(uri);
-        }
-        break;
-      }
-      case Stage.provision: {
-        result = await core.provisionResources(inputs);
-        break;
-      }
-      case Stage.deploy: {
-        result = await core.deployArtifacts(inputs);
-        break;
-      }
-      case Stage.publish: {
-        result = await core.publishApplication(inputs);
-        break;
-      }
-      case Stage.debug: {
-        if (isConfigUnifyEnabled()) {
-          inputs.ignoreEnvInfo = false;
-        } else {
-          inputs.ignoreEnvInfo = true;
-        }
-        inputs.checkerInfo = {
-          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
-          trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
-        };
-        result = await core.localDebug(inputs);
-        break;
-      }
-      case Stage.createEnv: {
-        result = await core.createEnv(inputs);
-        break;
-      }
-      case Stage.listCollaborator: {
-        result = await core.listCollaborator(inputs);
-        break;
-      }
-      default:
-        throw new SystemError(
-          ExtensionErrors.UnsupportedOperation,
-          util.format(StringResources.vsc.handlers.operationNotSupport, stage),
-          ExtensionSource
-        );
-    }
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(eventName, result, inputs);
-
-  return result;
 }
 
 export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -569,7 +474,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
 
     inputs.stage = Stage.create;
     inputs["scratch"] = "no";
-    const tmpResult = await core.createProject(inputs);
+    const tmpResult = await core.createProject([], inputs);
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
@@ -614,39 +519,12 @@ export function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-export async function runUserTask(
-  func: Func,
-  eventName: string,
-  ignoreEnvInfo: boolean,
-  envName?: string
-): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(null);
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = ignoreEnvInfo;
-    inputs.env = envName;
-    result = await core.executeUserTask(func, inputs);
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(eventName, result, inputs);
-
-  return result;
-}
-
 //TODO workaround
 function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-function showWarningMessageWithProvisionButton(message: string): void {
+export function showWarningMessageWithProvisionButton(message: string): void {
   window
     .showWarningMessage(message, StringResources.vsc.handlers.provisionResourcesButton)
     .then((result) => {
@@ -656,7 +534,7 @@ function showWarningMessageWithProvisionButton(message: string): void {
     });
 }
 
-async function showGrantSuccessMessageWithGetHelpButton(
+export async function showGrantSuccessMessageWithGetHelpButton(
   message: string,
   helpUrl: string
 ): Promise<void> {
@@ -667,7 +545,7 @@ async function showGrantSuccessMessageWithGetHelpButton(
   });
 }
 
-async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
+export async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
   try {
     const provisionSucceeded = await getProvisionSucceedFromEnv(env);
     if (!provisionSucceeded) {
@@ -881,7 +759,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   }
 
   let result: Result<any, FxError> = ok(null);
-  result = await runCommand(Stage.debug);
+  result = await core.debug([], getSystemInputs());
   if (result.isErr()) {
     try {
       const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
@@ -971,9 +849,9 @@ export async function openWelcomeHandler(args?: any[]) {
   );
 }
 
-export async function checkUpgrade(args?: any[]) {
+export async function checkUpgrade(args: any[]) {
   // just for triggering upgrade check for multi-env && bicep.
-  await runCommand(Stage.listCollaborator);
+  await core.listCollaborator(args, getSystemInputs());
 }
 
 export async function openSurveyHandler(args?: any[]) {
@@ -1246,71 +1124,12 @@ export async function openExternalHandler(args?: any[]) {
   }
 }
 
-export async function openManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.OpenManifestEditorStart,
-    getTriggerFromProperty(args)
-  );
-  const projectPath = getWorkspacePath();
-  if (!projectPath) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, InvalidProjectError());
-    return err(InvalidProjectError());
-  }
-  const appDirectory = await getAppDirectory(projectPath!);
-  if (!(await fs.pathExists(appDirectory))) {
-    const invalidProjectError: FxError = InvalidProjectError();
-    showError(invalidProjectError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
-    return err(invalidProjectError);
-  }
-
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
-  }
-  const env = selectedEnv.value;
-
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-appstudio",
-    method: "getManifestTemplatePath",
-    params: {
-      type: env === "local" ? "localDebug" : "remote",
-    },
-  };
-  const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
-  if (res.isOk()) {
-    const manifestFile = res.value as string;
-    if (fs.existsSync(manifestFile)) {
-      workspace.openTextDocument(manifestFile).then((document) => {
-        window.showTextDocument(document);
-      });
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(null);
-    } else {
-      const FxError = new SystemError(
-        "FileNotFound",
-        util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-        ExtensionSource
-      );
-      showError(FxError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-      return err(FxError);
-    }
-  } else {
-    showError(res.error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
-    return err(res.error);
-  }
+export async function openManifestHandler(args: any[]): Promise<Result<null, FxError>> {
+  return await core.openManifestEditor(args, getSystemInputs());
 }
 
-export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CreateNewEnvironmentStart,
-    getTriggerFromProperty(args)
-  );
-  const result = await runCommand(Stage.createEnv);
+export async function createNewEnvironment(args: any[]): Promise<Result<Void, FxError>> {
+  const result = await core.createEnv(args, getSystemInputs());
   if (!result.isErr()) {
     await envTree.registerEnvTreeHandler();
   }
@@ -1416,104 +1235,12 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
   }
 }
 
-export async function grantPermission(env: string): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
-
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const collaborationStateResult = await checkCollaborationState(env);
-    if (collaborationStateResult.isErr()) {
-      throw collaborationStateResult.error;
-    }
-
-    if (collaborationStateResult.value.state === CollaborationState.OK) {
-      inputs = getSystemInputs();
-      inputs.env = env;
-      result = await core.grantPermission(inputs);
-      if (result.isErr()) {
-        throw result.error;
-      }
-      const grantSucceededMsg = util.format(
-        StringResources.vsc.handlers.grantPermissionSucceeded,
-        inputs.email,
-        env
-      );
-
-      let warningMsg = StringResources.vsc.handlers.grantPermissionWarning;
-      let helpUrl = AzureAssignRoleHelpUrl;
-      if (await isSPFxProject(ext.workspaceUri.fsPath)) {
-        warningMsg = StringResources.vsc.handlers.grantPermissionWarningSpfx;
-        helpUrl = SpfxManageSiteAdminUrl;
-      }
-
-      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-      VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(
-        warningMsg + StringResources.vsc.handlers.referLinkForMoreDetails + helpUrl
-      );
-    } else {
-      result = collaborationStateResult;
-      if (result.value.state === CollaborationState.NotProvisioned) {
-        showWarningMessageWithProvisionButton(result.value.message);
-      } else {
-        window.showWarningMessage(result.value.message);
-      }
-    }
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(TelemetryEvent.GrantPermission, result, inputs);
-  return result;
+export async function grantPermission(args: any[]): Promise<Result<any, FxError>> {
+  return await core.grantPermission(args, getSystemInputs());
 }
 
-export async function listCollaborator(env: string): Promise<void> {
-  let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
-
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const collaborationStateResult = await checkCollaborationState(env);
-    if (collaborationStateResult.isErr()) {
-      throw collaborationStateResult.error;
-    }
-
-    if (collaborationStateResult.value.state === CollaborationState.OK) {
-      inputs = getSystemInputs();
-      inputs.env = env;
-
-      result = await core.listCollaborator(inputs);
-      if (result.isErr()) {
-        throw result.error;
-      }
-
-      // TODO: For short-term workaround. Remove after webview is ready.
-      VsCodeLogInstance.outputChannel.show();
-    } else {
-      result = collaborationStateResult;
-      if (result.value.state === CollaborationState.NotProvisioned) {
-        showWarningMessageWithProvisionButton(result.value.message);
-      } else {
-        window.showWarningMessage(result.value.message);
-      }
-    }
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(TelemetryEvent.ListCollaborator, result, inputs);
+export async function listCollaborator(args: any[]): Promise<Result<any, FxError>> {
+  return await core.listCollaborator(args, getSystemInputs());
 }
 
 export async function openM365AccountHandler() {
@@ -1759,7 +1486,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     return;
   }
   const inputs = getSystemInputs();
-  const result = await core.decrypt(cipher, inputs);
+  const result = await core.decrypt([], cipher, inputs);
   if (result.isOk()) {
     const editedSecret = await VS_CODE_UI.inputText({
       name: "Secret Editor",
@@ -1836,7 +1563,7 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
   } else {
     const inputs = getSystemInputs();
     inputs.ignoreEnvInfo = false;
-    const env = await core.getSelectedEnv(inputs);
+    const env = await core.getSelectedEnv([], inputs);
     if (env.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
       return err(env.error);
@@ -1967,51 +1694,7 @@ export async function openConfigStateFile(args: any[]) {
 }
 
 export async function updatePreviewManifest(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.UpdatePreviewManifestStart,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-  let env: string | undefined;
-  if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    env = segments[segments.length - 2];
-  }
-
-  if (env && env !== "local") {
-    const inputs = getSystemInputs();
-    inputs.env = env;
-    await core.activateEnv(inputs);
-  }
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-appstudio",
-    method: "updateManifest",
-    params: {
-      envName: env,
-    },
-  };
-
-  const result = await runUserTask(
-    func,
-    TelemetryEvent.UpdatePreviewManifest,
-    env && env === "local" ? true : false,
-    env
-  );
-
-  if (!args || args.length === 0) {
-    const workspacePath = getWorkspacePath();
-    const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = true;
-    const env = await core.getSelectedEnv(inputs);
-    if (env.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
-      return err(env.error);
-    }
-    const manifestPath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
-    });
-  }
-  return result;
+  return await core.updatePreviewManifest(args, getSystemInputs());
 }
 
 export async function editManifestTemplate(args: any[]) {

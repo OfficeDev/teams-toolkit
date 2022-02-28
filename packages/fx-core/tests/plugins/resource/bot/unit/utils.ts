@@ -41,6 +41,7 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import faker from "faker";
 import sinon from "sinon";

@@ -29,8 +29,6 @@ import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 
-const PackageJson = require("@npmcli/package-json");
-
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
@@ -177,38 +175,6 @@ export async function _scaffoldLocalDebugSettings(
           localSettings = generateLocalSettingsFile
             ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
             : undefined;
-        }
-
-        // add 'npm install' scripts into root package.json
-        const packageJsonPath = inputs.projectPath;
-        let packageJson: any = undefined;
-        try {
-          packageJson = await PackageJson.load(packageJsonPath);
-        } catch (error) {
-          logProvider.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
-        }
-
-        if (packageJson !== undefined) {
-          const scripts = packageJson.content.scripts ?? {};
-          const installAll: string[] = [];
-
-          if (includeBackend) {
-            scripts["install:api"] = "cd api && npm install";
-            installAll.push("npm run install:api");
-          }
-          if (includeBot) {
-            scripts["install:bot"] = "cd bot && npm install";
-            installAll.push("npm run install:bot");
-          }
-          if (includeFrontend) {
-            scripts["install:tabs"] = "cd tabs && npm install";
-            installAll.push("npm run install:tabs");
-          }
-
-          scripts["installAll"] = installAll.join(" & ");
-
-          packageJson.update({ scripts: scripts });
-          await packageJson.save();
         }
       }
 

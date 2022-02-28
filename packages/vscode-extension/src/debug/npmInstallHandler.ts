@@ -29,17 +29,6 @@ import {
 import { returnUserError } from "@microsoft/teamsfx-api";
 import { ExtensionSource } from "../error";
 
-export async function runNpmInstallAll(projectRoot: string): Promise<void> {
-  const packageJson = await loadPackageJson(path.join(projectRoot, "package.json"));
-  if (packageJson && packageJson.scripts && packageJson.scripts["installAll"]) {
-    const terminal = vscode.window.createTerminal({
-      cwd: projectRoot,
-    });
-    terminal.show();
-    terminal.sendText("npm run installAll");
-  }
-}
-
 export async function automaticNpmInstallHandler(
   excludeFrontend: boolean,
   excludeBackend: boolean,

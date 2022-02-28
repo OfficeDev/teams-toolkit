@@ -101,8 +101,7 @@ describe("Middleware - ErrorHandlerMW", () => {
     }
   });
   it("convert system error to user error: no space left on device", async () => {
-    const msg =
-      "no space left on device.";
+    const msg = "xxx no space left on device.";
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         throw new Error(msg);

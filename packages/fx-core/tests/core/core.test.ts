@@ -12,6 +12,7 @@ import {
   MultiSelectResult,
   ok,
   Platform,
+  ProjectSettings,
   QTreeNode,
   Result,
   SelectFolderConfig,
@@ -31,6 +32,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import {
+  createV2Context,
   environmentManager,
   FxCore,
   InvalidInputError,
@@ -50,6 +52,9 @@ import {
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
+import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -151,7 +156,25 @@ describe("Core basic APIs", () => {
             }
           }
         );
+      const appstudio = Container.get(ResourcePlugins.AppStudioPlugin) as Plugin;
+      const spfx = Container.get(ResourcePlugins.SpfxPlugin) as Plugin;
+      sandbox.stub<any, any>(appstudio, "scaffold").resolves(ok(undefined));
+      sandbox.stub<any, any>(spfx, "postScaffold").resolves(ok(undefined));
+      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+      mockedEnvRestore = mockedEnv(newParam);
       appName = randomAppName();
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: "123234",
+        solutionSettings: {
+          name: BuiltInSolutionNames.azure,
+          version: "3.0.0",
+        },
+      };
+      projectPath = path.resolve(
+        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
+        appName
+      );
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -162,12 +185,13 @@ describe("Core basic APIs", () => {
         [SPFXQuestionNames.framework_type]: "react",
         [SPFXQuestionNames.webpart_name]: "helloworld",
         [SPFXQuestionNames.webpart_desp]: "helloworld",
+        solution: mockSolutionV2.name,
+        projectPath: projectPath,
       };
-      const core = new FxCore(tools);
-      const res = await core.createProject(inputs);
+      const contextV2 = createV2Context(projectSettings);
+      const res = await scaffoldSourceCode(contextV2, inputs);
       assert.isTrue(res.isOk());
       assert.isTrue(sendCreate);
-      projectPath = inputs.projectPath!;
       mockedEnvRestore();
     });
   });

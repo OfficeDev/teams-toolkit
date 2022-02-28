@@ -86,6 +86,7 @@ describe("WebappPlugin", () => {
     });
 
     it("post local debug", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readFile").resolves(appSettingDevelopment as any);
       sinon.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
         chai.assert.equal(data, expectedAppSettings);
@@ -147,6 +148,7 @@ describe("WebappPlugin", () => {
     });
 
     it("post local debug", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readFile").resolves(appSettingDevelopment as any);
       sinon.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
         chai.assert.equal(data, expectedAppSettings);

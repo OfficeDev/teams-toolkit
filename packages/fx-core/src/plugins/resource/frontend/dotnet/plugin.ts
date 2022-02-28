@@ -14,7 +14,8 @@ import {
   DotnetPathInfo as PathInfo,
   WebappBicepFile,
   WebappBicep,
-  AppSettingsPlaceholder,
+  AppSettingsPlaceholders as Placeholders,
+  RegularExpr,
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { scaffoldFromZipPackage } from "./ops/scaffold";
@@ -24,6 +25,7 @@ import { AzureClientFactory } from "./utils/azure-client";
 import { DotnetConfigKey as ConfigKey } from "./enum";
 import {
   FetchConfigError,
+  FileIOError,
   NoProjectSettingError,
   ProjectPathError,
   runWithErrorCatchAndThrow,
@@ -49,7 +51,6 @@ import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
-import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -222,56 +223,63 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
-    let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+    if (
+      !(await runWithErrorCatchAndThrow(
+        new FileIOError(appSettingsPath),
+        async () => await fs.pathExists(appSettingsPath)
+      ))
+    ) {
+      return ok(undefined);
+    }
+    let appSettings = await runWithErrorCatchAndThrow(
+      new FileIOError(appSettingsPath),
+      async () => await fs.readFile(appSettingsPath, "utf-8")
+    );
 
-    let clientId = AppSettingsPlaceholder.clientId;
-    let clientSecret = AppSettingsPlaceholder.clientSecret;
+    let clientId = Placeholders.clientId;
+    let clientSecret = Placeholders.clientSecret;
     let tenantId = "";
-    let oauthAuthority = AppSettingsPlaceholder.oauthAuthority;
-    let botId = AppSettingsPlaceholder.botId;
-    let botPassword = AppSettingsPlaceholder.botPassword;
+    let oauthAuthority = Placeholders.oauthAuthority;
+    let botId = Placeholders.botId;
+    let botPassword = Placeholders.botPassword;
 
     if (isConfigUnifyEnabled()) {
       clientId =
         ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
-        AppSettingsPlaceholder.clientId;
+        Placeholders.clientId;
       clientSecret =
         ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
-        AppSettingsPlaceholder.clientSecret;
+        Placeholders.clientSecret;
       tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
-      oauthAuthority = tenantId
-        ? PathInfo.oauthHost(tenantId)
-        : AppSettingsPlaceholder.oauthAuthority;
+      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
       botId =
         ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botId) ??
-        AppSettingsPlaceholder.botId;
+        Placeholders.botId;
       botPassword =
         ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botPassword) ??
-        AppSettingsPlaceholder.botPassword;
+        Placeholders.botPassword;
     } else {
       clientId =
-        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ??
-        AppSettingsPlaceholder.clientId;
+        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ?? Placeholders.clientId;
       clientSecret =
         ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) ??
-        AppSettingsPlaceholder.clientSecret;
+        Placeholders.clientSecret;
       tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
-      oauthAuthority = tenantId
-        ? PathInfo.oauthHost(tenantId)
-        : AppSettingsPlaceholder.oauthAuthority;
-      botId =
-        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ?? AppSettingsPlaceholder.botId;
+      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
+      botId = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ?? Placeholders.botId;
       botPassword =
-        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ??
-        AppSettingsPlaceholder.botPassword;
+        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ?? Placeholders.botPassword;
     }
 
-    appSettings = appSettings.replace(AppSettingsPlaceholder.clientId, clientId);
-    appSettings = appSettings.replace(AppSettingsPlaceholder.clientSecret, clientSecret);
-    appSettings = appSettings.replace(AppSettingsPlaceholder.oauthAuthority, oauthAuthority);
-    appSettings = appSettings.replace(AppSettingsPlaceholder.botId, botId);
-    appSettings = appSettings.replace(AppSettingsPlaceholder.botPassword, botPassword);
-    await fs.writeFile(appSettingsPath, appSettings, "utf-8");
+    appSettings = appSettings.replace(RegularExpr.clientId, clientId);
+    appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);
+    appSettings = appSettings.replace(RegularExpr.oauthAuthority, oauthAuthority);
+    appSettings = appSettings.replace(RegularExpr.botId, botId);
+    appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
+    await runWithErrorCatchAndThrow(
+      new FileIOError(appSettingsPath),
+      async () => await fs.writeFile(appSettingsPath, appSettings, "utf-8")
+    );
     return ok(undefined);
   }
 

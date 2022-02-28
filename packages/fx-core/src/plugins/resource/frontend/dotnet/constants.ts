@@ -14,6 +14,11 @@ export class AzureInfo {
 
 export class RegularExpr {
   static readonly targetFramework: RegExp = /(?<=<TargetFramework>)(.*)(?=<)/gim;
+  static readonly clientId = /\$clientId\$/g;
+  static readonly clientSecret = /\$client-secret\$/g;
+  static readonly oauthAuthority = /\$oauthAuthority\$/g;
+  static readonly botId = /\$botId\$/g;
+  static readonly botPassword = /\$bot-password\$/g;
 }
 
 export class DotnetPluginInfo {
@@ -39,7 +44,7 @@ export class DotnetPathInfo {
   static readonly TemplateFolderName = "dotnet";
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
 
-  static readonly indexPath = ""; // Index path is '/', relational path is empty.
+  static readonly indexPath = ""; // Index path is '/', relative path is empty.
   static readonly appSettingDevelopment = "appsettings.Development.json";
   static readonly oauthHost = (tenantId: string): string =>
     `https://login.microsoftonline.com/${tenantId}`;
@@ -97,7 +102,7 @@ export class WebappBicep {
   };
 }
 
-export class AppSettingsPlaceholder {
+export class AppSettingsPlaceholders {
   static readonly clientId = "$clientId$";
   static readonly clientSecret = "$client-secret$";
   static readonly oauthAuthority = "$oauthAuthority$";

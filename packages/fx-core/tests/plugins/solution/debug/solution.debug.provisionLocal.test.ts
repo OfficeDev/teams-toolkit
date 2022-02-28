@@ -11,10 +11,6 @@ import {
   configLocalEnvironment,
 } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
-import {
-  setDataForLocal,
-  setPostDataForLocal,
-} from "../../../../src/plugins/solution/fx-solution/v2/provisionLocal";
 
 chai.use(chaiAsPromised);
 
@@ -55,7 +51,7 @@ describe("solution.debug.provisionLocal", () => {
           hostType: "Azure",
           capabilities: ["Tab"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "typescript",
       };
@@ -136,39 +132,6 @@ describe("solution.debug.provisionLocal", () => {
       };
       const result = await setupLocalEnvironment(v2Context, inputs, envInfo);
       chai.assert.isTrue(result.isOk());
-    });
-  });
-
-  describe("setDataForLocal", () => {
-    it("happy path", async () => {
-      const envInfo = {
-        envName: "default",
-        config: {},
-        state: {
-          solution: {},
-          "fx-resource-bot": {
-            siteEndPoint: "https://www.test.com",
-          },
-          "fx-resource-aad-app-for-teams": {
-            clientId: "id",
-          },
-          "fx-resource-frontend-hosting": {},
-        },
-      };
-
-      const localSettings = {
-        auth: {
-          clientId: "id",
-        },
-        frontend: {},
-        teamsApp: {},
-      };
-      setDataForLocal(envInfo, localSettings);
-      setPostDataForLocal(envInfo, localSettings);
-      chai.assert.equal(
-        localSettings.auth.clientId,
-        envInfo.state["fx-resource-aad-app-for-teams"].clientId
-      );
     });
   });
 

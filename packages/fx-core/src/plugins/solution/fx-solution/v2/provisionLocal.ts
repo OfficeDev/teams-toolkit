@@ -30,7 +30,6 @@ import {
 } from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { ResourcePlugins } from "../../../../common/constants";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -107,8 +106,6 @@ export async function provisionLocalResource(
     if (localEnvSetupResult.isErr()) {
       return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
     }
-
-    setDataForLocal(envInfo!, localSettings);
   } else {
     const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
 
@@ -174,7 +171,6 @@ export async function provisionLocalResource(
   }
 
   if (isConfigUnifyEnabled()) {
-    setPostDataForLocal(envInfo!, localSettings);
     const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
     if (localConfigResult.isErr()) {
@@ -189,24 +185,4 @@ export async function provisionLocalResource(
   }
 
   return new v2.FxSuccess(localSettings);
-}
-
-// TODO: delete me later, this is used to set localSettings using envInfo.state value
-export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
-  localSettings.auth.clientId = envInfo.state[ResourcePlugins.Aad].clientId;
-  localSettings.auth.clientSecret = envInfo.state[ResourcePlugins.Aad].clientSecret;
-  localSettings.auth.objectId = envInfo.state[ResourcePlugins.Aad].objectId;
-  localSettings.auth.oauth2PermissionScopeId =
-    envInfo.state[ResourcePlugins.Aad].oauth2PermissionScopeId;
-  localSettings.auth.oauthAuthority = envInfo.state[ResourcePlugins.Aad].oauthAuthority;
-  localSettings.auth.oauthHost = envInfo.state[ResourcePlugins.Aad].oauthHost;
-
-  localSettings.frontend.tabIndexPath = envInfo.state[ResourcePlugins.FrontendHosting].indexPath;
-  localSettings.frontend.tabDomain = envInfo.state[ResourcePlugins.FrontendHosting].domain;
-  localSettings.frontend.tabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting].endpoint;
-}
-
-export function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
-  localSettings.auth.applicationIdUris = envInfo.state[ResourcePlugins.Aad].applicationIdUris;
-  localSettings.teamsApp.teamsAppId = envInfo.state[ResourcePlugins.AppStudio]?.teamsAppId;
 }

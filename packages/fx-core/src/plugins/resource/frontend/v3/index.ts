@@ -37,6 +37,7 @@ import { getTemplatesFolder } from "../../../../folder";
 import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
 import {
@@ -263,6 +264,10 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    if (envInfo.envName === "local") {
+      envInfo.state[this.name][FRONTEND_INDEX_PATH] = Constants.FrontendIndexPath;
+      return ok(Void);
+    }
     ctx.logProvider.info(Messages.StartPostProvision(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.PostProvisionProgressTitle,

@@ -7,7 +7,7 @@ import {
   IBot,
   IComposeExtension,
   IWebApplicationInfo,
-} from "../manifest";
+} from "@microsoft/teams-manifest";
 import { EnvInfoV2 } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
 

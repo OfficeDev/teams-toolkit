@@ -20,6 +20,7 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import { GlobalKey } from "../constants";
 import { ext } from "../extensionVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
@@ -165,6 +166,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+      await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
       await ExtTelemetry.dispose();
       setTimeout(() => {
         vscode.commands.executeCommand("vscode.openFolder", res.value);

@@ -361,8 +361,8 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    await ExtTelemetry.dispose();
     await updateGlobalKeyValue(args);
+    await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
     setTimeout(() => {
@@ -1118,13 +1118,18 @@ function getTriggerFromProperty(args?: any[]) {
 async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = globalStateGet(GlobalKey.OpenWalkThrough, false);
   const isOpenReadMe = globalStateGet(GlobalKey.OpenReadMe, false);
+  const isOpenSampleReadMe = globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
-    await openWelcomeHandler([TelemetryTiggerFrom.Other]);
+    await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
   if (isOpenReadMe) {
-    await openReadMeHandler([TelemetryTiggerFrom.Other, false]);
+    await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
     await globalStateUpdate(GlobalKey.OpenReadMe, false);
+  }
+  if (isOpenSampleReadMe) {
+    await openSampleReadmeHandler([TelemetryTiggerFrom.Auto]);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
 }
 

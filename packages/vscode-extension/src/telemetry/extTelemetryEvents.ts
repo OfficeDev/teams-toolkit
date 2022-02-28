@@ -205,6 +205,7 @@ export enum TelemetryTiggerFrom {
   WalkThrough = "WalkThrough",
   Notification = "Notification",
   Other = "Other",
+  Auto = "Auto",
   Unknow = "Unknow",
 }
 

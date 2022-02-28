@@ -13,7 +13,6 @@ import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
 import { LocalEnvManager, FolderName } from "@microsoft/teamsfx-core";
-import { TelemetryTiggerFrom } from "../telemetry/extTelemetryEvents";
 
 export async function getProjectRoot(
   folderPath: string,

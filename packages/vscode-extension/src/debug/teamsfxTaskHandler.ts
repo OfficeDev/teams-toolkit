@@ -262,7 +262,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete(getTaskKey(task));
     try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugService, {
         [TelemetryProperty.DebugServiceName]: task.name,
         [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
       });

@@ -80,9 +80,29 @@ describe("Middleware - ErrorHandlerMW", () => {
     );
   });
 
-  it("convert system error to user error", async () => {
+  it("convert system error to user error: The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action", async () => {
     const msg =
       "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        throw new Error(msg);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [ErrorHandlerMW],
+    });
+    const my = new MyClass();
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.isTrue(error instanceof UserError);
+      assert.equal(error.message, msg);
+    }
+  });
+  it("convert system error to user error: no space left on device", async () => {
+    const msg =
+      "no space left on device.";
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         throw new Error(msg);

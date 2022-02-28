@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Json } from "@microsoft/teamsfx-api";
+import { ProjectSettings } from "@microsoft/teamsfx-api/build/types";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import "mocha";
 import { convertDotenvToEmbeddedJson, redactObject, replaceTemplateWithUserData } from "../../src";
+import { validateProjectSettings } from "../../src/common/projectSettingsValidator";
 import { isValidProject, newEnvInfo } from "../../src/core/tools";
+import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("tools", () => {
   // it("base64 encode", () => {
   //   const source = "Hello, World!";
@@ -22,6 +25,22 @@ describe("tools", () => {
 
   it("is not valid project", () => {
     expect(isValidProject()).is.false;
+  });
+
+  it("validateProjectSettings()", () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: "123234",
+      solutionSettings: {
+        name: BuiltInSolutionNames.azure,
+        version: "3.0.0",
+        capabilities: ["Tab"],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    expect(validateProjectSettings(projectSettings)).is.true;
   });
 });
 

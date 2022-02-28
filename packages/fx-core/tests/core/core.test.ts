@@ -146,7 +146,7 @@ describe("Core basic APIs", () => {
             properties?: { [key: string]: string },
             measurements?: { [key: string]: number }
           ) => {
-            if (eventName === "create" && properties["host-type"] === "spfx") {
+            if (eventName === "create" && properties && properties["host-type"] === "spfx") {
               sendCreate = true;
             }
           }

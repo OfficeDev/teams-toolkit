@@ -380,6 +380,7 @@ export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
     await globalStateUpdate(GlobalKey.OpenReadMe, true);
   }
+  await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
 }
 
 export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
@@ -1122,14 +1123,17 @@ async function autoOpenProjectHandler(): Promise<void> {
   const isOpenReadMe = globalStateGet(GlobalKey.OpenReadMe, false);
   const isOpenSampleReadMe = globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
+    showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
   if (isOpenReadMe) {
+    showLocalDebugMessage();
     await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
     await globalStateUpdate(GlobalKey.OpenReadMe, false);
   }
   if (isOpenSampleReadMe) {
+    showLocalDebugMessage();
     await openSampleReadmeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
@@ -1278,7 +1282,6 @@ async function openUpgradeChangeLogsHandler() {
 
 async function openSampleReadmeHandler(args?: any) {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
@@ -1295,6 +1298,14 @@ async function openSampleReadmeHandler(args?: any) {
 }
 
 async function showLocalDebugMessage() {
+  const isShowLocalDebugMessage = globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
+
+  if (!isShowLocalDebugMessage) {
+    return;
+  } else {
+    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);
+  }
+
   const localDebug = {
     title: StringResources.vsc.handlers.localDebugTitle,
     run: async (): Promise<void> => {

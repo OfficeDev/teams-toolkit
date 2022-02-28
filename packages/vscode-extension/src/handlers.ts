@@ -361,7 +361,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    await updateGlobalKeyValue(args);
+    await updateAutoOpenGlobalKey(args);
     await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
@@ -372,7 +372,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
-export async function updateGlobalKeyValue(args?: any[]): Promise<void> {
+export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
     await globalStateUpdate(GlobalKey.OpenReadMe, false);
@@ -1164,6 +1164,8 @@ export async function openReadMeHandler(args: any[]) {
     let targetFolder: string | undefined;
     if (await isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
+    } else if (await getIsFromSample()) {
+      openSampleReadmeHandler(args);
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
@@ -1188,6 +1190,8 @@ export async function openReadMeHandler(args: any[]) {
       isToSide = args[1] as boolean;
     }
 
+    // if it is open from walk through, "isToSide" flag is set to true.
+    // Otherwise, "isToSide" flag is false, which mean open the markdown in new windws.
     if (isToSide) {
       workspace.openTextDocument(uri).then(() => {
         const PreviewMarkdownCommand = "markdown.showPreviewToSide";
@@ -1277,8 +1281,13 @@ async function openSampleReadmeHandler(args?: any) {
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
     workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
+      if (isTriggerFromWalkThrough(args)) {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      } else {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      }
     });
   }
 }
@@ -1321,7 +1330,7 @@ async function showLocalDebugMessage() {
 
 export async function openSamplesHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.SampleGallery);
+  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
 }
 
 export async function openAppManagement(args?: any[]) {

@@ -45,7 +45,7 @@ export class WebviewPanel {
   private panelType: PanelType = PanelType.QuickStart;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(panelType: PanelType) {
+  public static createOrShow(panelType: PanelType, isToSide?: boolean) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -57,7 +57,13 @@ export class WebviewPanel {
         .find((panel) => panel.panelType === panelType)!
         .panel.reveal(column);
     } else {
-      WebviewPanel.currentPanels.push(new WebviewPanel(panelType, column || vscode.ViewColumn.One));
+      isToSide
+        ? WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.Two)
+          )
+        : WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.One)
+          );
     }
   }
 

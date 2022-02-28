@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ext, initializeExtensionVariables } from "./extensionVariables";
+import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -22,27 +22,19 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import {
-  Correlator,
-  globalStateUpdate,
-  isMultiEnvEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
-  isTeamsfx,
   syncFeatureFlags,
   isValidNode,
   delay,
   isSupportAutoOpenAPI,
-  isTriggerFromWalkThrough,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
   InputConfigsFolderName,
-  StatesFolderName,
   AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
@@ -52,8 +44,6 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
-import { version } from "os";
-import { GlobalKey } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -102,7 +92,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
       const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
       if (targetUri.isOk()) {
-        await handlers.updateGlobalKeyValue(args);
+        await handlers.updateAutoOpenGlobalKey(args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: targetUri.value };

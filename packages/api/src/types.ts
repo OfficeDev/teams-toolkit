@@ -3,6 +3,7 @@
 "use strict";
 
 import { Platform, Stage, VsCodeEnv } from "./constants";
+import { EnvInfoV3 } from "./v3/types";
 
 export type Json = Record<string, any>;
 
@@ -249,4 +250,11 @@ export interface ProjectConfig {
   settings?: ProjectSettings;
   config?: SolutionConfig | Json;
   localSettings?: LocalSettings | Json;
+}
+
+export interface ProjectConfigV3 {
+  projectSettings: ProjectSettings;
+  envInfos: {
+    [key: string]: EnvInfoV3;
+  };
 }

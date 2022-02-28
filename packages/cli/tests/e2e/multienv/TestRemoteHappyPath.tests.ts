@@ -216,6 +216,6 @@ describe("Multi Env Happy Path for Azure", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, true, false, true, env);
+    await cleanUp(appName, projectPath, true, true, false, env);
   });
 });

@@ -30,7 +30,6 @@ import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
 import { PluginImpl } from "./interface";
-import { TabLanguage } from "./resources/templateInfo";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
@@ -101,6 +100,13 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.LocalDebug, () =>
       this.getImpl(ctx).localDebug(ctx)
+    );
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.PostLocalDebug, () =>
+      this.getImpl(ctx).postLocalDebug(ctx)
     );
   }
 

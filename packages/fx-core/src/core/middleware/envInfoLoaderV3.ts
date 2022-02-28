@@ -65,7 +65,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
   };
 }
 
-async function loadEnvInfoV3(
+export async function loadEnvInfoV3(
   inputs: v2.InputsWithProjectPath,
   projectSettings: ProjectSettings,
   targetEnvName?: string,

@@ -36,6 +36,7 @@ import * as path from "path";
 import * as os from "os";
 import { randomAppName } from "../../core/utils";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/v3/plugin";
 import { ResourceManagementClient } from "@azure/arm-resources";
 describe("SolutionV3 - provision", () => {
   const sandbox = sinon.createSandbox();
@@ -124,6 +125,7 @@ describe("SolutionV3 - provision", () => {
           return ok("Provision");
         }
       );
+    sandbox.stub(AppStudioPluginImpl.prototype, "createOrUpdateTeamsApp").resolves(ok(uuid.v4()));
 
     const envInfoV3: v3.EnvInfoV3 = {
       envName: "dev",

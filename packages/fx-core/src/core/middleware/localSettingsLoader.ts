@@ -11,7 +11,6 @@ import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
-import { isPureExistingApp } from "../utils";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,

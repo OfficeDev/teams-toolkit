@@ -65,15 +65,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         let debugConfig = undefined;
-        if (isLocalSideloadingConfiguration) {
-          if (isConfigUnifyEnabled()) {
-            debugConfig = await commonUtils.getDebugConfig(
-              false,
-              environmentManager.getLocalEnvName()
-            );
-          } else {
-            debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
-          }
+        if (isLocalSideloadingConfiguration && isConfigUnifyEnabled()) {
+          debugConfig = await commonUtils.getDebugConfig(
+            false,
+            environmentManager.getLocalEnvName()
+          );
+        } else {
+          debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
         }
         if (!debugConfig) {
           // The user cancels env selection.

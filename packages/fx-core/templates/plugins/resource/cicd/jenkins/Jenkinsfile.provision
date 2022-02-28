@@ -56,16 +56,23 @@ pipeline {
 <%#hosting_type_contains_azure%>            
             environment {
                 AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+<%#cloud_resources_contains_sql%>
+                SQL_ADMIN_NAME = credentials('SQL_ADMIN_NAME')
+                SQL_PASSWORD = credentials('SQL_PASSWORD')
+<%/cloud_resources_contains_sql%>
             }
 <%/hosting_type_contains_azure%>
             steps {
-                sh 'npx teamsfx provision<%#hosting_type_contains_azure%> --subscription ${AZURE_SUBSCRIPTION_ID}<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}'
+                sh 'npx teamsfx provision<%#hosting_type_contains_azure%> --subscription ${AZURE_SUBSCRIPTION_ID}<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name ${SQL_ADMIN_NAME} --sql-password ${SQL_PASSWORD}<%/cloud_resources_contains_sql%>
+'
             }
         }
 
         stage('Commit provision configs if necessary') {
             steps {
-                sh 'git add .fx'
+                sh 'git config user.name "azdo-agent"'
+                sh 'git config user.email "azdo-agent@azure.com"'
+                sh 'git add .'
                 sh 'git commit -m "chore: commit provision configs"'
                 sh 'git push'
             }

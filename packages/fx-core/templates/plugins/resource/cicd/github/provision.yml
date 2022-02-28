@@ -11,11 +11,9 @@ jobs:
     # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
     #environment: test_environment
     env:
-<%#hosting_type_contains_spfx%>
       M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
       M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
       M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
-<%/hosting_type_contains_spfx%>
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: <%env_name%>
 
@@ -51,9 +49,17 @@ jobs:
           subscription: ${{secrets.AZURE_SUBSCRIPTION_ID}}
 <%/hosting_type_contains_azure%>
           env: ${{env.TEAMSFX_ENV_NAME}}
+<%#cloud_resources_contains_sql%>
+          sql-admin-name: ${{secrets.SQL_ADMIN_NAME}}
+          sql-password: ${{secrets.SQL_PASSWORD}}
+<%/cloud_resources_contains_sql%>
 
       - name: Commit provision configs if necessary
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore: commit provision configs"
-          file_pattern: .fx/*
+        env:
+          BRANCH: ${{github.ref}}
+        run: |
+          git config user.name "github-agent"
+          git config user.email "github-agent@github.com"
+          git add .
+          git commit -m "chore: commit provision configs"
+          git push origin ${BRANCH}

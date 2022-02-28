@@ -76,6 +76,7 @@ describe("Verify Generated Templates & README", () => {
               build_script: generateBuildScript(context.projectSetting),
               hosting_type_contains_spfx: hostType == "SPFx",
               hosting_type_contains_azure: hostType == "Azure",
+              cloud_resources_contains_sql: false,
             };
             const sourceTemplatePath = path.join(
               localTemplatePath,
@@ -170,6 +171,7 @@ describe("Verify Generated Templates & README", () => {
             build_script: generateBuildScript(context.projectSetting),
             hosting_type_contains_spfx: hostType == "SPFx",
             hosting_type_contains_azure: hostType == "Azure",
+            cloud_resources_contains_sql: false,
           };
           const sourceTemplatePath = path.join(
             localTemplatePath,

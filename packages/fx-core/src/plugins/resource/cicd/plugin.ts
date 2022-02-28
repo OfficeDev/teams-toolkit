@@ -50,6 +50,8 @@ export class CICDImpl {
       build_script: generateBuildScript(context.projectSetting),
       hosting_type_contains_spfx: hostType == "SPFx",
       hosting_type_contains_azure: hostType == "Azure",
+      cloud_resources_contains_sql:
+        context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
     };
 
     const progressBar = context.userInteraction.createProgressBar(

@@ -39,9 +39,11 @@ steps:
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
       # After provisioning, you should commit necessary files under .fx into the repository. 
-      npx teamsfx provision<%#hosting_type_contains_azure%> --subscription $(AZURE_SUBSCRIPTION_ID)<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}
+      npx teamsfx provision<%#hosting_type_contains_azure%> --subscription $(AZURE_SUBSCRIPTION_ID)<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name $(SQL_ADMIN_NAME) --sql-password $(SQL_PASSWORD)<%/cloud_resources_contains_sql%>
 
       # Commit provision configs if necessary.
-      git add .fx
+      git config user.name "azdo-agent"
+      git config user.email "azdo-agent@azure.com"
+      git add .
       git commit -m "chore: commit provision configs"
       git push

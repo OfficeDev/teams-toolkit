@@ -51,6 +51,7 @@ describe("Verify generated templates & readme", function () {
           build_script: "cd bot; npm install; cd -;",
           hosting_type_contains_spfx: false,
           hosting_type_contains_azure: true,
+          cloud_resources_contains_sql: false,
         };
         const sourceTemplatePath = path.join(
           localTemplatePath,

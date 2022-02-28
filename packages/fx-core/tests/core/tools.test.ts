@@ -40,7 +40,7 @@ describe("tools", () => {
         activeResourcePlugins: [],
       },
     };
-    expect(validateProjectSettings(projectSettings)).is.true;
+    expect(validateProjectSettings(projectSettings)).is.undefined;
   });
 });
 

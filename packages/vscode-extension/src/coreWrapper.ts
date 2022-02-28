@@ -50,6 +50,8 @@ import * as util from "util";
 import * as vscode from "vscode";
 import * as StringResources from "./resources/Strings.json";
 import { ExtensionSource } from "./error";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 export interface ErrorHandleOption {
   startFn?: (ctx: HookContext) => Promise<Result<any, FxError>>;
   endFn?: (ctx: HookContext) => Promise<void>;
@@ -98,16 +100,20 @@ export function CommonErrorHandlerMW(option?: ErrorHandleOption): Middleware {
 }
 
 export class FxCoreWrapper {
+  core: FxCore;
+  constructor(core: FxCore) {
+    this.core = core;
+  }
   @hooks([CommonErrorHandlerMW()])
   async init(args: any[], inputs?: Inputs): Promise<Result<Void, FxError>> {
-    return await core.init(inputs!);
+    return await core.init(inputs! as v2.InputsWithProjectPath);
   }
   @hooks([CommonErrorHandlerMW()])
   async addFeature(args: any[], inputs?: Inputs): Promise<Result<Void, FxError>> {
-    return await core.addFeature(inputs!);
+    return await core.addFeature(inputs! as v2.InputsWithProjectPath);
   }
   @hooks([CommonErrorHandlerMW()])
-  async createProject(args: any[], inputs?: Inputs): Promise<Result<string, FxError>> {
+  async createProject(args: any[], inputs?: Inputs): Promise<Result<any, FxError>> {
     if (TreatmentVariableValue.removeCreateFromSample) {
       inputs!["scratch"] = inputs!["scratch"] ?? "yes";
       inputs!.projectId = inputs!.projectId ?? uuid.v4();
@@ -116,7 +122,7 @@ export class FxCoreWrapper {
     if (tmpResult.isErr()) {
       return err(tmpResult.error);
     } else {
-      const uri = Uri.file(tmpResult.value);
+      const uri = vscode.Uri.file(tmpResult.value);
       return ok(uri);
     }
   }
@@ -264,7 +270,7 @@ export class FxCoreWrapper {
       } else {
         inputs!.ignoreEnvInfo = false;
         inputs!.env = args[1];
-        return await runUserTask(func, inputs!);
+        return await core.executeUserTask(func, inputs!);
       }
     } else {
       const selectedEnv = await askTargetEnvironment();

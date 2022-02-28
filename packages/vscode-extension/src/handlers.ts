@@ -128,8 +128,9 @@ import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
+import { FxCoreWrapper } from "./coreWrapper";
 
-export let core: FxCore;
+export let core: FxCoreWrapper;
 export let tools: Tools;
 export function getWorkspacePath(): string | undefined {
   const workspacePath: string | undefined = workspace.workspaceFolders?.length
@@ -205,7 +206,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
     };
-    core = new FxCore(tools);
+    core = new FxCoreWrapper(new FxCore(tools));
     registerCoreEvents();
     await registerAccountTreeHandler();
     await envTree.registerEnvTreeHandler();
@@ -353,8 +354,7 @@ export function getSystemInputs(): Inputs {
 }
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+  const result = await core.createProject(args);
   if (result.isOk()) {
     await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
@@ -367,9 +367,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
 }
 
 export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
-  return result;
+  return await core.createProject(args);
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -409,71 +407,16 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   return ok(null);
 }
 
-export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddResourceStart, getTriggerFromProperty(args));
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addResource",
-  };
-  let excludeBackend = true;
-  try {
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
-  } catch (error) {
-    VsCodeLogInstance.warning(`${error}`);
-  }
-  const result = await runUserTask(func, TelemetryEvent.AddResource, true);
-  if (result.isOk() && !excludeBackend) {
-    await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(true, excludeBackend, true);
-  }
-  return result;
+export async function addResourceHandler(args: any[]): Promise<Result<null, FxError>> {
+  return await core.addResource(args);
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addCapability",
-  };
-  let excludeFrontend = true,
-    excludeBot = true;
-  try {
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
-  } catch (error) {
-    VsCodeLogInstance.warning(`${error}`);
-  }
-  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
-  if (result.isOk()) {
-    await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
-  }
-  return result;
+  return await core.addCapability(args);
 }
 
-export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ValidateManifestStart,
-    getTriggerFromProperty(args)
-  );
-
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "validateManifest",
-  };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+export async function validateManifestHandler(args: any[]): Promise<Result<null, FxError>> {
+  return await core.validateManifest(args);
 }
 
 /**
@@ -501,40 +444,8 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   }
 }
 
-export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
-
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "buildPackage",
-    params: {
-      type: "",
-    },
-  };
-
-  if (args && args.length > 0 && args[0] != CommandsTreeViewProvider.TreeViewFlag) {
-    func.params.type = args[0];
-    const isLocalDebug = args[0] === "localDebug";
-    if (isLocalDebug) {
-      return await runUserTask(func, TelemetryEvent.Build, true);
-    } else {
-      return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
-    }
-  } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-    const isLocalDebug = env === "local";
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
-    } else {
-      func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
-    }
-  }
+export async function buildPackageHandler(args: any[]): Promise<Result<any, FxError>> {
+  return await core.build(args);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {

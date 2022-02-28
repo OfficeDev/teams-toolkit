@@ -7,7 +7,7 @@ export function useGraph(asyncFunc, options) {
     try {
       const teamsfx = new TeamsFx();
       const graph = createMicrosoftGraphClient(teamsfx, scope);
-      return await asyncFunc(graph, credential, scope);
+      return await asyncFunc(graph, teamsfx, scope);
     } catch (err) {
       if (err.code.includes("UiRequiredError")) {
         // Silently fail for user didn't login error

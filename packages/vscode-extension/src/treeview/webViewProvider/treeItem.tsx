@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ActionButton, DirectionalHint, TooltipHost } from "@fluentui/react";
 import "./tree.scss";
-import { Commands } from "../controls/Commands";
+import { Commands } from "../../controls/Commands";
 
 export class TreeItem extends React.Component<any, any> {
   constructor(props: any) {

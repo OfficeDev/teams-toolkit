@@ -120,7 +120,7 @@ import * as path from "path";
 import * as exp from "./exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import { AzureAssignRoleHelpUrl, AzurePortalUrl, SpfxManageSiteAdminUrl } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";

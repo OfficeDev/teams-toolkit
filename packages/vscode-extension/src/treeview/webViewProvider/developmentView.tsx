@@ -6,7 +6,7 @@ import addResources_dark from "../../media/dark/addResources.svg";
 import addResources_light from "../../media/light/addResources.svg";
 import * as StringResources from "../resources/Strings.json";
 import { getCurrentTheme, Theme } from "./theme";
-import { TreeItem } from "./treeItem";
+import { TreeItem } from "./webViewProvider/treeItem";
 
 export class DevelopmentView extends React.Component<any, any> {
   constructor(props: any) {

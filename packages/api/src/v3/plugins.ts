@@ -255,14 +255,14 @@ export interface AzureResourcePlugin {
     inputs: AddFeatureInputs
   ) => Promise<Result<BicepTemplate[], FxError>>;
 
-  /**
-   * triggered when some other resource(s) is(are) added,
-   * in this API, plugin is supposed to update bicep template according to the updated context
-   */
-  updateBicep?: (
-    ctx: ContextWithManifestProvider,
-    inputs: UpdateInputs
-  ) => Promise<Result<BicepTemplate[], FxError>>;
+  // /**
+  //  * triggered when some other resource(s) is(are) added,
+  //  * in this API, plugin is supposed to update bicep template according to the updated context
+  //  */
+  // updateBicep?: (
+  //   ctx: ContextWithManifestProvider,
+  //   inputs: UpdateInputs
+  // ) => Promise<Result<BicepTemplate[], FxError>>;
 
   /**
    * questions to ask for provision

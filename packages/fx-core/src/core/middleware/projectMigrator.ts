@@ -37,7 +37,6 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore, TOOLS } from "..";
 import { getStrings, isSPFxProject } from "../../common/tools";

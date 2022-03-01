@@ -587,17 +587,8 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);
-
-      const packageJsonPath = path.resolve(__dirname, "./data/package.json");
-      fs.writeFileSync(packageJsonPath, "{}");
-
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
-
-      //assert output package
-      const packageJson = fs.readJSONSync(packageJsonPath);
-      const scripts: [] = packageJson["scripts"];
-      chai.assert.isTrue(scripts !== undefined);
     });
 
     it("happy path: add capability", async () => {

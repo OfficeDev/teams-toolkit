@@ -18,7 +18,6 @@ import {
   Json,
   LogProvider,
   ok,
-  OptionItem,
   Platform,
   ProjectConfig,
   ProjectConfigV3,
@@ -40,7 +39,7 @@ import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { environmentManager } from "..";
+import { environmentManager, newEnvInfoV3 } from "./environment";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
@@ -49,10 +48,7 @@ import { getRootDirectory, isConfigUnifyEnabled, mapToJson } from "../common/too
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -115,7 +111,6 @@ import {
   TabSPFxItem,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
-import { newEnvInfoV3 } from "./environment";
 import { isPureExistingApp } from "../common/projectSettingsHelper";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.

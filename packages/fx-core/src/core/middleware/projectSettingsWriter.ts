@@ -4,7 +4,6 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
-  AzureSolutionSettings,
   ConfigFolderName,
   err,
   FxError,

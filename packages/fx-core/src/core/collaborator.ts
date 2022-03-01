@@ -10,14 +10,12 @@ import {
   err,
   v3,
   Platform,
-  AzureSolutionSettings,
   Colors,
   Json,
   UserError,
   Inputs,
   DynamicPlatforms,
   QTreeNode,
-  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import {

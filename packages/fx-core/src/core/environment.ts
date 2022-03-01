@@ -28,22 +28,24 @@ import * as dotenv from "dotenv";
 import {
   dataNeedEncryption,
   replaceTemplateWithUserData,
-  PathNotExistError,
   serializeDict,
   separateSecretData,
-  WriteFileError,
   mapToJson,
   objectToMap,
-  ProjectEnvNotExistError,
-  InvalidEnvConfigError,
-} from "..";
+  compileHandlebarsTemplateString,
+} from "../common/tools";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString, ManifestVariables } from "../common/constants";
+import {
+  InvalidEnvConfigError,
+  PathNotExistError,
+  ProjectEnvNotExistError,
+  WriteFileError,
+} from "./error";
 
 export interface EnvStateFiles {
   envState: string;

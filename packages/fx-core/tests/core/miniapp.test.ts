@@ -57,48 +57,41 @@ import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/Resource
 import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
-describe("Core basic APIs", () => {
+describe("Minimal app", () => {
   const sandbox = sinon.createSandbox();
-  const mockSolutionV1 = new MockSolution();
-  const mockSolutionV2 = new MockSolutionV2();
   const tools = new MockTools();
   let appName = randomAppName();
-  let projectPath = path.resolve(os.tmpdir(), appName);
+  const projectPath = path.resolve(os.tmpdir(), appName);
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
-    Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
-    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
   });
   afterEach(async () => {
     sandbox.restore();
-    deleteFolder(projectPath);
     mockedEnvRestore();
   });
 
-  it("create minimized project", async () => {
+  it("create minimized project with existing Tab", async () => {
     appName = randomAppName();
-    const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+    const newParam = { TEAMSFX_APIV3: "false" };
     mockedEnvRestore = mockedEnv(newParam);
     const core = new FxCore(tools);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab"],
       stage: Stage.create,
-      isCreatedFromExistingApp: {
+      existingAppConfig: {
         isCreatedFromExistingApp: true,
         newAppTypes: [ExistingTeamsAppType.StaticTab],
       },
     };
     const createRes = await core.createProject(inputs);
-    projectPath = path.resolve(
-      newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-      appName
-    );
     assert.isTrue(createRes.isOk());
-
     mockedEnvRestore();
+    deleteFolder(inputs.projectPath);
   });
 });

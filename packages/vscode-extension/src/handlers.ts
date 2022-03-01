@@ -603,10 +603,6 @@ export async function runCommand(
 
     switch (stage) {
       case Stage.create: {
-        if (TreatmentVariableValue.removeCreateFromSample) {
-          inputs["scratch"] = inputs["scratch"] ?? "yes";
-          inputs.projectId = inputs.projectId ?? uuid.v4();
-        }
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -926,6 +922,17 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   const result = await localPrerequisites.checkAndInstall();
+  if (result.isErr()) {
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+}
+
+/**
+ * Check required prerequisites in Get Started Page.
+ */
+export async function validateGetStartedPrerequisitesHandler(): Promise<string | undefined> {
+  const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

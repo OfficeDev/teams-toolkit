@@ -5,7 +5,6 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
-import axios from "axios";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import { TestHelper } from "../helper";

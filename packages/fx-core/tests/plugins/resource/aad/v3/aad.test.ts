@@ -14,17 +14,17 @@ import {
   GetConfigError,
   GetSkipAppConfigError,
 } from "../../../../../src/plugins/resource/aad/errors";
-import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
 import {
   PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
+  Utils,
 } from "../../../../../src/plugins/resource/aad/utils/configs";
 import {
   checkPermissionRequest,
   createPermissionRequestFile,
   getPermissionRequest,
-} from "../../../../../src/plugins/resource/aad/v3";
+} from "../../../../../src/plugins/resource/aad/permissions";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,

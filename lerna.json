@@ -4,6 +4,7 @@
         "packages/api",
         "packages/fx-core",
         "packages/sdk",
+        "packages/sdk-react",
         "packages/cli",
         "packages/server",
         "packages/vscode-extension",

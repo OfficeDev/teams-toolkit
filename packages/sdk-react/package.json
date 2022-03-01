@@ -1,0 +1,51 @@
+{
+  "name": "@microsoft/teamsfx-react",
+  "version": "0.0.1",
+  "description": "React helper functions for Microsoft TeamsFx",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "teamsfx",
+    "react"
+  ],
+  "repository": "https://github.com/OfficeDev/TeamsFx",
+  "author": "Microsoft Corporation",
+  "files": [
+    "build/**/*"
+  ],
+  "scripts": {
+    "lint:staged": "lint-staged",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "build": "rimraf build && npx tsc -p ./",
+    "prepare": "npm run build",
+    "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
+    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "test": "npm run test:unit",
+    "format-check": "echo test",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
+  },
+  "devDependencies": {
+    "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
+    "@types/react": "^17.0.39",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
+    "@typescript-eslint/parser": "^5.13.0",
+    "eslint": "^8.10.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-prettier": "^4.0.0",
+    "lint-staged": "^12.3.4",
+    "prettier": "^2.5.1",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
+    "react": "^17.0.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
+  }
+}

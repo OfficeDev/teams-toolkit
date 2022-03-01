@@ -237,15 +237,6 @@ export interface AzureResourcePlugin {
     inputs: AddFeatureInputs
   ) => Promise<Result<Void, FxError>>;
 
-  // /**
-  //  * triggered when some other resource(s) is(are) added,
-  //  * in this API, plugin is supposed to update the source code according to the updated context
-  //  */
-  // updateCode?: (
-  //   ctx: ContextWithManifestProvider,
-  //   inputs: UpdateInputs
-  // ) => Promise<Result<Void, FxError>>;
-
   /**
    * triggered when the resource is added,
    * in this API, plugin is supposed to generate bicep template for the resource provisioning

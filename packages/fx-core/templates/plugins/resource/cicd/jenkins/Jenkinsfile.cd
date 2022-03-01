@@ -71,7 +71,7 @@ pipeline {
 
         stage('Deploy to hosting environment') {
             steps {
-                sh 'npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}'
+                sh 'npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_apim%> --api-version v1 --open-api-document openapi/openapi.json --api-prefix <%api_prefix%><%/cloud_resources_contains_apim%>'
             }
         }
     }

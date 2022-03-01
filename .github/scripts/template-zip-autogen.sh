@@ -1,21 +1,39 @@
 #!/usr/bin/env bash
 set -x
 
-cd ./templates/
+LANGUAGE_LIST=(js ts csharp)
 
-for SCOPE_PATH in */; do
-    SCOPE=$(echo $SCOPE_PATH | tr -d "/")
-    if [ $SCOPE = "node_modules" ]; then
-        continue
-    fi
-    for LANGUAGE_PATH in ${SCOPE_PATH}*/; do
-        for SCENARIO_PATH in ${LANGUAGE_PATH}*/; do
-            TEMPLATE=($(echo $SCENARIO_PATH | tr "/" "\n"))
-            LANGUAGE=${TEMPLATE[1]}
-            SCENARIO=${TEMPLATE[2]}
-            cd ./${SCOPE}/${LANGUAGE}/${SCENARIO}
-            zip -rq ../../../../${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
-            cd -
-        done
+TEMPLATE_LIST=(
+    function-base.default
+    function-triggers.HTTPTrigger
+    tab.default
+    bot.default
+    blazor-base.default
+)
+
+for LANGUAGE in ${LANGUAGE_LIST[@]}; do
+    for TEMPLATE in ${TEMPLATE_LIST[@]}; do
+        TEMPLATE=($(echo $TEMPLATE | tr "." "\n"))
+        SCOPE=${TEMPLATE[0]}
+        SCENARIO=${TEMPLATE[1]}
+
+        if [ -z "$SCOPE" ]; then
+            echo "SCOPE is empty."
+            exit -1
+        fi
+
+        if [ -z "$SCENARIO" ]; then
+            echo "SCENARIO is empty."
+            exit -1
+        fi
+
+        if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
+            echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
+            continue
+        fi        
+
+        cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
+        zip -rq ../../../../${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
+        cd -
     done
 done

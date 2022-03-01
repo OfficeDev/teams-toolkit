@@ -36,9 +36,9 @@ describe("Create single tab", function () {
   describe("feature flags for API v3", async function () {
     const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
     let mockedEnvRestore: RestoreFn;
-    for (const env of envs) {
+    for (const envParam of envs) {
       beforeEach(() => {
-        mockedEnvRestore = mockedEnv(env);
+        mockedEnvRestore = mockedEnv(envParam);
       });
       afterEach(() => {
         mockedEnvRestore();

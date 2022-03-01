@@ -111,10 +111,7 @@ import * as StringResources from "./resources/Strings.json";
 import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
-import {
-  allRunningDebugSessions,
-  terminateAllRunningTeamsfxTasks,
-} from "./debug/teamsfxTaskHandler";
+import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
 import * as envTree from "./envTree";
@@ -877,10 +874,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
-  // skip debugging if there is already a debug session
-  if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
-    commonUtils.endLocalDebugSession();
+  if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -917,10 +911,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
 export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
-  // skip debugging if there is already a debug session
-  if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
-    commonUtils.endLocalDebugSession();
+  if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -954,10 +945,7 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  // skip debugging if there is already a debug session
-  if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
-    commonUtils.endLocalDebugSession();
+  if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }

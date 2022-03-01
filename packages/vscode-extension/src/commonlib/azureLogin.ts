@@ -603,7 +603,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.packageJSON
           .version;
       const versionDetail = version.split(".");
-      return parseInt(versionDetail[1]) < 10;
+      return parseInt(versionDetail[0]) === 0 && parseInt(versionDetail[1]) < 10;
     } catch (e) {
       VsCodeLogInstance.error("[Get Azure extension] " + e.message);
       return false;

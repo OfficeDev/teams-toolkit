@@ -32,7 +32,7 @@ import {
   UpdatePermissionError,
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
-import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
+import { Utils } from "../../../../../src/plugins/resource/aad/utils/configs";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
 import {
   MockAppStudioTokenProvider,

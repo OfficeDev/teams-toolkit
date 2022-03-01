@@ -493,6 +493,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.validate-getStarted-prerequisites",
+        "title": "Teams - Validate Get Started Prerequisites",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.get-func-path",
         "title": "Teams - Get Func Path for Environment Variable",
         "enablement": "never"

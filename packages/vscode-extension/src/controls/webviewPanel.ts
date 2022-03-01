@@ -173,6 +173,7 @@ export class WebviewPanel {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
       await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
+      await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
       await ExtTelemetry.dispose();
       setTimeout(() => {
         vscode.commands.executeCommand("vscode.openFolder", res.value);

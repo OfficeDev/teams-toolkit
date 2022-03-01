@@ -76,6 +76,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
+import { setActivatedResourcePluginsV2 } from "../../plugins/solution/fx-solution/v2/utils";
 import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 
 const programmingLanguage = "programmingLanguage";
@@ -1017,6 +1018,7 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     throw ProjectSettingError();
   }
   const projectSettings = loadRes.value;
+  setActivatedResourcePluginsV2(projectSettings);
   minorCtx.projectSettings = projectSettings;
 
   const targetEnvName = "dev";

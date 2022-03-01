@@ -912,7 +912,7 @@
           {
             "id": "teamsToolkitEnvironment",
             "title": "Get your environment ready",
-            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)",
+            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites)",
             "media": {
               "svg": "media/environment.svg",
               "altText": "Get your environment ready"

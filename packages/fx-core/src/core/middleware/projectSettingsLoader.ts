@@ -31,7 +31,8 @@ import {
   ReadFileError,
 } from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo, validateSettings } from "../tools";
+import { newEnvInfo } from "../environment";
+import { validateProjectSettings } from "../../common";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -56,7 +57,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     const projectSettings = loadRes.value;
 
-    const validRes = validateSettings(projectSettings);
+    const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
       ctx.result = err(
         InvalidProjectSettingsFileError(

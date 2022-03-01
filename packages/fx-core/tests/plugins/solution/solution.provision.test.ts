@@ -83,7 +83,7 @@ import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plu
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import Container from "typedi";
 import {
   askResourceGroupInfo,

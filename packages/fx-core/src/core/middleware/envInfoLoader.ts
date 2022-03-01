@@ -26,7 +26,7 @@ import {
   ProjectSettingsUndefinedError,
 } from "../error";
 import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
+import { environmentManager, newEnvInfo } from "../environment";
 import {
   DEFAULT_FUNC_NAME,
   GLOBAL_CONFIG,
@@ -41,7 +41,6 @@ import {
 import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo } from "../tools";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 
 const newTargetEnvNameOption = "+ new environment";

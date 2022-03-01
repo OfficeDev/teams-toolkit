@@ -17,7 +17,7 @@ import {
   BotOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);

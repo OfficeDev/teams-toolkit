@@ -19,7 +19,7 @@ import "mocha";
 import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
-import { getLockFolder } from "../../../src";
+import { getLockFolder } from "../../../src/core/middleware/concurrentLocker";
 import { CallbackRegistry } from "../../../src/core/callback";
 import {
   CoreSource,

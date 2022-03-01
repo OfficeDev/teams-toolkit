@@ -10,17 +10,19 @@ import {
   err,
   Func,
   Inputs,
+  ProductName,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { FxCore, TOOLS } from "..";
-import { waitSeconds } from "../..";
+import { TOOLS } from "..";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
-import { getLockFolder } from "../tools";
 import { shouldIgnored } from "./projectSettingsLoader";
+import crypto from "crypto";
+import * as os from "os";
+import { waitSeconds } from "../../common/tools";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -105,3 +107,10 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     ctx.result = err(new ConcurrentError(CoreSource));
   }
 };
+
+export function getLockFolder(projectPath: string): string {
+  return path.join(
+    os.tmpdir(),
+    `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
+  );
+}

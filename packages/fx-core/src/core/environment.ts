@@ -465,3 +465,39 @@ export function separateSecretDataV3(envState: v3.ResourceStates): Record<string
 }
 
 export const environmentManager = new EnvironmentManager();
+
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  state?: Map<string, any>
+): EnvInfo {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
+}
+
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
+  };
+}

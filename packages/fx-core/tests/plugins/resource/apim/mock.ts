@@ -28,7 +28,7 @@ import {
 import axios, { AxiosInstance } from "axios";
 import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../src/core/tools";
+import { newEnvInfo } from "../../../../src";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 

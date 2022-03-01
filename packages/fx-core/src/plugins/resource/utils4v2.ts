@@ -24,11 +24,11 @@ import {
 import _ from "lodash";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { ArmTemplateResult } from "../../common/armInterface";
-import { CryptoDataMatchers, isConfigUnifyEnabled, objectToMap } from "../../common/tools";
+import { isConfigUnifyEnabled, objectToMap } from "../../common/tools";
 import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
-import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { newEnvInfo } from "../../core/environment";
 
 export function convert2PluginContext(
   pluginName: string,

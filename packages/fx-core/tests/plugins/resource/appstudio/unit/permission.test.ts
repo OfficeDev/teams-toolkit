@@ -22,7 +22,7 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
-import { newEnvInfo } from "../../../../../src/core/tools";
+import { newEnvInfo } from "../../../../../src";
 import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import { LocalCrypto } from "../../../../../src/core/crypto";

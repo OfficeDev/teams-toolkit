@@ -42,6 +42,7 @@ export class ErrorMessages {
 export const REMOTE_MANIFEST = "manifest.source.json";
 export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
 export const MANIFEST_LOCAL = "manifest.local.template.json";
+export const MANIFEST_TEMPLATE_CONSOLIDATE = "manifest.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_INDEX_PATH = "indexPath";

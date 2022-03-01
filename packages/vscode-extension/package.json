@@ -221,20 +221,20 @@
         },
         {
           "command": "fx-extension.preview",
-          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned|local-existing-app/"
         },
         {
           "command": "fx-extension.previewWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned|local-existing-app/",
           "group": "inline@3"
         },
         {
           "command": "fx-extension.localdebug",
-          "when": "view == teamsfx-environment && viewItem =~ /local/"
+          "when": "view == teamsfx-environment && viewItem =~ /^local$/"
         },
         {
           "command": "fx-extension.localdebugWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /local/",
+          "when": "view == teamsfx-environment && viewItem =~ /^local$/",
           "group": "inline@3"
         },
         {

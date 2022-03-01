@@ -49,4 +49,10 @@ steps:
 <%/hosting_type_contains_azure%>
 
     # Deploy to hosting environment.
+    #<%#cloud_resources_contains_apim%>
+          # Below are default values. You should update them if anything is customized.
+          api-version: v1
+          open-api-document: openapi/openapi.json
+          api-prefix: <%api_prefix%>
+    #<%/cloud_resources_contains_apim%>
     npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}

@@ -12,7 +12,7 @@ import {
   AzureSolutionSettings,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { BuiltInFeaturePluginNames } from "../../solution/fx-solution/v3/constants";
 import fs from "fs-extra";
 import { generateBicepFromFile } from "../../../common/tools";
@@ -24,9 +24,10 @@ import {
 } from "../../solution/fx-solution/question";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks";
-import { DotnetPluginPathInfo as PathInfo, WebappBicep } from "./constants";
+import { DotnetPluginPathInfo as PathInfo, ManifestSnippet, WebappBicep } from "./constants";
 import { LogMessage } from "./messages";
 import { ensureSolutionSettings } from "../../solution/fx-solution/utils/solutionSettingsHelper";
+import { AppStudioPluginV3 } from "../appstudio/v3/index";
 
 export interface DotnetPluginConfig {
   /* Config from solution */
@@ -81,18 +82,41 @@ export class DotnetPlugin implements v3.PluginV3 {
         solutionSettings.capabilities.push(cap);
       }
     });
-    // TODO: edit manifest
     if (capabilities.includes(TabOptionItem.id)) {
       const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [
-        { name: "staticTab" },
+        {
+          name: "staticTab",
+          snippet: ManifestSnippet.staticTabCapability,
+        },
+        {
+          name: "configurableTab",
+          snippet: ManifestSnippet.configurableTabCapability,
+        },
       ]);
       if (res.isErr()) return err(res.error);
     }
 
     if (capabilities.includes(BotOptionItem.id)) {
-      const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [{ name: "Bot" }]);
+      const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [
+        { name: "Bot", snippet: ManifestSnippet.botCapability },
+      ]);
       if (res.isErr()) return err(res.error);
     }
+
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const manifest = await appStudioV3.loadManifest(ctx, inputs);
+    const res = await manifest.match(
+      async (manifest) => {
+        manifest.remote.developer = ManifestSnippet.getDeveloperSnippet(
+          manifest.remote.developer.name
+        );
+        return await appStudioV3.saveManifest(ctx, inputs, manifest);
+      },
+      async (error) => {
+        return err(error);
+      }
+    );
+    if (res.isErr()) return err(res.error);
 
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);

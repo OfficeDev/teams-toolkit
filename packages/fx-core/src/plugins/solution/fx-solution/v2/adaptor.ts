@@ -23,7 +23,7 @@ import {
   returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { SolutionError, SolutionSource } from "..";
+import { SolutionError, SolutionSource } from "../constants";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../../common/armInterface";
 import { LocalCrypto } from "../../../../core/crypto";
 import { newEnvInfo } from "../../../../core/environment";

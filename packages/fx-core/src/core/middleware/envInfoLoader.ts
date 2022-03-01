@@ -18,8 +18,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
+import { TOOLS } from "../globalVars";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
@@ -38,10 +37,10 @@ import {
   QuestionSelectSourceEnvironment,
   QuestionSelectTargetEnvironment,
 } from "../question";
-import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
+import { CoreHookContext } from "../types";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -256,13 +255,6 @@ export async function askTargetEnvironment(
       tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
       return err(res.error);
     }
-
-    const desensitized = desensitize(node, inputs);
-    tools.logProvider.info(
-      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
-        desensitized
-      )}`
-    );
   }
 
   if (!inputs.targetEnvName) {
@@ -282,7 +274,6 @@ export async function askNewEnvironment(
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
-  const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     TOOLS.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
@@ -301,13 +292,6 @@ export async function askNewEnvironment(
       ctx.result = err(res.error);
       return undefined;
     }
-
-    const desensitized = desensitize(node, inputs);
-    TOOLS.logProvider.info(
-      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
-        desensitized
-      )}`
-    );
   }
 
   const sourceEnvName = inputs.sourceEnvName!;

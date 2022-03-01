@@ -24,21 +24,21 @@ import {
   fillInSolutionSettings,
   isAzureProject,
 } from "./utils";
-import { isVSProject } from "../../../../core";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import path from "path";
 import fs from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
-  getTemplatesFolder,
   SolutionError,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-} from "../../../..";
+} from "../constants";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+import { getTemplatesFolder } from "../../../../folder";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,

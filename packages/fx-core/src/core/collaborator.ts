@@ -42,7 +42,7 @@ import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/co
 import * as util from "util";
 import { IUserList } from "../plugins/resource/appstudio/interfaces/IAppDefinition";
 import { CoreSource } from "./error";
-import { TOOLS } from ".";
+import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
 import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
 

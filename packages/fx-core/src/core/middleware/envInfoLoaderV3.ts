@@ -13,10 +13,10 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { CoreHookContext } from "../..";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
+import { CoreHookContext } from "../types";
 import { getTargetEnvName } from "./envInfoLoader";
 import { shouldIgnored } from "./projectSettingsLoader";
 

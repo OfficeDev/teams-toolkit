@@ -15,7 +15,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { TOOLS } from "..";
+import { TOOLS } from "../globalVars";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";

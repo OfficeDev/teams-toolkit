@@ -65,7 +65,7 @@ import {
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../..";
+import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 
 import {

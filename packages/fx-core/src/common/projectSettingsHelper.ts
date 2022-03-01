@@ -15,6 +15,7 @@ import {
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import * as uuid from "uuid";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -111,4 +112,20 @@ export function hasAzureResource(projectSetting: ProjectSettings): boolean {
 
 export function isPureExistingApp(projectSettings: ProjectSettings): boolean {
   return projectSettings.solutionSettings === undefined;
+}
+
+export function getProjectSettingsVersion() {
+  return "2.1.0";
+}
+
+export function newProjectSettings(): ProjectSettings {
+  const projectSettings: ProjectSettings = {
+    appName: "",
+    projectId: uuid.v4(),
+    version: getProjectSettingsVersion(),
+  };
+  return projectSettings;
+}
+export function isVSProject(projectSettings: ProjectSettings): boolean {
+  return projectSettings.programmingLanguage === "csharp";
 }

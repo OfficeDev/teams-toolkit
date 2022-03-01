@@ -7,11 +7,9 @@ import {
   err,
   FxError,
   ok,
-  ProjectSettings,
   Result,
   SystemError,
   TokenProvider as TokenProviderInAPI,
-  UserError,
   v2,
   v3,
   Void,
@@ -23,7 +21,6 @@ import { Bicep, ConstantString } from "../../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
-import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { IUserList } from "../../appstudio/interfaces/IAppDefinition";
@@ -40,65 +37,18 @@ import {
 } from "../constants";
 import { AppIdUriInvalidError, ConfigErrorMessages, GetConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
+import { checkPermissionRequest, createPermissionRequestFile } from "../permissions";
 import { AadAppForTeamsImpl } from "../plugin";
 import { ResultFactory } from "../results";
-import { Utils } from "../utils/common";
 import {
+  getPermissionErrorMessage,
   PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
+  Utils,
 } from "../utils/configs";
 import { DialogUtils } from "../utils/dialog";
 import { TokenAudience, TokenProvider } from "../utils/tokenProvider";
-
-const permissionFile = "permissions.json";
-
-export async function createPermissionRequestFile(
-  projectPath: string
-): Promise<Result<string, FxError>> {
-  const filePath = path.join(projectPath, permissionFile);
-  await fs.writeJSON(filePath, DEFAULT_PERMISSION_REQUEST, {
-    spaces: 4,
-  });
-  return ok(filePath);
-}
-
-export async function checkPermissionRequest(
-  projectPath: string
-): Promise<Result<string, FxError>> {
-  const filePath = path.join(projectPath, permissionFile);
-  if (!(await fs.pathExists(filePath))) {
-    return err(
-      new UserError(
-        SolutionError.MissingPermissionsJson,
-        `${filePath} is missing`,
-        Plugins.pluginNameShort
-      )
-    );
-  }
-  return ok(filePath);
-}
-
-export async function getPermissionRequest(projectPath: string): Promise<Result<string, FxError>> {
-  const checkRes = await checkPermissionRequest(projectPath);
-  if (checkRes.isErr()) {
-    return err(checkRes.error);
-  }
-  const permissionRequest = await fs.readJSON(checkRes.value);
-  return ok(JSON.stringify(permissionRequest));
-}
-
-export function isAadAdded(projectSetting: ProjectSettings): boolean {
-  if (
-    projectSetting.solutionSettings &&
-    (projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.includes(
-      Plugins.pluginNameComplex
-    )
-  )
-    return true;
-  return false;
-}
-
 @Service(Plugins.pluginNameComplex)
 export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
   name = Plugins.pluginNameComplex;
@@ -383,7 +333,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
       return err(
         new SystemError(
           GetConfigError.name,
-          Utils.getPermissionErrorMessage(
+          getPermissionErrorMessage(
             GetConfigError.message(
               ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
             ),
@@ -430,7 +380,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
       return err(
         new SystemError(
           GetConfigError.name,
-          Utils.getPermissionErrorMessage(
+          getPermissionErrorMessage(
             GetConfigError.message(
               ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
             ),

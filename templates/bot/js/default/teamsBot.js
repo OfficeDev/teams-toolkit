@@ -1,31 +1,23 @@
-{{#IS_ME}}
-import { default as axios } from "axios";
-import * as querystring from "querystring";
-{{/IS_ME}}
-import { TeamsActivityHandler, CardFactory, TurnContext{{#IS_BOT}}, AdaptiveCardInvokeValue, AdaptiveCardInvokeResponse{{/IS_BOT}}} from "botbuilder";
-{{#IS_BOT}}
-import rawWelcomeCard from "./adaptiveCards/welcome.json"
-import rawLearnCard from "./adaptiveCards/learn.json"
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+const axios = require("axios");
+const querystring = require("querystring");
 
-export interface DataInterface {
-  likeCount: number
-}
-{{/IS_BOT}}
+const { TeamsActivityHandler, CardFactory, TurnContext} = require("botbuilder");
 
-export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} extends TeamsActivityHandler {
-  {{#IS_BOT}}
-  // record the likeCount
-  likeCountObj: { likeCount: number };
+const rawWelcomeCard = require("./adaptiveCards/welcome.json");
+const rawLearnCard = require("./adaptiveCards/learn.json");
+const cardTools = require("@microsoft/adaptivecards-tools");
 
+
+class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
+  
   constructor() {
     super();
 
+    // record the likeCount
     this.likeCountObj = { likeCount: 0 };
 
     this.onMessage(async (context, next) => {
       console.log("Running with Message Activity.");
-
       let txt = context.activity.text;
       const removedMentionText = TurnContext.removeRecipientMention(
         context.activity
@@ -38,13 +30,13 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
       // Trigger command by IM text
       switch (txt) {
         case "welcome": {
-          const card = AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
+          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
           await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
           break;
         }
         case "learn": {
           this.likeCountObj.likeCount = 0;
-          const card = AdaptiveCards.declare<DataInterface>(rawLearnCard).render(this.likeCountObj);
+          const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
           await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
           break;
         }
@@ -60,11 +52,12 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
       await next();
     });
 
+    // Listen to MembersAdded event, view https://docs.microsoft.com/en-us/microsoftteams/platform/resources/bot-v3/bots-notifications for more events
     this.onMembersAdded(async (context, next) => {
       const membersAdded = context.activity.membersAdded;
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
-          const card = AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
+          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
           await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
           break;
         }
@@ -75,31 +68,25 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
 
   // Invoked when an action is taken on an Adaptive Card. The Adaptive Card sends an event to the Bot and this
   // method handles that event.
-  async onAdaptiveCardInvoke(
-    context: TurnContext,
-    invokeValue: AdaptiveCardInvokeValue
-  ): Promise<AdaptiveCardInvokeResponse> {
+  async onAdaptiveCardInvoke(context, invokeValue) {
     // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/learn.json
     if (invokeValue.action.verb === "userlike") {
       this.likeCountObj.likeCount++;
-      const card = AdaptiveCards.declare<DataInterface>(rawLearnCard).render(this.likeCountObj);
+      const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
       await context.updateActivity({
         type: "message",
         id: context.activity.replyToId,
         attachments: [CardFactory.adaptiveCard(card)],
       });
-      return { statusCode: 200, type: undefined, value: undefined };
+      return { statusCode: 200 };
     }
   }
-  {{/IS_BOT}}
+  
 
-  {{#IS_ME}}
+  
   // Messaging extension Code
   // Action.
-  public async handleTeamsMessagingExtensionSubmitAction(
-    context: TurnContext,
-    action: any
-  ): Promise<any> {
+  handleTeamsMessagingExtensionSubmitAction(context, action) {
     switch (action.commandId) {
       case "createCard":
         return createCardCommand(context, action);
@@ -111,7 +98,7 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
   }
 
   // Search.
-  public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
+  async handleTeamsMessagingExtensionQuery(context, query) {
     const searchQuery = query.parameters[0].value;
     const response = await axios.get(
       `http://registry.npmjs.com/-/v1/search?${querystring.stringify({
@@ -141,10 +128,7 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
     };
   }
 
-  public async handleTeamsMessagingExtensionSelectItem(
-    context: TurnContext,
-    obj: any
-  ): Promise<any> {
+  async handleTeamsMessagingExtensionSelectItem(context, obj) {
     return {
       composeExtension: {
         type: "result",
@@ -155,8 +139,8 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
   }
 
   // Link Unfurling.
-  public async handleTeamsAppBasedLinkQuery(context: TurnContext, query: any): Promise<any> {
-    const attachment = CardFactory.thumbnailCard("Image Preview Card", query.url, [query.url]);
+  handleTeamsAppBasedLinkQuery(context, query) {
+    const attachment = CardFactory.thumbnailCard("Thumbnail Card", query.url, [query.url]);
 
     const result = {
       attachmentLayout: "list",
@@ -169,11 +153,11 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
     };
     return response;
   }
-  {{/IS_ME}}
+  
 }
 
-{{#IS_ME}}
-async function createCardCommand(context: TurnContext, action: any): Promise<any> {
+
+function createCardCommand(context, action) {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.
   const data = action.data;
   const heroCard = CardFactory.heroCard(data.title, data.text);
@@ -193,7 +177,7 @@ async function createCardCommand(context: TurnContext, action: any): Promise<any
   };
 }
 
-async function shareMessageCommand(context: TurnContext, action: any): Promise<any> {
+function shareMessageCommand(context, action) {
   // The user has chosen to share a message by choosing the 'Share Message' context menu command.
   let userName = "unknown";
   if (
@@ -244,4 +228,6 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
     },
   };
 }
-{{/IS_ME}}
+
+
+module.exports.TeamsBotMessageExtensionBot = TeamsBotMessageExtensionBot;

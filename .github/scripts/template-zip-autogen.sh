@@ -32,10 +32,6 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
             echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
             continue
         fi        
-        
-        if [ ${SCOPE} == "bot-msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
-            IS_ME=true IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
-        fi
 
         cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
         zip -rq ../../../../${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .

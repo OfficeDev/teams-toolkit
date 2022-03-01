@@ -30,6 +30,7 @@ import {
 } from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { isPureExistingApp } from "../../../../core/utils";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -71,7 +72,8 @@ export async function provisionLocalResource(
   if (isConfigUnifyEnabled()) {
     localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
   } else {
-    localDebugTenantId = localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+    if (!localSettings.teamsApp) localSettings.teamsApp = {};
+    localDebugTenantId = localSettings.teamsApp?.tenantId;
   }
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
@@ -81,8 +83,11 @@ export async function provisionLocalResource(
   if (m365TenantMatches.isErr()) {
     return new v2.FxFailure(m365TenantMatches.error);
   }
-
-  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(ctx.projectSetting);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {

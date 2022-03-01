@@ -165,7 +165,7 @@ interface AzureResourcePlugin {
     getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     name: string;
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    updateCode?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Void, FxError>>;
+    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
 }
 
 // @public

@@ -157,17 +157,6 @@ export async function addFeature(
       if (res.isErr()) return err(res.error);
     }
   }
-  const updateInputs: v3.UpdateInputs = {
-    ...addFeatureInputs,
-    newPlugins: newArray,
-  };
-  for (const pluginName of existingArray) {
-    const plugin = Container.get<v3.PluginV3>(pluginName);
-    if (plugin.updateCode) {
-      const res = await plugin.updateCode(contextWithManifestProvider, updateInputs);
-      if (res.isErr()) return err(res.error);
-    }
-  }
   const bicepRes = await arm.generateBicep(
     contextWithManifestProvider,
     inputs,

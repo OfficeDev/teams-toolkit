@@ -52,7 +52,6 @@ describe("SolutionV3 - executeUserTask", () => {
     if (plugin.generateBicep) sandbox.stub<any, any>(plugin, "generateBicep").resolves(ok([]));
     if (plugin.updateBicep) sandbox.stub<any, any>(plugin, "updateBicep").resolves(ok([]));
     if (plugin.generateCode) sandbox.stub<any, any>(plugin, "generateCode").resolves(ok(Void));
-    if (plugin.updateCode) sandbox.stub<any, any>(plugin, "updateCode").resolves(ok(Void));
   }
   it("getQuestionsForAddResource", async () => {
     const projectSettings: ProjectSettings = {

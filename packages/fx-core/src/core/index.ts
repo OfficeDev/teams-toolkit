@@ -216,7 +216,6 @@ export class FxCore implements v3.ICore {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
-    let globalStateDescription = "openReadme";
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
@@ -225,7 +224,6 @@ export class FxCore implements v3.ICore {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-      globalStateDescription = "openSampleReadme";
     } else {
       // create from new
       const appName = inputs[QuestionAppName.name] as string;
@@ -247,7 +245,7 @@ export class FxCore implements v3.ICore {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
       await fs.ensureDir(path.join(projectPath, path.join("templates", `${AppPackageFolderName}`)));
-      const basicFolderRes = await createBasicFolderStructure(inputs);
+      const basicFolderRes = await ensureBasicFolderStructure(inputs);
       if (basicFolderRes.isErr()) {
         return err(basicFolderRes.error);
       }
@@ -359,7 +357,6 @@ export class FxCore implements v3.ICore {
       }
     }
     if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(globalStateDescription, true);
       await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
@@ -382,7 +379,6 @@ export class FxCore implements v3.ICore {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
-    let globalStateDescription = "openReadme";
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
@@ -391,7 +387,6 @@ export class FxCore implements v3.ICore {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-      globalStateDescription = "openSampleReadme";
     } else {
       // create from new
       const appName = inputs[QuestionAppName.name] as string;
@@ -462,7 +457,6 @@ export class FxCore implements v3.ICore {
       }
     }
     if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(globalStateDescription, true);
       await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
@@ -672,10 +666,6 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("local debug input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
-      // existing app scenario, local debug has no effect
-      return err(new OperationNotSupportedForExistingAppError("localDebug"));
-    }
     if (!ctx.solutionV2 || !ctx.contextV2) {
       const name = undefinedName(
         [ctx, ctx?.solutionV2, ctx?.contextV2],
@@ -833,6 +823,15 @@ export class FxCore implements v3.ICore {
           ctx.envInfoV2,
           this.tools.tokenProvider
         );
+        //for existing app
+        if (
+          res.isOk() &&
+          func.method === "addCapability" &&
+          inputs.capabilities &&
+          inputs.capabilities.length > 0
+        ) {
+          await ensureBasicFolderStructure(inputs);
+        }
         return res;
       } else return err(FunctionRouterError(func));
     }
@@ -1386,7 +1385,7 @@ export class FxCore implements v3.ICore {
     // create folder structure
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
-    const basicFolderRes = await createBasicFolderStructure(inputs);
+    const basicFolderRes = await ensureBasicFolderStructure(inputs);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
     }
@@ -1507,47 +1506,59 @@ export class FxCore implements v3.ICore {
   _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
-export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
+export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
   if (!inputs.projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
   try {
-    const appName = inputs[QuestionAppName.name] as string;
-    if (inputs.platform !== Platform.VS) {
-      await fs.writeFile(
-        path.join(inputs.projectPath, `package.json`),
-        JSON.stringify(
-          {
-            name: appName,
-            version: "0.0.1",
-            description: "",
-            author: "",
-            scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
-            },
-            devDependencies: {
-              "@microsoft/teamsfx-cli": "0.*",
-            },
-            license: "MIT",
-          },
-          null,
-          4
-        )
-      );
+    {
+      const appName = inputs[QuestionAppName.name] as string;
+      if (inputs.platform !== Platform.VS) {
+        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
+        const exists = await fs.pathExists(packageJsonFilePath);
+        if (!exists) {
+          await fs.writeFile(
+            packageJsonFilePath,
+            JSON.stringify(
+              {
+                name: appName,
+                version: "0.0.1",
+                description: "",
+                author: "",
+                scripts: {
+                  test: 'echo "Error: no test specified" && exit 1',
+                },
+                devDependencies: {
+                  "@microsoft/teamsfx-cli": "0.*",
+                },
+                license: "MIT",
+              },
+              null,
+              4
+            )
+          );
+        }
+      }
     }
-    const gitIgnoreContent = [
-      "node_modules",
-      `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-      `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-      ".DS_Store",
-      ".env.teamsfx.local",
-      "subscriptionInfo.json",
-      BuildFolderName,
-    ];
-    if (inputs.platform === Platform.VS) {
-      gitIgnoreContent.push("appsettings.Development.json");
+    {
+      const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
+      const exists = await fs.pathExists(gitIgnoreFilePath);
+      if (!exists) {
+        const gitIgnoreContent = [
+          "node_modules",
+          `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+          `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
+          ".DS_Store",
+          ".env.teamsfx.local",
+          "subscriptionInfo.json",
+          BuildFolderName,
+        ];
+        if (inputs.platform === Platform.VS) {
+          gitIgnoreContent.push("appsettings.Development.json");
+        }
+        await fs.writeFile(gitIgnoreFilePath, gitIgnoreContent.join("\n"));
+      }
     }
-    await fs.writeFile(path.join(inputs.projectPath!, `.gitignore`), gitIgnoreContent.join("\n"));
   } catch (e) {
     return err(WriteFileError(e));
   }

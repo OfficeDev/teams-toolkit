@@ -13,6 +13,7 @@ import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
 import { LocalEnvManager, FolderName, isV3 } from "@microsoft/teamsfx-core";
+import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -240,16 +241,30 @@ export async function loadPackageJson(path: string): Promise<any> {
 }
 
 // Helper functions for local debug correlation-id, only used for telemetry
-let localDebugCorrelationId: string | undefined = undefined;
+// Use a 2-element tuple to handle concurrent F5
+const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+let current = 0;
 export function startLocalDebugSession(): string {
-  localDebugCorrelationId = uuid.v4();
+  current = (current + 1) % 2;
+  localDebugCorrelationIds[current] = uuid.v4();
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationId = undefined;
+  localDebugCorrelationIds[current] = "no-session-id";
+  current = (current + 1) % 2;
 }
 
 export function getLocalDebugSessionId(): string {
-  return localDebugCorrelationId || "no-session-id";
+  return localDebugCorrelationIds[current];
+}
+
+export function checkAndSkipDebugging(): boolean {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    endLocalDebugSession();
+    return true;
+  }
+  return false;
 }

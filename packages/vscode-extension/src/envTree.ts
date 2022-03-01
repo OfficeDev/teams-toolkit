@@ -11,9 +11,14 @@ import {
   TreeItem,
   SubscriptionInfo,
   LocalEnvironmentName,
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
+import * as fs from "fs-extra";
+import * as path from "path";
 import * as vscode from "vscode";
 import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
@@ -41,6 +46,13 @@ interface accountStatus {
   warnings: string[];
 }
 
+enum EnvInfo {
+  Local = "local",
+  LocalForExistingApp = "local-existing-app",
+  RemoteEnv = "environment",
+  ProvisionedRemoteEnv = "environment-provisioned",
+}
+
 export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
   if (vscode.workspace.workspaceFolders) {
     await mutex.runExclusive(async () => {
@@ -61,30 +73,19 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
       for (const item of envNames) {
         showEnvList.push(item);
-        const provisionSucceeded = await getProvisionSucceedFromEnv(item);
-        const isLocal = item === LocalEnvironmentName;
-
-        let contextValue = "environment";
-
-        if (isLocal) {
-          contextValue = "local";
-        } else {
-          if (provisionSucceeded) {
-            contextValue = contextValue + "-provisioned";
-          }
-        }
+        const envInfo = await getCurrentEnvInfo(workspacePath, item);
         const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
 
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
-            description: provisionSucceeded ? "(Provisioned)" : "",
+            description: envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: contextValue,
-            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
+            contextValue: envInfo,
+            icon: envInfo === EnvInfo.ProvisionedRemoteEnv ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: isLocal || isSpfxProject ? undefined : true,
+            expanded: envInfo === EnvInfo.Local || isSpfxProject ? undefined : true,
           },
         ]);
       }
@@ -93,6 +94,36 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     });
   }
   return ok(Void);
+}
+
+// Get the environment info for the given environment name.
+async function getCurrentEnvInfo(workspacePath: string, envName: string): Promise<EnvInfo> {
+  const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
+
+  if (envName === LocalEnvironmentName) {
+    return isExistingApp(workspacePath) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+  } else if (provisionSucceeded) {
+    return EnvInfo.ProvisionedRemoteEnv;
+  } else {
+    return EnvInfo.RemoteEnv;
+  }
+}
+
+async function isExistingApp(workspacePath: string): Promise<boolean> {
+  // Check if solution settings is empty.
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return !projectSettings.solutionSettings;
+  } else {
+    return false;
+  }
 }
 
 async function checkAllEnv(itemList: Array<string>) {

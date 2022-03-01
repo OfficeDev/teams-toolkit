@@ -833,7 +833,7 @@ export class FxCore implements v3.ICore {
           ctx.envInfoV2,
           this.tools.tokenProvider
         );
-        //兼容existing app
+        //for existing app
         if (
           res.isOk() &&
           func.method === "addCapability" &&

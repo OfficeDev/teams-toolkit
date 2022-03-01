@@ -21,7 +21,7 @@ const scenrioSupportedLanguages = new Map([
     ["js", "ts", "csharp"],
   ],
   [
-    ["bot-msgext", "default", "bot"],
+    ["bot", "default", "bot"],
     ["js", "ts", "csharp"],
   ],
   [["blazor-base", "default", "dotnet"], ["csharp"]],

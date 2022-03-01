@@ -93,7 +93,7 @@ import {
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
-import { getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1444,9 +1444,13 @@ export class AppStudioPluginImpl {
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
     let indexPath = tabIndexPath;
-    const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-      ?.solutionSettings as AzureSolutionSettings;
-    const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+
+    const capabilities = await getCapabilities(ctx.root);
+    if (capabilities.isErr()) {
+      return err(capabilities.error);
+    }
+    const hasFrontend =
+      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
       indexPath = "";

@@ -8,3 +8,4 @@ export * from "./downloadSample";
 export * from "./error";
 export * from "./FxCore";
 export * from "./globalVars";
+export * from "./types";

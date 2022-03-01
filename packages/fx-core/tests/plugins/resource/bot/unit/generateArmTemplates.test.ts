@@ -81,6 +81,22 @@ describe("Bot Generates Arm Templates", () => {
     );
   });
 
+  it("generate bicep arm tempalte: withoud aad plugin", async () => {
+    const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(
+      settings,
+      "botConfigWithoutAadPlugin.result.bicep",
+      "configWithoutAadPlugin.result.bicep"
+    );
+  });
+
   async function testGenerateArmTemplates(
     settings: AzureSolutionSettings,
     configurationModuleFileName: string,

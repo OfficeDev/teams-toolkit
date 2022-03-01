@@ -8,7 +8,7 @@ TEMPLATE_LIST=(
     function-base.default
     function-triggers.HTTPTrigger
     tab.default
-    bot-msgext.default
+    bot.default
     blazor-base.default
 )
 

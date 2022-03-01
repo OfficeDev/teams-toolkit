@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ext, initializeExtensionVariables } from "./extensionVariables";
+import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -27,7 +27,6 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
-  isTeamsfx,
   syncFeatureFlags,
   isValidNode,
   delay,
@@ -36,7 +35,6 @@ import {
 import {
   ConfigFolderName,
   InputConfigsFolderName,
-  StatesFolderName,
   AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
@@ -46,7 +44,6 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
-import { version } from "os";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -88,6 +85,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
       const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
       if (targetUri.isOk()) {
+        await handlers.updateAutoOpenGlobalKey(args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: targetUri.value };

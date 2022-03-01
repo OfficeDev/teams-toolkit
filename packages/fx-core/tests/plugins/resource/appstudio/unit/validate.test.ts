@@ -33,6 +33,10 @@ describe("validate manifest", () => {
     selectedPlugins = [BotPlugin];
   });
 
+  afterEach(async () => {
+    sinon.restore();
+  });
+
   it("valid manifest", async () => {
     sinon.stub(plugin, "validateManifest").resolves(ok([]));
 
@@ -41,8 +45,6 @@ describe("validate manifest", () => {
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(0);
     }
-
-    sinon.restore();
   });
 
   it("invalid manifest", async () => {
@@ -55,8 +57,6 @@ describe("validate manifest", () => {
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(1);
     }
-
-    sinon.restore();
   });
 
   it("validate should not call app studio API", async () => {

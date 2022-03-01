@@ -42,13 +42,11 @@ import {
   REMOTE_MANIFEST,
   ErrorMessages,
   MANIFEST_TEMPLATE,
-  TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
   BOTS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   MANIFEST_LOCAL,
-  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG,
   STATIC_TABS_TPL_LOCAL_DEBUG,
   CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
   BOTS_TPL_LOCAL_DEBUG,
@@ -60,13 +58,22 @@ import {
   MANIFEST_RESOURCES,
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   FRONTEND_INDEX_PATH,
+  TEAMS_APP_MANIFEST_TEMPLATE_V3,
+  WEB_APPLICATION_INFO_LOCAL_DEBUG,
+  WEB_APPLICATION_INFO_MULTI_ENV,
+  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import path from "path";
 
-import { getAppDirectory, isConfigUnifyEnabled, isSPFxProject } from "../../../common";
+import {
+  getAppDirectory,
+  isAADEnabled,
+  isConfigUnifyEnabled,
+  isSPFxProject,
+} from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -527,12 +534,14 @@ export class AppStudioPluginImpl {
       const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
       const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+      const hasAad = isAADEnabled(solutionSettings);
       manifest = await createManifest(
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
         hasMessageExtension,
-        false
+        false,
+        hasAad
       );
       if (!isConfigUnifyEnabled()) {
         const localDebugManifest = await createLocalManifest(
@@ -540,7 +549,8 @@ export class AppStudioPluginImpl {
           hasFrontend,
           hasBot,
           hasMessageExtension,
-          false
+          false,
+          hasAad
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -1610,7 +1620,8 @@ export async function createLocalManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean
+  isSPFx: boolean,
+  hasAad = true
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1625,10 +1636,13 @@ export async function createLocalManifest(
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     return manifest;
   } else {
-    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
+    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
 
     manifestString = replaceConfigValue(manifestString, "appName", name);
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    if (hasAad) {
+      manifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
+    }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
       manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
@@ -1648,14 +1662,18 @@ export async function createManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean
+  isSPFx: boolean,
+  hasAad = true
 ): Promise<TeamsAppManifest | undefined> {
-  if (!hasBot && !hasMessageExtension && !hasFrontend) {
+  if (!hasBot && !hasMessageExtension && !hasFrontend && !hasAad) {
     throw new Error(`Invalid capability`);
   }
-  if (!isSPFx || hasBot || hasMessageExtension) {
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
+  if (!isSPFx || hasBot || hasMessageExtension || hasAad) {
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    if (hasAad) {
+      manifest.webApplicationInfo = WEB_APPLICATION_INFO_MULTI_ENV;
+    }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_FOR_MULTI_ENV;
       manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;

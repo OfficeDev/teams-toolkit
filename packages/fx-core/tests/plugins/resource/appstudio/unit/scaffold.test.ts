@@ -279,4 +279,26 @@ describe("Scaffold", () => {
       )
     ).to.be.true;
   });
+
+  it("shouldn't generate aad manifest when aad plugin is not activated", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-app-studio"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest = fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)));
+    chai.expect(manifest).to.be.not.undefined;
+
+    chai.expect(manifest.webApplicationInfo).to.be.undefined;
+  });
 });

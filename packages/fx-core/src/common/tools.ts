@@ -52,6 +52,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
+import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -380,6 +381,18 @@ export function isBicepEnvCheckerEnabled(): boolean {
 
 export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
+// This method is for deciding whether AAD should be activated.
+// Currently AAD plugin will always be activated when scaffold.
+// This part will be updated when we support adding aad separately.
+export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  return (
+    solutionSettings.hostType === HostTypeOptionAzure.id &&
+    // For scaffold, activeResourecPlugins is undefined
+    (!solutionSettings.activeResourcePlugins ||
+      solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
+  );
 }
 
 export function getRootDirectory(): string {

@@ -672,10 +672,6 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("local debug input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
-      // existing app scenario, local debug has no effect
-      return err(new OperationNotSupportedForExistingAppError("localDebug"));
-    }
     if (!ctx.solutionV2 || !ctx.contextV2) {
       const name = undefinedName(
         [ctx, ctx?.solutionV2, ctx?.contextV2],

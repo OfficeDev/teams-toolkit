@@ -160,18 +160,21 @@ export async function activate(): Promise<Result<Void, FxError>> {
     }
 
     const telemetry = ExtTelemetry.reporter;
-    AzureAccountManager.setStatusChangeMap(
-      "successfully-sign-in-azure",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
-        } else if (status === signedOut) {
-          window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
-        }
-        return Promise.resolve();
-      },
-      false
-    );
+    if (validProject) {
+      AzureAccountManager.setStatusChangeMap(
+        "successfully-sign-in-azure",
+        (status, token, accountInfo) => {
+          if (status === signedIn) {
+            window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
+          } else if (status === signedOut) {
+            window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
+          }
+          return Promise.resolve();
+        },
+        false
+      );
+    }
+
     let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
     const vscodeEnv = detectVsCodeEnv();
     if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {

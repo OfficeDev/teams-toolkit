@@ -1,9 +1,6 @@
-
 import { default as axios } from "axios";
 import * as querystring from "querystring";
-
 import { TeamsActivityHandler, CardFactory, TurnContext, AdaptiveCardInvokeValue, AdaptiveCardInvokeResponse} from "botbuilder";
-
 import rawWelcomeCard from "./adaptiveCards/welcome.json"
 import rawLearnCard from "./adaptiveCards/learn.json"
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
@@ -12,9 +9,7 @@ export interface DataInterface {
   likeCount: number
 }
 
-
-export class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
-  
+export class TeamsBot extends TeamsActivityHandler {
   // record the likeCount
   likeCountObj: { likeCount: number };
 
@@ -91,9 +86,7 @@ export class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
       return { statusCode: 200, type: undefined, value: undefined };
     }
   }
-  
 
-  
   // Messaging extension Code
   // Action.
   public async handleTeamsMessagingExtensionSubmitAction(
@@ -169,9 +162,7 @@ export class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
     };
     return response;
   }
-  
 }
-
 
 async function createCardCommand(context: TurnContext, action: any): Promise<any> {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.

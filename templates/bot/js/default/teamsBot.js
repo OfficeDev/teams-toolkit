@@ -1,15 +1,11 @@
 const axios = require("axios");
 const querystring = require("querystring");
-
 const { TeamsActivityHandler, CardFactory, TurnContext} = require("botbuilder");
-
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
 const rawLearnCard = require("./adaptiveCards/learn.json");
 const cardTools = require("@microsoft/adaptivecards-tools");
 
-
-class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
-  
+class TeamsBot extends TeamsActivityHandler {
   constructor() {
     super();
 
@@ -81,9 +77,7 @@ class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
       return { statusCode: 200 };
     }
   }
-  
 
-  
   // Messaging extension Code
   // Action.
   handleTeamsMessagingExtensionSubmitAction(context, action) {
@@ -153,9 +147,7 @@ class TeamsBotMessageExtensionBot extends TeamsActivityHandler {
     };
     return response;
   }
-  
 }
-
 
 function createCardCommand(context, action) {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.
@@ -229,5 +221,4 @@ function shareMessageCommand(context, action) {
   };
 }
 
-
-module.exports.TeamsBotMessageExtensionBot = TeamsBotMessageExtensionBot;
+module.exports.TeamsBot = TeamsBot;

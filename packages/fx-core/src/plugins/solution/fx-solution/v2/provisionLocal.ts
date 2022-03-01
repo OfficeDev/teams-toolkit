@@ -30,7 +30,7 @@ import {
 } from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { isPureExistingApp } from "../../../../core/utils";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionLocalResource(
   ctx: v2.Context,

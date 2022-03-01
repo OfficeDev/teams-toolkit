@@ -115,8 +115,8 @@ import {
   TabSPFxItem,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
-import { isPureExistingApp } from "./utils";
 import { newEnvInfoV3 } from "./environment";
+import { isPureExistingApp } from "../common/projectSettingsHelper";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.

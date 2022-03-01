@@ -18,15 +18,10 @@ import {
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
-  SolutionContext,
-  v3,
-  PluginContext,
 } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as Handlebars from "handlebars";
 import * as path from "path";
 import { promisify } from "util";

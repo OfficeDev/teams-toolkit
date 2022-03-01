@@ -46,39 +46,7 @@ import { IUserList } from "../plugins/resource/appstudio/interfaces/IAppDefiniti
 import { CoreSource } from "./error";
 import { TOOLS } from ".";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
-
-export function hasAAD(projectSetting: ProjectSettings): boolean {
-  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  if (!solutionSettings) return false;
-  return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad);
-}
-
-export function hasSPFx(projectSetting: ProjectSettings): boolean {
-  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  if (!solutionSettings) return false;
-  return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.spfx);
-}
-
-export function hasAzureResource(projectSetting: ProjectSettings): boolean {
-  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  if (!solutionSettings) return false;
-  const azurePlugins = [
-    BuiltInFeaturePluginNames.aad,
-    BuiltInFeaturePluginNames.apim,
-    BuiltInFeaturePluginNames.bot,
-    BuiltInFeaturePluginNames.dotnet,
-    BuiltInFeaturePluginNames.frontend,
-    BuiltInFeaturePluginNames.function,
-    BuiltInFeaturePluginNames.identity,
-    BuiltInFeaturePluginNames.keyVault,
-    BuiltInFeaturePluginNames.simpleAuth,
-    BuiltInFeaturePluginNames.sql,
-  ];
-  for (const pluginName of solutionSettings.activeResourcePlugins) {
-    if (azurePlugins.includes(pluginName)) return true;
-  }
-  return false;
-}
+import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
 
 export async function listCollaborator(
   ctx: v2.Context,

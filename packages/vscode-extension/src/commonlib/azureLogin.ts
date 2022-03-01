@@ -380,7 +380,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getStatus(): Promise<LoginStatus> {
     const azureAccount = this.getAzureAccount();
-    if (this.checkVersion()) {
+    if (this.isLegacyVersion()) {
       // add this to make sure Azure Account Extension has fully initialized
       // this will wait for login finish when version >= 0.10.0, so loggingIn status will be ignored
       await azureAccount.waitForSubscriptions();
@@ -412,7 +412,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     azureAccount.onStatusChanged(async (event) => {
-      if (this.checkVersion()) {
+      if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {
           AzureAccountManager.currentStatus = event;
           if (AzureAccountManager.currentStatus === "LoggedIn") {
@@ -597,7 +597,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  checkVersion(): boolean {
+  isLegacyVersion(): boolean {
     try {
       const version: string =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.packageJSON

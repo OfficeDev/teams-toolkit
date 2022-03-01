@@ -879,11 +879,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     return "1";
   }
 
-  try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
-  } catch {
-    // ignore telemetry error
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
 
   const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
@@ -891,13 +887,9 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve(deps);
 
-  try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
-      [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-    });
-  } catch {
-    // ignore telemetry error
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+  });
 
   if (!shouldContinue) {
     await debug.stopDebugging();
@@ -916,22 +908,14 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
     return "1";
   }
 
-  try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
-  } catch {
-    // ignore telemetry error
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
 
-  try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
-      [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-    });
-  } catch {
-    // ignore telemetry error
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+  });
 
   if (!shouldContinue) {
     await debug.stopDebugging();
@@ -1014,31 +998,23 @@ export async function getFuncPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
-  try {
-    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheckStart, {
-      [TelemetryProperty.DebugAppId]: localAppId,
-    });
-  } catch {
-    // ignore telemetry error
-  }
+  const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheckStart, {
+    [TelemetryProperty.DebugAppId]: localAppId,
+  });
 
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
-    try {
-      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
-        [TelemetryProperty.DebugAppId]: localAppId,
-      });
-    } finally {
-      // ignore telemetry error
-      terminateAllRunningTeamsfxTasks();
-      await debug.stopDebugging();
-      commonUtils.endLocalDebugSession();
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      return "1";
-    }
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
+    terminateAllRunningTeamsfxTasks();
+    await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 
   const portsInUse = await commonUtils.getPortsInUse();
@@ -1053,38 +1029,27 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
-    try {
-      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
-        [TelemetryProperty.DebugAppId]: localAppId,
-      });
-    } finally {
-      // ignore telemetry error
-      terminateAllRunningTeamsfxTasks();
-      await debug.stopDebugging();
-      commonUtils.endLocalDebugSession();
-      VS_CODE_UI.showMessage(
-        "error",
-        message,
-        false,
-        StringResources.vsc.localDebug.learnMore
-      ).then(async (result) => {
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
+    terminateAllRunningTeamsfxTasks();
+    await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
+    VS_CODE_UI.showMessage("error", message, false, StringResources.vsc.localDebug.learnMore).then(
+      async (result) => {
         if (result.isOk() && result.value === StringResources.vsc.localDebug.learnMore) {
           await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
         }
-      });
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      return "1";
-    }
+      }
+    );
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 
-  try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-  } catch {
-    // ignore telemetry error
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
 }
 
 export async function openDocumentHandler(args: any[]): Promise<boolean> {

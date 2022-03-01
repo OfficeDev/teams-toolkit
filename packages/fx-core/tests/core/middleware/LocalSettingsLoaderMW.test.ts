@@ -21,7 +21,6 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
@@ -35,6 +34,7 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import mockLocalSettings from "./localSettings.json";
 

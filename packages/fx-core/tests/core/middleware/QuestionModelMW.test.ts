@@ -24,7 +24,7 @@ import {
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
+import { createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
 import {
   newSolutionContext,
   QuestionModelMW,
@@ -39,6 +39,7 @@ import {
 } from "../utils";
 import { Container } from "typedi";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { CoreHookContext } from "../../../src/core/types";
 describe("Middleware - QuestionModelMW", () => {
   const sandbox = sinon.createSandbox();
   afterEach(function () {

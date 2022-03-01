@@ -1,16 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ok,
-  Func,
-  ArchiveFolderName,
-  ArchiveLogFileName,
-  AppPackageFolderName,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, ok, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import path from "path";
-
 import { AzureStorageClient } from "./clients";
 import {
   EnableStaticWebsiteError,
@@ -20,8 +11,6 @@ import {
   runWithErrorCatchAndThrow,
   CheckStorageError,
   CheckResourceGroupError,
-  UserTaskNotImplementedError,
-  MigrateV1ProjectError,
 } from "./resources/errors";
 import {
   Constants,
@@ -39,7 +28,6 @@ import { TeamsFxResult } from "./error-factory";
 import { ProgressHelper } from "./utils/progress-helper";
 import {
   DeployProgress,
-  MigrateProgress,
   PostProvisionProgress,
   PreDeployProgress,
   ScaffoldProgress,
@@ -48,14 +36,18 @@ import { TemplateInfo } from "./resources/templateInfo";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep } from "../../../common/constants";
-import { copyFiles } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  isConfigUnifyEnabled,
+  IsSimpleAuthEnabled,
+} from "../../../common/tools";
 import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
 import { PluginImpl } from "./interface";
+import { FRONTEND_INDEX_PATH } from "../appstudio/constants";
 
 export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -175,10 +167,20 @@ export class FrontendPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-    ctx.localSettings?.frontend?.set(
-      LocalSettingsFrontendKeys.TabIndexPath,
-      Constants.FrontendIndexPath
-    );
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(PluginInfo.PluginName)
+        ?.set(FRONTEND_INDEX_PATH, Constants.FrontendIndexPath);
+    } else {
+      ctx.localSettings?.frontend?.set(
+        LocalSettingsFrontendKeys.TabIndexPath,
+        Constants.FrontendIndexPath
+      );
+    }
+    return ok(undefined);
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     return ok(undefined);
   }
 
@@ -233,32 +235,6 @@ export class FrontendPluginImpl implements PluginImpl {
         customizedRemoteEnvs: {},
       }
     );
-  }
-
-  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    if (func.method === "migrateV1Project") {
-      Logger.info(Messages.StartMigrateV1Project(PluginInfo.DisplayName));
-      const progressHandler = await ProgressHelper.startProgress(ctx, MigrateProgress);
-      await progressHandler?.next(MigrateProgress.steps.Migrate);
-
-      const sourceFolder = path.join(ctx.root, ArchiveFolderName);
-      const distFolder = path.join(ctx.root, FrontendPathInfo.WorkingDir);
-      const excludeFiles = [
-        { fileName: ArchiveFolderName, recursive: false },
-        { fileName: ArchiveLogFileName, recursive: false },
-        { fileName: AppPackageFolderName, recursive: false },
-        { fileName: FrontendPathInfo.NodePackageFolderName, recursive: true },
-      ];
-
-      await runWithErrorCatchAndThrow(new MigrateV1ProjectError(), async () => {
-        await copyFiles(sourceFolder, distFolder, excludeFiles);
-      });
-
-      await ProgressHelper.endProgress(true);
-      Logger.info(Messages.EndMigrateV1Project(PluginInfo.DisplayName));
-      return ok(undefined);
-    }
-    throw new UserTaskNotImplementedError(func.method);
   }
 
   private async checkStorageAvailability(ctx: PluginContext) {

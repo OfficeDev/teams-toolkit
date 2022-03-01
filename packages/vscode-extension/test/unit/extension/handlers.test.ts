@@ -296,7 +296,7 @@ suite("handlers", () => {
 
     await handlers.openSamplesHandler();
 
-    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery);
+    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, false);
     createOrShow.restore();
     sendTelemetryEvent.restore();
   });

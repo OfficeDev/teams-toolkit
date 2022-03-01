@@ -25,8 +25,8 @@ import {
   ErrorWithCode,
   ErrorCode,
   TeamsBotSsoPromptSettings,
-  loadConfiguration,
-  Configuration,
+  TeamsFx,
+  IdentityType,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -348,12 +348,40 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       scopes: invalidScopes,
     };
 
-    loadConfiguration();
     expect(() => {
-      new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings);
+      new TeamsBotSsoPrompt(new TeamsFx(), TeamsBotSsoPromptId, settings);
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
+  });
+
+  it("create TeamsBotSsoPrompt instance should throw IdentityTypeNotSupported error with invalid identity type", async function () {
+    const settings: any = {
+      scopes: requiredScopes,
+    };
+
+    expect(() => {
+      new TeamsBotSsoPrompt(new TeamsFx(IdentityType.App), TeamsBotSsoPromptId, settings);
+    })
+      .to.throw(ErrorWithCode, "Application identity is not supported in TeamsBotSsoPrompt")
+      .with.property("code", ErrorCode.IdentityTypeNotSupported);
+  });
+
+  it("create TeamsBotSsoPrompt instance should throw InvalidConfiguration error with empty configuration", async function () {
+    mockedEnvRestore();
+    mockedEnvRestore = mockedEnv({});
+    const settings: any = {
+      scopes: requiredScopes,
+    };
+
+    expect(() => {
+      new TeamsBotSsoPrompt(new TeamsFx(), TeamsBotSsoPromptId, settings);
+    })
+      .to.throw(
+        ErrorWithCode,
+        "initiateLoginEndpoint, clientId, tenantId, applicationIdUri in configuration is invalid: undefined."
+      )
+      .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
   function createReply(type: ActivityTypes, activity: Partial<Activity>): Partial<Activity> {
@@ -417,8 +445,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   async function initializeTestEnv(
     timeout_value?: number,
     endOnInvalidMessage?: boolean,
-    channelId?: Channels,
-    config?: Configuration
+    channelId?: Channels
   ): Promise<TestAdapter> {
     // Create new ConversationState with MemoryStorage
     const convoState: ConversationState = new ConversationState(new MemoryStorage());
@@ -433,9 +460,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       endOnInvalidMessage: endOnInvalidMessage,
     };
 
-    loadConfiguration(config);
-
-    dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings));
+    const teamsfx = new TeamsFx();
+    dialogs.add(new TeamsBotSsoPrompt(teamsfx, TeamsBotSsoPromptId, settings));
 
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {

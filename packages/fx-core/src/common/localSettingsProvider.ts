@@ -34,7 +34,6 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false,
     includeSimpleAuth = false,
     includeAAD = true
   ): LocalSettings {
@@ -47,7 +46,7 @@ export class LocalSettingsProvider {
       teamsApp: teamsAppLocalConfig,
     };
 
-    if (!migrateFromV1 && includeAAD) {
+    if (includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth);
     }
 
@@ -73,7 +72,6 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false,
     includeSimpleAuth = false,
     includeAAD = true
   ): Json {
@@ -84,7 +82,7 @@ export class LocalSettingsProvider {
       },
     };
 
-    if (!migrateFromV1 && includeAAD) {
+    if (includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth).toJSON();
     }
 
@@ -148,12 +146,23 @@ export class LocalSettingsProvider {
     }
   }
 
-  public async loadV2(cryptoProvider?: CryptoProvider): Promise<Json | undefined> {
+  public async loadV2(
+    cryptoProvider?: CryptoProvider,
+    includeAAD?: boolean
+  ): Promise<Json | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
       const localSettingsJson: Json = await fs.readJson(this.localSettingsFilePath);
       if (localSettingsJson && cryptoProvider) {
         const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
         this.decryptLocalSettings(localSettings, cryptoProvider);
+
+        // TODO: Add auth part when scaffolding
+        // This part will add auth in localSettings when AAD plugin exists
+        // Will remove these when auth can be added through command
+        if (includeAAD && !localSettings.auth) {
+          localSettings.auth = new ConfigMap();
+        }
+
         return this.convertToLocalSettingsJson(localSettings);
       }
       return localSettingsJson;

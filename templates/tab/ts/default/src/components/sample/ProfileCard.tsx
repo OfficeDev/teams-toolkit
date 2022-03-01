@@ -6,7 +6,7 @@ export const ProfileCard = (loading: boolean, data?: any) => (
     aria-roledescription="card avatar"
     elevated
     inverted
-    styles={{ height: "max-content", margin: "0.5em 0" }}
+    styles={{ height: "max-content", margin: "0.5em 0", width: "340px", background: "#faf9f8" }}
   >
     <Card.Header styles={{ "margin-bottom": "0" }}>
       {loading && (

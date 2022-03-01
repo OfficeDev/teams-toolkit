@@ -20,6 +20,7 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
@@ -30,52 +31,62 @@ describe("Create single tab", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
+  describe("feature flags for API v3", async function () {
+    const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
+    let mockedEnvRestore: RestoreFn;
+    for (const envParam of envs) {
+      beforeEach(() => {
+        mockedEnvRestore = mockedEnv(envParam);
+      });
+      afterEach(() => {
+        mockedEnvRestore();
+      });
+      it(`Create react app without Azure Function, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
+        // new a project ( tab only )
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        {
+          // Validate scaffold
+          await FrontendValidator.validateScaffold(projectPath, "javascript");
+        }
+      });
 
-  it("Create react app without Azure Function", async () => {
-    // new a project ( tab only )
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      it(`Provision Resource: React app without function, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
+        await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
-    {
-      // Validate scaffold
-      await FrontendValidator.validateScaffold(projectPath, "javascript");
+        await CliHelper.setSubscription(subscription, projectPath);
+
+        await CliHelper.provisionProject(projectPath);
+
+        // Validate provision
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
+
+        // Validate Tab Frontend
+        const frontend = FrontendValidator.init(context, true);
+        await FrontendValidator.validateProvision(frontend);
+      });
+
+      it(`Deploy react app without Azure Function and SQL, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
+        // deploy
+        await execAsyncWithRetry(`teamsfx deploy`, {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        });
+
+        // Validate deployment
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+        // Validate Tab Frontend
+        const frontend = FrontendValidator.init(context, true);
+        await FrontendValidator.validateDeploy(frontend);
+      });
     }
-  });
-
-  it("Provision Resource: React app without function", async () => {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-
-    await CliHelper.setSubscription(subscription, projectPath);
-
-    await CliHelper.provisionProject(projectPath);
-
-    // Validate provision
-    // Get context
-    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-    // Validate Aad App
-    const aad = AadValidator.init(context, false, AppStudioLogin);
-    await AadValidator.validate(aad);
-
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context, true);
-    await FrontendValidator.validateProvision(frontend);
-  });
-
-  it("Deploy react app without Azure Function and SQL", async () => {
-    // deploy
-    await execAsyncWithRetry(`teamsfx deploy`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    // Validate deployment
-    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context, true);
-    await FrontendValidator.validateDeploy(frontend);
   });
 });

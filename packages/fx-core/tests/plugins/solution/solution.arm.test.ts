@@ -62,7 +62,8 @@ describe("Generate ARM Template for project", () => {
 
   beforeEach(async () => {
     mockedCtx = TestHelper.mockSolutionContext();
-    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
+    mocker.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["default"]));
+    mocker.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["default", "local"]));
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
     await fs.ensureDir(TestHelper.rootDir);
   });

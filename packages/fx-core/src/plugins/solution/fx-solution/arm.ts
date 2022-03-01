@@ -110,16 +110,18 @@ export async function generateArmTemplate(
   return result;
 }
 
-export async function addFeature(
+export async function generateBicep(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs
+  inputs: v2.InputsWithProjectPath,
+  addedPlugins: string[],
+  existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
   try {
-    result = await doAddFeature(ctx, inputs);
+    result = await doGenerateBicep(ctx, inputs, addedPlugins, existingPlugins);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -565,8 +567,8 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
                       .get(pluginId)
                       ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
-                    (envInfo.state as v3.TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
-                      pluginOutput[pluginOutputKey];
+                    if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
+                    envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];
                   }
                 }
               }
@@ -872,81 +874,80 @@ async function doGenerateArmTemplate(
   return ok(undefined); // Nothing to return when success
 }
 
-async function doAddFeature(
+async function doGenerateBicep(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs
+  inputs: v2.InputsWithProjectPath,
+  addedPlugins: string[],
+  existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
-  const pluginNames = [];
-  if (ctx.projectSetting.solutionSettings)
-    (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.forEach(
-      (p) => pluginNames.push(p)
-    );
-  pluginNames.push(inputs.feature);
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(pluginNames, baseName);
+  const allPlugins = addedPlugins.concat(existingPlugins);
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(allPlugins, baseName);
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
 
-  // add feature for selected plugin
-  const selectedPlugin = await Container.get<v3.FeaturePlugin>(inputs.feature);
-  if (!selectedPlugin.addFeature) return ok(undefined);
-  const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs);
-  if (addFeatureRes && addFeatureRes.isErr()) {
-    return err(addFeatureRes.error);
-  }
-  if (addFeatureRes.value) {
-    for (const template of addFeatureRes.value) {
-      if (template.kind === "bicep") {
-        const armTemplate = template.template as ArmTemplateResult;
+  // generateBicep
+  const addFeatureInputs: v3.AddFeatureInputs = {
+    ...inputs,
+    allPluginsAfterAdd: allPlugins,
+  };
+  for (const pluginName of addedPlugins) {
+    const selectedPlugin = await Container.get<v3.PluginV3>(pluginName);
+    if (!selectedPlugin.generateBicep) continue;
+    const res = await selectedPlugin.generateBicep(ctx, addFeatureInputs);
+    if (res.isErr()) {
+      ctx.logProvider.error(`${pluginName}: generateBicep() failed!`);
+      return err(res.error);
+    }
+    if (res.value) {
+      for (const template of res.value) {
+        const armTemplate = template as ArmTemplateResult;
         generateArmFromResult(
           armTemplate,
           bicepOrchestrationTemplate,
-          inputs.feature,
+          pluginName,
           moduleProvisionFiles,
           moduleConfigFiles
         );
       }
     }
-    // notify other plugins
-    for (const pluginName of pluginNames) {
-      if (pluginName === inputs.feature) continue;
-      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-      if (plugin.afterOtherFeaturesAdded) {
-        const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
-          ...inputs,
-          features: [
-            {
-              name: inputs.feature,
-              value: addFeatureRes.value,
-            },
-          ],
-        });
-        if (notifyRes.isErr()) {
-          return err(notifyRes.error);
-        }
-        if (notifyRes.value) {
-          for (const template of notifyRes.value) {
-            if (template.kind === "bicep") {
-              const armTemplate = template.template as ArmTemplateResult;
-              generateArmFromResult(
-                armTemplate,
-                bicepOrchestrationTemplate,
-                plugin.name,
-                moduleProvisionFiles,
-                moduleConfigFiles
-              );
-            }
-          }
-        }
+    ctx.logProvider.info(`${pluginName}: generateBicep() success!`);
+  }
+  //updateBicep
+  const updateInputs: v3.UpdateInputs = {
+    ...addFeatureInputs,
+    newPlugins: addedPlugins,
+  };
+  for (const pluginName of existingPlugins) {
+    const existingPlugin = await Container.get<v3.PluginV3>(pluginName);
+    if (!existingPlugin.updateBicep) continue;
+    const res = await existingPlugin.updateBicep(ctx, updateInputs);
+    if (res.isErr()) {
+      ctx.logProvider.error(`${pluginName}: updateBicep() failed!`);
+      return err(res.error);
+    }
+    if (res.value) {
+      for (const template of res.value) {
+        const armTemplate = template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          pluginName,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
       }
     }
-    await persistBicepTemplates(
-      bicepOrchestrationTemplate,
-      moduleProvisionFiles,
-      moduleConfigFiles,
-      inputs.projectPath
-    );
+    ctx.logProvider.info(`${pluginName}: updateBicep() success!`);
   }
+
+  await persistBicepTemplates(
+    bicepOrchestrationTemplate,
+    moduleProvisionFiles,
+    moduleConfigFiles,
+    inputs.projectPath
+  );
+
   return ok(undefined); // Nothing to return when success
 }
 
@@ -954,16 +955,16 @@ async function persistBicepTemplates(
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
-  projectaPath: string
+  projectPath: string
 ) {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(projectaPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }
-    const parameterEnvFolderPath = path.join(projectaPath, configsFolder);
+    const parameterEnvFolderPath = path.join(projectPath, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envListResult.value) {
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
@@ -1016,7 +1017,7 @@ async function persistBicepTemplates(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
 
-    const templateFolderPath = path.join(projectaPath, templatesFolder);
+    const templateFolderPath = path.join(projectPath, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     // Generate provision.bicep and module provision bicep files
@@ -1219,6 +1220,8 @@ class BicepOrchestrationContent {
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
     this.RenderContext.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
+    if (armResult.Parameters && Object.keys(armResult.Parameters).length > 0)
+      this.TemplateAdded = true;
   }
 
   public applyReference(configContent: string): string {
@@ -1348,7 +1351,7 @@ function expandParameterPlaceholdersV3(
 ): string {
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const plugins = solutionSettings
-    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.FeaturePlugin>(p))
+    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p))
     : [];
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
@@ -1542,11 +1545,13 @@ class ArmV2 {
 }
 
 class Arm {
-  async addFeature(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.SolutionAddFeatureInputs
+    inputs: v2.InputsWithProjectPath,
+    addedPlugins: string[],
+    existingPlugins: string[]
   ): Promise<Result<any, FxError>> {
-    return addFeature(ctx, inputs);
+    return generateBicep(ctx, inputs, addedPlugins, existingPlugins);
   }
   async deployArmTemplates(
     ctx: v2.Context,

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, GraphTokenProvider, PluginContext } from "@microsoft/teamsfx-api";
+import { FxError, GraphTokenProvider, PluginContext, v2 } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
 import {
@@ -239,7 +239,6 @@ export class AadAppClient {
   }
 
   public static async checkPermission(
-    ctx: PluginContext,
     stage: string,
     objectId: string,
     userObjectId: string
@@ -255,8 +254,7 @@ export class AadAppClient {
   }
 
   public static async grantPermission(
-    ctx: PluginContext,
-    stage: string,
+    ctx: PluginContext | v2.Context,
     objectId: string,
     userObjectId: string
   ): Promise<void> {
@@ -279,7 +277,6 @@ export class AadAppClient {
   }
 
   public static async listCollaborator(
-    ctx: PluginContext,
     stage: string,
     objectId: string
   ): Promise<AadOwner[] | undefined> {

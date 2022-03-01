@@ -21,6 +21,7 @@ import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import {
+  initializing,
   loggedIn,
   loggedOut,
   loggingIn,
@@ -379,8 +380,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getStatus(): Promise<LoginStatus> {
     const azureAccount = this.getAzureAccount();
-    // add this to make sure Azure Account Extension has fully initialized
-    await azureAccount.waitForSubscriptions();
+    if (this.isLegacyVersion()) {
+      // add this to make sure Azure Account Extension has fully initialized
+      // this will wait for login finish when version >= 0.10.0, so loggingIn status will be ignored
+      await azureAccount.waitForSubscriptions();
+    }
     if (azureAccount.status === loggedIn) {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();
@@ -408,27 +412,54 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     azureAccount.onStatusChanged(async (event) => {
-      if (AzureAccountManager.currentStatus === "Initializing") {
-        AzureAccountManager.currentStatus = event;
-        if (AzureAccountManager.currentStatus === "LoggedIn") {
-          const subscriptioninfo = await this.readSubscription();
-          if (subscriptioninfo) {
-            this.setSubscription(subscriptioninfo.subscriptionId);
+      if (this.isLegacyVersion()) {
+        if (AzureAccountManager.currentStatus === "Initializing") {
+          AzureAccountManager.currentStatus = event;
+          if (AzureAccountManager.currentStatus === "LoggedIn") {
+            const subscriptioninfo = await this.readSubscription();
+            if (subscriptioninfo) {
+              this.setSubscription(subscriptioninfo.subscriptionId);
+            }
           }
+          return;
         }
-        return;
-      }
-      AzureAccountManager.currentStatus = event;
-      if (event === loggedOut) {
-        if (AzureAccountManager.statusChange !== undefined) {
-          await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+        AzureAccountManager.currentStatus = event;
+        if (event === loggedOut) {
+          if (AzureAccountManager.statusChange !== undefined) {
+            await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+          }
+          await this.notifyStatus();
+        } else if (event === loggedIn) {
+          await this.updateLoginStatus();
+          await this.notifyStatus();
+        } else if (event === loggingIn) {
+          await this.notifyStatus();
         }
-        await this.notifyStatus();
-      } else if (event === loggedIn) {
-        await this.updateLoginStatus();
-        await this.notifyStatus();
-      } else if (event === loggingIn) {
-        await this.notifyStatus();
+      } else {
+        if (AzureAccountManager.currentStatus === initializing) {
+          if (event === loggedIn) {
+            const subscriptioninfo = await this.readSubscription();
+            if (subscriptioninfo) {
+              this.setSubscription(subscriptioninfo.subscriptionId);
+            }
+            AzureAccountManager.currentStatus = event;
+          } else if (event === loggedOut) {
+            AzureAccountManager.currentStatus = event;
+          }
+          return;
+        }
+        AzureAccountManager.currentStatus = event;
+        if (event === loggedOut) {
+          if (AzureAccountManager.statusChange !== undefined) {
+            await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+          }
+          await this.notifyStatus();
+        } else if (event === loggedIn) {
+          await this.updateLoginStatus();
+          await this.notifyStatus();
+        } else if (event === loggingIn) {
+          await this.notifyStatus();
+        }
       }
     });
   }
@@ -563,6 +594,19 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return subscriptionFile;
     } else {
       return undefined;
+    }
+  }
+
+  isLegacyVersion(): boolean {
+    try {
+      const version: string =
+        vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.packageJSON
+          .version;
+      const versionDetail = version.split(".");
+      return parseInt(versionDetail[0]) === 0 && parseInt(versionDetail[1]) < 10;
+    } catch (e) {
+      VsCodeLogInstance.error("[Get Azure extension] " + e.message);
+      return false;
     }
   }
 }

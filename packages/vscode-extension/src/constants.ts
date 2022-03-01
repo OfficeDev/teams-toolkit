@@ -5,7 +5,6 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
 }
 
-export const migrateV1DocUrl = "https://aka.ms/teamsfx-migrate-v1";
 export const AzurePortalUrl = "https://portal.azure.com";
 export const AzureAssignRoleHelpUrl = "https://aka.ms/teamsfx-azure-role-assignments-help-link";
 
@@ -18,4 +17,11 @@ export enum SyncedState {
 
 export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
+}
+
+export enum GlobalKey {
+  OpenWalkThrough = "fx-extension.openWalkThrough",
+  OpenReadMe = "fx-extension.openReadMe",
+  OpenSampleReadMe = "fx-extension.openSampleReadMe",
+  ShowLocalDebugMessage = "ShowLocalDebugMessage",
 }

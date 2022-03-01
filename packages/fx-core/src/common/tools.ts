@@ -52,6 +52,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
+import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -378,6 +379,22 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+export function isConfigUnifyEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
+// This method is for deciding whether AAD should be activated.
+// Currently AAD plugin will always be activated when scaffold.
+// This part will be updated when we support adding aad separately.
+export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  return (
+    solutionSettings.hostType === HostTypeOptionAzure.id &&
+    // For scaffold, activeResourecPlugins is undefined
+    (!solutionSettings.activeResourcePlugins ||
+      solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
+  );
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {
@@ -432,32 +449,6 @@ export function getAppStudioEndpoint(): string {
     return "https://dev-int.teams.microsoft.com";
   } else {
     return "https://dev.teams.microsoft.com";
-  }
-}
-
-export async function copyFiles(
-  srcPath: string,
-  distPath: string,
-  excludeFileList: { fileName: string; recursive: boolean }[] = []
-): Promise<void> {
-  await fs.ensureDir(distPath);
-
-  const excludeFileNames = excludeFileList.map((file) => file.fileName);
-  const recursiveExcludeFileNames = excludeFileList
-    .filter((file) => file.recursive)
-    .map((file) => file.fileName);
-
-  const fileNames = await fs.readdir(srcPath);
-  for (const fileName of fileNames) {
-    if (excludeFileNames.includes(fileName)) {
-      continue;
-    }
-    await fs.copy(path.join(srcPath, fileName), path.join(distPath, fileName), {
-      overwrite: false,
-      errorOnExist: true,
-      filter: (src: string, dest: string): boolean =>
-        !recursiveExcludeFileNames.includes(path.basename(src)),
-    });
   }
 }
 
@@ -616,10 +607,12 @@ export function getAllowedAppIds(): string[] {
   return [
     TeamsClientId.MobileDesktop,
     TeamsClientId.Web,
+    OfficeClientId.Desktop,
     OfficeClientId.Web1,
     OfficeClientId.Web2,
     OutlookClientId.Desktop,
-    OutlookClientId.Web,
+    OutlookClientId.Web1,
+    OutlookClientId.Web2,
   ];
 }
 

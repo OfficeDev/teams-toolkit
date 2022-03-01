@@ -19,6 +19,7 @@ import {
   ProvisionInputs,
   ResourcePlugin,
   ResourceTemplate,
+  EnvInfoV2,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
@@ -35,6 +36,7 @@ import {
   generateResourceTemplateAdapter,
   scaffoldSourceCodeAdapter,
   provisionLocalResourceAdapter,
+  configureLocalResourceAdapter,
 } from "../../utils4v2";
 import { TabLanguage } from "../resources/templateInfo";
 
@@ -91,14 +93,33 @@ export class FrontendPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,
       tokenProvider,
-      this.plugin
+      this.plugin,
+      envInfo
+    );
+  }
+
+  async configureLocalResource(
+    ctx: Context,
+    inputs: Inputs,
+    localSettings: Json,
+    tokenProvider: TokenProvider,
+    envInfo?: v2.EnvInfoV2 | undefined
+  ): Promise<Result<Void, FxError>> {
+    return await configureLocalResourceAdapter(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider,
+      this.plugin,
+      envInfo
     );
   }
 

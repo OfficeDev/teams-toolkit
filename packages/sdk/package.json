@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -10,7 +10,6 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "rollup -c && api-extractor run --local && npm run api-markdown",
-    "prepare": "npm run build",
     "api-markdown": "api-documenter generate -i temp -o ../../docs/sdk",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
     "check-format": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\" \"config/*.js\"",
@@ -21,15 +20,12 @@
     "test:unit:browser": "karma start --single-run --unit",
     "test:unit:node": "nyc --no-clean -- mocha 'test/unit/{,!(browser)/**/}*.spec.ts' --file src/index.ts -r config/mocha.env.ts --config config/mocharc.node.js",
     "test:unit": "npm run test:unit:node && npm run test:unit:browser",
-    "test:e2e:browser": "node test/e2e/scripts/DownloadSimpleAuth.js && concurrently --kill-others --success first \"node test/e2e/scripts/StartSimpleAuth.js\" \"npm run test:e2e:browser-case\"",
-    "test:e2e:browser-case": "karma start --single-run --integration",
+    "test:e2e:browser": "karma start --single-run --integration",
     "test:e2e:node": "nyc --reporter lcovonly -- mocha 'test/e2e/node/*.spec.ts' --file src/index.ts -r config/mocha.env.ts --config config/mocharc.node.js",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged",
-    "version": "../../.github/scripts/pkg-version.sh templates",
-    "postversion": "../../.github/scripts/pkg-postversion.sh templates"
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "files": [
     "dist/*js",

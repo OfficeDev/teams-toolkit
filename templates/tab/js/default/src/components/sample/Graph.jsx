@@ -36,7 +36,7 @@ export function Graph() {
       <h3>Example: Get the user's profile</h3>
       <div className="section-margin">
         <p>Click below to authorize button to grant permission to using Microsoft Graph.</p>
-        <pre>{`const credential = new TeamsUserCredential(); \nawait credential.login(scope);`}</pre>
+        <pre>{`const teamsfx = new TeamsFx(); \nawait teamsfx.login(scope);`}</pre>
         <Button primary content="Authorize" disabled={loading} onClick={reload} />
 
         <p>Below are two different implementations of retrieving profile photo for currently signed-in user using Fluent UI component and Graph Toolkit respectively.</p>

@@ -13,7 +13,7 @@ const teamsfxSdk = require("@microsoft/teamsfx");
  * Before trigger this function, teamsfx binding would process the SSO token and generate teamsfx configuration.
  *
  * This function initializes the teamsfx SDK with the configuration and calls these APIs:
- * - OnBehalfOfUserCredential() - Construct credential with the received SSO token and initialized configuration.
+ * - TeamsFx().setSsoToken() - Construct teamsfx instance with the received SSO token and initialized configuration.
  * - getUserInfo() - Get the user's information from the received SSO token.
  * - createMicrosoftGraphClient() - Get a graph client to access user's Microsoft 365 data.
  *
@@ -49,7 +49,7 @@ module.exports = async function (context, req, teamsfxContext) {
     };
   }
 
-  // Construct credential.
+  // Construct TeamsFx using user identity.
   let teamsfx;
   try {
     teamsfx = new teamsfxSdk.TeamsFx().setSsoToken(accessToken);
@@ -59,7 +59,7 @@ module.exports = async function (context, req, teamsfxContext) {
       status: 500,
       body: {
         error:
-          "Failed to obtain on-behalf-of credential using your accessToken. " +
+          "Failed to construct TeamsFx using your accessToken. " +
           "Ensure your function app is configured with the right Azure AD App registration.",
       },
     };

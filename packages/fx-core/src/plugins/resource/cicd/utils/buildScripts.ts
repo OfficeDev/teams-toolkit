@@ -9,9 +9,11 @@ export function generateBuildScript(projectSettings: ProjectSettings): string {
   const solutionSettings = projectSettings?.solutionSettings;
   const capabilities = solutionSettings?.["capabilities"];
   const azureResources = solutionSettings?.["azureResources"];
+  const hostType = solutionSettings?.["hostType"];
 
   if (capabilities?.includes("Tab")) {
-    parts.push("cd tabs; npm install; npm run build; cd -;");
+    if (hostType && hostType == "Azure") parts.push("cd tabs; npm install; npm run build; cd -;");
+    if (hostType && hostType == "SPFx") parts.push("cd SPFx; npm install; npm run build; cd -;");
   }
 
   if (capabilities?.includes("Bot") || capabilities.includes("MessagingExtension")) {

@@ -52,6 +52,9 @@ export class CICDImpl {
       hosting_type_contains_azure: hostType == "Azure",
       cloud_resources_contains_sql:
         context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
+      api_prefix: context.projectSetting.appName,
+      cloud_resources_contains_apim:
+        context.projectSetting.solutionSettings?.["azureResources"].includes("apim") ?? false,
     };
 
     const progressBar = context.userInteraction.createProgressBar(

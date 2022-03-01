@@ -8,7 +8,7 @@ on:
     branches:
       - main
 jobs:
-  buildAndPublish:
+  buildAndDeploy:
     runs-on: ubuntu-latest
     # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
     #environment: test_environment
@@ -62,3 +62,10 @@ jobs:
         with:
           commands: deploy
           env: ${{env.TEAMSFX_ENV_NAME}}
+<%#cloud_resources_contains_apim%>
+          # Below are default values. You should update them if anything is customized.
+          api-version: v1
+          open-api-document: openapi/openapi.json
+          api-prefix: <%api_prefix%>
+<%/cloud_resources_contains_apim%>
+

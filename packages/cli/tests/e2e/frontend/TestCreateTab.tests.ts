@@ -43,7 +43,7 @@ describe("Create single tab", function () {
       afterEach(() => {
         mockedEnvRestore();
       });
-      it("Create react app without Azure Function", async () => {
+      it(`Create react app without Azure Function, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
         // new a project ( tab only )
         await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
         {
@@ -52,7 +52,7 @@ describe("Create single tab", function () {
         }
       });
 
-      it("Provision Resource: React app without function", async () => {
+      it(`Provision Resource: React app without function, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
         await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
         await CliHelper.setSubscription(subscription, projectPath);
@@ -72,7 +72,7 @@ describe("Create single tab", function () {
         await FrontendValidator.validateProvision(frontend);
       });
 
-      it("Deploy react app without Azure Function and SQL", async () => {
+      it(`Deploy react app without Azure Function and SQL, API V3: ${envParam.TEAMSFX_APIV3}`, async () => {
         // deploy
         await execAsyncWithRetry(`teamsfx deploy`, {
           cwd: projectPath,

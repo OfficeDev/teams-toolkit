@@ -57,6 +57,7 @@ export class TelemetryEvent {
 export class ProgressTitleMessage {
   static readonly PreDeployProgressTitle = "Building SharePoint package";
   static readonly DeployProgressTitle = `Upload and deploy SharePoint Package`;
+  static readonly ScaffoldProgressTitle = "Scaffolding project";
 }
 
 export class PreDeployProgressMessage {
@@ -68,6 +69,11 @@ export class PreDeployProgressMessage {
 export class DeployProgressMessage {
   static readonly CreateSPAppCatalog = "Create Sharepoint app catalog";
   static readonly UploadAndDeploy = "Upload and deploy SPFx package to your tenant app catalog";
+}
+
+export class ScaffoldProgressMessage {
+  static readonly ScaffoldProject = "Generate SPFx project using Yeoman CLI";
+  static readonly UpdateManifest = "Update webpart manifest";
 }
 
 export class ManifestTemplate {

@@ -629,7 +629,7 @@
       },
       {
         "command": "fx-extension.addFeature",
-        "title": "Teams: add feature"
+        "title": "Teams: add component"
       }
     ],
     "taskDefinitions": [

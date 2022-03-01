@@ -10,9 +10,9 @@
     },
     "templates": [
         "blazor-base/csharp/default",
-        "bot-msgext/csharp/default",
-        "bot-msgext/js/default",
-        "bot-msgext/ts/default",
+        "bot/csharp/default",
+        "bot/js/default",
+        "bot/ts/default",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",

@@ -2,6 +2,7 @@ import "./Graph.css";
 import { useGraph } from "./lib/useGraph";
 import { Providers, ProviderState } from '@microsoft/mgt-element';
 import { TeamsFxProvider } from '@microsoft/mgt-teamsfx-provider';
+import { TeamsUserCredential } from "@microsoft/teamsfx";
 import { Button } from "@fluentui/react-northstar";
 import { Design } from './Design';
 import { PersonCardFluentUI } from './PersonCardFluentUI';
@@ -14,7 +15,7 @@ export function Graph() {
       const profile = await graph.api("/me").get();
 
       // Initialize Graph Toolkit TeamsFx provider
-      const provider = new TeamsFxProvider(teamsfx.getCredential(), scope);
+      const provider = new TeamsFxProvider(teamsfx.getCredential() as TeamsUserCredential, scope);
       Providers.globalProvider = provider;
       Providers.globalProvider.setState(ProviderState.SignedIn);
 

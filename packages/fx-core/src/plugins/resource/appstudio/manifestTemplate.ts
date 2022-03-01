@@ -12,7 +12,7 @@ import {
   v3,
   IStaticTab,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory } from "../../../common";
+import { getAppDirectory, isConfigUnifyEnabled } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -34,35 +34,57 @@ import {
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
-  return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  if (isConfigUnifyEnabled()) {
+    return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
+  } else {
+    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  }
 }
 
-export async function init(projectRoot: string, appName: string): Promise<Result<any, FxError>> {
+export async function init(
+  projectRoot: string,
+  appName: string,
+  existingApp: boolean
+): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-  const suffix = "-local-debug";
-  let localAppName = appName;
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    localAppName = localAppName + suffix;
-  }
-  localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
-  const localManifest = JSON.parse(localManifestString);
-  await saveManifest(projectRoot, localManifest, true);
+  if (isConfigUnifyEnabled()) {
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const manifest = JSON.parse(manifestString);
+    if (existingApp) {
+      manifest.developer = {
+        name: "Teams App, Inc.",
+        websiteUrl: "{{{config.manifest.developerWebsiteUrl}}}",
+        privacyUrl: "{{{config.manifest.developerPrivacyUrl}}}",
+        termsOfUseUrl: "{{{config.manifest.developerTermsOfUseUrl}}}",
+      };
+    }
+    await saveManifest(projectRoot, manifest);
+  } else {
+    let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+    const suffix = "-local-debug";
+    let localAppName = appName;
+    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+      localAppName = localAppName + suffix;
+    }
+    localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
+    const localManifest = JSON.parse(localManifestString);
+    await saveManifest(projectRoot, localManifest, true);
 
-  let remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-  remoteManifestString = replaceConfigValue(remoteManifestString, "appName", appName);
-  const remoteManifest = JSON.parse(remoteManifestString);
-  await saveManifest(projectRoot, remoteManifest, false);
+    const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const remoteManifest = JSON.parse(remoteManifestString);
+    await saveManifest(projectRoot, remoteManifest, false);
+  }
 
   return ok(undefined);
 }
@@ -109,7 +131,7 @@ export async function loadManifest(
 export async function saveManifest(
   projectRoot: string,
   manifest: TeamsAppManifest,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<Result<any, FxError>> {
   const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
   await fs.writeFile(manifestFilePath, JSON.stringify(manifest, null, 4));

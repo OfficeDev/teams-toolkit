@@ -93,7 +93,7 @@ import {
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
-import { loadManifest } from "./manifestTemplate";
+import { getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -518,14 +518,16 @@ export class AppStudioPluginImpl {
       );
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
-      const localManifest = await createLocalManifest(
-        ctx.projectSettings!.appName,
-        false,
-        false,
-        false,
-        true
-      );
-      await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
+      if (!isConfigUnifyEnabled()) {
+        const localManifest = await createLocalManifest(
+          ctx.projectSettings!.appName,
+          false,
+          false,
+          false,
+          true
+        );
+        await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
+      }
     } else {
       const solutionSettings: AzureSolutionSettings = ctx.projectSettings
         ?.solutionSettings as AzureSolutionSettings;
@@ -541,22 +543,23 @@ export class AppStudioPluginImpl {
         false,
         hasAad
       );
-      const localDebugManifest = await createLocalManifest(
-        ctx.projectSettings!.appName,
-        hasFrontend,
-        hasBot,
-        hasMessageExtension,
-        false,
-        hasAad
-      );
-      await fs.writeFile(
-        `${appDir}/${MANIFEST_LOCAL}`,
-        JSON.stringify(localDebugManifest, null, 4)
-      );
+      if (!isConfigUnifyEnabled()) {
+        const localDebugManifest = await createLocalManifest(
+          ctx.projectSettings!.appName,
+          hasFrontend,
+          hasBot,
+          hasMessageExtension,
+          false,
+          hasAad
+        );
+        await fs.writeFile(
+          `${appDir}/${MANIFEST_LOCAL}`,
+          JSON.stringify(localDebugManifest, null, 4)
+        );
+      }
     }
-
     await fs.ensureDir(appDir);
-    const manifestTemplatePath = `${appDir}/${MANIFEST_TEMPLATE}`;
+    const manifestTemplatePath = await getManifestTemplatePath(ctx.root);
     await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
 
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);

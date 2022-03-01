@@ -82,15 +82,11 @@ export async function automaticNpmInstallHandler(
           }
         }
         if (tasks.size > 0) {
-          try {
-            const properties: { [key: string]: string } = {};
-            for (const key of tasks.keys()) {
-              properties[key] = "true";
-            }
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstallStart, properties);
-          } catch {
-            // ignore telemetry error
+          let properties: { [key: string]: string } = {};
+          for (const key of tasks.keys()) {
+            properties[key] = "true";
           }
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstallStart, properties);
 
           VS_CODE_UI.showMessage(
             "info",
@@ -106,40 +102,32 @@ export async function automaticNpmInstallHandler(
                 "workbench.action.openSettings",
                 ConfigurationKey.AutomaticNpmInstall
               );
-              try {
-                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickDisableAutomaticNpmInstall);
-              } catch {
-                // ignore telemetry error
-              }
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickDisableAutomaticNpmInstall);
             }
           });
 
           const keys = tasks.keys();
           const exitCodes = await Promise.all(tasks.values());
 
-          try {
-            const properties: { [key: string]: string } = {};
-            for (const exitCode of exitCodes) {
-              properties[keys.next().value] = exitCode + "";
-            }
-            const failed = exitCodes.some((exitCode) => exitCode !== 0);
-            if (failed) {
-              const error = returnUserError(
-                new Error("Npm install failed"),
-                ExtensionSource,
-                "NpmInstallFailed"
-              );
-              ExtTelemetry.sendTelemetryErrorEvent(
-                TelemetryEvent.AutomaticNpmInstall,
-                error,
-                properties
-              );
-            } else {
-              properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstall, properties);
-            }
-          } catch {
-            // ignore telemetry error
+          properties = {};
+          for (const exitCode of exitCodes) {
+            properties[keys.next().value] = exitCode + "";
+          }
+          const failed = exitCodes.some((exitCode) => exitCode !== 0);
+          if (failed) {
+            const error = returnUserError(
+              new Error("Npm install failed"),
+              ExtensionSource,
+              "NpmInstallFailed"
+            );
+            ExtTelemetry.sendTelemetryErrorEvent(
+              TelemetryEvent.AutomaticNpmInstall,
+              error,
+              properties
+            );
+          } else {
+            properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstall, properties);
           }
         }
       }

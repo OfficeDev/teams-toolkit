@@ -1445,12 +1445,20 @@ export class AppStudioPluginImpl {
     let endpoint = tabEndpoint;
     let indexPath = tabIndexPath;
 
-    const capabilities = await getCapabilities(ctx.root);
-    if (capabilities.isErr()) {
-      return err(capabilities.error);
+    let hasFrontend = false;
+    if (isConfigUnifyEnabled()) {
+      const capabilities = await getCapabilities(ctx.root);
+      if (capabilities.isErr()) {
+        return err(capabilities.error);
+      }
+      hasFrontend =
+        capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+    } else {
+      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
+        ?.solutionSettings as AzureSolutionSettings;
+      hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
     }
-    const hasFrontend =
-      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
       indexPath = "";

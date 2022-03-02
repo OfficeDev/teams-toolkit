@@ -17,15 +17,8 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { CollaborationState, SolutionError } from "../../src";
-import {
-  checkPermission,
-  grantPermission,
-  hasAAD,
-  hasAzureResource,
-  hasSPFx,
-  listCollaborator,
-} from "../../src/core/collaborator";
+import { CollaborationState, hasAAD, hasAzureResource, hasSPFx, SolutionError } from "../../src";
+import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import {

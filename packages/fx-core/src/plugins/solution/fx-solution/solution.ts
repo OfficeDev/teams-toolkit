@@ -19,7 +19,6 @@ import {
   OptionItem,
   Platform,
   Plugin,
-  PluginContext,
   QTreeNode,
   Result,
   returnSystemError,
@@ -51,11 +50,9 @@ import {
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
-import { CopyFileError, isVsCallingCli } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
-import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -92,6 +89,8 @@ import {
   SUBSCRIPTION_ID,
   RESOURCE_GROUP_NAME,
   SUBSCRIPTION_NAME,
+  LOCAL_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -139,22 +138,15 @@ import { checkPermission } from "./v2/checkPermission";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
-import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
-
-export type LoadedPlugin = Plugin;
-export type PluginsWithContext = [LoadedPlugin, PluginContext];
-
-// Maybe we need a state machine to track state transition.
-export enum SolutionRunningState {
-  Idle = "idle",
-  ProvisionInProgress = "ProvisionInProgress",
-  DeployInProgress = "DeployInProgress",
-  PublishInProgress = "PublishInProgress",
-}
+import { CopyFileError } from "../../../core/error";
+import { isVsCallingCli } from "../../../core/globalVars";
+import { AppStudioPlugin } from "../../resource/appstudio";
+import { AadAppForTeamsPlugin } from "../../resource/aad";
+import { LoadedPlugin, PluginsWithContext, SolutionRunningState } from "./types";
 
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
-  SpfxPlugin: SpfxPlugin;
+  SpfxPlugin: Plugin;
   AppStudioPlugin: AppStudioPlugin;
   BotPlugin: Plugin;
   AadPlugin: Plugin;
@@ -170,7 +162,7 @@ export class TeamsAppSolution implements Solution {
   runningState: SolutionRunningState;
 
   constructor() {
-    this.SpfxPlugin = Container.get<SpfxPlugin>(ResourcePlugins.SpfxPlugin);
+    this.SpfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
     this.AppStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
     this.BotPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
     this.AadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
@@ -882,7 +874,7 @@ export class TeamsAppSolution implements Solution {
       //capNode.addChild(hostTypeNode);
 
       // 1.1.1 SPFX Tab
-      const spfxPlugin: Plugin = new SpfxPlugin();
+      const spfxPlugin: Plugin = this.SpfxPlugin;
       if (spfxPlugin.getQuestions) {
         const pluginCtx = getPluginContext(ctx, spfxPlugin.name);
         const res = await spfxPlugin.getQuestions(Stage.create, pluginCtx);

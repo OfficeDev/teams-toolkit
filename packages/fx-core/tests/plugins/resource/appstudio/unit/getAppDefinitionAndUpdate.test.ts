@@ -39,7 +39,7 @@ import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
 import { isMultiEnvEnabled } from "../../../../../src/common/tools";
-import { newEnvInfo } from "../../../../../src/core/tools";
+import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   LocalSettingsAuthKeys,

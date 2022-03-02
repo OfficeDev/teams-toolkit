@@ -1,29 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  err,
-  Func,
-  FxError,
-  Inputs,
-  InputTextConfig,
-  InputTextResult,
-  MultiSelectConfig,
-  MultiSelectResult,
-  ok,
-  Platform,
-  ProjectSettings,
-  QTreeNode,
-  Result,
-  SelectFolderConfig,
-  SelectFolderResult,
-  SingleSelectConfig,
-  SingleSelectResult,
-  Stage,
-  TokenProvider,
-  traverse,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
 import { ExistingTeamsAppType } from "@microsoft/teamsfx-api/build/types";
 import { assert } from "chai";
 import "mocha";
@@ -31,32 +9,9 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
-import {
-  createV2Context,
-  environmentManager,
-  FxCore,
-  InvalidInputError,
-  setTools,
-  validateSettings,
-} from "../../src";
-import { ConstantString } from "../../src/common/constants";
-import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
-import {
-  BotOptionItem,
-  CoreQuestionNames,
-  MessageExtensionItem,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../src/core/question";
-import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
-import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
-import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
-import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
+import { FxCore, setTools } from "../../src";
+import { CoreQuestionNames, ScratchOptionYesVSC } from "../../src/core/question";
+import { deleteFolder, MockTools, randomAppName } from "./utils";
 describe("Minimal app", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

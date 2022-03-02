@@ -39,7 +39,7 @@ import _ from "lodash";
 import * as uuid from "uuid";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   fehostPlugin,

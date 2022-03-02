@@ -4,9 +4,10 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, TOOLS } from "..";
-import { isConfigUnifyEnabled } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
+import { isConfigUnifyEnabled } from "../../common/tools";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**

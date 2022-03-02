@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks, NextFunction } from "@feathersjs/hooks/lib";
+import { hooks, NextFunction } from "@feathersjs/hooks";
 import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
-import { CoreHookContext } from "../../../src";
 import { ContextInjectorMW, SolutionLoaderMW } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 
 describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
   const MockProjectSettingsMW = async (ctx: CoreHookContext, next: NextFunction) => {

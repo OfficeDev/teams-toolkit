@@ -20,7 +20,7 @@ import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
-import { newEnvInfoV3 } from "../../../../../src/core/tools";
+import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   MockedAppStudioTokenProvider,

@@ -10,6 +10,7 @@
     "src/plugins/resource/aad/interfaces/**/*",
     "src/plugins/resource/apim/interfaces/**/*",
     "src/plugins/resource/bot/interface.ts",
+    "src/plugins/resource/bot/appStudio/interfaces/**/*",
     "src/plugins/resource/frontend/interface.ts",
     "src/plugins/solution/fx-solution/appstudio/interface.ts",
     "src/plugins/solution/fx-solution/v3/error.ts",

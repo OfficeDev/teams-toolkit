@@ -15,15 +15,16 @@
     "build/**/*"
   ],
   "scripts": {
-    "lint:staged": "lint-staged",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "build": "rimraf build && npx tsc -p ./",
     "prepare": "npm run build",
-    "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
-    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "build": "rimraf build && npx tsc -p ./",
+    "lint:staged": "lint-staged",
+    "lint": "eslint \"src/**/*.ts\"",
     "test": "npm run test:unit",
-    "format-check": "echo test",
-    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
+    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"*.{js,json}\"",
+    "format-check": "prettier --list-different \"src/**/*.ts\" \"*.{js,json}\"",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../eslint-config",
@@ -40,7 +41,9 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
+    "@fluentui/react-northstar": "^0.60.1",
     "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
+    "msteams-react-base-component": "^3.1.1",
     "react": "^17.0.2"
   },
   "lint-staged": {

@@ -101,7 +101,7 @@ async function getCurrentEnvInfo(workspacePath: string, envName: string): Promis
   const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
 
   if (envName === LocalEnvironmentName) {
-    return isExistingApp(workspacePath) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+    return (await isExistingApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
   } else if (provisionSucceeded) {
     return EnvInfo.ProvisionedRemoteEnv;
   } else {

@@ -114,7 +114,8 @@ export async function addFeature(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
-  ctx.projectSetting.programmingLanguage = inputs[ProgrammingLanguageQuestion.name];
+  if (!ctx.projectSetting.programmingLanguage && inputs[ProgrammingLanguageQuestion.name])
+    ctx.projectSetting.programmingLanguage = inputs[ProgrammingLanguageQuestion.name];
   let solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingSet = new Set<string>();
   let newSet = new Set<string>();

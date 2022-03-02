@@ -47,7 +47,7 @@ export async function getQuestionsForAddFeature(
   const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectMultipleFeaturesQuestion);
-  if (!ctx.projectSetting.solutionSettings?.programmingLanguage) {
+  if (!ctx.projectSetting.programmingLanguage) {
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     node.addChild(programmingLanguage);
   }

@@ -17,7 +17,7 @@ Before you run or Start Debugging for the first time, follow these steps:
 
 2. For projects that contain a Bot capability, first use a Command Prompt to run this command: ngrok http 2544.
 
-3. Select the Project > TeamsFx > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
+3. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
 
 4. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
 

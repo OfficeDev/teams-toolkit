@@ -233,67 +233,67 @@ export class SPFxPluginImpl {
           `${outputFolderPath}/tslint.json`
         );
 
-      // Configure placeholders
-      const replaceMap: Map<string, string> = new Map();
-      replaceMap.set(PlaceHolders.componentName, componentName);
-      replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
-      replaceMap.set(PlaceHolders.componentClassName, componentClassName);
-      replaceMap.set(PlaceHolders.componentStrings, componentStrings);
-      replaceMap.set(PlaceHolders.libraryName, libraryName);
-      replaceMap.set(PlaceHolders.componentId, componentId);
-      replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-      replaceMap.set(
-        PlaceHolders.componentDescription,
-        ctx.answers![SPFXQuestionNames.webpart_desp] as string
-      );
-      replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
-      replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
-
-      const appDirectory = await getAppDirectory(ctx.root);
-      await Utils.configure(outputFolderPath, replaceMap);
-
-      if (isConfigUnifyEnabled()) {
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
-
-        const appManifestProvider = new DefaultManifestProvider();
-        const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-        const remoteStaticSnippet: IStaticTab = {
-          entityId: componentId,
-          name: webpartName,
-          contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId),
-          websiteUrl: ManifestTemplate.WEBSITE_URL,
-          scopes: ["personal"],
-        };
-        const remoteConfigurableSnippet: IConfigurableTab = {
-          configurationUrl: util.format(ManifestTemplate.REMOTE_CONFIGURATION_URL, componentId),
-          canUpdateConfiguration: true,
-          scopes: ["team"],
-        };
-        capabilitiesToAddManifest.push(
-          {
-            name: "staticTab",
-            snippet: remoteStaticSnippet,
-          },
-          {
-            name: "configurableTab",
-            snippet: remoteConfigurableSnippet,
-          }
+        // Configure placeholders
+        const replaceMap: Map<string, string> = new Map();
+        replaceMap.set(PlaceHolders.componentName, componentName);
+        replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
+        replaceMap.set(PlaceHolders.componentClassName, componentClassName);
+        replaceMap.set(PlaceHolders.componentStrings, componentStrings);
+        replaceMap.set(PlaceHolders.libraryName, libraryName);
+        replaceMap.set(PlaceHolders.componentId, componentId);
+        replaceMap.set(PlaceHolders.componentAlias, componentAlias);
+        replaceMap.set(
+          PlaceHolders.componentDescription,
+          ctx.answers![SPFXQuestionNames.webpart_desp] as string
         );
+        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+        replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-        const contextWithInputs = convert2Context(ctx, true);
-        for (const capability of capabilitiesToAddManifest) {
-          const addCapRes = await appManifestProvider.updateCapability(
-            contextWithInputs.context,
-            contextWithInputs.inputs,
-            capability
+        const appDirectory = await getAppDirectory(ctx.root);
+        await Utils.configure(outputFolderPath, replaceMap);
+
+        if (isConfigUnifyEnabled()) {
+          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+
+          const appManifestProvider = new DefaultManifestProvider();
+          const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+          const remoteStaticSnippet: IStaticTab = {
+            entityId: componentId,
+            name: webpartName,
+            contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId),
+            websiteUrl: ManifestTemplate.WEBSITE_URL,
+            scopes: ["personal"],
+          };
+          const remoteConfigurableSnippet: IConfigurableTab = {
+            configurationUrl: util.format(ManifestTemplate.REMOTE_CONFIGURATION_URL, componentId),
+            canUpdateConfiguration: true,
+            scopes: ["team"],
+          };
+          capabilitiesToAddManifest.push(
+            {
+              name: "staticTab",
+              snippet: remoteStaticSnippet,
+            },
+            {
+              name: "configurableTab",
+              snippet: remoteConfigurableSnippet,
+            }
           );
-          if (addCapRes.isErr()) return err(addCapRes.error);
-        }
-      } else {
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
-      }
 
+          const contextWithInputs = convert2Context(ctx, true);
+          for (const capability of capabilitiesToAddManifest) {
+            const addCapRes = await appManifestProvider.updateCapability(
+              contextWithInputs.context,
+              contextWithInputs.inputs,
+              capability
+            );
+            if (addCapRes.isErr()) return err(addCapRes.error);
+          }
+        } else {
+          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
+          await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
+        }
+      }
       return ok(undefined);
     } catch (error) {
       return err(ScaffoldError(error));

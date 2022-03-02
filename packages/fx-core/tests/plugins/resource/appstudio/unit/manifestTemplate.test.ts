@@ -8,7 +8,7 @@ import fs, { PathLike } from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
-import Container from "typedi";
+import { Container } from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot, MockUserInteraction } from "../helper";
@@ -133,10 +133,8 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.local.staticTabs!.length, 2);
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs!.length, 2);
 
-      chai.assert.equal(loadedManifestTemplate.value.local.staticTabs![1].entityId, "index1");
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs![1].entityId, "index1");
     }
   });
@@ -183,7 +181,7 @@ describe("Update capability", () => {
     };
     const result = await plugin.updateCapability(ctx, inputs, {
       name: "staticTab",
-      snippet: { local: tab, remote: tab },
+      snippet: tab,
     });
     chai.assert.isTrue(result.isOk());
   });
@@ -195,7 +193,7 @@ describe("Update capability", () => {
     };
     const result = await plugin.updateCapability(ctx, inputs, {
       name: "staticTab",
-      snippet: { local: tab, remote: tab },
+      snippet: tab,
     });
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -210,7 +208,7 @@ describe("Update capability", () => {
     };
     const result = await plugin.updateCapability(ctx, inputs, {
       name: "configurableTab",
-      snippet: { local: tab, remote: tab },
+      snippet: tab,
     });
     chai.assert.isTrue(result.isOk());
   });
@@ -222,7 +220,7 @@ describe("Update capability", () => {
     };
     const result = await plugin.updateCapability(ctx, inputs, {
       name: "Bot",
-      snippet: { local: bot, remote: bot },
+      snippet: bot,
     });
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {

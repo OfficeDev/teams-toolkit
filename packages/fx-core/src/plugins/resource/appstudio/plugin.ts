@@ -94,6 +94,7 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { environmentManager } from "../../../core/environment";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1526,8 +1527,8 @@ export class AppStudioPluginImpl {
               // TODO: update local check
               return (
                 x[0] != "text" &&
-                ctx.envInfo.envName !== "local" &&
-                x[1] != "state.fx-resource-appstudio.teamsAppId"
+                (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
+                  x[1] != "state.fx-resource-appstudio.teamsAppId")
               );
             } else {
               return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";

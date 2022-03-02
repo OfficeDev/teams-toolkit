@@ -158,14 +158,7 @@ export async function getDebugConfig(
         if (isConfigUnifyEnabled()) {
           // load local env app info
           const appInfo = getTeamsAppTelemetryInfoByEnv(environmentManager.getLocalEnvName());
-          if (appInfo === undefined) {
-            throw new UserError({
-              name: "MissingTeamsAppId",
-              message: `No teams app found in ${env} environment. Run local debug to ensure teams app is created.`,
-              source: "preview",
-            });
-          }
-          return { appId: appInfo.appId as string, env: env };
+          return { appId: appInfo?.appId as string, env: env };
         } else {
           const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
           const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);

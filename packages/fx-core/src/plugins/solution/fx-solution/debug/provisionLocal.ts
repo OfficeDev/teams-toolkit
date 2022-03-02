@@ -528,14 +528,18 @@ export async function configLocalEnvironment(
 
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "https://login.microsoftonline.com";
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-          envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
-        }/auth-start.html`;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+
+        if (includeAAD) {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
+            "https://login.microsoftonline.com";
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+            envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
+          }/auth-start.html`;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+        }
 
         if (includeBackend) {
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;

@@ -28,7 +28,7 @@ import { CryptoDataMatchers, isConfigUnifyEnabled, objectToMap } from "../../com
 import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2, InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -53,6 +53,24 @@ export function convert2PluginContext(
     ui: ctx.userInteraction,
   };
   return pluginContext;
+}
+
+export function convert2Context(ctx: PluginContext, ignoreEmptyProjectPath = false) {
+  if (!ignoreEmptyProjectPath && !ctx.answers!.projectPath) throw NoProjectOpenedError();
+  const inputs: InputsWithProjectPath = {
+    projectPath: ctx.root,
+    env: ctx.envInfo.envName,
+    platform: ctx.answers!.platform!,
+  };
+  const context: v2.Context = {
+    projectSetting: ctx.projectSettings!,
+    logProvider: ctx.logProvider!,
+    telemetryReporter: ctx.telemetryReporter!,
+    cryptoProvider: ctx.cryptoProvider,
+    permissionRequestProvider: ctx.permissionRequestProvider,
+    userInteraction: ctx.ui!,
+  };
+  return { context, inputs };
 }
 
 export async function scaffoldSourceCodeAdapter(

@@ -29,6 +29,7 @@ import { hasAzureResource, hasSPFx } from "../../../../common/projectSettingsHel
 function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.frontend),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.bot),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.aad),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.function),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.apim),
@@ -54,7 +55,7 @@ export async function getQuestionsForAddFeature(
   for (const plugin of plugins) {
     staticOptions.push({
       id: plugin.name,
-      label: plugin.description || "",
+      label: plugin.description || plugin.displayName || plugin.name,
     });
     if (plugin.getQuestionsForAddInstance) {
       const childNode = await plugin.getQuestionsForAddInstance(ctx, inputs);

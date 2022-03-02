@@ -4,12 +4,21 @@
 import { LogLevel, setLogLevel, setLogFunction, TeamsFx, IdentityType } from "@microsoft/teamsfx";
 import { useTeams } from "msteams-react-base-component";
 import { ThemePrepared } from "@fluentui/react-northstar";
+import { useData } from "./useData";
 
 export type TeamsFxContext = {
   /**
    * Instance of TeamsFx.
    */
   teamsfx?: TeamsFx;
+  /**
+   * Status of data loading.
+   */
+  loading: boolean;
+  /**
+   * Error information.
+   */
+  error: unknown;
   /**
    * Indicates that current environment is in Teams
    */
@@ -18,6 +27,10 @@ export type TeamsFxContext = {
    * Teams theme.
    */
   theme: ThemePrepared;
+  /**
+   * Teams theme string.
+   */
+  themeString: string;
   /**
    * Teams context object.
    */
@@ -35,12 +48,14 @@ export type TeamsFxContext = {
  */
 export function useTeamsFx(teamsfxConfig?: Record<string, string>): TeamsFxContext {
   const [result] = useTeams({});
-  if (process.env.NODE_ENV === "development") {
-    setLogLevel(LogLevel.Verbose);
-    setLogFunction((level: LogLevel, message: string) => {
-      console.log(message);
-    });
-  }
-  const teamsfx = new TeamsFx(IdentityType.User, teamsfxConfig);
-  return { teamsfx, ...result };
+  const { data, error, loading } = useData(async () => {
+    if (process.env.NODE_ENV === "development") {
+      setLogLevel(LogLevel.Verbose);
+      setLogFunction((level: LogLevel, message: string) => {
+        console.log(message);
+      });
+    }
+    return new TeamsFx(IdentityType.User, teamsfxConfig);
+  });
+  return { teamsfx: data, error, loading, ...result };
 }

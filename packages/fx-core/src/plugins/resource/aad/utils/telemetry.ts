@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../../../core";
+import { TOOLS } from "../../../../core/globalVars";
 import { solutionGlobalVars } from "../../../solution/fx-solution/v3/solutionGlobalVars";
 import { Plugins, Telemetry } from "../constants";
 

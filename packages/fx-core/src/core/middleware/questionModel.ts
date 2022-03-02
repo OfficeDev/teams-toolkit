@@ -24,9 +24,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { Container } from "typedi";
-import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import { deepCopy } from "../../common";
+import { createV2Context, deepCopy } from "../../common/tools";
+import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
@@ -34,6 +33,8 @@ import {
   BuiltInSolutionNames,
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
+import { CoreSource, FunctionRouterError } from "../error";
+import { TOOLS } from "../globalVars";
 import {
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
@@ -45,6 +46,7 @@ import {
   ScratchOptionYes,
 } from "../question";
 import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "../types";
 import { getProjectSettingsPath } from "./projectSettingsLoader";
 /**
  * This middleware will help to collect input from question flow
@@ -52,7 +54,7 @@ import { getProjectSettingsPath } from "./projectSettingsLoader";
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
+  const core = ctx.self as any;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV2") {

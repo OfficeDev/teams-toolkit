@@ -8,7 +8,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
-import * as core from "../../../../../../fx-core/src/core";
+import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import { FrontendPlugin as WebappPlugin } from "../../../../../src";
 import { mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 import {
@@ -135,7 +135,7 @@ describe("WebappPlugin", () => {
   beforeEach(() => {
     plugin = new WebappPlugin();
     pluginContext = TestHelper.getFakePluginContext();
-    sinon.stub(core, <any>"isVSProject").returns(true);
+    sinon.stub(projectSettingsHelper, <any>"isVSProject").returns(true);
   });
 
   afterEach(() => {

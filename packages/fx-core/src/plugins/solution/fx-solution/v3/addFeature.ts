@@ -22,10 +22,9 @@ import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { HostTypeOptionAzure, HostTypeOptionSPFx } from "../question";
-import { isSPFxProject } from "../../../../common";
-import { hasAzureResource, hasSPFx } from "../../../../core/collaborator";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { cloneDeep } from "lodash";
+import { hasAzureResource, hasSPFx } from "../../../../common/projectSettingsHelper";
 
 function getAllFeaturePlugins(): v3.PluginV3[] {
   return [

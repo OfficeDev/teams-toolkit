@@ -41,7 +41,7 @@ import {
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
-import { getTemplatesFolder } from "../../..";
+import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,

@@ -1,4 +1,3 @@
-import { getAppDirectory, getStrings, getTemplatesFolder } from "../../../..";
 import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../appstudio/constants";
 import {
   BuildSPPackageError,
@@ -38,6 +37,8 @@ import { ProgressHelper } from "../utils/progress-helper";
 import * as util from "util";
 import { SPOClient } from "../spoClient";
 import axios from "axios";
+import { getTemplatesFolder } from "../../../../folder";
+import { getAppDirectory, getStrings } from "../../../../common/tools";
 
 export class SPFxPluginImpl {
   async scaffold(

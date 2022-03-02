@@ -9,13 +9,12 @@ import {
   returnUserError,
   v2,
   Void,
-  returnSystemError,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
-import { isVSProject } from "../../../..";
 import { PluginDisplayName } from "../../../../common/constants";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { getStrings } from "../../../../common/tools";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {

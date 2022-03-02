@@ -62,9 +62,6 @@ export function useData<T>(
   });
   function reload() {
     if (!loading) dispatch({ type: "loading" });
-    if (typeof fetchDataAsync != "function") {
-      throw new Error("invalid argument to useData, a function is required");
-    }
     fetchDataAsync()
       .then((data) => dispatch({ type: "result", result: data }))
       .catch((error) => dispatch({ type: "error", error }));

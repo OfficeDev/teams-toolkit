@@ -19,12 +19,11 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isVSProject } from "../../../core";
 import "./v2";
 import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import { ProgrammingLanguage } from "./enums/programmingLanguage";
+import { isVSProject } from "../../../common/projectSettingsHelper";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

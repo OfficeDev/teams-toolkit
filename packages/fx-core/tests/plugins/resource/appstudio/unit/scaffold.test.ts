@@ -26,7 +26,7 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { newEnvInfo } from "../../../../../src/core/tools";
+import { newEnvInfo } from "../../../../../src";
 import * as commonTools from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";

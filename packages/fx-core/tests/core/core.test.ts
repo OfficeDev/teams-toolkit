@@ -37,7 +37,7 @@ import {
   FxCore,
   InvalidInputError,
   setTools,
-  validateSettings,
+  validateProjectSettings,
 } from "../../src";
 import { ConstantString } from "../../src/common/constants";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
@@ -113,7 +113,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(projectSettingsResult.isOk());
       if (projectSettingsResult.isOk()) {
         const projectSettings = projectSettingsResult.value;
-        const validSettingsResult = validateSettings(projectSettings);
+        const validSettingsResult = validateProjectSettings(projectSettings);
         assert.isTrue(validSettingsResult === undefined);
         assert.isTrue(projectSettings.version === "2.1.0");
       }

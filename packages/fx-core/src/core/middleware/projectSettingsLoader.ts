@@ -20,8 +20,6 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, isV3 } from "..";
-import { CoreHookContext, FxCore } from "../..";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {
@@ -31,7 +29,11 @@ import {
   ReadFileError,
 } from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo, validateSettings } from "../tools";
+import { newEnvInfo } from "../environment";
+import { validateProjectSettings } from "../../common/projectSettingsHelper";
+import { CoreHookContext } from "../types";
+import { createV2Context } from "../../common/tools";
+import { isV3 } from "../globalVars";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -56,7 +58,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     const projectSettings = loadRes.value;
 
-    const validRes = validateSettings(projectSettings);
+    const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
       ctx.result = err(
         InvalidProjectSettingsFileError(
@@ -67,9 +69,9 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     }
 
     ctx.projectSettings = projectSettings;
-    (ctx.self as FxCore).isFromSample = projectSettings.isFromSample === true;
-    (ctx.self as FxCore).settingsVersion = projectSettings.version;
-    (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
+    (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
+    (ctx.self as any).settingsVersion = projectSettings.version;
+    (ctx.self as any).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
     ctx.contextV2 = createV2Context(projectSettings);
   }
 

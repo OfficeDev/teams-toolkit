@@ -56,7 +56,7 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider, randomAppName } from "../../core/utils";

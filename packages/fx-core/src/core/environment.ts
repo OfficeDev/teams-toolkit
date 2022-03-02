@@ -28,22 +28,24 @@ import * as dotenv from "dotenv";
 import {
   dataNeedEncryption,
   replaceTemplateWithUserData,
-  PathNotExistError,
   serializeDict,
   separateSecretData,
-  WriteFileError,
   mapToJson,
   objectToMap,
-  ProjectEnvNotExistError,
-  InvalidEnvConfigError,
-} from "..";
+  compileHandlebarsTemplateString,
+} from "../common/tools";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString, ManifestVariables } from "../common/constants";
+import {
+  InvalidEnvConfigError,
+  PathNotExistError,
+  ProjectEnvNotExistError,
+  WriteFileError,
+} from "./error";
 
 export interface EnvStateFiles {
   envState: string;
@@ -465,3 +467,39 @@ export function separateSecretDataV3(envState: v3.ResourceStates): Record<string
 }
 
 export const environmentManager = new EnvironmentManager();
+
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  state?: Map<string, any>
+): EnvInfo {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
+}
+
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
+  };
+}

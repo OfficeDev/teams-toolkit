@@ -3,8 +3,6 @@
 import { Solution, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
-import { isV3 } from ".";
-import { TabSPFxItem } from "../plugins/solution/fx-solution/question";
 import { BuiltInSolutionNames } from "../plugins/solution/fx-solution/v3/constants";
 
 export const SolutionPlugins: any = {

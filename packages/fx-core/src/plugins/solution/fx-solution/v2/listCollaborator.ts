@@ -38,8 +38,8 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import { ResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -48,8 +48,8 @@ import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
-import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 import * as util from "util";
+import { PluginsWithContext } from "../types";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,

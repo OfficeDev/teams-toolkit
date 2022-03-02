@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
-import { CoreHookContext, TOOLS } from ".";
+import { TOOLS } from "./globalVars";
 import { sampleProvider } from "../common/samples";
 import {
   Component,
@@ -21,6 +21,7 @@ import { getRootDirectory } from "../common/tools";
 import { FetchSampleError, InvalidInputError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { CoreQuestionNames, QuestionRootFolder } from "./question";
+import { CoreHookContext } from "./types";
 
 export async function fetchCodeZip(
   url: string,

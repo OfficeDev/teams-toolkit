@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory } from "..";
+import { getRootDirectory } from "../common/tools";
 
 export enum CoreQuestionNames {
   AppName = "app-name",

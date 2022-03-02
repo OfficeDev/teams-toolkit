@@ -10,6 +10,7 @@ import {
   ProvisionConfig,
   SetApplicationInContextConfig,
   UpdatePermissionConfig,
+  Utils,
 } from "./utils/configs";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
@@ -44,7 +45,6 @@ import {
 import { validate as uuidValidate } from "uuid";
 import { IPermissionList } from "./interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions/permissions.json";
-import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -52,7 +52,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
-import { isConfigUnifyEnabled } from "../../..";
+import { isConfigUnifyEnabled } from "../../../common/tools";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {

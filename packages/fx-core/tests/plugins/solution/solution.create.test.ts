@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import { Platform, SolutionContext, SolutionSettings } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -17,8 +17,9 @@ import {
   BotOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

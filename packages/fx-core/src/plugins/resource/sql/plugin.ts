@@ -39,6 +39,7 @@ export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
   async loadConfig(ctx: PluginContext) {
+    this.config.databases = [];
     this.loadConfigSubscription(ctx);
     this.loadConfigResourceGroup(ctx);
     this.config.resourceNameSuffix = ContextUtils.getConfig<string>(

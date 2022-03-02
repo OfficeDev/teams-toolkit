@@ -18,7 +18,7 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("certificate", () => {
-  const workspaceFolder = path.resolve(__dirname, "../data\\n\\t\\r\\test space 1/");
+  const workspaceFolder = path.resolve(__dirname, "../data/n/t/r/test space 1/");
   const expectedWorkspaceFolder = path.resolve(__dirname, "../data/n/t/r/test space 1/");
   const expectedCertFile = path.resolve(
     expectedWorkspaceFolder,

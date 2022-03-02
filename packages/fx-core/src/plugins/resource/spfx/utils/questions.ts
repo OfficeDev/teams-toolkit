@@ -13,6 +13,7 @@ export const frameworkQuestion: Question = {
   staticOptions: [
     { id: "react", label: "React" },
     { id: "none", label: "None" },
+    { id: "minimal", label: "Minimal" },
   ],
   placeholder: "Select an option",
   default: "react",

@@ -2481,3 +2481,11 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
   }
   return result;
 }
+
+export async function openDeploymentTreeview() {
+  if (await isTeamsfx()) {
+    vscode.commands.executeCommand("teamsfx-deployment.focus");
+  } else {
+    vscode.commands.executeCommand("workbench.view.extension.teamsfx");
+  }
+}

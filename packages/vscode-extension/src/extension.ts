@@ -98,6 +98,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openReadMeCmd);
 
+  const openDeploymentTreeview = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentTreeview",
+    () => Correlator.run(handlers.openDeploymentTreeview)
+  );
+  context.subscriptions.push(openDeploymentTreeview);
+
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
   );

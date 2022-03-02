@@ -60,6 +60,7 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
+    "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -639,6 +640,11 @@
         "command": "fx-extension.openReadMe",
         "title": "Teams: Open Read Me",
         "enablement": "never"
+      },
+      {
+        "command": "fx-extension.openDeploymentTreeview",
+        "title": "Teams: Open Deployment Treeview",
+        "enablement": "never"
       }
     ],
     "taskDefinitions": [
@@ -950,7 +956,7 @@
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
             "media": {
               "svg": "media/Deployment.svg",
               "altText": "Deploy Teams apps"

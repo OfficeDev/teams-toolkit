@@ -27,25 +27,33 @@
     "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
+    "@fluentui/react-northstar": "^0.60.1",
+    "@microsoft/teams-js": "^1.9.0",
+    "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
-    "@types/react": "^17.0.39",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
-    "eslint": "^8.10.0",
+    "eslint": "^7.32.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^12.3.4",
+    "msteams-react-base-component": "^3.1.1",
     "prettier": "^2.5.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "rimraf": "^3.0.2"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@fluentui/react-northstar": "^0.60.1",
     "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
     "msteams-react-base-component": "^3.1.1",
-    "react": "^17.0.2"
+    "react": "^16.8.6"
   },
+  "dependencies": {},
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

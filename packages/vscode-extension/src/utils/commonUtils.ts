@@ -327,7 +327,7 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
     return undefined;
   }
 
-  return provisionResult.solution.provisionSucceeded;
+  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {

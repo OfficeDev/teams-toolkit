@@ -9,6 +9,9 @@ import {
   Colors,
   err,
   UserCancelError,
+  v3,
+  IStaticTab,
+  IConfigurableTab,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -19,6 +22,7 @@ import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
+  ManifestTemplate,
   PlaceHolders,
   PreDeployProgressMessage,
   ScaffoldProgressMessage,
@@ -38,9 +42,17 @@ import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
+import {
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
+  REMOTE_MANIFEST,
+} from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
+import { isConfigUnifyEnabled } from "../../../common";
+import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
+import { convert2Context } from "../utils4v2";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -239,11 +251,47 @@ export class SPFxPluginImpl {
 
         const appDirectory = await getAppDirectory(ctx.root);
         await Utils.configure(outputFolderPath, replaceMap);
-        if (isMultiEnvEnabled()) {
+
+        if (isConfigUnifyEnabled()) {
+          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+
+          const appManifestProvider = new DefaultManifestProvider();
+          const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+          const remoteStaticSnippet: IStaticTab = {
+            entityId: componentId,
+            name: webpartName,
+            contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId),
+            websiteUrl: ManifestTemplate.WEBSITE_URL,
+            scopes: ["personal"],
+          };
+          const remoteConfigurableSnippet: IConfigurableTab = {
+            configurationUrl: util.format(ManifestTemplate.REMOTE_CONFIGURATION_URL, componentId),
+            canUpdateConfiguration: true,
+            scopes: ["team"],
+          };
+          capabilitiesToAddManifest.push(
+            {
+              name: "staticTab",
+              snippet: remoteStaticSnippet,
+            },
+            {
+              name: "configurableTab",
+              snippet: remoteConfigurableSnippet,
+            }
+          );
+
+          const contextWithInputs = convert2Context(ctx, true);
+          for (const capability of capabilitiesToAddManifest) {
+            const addCapRes = await appManifestProvider.updateCapability(
+              contextWithInputs.context,
+              contextWithInputs.inputs,
+              capability
+            );
+            if (addCapRes.isErr()) return err(addCapRes.error);
+          }
+        } else {
           await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
           await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
-        } else {
-          await Utils.configure(path.join(appDirectory, REMOTE_MANIFEST), replaceMap);
         }
       }
       return ok(undefined);

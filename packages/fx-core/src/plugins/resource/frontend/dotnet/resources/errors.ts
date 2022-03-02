@@ -48,6 +48,12 @@ export class DotnetPluginError extends FrontendPluginError {
   }
 }
 
+export class NoProjectSettingError extends DotnetPluginError {
+  constructor() {
+    super(ErrorType.System, "NoProjectSettingError", "Failed to load project setting", []);
+  }
+}
+
 export class FetchConfigError extends DotnetPluginError {
   constructor(key: string) {
     super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration`, [
@@ -101,6 +107,15 @@ export class UploadZipError extends DotnetPluginError {
     super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [
       tips.checkNetwork,
       tips.reDeploy,
+    ]);
+  }
+}
+
+export class FileIOError extends DotnetPluginError {
+  constructor(path: string) {
+    super(ErrorType.User, "FileIOError", `Failed to read/write ${path}.`, [
+      tips.checkFsPermissions,
+      tips.checkLog,
     ]);
   }
 }

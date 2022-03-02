@@ -78,11 +78,6 @@ export const LocalEnvFrontendKeys = Object.freeze({
   ClientId: "FRONTEND_REACT_APP_CLIENT_ID",
 });
 
-export const LocalEnvBotKeysMigratedFromV1 = Object.freeze({
-  BotId: "BOT_BotId",
-  BotPassword: "BOT_BotPassword",
-});
-
 export class LocalDebugCertificate {
   public static readonly CertFileName: string = "localhost.crt";
   public static readonly KeyFileName: string = "localhost.key";

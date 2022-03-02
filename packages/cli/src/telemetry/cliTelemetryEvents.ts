@@ -31,6 +31,9 @@ export enum TelemetryEvent {
   ProvisionStart = "provision-start",
   Provision = "provision",
 
+  ProvisionManifestStart = "provision-manifest-start",
+  ProvisionManifest = "provision-manifest",
+
   DeployStart = "deploy-start",
   Deploy = "deploy",
 
@@ -76,6 +79,7 @@ export enum TelemetryProperty {
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
   AppId = "appid",
+  TenantId = "tenant-id",
   UserId = "hashed-userid",
   AccountType = "account-type",
   Success = "success",
@@ -103,6 +107,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {

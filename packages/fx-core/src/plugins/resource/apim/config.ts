@@ -283,8 +283,8 @@ function checkAndGetOtherPluginConfig(
   if (!pluginConfig) {
     throw BuildError(NoPluginConfig, component, ComponentRetryOperations[component]);
   }
-
-  const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key), envName);
+  const rawValue = pluginConfig.get ? pluginConfig.get(key) : pluginConfig[key];
+  const value = AssertConfigNotEmpty(component, key, rawValue, envName);
   if (typeof value !== "string") {
     throw BuildError(InvalidPropertyType, key, "string");
   }

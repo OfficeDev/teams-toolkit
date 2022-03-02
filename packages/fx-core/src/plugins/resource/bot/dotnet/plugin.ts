@@ -60,23 +60,11 @@ export class DotnetBotImpl extends TeamsBotImpl {
     return ResultFactory.Success();
   }
 
-  public async localDebug(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
-  }
-
-  public async postLocalDebug(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
-  }
-
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
     return ResultFactory.Success();
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
-  }
-
-  public async migrateV1Project(ctx: PluginContext): Promise<FxResult> {
     return ResultFactory.Success();
   }
 }

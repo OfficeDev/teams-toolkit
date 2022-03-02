@@ -6,13 +6,13 @@ import {
   BotOptionItem,
   MessageExtensionItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   let validateRes = validateStringArray(solutionSettings.azureResources);
   if (validateRes) {
     return `solutionSettings.azureResources validation failed: ${validateRes}`;
@@ -21,6 +21,7 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     TabOptionItem.id,
     BotOptionItem.id,
     MessageExtensionItem.id,
+    TabSPFxItem.id,
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;
@@ -29,6 +30,11 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
   if (validateRes) {
     return `solutionSettings.activeResourcePlugins validation failed: ${validateRes}`;
   }
+
+  if (projectSettings?.solutionSettings?.migrateFromV1) {
+    return "The project created before v2.0.0 is only supported in the Teams Toolkit before v3.4.0.";
+  }
+
   return undefined;
 }
 

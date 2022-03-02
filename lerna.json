@@ -9,6 +9,7 @@
         "packages/vscode-extension",
         "packages/failpoint-ts",
         "packages/adaptivecards-tools-sdk",
+        "packages/manifest",
         "templates"
     ],
     "command": {

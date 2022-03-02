@@ -41,16 +41,11 @@ export class ProjectSettingsHelper {
   }
 
   public static includeAAD = (projectSettings: ProjectSettings | undefined): boolean =>
-    !ProjectSettingsHelper.isMigrateFromV1(projectSettings) &&
     !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.includes(
       ResourcePlugins.Aad
     );
 
   public static includeSimpleAuth = (projectSettings: ProjectSettings | undefined): boolean =>
     // TODO: update this when retiring simple auth service
-    !ProjectSettingsHelper.isMigrateFromV1(projectSettings) &&
     !!IsSimpleAuthEnabled(projectSettings);
-
-  public static isMigrateFromV1 = (projectSettings: ProjectSettings | undefined): boolean =>
-    !!projectSettings?.solutionSettings?.migrateFromV1;
 }

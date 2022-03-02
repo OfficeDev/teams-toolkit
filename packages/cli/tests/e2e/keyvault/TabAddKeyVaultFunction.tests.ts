@@ -30,7 +30,7 @@ describe("Test Azure Key Vault", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab + key vault + function project happy path`, async function () {

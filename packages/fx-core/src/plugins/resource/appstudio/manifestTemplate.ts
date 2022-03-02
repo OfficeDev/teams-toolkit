@@ -10,8 +10,9 @@ import {
   ok,
   AppPackageFolderName,
   v3,
+  IStaticTab,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory } from "../../../common";
+import { getAppDirectory, isConfigUnifyEnabled } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -33,35 +34,57 @@ import {
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
-  return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  if (isConfigUnifyEnabled()) {
+    return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
+  } else {
+    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  }
 }
 
-export async function init(projectRoot: string, appName: string): Promise<Result<any, FxError>> {
+export async function init(
+  projectRoot: string,
+  appName: string,
+  existingApp: boolean
+): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-  const suffix = "-local-debug";
-  let localAppName = appName;
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    localAppName = localAppName + suffix;
-  }
-  localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
-  const localManifest = JSON.parse(localManifestString);
-  await saveManifest(projectRoot, localManifest, true);
+  if (isConfigUnifyEnabled()) {
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const manifest = JSON.parse(manifestString);
+    if (existingApp) {
+      manifest.developer = {
+        name: "Teams App, Inc.",
+        websiteUrl: "{{{config.manifest.developerWebsiteUrl}}}",
+        privacyUrl: "{{{config.manifest.developerPrivacyUrl}}}",
+        termsOfUseUrl: "{{{config.manifest.developerTermsOfUseUrl}}}",
+      };
+    }
+    await saveManifest(projectRoot, manifest);
+  } else {
+    let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+    const suffix = "-local-debug";
+    let localAppName = appName;
+    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+      localAppName = localAppName + suffix;
+    }
+    localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
+    const localManifest = JSON.parse(localManifestString);
+    await saveManifest(projectRoot, localManifest, true);
 
-  let remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-  remoteManifestString = replaceConfigValue(remoteManifestString, "appName", appName);
-  const remoteManifest = JSON.parse(remoteManifestString);
-  await saveManifest(projectRoot, remoteManifest, false);
+    const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const remoteManifest = JSON.parse(remoteManifestString);
+    await saveManifest(projectRoot, remoteManifest, false);
+  }
 
   return ok(undefined);
 }
@@ -108,7 +131,7 @@ export async function loadManifest(
 export async function saveManifest(
   projectRoot: string,
   manifest: TeamsAppManifest,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<Result<any, FxError>> {
   const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
   await fs.writeFile(manifestFilePath, JSON.stringify(manifest, null, 4));
@@ -117,7 +140,7 @@ export async function saveManifest(
 
 export async function capabilityExceedLimit(
   projectRoot: string,
-  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
 ): Promise<Result<boolean, FxError>> {
   const localManifest = await loadManifest(projectRoot, true);
   if (localManifest.isErr()) {
@@ -161,6 +184,8 @@ export async function capabilityExceedLimit(
         remoteManifest.value.composeExtensions !== undefined &&
         remoteManifest.value.composeExtensions!.length >= 1;
       return ok(localExceed || remoteExceed);
+    case "WebApplicationInfo":
+      return ok(false);
     default:
       return err(
         AppStudioResultFactory.SystemError(
@@ -306,6 +331,151 @@ export async function addCapabilities(
     return err(res.error);
   }
   res = await saveManifest(projectRoot, remoteManifest, false);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  return ok(undefined);
+}
+
+export async function updateCapability(
+  projectRoot: string,
+  capability: v3.ManifestCapability
+): Promise<Result<any, FxError>> {
+  const manifestRes = await loadManifest(projectRoot, false);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  switch (capability.name) {
+    case "staticTab":
+      // find the corresponding static Tab with entity id
+      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
+      if (index !== undefined && index !== -1) {
+        manifest.staticTabs![index] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.StaticTabNotExistError.name,
+            AppStudioError.StaticTabNotExistError.message(entityId)
+          )
+        );
+      }
+      break;
+    case "configurableTab":
+      if (manifest.configurableTabs && manifest.configurableTabs.length) {
+        manifest.configurableTabs[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "Bot":
+      if (manifest.bots && manifest.bots.length > 0) {
+        manifest.bots[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "MessageExtension":
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+        manifest.composeExtensions[0] = capability.snippet!.remote;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "WebApplicationInfo":
+      manifest.webApplicationInfo = capability.snippet;
+      break;
+  }
+
+  const res = await saveManifest(projectRoot, manifest, false);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  return ok(undefined);
+}
+
+export async function deleteCapability(
+  projectRoot: string,
+  capability: v3.ManifestCapability
+): Promise<Result<any, FxError>> {
+  const manifestRes = await loadManifest(projectRoot, false);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  switch (capability.name) {
+    case "staticTab":
+      // find the corresponding static Tab with entity id
+      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
+      if (index !== undefined && index !== -1) {
+        manifest.staticTabs!.slice(index, 1);
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.StaticTabNotExistError.name,
+            AppStudioError.StaticTabNotExistError.message(entityId)
+          )
+        );
+      }
+      break;
+    case "configurableTab":
+      if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+        manifest.configurableTabs = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "Bot":
+      if (manifest.bots && manifest.bots.length > 0) {
+        manifest.bots = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "MessageExtension":
+      if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+        manifest.composeExtensions = [];
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
+      break;
+    case "WebApplicationInfo":
+      manifest.webApplicationInfo = undefined;
+      break;
+  }
+  const res = await saveManifest(projectRoot, manifest, false);
   if (res.isErr()) {
     return err(res.error);
   }

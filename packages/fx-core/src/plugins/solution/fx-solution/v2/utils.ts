@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -40,6 +40,7 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -86,10 +87,6 @@ export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
   permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
-  if (solutionSettings.migrateFromV1) {
-    return ok(Void);
-  }
-
   if (!isAzureProject(solutionSettings)) {
     return err(
       returnUserError(
@@ -167,21 +164,21 @@ export async function checkWhetherLocalDebugM365TenantMatches(
   appStudioTokenProvider?: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const m365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
-    if (m365TenantId.isErr()) {
-      throw err(m365TenantId.error);
+    const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365TenantId.isErr()) {
+      return maybeM365TenantId;
     }
 
-    const m365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
-    if (m365UserAccount.isErr()) {
-      throw err(m365UserAccount.error);
+    const maybeM365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365UserAccount.isErr()) {
+      return maybeM365UserAccount;
     }
 
-    if (m365TenantId.value !== localDebugTenantId) {
+    if (maybeM365TenantId.value !== localDebugTenantId) {
       const errorMessage: string = util.format(
         getStrings().solution.LocalDebugTenantConfirmNotice,
         localDebugTenantId,
-        m365UserAccount.value,
+        maybeM365UserAccount.value,
         "localSettings.json"
       );
 
@@ -201,11 +198,16 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
-  appStudioToken?: Record<string, unknown>
+  appStudioToken?: Record<string, unknown>,
+  envInfo?: EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
-      localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      if (isConfigUnifyEnabled()) {
+        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
+      } else {
+        localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      }
       return ok(Void);
     }
   );

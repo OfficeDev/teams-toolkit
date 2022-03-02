@@ -21,7 +21,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { FxCore, setTools } from "../../src";
+import { environmentManager, FxCore, setTools } from "../../src";
 import {
   CoreQuestionNames,
   SampleSelect,
@@ -41,6 +41,7 @@ import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName }
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
+import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -75,6 +76,8 @@ describe("Core basic APIs for v3", () => {
     sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok(Void));
     sandbox.stub<any, any>(solutionAzure, "addFeature").resolves(ok([]));
     sandbox.stub<any, any>(solutionSPFx, "addFeature").resolves(ok([]));
+    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
   });
 
   afterEach(() => {
@@ -82,7 +85,29 @@ describe("Core basic APIs for v3", () => {
     sandbox.restore();
     deleteFolder(projectPath);
   });
-
+  it("create + provision (VSC, Tab)", async () => {
+    appName = randomAppName();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
+    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
+    const provisionRes = await core.provisionResources({
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      env: "dev",
+    });
+    assert.isTrue(provisionRes.isOk());
+  });
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
@@ -96,14 +121,6 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
-    const provisionRes = await core.provisionResources({
-      platform: Platform.VSCode,
-      projectPath: projectPath,
-    });
-    assert.isTrue(provisionRes.isOk());
   });
   it("create from new (VS, Tab+Bot)", async () => {
     appName = randomAppName();
@@ -130,6 +147,9 @@ describe("Core basic APIs for v3", () => {
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+      [SPFXQuestionNames.framework_type]: "react",
+      [SPFXQuestionNames.webpart_name]: "helloworld",
+      [SPFXQuestionNames.webpart_desp]: "helloworld",
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);

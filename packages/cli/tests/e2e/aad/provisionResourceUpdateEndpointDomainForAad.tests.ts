@@ -5,7 +5,7 @@
  * @author Bowen Song <bowen.song@microsoft.com>
  */
 
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import path from "path";
@@ -32,11 +32,6 @@ function test(vsCallingCli: boolean) {
 
     it(`Provision Resource: Update Domain and Endpoint for AAD - Test Plan Id 9576711`, async function () {
       const env = cloneDeep(process.env);
-      if (!isMultiEnvEnabled()) {
-        if (vsCallingCli) {
-          env["VS_CALLING_CLI"] = "true";
-        }
-      }
       // new a project
       await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
         cwd: testFolder,
@@ -53,30 +48,17 @@ function test(vsCallingCli: boolean) {
         timeout: 0,
       });
 
-      if (isMultiEnvEnabled()) {
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-        // Validate Aad App
-        const aad = AadValidator.init(context);
-        await AadValidator.validate(aad);
-      } else {
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-        // Validate Aad App
-        const aad = AadValidator.init(context);
-        await AadValidator.validate(aad);
-      }
+      // Validate Aad App
+      const aad = AadValidator.init(context);
+      await AadValidator.validate(aad);
     });
 
     after(async () => {
       // clean up
-      if (isMultiEnvEnabled()) {
-        await cleanUp(appName, projectPath, true, false, false, true);
-      } else {
-        await cleanUp(appName, projectPath, true, false, false);
-      }
+      await cleanUp(appName, projectPath, true, false, false);
     });
   });
 }

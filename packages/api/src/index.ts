@@ -10,7 +10,7 @@ export * from "./types";
 export * from "./plugin";
 export * from "./solution";
 export * from "./vscode";
-export * from "./manifest";
+export * from "@microsoft/teams-manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";

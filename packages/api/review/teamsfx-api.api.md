@@ -4,6 +4,11 @@
 
 ```ts
 
+import { IBot } from '@microsoft/teams-manifest';
+import { IComposeExtension } from '@microsoft/teams-manifest';
+import { IConfigurableTab } from '@microsoft/teams-manifest';
+import { IStaticTab } from '@microsoft/teams-manifest';
+import { IWebApplicationInfo } from '@microsoft/teams-manifest';
 import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
@@ -34,6 +39,12 @@ interface AADApp extends AzureResource {
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
+interface AddFeatureInputs extends InputsWithProjectPath {
+    // (undocumented)
+    allPluginsAfterAdd: string[];
+}
+
+// @public (undocumented)
 interface APIM extends AzureResource {
     // (undocumented)
     apimClientAADClientId: string;
@@ -52,32 +63,15 @@ interface APIM extends AzureResource {
 }
 
 // @public (undocumented)
-export type AppManifest = Json;
-
-// @public (undocumented)
 interface AppManifestProvider {
     // (undocumented)
-    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
-        name: "staticTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "configurableTab";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "Bot";
-        snippet?: Json;
-        existing?: boolean;
-    } | {
-        name: "MessageExtension";
-        snippet?: Json;
-        existing?: boolean;
-    })[]) => Promise<Result<Void, FxError>>;
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
+    capabilityExceedLimit: (ctx: Context_2, inputs: InputsWithProjectPath, capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo") => Promise<Result<boolean, FxError>>;
     // (undocumented)
-    saveManifest: (ctx: Context_2, inputs: InputsWithProjectPath, manifest: AppManifest) => Promise<Result<Void, FxError>>;
+    deleteCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    updateCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -91,12 +85,6 @@ export interface AppStudioTokenProvider {
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
     signout(): Promise<boolean>;
 }
-
-// @public (undocumented)
-export const ArchiveFolderName = ".archive";
-
-// @public (undocumented)
-export const ArchiveLogFileName = ".archive.log";
 
 // @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
@@ -163,6 +151,23 @@ interface AzureIdentity extends AzureResource {
 // @public (undocumented)
 type AzureResource = CloudResource;
 
+// @public (undocumented)
+interface AzureResourcePlugin {
+    addInstance?: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<string[], FxError>>;
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    description?: string;
+    displayName?: string;
+    generateBicep?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
+    generateCode?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Void, FxError>>;
+    getQuestionsForAddInstance?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    name: string;
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
+}
+
 // @public
 interface AzureSolutionConfig extends Json {
     // (undocumented)
@@ -195,8 +200,6 @@ export interface AzureSolutionSettings extends SolutionSettings {
     capabilities: string[];
     // (undocumented)
     hostType: string;
-    // (undocumented)
-    migrateFromV1?: boolean;
 }
 
 // @public (undocumented)
@@ -227,6 +230,28 @@ type BicepTemplate = {
     kind: "bicep";
     template: Record<string, unknown>;
 };
+
+// @public (undocumented)
+interface BicepTemplate_2 extends Record<any, unknown> {
+    // (undocumented)
+    Configuration?: {
+        Orchestration?: string;
+        Modules?: {
+            [moduleFileName: string]: string;
+        };
+    };
+    // (undocumented)
+    Parameters?: Record<string, string>;
+    // (undocumented)
+    Provision?: {
+        Orchestration?: string;
+        Modules?: {
+            [moduleFileName: string]: string;
+        };
+    };
+    // (undocumented)
+    Reference?: Record<string, unknown>;
+}
 
 // @public (undocumented)
 export const BuildFolderName = "build";
@@ -374,8 +399,6 @@ export interface Core {
     listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    migrateV1Project: (inputs: Inputs) => Promise<Result<string, FxError>>;
     on: (event: CoreCallbackEvent, callback: CoreCallbackFunc) => void;
     // (undocumented)
     provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -549,22 +572,6 @@ export interface ExpServiceProvider {
 }
 
 // @public (undocumented)
-interface FeaturePlugin {
-    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2[], FxError>>;
-    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
-    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
-    description?: string;
-    displayName?: string;
-    getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    name: string;
-    pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -700,138 +707,11 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
 }
 
 // @public (undocumented)
-export interface IActivityType {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    templateText: string;
-    // (undocumented)
-    type: string;
-}
-
-// @public (undocumented)
-export interface IBot {
-    botId: string;
-    commandLists?: ICommandList[];
-    isNotificationOnly?: boolean;
-    needsChannelSelector?: boolean;
-    scopes: ("team" | "personal" | "groupchat")[];
-    supportsCalling?: boolean;
-    supportsFiles?: boolean;
-    supportsVideo?: boolean;
-}
-
-// @public (undocumented)
-export interface ICommand {
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    title: string;
-}
-
-// @public (undocumented)
-export interface ICommandList {
-    // (undocumented)
-    commands: ICommand[];
-    // (undocumented)
-    scopes: ("team" | "personal" | "groupchat")[];
-}
-
-// @public (undocumented)
-export interface IComposeExtension {
-    botId: string;
-    canUpdateConfiguration?: boolean;
-    // (undocumented)
-    commands: IMessagingExtensionCommand[];
-    messageHandlers?: IComposeExtensionMessageHandler[];
-    // (undocumented)
-    objectId?: string;
-}
-
-// @public (undocumented)
-export interface IComposeExtensionMessageHandler {
-    type: "link";
-    // (undocumented)
-    value: {
-        domains?: string[];
-        [k: string]: unknown;
-    };
-}
-
-// @public (undocumented)
-export interface IConfigurableTab {
-    canUpdateConfiguration?: boolean;
-    configurationUrl: string;
-    context?: ("channelTab" | "privateChatTab" | "meetingChatTab" | "meetingDetailsTab" | "meetingSidePanel" | "meetingStage")[];
-    // (undocumented)
-    objectId?: string;
-    scopes: ("team" | "groupchat")[];
-    sharePointPreviewImage?: string;
-    supportedSharePointHosts?: ("sharePointFullPage" | "sharePointWebPart")[];
-}
-
-// @public (undocumented)
-export interface IConnector {
-    configurationUrl?: string;
-    connectorId: string;
-    scopes: "team"[];
-}
-
-// @public (undocumented)
 interface ICore extends Core {
     addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     init: (inputs: InputsWithProjectPath & {
         solution?: string;
     }) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
-export interface IDeveloper {
-    mpnId?: string;
-    name: string;
-    privacyUrl: string;
-    termsOfUseUrl: string;
-    websiteUrl: string;
-}
-
-// @public (undocumented)
-export interface IIcons {
-    // (undocumented)
-    color: string;
-    // (undocumented)
-    outline: string;
-}
-
-// @public (undocumented)
-export interface ILocalizationInfo {
-    // (undocumented)
-    additionalLanguages?: {
-        languageTag: string;
-        file: string;
-    }[];
-    defaultLanguageTag: string;
-}
-
-// @public (undocumented)
-export interface IMessagingExtensionCommand {
-    context?: ("compose" | "commandBox" | "message")[];
-    description?: string;
-    fetchTask?: boolean;
-    id: string;
-    initialRun?: boolean;
-    // (undocumented)
-    parameters?: IParameter[];
-    // (undocumented)
-    taskInfo?: ITaskInfo;
-    title: string;
-    type?: "query" | "action";
-}
-
-// @public (undocumented)
-export interface IName {
-    full?: string;
-    // (undocumented)
-    short: string;
 }
 
 // @public (undocumented)
@@ -855,8 +735,6 @@ export interface Inputs extends Json {
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
-    // (undocumented)
-    ignoreLock?: boolean;
     // (undocumented)
     platform: Platform;
     // (undocumented)
@@ -909,19 +787,6 @@ export class InvalidProjectError extends UserError {
 }
 
 // @public (undocumented)
-export interface IParameter {
-    choices?: {
-        title: string;
-        value: string;
-    }[];
-    description?: string;
-    inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
-    name: string;
-    title: string;
-    value?: string;
-}
-
-// @public (undocumented)
 export interface IProgressHandler {
     end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
@@ -956,35 +821,6 @@ interface ISolution {
     provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
-export interface IStaticTab {
-    contentUrl?: string;
-    context?: ("personalTab" | "channelTab")[];
-    entityId: string;
-    name?: string;
-    // (undocumented)
-    objectId?: string;
-    scopes: ("team" | "personal")[];
-    searchUrl?: string;
-    websiteUrl?: string;
-}
-
-// @public (undocumented)
-export interface ITaskInfo {
-    height?: string;
-    title?: string;
-    url?: string;
-    width?: string;
-}
-
-// @public (undocumented)
-export interface IWebApplicationInfo {
-    // (undocumented)
-    applicationPermissions?: string[];
-    id: string;
-    resource?: string;
 }
 
 // @public (undocumented)
@@ -1096,6 +932,10 @@ type ManifestCapability = {
         remote: IComposeExtension;
     };
     existingApp?: boolean;
+} | {
+    name: "WebApplicationInfo";
+    snippet?: IWebApplicationInfo;
+    existingApp?: boolean;
 };
 
 // @public (undocumented)
@@ -1165,15 +1005,6 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
-}
-
-// @public (undocumented)
-interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
-    // (undocumented)
-    features: {
-        name: string;
-        value: ResourceTemplate_2[];
-    }[];
 }
 
 // @public (undocumented)
@@ -1273,6 +1104,9 @@ export type PluginIdentity = string;
 type PluginName = string;
 
 // @public (undocumented)
+type PluginV3 = AzureResourcePlugin;
+
+// @public (undocumented)
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
@@ -1283,6 +1117,16 @@ export interface ProjectConfig {
     localSettings?: LocalSettings | Json;
     // (undocumented)
     settings?: ProjectSettings;
+}
+
+// @public (undocumented)
+export interface ProjectConfigV3 {
+    // (undocumented)
+    envInfos: {
+        [key: string]: EnvInfoV3;
+    };
+    // (undocumented)
+    projectSettings: ProjectSettings;
 }
 
 // @public
@@ -1371,7 +1215,7 @@ interface ResourcePlugin {
     activate(projectSettings: ProjectSettings): boolean;
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
-    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -1391,7 +1235,7 @@ interface ResourcePlugin {
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1528,8 +1372,6 @@ export interface Solution {
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
-    migrate?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
-    // (undocumented)
     name: string;
     // (undocumented)
     provision: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1542,7 +1384,7 @@ export interface Solution {
 // @public (undocumented)
 interface SolutionAddFeatureInputs extends InputsWithProjectPath {
     // (undocumented)
-    feature: string;
+    features: string[];
 }
 
 // @public (undocumented)
@@ -1588,7 +1430,7 @@ interface SolutionPlugin {
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
-    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<FxResult<Json, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<FxResult<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1638,8 +1480,6 @@ export enum Stage {
     listCollaborator = "listCollaborator",
     // (undocumented)
     listEnv = "listEnv",
-    // (undocumented)
-    migrateV1 = "migrateV1",
     // (undocumented)
     package = "package",
     // (undocumented)
@@ -1731,42 +1571,6 @@ export interface TaskConfig {
 export interface TaskGroupConfig {
     fastFail?: boolean;
     sequential?: boolean;
-}
-
-// @public
-export class TeamsAppManifest implements AppManifest {
-    // (undocumented)
-    $schema?: string;
-    accentColor: string;
-    // (undocumented)
-    activities?: {
-        activityTypes?: IActivityType[];
-    };
-    bots?: IBot[];
-    composeExtensions?: IComposeExtension[];
-    configurableTabs?: IConfigurableTab[];
-    connectors?: IConnector[];
-    // (undocumented)
-    description: IName;
-    // (undocumented)
-    developer: IDeveloper;
-    devicePermissions?: ("geolocation" | "media" | "notifications" | "midi" | "openExternal")[];
-    // (undocumented)
-    icons: IIcons;
-    id: string;
-    isFullScreen?: boolean;
-    // (undocumented)
-    localizationInfo?: ILocalizationInfo;
-    manifestVersion: string;
-    // (undocumented)
-    name: IName;
-    packageName?: string;
-    permissions?: ("identity" | "messageTeamMembers")[];
-    showLoadingIndicator?: boolean;
-    staticTabs?: IStaticTab[];
-    validDomains?: string[];
-    version: string;
-    webApplicationInfo?: IWebApplicationInfo;
 }
 
 // @public (undocumented)
@@ -1943,6 +1747,11 @@ export class UnknownError extends SystemError {
 }
 
 // @public (undocumented)
+interface UpdateInputs extends AddFeatureInputs {
+    newPlugins: string[];
+}
+
+// @public (undocumented)
 export const UserCancelError: UserError;
 
 // @public
@@ -1994,9 +1803,6 @@ export interface UserInteraction {
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
-// @public (undocumented)
-export const V1ManifestFileName = "manifest.json";
-
 declare namespace v2 {
     export {
         ResourceTemplate_2 as ResourceTemplate,
@@ -2036,8 +1842,11 @@ declare namespace v3 {
         TeamsFxAzureResourceStates,
         AppManifestProvider,
         ContextWithManifestProvider,
-        OtherFeaturesAddedInputs,
-        FeaturePlugin,
+        AddFeatureInputs,
+        BicepTemplate_2 as BicepTemplate,
+        UpdateInputs,
+        AzureResourcePlugin,
+        PluginV3,
         SolutionAddFeatureInputs,
         ISolution,
         ICore,
@@ -2096,6 +1905,7 @@ export class WriteFileError extends SystemError {
 }
 
 
+export * from "@microsoft/teams-manifest";
 export * from "neverthrow";
 
 // (No @packageDocumentation comment for this package)

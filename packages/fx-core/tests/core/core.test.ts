@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AppPackageFolderName,
   err,
   Func,
   FxError,
@@ -12,8 +11,8 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  OptionItem,
   Platform,
+  ProjectSettings,
   QTreeNode,
   Result,
   SelectFolderConfig,
@@ -23,7 +22,6 @@ import {
   Stage,
   TokenProvider,
   traverse,
-  V1ManifestFileName,
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -34,6 +32,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import {
+  createV2Context,
   environmentManager,
   FxCore,
   InvalidInputError,
@@ -47,15 +46,16 @@ import {
   CoreQuestionNames,
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
-  SampleSelect,
-  ScratchOptionNoVSC,
   ScratchOptionYesVSC,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
+import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
-import fs from "fs-extra";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();
@@ -139,6 +139,59 @@ describe("Core basic APIs", () => {
         appName
       );
       assert.isTrue(res.isOk() && res.value === projectPath);
+      mockedEnvRestore();
+    });
+    it("create from new (VSC, SPFx) and telemetry is sent", async () => {
+      let sendCreate = false;
+      sandbox
+        .stub<any, any>(tools.telemetryReporter, "sendTelemetryEvent")
+        .callsFake(
+          async (
+            eventName: string,
+            properties?: { [key: string]: string },
+            measurements?: { [key: string]: number }
+          ) => {
+            if (eventName === "create" && properties && properties["host-type"] === "spfx") {
+              sendCreate = true;
+            }
+          }
+        );
+      const appstudio = Container.get(ResourcePlugins.AppStudioPlugin) as Plugin;
+      const spfx = Container.get(ResourcePlugins.SpfxPlugin) as Plugin;
+      sandbox.stub<any, any>(appstudio, "scaffold").resolves(ok(undefined));
+      sandbox.stub<any, any>(spfx, "postScaffold").resolves(ok(undefined));
+      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+      mockedEnvRestore = mockedEnv(newParam);
+      appName = randomAppName();
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: "123234",
+        solutionSettings: {
+          name: BuiltInSolutionNames.azure,
+          version: "3.0.0",
+        },
+      };
+      projectPath = path.resolve(
+        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
+        appName
+      );
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        stage: Stage.create,
+        [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+        [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+        [SPFXQuestionNames.framework_type]: "react",
+        [SPFXQuestionNames.webpart_name]: "helloworld",
+        [SPFXQuestionNames.webpart_desp]: "helloworld",
+        solution: mockSolutionV2.name,
+        projectPath: projectPath,
+      };
+      const contextV2 = createV2Context(projectSettings);
+      const res = await scaffoldSourceCode(contextV2, inputs);
+      assert.isTrue(res.isOk());
+      assert.isTrue(sendCreate);
       mockedEnvRestore();
     });
   });
@@ -383,7 +436,7 @@ describe("Core basic APIs", () => {
     projectPath = path.resolve(os.tmpdir(), appName);
 
     const newEnvName = "newEnv";
-    const envListResult = await environmentManager.listEnvConfigs(projectPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (envListResult.isErr()) {
       assert.fail("failed to list env names");
     }
@@ -393,7 +446,7 @@ describe("Core basic APIs", () => {
     const createEnvRes = await core.createEnv(inputs);
     assert.isTrue(createEnvRes.isOk());
 
-    const newEnvListResult = await environmentManager.listEnvConfigs(projectPath);
+    const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
     if (newEnvListResult.isErr()) {
       assert.fail("failed to list env names");
     }
@@ -476,85 +529,5 @@ describe("Core basic APIs", () => {
         assert.equal("Select a programming language.", placeholder);
       }
     }
-  });
-  describe("migrateV1", () => {
-    afterEach(async () => {
-      await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
-    });
-    const migrateV1Params = [
-      {
-        description: "skip ask app name",
-        appName: appName,
-        projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
-        skipAppNameQuestion: true,
-      },
-      {
-        description: "ask app name",
-        appName: "v1projectname",
-        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}-errorname`),
-        skipAppNameQuestion: false,
-      },
-    ];
-    migrateV1Params.forEach((testParam) => {
-      it(`happy path: migrate v1 project ${testParam.description}`, async () => {
-        await fs.ensureDir(testParam.projectPath);
-        await fs.writeJSON(path.join(testParam.projectPath, "package.json"), {
-          msteams: { teamsAppId: "testappid" },
-        });
-        await fs.ensureDir(path.join(testParam.projectPath, AppPackageFolderName));
-        await fs.writeJSON(
-          path.join(testParam.projectPath, AppPackageFolderName, V1ManifestFileName),
-          {}
-        );
-        const expectedInputs: Inputs = {
-          platform: Platform.VSCode,
-          projectPath: testParam.projectPath,
-          stage: Stage.migrateV1,
-        };
-
-        if (testParam.skipAppNameQuestion) {
-          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = testParam.appName;
-        } else {
-          expectedInputs[CoreQuestionNames.DefaultAppNameFunc] = undefined;
-          expectedInputs[CoreQuestionNames.AppName] = testParam.appName;
-        }
-
-        sandbox
-          .stub<any, any>(tools.ui, "inputText")
-          .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
-            if (config.name === CoreQuestionNames.AppName) {
-              return ok({
-                type: "success",
-                result: expectedInputs[CoreQuestionNames.AppName] as string,
-              });
-            }
-            throw err(InvalidInputError("invalid question"));
-          });
-        sandbox
-          .stub<any, any>(tools.ui, "showMessage")
-          .callsFake(async (): Promise<Result<string, FxError>> => {
-            return ok("OK");
-          });
-        const core = new FxCore(tools);
-        {
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            projectPath: testParam.projectPath,
-          };
-          const res = await core.migrateV1Project(inputs);
-          assert.isTrue(res.isOk() && res.value === testParam.projectPath);
-          assert.deepEqual(expectedInputs, inputs);
-          inputs.projectPath = testParam.projectPath;
-
-          const projectSettingsResult = await loadProjectSettings(inputs, true);
-          if (projectSettingsResult.isErr()) {
-            assert.fail("failed to load project settings");
-          }
-          const projectSettings = projectSettingsResult.value;
-          const validSettingsResult = validateSettings(projectSettings);
-          assert.isTrue(validSettingsResult === undefined);
-        }
-      });
-    });
   });
 });

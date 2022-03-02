@@ -10,14 +10,13 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
-import { IsSimpleAuthEnabled } from "../../common/tools";
-import { isPureExistingApp } from "../utils";
+import { isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (!shouldIgnored(ctx)) {
+  if (!shouldIgnored(ctx) && !isConfigUnifyEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());
@@ -57,13 +56,15 @@ export const LocalSettingsLoaderMW: Middleware = async (
       }
       //load two versions to make sure compatible
       if (exists) {
-        ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
+        ctx.localSettings = await localSettingsProvider.loadV2(
+          ctx.contextV2?.cryptoProvider,
+          hasAAD
+        );
       } else {
         ctx.localSettings = localSettingsProvider.initV2(
           hasFrontend,
           hasBackend,
           hasBot,
-          false,
           hasSimpleAuth,
           hasAAD
         );
@@ -78,7 +79,6 @@ export const LocalSettingsLoaderMW: Middleware = async (
             hasFrontend,
             hasBackend,
             hasBot,
-            false,
             hasSimpleAuth,
             hasAAD
           );

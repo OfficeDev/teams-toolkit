@@ -5,7 +5,7 @@ import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/tea
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deploy, getQuestionsForDeploy } from "../../../src/plugins/solution/fx-solution/v3/deploy";
 import {
   MockedAppStudioTokenProvider,
@@ -24,7 +24,7 @@ describe("SolutionV3 - deploy", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",
@@ -57,7 +57,7 @@ describe("SolutionV3 - deploy", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: TeamsFxAzureSolutionNameV3,
+        name: BuiltInSolutionNames.azure,
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",

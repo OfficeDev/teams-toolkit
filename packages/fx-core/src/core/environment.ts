@@ -64,6 +64,7 @@ class EnvironmentManager {
 
   private readonly defaultEnvName = "dev";
   private readonly ajv;
+  private readonly localEnvName = "local";
 
   constructor() {
     this.ajv = new Ajv();
@@ -208,7 +209,7 @@ class EnvironmentManager {
     return ok(envFiles.envState);
   }
 
-  public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
+  public async listAllEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
@@ -226,8 +227,26 @@ class EnvironmentManager {
     return ok(envNames);
   }
 
+  public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(PathNotExistError(projectPath));
+    }
+
+    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
+    if (!(await fs.pathExists(envConfigsFolder))) {
+      return ok([]);
+    }
+
+    const configFiles = await fs.readdir(envConfigsFolder);
+    const envNames = configFiles
+      .map((file) => this.getEnvNameFromPath(file))
+      .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
+
+    return ok(envNames);
+  }
+
   public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
-    const envList = await environmentManager.listEnvConfigs(projectPath);
+    const envList = await environmentManager.listAllEnvConfigs(projectPath);
     if (envList.isErr()) {
       return err(envList.error);
     }
@@ -310,9 +329,8 @@ class EnvironmentManager {
     const userData = userDataResult.value;
 
     if (!(await fs.pathExists(envFiles.envState))) {
-      const data = new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]);
-
-      return ok(data);
+      if (isV3) return ok({ solution: {} });
+      return ok(new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]));
     }
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
@@ -387,6 +405,10 @@ class EnvironmentManager {
       if (!dataNeedEncryption(secretKey)) {
         continue;
       }
+      if (!secrets[secretKey]) {
+        delete secrets[secretKey];
+        continue;
+      }
       const encryptedSecret = cryptoProvider.encrypt(secrets[secretKey]);
       // always success
       if (encryptedSecret.isOk()) {
@@ -420,6 +442,10 @@ class EnvironmentManager {
 
   public getDefaultEnvName() {
     return this.defaultEnvName;
+  }
+
+  public getLocalEnvName() {
+    return this.localEnvName;
   }
 }
 

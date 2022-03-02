@@ -7,8 +7,6 @@ import {
   UserError,
   SystemError,
   AzureSolutionSettings,
-  Func,
-  ok,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
@@ -21,7 +19,9 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { isVSProject } from "../../../core";
 import "./v2";
+import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
@@ -38,11 +38,7 @@ export class TeamsBot implements Plugin {
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
 
   public getImpl(context: PluginContext): PluginImpl {
-    return TeamsBot.isVsPlatform(context) ? this.dotnetBotImpl : this.teamsBotImpl;
-  }
-
-  private static isVsPlatform(context: PluginContext): boolean {
-    return context.projectSettings?.programmingLanguage === ProgrammingLanguage.Csharp;
+    return isVSProject(context.projectSettings!) ? this.dotnetBotImpl : this.teamsBotImpl;
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
@@ -176,20 +172,6 @@ export class TeamsBot implements Plugin {
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
-  }
-
-  public async executeUserTask(func: Func, context: PluginContext): Promise<FxResult> {
-    Logger.setLogger(context.logProvider);
-
-    if (func.method === "migrateV1Project") {
-      return await this.runWithExceptionCatching(
-        context,
-        () => this.getImpl(context).migrateV1Project(context),
-        true,
-        LifecycleFuncNames.MIGRATE_V1_PROJECT
-      );
-    }
-    return ok(undefined);
   }
 
   private wrapError(

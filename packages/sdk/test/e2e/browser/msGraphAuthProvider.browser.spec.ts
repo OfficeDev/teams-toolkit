@@ -4,10 +4,10 @@
 import { AccessToken } from "@azure/core-auth";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import { MsGraphAuthProvider, loadConfiguration } from "../../../src/index.browser";
+import { MsGraphAuthProvider, TeamsFx, IdentityType } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
 import * as sinon from "sinon";
-import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
+import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);
@@ -31,13 +31,17 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
         });
       });
 
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: "fake_login_url",
-        simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-      },
-    });
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"getToken")
+      .callsFake(async (scopes: string | string[]): Promise<AccessToken | null> => {
+        const graphToken = await getGraphToken(ssoToken, scopes);
+        return new Promise((resolve) => {
+          resolve({
+            token: graphToken,
+            expiresOnTimestamp: ssoToken.expire_time!,
+          });
+        });
+      });
   });
 
   afterEach(() => {
@@ -46,8 +50,12 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
 
   it("getAccessToken with user.read scopes should get valid access token", async function () {
     const scopes = "User.Read";
-    const credential = new TeamsUserCredential();
-    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(credential, scopes);
+    const teamsfx = new TeamsFx(IdentityType.User, {
+      initiateLoginEndpoint: "fake_login_url",
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
+
+    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(teamsfx, scopes);
     const accessToken = await authProvider.getAccessToken();
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);
@@ -59,8 +67,11 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
   });
 
   it("getAccessToken without scopes should get access token with default scope", async function () {
-    const credential = new TeamsUserCredential();
-    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(credential);
+    const teamsfx = new TeamsFx(IdentityType.User, {
+      initiateLoginEndpoint: "fake_login_url",
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
+    const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(teamsfx);
     const accessToken = await authProvider.getAccessToken();
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);

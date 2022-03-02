@@ -272,7 +272,7 @@ describe("Delete capability", () => {
     };
     const result = await plugin.deleteCapability(ctx, inputs, {
       name: "staticTab",
-      snippet: { local: tab, remote: tab },
+      snippet: tab,
     });
     chai.assert.isTrue(result.isOk());
   });
@@ -284,7 +284,7 @@ describe("Delete capability", () => {
     };
     const result = await plugin.deleteCapability(ctx, inputs, {
       name: "staticTab",
-      snippet: { local: tab, remote: tab },
+      snippet: tab,
     });
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {

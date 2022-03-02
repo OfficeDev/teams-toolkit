@@ -18,13 +18,14 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("certificate", () => {
-  const workspaceFolder = path.resolve(__dirname, "../data/");
+  const workspaceFolder = path.resolve(__dirname, "../data\\n\\t\\r\\test space 1/");
+  const expectedWorkspaceFolder = path.resolve(__dirname, "../data/n/t/r/test space 1/");
   const expectedCertFile = path.resolve(
-    workspaceFolder,
+    expectedWorkspaceFolder,
     `.home/.${ConfigFolderName}/certificate/localhost.crt`
   );
   const expectedKeyFile = path.resolve(
-    workspaceFolder,
+    expectedWorkspaceFolder,
     `.home/.${ConfigFolderName}/certificate/localhost.key`
   );
   beforeEach(() => {
@@ -32,7 +33,7 @@ describe("certificate", () => {
   });
 
   describe("setupCertificate", () => {
-    const fakeHomeDir = path.resolve(__dirname, "../data/.home/");
+    const fakeHomeDir = path.resolve(workspaceFolder, ".home/");
     let certManager: LocalCertificateManager;
 
     beforeEach(() => {
@@ -63,6 +64,15 @@ describe("certificate", () => {
       it(`happy path ${data.osType}`, async () => {
         sinon.stub(os, "type").returns(data.osType);
         const res = await certManager.setupCertificate(true);
+
+        chai.assert.equal(
+          res.certPath,
+          path.normalize(expectedCertFile).split(path.sep).join(path.posix.sep)
+        );
+        chai.assert.equal(
+          res.keyPath,
+          path.normalize(expectedKeyFile).split(path.sep).join(path.posix.sep)
+        );
 
         chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
         const certContent = fs.readFileSync(expectedCertFile, { encoding: "utf8" });

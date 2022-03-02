@@ -48,6 +48,7 @@ import {
 import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { getProjectSettingsPath } from "./projectSettingsLoader";
+import { ISanitizer } from "../../plugins/resource/apim/utils/namingRules";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -320,22 +321,17 @@ export async function getQuestionsForInit(
     }
   }
   const node = new QTreeNode({ type: "group" });
-  const globalSolutions = getGlobalSolutionsV3();
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
+  node.addChild(new QTreeNode(QuestionAppName));
+  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
-  for (const solution of globalSolutions) {
-    if (solution.getQuestionsForInit) {
-      const res = await solution.getQuestionsForInit(context, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        if (solutionNode.data) capNode.addChild(solutionNode);
-      }
+  if (solution.getQuestionsForInit) {
+    const res = await solution.getQuestionsForInit(context, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      if (solutionNode.data) node.addChild(solutionNode);
     }
   }
-  node.addChild(new QTreeNode(QuestionAppName));
   return ok(node.trim());
 }
 

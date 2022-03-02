@@ -47,7 +47,7 @@ export async function getQuestionsForAddFeature(
   const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectMultipleFeaturesQuestion);
-  if (!ctx.projectSetting.solutionSettings?.programmingLanguage) {
+  if (!ctx.projectSetting.programmingLanguage) {
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     node.addChild(programmingLanguage);
   }
@@ -114,6 +114,7 @@ export async function addFeature(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
+  ctx.projectSetting.programmingLanguage = inputs[ProgrammingLanguageQuestion.name];
   let solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingSet = new Set<string>();
   let newSet = new Set<string>();

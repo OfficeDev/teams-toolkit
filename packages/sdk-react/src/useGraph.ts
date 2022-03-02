@@ -4,6 +4,7 @@
 import { Data, useData } from "./useData";
 import { TeamsFx, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/teamsfx";
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
+import { useState } from "react";
 
 type GraphOption = {
   scope?: string[];
@@ -24,7 +25,7 @@ export function useGraph<T>(
   options?: GraphOption
 ): Data<T> {
   const { scope, teamsfx } = { scope: ["User.Read"], teamsfx: new TeamsFx(), ...options };
-  let needConsent = false;
+  const [needConsent, setNeedConsent] = useState(false);
   const { data, error, loading, reload } = useData(async () => {
     if (needConsent) {
       try {
@@ -43,11 +44,12 @@ export function useGraph<T>(
     }
     try {
       const graph = createMicrosoftGraphClient(teamsfx, scope);
-      return await fetchGraphDataAsync(graph, teamsfx, scope);
+      const graphData = await fetchGraphDataAsync(graph, teamsfx, scope);
+      return graphData;
     } catch (err: unknown) {
       if (err instanceof GraphError && err.code?.includes("UiRequiredError")) {
         // Silently fail for user didn't consent error
-        needConsent = true;
+        setNeedConsent(true);
       } else {
         throw err;
       }

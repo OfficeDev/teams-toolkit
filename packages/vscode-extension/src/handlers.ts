@@ -408,14 +408,59 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+
+  const LocalEnvName = environmentManager.getLocalEnvName();
+  let result: Result<null, FxError>;
+  if (env === LocalEnvName) {
+    result = await previewLocal();
+  } else {
+    result = await previewRemote(env);
+  }
+
+  if (result.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, result.error);
+    return result;
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
+}
+
+async function previewLocal(): Promise<Result<null, FxError>> {
+  let debugConfig = await commonUtils.getDebugConfig(true);
+  if (!debugConfig?.appId) {
+    const result = await runCommand(Stage.debug);
+    if (result.isErr()) {
+      return result;
+    }
+
+    debugConfig = await commonUtils.getDebugConfig(true);
+  }
+
+  return launch(debugConfig);
+}
+
+async function previewRemote(env: string): Promise<Result<null, FxError>> {
   const debugConfig = await commonUtils.getDebugConfig(false, env);
+  return launch(debugConfig);
+}
+
+async function launch(
+  debugConfig:
+    | {
+        appId: string;
+        env?: string;
+      }
+    | undefined
+): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = returnUserError(
       new Error(StringResources.vsc.handlers.teamsAppIdNotFound),
       ExtensionSource,
       ExtensionErrors.TeamsAppIdNotFoundError
     );
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, error);
     return err(error);
   }
 
@@ -423,9 +468,6 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
   await vscode.env.openExternal(Uri.parse(uri));
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
   return ok(null);
 }
 

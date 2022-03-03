@@ -39,7 +39,6 @@ export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
 
   async loadConfig(ctx: PluginContext) {
-    this.config.databases = [];
     this.loadConfigSubscription(ctx);
     this.loadConfigResourceGroup(ctx);
     this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
@@ -429,7 +428,9 @@ export class SqlPluginImpl {
   private loadDatabases(ctx: PluginContext) {
     ctx.config.forEach((v: string, k: string) => {
       if (k.startsWith(Constants.databaseName)) {
-        this.config.databases.push(v);
+        if (!this.config.databases.includes(v)) {
+          this.config.databases.push(v);
+        }
       }
     });
   }

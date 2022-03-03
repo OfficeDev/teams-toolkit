@@ -8,7 +8,7 @@ To scaffold from alpha release templates, set `TEAMSFX_TEMPLATE_PRERELEASE=alpha
 
 ## How to debug templates?
 
-1. Set `DEBUG_TEMPLATE=true` to your environment variables.
+1. Set `TEAMSFX_DEBUG_TEMPLATE=true` to your environment variables.
 1. Add your changes in templates source code.
 1. cd to vscode-extension folder.
 1. F5 to local debug and create new project.

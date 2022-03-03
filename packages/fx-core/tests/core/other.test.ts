@@ -41,6 +41,7 @@ import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2
 import { randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
+import { execPowerShell, execShell } from "../../src/common/local/process";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -235,12 +236,30 @@ describe("Other test case", () => {
     restore();
   });
   it("executeCommand", async () => {
-    const res = await executeCommand("ls", []);
-    assert.isTrue(res !== undefined);
-  });
-  it("tryExecuteCommand", async () => {
-    const res = await tryExecuteCommand("ls", []);
-    assert.isTrue(res !== undefined);
+    {
+      try {
+        const res = await executeCommand("ls", []);
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await tryExecuteCommand("ls", []);
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await execShell("ls");
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await execPowerShell("ls");
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
   });
   it("TaskDefinition", async () => {
     const appName = randomAppName();

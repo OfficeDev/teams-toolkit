@@ -578,7 +578,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, "local");
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
@@ -591,7 +595,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     const isLocalDebug = env === "local";
     if (isLocalDebug) {
       func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       func.params.type = "remote";
       return await runUserTask(func, TelemetryEvent.Build, false, env);
@@ -2186,12 +2194,17 @@ export async function updatePreviewManifest(args: any[]) {
     },
   };
 
-  const result = await runUserTask(
-    func,
-    TelemetryEvent.UpdatePreviewManifest,
-    env && env === "local" ? true : false,
-    env
-  );
+  let result;
+  if (isConfigUnifyEnabled()) {
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  } else {
+    result = await runUserTask(
+      func,
+      TelemetryEvent.UpdatePreviewManifest,
+      env && env === "local" ? true : false,
+      env
+    );
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = getWorkspacePath();

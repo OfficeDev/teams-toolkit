@@ -64,6 +64,7 @@ export class FeatureFlagName {
   static readonly VSCallingCLI = "VS_CALLING_CLI";
   static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
+  static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
 }
 
 export class ManifestVariables {

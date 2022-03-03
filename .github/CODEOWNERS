@@ -66,12 +66,8 @@
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan 
-/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan 
-
-/templates/bot @IvanJobs @eriolchan
-/templates/bot-msgext @IvanJobs @eriolchan
-/templates/msgext @IvanJobs @eriolchan
+/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
@@ -80,6 +76,16 @@
 /packages/fx-core/src/plugins/resource/function @eriolchan @hund030 @IvanJobs
 /packages/fx-core/tests/plugins/resource/function @eriolchan @hund030 @IvanJobs
 /packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
+
+/templates/tab @hund030 @eriolchan @IvanJobs
+/templates/function-base @hund030 @eriolchan @IvanJobs
+/templates/function-triggers @hund030 @eriolchan @IvanJobs
+/templates/blazor-base @JerryYangKai @eriolchan @IvanJobs
+/templates/bot @IvanJobs @eriolchan @Siglud @Yukun-dong
+/templates/bot-msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
+/templates/msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
+/packages/fx-core/src/common/template-utils @hund030 @IvanJobs @eriolchan
+/packages/fx-core/tests/common/templateFetch.test.ts @hund030 @IvanJobs @eriolchan
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey

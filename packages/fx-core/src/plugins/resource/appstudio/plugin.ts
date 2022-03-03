@@ -94,6 +94,7 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { environmentManager } from "../../../core/environment";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1530,7 +1531,16 @@ export class AppStudioPluginImpl {
       ...new Set(
         Mustache.parse(manifestString)
           .filter((x) => {
-            return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            if (isConfigUnifyEnabled()) {
+              // TODO: update local check
+              return (
+                x[0] != "text" &&
+                (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
+                  x[1] != "state.fx-resource-appstudio.teamsAppId")
+              );
+            } else {
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            }
           })
           .map((x) => x[1])
       ),

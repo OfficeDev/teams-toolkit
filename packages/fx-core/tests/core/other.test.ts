@@ -265,5 +265,33 @@ describe("Other test case", () => {
       const res = TaskDefinition.botStart(projectPath, "javascript", true);
       assert.isTrue(res !== undefined);
     }
+    {
+      const res = TaskDefinition.ngrokStart(projectPath, true, []);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.frontendInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendExtensionsInstall(projectPath, "");
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.botInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.spfxInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.gulpCert(projectPath);
+      assert.isTrue(res !== undefined);
+    }
   });
 });

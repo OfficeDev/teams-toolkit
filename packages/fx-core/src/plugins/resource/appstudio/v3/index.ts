@@ -275,7 +275,7 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider
+    tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);

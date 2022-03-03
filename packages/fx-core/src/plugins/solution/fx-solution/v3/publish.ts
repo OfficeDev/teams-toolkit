@@ -32,5 +32,5 @@ export async function publishApplication(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   const appstudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  return await appstudio.publishTeamsApp(ctx, inputs, envInfo, tokenProvider);
+  return await appstudio.publishTeamsApp(ctx, inputs, envInfo as v3.EnvInfoV3, tokenProvider);
 }

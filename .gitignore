@@ -380,3 +380,7 @@ diffFiles.txt
 
 # mocha
 mochawesome-report
+
+# verdaccio
+**/verdaccio/storage/
+

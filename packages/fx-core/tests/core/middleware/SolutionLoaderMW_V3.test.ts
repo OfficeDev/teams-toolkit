@@ -5,9 +5,10 @@ import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { CoreHookContext, newProjectSettings } from "../../../src";
+import { newProjectSettings } from "../../../src";
 import { ContextInjectorMW } from "../../../src/core/middleware";
 import { SolutionLoaderMW_V3 } from "../../../src/core/middleware/solutionLoaderV3";
+import { CoreHookContext } from "../../../src/core/types";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 
 describe("Middleware - SolutionLoaderMW_V3", () => {

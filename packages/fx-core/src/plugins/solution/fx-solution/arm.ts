@@ -1351,7 +1351,7 @@ function expandParameterPlaceholdersV3(
 ): string {
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const plugins = solutionSettings
-    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.FeaturePlugin>(p))
+    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p))
     : [];
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };

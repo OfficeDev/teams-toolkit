@@ -4,15 +4,7 @@
 import { FxError, GraphTokenProvider, PluginContext, v2 } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import {
-  ConfigFilePath,
-  ConfigKeys,
-  Constants,
-  Messages,
-  ProgressDetail,
-  Telemetry,
-  UILevels,
-} from "./constants";
+import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -32,13 +24,12 @@ import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinition";
 import { ResultFactory } from "./results";
-import { Utils } from "./utils/common";
-import { ProvisionConfig } from "./utils/configs";
+import { ProvisionConfig, Utils } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 import { getAllowedAppIds } from "../../../common/tools";
-import { TOOLS } from "../../../core";
+import { TOOLS } from "../../../core/globalVars";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout

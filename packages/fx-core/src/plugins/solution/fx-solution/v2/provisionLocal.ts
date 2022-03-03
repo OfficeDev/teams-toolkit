@@ -30,7 +30,7 @@ import {
 } from "../debug/provisionLocal";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { ResourcePlugins } from "../../../../common/constants";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -72,7 +72,8 @@ export async function provisionLocalResource(
   if (isConfigUnifyEnabled()) {
     localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
   } else {
-    localDebugTenantId = localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+    if (!localSettings.teamsApp) localSettings.teamsApp = {};
+    localDebugTenantId = localSettings.teamsApp?.tenantId;
   }
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
@@ -82,8 +83,11 @@ export async function provisionLocalResource(
   if (m365TenantMatches.isErr()) {
     return new v2.FxFailure(m365TenantMatches.error);
   }
-
-  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(ctx.projectSetting);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
@@ -107,8 +111,6 @@ export async function provisionLocalResource(
     if (localEnvSetupResult.isErr()) {
       return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
     }
-
-    setDataForLocal(envInfo!, localSettings);
   } else {
     const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
 
@@ -174,7 +176,6 @@ export async function provisionLocalResource(
   }
 
   if (isConfigUnifyEnabled()) {
-    setPostDataForLocal(envInfo!, localSettings);
     const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
     if (localConfigResult.isErr()) {
@@ -189,24 +190,4 @@ export async function provisionLocalResource(
   }
 
   return new v2.FxSuccess(localSettings);
-}
-
-// TODO: delete me later, this is used to set localSettings using envInfo.state value
-export function setDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
-  localSettings.auth.clientId = envInfo.state[ResourcePlugins.Aad].clientId;
-  localSettings.auth.clientSecret = envInfo.state[ResourcePlugins.Aad].clientSecret;
-  localSettings.auth.objectId = envInfo.state[ResourcePlugins.Aad].objectId;
-  localSettings.auth.oauth2PermissionScopeId =
-    envInfo.state[ResourcePlugins.Aad].oauth2PermissionScopeId;
-  localSettings.auth.oauthAuthority = envInfo.state[ResourcePlugins.Aad].oauthAuthority;
-  localSettings.auth.oauthHost = envInfo.state[ResourcePlugins.Aad].oauthHost;
-
-  localSettings.frontend.tabIndexPath = envInfo.state[ResourcePlugins.FrontendHosting].indexPath;
-  localSettings.frontend.tabDomain = envInfo.state[ResourcePlugins.FrontendHosting].domain;
-  localSettings.frontend.tabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting].endpoint;
-}
-
-export function setPostDataForLocal(envInfo: EnvInfoV2, localSettings: Json) {
-  localSettings.auth.applicationIdUris = envInfo.state[ResourcePlugins.Aad].applicationIdUris;
-  localSettings.teamsApp.teamsAppId = envInfo.state[ResourcePlugins.AppStudio]?.teamsAppId;
 }

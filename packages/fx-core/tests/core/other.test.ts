@@ -18,7 +18,6 @@ import * as path from "path";
 import sinon from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
-import { readJson } from "../../src/common/fileUtils";
 import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
@@ -187,21 +186,6 @@ describe("Other test case", () => {
       getSolutionPluginByName("fx-solution-azure"),
       Container.get(SolutionPlugins.AzureTeamsSolution)
     );
-  });
-
-  it("fileUtils", async () => {
-    try {
-      await readJson("abc");
-    } catch (e) {
-      assert.isTrue(e instanceof UserError);
-    }
-    sandbox.stub<any, any>(fs, "readJson").rejects(new Error("invalid json"));
-    sandbox.stub<any, any>(fs, "pathExists").resolves(true);
-    try {
-      await readJson("abc");
-    } catch (e) {
-      assert.isTrue(e instanceof SystemError);
-    }
   });
 
   it("ContextUpgradeError", async () => {

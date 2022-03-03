@@ -23,7 +23,6 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   environmentManager,
   newEnvInfo,
   newEnvInfoV3,
@@ -40,6 +39,7 @@ import {
   ProjectSettingsLoaderMW,
   ProjectSettingsWriterMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {

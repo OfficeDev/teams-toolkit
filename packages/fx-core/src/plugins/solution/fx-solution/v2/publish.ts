@@ -11,8 +11,11 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
+import Container from "typedi";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -43,7 +46,11 @@ export async function publishApplication(
     );
   }
 
-  const plugins = getSelectedPlugins(ctx.projectSetting);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const thunks = plugins
     .filter((plugin) => !isUndefined(plugin.publishApplication))
     .map((plugin) => {

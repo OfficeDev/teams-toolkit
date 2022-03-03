@@ -4,7 +4,7 @@ import { ConfigMap, LocalSettings, PluginContext } from "@microsoft/teamsfx-api"
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import { newEnvInfo } from "../../../../src/core/tools";
+import { newEnvInfo } from "../../../../src";
 import { ARM_TEMPLATE_OUTPUT, isMultiEnvEnabled } from "../../../../src";
 import {
   LocalSettingsAuthKeys,

@@ -25,6 +25,7 @@ import {
 import { PathLike } from "fs";
 import { FeatureFlagName } from "../../../../../src/common/constants";
 import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
+import * as core from "../../../../../src/common/tools";
 
 chai.use(chaiAsPromised);
 
@@ -40,20 +41,10 @@ const expectedAppSettings = `{TeamsFx": {"Authentication": {"ClientId": "${clien
   tenantId
 )}"}, "BOT_ID": "${botId}", "BOT_PASSWORD": "${botPassword}"}}`;
 
-const env = Object.assign({}, process.env);
-
 describe("WebappPlugin", () => {
   describe("config unify disabled", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;
-
-    before(() => {
-      process.env[FeatureFlagName.ConfigUnify] = "false";
-    });
-
-    after(() => {
-      process.env = env;
-    });
 
     beforeEach(async () => {
       plugin = new WebappPlugin();
@@ -70,6 +61,7 @@ describe("WebappPlugin", () => {
           [LocalSettingsBotKeys.BotPassword, botPassword],
         ]),
       } as LocalSettings;
+      sinon.stub(core, "isConfigUnifyEnabled").returns(false);
     });
 
     afterEach(() => {
@@ -101,14 +93,6 @@ describe("WebappPlugin", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;
 
-    before(() => {
-      process.env[FeatureFlagName.ConfigUnify] = "true";
-    });
-
-    after(() => {
-      process.env = env;
-    });
-
     beforeEach(async () => {
       plugin = new WebappPlugin();
       pluginContext = TestHelper.getFakePluginContext();
@@ -133,6 +117,7 @@ describe("WebappPlugin", () => {
           ],
         ]),
       } as EnvInfo;
+      sinon.stub(core, "isConfigUnifyEnabled").returns(true);
     });
 
     afterEach(() => {

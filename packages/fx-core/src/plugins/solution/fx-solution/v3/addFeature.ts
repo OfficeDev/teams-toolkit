@@ -22,10 +22,9 @@ import { BuiltInFeaturePluginNames } from "./constants";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { HostTypeOptionAzure, HostTypeOptionSPFx } from "../question";
-import { isSPFxProject } from "../../../../common";
-import { hasAzureResource, hasSPFx } from "../../../../core/collaborator";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { cloneDeep } from "lodash";
+import { hasAzureResource, hasSPFx } from "../../../../common/projectSettingsHelper";
 
 function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
@@ -154,17 +153,6 @@ export async function addFeature(
     const plugin = Container.get<v3.PluginV3>(pluginName);
     if (plugin.generateCode) {
       const res = await plugin.generateCode(contextWithManifestProvider, addFeatureInputs);
-      if (res.isErr()) return err(res.error);
-    }
-  }
-  const updateInputs: v3.UpdateInputs = {
-    ...addFeatureInputs,
-    newPlugins: newArray,
-  };
-  for (const pluginName of existingArray) {
-    const plugin = Container.get<v3.PluginV3>(pluginName);
-    if (plugin.updateCode) {
-      const res = await plugin.updateCode(contextWithManifestProvider, updateInputs);
       if (res.isErr()) return err(res.error);
     }
   }

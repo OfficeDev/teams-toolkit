@@ -38,11 +38,11 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
-import { isPureExistingApp } from "../../../../core/utils";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionResource(
   ctx: v2.Context,

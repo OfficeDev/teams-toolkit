@@ -7,7 +7,7 @@ import {
   IBot,
   IComposeExtension,
   IWebApplicationInfo,
-} from "../manifest";
+} from "@microsoft/teams-manifest";
 import { EnvInfoV2 } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
 
@@ -19,22 +19,22 @@ export interface EnvInfoV3 extends EnvInfoV2 {
 export type ManifestCapability =
   | {
       name: "staticTab";
-      snippet?: { local: IStaticTab; remote: IStaticTab };
+      snippet?: IStaticTab;
       existingApp?: boolean;
     }
   | {
       name: "configurableTab";
-      snippet?: { local: IConfigurableTab; remote: IConfigurableTab };
+      snippet?: IConfigurableTab;
       existingApp?: boolean;
     }
   | {
       name: "Bot";
-      snippet?: { local: IBot; remote: IBot };
+      snippet?: IBot;
       existingApp?: boolean;
     }
   | {
       name: "MessageExtension";
-      snippet?: { local: IComposeExtension; remote: IComposeExtension };
+      snippet?: IComposeExtension;
       existingApp?: boolean;
     }
   | {

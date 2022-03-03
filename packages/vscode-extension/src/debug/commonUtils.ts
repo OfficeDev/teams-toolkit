@@ -12,7 +12,14 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
-import { LocalEnvManager, FolderName } from "@microsoft/teamsfx-core";
+import {
+  LocalEnvManager,
+  FolderName,
+  isV3,
+  isConfigUnifyEnabled,
+  environmentManager,
+} from "@microsoft/teamsfx-core";
+import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -109,36 +116,81 @@ export async function getDebugConfig(
   env?: string
 ): Promise<{ appId: string; env?: string } | undefined> {
   try {
-    if (isLocalSideloadingConfiguration) {
-      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-      return { appId: localSettings?.teamsApp?.teamsAppId as string };
+    if (isV3()) {
+      const inputs = getSystemInputs();
+      const getConfigRes = await core.getProjectConfigV3(inputs);
+      if (getConfigRes.isErr()) throw getConfigRes.error;
+      const config = getConfigRes.value;
+      if (!config)
+        throw new UserError("GetConfigError", "Failed to get project config", "extension");
+      if (isLocalSideloadingConfiguration) {
+        const envInfo = config.envInfos["local"];
+        if (!envInfo)
+          throw new UserError("EnvConfigNotExist", "Local Env config not exist", "extension");
+        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        return { appId: appId, env: "local" };
+      } else {
+        if (env === undefined) {
+          const inputs = getSystemInputs();
+          inputs.ignoreConfigPersist = true;
+          inputs.ignoreEnvInfo = false;
+          const envRes = await core.getSelectedEnv(inputs);
+          if (envRes.isErr()) {
+            VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
+            return undefined;
+          }
+          env = envRes.value;
+        }
+        if (!env)
+          throw new UserError(
+            "GetSelectedEnvError",
+            "Failed to get selected Env name",
+            "extension"
+          );
+        const envInfo = config.envInfos[env];
+        if (!envInfo)
+          throw new UserError("EnvConfigNotExist", `Env '${env} ' config not exist`, "extension");
+        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        return { appId: appId, env: env };
+      }
     } else {
-      // select env
-      if (env === undefined) {
-        const inputs = getSystemInputs();
-        inputs.ignoreConfigPersist = true;
-        inputs.ignoreEnvInfo = false;
-        const envRes = await core.getSelectedEnv(inputs);
-        if (envRes.isErr()) {
-          VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
-          return undefined;
+      if (isLocalSideloadingConfiguration) {
+        if (isConfigUnifyEnabled()) {
+          // load local env app info
+          const appInfo = getTeamsAppTelemetryInfoByEnv(environmentManager.getLocalEnvName());
+          return { appId: appInfo?.appId as string, env: env };
+        } else {
+          const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+          const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+          return { appId: localSettings?.teamsApp?.teamsAppId as string };
+        }
+      } else {
+        // select env
+        if (env === undefined) {
+          const inputs = getSystemInputs();
+          inputs.ignoreConfigPersist = true;
+          inputs.ignoreEnvInfo = false;
+          const envRes = await core.getSelectedEnv(inputs);
+          if (envRes.isErr()) {
+            VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
+            return undefined;
+          }
+
+          env = envRes.value;
         }
 
-        env = envRes.value;
-      }
+        // load env state
+        const appInfo = getTeamsAppTelemetryInfoByEnv(env!);
+        if (appInfo === undefined) {
+          throw new UserError({
+            name: "MissingTeamsAppId",
+            message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
+            source: "preview",
+          });
+        }
 
-      // load env state
-      const appInfo = getTeamsAppTelemetryInfoByEnv(env!);
-      if (appInfo === undefined) {
-        throw new UserError({
-          name: "MissingTeamsAppId",
-          message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
-          source: "preview",
-        });
+        return { appId: appInfo.appId as string, env: env };
       }
-
-      return { appId: appInfo.appId as string, env: env };
     }
   } catch (error: any) {
     showError(error);
@@ -201,16 +253,30 @@ export async function loadPackageJson(path: string): Promise<any> {
 }
 
 // Helper functions for local debug correlation-id, only used for telemetry
-let localDebugCorrelationId: string | undefined = undefined;
+// Use a 2-element tuple to handle concurrent F5
+const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+let current = 0;
 export function startLocalDebugSession(): string {
-  localDebugCorrelationId = uuid.v4();
+  current = (current + 1) % 2;
+  localDebugCorrelationIds[current] = uuid.v4();
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationId = undefined;
+  localDebugCorrelationIds[current] = "no-session-id";
+  current = (current + 1) % 2;
 }
 
 export function getLocalDebugSessionId(): string {
-  return localDebugCorrelationId || "no-session-id";
+  return localDebugCorrelationIds[current];
+}
+
+export function checkAndSkipDebugging(): boolean {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    endLocalDebugSession();
+    return true;
+  }
+  return false;
 }

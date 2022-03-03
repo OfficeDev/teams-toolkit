@@ -54,6 +54,11 @@ jobs:
           VAR=$(realpath .github/scripts/lint-pr.sh)
           npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
 
+      - name: audit dependency in lerna packages
+        run: |
+          npm audit fix
+          npx lerna exec -- npm audit fix
+
       - name: Check if there are changes
         id: changes
         run: |

@@ -629,6 +629,9 @@ export class FxCore implements v3.ICore {
     }
     if (!ctx.localSettings) ctx.localSettings = {};
     if (ctx.solutionV2.provisionLocalResource) {
+      if (isConfigUnifyEnabled() && ctx.envInfoV2?.config) {
+        ctx.envInfoV2.config.isLocalDebug = true;
+      }
       const res = await ctx.solutionV2.provisionLocalResource(
         ctx.contextV2,
         inputs,
@@ -1405,13 +1408,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-  ])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

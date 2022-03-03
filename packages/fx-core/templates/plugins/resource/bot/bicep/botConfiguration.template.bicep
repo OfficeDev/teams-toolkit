@@ -7,6 +7,8 @@ param provisionOutputs object
 param currentAppSettings object
 
 var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
+
+{{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
 var m365ClientId = provisionParameters['m365ClientId']
 
 {{#if (contains "fx-resource-key-vault" plugins) }}
@@ -17,6 +19,16 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
 
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+
+{{#if (contains "fx-resource-frontend-hosting" plugins)}}
+  {{#if (contains "fx-resource-bot" plugins) }}
+var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
+  {{/if}}
+{{else}}
+var m365ApplicationIdUri = 'api://botid-${botId}'
+{{/if}}
+{{/if}}
+
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 
 {{#if (contains "fx-resource-key-vault" plugins) }}
@@ -27,23 +39,17 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 
 var botId = provisionParameters['botAadAppClientId']
 
-{{#if (contains "fx-resource-frontend-hosting" plugins) }}
-  {{#if (contains "fx-resource-bot" plugins) }}
-var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
-  {{/if}}
-{{else}}
-var m365ApplicationIdUri = 'api://botid-${botId}'
-{{/if}}
-
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${botWebAppName}/appsettings'
   properties: union({
+    {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
     INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
     M365_TENANT_ID: m365TenantId // Tenant id of AAD application
     M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
+    {{/if}}
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
     {{#if (contains "fx-resource-function" plugins) }}

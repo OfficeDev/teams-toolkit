@@ -381,6 +381,10 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
+export function isAadManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.

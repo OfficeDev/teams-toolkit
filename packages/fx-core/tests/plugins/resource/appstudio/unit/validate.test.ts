@@ -4,13 +4,12 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
-import fs from "fs-extra";
-import path from "path";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { AppStudioClient } from "../../../../../src/plugins/resource/appstudio/appStudio";
 
 describe("validate manifest", () => {
   let plugin: AppStudioPlugin;
@@ -34,11 +33,11 @@ describe("validate manifest", () => {
     selectedPlugins = [BotPlugin];
   });
 
-  it("valid manifest", async () => {
-    const manifestFile = path.resolve(__dirname, "./../resources-multi-env/valid.manifest.json");
-    const manifest = await fs.readJson(manifestFile);
-    const manifestString = JSON.stringify(manifest);
+  afterEach(async () => {
+    sinon.restore();
+  });
 
+  it("valid manifest", async () => {
     sinon.stub(plugin, "validateManifest").resolves(ok([]));
 
     const validationResult = await plugin.validateManifest(ctx);
@@ -46,15 +45,9 @@ describe("validate manifest", () => {
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(0);
     }
-
-    sinon.restore();
   });
 
   it("invalid manifest", async () => {
-    const manifestFile = path.resolve(__dirname, "./../resources-multi-env/invalid.manifest.json");
-    const manifest = await fs.readJson(manifestFile);
-    const manifestString = JSON.stringify(manifest);
-
     sinon
       .stub(plugin, "validateManifest")
       .resolves(ok(["developer | Required properties are missing from object: []."]));
@@ -64,7 +57,12 @@ describe("validate manifest", () => {
     if (validationResult.isOk()) {
       chai.expect(validationResult.value).to.have.lengthOf(1);
     }
+  });
 
-    sinon.restore();
+  it("validate should not call app studio API", async () => {
+    const spy = sinon.spy(AppStudioClient, "validateManifest");
+    await plugin.validateManifest(ctx);
+
+    chai.assert.isTrue(spy.notCalled);
   });
 });

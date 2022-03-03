@@ -60,6 +60,7 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
+    "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -647,6 +648,11 @@
         "command": "fx-extension.openReadMe",
         "title": "Teams: Open Read Me",
         "enablement": "never"
+      },
+      {
+        "command": "fx-extension.openDeploymentTreeview",
+        "title": "Teams: Open Deployment Treeview",
+        "enablement": "never"
       }
     ],
     "taskDefinitions": [
@@ -930,17 +936,6 @@
             "id": "teamsToolkitBuildApp",
             "title": "Build your first Teams app",
             "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.getNewProjectPath?%5B%22WalkThrough%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)",
-            "when": "!fx-extension.isNotSupportAutoOpenAPI",
-            "media": {
-              "svg": "media/Create.svg",
-              "altText": "Build your first Teams app"
-            }
-          },
-          {
-            "id": "teamsToolkitBuildAppOldApi",
-            "title": "Build your first Teams app",
-            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.create?%5B%22WalkThrough%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)",
-            "when": "fx-extension.isNotSupportAutoOpenAPI",
             "media": {
               "svg": "media/Create.svg",
               "altText": "Build your first Teams app"
@@ -958,7 +953,7 @@
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
             "media": {
               "svg": "media/Deployment.svg",
               "altText": "Deploy Teams apps"

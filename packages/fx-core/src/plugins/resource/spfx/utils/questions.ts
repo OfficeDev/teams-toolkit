@@ -1,4 +1,5 @@
 import { Question } from "@microsoft/teamsfx-api";
+import { yeomanScaffoldEnabled } from "./utils";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -10,10 +11,16 @@ export const frameworkQuestion: Question = {
   type: "singleSelect",
   name: SPFXQuestionNames.framework_type,
   title: "Framework",
-  staticOptions: [
-    { id: "react", label: "React" },
-    { id: "none", label: "None" },
-  ],
+  staticOptions: yeomanScaffoldEnabled()
+    ? [
+        { id: "react", label: "React" },
+        { id: "none", label: "None" },
+        { id: "minimal", label: "Minimal" },
+      ]
+    : [
+        { id: "react", label: "React" },
+        { id: "none", label: "None" },
+      ],
   placeholder: "Select an option",
   default: "react",
 };

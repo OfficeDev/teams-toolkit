@@ -14,11 +14,11 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
--User can select code template without SSO when create new Teams app.
+- New sample app - Teams tab app without SSO.
 
 Enhancement:
-- Enhaced the code generated from "create a new Teams app".
-- 
+- Teams tab app generated from "create a new Teams app" can now use graph toolkit to retrieve user data.
+
 ## 3.4.0 - Feb 21, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

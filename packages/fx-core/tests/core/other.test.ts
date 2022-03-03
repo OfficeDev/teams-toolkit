@@ -40,7 +40,7 @@ import {
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
-
+import { TaskDefinition } from "../../src/common/local/taskDefinition";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -241,5 +241,21 @@ describe("Other test case", () => {
   it("tryExecuteCommand", async () => {
     const res = await tryExecuteCommand("ls", []);
     assert.isTrue(res !== undefined);
+  });
+  it("TaskDefinition", async () => {
+    const appName = randomAppName();
+    const projectPath = path.resolve(os.tmpdir(), appName);
+    {
+      const res = TaskDefinition.frontendStart(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendStart(projectPath, "javascript", "echo", true);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendWatch(projectPath);
+      assert.isTrue(res !== undefined);
+    }
   });
 });

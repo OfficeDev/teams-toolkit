@@ -35,6 +35,7 @@ import {
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   MANIFEST_TEMPLATE_CONSOLIDATE,
+  WEB_APPLICATION_INFO_MULTI_ENV,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
@@ -307,6 +308,13 @@ export async function addCapabilities(
               COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
             );
           }
+        }
+        break;
+      case "WebApplicationInfo":
+        if (capability.snippet) {
+          remoteManifest.webApplicationInfo = capability.snippet;
+        } else {
+          remoteManifest.webApplicationInfo = WEB_APPLICATION_INFO_MULTI_ENV;
         }
         break;
     }

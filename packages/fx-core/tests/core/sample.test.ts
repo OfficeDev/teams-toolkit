@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, ProjectSettings, Stage } from "@microsoft/teamsfx-api";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -15,7 +15,8 @@ import { FxCore, setTools } from "../../src";
 import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
-
+import * as downloadSample from "../../src/core/downloadSample";
+import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
 describe("Core basic APIs - create from sample", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();
@@ -62,6 +63,28 @@ describe("Core basic APIs - create from sample", () => {
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk() && res.value === projectPath);
+  });
+
+  it("downloadSample", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: "123123",
+    };
+    sandbox.stub(downloadSample, "downloadSampleHook").resolves();
+    sandbox.stub(downloadSample, "saveFilesRecursively").resolves();
+    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
+    appName = "hello-world-tab";
+    projectPath = path.resolve(os.tmpdir(), appName);
+    deleteFolder(projectPath);
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+      stage: Stage.create,
+    };
+    const res = await downloadSample.downloadSample(inputs);
     assert.isTrue(res.isOk() && res.value === projectPath);
   });
 });

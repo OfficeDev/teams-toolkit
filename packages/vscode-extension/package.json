@@ -872,53 +872,9 @@
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {
-            "id": "teamsToolkitCapailities",
-            "title": "What are Teams app \"Capabilities\"",
-            "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
-            "media": {
-              "svg": "media/learn.svg",
-              "altText": "Watch Teams Video"
-            }
-          },
-          {
-            "id": "teamsToolkitInstallNodeJs",
-            "title": "Install Node.js",
-            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
-            "media": {
-              "svg": "media/step_nodejs.svg",
-              "altText": "Install NodeJs"
-            },
-            "when": "fx-extension.isNotValidNode"
-          },
-          {
-            "id": "teamsToolkitTenantAccount",
-            "title": "Get your M365 testing tenant for free",
-            "description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
-            "media": {
-              "markdown": "docs/itp/itp.md"
-            }
-          },
-          {
-            "id": "teamsToolkitExploreMore",
-            "title": "Explore more TeamsFx functionalities",
-            "description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
-            "media": {
-              "svg": "media/goodToGo.svg",
-              "altText": "Explore more"
-            }
-          }
-        ]
-      },
-      {
-        "id": "teamsToolkitQuickStartNew",
-        "title": "Get started with Teams toolkit",
-        "description": "Jumpstart your Teams app development experience",
-        "when": "false",
-        "steps": [
-          {
             "id": "teamsToolkitEnvironment",
             "title": "Get your environment ready",
-            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites)",
+            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
             "media": {
               "svg": "media/Prerequisites.svg",
               "altText": "Get your environment ready"
@@ -936,7 +892,7 @@
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
+            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
             "media": {
               "svg": "media/F5.svg",
               "altText": "Preview your Teams app locally"
@@ -945,7 +901,7 @@
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
             "media": {
               "svg": "media/Deployment.svg",
               "altText": "Deploy Teams apps"
@@ -981,8 +937,8 @@
     "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
-    "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
-    "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "check-format": "prettier --list-different --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "format": "prettier --write --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",

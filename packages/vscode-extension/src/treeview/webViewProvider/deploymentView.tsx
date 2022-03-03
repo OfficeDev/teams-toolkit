@@ -1,10 +1,10 @@
 import * as React from "react";
 import "./tree.scss";
-import publish_dark from "../../media/dark/publish.svg";
-import publish_light from "../../media/light/publish.svg";
-import developerPortal_dark from "../../media/dark/developerPortal.svg";
-import developerPortal_light from "../../media/light/developerPortal.svg";
-import * as StringResources from "../resources/Strings.json";
+import publish_dark from "../../../media/dark/publish.svg";
+import publish_light from "../../../media/light/publish.svg";
+import developerPortal_dark from "../../../media/dark/developerPortal.svg";
+import developerPortal_light from "../../../media/light/developerPortal.svg";
+import * as StringResources from "../../resources/Strings.json";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 

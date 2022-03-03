@@ -1,9 +1,6 @@
-{{#IS_ME}}
 import { default as axios } from "axios";
 import * as querystring from "querystring";
-{{/IS_ME}}
-import { TeamsActivityHandler, CardFactory, TurnContext{{#IS_BOT}}, AdaptiveCardInvokeValue, AdaptiveCardInvokeResponse{{/IS_BOT}}} from "botbuilder";
-{{#IS_BOT}}
+import { TeamsActivityHandler, CardFactory, TurnContext, AdaptiveCardInvokeValue, AdaptiveCardInvokeResponse} from "botbuilder";
 import rawWelcomeCard from "./adaptiveCards/welcome.json"
 import rawLearnCard from "./adaptiveCards/learn.json"
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
@@ -11,10 +8,8 @@ import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 export interface DataInterface {
   likeCount: number
 }
-{{/IS_BOT}}
 
-export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} extends TeamsActivityHandler {
-  {{#IS_BOT}}
+export class TeamsBot extends TeamsActivityHandler {
   // record the likeCount
   likeCountObj: { likeCount: number };
 
@@ -91,9 +86,7 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
       return { statusCode: 200, type: undefined, value: undefined };
     }
   }
-  {{/IS_BOT}}
 
-  {{#IS_ME}}
   // Messaging extension Code
   // Action.
   public async handleTeamsMessagingExtensionSubmitAction(
@@ -169,10 +162,8 @@ export class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_B
     };
     return response;
   }
-  {{/IS_ME}}
 }
 
-{{#IS_ME}}
 async function createCardCommand(context: TurnContext, action: any): Promise<any> {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.
   const data = action.data;
@@ -244,4 +235,3 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
     },
   };
 }
-{{/IS_ME}}

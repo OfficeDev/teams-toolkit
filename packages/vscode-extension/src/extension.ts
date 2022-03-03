@@ -15,7 +15,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
-import { exp } from "./exp";
+import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
   AdaptiveCardCodeLensProvider,
@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const openDeploymentTreeview = vscode.commands.registerCommand(
     "fx-extension.openDeploymentTreeview",
-    () => Correlator.run(handlers.openDeploymentTreeview)
+    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
   );
   context.subscriptions.push(openDeploymentTreeview);
 
@@ -176,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",
-    () => Correlator.run(handlers.validateGetStartedPrerequisitesHandler)
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 

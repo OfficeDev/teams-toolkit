@@ -257,5 +257,13 @@ describe("Other test case", () => {
       const res = TaskDefinition.backendWatch(projectPath);
       assert.isTrue(res !== undefined);
     }
+    {
+      const res = TaskDefinition.authStart(projectPath, "");
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.botStart(projectPath, "javascript", true);
+      assert.isTrue(res !== undefined);
+    }
   });
 });

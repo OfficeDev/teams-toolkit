@@ -15,7 +15,7 @@
 *.otf
 *.eot
 packages/fx-core/tests/common/local/localCertificateManager.test.ts
-packages/sdk/test/unit/node/appCredential.spec.ts
+packages/sdk/test/unit/node/credential/appCredential.spec.ts
 packages/sdk/test/unit/node/core/onBehalfOfUserCredential.spec.ts
 packages/fx-core/tests/core/samples_v2.zip
 packages/cli/tests/e2e/manifest/appPackage.dev.zip

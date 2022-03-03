@@ -293,5 +293,9 @@ describe("Other test case", () => {
       const res = TaskDefinition.gulpCert(projectPath);
       assert.isTrue(res !== undefined);
     }
+    {
+      const res = TaskDefinition.gulpServe(projectPath);
+      assert.isTrue(res !== undefined);
+    }
   });
 });

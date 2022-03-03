@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const openDeploymentTreeview = vscode.commands.registerCommand(
     "fx-extension.openDeploymentTreeview",
-    () => Correlator.run(handlers.openDeploymentTreeview)
+    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
   );
   context.subscriptions.push(openDeploymentTreeview);
 
@@ -176,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",
-    () => Correlator.run(handlers.validateGetStartedPrerequisitesHandler)
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 

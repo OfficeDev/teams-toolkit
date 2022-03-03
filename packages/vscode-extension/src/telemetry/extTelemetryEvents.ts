@@ -83,6 +83,10 @@ export enum TelemetryEvent {
 
   ClickQuickStartCard = "click-quick-start-card",
 
+  ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
+  ClickValidatePrerequisites = "click-validate-prerequisites",
+  ClickOpenReadMe = "click-open-read-me",
+
   GetStartedPrerequisitesStart = "get-started-prerequisites-start",
   GetStartedPrerequisites = "get-started-prerequisites",
 

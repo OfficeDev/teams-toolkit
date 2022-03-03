@@ -83,12 +83,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
-      if (targetUri.isOk()) {
-        await handlers.updateAutoOpenGlobalKey(args);
-        await ExtTelemetry.dispose();
-        await delay(2000);
-        return { openFolder: targetUri.value };
+      if (!isSupportAutoOpenAPI()) {
+        Correlator.run(handlers.createNewProjectHandler, args);
+      } else {
+        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
+        if (targetUri.isOk()) {
+          await handlers.updateAutoOpenGlobalKey(args);
+          await ExtTelemetry.dispose();
+          await delay(2000);
+          return { openFolder: targetUri.value };
+        }
       }
     })
   );
@@ -97,6 +101,12 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.openReadMeHandler, args)
   );
   context.subscriptions.push(openReadMeCmd);
+
+  const openDeploymentTreeview = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentTreeview",
+    () => Correlator.run(handlers.openDeploymentTreeview)
+  );
+  context.subscriptions.push(openDeploymentTreeview);
 
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
@@ -553,11 +563,5 @@ function initializeContextKey() {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
-  }
-
-  if (isSupportAutoOpenAPI()) {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", false);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", true);
   }
 }

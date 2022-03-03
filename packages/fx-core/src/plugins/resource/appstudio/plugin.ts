@@ -93,7 +93,8 @@ import {
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
-import { getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { environmentManager } from "../../../core/environment";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1444,9 +1445,21 @@ export class AppStudioPluginImpl {
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
     let indexPath = tabIndexPath;
-    const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-      ?.solutionSettings as AzureSolutionSettings;
-    const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+
+    let hasFrontend = false;
+    if (isConfigUnifyEnabled()) {
+      const capabilities = await getCapabilities(ctx.root);
+      if (capabilities.isErr()) {
+        return err(capabilities.error);
+      }
+      hasFrontend =
+        capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+    } else {
+      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
+        ?.solutionSettings as AzureSolutionSettings;
+      hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+    }
+
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
       indexPath = "";
@@ -1518,7 +1531,16 @@ export class AppStudioPluginImpl {
       ...new Set(
         Mustache.parse(manifestString)
           .filter((x) => {
-            return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            if (isConfigUnifyEnabled()) {
+              // TODO: update local check
+              return (
+                x[0] != "text" &&
+                (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
+                  x[1] != "state.fx-resource-appstudio.teamsAppId")
+              );
+            } else {
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            }
           })
           .map((x) => x[1])
       ),

@@ -1,3 +1,4 @@
+- [3.5.0 - Mar 07 2022](#350---Mar-07-2022)
 - [3.4.0 - Feb 21 2022](#340---feb-21-2022)
 - [3.3.0 - Feb 07 2022](#330---feb-07-2022)
 - [3.2.0 - Jan 10 2022](#320---jan-10-2022)
@@ -9,6 +10,15 @@
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
+## 3.5.0 - Mar 07, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+-User can select code template without SSO when create new Teams app.
+
+Enhancement:
+- Enhaced the code generated from "create a new Teams app".
+- 
 ## 3.4.0 - Feb 21, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

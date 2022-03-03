@@ -39,7 +39,7 @@ import {
 } from "../../src/core/SolutionPluginContainer";
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { randomAppName } from "./utils";
-import { tryExecuteCommand } from "../../src/common/cpUtils";
+import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
@@ -234,7 +234,10 @@ describe("Other test case", () => {
     assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
     restore();
   });
-
+  it("executeCommand", async () => {
+    const res = await executeCommand("ls", []);
+    assert.isTrue(res !== undefined);
+  });
   it("tryExecuteCommand", async () => {
     const res = await tryExecuteCommand("ls", []);
     assert.isTrue(res !== undefined);

@@ -41,6 +41,8 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
+import { isConfigUnifyEnabled } from "../..";
+import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -106,7 +108,25 @@ export async function getTargetEnvName(
   if (!skip && !inputs.ignoreEnvInfo) {
     // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
     if (inputs.env) {
-      const result = await useUserSetEnv(inputs.projectPath!, inputs.env);
+      let result = await useUserSetEnv(inputs.projectPath!, inputs.env);
+      if (
+        result.isErr() &&
+        isConfigUnifyEnabled() &&
+        inputs.env == environmentManager.getLocalEnvName() &&
+        result.error.name === "ProjectEnvNotExistError"
+      ) {
+        const appName = getLocalAppName(ctx.projectSettings!.appName);
+        const newEnvConfig = environmentManager.newEnvConfigData(appName);
+        const writeEnvResult = await environmentManager.writeEnvConfig(
+          inputs.projectPath!,
+          newEnvConfig,
+          environmentManager.getLocalEnvName()
+        );
+        if (writeEnvResult.isErr()) {
+          return err(writeEnvResult.error);
+        }
+        result = await useUserSetEnv(inputs.projectPath!, inputs.env);
+      }
       if (result.isErr()) {
         ctx.result = result;
         return err(result.error);

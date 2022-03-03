@@ -20,6 +20,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: npm ci
+      - uses: oke-py/npm-audit-action@v1.8.4
+        with:
+          audit_level: moderate
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_assignees: oke-py
+          issue_labels: vulnerability,test
+          dedupe_issues: true
+
   check-format:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -54,10 +68,10 @@ jobs:
           VAR=$(realpath .github/scripts/lint-pr.sh)
           npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
 
-      - name: audit dependency in lerna packages
-        run: |
-          npm audit fix
-          npx lerna exec -- npm audit fix
+      # - name: audit dependency in lerna packages
+      #   run: |
+      #     npm audit fix
+      #     npx lerna exec -- npm audit fix
 
       - name: Check if there are changes
         id: changes

@@ -2,11 +2,8 @@
 // Licensed under the MIT license.
 
 import { MessageConnection } from "vscode-jsonrpc";
-import { TokenCredential } from "@microsoft/teamsfx-api/node_modules/@azure/core-auth";
-import {
-  TokenCredentialsBase,
-  DeviceTokenCredentials,
-} from "@microsoft/teamsfx-api/node_modules/@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-auth";
+import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 
 import {
   AzureAccountProvider,

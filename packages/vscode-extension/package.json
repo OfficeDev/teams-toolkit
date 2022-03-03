@@ -870,7 +870,6 @@
         "id": "teamsToolkitQuickStart",
         "title": "Get started with Teams toolkit",
         "description": "Jumpstart your Teams app development experience",
-        "when": "false",
         "steps": [
           {
             "id": "teamsToolkitEnvironment",

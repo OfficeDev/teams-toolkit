@@ -60,8 +60,9 @@ describe("validate manifest", () => {
   });
 
   it("validate should not call app studio API", async () => {
-    await plugin.validateManifest(ctx);
     const spy = sinon.spy(AppStudioClient, "validateManifest");
+    await plugin.validateManifest(ctx);
+
     chai.assert.isTrue(spy.notCalled);
   });
 });

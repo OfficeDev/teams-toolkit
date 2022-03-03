@@ -146,6 +146,7 @@ describe("Build Teams Package", () => {
 
   it("Build Teams app package should not call app studio API", async () => {
     ctx.localSettings = localSettings;
+    const spy = sandbox.spy(AppStudioClient, "validateManifest");
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
@@ -159,7 +160,6 @@ describe("Build Teams Package", () => {
 
     await plugin.buildTeamsPackage(ctx, true);
 
-    const spy = sinon.spy(AppStudioClient, "validateManifest");
     chai.assert.isTrue(spy.notCalled);
   });
 });

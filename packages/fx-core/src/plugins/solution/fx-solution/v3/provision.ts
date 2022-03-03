@@ -37,13 +37,7 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
-import {
-  configLocalDebugSettings,
-  configLocalEnvironment,
-  setupLocalDebugSettings,
-  setupLocalEnvironment,
-} from "../debug/provisionLocal";
-import { TabSPFxItem } from "../question";
+import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";

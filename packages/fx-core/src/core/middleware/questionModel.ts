@@ -322,6 +322,7 @@ export async function getQuestionsForInit(
   }
   const node = new QTreeNode({ type: "group" });
   node.addChild(new QTreeNode(QuestionAppName));
+  node.addChild(new QTreeNode(QuestionRootFolder));
   const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
   if (solution.getQuestionsForInit) {

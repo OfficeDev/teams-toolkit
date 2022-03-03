@@ -1333,6 +1333,8 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+    const folder = inputs[QuestionRootFolder.name] as string;
+    inputs.projectPath = path.join(folder, appName);
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();

@@ -21,13 +21,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   npm-audit:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
@@ -40,6 +37,9 @@ jobs:
           VAR=$(git diff --cached --name-only)
           if [ ! -z "$VAR" ]
           then
+            echo '======================================= Prompt Information ==============================================='
+            echo 'There found several moderate severity vulnerabilities in this repo, please check in the package or lock file to repo with: '
+            echo 'npx lerna-audit'
             exit 1
           fi
 
@@ -76,11 +76,6 @@ jobs:
         run: |
           VAR=$(realpath .github/scripts/lint-pr.sh)
           npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
-
-      # - name: audit dependency in lerna packages
-      #   run: |
-      #     npm audit fix
-      #     npx lerna exec -- npm audit fix
 
       - name: Check if there are changes
         id: changes

@@ -390,11 +390,11 @@ export async function provisionLocalResourceAdapter(
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   if (isConfigUnifyEnabled() && envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
+    pluginContext.envInfo.config = envInfo.config as EnvConfig;
   }
   if (!pluginContext.envInfo.state.get(plugin.name)) {
     pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   }
-  pluginContext.envInfo.config = envInfo!.config as EnvConfig;
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -422,6 +422,7 @@ export async function configureLocalResourceAdapter(
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   if (isConfigUnifyEnabled() && envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
+    pluginContext.envInfo.config = envInfo!.config as EnvConfig;
   }
   if (envInfo?.config.isLocalDebug) {
     pluginContext.envInfo.config.isLocalDebug = true;
@@ -429,7 +430,6 @@ export async function configureLocalResourceAdapter(
   if (!pluginContext.envInfo.state.get(plugin.name)) {
     pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   }
-  pluginContext.envInfo.config = envInfo!.config as EnvConfig;
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;

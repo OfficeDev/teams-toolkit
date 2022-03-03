@@ -423,6 +423,9 @@ export async function configureLocalResourceAdapter(
   if (isConfigUnifyEnabled() && envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
   }
+  if (envInfo?.config.isLocalDebug) {
+    pluginContext.envInfo.config.isLocalDebug = true;
+  }
   if (!pluginContext.envInfo.state.get(plugin.name)) {
     pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
   }

@@ -24,15 +24,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: install dependencies
-        run: npm ci
-      - uses: oke-py/npm-audit-action@v1.8.4
-        with:
-          audit_level: moderate
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_assignees: oke-py
-          issue_labels: vulnerability,test
-          dedupe_issues: true
+      - name: audit
+        run: npx lerna-audit
+      - name: check cache
+        run: |
+          git add .
+          VAR=$(git diff --cached --name-only)
+          if [ ! -z "$VAR" ]
+          then
+            exit 1
+          fi
 
   check-format:
     if: ${{ github.event_name == 'pull_request' }}

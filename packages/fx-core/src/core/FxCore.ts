@@ -1405,13 +1405,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-  ])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext

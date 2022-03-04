@@ -5,6 +5,7 @@ import {
   FuncValidation,
   Inputs,
   Platform,
+  ProjectSettings,
   Stage,
   SystemError,
   UserError,
@@ -42,6 +43,8 @@ import { randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { execPowerShell, execShell } from "../../src/common/local/process";
+import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
+import "../../src/plugins/solution/fx-solution/v2/solution";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -316,5 +319,15 @@ describe("Other test case", () => {
       const res = TaskDefinition.gulpServe(projectPath);
       assert.isTrue(res !== undefined);
     }
+  });
+  it("isValidProject: true", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
+    const isValid = isValidProject("aaa");
+    assert.isTrue(isValid);
   });
 });

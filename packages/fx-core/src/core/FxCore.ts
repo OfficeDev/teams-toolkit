@@ -331,6 +331,10 @@ export class FxCore implements v3.ICore {
         throw ProjectFolderInvalidError(folder);
       }
     }
+    if (!folder) {
+      return err(InvalidInputError("folder is undefined"));
+    }
+    inputs.folder = folder;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
@@ -1333,6 +1337,8 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+    const folder = inputs[QuestionRootFolder.name] as string;
+    inputs.projectPath = path.join(folder, appName);
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();

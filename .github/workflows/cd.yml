@@ -258,6 +258,7 @@ jobs:
           tag: '@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
+          allowUpdates: true
       
       - name: release RC server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
@@ -267,6 +268,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
+          allowUpdates: true
       
       - name: release stable server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -275,6 +277,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
           artifacts: ./packages/server/lib/*.exe
+          allowUpdates: true
 
       - name: pack vsix
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
@@ -297,6 +300,7 @@ jobs:
           tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}'
           artifacts: ./packages/**/*.vsix
           prerelease: true
+          allowUpdates: true
 
       - name: release RC VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
@@ -306,6 +310,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
           prerelease: true
+          allowUpdates: true
       
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -314,3 +319,4 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
+          allowUpdates: true

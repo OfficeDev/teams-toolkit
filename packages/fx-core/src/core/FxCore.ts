@@ -1408,13 +1408,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-  ])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -1444,6 +1438,10 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.solutionV3.addFeature) {
+      const res = await ensureBasicFolderStructure(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      }
       return await ctx.solutionV3.addFeature(ctx.contextV2, inputs as v3.SolutionAddFeatureInputs);
     }
     return ok(Void);

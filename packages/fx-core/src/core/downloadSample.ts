@@ -96,7 +96,7 @@ export async function downloadSampleHook(sampleId: string, sampleAppPath: string
 
 export async function downloadSample(
   inputs: Inputs,
-  ctx: CoreHookContext
+  ctx?: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
   const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
@@ -153,7 +153,7 @@ export async function downloadSample(
       projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
-      ctx.projectSettings = projectSettings;
+      if (ctx) ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
     } else {
       telemetryProperties[TelemetryProperty.ProjectId] =

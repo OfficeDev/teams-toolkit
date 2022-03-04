@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
+import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 
 import { LocalDebugCertificate } from "./constants";
@@ -53,7 +54,10 @@ export class LocalCertificateManager {
   constructor(ui?: UserInteraction, logger?: LogProvider) {
     this.ui = ui;
     this.logger = logger;
-    this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
+    this.certFolder = path
+      .normalize(`${os.homedir()}/.${ConfigFolderName}/certificate`)
+      .split(path.sep)
+      .join(path.posix.sep);
   }
 
   /**

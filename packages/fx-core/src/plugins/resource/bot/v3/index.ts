@@ -8,7 +8,10 @@ import {
   EnvConfig,
   err,
   FxError,
+  Inputs,
+  MultiSelectQuestion,
   ok,
+  QTreeNode,
   Result,
   TokenProvider,
   v2,
@@ -198,6 +201,25 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     };
     return ok([result]);
   }
+
+  async getQuestionsForAddInstance(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const capabilitiesQuestion: MultiSelectQuestion = {
+      name: AzureSolutionQuestionNames.Capabilities,
+      title: "Select capabilities",
+      type: "multiSelect",
+      staticOptions: [BotOptionItem, MessageExtensionItem],
+      default: [BotOptionItem.id],
+      placeholder: "Select at least 1 capability",
+      validation: {
+        minItems: 1,
+      },
+    };
+    return ok(new QTreeNode(capabilitiesQuestion));
+  }
+
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async addInstance(
     ctx: v3.ContextWithManifestProvider,

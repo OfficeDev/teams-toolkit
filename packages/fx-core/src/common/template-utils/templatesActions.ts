@@ -2,6 +2,7 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { getTemplatesFolder } from "../../folder";
+import { FeatureFlagName } from "../constants";
 import { fetchTemplateUrl, fetchZipFromUrl, renderTemplateContent, unzip } from "./templatesUtils";
 
 // The entire progress has following actions:
@@ -61,7 +62,7 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
   name: ScaffoldActionName.FetchTemplateZipFromSourceCode,
   run: async (context: ScaffoldContext) => {
     const isDebugMode = () => {
-      const DebugTemplateFlag = process.env.DEBUG_TEMPLATE;
+      const DebugTemplateFlag = process.env[FeatureFlagName.DebugTemplate];
       return DebugTemplateFlag?.toLowerCase() === "true" && process.env.VSCODE_PID;
     };
 

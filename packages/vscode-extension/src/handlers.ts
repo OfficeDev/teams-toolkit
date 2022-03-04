@@ -118,10 +118,10 @@ import { registerAccountTreeHandler } from "./accountTree";
 import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
-import { exp } from "./exp/index";
+import * as exp from "./exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import {
   AzureAssignRoleHelpUrl,
@@ -393,7 +393,7 @@ export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();
   await processResult(TelemetryEvent.RunIconDebug, result);
   return result;
@@ -1007,7 +1007,13 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 /**
  * Check required prerequisites in Get Started Page.
  */
-export async function validateGetStartedPrerequisitesHandler(): Promise<string | undefined> {
+export async function validateGetStartedPrerequisitesHandler(
+  args?: any[]
+): Promise<string | undefined> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ClickValidatePrerequisites,
+    getTriggerFromProperty(args)
+  );
   const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
@@ -1214,6 +1220,7 @@ async function autoOpenProjectHandler(): Promise<void> {
 }
 
 export async function openReadMeHandler(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
   if (!(await isTeamsfx())) {
     const createProject = {
       title: StringResources.vsc.handlers.createProjectTitle,
@@ -2482,7 +2489,11 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
   return result;
 }
 
-export async function openDeploymentTreeview() {
+export async function openDeploymentTreeview(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ClickOpenDeploymentTreeview,
+    getTriggerFromProperty(args)
+  );
   if (await isTeamsfx()) {
     vscode.commands.executeCommand("teamsfx-deployment.focus");
   } else {

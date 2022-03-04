@@ -19,7 +19,12 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import { SPFXQuestionNames } from "./utils/questions";
+import {
+  frameworkQuestion,
+  SPFXQuestionNames,
+  webpartDescriptionQuestion,
+  webpartNameQuestion,
+} from "./utils/questions";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import "./v2";
 import "./v3";
@@ -41,39 +46,13 @@ export class SpfxPlugin implements Plugin {
     });
 
     if (stage === Stage.create) {
-      const spfx_framework_type = new QTreeNode({
-        type: "singleSelect",
-        name: SPFXQuestionNames.framework_type,
-        title: "Framework",
-        staticOptions: [
-          { id: "react", label: "React" },
-          { id: "none", label: "None" },
-        ],
-        placeholder: "Select an option",
-        default: "react",
-      });
+      const spfx_framework_type = new QTreeNode(frameworkQuestion);
       spfx_frontend_host.addChild(spfx_framework_type);
 
-      const spfx_webpart_name = new QTreeNode({
-        type: "text",
-        name: SPFXQuestionNames.webpart_name,
-        title: "Web Part Name",
-        default: "helloworld",
-        validation: {
-          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
-        },
-      });
+      const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
       spfx_frontend_host.addChild(spfx_webpart_name);
 
-      const spfx_webpart_desp = new QTreeNode({
-        type: "text",
-        name: SPFXQuestionNames.webpart_desp,
-        title: "Web Part Description",
-        default: "helloworld description",
-        validation: {
-          required: true,
-        },
-      });
+      const spfx_webpart_desp = new QTreeNode(webpartDescriptionQuestion);
       spfx_frontend_host.addChild(spfx_webpart_desp);
     }
 

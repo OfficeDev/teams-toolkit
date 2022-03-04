@@ -12,7 +12,13 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
-import { LocalEnvManager, FolderName, isV3 } from "@microsoft/teamsfx-core";
+import {
+  LocalEnvManager,
+  FolderName,
+  isV3,
+  isConfigUnifyEnabled,
+  environmentManager,
+} from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(
@@ -149,9 +155,15 @@ export async function getDebugConfig(
       }
     } else {
       if (isLocalSideloadingConfiguration) {
-        const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-        const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-        return { appId: localSettings?.teamsApp?.teamsAppId as string };
+        if (isConfigUnifyEnabled()) {
+          // load local env app info
+          const appInfo = getTeamsAppTelemetryInfoByEnv(environmentManager.getLocalEnvName());
+          return { appId: appInfo?.appId as string, env: env };
+        } else {
+          const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+          const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+          return { appId: localSettings?.teamsApp?.teamsAppId as string };
+        }
       } else {
         // select env
         if (env === undefined) {

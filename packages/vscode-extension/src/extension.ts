@@ -15,7 +15,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
-import { exp } from "./exp";
+import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
   AdaptiveCardCodeLensProvider,
@@ -83,12 +83,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
-      if (targetUri.isOk()) {
-        await handlers.updateAutoOpenGlobalKey(args);
-        await ExtTelemetry.dispose();
-        await delay(2000);
-        return { openFolder: targetUri.value };
+      if (!isSupportAutoOpenAPI()) {
+        Correlator.run(handlers.createNewProjectHandler, args);
+      } else {
+        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
+        if (targetUri.isOk()) {
+          await handlers.updateAutoOpenGlobalKey(args);
+          await ExtTelemetry.dispose();
+          await delay(2000);
+          return { openFolder: targetUri.value };
+        }
       }
     })
   );
@@ -100,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const openDeploymentTreeview = vscode.commands.registerCommand(
     "fx-extension.openDeploymentTreeview",
-    () => Correlator.run(handlers.openDeploymentTreeview)
+    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
   );
   context.subscriptions.push(openDeploymentTreeview);
 
@@ -172,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",
-    () => Correlator.run(handlers.validateGetStartedPrerequisitesHandler)
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
@@ -559,11 +563,5 @@ function initializeContextKey() {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
-  }
-
-  if (isSupportAutoOpenAPI()) {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", false);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", true);
   }
 }

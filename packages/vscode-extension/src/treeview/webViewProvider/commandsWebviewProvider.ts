@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { Commands } from "../controls/Commands";
-import { ext } from "../extensionVariables";
-import { TreeContainerType } from "../treeview/treeContainerType";
+import { Commands } from "../../controls/Commands";
+import { ext } from "../../extensionVariables";
+import { TreeContainerType } from "./treeContainerType";
 
 export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;

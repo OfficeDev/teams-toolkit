@@ -1,10 +1,10 @@
 import * as React from "react";
 import "./tree.scss";
-import addCapability_dark from "../../media/dark/addCapability.svg";
-import addCapability_light from "../../media/light/addCapability.svg";
-import addResources_dark from "../../media/dark/addResources.svg";
-import addResources_light from "../../media/light/addResources.svg";
-import * as StringResources from "../resources/Strings.json";
+import addCapability_dark from "../../../media/dark/addCapability.svg";
+import addCapability_light from "../../../media/light/addCapability.svg";
+import addResources_dark from "../../../media/dark/addResources.svg";
+import addResources_light from "../../../media/light/addResources.svg";
+import * as StringResources from "../../resources/Strings.json";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 

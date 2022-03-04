@@ -9,6 +9,9 @@ import {
   Colors,
   err,
   UserCancelError,
+  v3,
+  IStaticTab,
+  IConfigurableTab,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -19,6 +22,7 @@ import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
+  ManifestTemplate,
   PlaceHolders,
   PreDeployProgressMessage,
   ScaffoldProgressMessage,
@@ -38,9 +42,17 @@ import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
+import {
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
+  REMOTE_MANIFEST,
+} from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
+import { isConfigUnifyEnabled } from "../../../common";
+import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
+import { convert2Context } from "../utils4v2";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -48,6 +60,8 @@ export class SPFxPluginImpl {
       const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = lodash.camelCase(componentName);
+      let componentId: string;
+      const replaceMap: Map<string, string> = new Map();
       if (yeomanScaffoldEnabled()) {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
         await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
@@ -72,7 +86,7 @@ export class SPFxPluginImpl {
           `"supportedHosts": ["SharePointWebPart"]`,
           `"supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"]`
         );
-        fs.writeFile(manifestPath, manifestString);
+        await fs.writeFile(manifestPath, manifestString);
 
         // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
         const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
@@ -86,9 +100,16 @@ export class SPFxPluginImpl {
           `import { Version } from '@microsoft/sp-core-library';\r\n`,
           ``
         );
-        fs.writeFile(webpartFile, codeString);
+        await fs.writeFile(webpartFile, codeString);
+
+        const solutionPath = `${newPath}/config/package-solution.json`;
+        const solution = await fs.readJson(solutionPath);
+        componentId = solution.solution.id;
+
+        replaceMap.set(PlaceHolders.componentId, componentId);
+        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
       } else {
-        const componentId = uuid.v4();
+        componentId = uuid.v4();
         const componentClassName = `${componentName}WebPart`;
         const componentStrings = componentClassName + "Strings";
         const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
@@ -222,7 +243,6 @@ export class SPFxPluginImpl {
         );
 
         // Configure placeholders
-        const replaceMap: Map<string, string> = new Map();
         replaceMap.set(PlaceHolders.componentName, componentName);
         replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
         replaceMap.set(PlaceHolders.componentClassName, componentClassName);
@@ -237,14 +257,54 @@ export class SPFxPluginImpl {
         replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
         replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-        const appDirectory = await getAppDirectory(ctx.root);
         await Utils.configure(outputFolderPath, replaceMap);
-        if (isMultiEnvEnabled()) {
-          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-          await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
-        } else {
-          await Utils.configure(path.join(appDirectory, REMOTE_MANIFEST), replaceMap);
+      }
+
+      const appDirectory = await getAppDirectory(ctx.root);
+      if (isConfigUnifyEnabled()) {
+        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+
+        const appManifestProvider = new DefaultManifestProvider();
+        const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+        const remoteStaticSnippet: IStaticTab = {
+          entityId: componentId,
+          name: webpartName,
+          contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
+          websiteUrl: ManifestTemplate.WEBSITE_URL,
+          scopes: ["personal"],
+        };
+        const remoteConfigurableSnippet: IConfigurableTab = {
+          configurationUrl: util.format(
+            ManifestTemplate.REMOTE_CONFIGURATION_URL,
+            componentId,
+            componentId
+          ),
+          canUpdateConfiguration: true,
+          scopes: ["team"],
+        };
+        capabilitiesToAddManifest.push(
+          {
+            name: "staticTab",
+            snippet: remoteStaticSnippet,
+          },
+          {
+            name: "configurableTab",
+            snippet: remoteConfigurableSnippet,
+          }
+        );
+
+        const contextWithInputs = convert2Context(ctx, true);
+        for (const capability of capabilitiesToAddManifest) {
+          const addCapRes = await appManifestProvider.updateCapability(
+            contextWithInputs.context,
+            contextWithInputs.inputs,
+            capability
+          );
+          if (addCapRes.isErr()) return err(addCapRes.error);
         }
+      } else {
+        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
+        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
       }
       return ok(undefined);
     } catch (error) {

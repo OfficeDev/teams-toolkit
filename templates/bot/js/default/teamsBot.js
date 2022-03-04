@@ -1,16 +1,11 @@
-{{#IS_ME}}
 const axios = require("axios");
 const querystring = require("querystring");
-{{/IS_ME}}
-const { TeamsActivityHandler, CardFactory{{#IS_BOT}}, TurnContext{{/IS_BOT}}} = require("botbuilder");
-{{#IS_BOT}}
+const { TeamsActivityHandler, CardFactory, TurnContext} = require("botbuilder");
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
 const rawLearnCard = require("./adaptiveCards/learn.json");
 const cardTools = require("@microsoft/adaptivecards-tools");
-{{/IS_BOT}}
 
-class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} extends TeamsActivityHandler {
-  {{#IS_BOT}}
+class TeamsBot extends TeamsActivityHandler {
   constructor() {
     super();
 
@@ -82,9 +77,7 @@ class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} ex
       return { statusCode: 200 };
     }
   }
-  {{/IS_BOT}}
 
-  {{#IS_ME}}
   // Messaging extension Code
   // Action.
   handleTeamsMessagingExtensionSubmitAction(context, action) {
@@ -154,10 +147,8 @@ class {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} ex
     };
     return response;
   }
-  {{/IS_ME}}
 }
 
-{{#IS_ME}}
 function createCardCommand(context, action) {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.
   const data = action.data;
@@ -229,6 +220,5 @@ function shareMessageCommand(context, action) {
     },
   };
 }
-{{/IS_ME}}
 
-module.exports.{{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}} = {{#IS_BOT}}TeamsBot{{/IS_BOT}}{{^IS_BOT}}MessageExtensionBot{{/IS_BOT}};
+module.exports.TeamsBot = TeamsBot;

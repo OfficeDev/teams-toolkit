@@ -1034,47 +1034,53 @@ export class AppStudioPluginImpl {
   }
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabEndpoint = isLocalDebug
-      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
-      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabEndpoint =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
 
     return tabEndpoint;
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabDomain = isLocalDebug
-      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
-      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const tabDomain =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     return tabDomain;
   }
 
   private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabIndexPath = isLocalDebug
-      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath) as string)
-      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
+    const tabIndexPath =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath) as string)
+        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
     return tabIndexPath;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientId = isLocalDebug
-      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
-      : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+    const clientId =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
+        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
 
     return clientId;
   }
 
   private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botId = isLocalDebug
-      ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
-      : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
+    const botId =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
+        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
 
     return botId;
   }
 
   private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botDomain = isLocalDebug
-      ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
-      : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    const botDomain =
+      isLocalDebug && !isConfigUnifyEnabled()
+        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
+        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
 
     return botDomain;
   }

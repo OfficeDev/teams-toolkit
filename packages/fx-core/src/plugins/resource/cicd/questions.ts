@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { OptionItem } from "@microsoft/teamsfx-api";
 
 export const githubOption: OptionItem = {

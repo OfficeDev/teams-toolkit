@@ -3,7 +3,7 @@
 "use strict";
 
 import * as os from "os";
-import { yeomanScaffoldEnabled } from "../../../../resource/spfx/utils/utils";
+import { yeomanScaffoldEnabled } from "../../../../../core/globalVars";
 import { LaunchBrowser } from "../constants";
 
 export function generateConfigurations(

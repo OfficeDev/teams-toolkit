@@ -18,7 +18,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from "./utils/questions";
-import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
+import { Utils, sleep } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
@@ -52,6 +52,7 @@ import { SPOClient } from "./spoClient";
 import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
+import { yeomanScaffoldEnabled } from "../../../core/globalVars";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {

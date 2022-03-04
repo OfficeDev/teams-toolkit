@@ -6,6 +6,7 @@ import * as StringResources from "./resources/Strings.json";
 import * as fs from "fs-extra";
 import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
+import { isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 
 /**
  * CodelensProvider
@@ -135,7 +136,11 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
     }
 
-    if (document.fileName.endsWith("manifest.remote.template.json")) {
+    if (
+      document.fileName.endsWith(
+        isConfigUnifyEnabled() ? "manifest.template.json" : "manifest.remote.template.json"
+      )
+    ) {
       const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
         title: "✏️Edit the config file",
         command: "fx-extension.openConfigState",

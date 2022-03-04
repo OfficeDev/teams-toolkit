@@ -20,7 +20,7 @@ pipeline {
 <%/hosting_type_contains_spfx%>
 
         // To specify the env name for multi-env feature.
-        TEAMSFX_ENV_NAME = <%env_name%>
+        TEAMSFX_ENV_NAME = '<%env_name%>'
     }
 
     stages {

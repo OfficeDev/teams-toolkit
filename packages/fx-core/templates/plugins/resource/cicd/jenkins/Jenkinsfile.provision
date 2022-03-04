@@ -12,13 +12,11 @@ pipeline {
 
     // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
     environment {
-<%#hosting_type_contains_spfx%>
         M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
         M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
         M365_TENANT_ID = credentials('M365_TENANT_ID')
         // To enable M365 account login by non-interactive mode. 
         CI_ENABLED = 'true'
-<%/hosting_type_contains_spfx%>
 
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = '<%env_name%>'
@@ -63,8 +61,7 @@ pipeline {
             }
 <%/hosting_type_contains_azure%>
             steps {
-                sh 'npx teamsfx provision<%#hosting_type_contains_azure%> --subscription ${AZURE_SUBSCRIPTION_ID}<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name ${SQL_ADMIN_NAME} --sql-password ${SQL_PASSWORD}<%/cloud_resources_contains_sql%>
-'
+                sh 'npx teamsfx provision<%#hosting_type_contains_azure%> --subscription ${AZURE_SUBSCRIPTION_ID}<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name ${SQL_ADMIN_NAME} --sql-password ${SQL_PASSWORD}<%/cloud_resources_contains_sql%>'
             }
         }
 
@@ -74,7 +71,8 @@ pipeline {
                 sh 'git config user.email "azdo-agent@azure.com"'
                 sh 'git add .'
                 sh 'git commit -m "chore: commit provision configs"'
-                sh 'git push'
+                // Using awk to extract origin and branch name.
+                sh 'git push `echo $GIT_BRANCH | awk -F\'/\' \'{print $1, "HEAD:"$2}\'`'
             }
         }
     }

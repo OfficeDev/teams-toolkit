@@ -428,7 +428,9 @@ export class SqlPluginImpl {
   private loadDatabases(ctx: PluginContext) {
     ctx.config.forEach((v: string, k: string) => {
       if (k.startsWith(Constants.databaseName)) {
-        this.config.databases.push(v);
+        if (!this.config.databases.includes(v)) {
+          this.config.databases.push(v);
+        }
       }
     });
   }

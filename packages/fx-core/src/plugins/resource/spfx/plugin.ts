@@ -40,13 +40,12 @@ import {
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
+import { getStrings, getAppDirectory } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
-  REMOTE_MANIFEST,
 } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
@@ -101,6 +100,10 @@ export class SPFxPluginImpl {
           ``
         );
         await fs.writeFile(webpartFile, codeString);
+
+        // remove .vscode
+        const debugPath = `${newPath}/.vscode`;
+        await fs.remove(debugPath);
 
         const solutionPath = `${newPath}/config/package-solution.json`;
         const solution = await fs.readJson(solutionPath);

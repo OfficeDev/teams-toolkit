@@ -1032,7 +1032,7 @@
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",
-    "@azure/ms-rest-nodeauth": "^3.0.7",
+    "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
     "@microsoft/teamsfx-api": "^0.16.0",

@@ -17,15 +17,8 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { CollaborationState, SolutionError } from "../../src";
-import {
-  checkPermission,
-  grantPermission,
-  hasAAD,
-  hasAzureResource,
-  hasSPFx,
-  listCollaborator,
-} from "../../src/core/collaborator";
+import { CollaborationState, hasAAD, hasAzureResource, hasSPFx, SolutionError } from "../../src";
+import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import {
@@ -199,7 +192,7 @@ describe("Collaborator APIs for V3", () => {
         },
         config: {},
       };
-
+      inputs.platform = Platform.CLI;
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToListCollaborator);
     });
@@ -411,6 +404,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
+      inputs.platform = Platform.CLI;
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
@@ -628,6 +622,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.email = "your_collaborator@yourcompany.com";
+      inputs.platform = Platform.CLI;
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });

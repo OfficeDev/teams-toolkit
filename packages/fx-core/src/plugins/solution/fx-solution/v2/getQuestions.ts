@@ -10,13 +10,11 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
-  Platform,
   QTreeNode,
   Result,
   returnUserError,
   Stage,
   TokenProvider,
-  UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
@@ -33,7 +31,6 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   createAddAzureResourceQuestion,
-  createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
   MessageExtensionItem,
@@ -51,8 +48,8 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { isPureExistingApp } from "../../../../core/utils";
-import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -216,11 +213,7 @@ export async function getQuestions(
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   const node = new QTreeNode({ type: "group" });
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  if (stage == Stage.migrateV1) {
-    const capQuestion = createV1CapabilityQuestion();
-    const capNode = new QTreeNode(capQuestion);
-    node.addChild(capNode);
-  } else if (stage === Stage.provision) {
+  if (stage === Stage.provision) {
     if (isDynamicQuestion) {
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (provisioned) return ok(undefined);

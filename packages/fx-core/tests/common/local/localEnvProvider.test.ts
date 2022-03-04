@@ -57,7 +57,7 @@ describe("LocalEnvProvider", () => {
       fs.createFileSync(envFile);
       fs.writeFileSync(envFile, raw);
 
-      const actual = await localEnvProvider.loadFrontendLocalEnvs(true, true, false);
+      const actual = await localEnvProvider.loadFrontendLocalEnvs(true, true);
       chai.assert.deepEqual(actual, expected);
     });
 
@@ -141,7 +141,7 @@ describe("LocalEnvProvider", () => {
       fs.createFileSync(envFile);
       fs.writeFileSync(envFile, raw);
 
-      const actual = await localEnvProvider.loadBotLocalEnvs(false);
+      const actual = await localEnvProvider.loadBotLocalEnvs();
       chai.assert.deepEqual(actual, expected);
     });
   });
@@ -288,19 +288,19 @@ describe("LocalEnvProvider", () => {
     });
 
     it("frontend", () => {
-      const envs = localEnvProvider.initFrontendLocalEnvs(false, false, false);
+      const envs = localEnvProvider.initFrontendLocalEnvs(false, false);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 3);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth", () => {
-      const envs = localEnvProvider.initFrontendLocalEnvs(false, true, false);
+      const envs = localEnvProvider.initFrontendLocalEnvs(false, true);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 6);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth + backend", () => {
-      const envs = localEnvProvider.initFrontendLocalEnvs(true, true, false);
+      const envs = localEnvProvider.initFrontendLocalEnvs(true, true);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 8);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
@@ -312,15 +312,9 @@ describe("LocalEnvProvider", () => {
     });
 
     it("bot", () => {
-      const envs = localEnvProvider.initBotLocalEnvs(false);
+      const envs = localEnvProvider.initBotLocalEnvs();
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 9);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 4);
-    });
-
-    it("bot v1", () => {
-      const envs = localEnvProvider.initBotLocalEnvs(true);
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 2);
-      chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
   });
 });

@@ -11,6 +11,7 @@ import {
   ResourcePlugins,
 } from "../../util";
 import { TeamsBot } from "../../../../../src";
+import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import * as testUtils from "./utils";
 import path from "path";
 import fs from "fs-extra";
@@ -77,6 +78,22 @@ describe("Bot Generates Arm Templates", () => {
           },
         },
       }
+    );
+  });
+
+  it("generate bicep arm tempalte: withoud aad plugin", async () => {
+    const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(
+      settings,
+      "botConfigWithoutAadPlugin.result.bicep",
+      "configWithoutAadPlugin.result.bicep"
     );
   });
 
@@ -238,7 +255,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in .NET scenario", async () => {
-    sinon.stub(TeamsBot, <any>"isVsPlatform").returns(true);
+    sinon.stub(projectSettingsHelper, <any>"isVSProject").returns(true);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.FrontendHosting,

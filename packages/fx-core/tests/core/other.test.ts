@@ -5,6 +5,7 @@ import {
   FuncValidation,
   Inputs,
   Platform,
+  ProjectSettings,
   Stage,
   SystemError,
   UserError,
@@ -18,7 +19,6 @@ import * as path from "path";
 import sinon from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
-import { readJson } from "../../src/common/fileUtils";
 import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
@@ -40,7 +40,11 @@ import {
 } from "../../src/core/SolutionPluginContainer";
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { randomAppName } from "./utils";
-
+import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
+import { TaskDefinition } from "../../src/common/local/taskDefinition";
+import { execPowerShell, execShell } from "../../src/common/local/process";
+import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
+import "../../src/plugins/solution/fx-solution/v2/solution";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -189,21 +193,6 @@ describe("Other test case", () => {
     );
   });
 
-  it("fileUtils", async () => {
-    try {
-      await readJson("abc");
-    } catch (e) {
-      assert.isTrue(e instanceof UserError);
-    }
-    sandbox.stub<any, any>(fs, "readJson").rejects(new Error("invalid json"));
-    sandbox.stub<any, any>(fs, "pathExists").resolves(true);
-    try {
-      await readJson("abc");
-    } catch (e) {
-      assert.isTrue(e instanceof SystemError);
-    }
-  });
-
   it("ContextUpgradeError", async () => {
     const userError = ContextUpgradeError(new Error("11"), true);
     assert.isTrue(userError instanceof UserError);
@@ -248,5 +237,97 @@ describe("Other test case", () => {
 
     assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
     restore();
+  });
+  it("executeCommand", async () => {
+    {
+      try {
+        const res = await executeCommand("ls", []);
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await tryExecuteCommand("ls", []);
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await execShell("ls");
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+    {
+      try {
+        const res = await execPowerShell("ls");
+        assert.isTrue(res !== undefined);
+      } catch (e) {}
+    }
+  });
+  it("TaskDefinition", async () => {
+    const appName = randomAppName();
+    const projectPath = path.resolve(os.tmpdir(), appName);
+    {
+      const res = TaskDefinition.frontendStart(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendStart(projectPath, "javascript", "echo", true);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendWatch(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.authStart(projectPath, "");
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.botStart(projectPath, "javascript", true);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.ngrokStart(projectPath, true, []);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.frontendInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.backendExtensionsInstall(projectPath, "");
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.botInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.spfxInstall(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.gulpCert(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.gulpServe(projectPath);
+      assert.isTrue(res !== undefined);
+    }
+  });
+  it("isValidProject: true", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
+    const isValid = isValidProject("aaa");
+    assert.isTrue(isValid);
   });
 });

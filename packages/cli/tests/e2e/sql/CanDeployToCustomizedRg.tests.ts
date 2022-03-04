@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
+ */
+
 import path from "path";
 
 import { SqlValidator } from "../../commonlib";
@@ -13,11 +17,11 @@ import {
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
+  customizeBicepFilesToCustomizedRg,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
-import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 
 describe("Deploy to customized resource group", function () {
@@ -32,7 +36,7 @@ describe("Deploy to customized resource group", function () {
   });
 
   afterEach(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it(`tab project can deploy sql resource to customized resource group and successfully provision`, async function () {

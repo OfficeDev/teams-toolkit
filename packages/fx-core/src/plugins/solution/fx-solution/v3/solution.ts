@@ -19,15 +19,15 @@ import {
 import { Service } from "typedi";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { addFeature, getQuestionsForAddFeature } from "./addFeature";
-import { BuiltInSolutionNames, TeamsFxAzureSolutionNameV3 } from "./constants";
+import { BuiltInSolutionNames } from "./constants";
 import { deploy, getQuestionsForDeploy } from "./deploy";
 import { getQuestionsForProvision, provisionResources } from "./provision";
 import { getQuestionsForPublish, publishApplication } from "./publish";
 import { addCapability, addResource, getQuestionsForUserTask } from "./userTask";
 
-@Service(TeamsFxAzureSolutionNameV3)
+@Service(BuiltInSolutionNames.azure)
 export class TeamsFxAzureSolution implements v3.ISolution {
-  name = TeamsFxAzureSolutionNameV3;
+  name = BuiltInSolutionNames.azure;
 
   getQuestionsForAddFeature = getQuestionsForAddFeature;
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInSolutionNames.azure } })])

@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ext, initializeExtensionVariables } from "./extensionVariables";
+import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -15,7 +15,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
-import { exp } from "./exp";
+import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
   AdaptiveCardCodeLensProvider,
@@ -27,15 +27,14 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
-  isTeamsfx,
   syncFeatureFlags,
   isValidNode,
   delay,
+  isSupportAutoOpenAPI,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
   InputConfigsFolderName,
-  StatesFolderName,
   AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
@@ -75,13 +74,6 @@ export async function activate(context: vscode.ExtensionContext) {
       TreatmentVariables.EmbeddedSurvey,
       true
     )) as boolean | undefined;
-  TreatmentVariableValue.removeCreateFromSample = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.RemoveCreateFromSample,
-      true
-    )) as boolean | undefined;
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
@@ -91,11 +83,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      const targetUri = await Correlator.run(handlers.getNewProjectHandler, args);
-      if (targetUri.isOk()) {
-        await ExtTelemetry.dispose();
-        await delay(2000);
-        return { openFolder: targetUri.value };
+      if (!isSupportAutoOpenAPI()) {
+        Correlator.run(handlers.createNewProjectHandler, args);
+      } else {
+        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
+        if (targetUri.isOk()) {
+          await handlers.updateAutoOpenGlobalKey(args);
+          await ExtTelemetry.dispose();
+          await delay(2000);
+          return { openFolder: targetUri.value };
+        }
       }
     })
   );
@@ -104,6 +101,12 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.openReadMeHandler, args)
   );
   context.subscriptions.push(openReadMeCmd);
+
+  const openDeploymentTreeview = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentTreeview",
+    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
+  );
+  context.subscriptions.push(openDeploymentTreeview);
 
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
@@ -171,6 +174,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-getStarted-prerequisites",
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
+  );
+  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
   // Referenced by tasks.json
   const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>

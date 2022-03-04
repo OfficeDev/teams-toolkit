@@ -7,7 +7,7 @@ import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { getAppStudioEndpoint } from "../../..";
+import { getAppStudioEndpoint } from "../../../common/tools";
 import { Constants, ErrorMessages } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -352,7 +352,7 @@ export namespace AppStudioClient {
             response.data.error?.message || response.data.errorMessage
           );
         } else {
-          return response.data.id;
+          return response.data.teamsAppId;
         }
       } else {
         throw AppStudioResultFactory.SystemError(

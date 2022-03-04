@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -25,9 +25,7 @@
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged",
-    "version": "../../.github/scripts/pkg-version.sh templates",
-    "postversion": "../../.github/scripts/pkg-postversion.sh templates"
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "files": [
     "dist/*js",

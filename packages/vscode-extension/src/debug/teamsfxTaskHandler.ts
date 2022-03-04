@@ -23,8 +23,8 @@ import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
-const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
-const allRunningDebugSessions: Set<string> = new Set<string>();
+export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
+export const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
 
 /**
@@ -217,19 +217,18 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
+        [TelemetryProperty.DebugServiceName]: task.name,
+      });
     } else if (isNpmInstallTask(task)) {
-      try {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
-          [TelemetryProperty.DebugNpmInstallName]: task.name,
-        });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
+      });
 
-        if (TreatmentVariableValue.isEmbeddedSurvey) {
-          // Survey triggering point
-          const survey = ExtensionSurvey.getInstance();
-          survey.activate();
-        }
-      } catch {
-        // ignore telemetry error
+      if (TreatmentVariableValue.isEmbeddedSurvey) {
+        // Survey triggering point
+        const survey = ExtensionSurvey.getInstance();
+        survey.activate();
       }
 
       activeNpmInstallTasks.add(task.name);
@@ -254,6 +253,10 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete(getTaskKey(task));
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugService, {
+      [TelemetryProperty.DebugServiceName]: task.name,
+      [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
+    });
   } else if (isNpmInstallTask(task)) {
     try {
       activeNpmInstallTasks.delete(task.name);
@@ -363,37 +366,33 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
     ) {
       // and not a restart one
       // send f5 event telemetry
-      try {
-        const localAppId = (await getLocalTeamsAppId()) as string;
-        const isLocal =
-          (debugConfig.url as string) &&
-          localAppId &&
-          (debugConfig.url as string).includes(localAppId);
-        let appId = "";
-        let env = "";
-        if (isLocal) {
-          appId = localAppId;
-        } else {
-          if (debugConfig.teamsfxAppId) {
-            appId = debugConfig.teamsfxAppId;
-          }
-          if (debugConfig.teamsfxEnv) {
-            env = getHashedEnv(event.configuration.env);
-          }
+      const localAppId = (await getLocalTeamsAppId()) as string;
+      const isLocal =
+        (debugConfig.url as string) &&
+        localAppId &&
+        (debugConfig.url as string).includes(localAppId);
+      let appId = "";
+      let env = "";
+      if (isLocal) {
+        appId = localAppId;
+      } else {
+        if (debugConfig.teamsfxAppId) {
+          appId = debugConfig.teamsfxAppId;
         }
-
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
-          [TelemetryProperty.DebugSessionId]: event.id,
-          [TelemetryProperty.DebugType]: debugConfig.type,
-          [TelemetryProperty.DebugRequest]: debugConfig.request,
-          [TelemetryProperty.DebugPort]: debugConfig.port + "",
-          [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
-          [TelemetryProperty.DebugAppId]: appId,
-          [TelemetryProperty.Env]: env,
-        });
-      } catch {
-        // ignore telemetry error
+        if (debugConfig.teamsfxEnv) {
+          env = getHashedEnv(event.configuration.env);
+        }
       }
+
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
+        [TelemetryProperty.DebugSessionId]: event.id,
+        [TelemetryProperty.DebugType]: debugConfig.type,
+        [TelemetryProperty.DebugRequest]: debugConfig.request,
+        [TelemetryProperty.DebugPort]: debugConfig.port + "",
+        [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
+        [TelemetryProperty.DebugAppId]: appId,
+        [TelemetryProperty.Env]: env,
+      });
 
       allRunningDebugSessions.add(event.id);
     }
@@ -415,19 +414,11 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
   if (allRunningDebugSessions.has(event.id)) {
     // a valid debug session
     // send stop-debug event telemetry
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
-        [TelemetryProperty.DebugSessionId]: event.id,
-      });
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
+      [TelemetryProperty.DebugSessionId]: event.id,
+    });
 
-    const extConfig: vscode.WorkspaceConfiguration =
-      vscode.workspace.getConfiguration("fx-extension");
-    if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
-      terminateAllRunningTeamsfxTasks();
-    }
+    terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
     if (allRunningDebugSessions.size == 0) {

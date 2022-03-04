@@ -57,11 +57,6 @@ export const EnvKeysBot = Object.freeze({
   ApplicationIdUri: "M365_APPLICATION_ID_URI",
 });
 
-export const EnvKeysBotV1 = Object.freeze({
-  BotId: "BotId",
-  BotPassword: "BotPassword",
-});
-
 export const EnvKeysBotCustom = Object.freeze({
   SqlEndpoint: "SQL_ENDPOINT",
   SqlDbName: "SQL_DATABASE_NAME",
@@ -81,15 +76,14 @@ export class LocalEnvProvider {
 
   public async loadFrontendLocalEnvs(
     includeBackend: boolean,
-    includeAuth: boolean,
-    isMigrateFromV1: boolean
+    includeAuth: boolean
   ): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
       path.join(this.projectRoot, FolderName.Frontend, LocalEnvProvider.LocalEnvFileName),
       Object.values(EnvKeysFrontend)
     );
 
-    return envs ?? this.initFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1);
+    return envs ?? this.initFrontendLocalEnvs(includeBackend, includeAuth);
   }
 
   public async loadBackendLocalEnvs(): Promise<LocalEnvs> {
@@ -101,13 +95,13 @@ export class LocalEnvProvider {
     return envs ?? this.initBackendLocalEnvs();
   }
 
-  public async loadBotLocalEnvs(isMigrateFromV1: boolean): Promise<LocalEnvs> {
+  public async loadBotLocalEnvs(): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
       path.join(this.projectRoot, FolderName.Bot, LocalEnvProvider.LocalEnvFileName),
       Object.values(EnvKeysBot)
     );
 
-    return envs ?? this.initBotLocalEnvs(isMigrateFromV1);
+    return envs ?? this.initBotLocalEnvs();
   }
 
   public async saveLocalEnvs(
@@ -128,11 +122,7 @@ export class LocalEnvProvider {
     }
   }
 
-  public initFrontendLocalEnvs(
-    includeBackend: boolean,
-    includeAuth: boolean,
-    isMigrateFromV1: boolean
-  ): LocalEnvs {
+  public initFrontendLocalEnvs(includeBackend: boolean, includeAuth: boolean): LocalEnvs {
     const result: LocalEnvs = {
       teamsfxLocalEnvs: {},
       customizedLocalEnvs: {},
@@ -141,9 +131,7 @@ export class LocalEnvProvider {
     result.teamsfxLocalEnvs[EnvKeysFrontend.Browser] = "none";
     result.teamsfxLocalEnvs[EnvKeysFrontend.Https] = "true";
 
-    if (!isMigrateFromV1) {
-      result.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
-    }
+    result.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
     if (includeAuth) {
       result.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = "";
@@ -183,31 +171,26 @@ export class LocalEnvProvider {
     return result;
   }
 
-  public initBotLocalEnvs(isMigrateFromV1: boolean): LocalEnvs {
+  public initBotLocalEnvs(): LocalEnvs {
     const result: LocalEnvs = {
       teamsfxLocalEnvs: {},
       customizedLocalEnvs: {},
     };
 
-    if (isMigrateFromV1) {
-      result.teamsfxLocalEnvs[EnvKeysBotV1.BotId] = "";
-      result.teamsfxLocalEnvs[EnvKeysBotV1.BotPassword] = "";
-    } else {
-      result.teamsfxLocalEnvs[EnvKeysBot.BotId] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.ClientId] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.TenantID] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.ApiEndpoint] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.BotId] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.ClientId] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.TenantID] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.ApiEndpoint] = "";
+    result.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = "";
 
-      result.customizedLocalEnvs[EnvKeysBotCustom.SqlEndpoint] = "";
-      result.customizedLocalEnvs[EnvKeysBotCustom.SqlDbName] = "";
-      result.customizedLocalEnvs[EnvKeysBotCustom.SqlUserName] = "";
-      result.customizedLocalEnvs[EnvKeysBotCustom.SqlPassword] = "";
-    }
+    result.customizedLocalEnvs[EnvKeysBotCustom.SqlEndpoint] = "";
+    result.customizedLocalEnvs[EnvKeysBotCustom.SqlDbName] = "";
+    result.customizedLocalEnvs[EnvKeysBotCustom.SqlUserName] = "";
+    result.customizedLocalEnvs[EnvKeysBotCustom.SqlPassword] = "";
 
     return result;
   }

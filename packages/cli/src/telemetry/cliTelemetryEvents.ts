@@ -82,6 +82,7 @@ export enum TelemetryProperty {
   ProjectId = "project-id",
   CorrelationId = "correlation-id",
   AppId = "appid",
+  TenantId = "tenant-id",
   UserId = "hashed-userid",
   AccountType = "account-type",
   Success = "success",
@@ -109,6 +110,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {

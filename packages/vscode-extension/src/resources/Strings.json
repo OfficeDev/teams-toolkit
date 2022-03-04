@@ -113,7 +113,10 @@
       "grantPermissionWarning": "If added user cannot access Azure resources, you need to manually setup access policy via Azure portal. ",
       "referLinkForMoreDetails": "Please refer to this link for more details: ",
       "disableAutomaticNpmInstall": "Disable Auto NPM Install",
-      "automaticNpmInstall": "Teams Toolkit will automatically install packages required for your project. Please refer to the command window prompt to view execution details. You can also disable this by clicking the button below and uncheck \"Automatic NPM Install\" in the settings page."
+      "automaticNpmInstall": "Teams Toolkit will automatically install packages required for your project. Please refer to the command window prompt to view execution details. You can also disable this by clicking the button below and uncheck \"Automatic NPM Install\" in the settings page.",
+      "createProjectTitle":"Create a new Teams app",
+      "createProjectNotification": "You should create a new Teams app or open an existing one to open the README file.",
+      "openFolderTitle":"Open folder"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -233,20 +236,6 @@
       "quickStartPageTitle": "Quick Start",
       "samplePageTitle": "Samples",
       "surveyPageTitle": "Teams Toolkit Survey"
-    },
-    "migrateV1": {
-      "banner": "Click migrate to continue developing your project with the latest Teams Toolkit features. We will update some project configurations and recommend using git for better tracking file changes.",
-      "learnMore": {
-        "title": "Learn More",
-        "status": "learnMore"
-      },
-      "confirm": {
-        "title": "Migrate",
-        "status": "migrate"
-      },
-      "cancel": {
-        "status": "cancel"
-      }
     },
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",

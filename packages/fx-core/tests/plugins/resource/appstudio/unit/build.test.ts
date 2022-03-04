@@ -78,8 +78,6 @@ describe("Build Teams Package", () => {
     BotPlugin.name = "fx-resource-bot";
     BotPlugin.displayName = "Bot";
     selectedPlugins = [BotPlugin];
-
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {
@@ -144,5 +142,24 @@ describe("Build Teams Package", () => {
     const builtPackage = await plugin.buildTeamsPackage(ctx, true);
     console.log(builtPackage);
     chai.assert.isTrue(builtPackage.isOk());
+  });
+
+  it("Build Teams app package should not call app studio API", async () => {
+    ctx.localSettings = localSettings;
+    const spy = sandbox.spy(AppStudioClient, "validateManifest");
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "https://tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: uuid(),
+      botDomain: "botDomain",
+      botId: uuid(),
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
+    sandbox.stub(fs, "move").resolves();
+
+    await plugin.buildTeamsPackage(ctx, true);
+
+    chai.assert.isTrue(spy.notCalled);
   });
 });

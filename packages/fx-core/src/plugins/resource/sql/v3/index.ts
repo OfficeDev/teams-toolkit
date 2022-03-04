@@ -4,7 +4,6 @@
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
-  err,
   FxError,
   Inputs,
   ok,
@@ -18,7 +17,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import {
   generateBicepFromFile,
@@ -42,22 +40,31 @@ import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHan
 import { hooks } from "@feathersjs/hooks";
 import { AzureResourceSQL } from "../../../solution/fx-solution/question";
 import { ManagementClient, SqlMgrClient } from "../managementClient";
+import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 
 @Service(BuiltInFeaturePluginNames.sql)
-export class SqlPluginV3 implements v3.FeaturePlugin {
+export class SqlPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.sql;
   displayName = "Azure SQL Database";
   totalFirewallRuleCount = 0;
   config: SqlConfig = new SqlConfig();
 
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok([BuiltInFeaturePluginNames.identity]);
+  async generateBicep(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.AddFeatureInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const firstTime = !solutionSettings.activeResourcePlugins.includes(this.name);
+    const armRes = firstTime
+      ? await this.generateNewSqlServerBicep(ctx, inputs)
+      : await this.generateNewDatabaseBicep();
+    return armRes;
   }
 
   public async generateNewSqlServerBicep(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
     const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -74,7 +81,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
       pluginCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { azureSql: provisionModules },
@@ -86,10 +93,10 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
         databaseName: AzureSqlBicep.databaseName,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
 
-  public async generateNewDatabaseBicep(): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  public async generateNewDatabaseBicep(): Promise<Result<v3.BicepTemplate[], FxError>> {
     const suffix = getUuid().substring(0, 6);
     const compileCtx = {
       suffix: suffix,
@@ -109,7 +116,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseProvisionTemplateFileName),
       compileCtx
     );
-    const result: ArmTemplateResult = {
+    const result: v3.BicepTemplate = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { azureSql: provisionModules },
@@ -120,38 +127,34 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
         databaseName: AzureSqlBicep.databaseName,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.AddFeatureInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
+    ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    const firstTime = !activeResourcePlugins.includes(this.name);
-    const armRes = firstTime
-      ? await this.generateNewSqlServerBicep(ctx, inputs)
-      : await this.generateNewDatabaseBicep();
-    if (armRes.isErr()) return err(armRes.error);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     if (!solutionSettings.azureResources.includes(AzureResourceSQL.id))
       solutionSettings.azureResources.push(AzureResourceSQL.id);
-    return ok(armRes.value);
+    return ok([BuiltInFeaturePluginNames.identity]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])
-  async afterOtherFeaturesAdded(
+  async updateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const result: ArmTemplateResult = {
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const result: v3.BicepTemplate = {
       Reference: {
         sqlResourceId: AzureSqlBicep.sqlResourceId,
         sqlEndpoint: AzureSqlBicep.sqlEndpoint,
         databaseName: AzureSqlBicep.databaseName,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
 
   async getQuestionsForProvision(

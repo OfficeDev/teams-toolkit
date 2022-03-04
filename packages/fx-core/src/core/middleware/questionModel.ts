@@ -24,9 +24,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { Container } from "typedi";
-import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import { deepCopy } from "../../common";
+import { createV2Context, deepCopy } from "../../common/tools";
+import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
@@ -34,51 +33,35 @@ import {
   BuiltInSolutionNames,
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
+import { CoreSource, FunctionRouterError } from "../error";
+import { TOOLS } from "../globalVars";
 import {
   createCapabilityQuestion,
-  DefaultAppNameFunc,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionV1AppName,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
-import {
-  getAllSolutionPlugins,
-  getAllSolutionPluginsV2,
-  getGlobalSolutionsV3,
-} from "../SolutionPluginContainer";
-import { getProjectSettingsPath, newSolutionContext } from "./projectSettingsLoader";
+import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "../types";
+import { getProjectSettingsPath } from "./projectSettingsLoader";
+import { ISanitizer } from "../../plugins/resource/apim/utils/namingRules";
 /**
  * This middleware will help to collect input from question flow
  */
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
+  const core = ctx.self as any;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV2") {
     getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "createProjectV3") {
     getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
-  } else if (method === "migrateV1Project") {
-    const res = await TOOLS?.ui.showMessage(
-      "warn",
-      "We will update your project to make it compatible with the latest Teams Toolkit. We recommend to use git for better tracking file changes before migration. Your original project files will be archived to the .archive folder. You can refer to .archive.log which provides detailed information about the archive process.",
-      true,
-      "OK"
-    );
-    const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != "OK") {
-      TOOLS?.logProvider.info(`[core] V1 project migration was canceled.`);
-      ctx.result = ok(null);
-      return;
-    }
-    getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
@@ -338,22 +321,18 @@ export async function getQuestionsForInit(
     }
   }
   const node = new QTreeNode({ type: "group" });
-  const globalSolutions = getGlobalSolutionsV3();
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
+  node.addChild(new QTreeNode(QuestionAppName));
+  node.addChild(new QTreeNode(QuestionRootFolder));
+  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
-  for (const solution of globalSolutions) {
-    if (solution.getQuestionsForInit) {
-      const res = await solution.getQuestionsForInit(context, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        if (solutionNode.data) capNode.addChild(solutionNode);
-      }
+  if (solution.getQuestionsForInit) {
+    const res = await solution.getQuestionsForInit(context, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      if (solutionNode.data) node.addChild(solutionNode);
     }
   }
-  node.addChild(new QTreeNode(QuestionAppName));
   return ok(node.trim());
 }
 
@@ -381,7 +360,7 @@ export async function getQuestionsForCreateProjectV3(
     }
   }
   const spfxPlugin = Container.get<SPFxPluginV3>(BuiltInFeaturePluginNames.spfx);
-  const spfxRes = await spfxPlugin.getQuestionsForAddFeature(context, inputs);
+  const spfxRes = await spfxPlugin.getQuestionsForAddInstance(context, inputs);
   if (spfxRes.isOk()) {
     if (spfxRes.value?.data) {
       spfxRes.value.condition = { contains: TabSPFxItem.id };
@@ -519,34 +498,4 @@ export async function getQuestionsV2(
     }
   }
   return ok(undefined);
-}
-
-export async function getQuestionsForMigrateV1Project(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode({ type: "group" });
-  const globalSolutions: Solution[] = await getAllSolutionPlugins();
-  const solutionContext = await newSolutionContext(TOOLS, inputs);
-
-  for (const v of globalSolutions) {
-    if (v.getQuestions) {
-      const res = await v.getQuestions(Stage.migrateV1, solutionContext);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        solutionNode.condition = { equals: v.name };
-        if (solutionNode.data) node.addChild(solutionNode);
-      }
-    }
-  }
-
-  const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-  node.addChild(defaultAppNameFunc);
-
-  const appNameQuestion = new QTreeNode(QuestionV1AppName);
-  appNameQuestion.condition = {
-    validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-  };
-  defaultAppNameFunc.addChild(appNameQuestion);
-  return ok(node.trim());
 }

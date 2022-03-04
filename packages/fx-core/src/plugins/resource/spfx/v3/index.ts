@@ -19,7 +19,7 @@ import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHan
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { TabSPFxItem } from "../../../solution/fx-solution/question";
-import { LoadManifestError, SaveManifestError, SPFxAlreadyExistError } from "./error";
+import { SPFxAlreadyExistError } from "./error";
 import * as uuid from "uuid";
 import {
   frameworkQuestion,
@@ -33,14 +33,14 @@ import { ManifestTemplate } from "../utils/constants";
 import * as util from "util";
 
 @Service(BuiltInFeaturePluginNames.spfx)
-export class SPFxPluginV3 implements v3.FeaturePlugin {
+export class SPFxPluginV3 implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.spfx;
   displayName = "SPFx";
   description = "SharePoint Framework (SPFx)";
 
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
 
-  async getQuestionsForAddFeature(
+  async getQuestionsForAddInstance(
     ctx: v2.Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -61,10 +61,10 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.spfx } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
@@ -74,25 +74,12 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
 
     const componentId = uuid.v4();
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-    const templates: v2.ResourceTemplate[] = [];
     // spfx is added for first time, scaffold and generate resource template
     const scaffoldRes = await this.spfxPluginImpl.scaffold(ctx, inputs, componentId);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     capabilities.push(TabSPFxItem.id);
 
     const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-    const localStaticSnippet: IStaticTab = {
-      entityId: componentId,
-      name: webpartName,
-      contentUrl: util.format(ManifestTemplate.LOCAL_CONTENT_URL, componentId),
-      websiteUrl: ManifestTemplate.WEBSITE_URL,
-      scopes: ["personal"],
-    };
-    const localConfigurableSnippet: IConfigurableTab = {
-      configurationUrl: util.format(ManifestTemplate.LOCAL_CONFIGURATION_URL, componentId),
-      canUpdateConfiguration: true,
-      scopes: ["team"],
-    };
     const remoteStaticSnippet: IStaticTab = {
       entityId: componentId,
       name: webpartName,
@@ -106,10 +93,10 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
       scopes: ["team"],
     };
     capabilitiesToAddManifest.push(
-      { name: "staticTab", snippet: { local: localStaticSnippet, remote: remoteStaticSnippet } },
+      { name: "staticTab", snippet: remoteStaticSnippet },
       {
         name: "configurableTab",
-        snippet: { local: localConfigurableSnippet, remote: remoteConfigurableSnippet },
+        snippet: remoteConfigurableSnippet,
       }
     );
 
@@ -137,7 +124,7 @@ export class SPFxPluginV3 implements v3.FeaturePlugin {
 
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(templates);
+    return ok([]);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.spfx } })])

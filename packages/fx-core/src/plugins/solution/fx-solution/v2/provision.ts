@@ -38,11 +38,11 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
-import { isPureExistingApp } from "../../../../core/utils";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -62,6 +62,11 @@ export async function provisionResource(
       )
     );
   }
+  // Just to trigger M365 login before the concurrent execution of localDebug.
+  // Because concurrent execution of localDebug may getAccessToken() concurrently, which
+  // causes 2 M365 logins before the token caching in common lib takes effect.
+  await tokenProvider.appStudioToken.getAccessToken();
+
   const inputsNew: v2.InputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const projectPath: string = inputs.projectPath;
 

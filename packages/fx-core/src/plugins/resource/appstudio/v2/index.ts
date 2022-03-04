@@ -4,7 +4,7 @@
 import {
   AppStudioTokenProvider,
   AzureSolutionSettings,
-  ConfigMap,
+  Plugin,
   err,
   Func,
   FxError,
@@ -22,14 +22,11 @@ import {
 import {
   Context,
   DeepReadonly,
+  EnvInfoV2,
   ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput,
-  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { AppStudioPlugin } from "..";
-import { newEnvInfo } from "../../../..";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -51,7 +48,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
   @Inject(ResourcePlugins.AppStudioPlugin)
-  plugin!: AppStudioPlugin;
+  plugin!: Plugin;
 
   activate(projectSettings: ProjectSettings): boolean {
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
@@ -84,14 +81,16 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,
       tokenProvider,
-      this.plugin
+      this.plugin,
+      envInfo
     );
   }
 
@@ -145,7 +144,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     //   }
     // }
     //TODO pass provisionInputConfig into config??
-    const postRes = await this.plugin.publish(pluginContext);
+    const postRes = await this.plugin.publish!(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);
     }

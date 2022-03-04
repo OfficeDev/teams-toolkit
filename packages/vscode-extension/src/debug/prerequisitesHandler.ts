@@ -52,11 +52,18 @@ import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
-import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
-import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
+import {
+  taskEndEventEmitter,
+  trackedTasks,
+  allRunningDebugSessions,
+  allRunningTeamsfxTasks,
+  runTask,
+  terminateAllRunningTeamsfxTasks,
+} from "./teamsfxTaskHandler";
 import { trustDevCertHelpLink } from "./constants";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
 import { ProgressHelper } from "./progressHelper";
 
@@ -148,13 +155,56 @@ async function checkPort(
   };
 }
 
+export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxError>> {
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
+
+    // node, account
+    const totalSteps = 2;
+    let currentStep = 1;
+    VsCodeLogInstance.outputChannel.show();
+    VsCodeLogInstance.info("Prerequisites Check");
+    VsCodeLogInstance.outputChannel.appendLine(
+      doctorConstant.CheckNumber.split("@number").join(`${totalSteps}`)
+    );
+
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const node: DepsType = await detectNodeDepsType();
+    // node
+    const checkResults: CheckResult[] = [];
+    const nodeResult = await checkNode(
+      [node],
+      depsManager,
+      `(${currentStep++}/${totalSteps})`,
+      undefined
+    );
+    if (nodeResult) {
+      checkResults.push(nodeResult);
+    }
+
+    // login checker
+    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`, false);
+    checkResults.push(accountResult);
+
+    await handleCheckResults(checkResults, undefined, false);
+  } catch (error: any) {
+    const fxError = assembleError(error);
+    showError(fxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, fxError);
+    return err(fxError);
+  }
+  return ok(null);
+}
+
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
   let progressHelper: ProgressHelper | undefined;
   try {
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
-    } catch {
-      // ignore telemetry error
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
+
+    // terminate all running teamsfx tasks
+    if (allRunningTeamsfxTasks.size > 0) {
+      VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+      terminateAllRunningTeamsfxTasks();
     }
 
     // [node] => [account, certificate, deps] => [backend extension, npm install] => [port]
@@ -191,22 +241,19 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
-    const nodeDep = getNodeDep(enabledCheckers);
-    if (nodeDep) {
-      const nodeResult = await checkNode(
-        nodeDep,
-        depsManager,
-        progressHelper,
-        `(${currentStep++}/${totalSteps})`
-      );
-      if (nodeResult) {
-        checkResults.push(nodeResult);
-      }
-      await checkFailure(checkResults, progressHelper);
+    const nodeResult = await checkNode(
+      enabledCheckers,
+      depsManager,
+      `(${currentStep++}/${totalSteps})`,
+      progressHelper
+    );
+    if (nodeResult) {
+      checkResults.push(nodeResult);
     }
+    await checkFailure(checkResults, progressHelper);
 
     // login checker
-    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`);
+    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`, true);
     await progressHelper.end(Checker.M365Account);
     checkResults.push(accountResult);
 
@@ -309,22 +356,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // handle checkResults
     await handleCheckResults(checkResults, progressHelper);
 
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (error: any) {
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
 
     return err(fxError);
   }
@@ -332,7 +371,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   return ok(null);
 }
 
-async function checkM365Account(prefix: string): Promise<CheckResult> {
+async function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
   let result = ResultStatus.success;
   let error = undefined;
   const failureMsg = Checker.M365Account;
@@ -341,7 +380,13 @@ async function checkM365Account(prefix: string): Promise<CheckResult> {
     VsCodeLogInstance.outputChannel.appendLine(
       `${prefix} ${ProgressMessage[Checker.M365Account]} ...`
     );
-    const token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
+
+    const loginStatus = await AppStudioTokenInstance.getStatus();
+    let token = loginStatus.token;
+    if (loginStatus.status === signedOut && showLoginPage) {
+      token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
+    }
+
     if (token === undefined) {
       // corner case but need to handle
       result = ResultStatus.failed;
@@ -362,7 +407,7 @@ async function checkM365Account(prefix: string): Promise<CheckResult> {
         );
       }
     }
-    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    const tokenObject = loginStatus.accountInfo;
     if (tokenObject && tokenObject.upn) {
       loginHint = tokenObject.upn;
     }
@@ -385,11 +430,16 @@ async function checkM365Account(prefix: string): Promise<CheckResult> {
 }
 
 async function checkNode(
-  nodeDep: DepsType,
+  enabledCheckers: (Checker | DepsType)[],
   depsManager: DepsManager,
-  progressHelper: ProgressHelper,
-  prefix: string
-): Promise<CheckResult> {
+  prefix: string,
+  progressHelper?: ProgressHelper
+): Promise<CheckResult | undefined> {
+  const nodeDep = getNodeDep(enabledCheckers);
+  if (!nodeDep) {
+    return undefined;
+  }
+
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
     const nodeStatus = (
@@ -416,7 +466,7 @@ async function checkNode(
       error: handleDepsCheckerError(error),
     };
   } finally {
-    await progressHelper.end(nodeDep);
+    await progressHelper?.end(nodeDep);
   }
 }
 
@@ -637,7 +687,8 @@ async function checkNpmInstall(
 
 async function handleCheckResults(
   results: CheckResult[],
-  progressHelper: ProgressHelper
+  progressHelper?: ProgressHelper,
+  fromLocalDebug = true
 ): Promise<void> {
   if (results.length <= 0) {
     return;
@@ -677,19 +728,23 @@ async function handleCheckResults(
   output.appendLine("");
   output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
 
-  if (!shouldStop) {
-    output.appendLine("");
-    output.appendLine(`${doctorConstant.LaunchServices}`);
-    await progressHelper.stop(true);
-  }
+  if (fromLocalDebug) {
+    if (!shouldStop) {
+      output.appendLine("");
+      output.appendLine(`${doctorConstant.LaunchServices}`);
+      await progressHelper?.stop(true);
+    }
 
-  if (shouldStop) {
-    await progressHelper.stop(false);
-    throw returnUserError(
-      new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
-      ExtensionSource,
-      ExtensionErrors.PrerequisitesValidationError
-    );
+    if (shouldStop) {
+      await progressHelper?.stop(false);
+      throw returnUserError(
+        new Error(
+          `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
+        ),
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesValidationError
+      );
+    }
   }
 }
 
@@ -749,6 +804,24 @@ async function getOrderedCheckers(
   }
   checkers.push(Checker.Ports);
   return checkers;
+}
+
+async function detectNodeDepsType(): Promise<DepsType> {
+  try {
+    const workspacePath = ext.workspaceUri.fsPath;
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+    return (
+      getNodeDep(await getOrderedCheckers(projectSettings, localEnvManager)) ?? DepsType.AzureNode
+    );
+  } catch (error) {
+    // not a teamsfx project
+    return DepsType.AzureNode;
+  }
 }
 
 function getDeps(checkerOrDeps: (Checker | DepsType)[]): DepsType[] {

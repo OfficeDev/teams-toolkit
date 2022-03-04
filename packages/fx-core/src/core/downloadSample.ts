@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
-import { CoreHookContext, TOOLS } from ".";
+import { TOOLS } from "./globalVars";
 import { sampleProvider } from "../common/samples";
 import {
   Component,
@@ -21,6 +21,7 @@ import { getRootDirectory } from "../common/tools";
 import { FetchSampleError, InvalidInputError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { CoreQuestionNames, QuestionRootFolder } from "./question";
+import { CoreHookContext } from "./types";
 
 export async function fetchCodeZip(
   url: string,
@@ -95,7 +96,7 @@ export async function downloadSampleHook(sampleId: string, sampleAppPath: string
 
 export async function downloadSample(
   inputs: Inputs,
-  ctx: CoreHookContext
+  ctx?: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
   const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
@@ -152,7 +153,7 @@ export async function downloadSample(
       projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
-      ctx.projectSettings = projectSettings;
+      if (ctx) ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
     } else {
       telemetryProperties[TelemetryProperty.ProjectId] =

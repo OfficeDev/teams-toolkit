@@ -22,8 +22,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import * as util from "util";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { getStrings, isFeatureFlagEnabled } from "../../../../common/tools";
-import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,
@@ -101,9 +102,9 @@ export async function getQuestionsForAddResource(
   for (const pair of pluginsWithResources) {
     const pluginName = pair[0];
     const resourceName = pair[1];
-    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-    if (plugin.getQuestionsForAddFeature) {
-      const res = await plugin.getQuestionsForAddFeature(ctx, inputs);
+    const plugin = Container.get<v3.PluginV3>(pluginName);
+    if (plugin.getQuestionsForAddInstance) {
+      const res = await plugin.getQuestionsForAddInstance(ctx, inputs);
       if (res.isErr()) return res;
       if (res.value) {
         const node = res.value as QTreeNode;
@@ -129,7 +130,11 @@ export async function addCapability(
     telemetryProps[SolutionTelemetryProperty.Capabilities] = capabilitiesAnswer.join(";");
   }
   const vsProject = isVSProject(ctx.projectSetting);
-  const features: string[] = [BuiltInFeaturePluginNames.aad]; // AAD is added by default
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const features: string[] = [];
+  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    features.push(BuiltInFeaturePluginNames.aad);
+  }
   if (vsProject) {
     features.push(BuiltInFeaturePluginNames.dotnet);
   } else {

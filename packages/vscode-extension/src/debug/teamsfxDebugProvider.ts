@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
@@ -64,7 +64,15 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           debugConfiguration.timeout = 20000;
         }
 
-        const debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
+        let debugConfig = undefined;
+        if (isLocalSideloadingConfiguration && isConfigUnifyEnabled()) {
+          debugConfig = await commonUtils.getDebugConfig(
+            false,
+            environmentManager.getLocalEnvName()
+          );
+        } else {
+          debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
+        }
         if (!debugConfig) {
           // The user cancels env selection.
           // Returning the value 'undefined' prevents the debug session from starting.

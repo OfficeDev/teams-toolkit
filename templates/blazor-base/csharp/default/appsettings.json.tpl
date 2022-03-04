@@ -11,7 +11,6 @@
     "Authentication": {
       "ClientId": "$clientId$",
       "ClientSecret": "$client-secret$",
-      "InitiateLoginEndpoint": "$appEndPoint$auth-start.html",
       "OAuthAuthority": "$oauthAuthority$"
     }
   }{{/IS_TAB}}{{#IS_BOT}},

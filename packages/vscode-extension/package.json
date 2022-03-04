@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.3.0",
+  "version": "3.5.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -60,6 +60,7 @@
     "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
+    "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -221,20 +222,20 @@
         },
         {
           "command": "fx-extension.preview",
-          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned|local-existing-app/"
         },
         {
           "command": "fx-extension.previewWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned|local-existing-app/",
           "group": "inline@3"
         },
         {
           "command": "fx-extension.localdebug",
-          "when": "view == teamsfx-environment && viewItem =~ /local/"
+          "when": "view == teamsfx-environment && viewItem =~ /^local$/"
         },
         {
           "command": "fx-extension.localdebugWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /local/",
+          "when": "view == teamsfx-environment && viewItem =~ /^local$/",
           "group": "inline@3"
         },
         {
@@ -493,6 +494,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.validate-getStarted-prerequisites",
+        "title": "Teams - Validate Get Started Prerequisites",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.get-func-path",
         "title": "Teams - Get Func Path for Environment Variable",
         "enablement": "never"
@@ -633,6 +639,11 @@
       {
         "command": "fx-extension.openReadMe",
         "title": "Teams: Open Read Me",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.openDeploymentTreeview",
+        "title": "Teams: Open Deployment Treeview",
         "enablement": "never"
       }
     ],
@@ -781,11 +792,6 @@
         "title": "General",
         "order": 1,
         "properties": {
-          "fx-extension.stopTeamsToolkitTasksPostDebug": {
-            "type": "boolean",
-            "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
-            "default": true
-          },
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
@@ -824,7 +830,7 @@
               },
               "ngrok": {
                 "type": "boolean",
-                "description": "Ensure Ngrok is installed."
+                "description": "Ensure Ngrok is installed and started."
               },
               "devCert": {
                 "type": "boolean",
@@ -866,91 +872,47 @@
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {
-            "id": "teamsToolkitCapailities",
-            "title": "What are Teams app \"Capabilities\"",
-            "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
-            "media": {
-              "svg": "media/learn.svg",
-              "altText": "Watch Teams Video"
-            }
-          },
-          {
-            "id": "teamsToolkitInstallNodeJs",
-            "title": "Install Node.js",
-            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
-            "media": {
-              "svg": "media/step_nodejs.svg",
-              "altText": "Install NodeJs"
-            },
-            "when": "fx-extension.isNotValidNode"
-          },
-          {
-            "id": "teamsToolkitTenantAccount",
-            "title": "Get your M365 testing tenant for free",
-            "description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
-            "media": {
-              "markdown": "docs/itp/itp.md"
-            }
-          },
-          {
-            "id": "teamsToolkitExploreMore",
-            "title": "Explore more TeamsFx functionalities",
-            "description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
-            "media": {
-              "svg": "media/goodToGo.svg",
-              "altText": "Explore more"
-            }
-          }
-        ]
-      },
-      {
-        "id": "teamsToolkitQuickStartNew",
-        "title": "Get started with Teams toolkit",
-        "description": "Jumpstart your Teams app development experience",
-        "when": "false",
-        "steps": [
-          {
             "id": "teamsToolkitEnvironment",
             "title": "Get your environment ready",
-            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)",
+            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
             "media": {
-              "svg": "media/environment.svg",
+              "svg": "media/Prerequisites.svg",
               "altText": "Get your environment ready"
             }
           },
           {
             "id": "teamsToolkitBuildApp",
             "title": "Build your first Teams app",
-            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.getNewProjectPath?%5B%22Webview%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
+            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.getNewProjectPath?%5B%22WalkThrough%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)",
             "media": {
-              "svg": "media/step_create.svg",
+              "svg": "media/Create.svg",
               "altText": "Build your first Teams app"
             }
           },
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
+            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
             "media": {
-              "svg": "media/preview.svg",
+              "svg": "media/F5.svg",
               "altText": "Preview your Teams app locally"
             }
           },
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
             "media": {
-              "svg": "media/openExtensionIcon.svg",
+              "svg": "media/Deployment.svg",
               "altText": "Deploy Teams apps"
             }
           },
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:toSide:fx-extension.openReadMe?%5B%22Webview%22%5D)",
+            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D)",
             "media": {
-              "svg": "media/goodToGo.svg",
+              "svg": "media/Readme.svg",
               "altText": "Explore more"
             }
           }
@@ -975,8 +937,8 @@
     "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
-    "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
-    "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "check-format": "prettier --list-different --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "format": "prettier --write --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
@@ -995,6 +957,7 @@
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
+    "@types/detect-port": "^1.3.2",
     "@types/express": "^4.17.11",
     "@types/fs-extra": "^9.0.5",
     "@types/glob": "^7.1.4",
@@ -1021,6 +984,7 @@
     "copyfiles": "^2.4.1",
     "css-loader": "^5.1.3",
     "decache": "^4.6.0",
+    "detect-port": "^1.3.0",
     "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
@@ -1030,6 +994,7 @@
     "glob": "^7.1.7",
     "html-webpack-plugin": "^5.3.1",
     "istanbul": "^0.4.5",
+    "kill-port-process": "^3.0.1",
     "lint-staged": "^11.2.6",
     "mocha": "^9.1.1",
     "mocha-junit-reporter": "^2.0.2",
@@ -1059,6 +1024,7 @@
     "typescript": "^4.2.4",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
+    "verdaccio": "^5.6.2",
     "vsce": "^1.93.0",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2",
@@ -1069,12 +1035,12 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.14.0",
-    "@microsoft/teamsfx-core": "^1.3.0",
+    "@microsoft/teamsfx-api": "^0.16.0",
+    "@microsoft/teamsfx-core": "^1.5.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
-    "async-mutex": "^0.3.1",
     "ajv": "^8.5.0",
+    "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

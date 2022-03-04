@@ -21,7 +21,6 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
@@ -35,6 +34,7 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import mockLocalSettings from "./localSettings.json";
 
@@ -167,7 +167,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
         if (ctx) {
           assert.deepEqual(
             ctx.localSettings,
-            localSettingsProvider.initV2(true, false, false, false, true)
+            localSettingsProvider.initV2(true, false, false, true)
           );
         }
         assert.isTrue(ctx?.solutionContext !== undefined);

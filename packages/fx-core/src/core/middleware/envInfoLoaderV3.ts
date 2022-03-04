@@ -2,12 +2,21 @@
 // Licensed under the MIT license.
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, ProjectSettings, Result, v2, v3 } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "..";
-import { CoreHookContext } from "../..";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  ProjectSettings,
+  Result,
+  Stage,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
+import { environmentManager, newEnvInfoV3 } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
+import { CoreHookContext } from "../types";
 import { getTargetEnvName } from "./envInfoLoader";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -30,6 +39,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     // make sure inputs.env always has value so telemetry can use it.
+    if (inputs.stage === Stage.debug) inputs.ignoreEnvInfo = false; // for local debug v3, envInfo should not be ignored
     const envRes = await getTargetEnvName(skip, inputs, ctx);
     if (envRes.isErr()) {
       ctx.result = err(envRes.error);
@@ -54,7 +64,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
   };
 }
 
-async function loadEnvInfoV3(
+export async function loadEnvInfoV3(
   inputs: v2.InputsWithProjectPath,
   projectSettings: ProjectSettings,
   targetEnvName?: string,

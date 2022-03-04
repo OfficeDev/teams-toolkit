@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Yitong Feng <yitong.feng@microsoft.com>
+ * @author Ivan He <ruhe@microsoft.com>
  */
 
 import fs from "fs-extra";
@@ -23,7 +23,7 @@ import {
   readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
 
@@ -42,11 +42,7 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    if (isMultiEnvEnabled()) {
-      await setBotSkuNameToB1Bicep(projectPath, env);
-    } else {
-      await setBotSkuNameToB1(projectPath);
-    }
+    await setBotSkuNameToB1Bicep(projectPath, env);
 
     // set subscription
     await execAsync(`teamsfx account set --subscription ${subscription}`, {
@@ -126,10 +122,6 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, true, false, true);
-    } else {
-      await cleanUp(appName, projectPath, true, true, false);
-    }
+    await cleanUp(appName, projectPath, true, true, false);
   });
 });

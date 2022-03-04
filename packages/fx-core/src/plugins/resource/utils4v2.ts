@@ -24,10 +24,11 @@ import {
 import _ from "lodash";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { ArmTemplateResult } from "../../common/armInterface";
-import { CryptoDataMatchers } from "../../common/tools";
+import { isConfigUnifyEnabled, objectToMap } from "../../common/tools";
 import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
-import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { EnvInfoV2, InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
+import { newEnvInfo } from "../../core/environment";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -52,6 +53,24 @@ export function convert2PluginContext(
     ui: ctx.userInteraction,
   };
   return pluginContext;
+}
+
+export function convert2Context(ctx: PluginContext, ignoreEmptyProjectPath = false) {
+  if (!ignoreEmptyProjectPath && !ctx.answers!.projectPath) throw NoProjectOpenedError();
+  const inputs: InputsWithProjectPath = {
+    projectPath: ctx.root,
+    env: ctx.envInfo.envName,
+    platform: ctx.answers!.platform!,
+  };
+  const context: v2.Context = {
+    projectSetting: ctx.projectSettings!,
+    logProvider: ctx.logProvider!,
+    telemetryReporter: ctx.telemetryReporter!,
+    cryptoProvider: ctx.cryptoProvider,
+    permissionRequestProvider: ctx.permissionRequestProvider,
+    userInteraction: ctx.ui!,
+  };
+  return { context, inputs };
 }
 
 export async function scaffoldSourceCodeAdapter(
@@ -364,11 +383,18 @@ export async function provisionLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin
+  plugin: Plugin,
+  envInfo?: EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  if (isConfigUnifyEnabled() && envInfo) {
+    pluginContext.envInfo.state = objectToMap(envInfo!.state);
+    pluginContext.envInfo.config = envInfo.config as EnvConfig;
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -378,6 +404,9 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
+  if (isConfigUnifyEnabled() && envInfo) {
+    envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
+  }
   return ok(Void);
 }
 
@@ -386,11 +415,21 @@ export async function configureLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin
+  plugin: Plugin,
+  envInfo?: EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  if (isConfigUnifyEnabled() && envInfo) {
+    pluginContext.envInfo.state = objectToMap(envInfo!.state);
+    pluginContext.envInfo.config = envInfo!.config as EnvConfig;
+  }
+  if (envInfo?.config.isLocalDebug) {
+    pluginContext.envInfo.config.isLocalDebug = true;
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -399,6 +438,9 @@ export async function configureLocalResourceAdapter(
   const res = await plugin.postLocalDebug(pluginContext);
   if (res.isErr()) {
     return err(res.error);
+  }
+  if (isConfigUnifyEnabled() && envInfo) {
+    envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
   }
   return ok(Void);
 }

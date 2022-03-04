@@ -1,12 +1,7 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using {{BlazorAppServer}};
 {{#IS_TAB}}
 using {{BlazorAppServer}}.Interop.TeamsSDK;
 {{/IS_TAB}}{{#IS_BOT}}
+using {{BlazorAppServer}};
 using {{BlazorAppServer}}.Bots;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;

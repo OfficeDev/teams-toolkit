@@ -331,6 +331,10 @@ export class FxCore implements v3.ICore {
         throw ProjectFolderInvalidError(folder);
       }
     }
+    if (!folder) {
+      return err(InvalidInputError("folder is undefined"));
+    }
+    inputs.folder = folder;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";

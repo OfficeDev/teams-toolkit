@@ -15,6 +15,10 @@ steps:
     versionSpec: '14.17.0'
     checkLatest: true
 
+# Check out
+- checkout: self
+  persistCredentials: true
+
 - task: Bash@3
   env:
     M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
@@ -25,6 +29,8 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
+      set -vuxo pipefail
+      
       # Install the local dev dependency of @microsoft/teamsfx-cli. 
       # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
       # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
@@ -44,4 +50,4 @@ steps:
       git config user.email "azdo-agent@azure.com"
       git add .
       git commit -m "chore: commit provision configs"
-      git push origin ${BUILD_SOURCEBRANCHNAME}
+      git push origin HEAD:${BUILD_SOURCEBRANCHNAME}

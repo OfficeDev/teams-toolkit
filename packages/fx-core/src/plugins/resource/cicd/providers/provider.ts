@@ -2,15 +2,11 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
-import { sendRequestWithTimeout } from "../../../../common/template-utils/templatesUtils";
 import { FileSystemError, InternalError, NoProjectOpenedError } from "../errors";
 import { TemplateKind } from "./enums";
-import { Logger } from "../logger";
 import path from "path";
-import { URLPrefixes } from "../constants";
-import Mustache, { render } from "mustache";
+import Mustache from "mustache";
 import { getTemplatesFolder } from "../../../..";
 
 export class CICDProvider {
@@ -42,10 +38,9 @@ export class CICDProvider {
       throw new FileSystemError(`Fail to create path: ${targetPath}`, e as Error);
     }
 
-    // 2. Read README from remote or local.
+    // 2. Read README from local.
     const targetReadMePath = path.join(targetPath, "README.md");
     if (!(await fs.pathExists(targetReadMePath))) {
-      const targetReadMeUrl = `${URLPrefixes.CICD_TEMPLATES}/${this.providerName}/README.md`;
       const localReadMePath = path.join(
         getTemplatesFolder(),
         "plugins",
@@ -54,7 +49,7 @@ export class CICDProvider {
         this.providerName,
         "README.md"
       );
-      const readmeContent = await this.fetchRemoteOrFallbackLocal(targetReadMeUrl, localReadMePath);
+      const readmeContent = await this.readLocalFile(localReadMePath);
       try {
         await fs.writeFile(targetReadMePath, readmeContent);
       } catch (e) {
@@ -68,9 +63,6 @@ export class CICDProvider {
       this.targetTemplateName(templateName, replacements.env_name)
     );
     if (!(await fs.pathExists(targetTemplatePath))) {
-      const targetTemplateUrl = `${URLPrefixes.CICD_TEMPLATES}/${
-        this.providerName
-      }/${this.sourceTemplateName(templateName)}`;
       const localTemplatePath = path.join(
         getTemplatesFolder(),
         "plugins",
@@ -79,10 +71,7 @@ export class CICDProvider {
         this.providerName,
         this.sourceTemplateName(templateName)
       );
-      const templateContent = await this.fetchRemoteOrFallbackLocal(
-        targetTemplateUrl,
-        localTemplatePath
-      );
+      const templateContent = await this.readLocalFile(localTemplatePath);
       const renderedContent = Mustache.render(templateContent, replacements);
       try {
         await fs.writeFile(targetTemplatePath, renderedContent);
@@ -94,23 +83,7 @@ export class CICDProvider {
     return ok(true);
   }
 
-  public async fetchRemoteOrFallbackLocal(url: string, localPath: string): Promise<string> {
-    try {
-      const res: AxiosResponse<any> = await sendRequestWithTimeout(
-        async (cancelToken) => {
-          return await axios.get(url, {
-            responseType: "text",
-            cancelToken: cancelToken,
-          });
-        },
-        30000,
-        1
-      );
-      if (!res.data) return res.data as string;
-    } catch (e) {
-      Logger.debug(`Fail to get ${url}, ${e.message}`);
-    }
-
+  public async readLocalFile(localPath: string): Promise<string> {
     if (!(await fs.pathExists(localPath))) {
       throw new InternalError(`local path: ${localPath} not found.`);
     }

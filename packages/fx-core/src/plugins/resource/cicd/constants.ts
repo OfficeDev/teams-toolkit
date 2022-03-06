@@ -47,13 +47,3 @@ export class Suggestions {
     "Create a new project or open an existing one.";
   public static readonly CHECK_PERMISSION = "Please check if you got sufficient permission.";
 }
-
-export class URLPrefixes {
-  public static readonly CICD_TEMPLATES =
-    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/fx-core/templates/plugins/resource/cicd";
-}
-
-export class Retry {
-  public static readonly RETRY_TIMES = 10;
-  public static readonly BACKOFF_TIME_MS = 5000;
-}

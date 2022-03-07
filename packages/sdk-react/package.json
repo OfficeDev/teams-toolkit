@@ -15,7 +15,6 @@
     "build/**/*"
   ],
   "scripts": {
-    "prepare": "npm run build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",

@@ -50,6 +50,7 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
+import { loadLocalizedStrings } from "./utils/localizeUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -557,6 +558,8 @@ export async function activate(context: vscode.ExtensionContext) {
   openWelcomePageAfterExtensionInstallation();
 
   showDebugChangesNotification();
+
+  await loadLocalizedStrings();
 }
 
 // this method is called when your extension is deactivated

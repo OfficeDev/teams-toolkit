@@ -22,8 +22,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import * as util from "util";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { getStrings, isFeatureFlagEnabled } from "../../../../common/tools";
-import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,

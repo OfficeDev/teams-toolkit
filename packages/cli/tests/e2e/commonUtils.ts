@@ -333,7 +333,7 @@ export async function cleanUpResourcesCreatedHoursAgo(
     const groups = await rgManager.searchResourceGroups(contains);
     const filteredGroups =
       hours && hours > 0
-        ? groups.filter((group) => {
+        ? groups.filter((group: { name?: string }) => {
             const name = group.name!;
             const startPos = name.indexOf(contains) + contains.length;
             const createdTime = Number(name.slice(startPos, startPos + 13));
@@ -341,7 +341,7 @@ export async function cleanUpResourcesCreatedHoursAgo(
           })
         : groups;
 
-    const promises = filteredGroups.map((rg) =>
+    const promises = filteredGroups.map((rg: { name?: string }) =>
       rgManager.deleteResourceGroup(rg.name!, retryTimes)
     );
     const results = await Promise.all(promises);

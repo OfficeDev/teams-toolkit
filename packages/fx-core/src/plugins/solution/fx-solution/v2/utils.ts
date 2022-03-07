@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import { getStrings, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -37,10 +37,10 @@ import {
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
-import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PluginsWithContext } from "../types";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -164,21 +164,21 @@ export async function checkWhetherLocalDebugM365TenantMatches(
   appStudioTokenProvider?: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const m365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
-    if (m365TenantId.isErr()) {
-      throw err(m365TenantId.error);
+    const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365TenantId.isErr()) {
+      return maybeM365TenantId;
     }
 
-    const m365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
-    if (m365UserAccount.isErr()) {
-      throw err(m365UserAccount.error);
+    const maybeM365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365UserAccount.isErr()) {
+      return maybeM365UserAccount;
     }
 
-    if (m365TenantId.value !== localDebugTenantId) {
+    if (maybeM365TenantId.value !== localDebugTenantId) {
       const errorMessage: string = util.format(
         getStrings().solution.LocalDebugTenantConfirmNotice,
         localDebugTenantId,
-        m365UserAccount.value,
+        maybeM365UserAccount.value,
         "localSettings.json"
       );
 

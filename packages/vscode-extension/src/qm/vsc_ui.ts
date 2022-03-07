@@ -49,7 +49,7 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
 import * as StringResources from "../resources/Strings.json";
 import { ProgressHandler } from "../progressHandler";
-import { exp } from "../exp";
+import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import * as packageJson from "../../package.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";

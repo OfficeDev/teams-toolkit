@@ -18,3 +18,10 @@ export enum SyncedState {
 export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
+
+export enum GlobalKey {
+  OpenWalkThrough = "fx-extension.openWalkThrough",
+  OpenReadMe = "fx-extension.openReadMe",
+  OpenSampleReadMe = "fx-extension.openSampleReadMe",
+  ShowLocalDebugMessage = "ShowLocalDebugMessage",
+}

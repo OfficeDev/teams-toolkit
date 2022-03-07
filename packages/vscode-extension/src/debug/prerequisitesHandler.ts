@@ -157,11 +157,7 @@ async function checkPort(
 
 export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxError>> {
   try {
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
 
     // node, account
     const totalSteps = 2;
@@ -194,36 +190,16 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
   } catch (error: any) {
     const fxError = assembleError(error);
     showError(fxError);
-    try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, fxError);
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, fxError);
     return err(fxError);
   }
   return ok(null);
 }
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
-  // skip debugging if there is already a debug session
-  if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
-    return err(
-      returnUserError(
-        new Error("SKip debugging because there is already a debug session."),
-        ExtensionSource,
-        "SkipDebugging"
-      )
-    );
-  }
-
   let progressHelper: ProgressHelper | undefined;
   try {
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
 
     // terminate all running teamsfx tasks
     if (allRunningTeamsfxTasks.size > 0) {
@@ -380,22 +356,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // handle checkResults
     await handleCheckResults(checkResults, progressHelper);
 
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   } catch (error: any) {
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
 
     return err(fxError);
   }

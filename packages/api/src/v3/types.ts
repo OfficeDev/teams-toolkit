@@ -19,22 +19,22 @@ export interface EnvInfoV3 extends EnvInfoV2 {
 export type ManifestCapability =
   | {
       name: "staticTab";
-      snippet?: { local: IStaticTab; remote: IStaticTab };
+      snippet?: IStaticTab;
       existingApp?: boolean;
     }
   | {
       name: "configurableTab";
-      snippet?: { local: IConfigurableTab; remote: IConfigurableTab };
+      snippet?: IConfigurableTab;
       existingApp?: boolean;
     }
   | {
       name: "Bot";
-      snippet?: { local: IBot; remote: IBot };
+      snippet?: IBot;
       existingApp?: boolean;
     }
   | {
       name: "MessageExtension";
-      snippet?: { local: IComposeExtension; remote: IComposeExtension };
+      snippet?: IComposeExtension;
       existingApp?: boolean;
     }
   | {

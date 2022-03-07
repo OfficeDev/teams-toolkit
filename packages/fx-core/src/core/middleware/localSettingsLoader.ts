@@ -4,13 +4,13 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { AzureSolutionSettings, err, Inputs, Plugin } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { CoreHookContext, NoProjectOpenedError, PathNotExistError } from "..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
-import { ObjectIsUndefinedError } from "../error";
+import { NoProjectOpenedError, ObjectIsUndefinedError, PathNotExistError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
+import { CoreHookContext } from "../types";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,

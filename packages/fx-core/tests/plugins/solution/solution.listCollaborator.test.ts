@@ -32,7 +32,7 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import { CollaborationState } from "../../../src/common/permissionInterface";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { CollaborationUtil } from "../../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import { aadPlugin, appStudioPlugin } from "../../constants";

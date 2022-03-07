@@ -15,12 +15,12 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { CoreHookContext, setTools } from "../../../src";
+import { setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsWriterMW } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
 describe("Middleware - ProjectSettingsWriterMW", () => {

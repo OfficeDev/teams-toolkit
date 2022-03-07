@@ -9,13 +9,12 @@ import {
   returnUserError,
   v2,
   Void,
-  returnSystemError,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
-import { isVSProject } from "../../../..";
 import { PluginDisplayName } from "../../../../common/constants";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { getStrings } from "../../../../common/tools";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -55,24 +54,24 @@ export async function deploy(
     );
   }
 
-  const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+  if (!inAzureProject) {
+    const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
 
-  if (appStudioTokenJson) {
-    const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
-    if (checkM365.isErr()) {
-      return checkM365;
+    if (appStudioTokenJson) {
+      const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
+      if (checkM365.isErr()) {
+        return checkM365;
+      }
+    } else {
+      return err(
+        new SystemError(
+          SolutionError.NoAppStudioToken,
+          "App Studio json is undefined",
+          SolutionSource
+        )
+      );
     }
   } else {
-    return err(
-      new SystemError(
-        SolutionError.NoAppStudioToken,
-        "App Studio json is undefined",
-        SolutionSource
-      )
-    );
-  }
-
-  if (isAzureProject(getAzureSolutionSettings(ctx))) {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider

@@ -48,7 +48,8 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,

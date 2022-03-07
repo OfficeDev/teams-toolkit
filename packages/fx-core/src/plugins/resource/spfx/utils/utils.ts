@@ -20,14 +20,14 @@ export class Utils {
       }
     }
 
-    files.forEach(async function (file) {
+    for (const file of files) {
       let content = (await fs.readFile(file)).toString();
       map.forEach((value, key) => {
         const reg = new RegExp(key, "g");
         content = content.replace(reg, value);
       });
       await fs.writeFile(file, content);
-    });
+    }
   }
 
   static normalizeComponentName(name: string): string {
@@ -77,4 +77,8 @@ export class Utils {
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function yeomanScaffoldEnabled() {
+  return false;
 }

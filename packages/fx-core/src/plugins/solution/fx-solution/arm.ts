@@ -21,6 +21,7 @@ import {
   UserError,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import os from "os";
@@ -941,13 +942,15 @@ async function doGenerateBicep(
     ctx.logProvider.info(`${pluginName}: updateBicep() success!`);
   }
 
-  await persistBicepTemplates(
+  const persistRes = await persistBicepTemplates(
     bicepOrchestrationTemplate,
     moduleProvisionFiles,
     moduleConfigFiles,
     inputs.projectPath
   );
-
+  if (persistRes.isErr()) {
+    return err(persistRes.error);
+  }
   return ok(undefined); // Nothing to return when success
 }
 
@@ -956,7 +959,7 @@ async function persistBicepTemplates(
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
   projectPath: string
-) {
+): Promise<Result<undefined, FxError>> {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
@@ -1086,6 +1089,7 @@ async function persistBicepTemplates(
       }
     }
   }
+  return ok(undefined);
 }
 
 async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
@@ -1351,7 +1355,7 @@ function expandParameterPlaceholdersV3(
 ): string {
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const plugins = solutionSettings
-    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.FeaturePlugin>(p))
+    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p))
     : [];
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };

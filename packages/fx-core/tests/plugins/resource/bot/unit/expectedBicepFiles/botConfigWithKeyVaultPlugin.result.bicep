@@ -7,19 +7,21 @@ param provisionOutputs object
 param currentAppSettings object
 
 var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
+
 var m365ClientId = provisionParameters['m365ClientId']
 
 var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
 
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+
+var m365ApplicationIdUri = 'api://botid-${botId}'
+
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 
 var botAadAppClientSecret = provisionOutputs.keyVaultOutput.value.botClientSecretReference
 
 var botId = provisionParameters['botAadAppClientId']
-
-var m365ApplicationIdUri = 'api://botid-${botId}'
 
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${botWebAppName}/appsettings'

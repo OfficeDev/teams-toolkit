@@ -2,13 +2,12 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import fs from "fs-extra";
+const fs = require("fs-extra");
 import * as sinon from "sinon";
-import { default as chaiAsPromised } from "chai-as-promised";
-import AdmZip from "adm-zip";
-import path from "path";
+const AdmZip = require("adm-zip");
+import * as path from "path";
 
-import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
+import { TeamsBot, isMultiEnvEnabled } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -23,7 +22,6 @@ import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegi
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
-import { isMultiEnvEnabled } from "../../../../../src";
 import { LocalSettingsBotKeys } from "../../../../../src/common/localSettingsConstants";
 import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
 import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
@@ -40,8 +38,6 @@ import {
 } from "../../../solution/util";
 import { randomAppName } from "../../../../core/utils";
 import * as os from "os";
-
-chai.use(chaiAsPromised);
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test preScaffold", () => {
@@ -163,45 +159,29 @@ describe("Teams Bot Resource Plugin", () => {
       const pluginContext = testUtils.newPluginContext();
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-
-      let item: any = { registrationState: "Unregistered" };
-      const namespace = ["ut"];
-      const fakeRPClient: any = {
-        get: (namespace: string) => item,
-        register: (namespace: string) => {
-          item = {};
-          item = { ...item, $namespace: { registrationState: "Registered" } };
-          return item;
-        },
-      };
-      sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
 
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(botPluginImpl.config.scaffold, "botAADCreated").returns(true);
 
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
+      // Act
+      const result = await botPlugin.provision(pluginContext);
 
-      const fakeBotClient = factory.createAzureBotServiceClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(fakeBotClient.bots, "create").resolves({
-        status: 200,
-      });
-      sinon.stub(fakeBotClient.channels, "create").resolves({
-        status: 200,
-      });
+      // Assert
+      chai.assert.isTrue(result.isOk());
+    });
 
-      sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
-      sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
-        defaultHostName: "abc.azurewebsites.net",
-      });
-      sinon.stub(AzureOperations, "CreateOrUpdateAppServicePlan").resolves();
-      sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
-      sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
+    it("Register Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
+      botPluginImpl.config.saveConfigIntoContext(pluginContext);
+
+      sinon.stub(botPluginImpl.config.scaffold, "botAADCreated").returns(false);
+      const botAuthCreds = new BotAuthCredential();
+      botAuthCreds.clientId = "anything";
+      botAuthCreds.clientSecret = "anything";
+      botAuthCreds.objectId = "anything";
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
 
       // Act
       const result = await botPlugin.provision(pluginContext);

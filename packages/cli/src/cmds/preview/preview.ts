@@ -28,6 +28,7 @@ import {
   TaskDefinition,
   ProgrammingLanguage,
   isConfigUnifyEnabled,
+  environmentManager,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -197,12 +198,16 @@ export default class Preview extends YargsCommand {
         skipNgrok: skipNgrok,
         trustDevCert: trustDevCert,
       },
+      env: isConfigUnifyEnabled() ? environmentManager.getLocalEnvName() : undefined,
     };
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-    let localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
-
+    let localSettings = undefined;
+    let configResult = undefined;
+    if (!isConfigUnifyEnabled()) {
+      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
+    }
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
@@ -304,10 +309,26 @@ export default class Preview extends YargsCommand {
 
     /* === get local teams app id === */
     // re-load local settings
-    localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
+    let tenantId = undefined,
+      localTeamsAppId = undefined;
+    if (isConfigUnifyEnabled()) {
+      configResult = await core.getProjectConfig(inputs);
+      if (configResult.isErr()) {
+        return err(configResult.error);
+      }
+      const config = configResult.value;
+      tenantId = config?.config
+        ?.get(constants.solutionPluginName)
+        ?.get(constants.teamsAppTenantIdConfigKey) as string;
+      localTeamsAppId = config?.config
+        ?.get(constants.appstudioPluginName)
+        ?.get(constants.remoteTeamsAppIdConfigKey);
+    } else {
+      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
-    const tenantId = localSettings?.teamsApp?.tenantId as string;
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+      tenantId = localSettings?.teamsApp?.tenantId as string;
+      localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+    }
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
@@ -641,12 +662,19 @@ export default class Preview extends YargsCommand {
 
     const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
     const funcCommand = func.command;
+    let funcEnv = undefined;
+    if (func.details.binFolders !== undefined) {
+      funcEnv = {
+        PATH: `${process.env.PATH}${path.delimiter}${func.details.binFolders.join(path.delimiter)}`,
+      };
+    }
     const backendStartTask = includeBackend
       ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !== undefined
         ? this.prepareTaskNext(
             TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
             constants.backendStartStartMessageNext,
-            false
+            false,
+            funcEnv
           )
         : this.prepareTask(
             TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
@@ -886,7 +914,8 @@ export default class Preview extends YargsCommand {
   private prepareTaskNext(
     taskDefinition: ITaskDefinition,
     startMessage: string,
-    isWatchTask: boolean
+    isWatchTask: boolean,
+    env?: { [key: string]: string }
   ): {
     task: Task;
     startCb: (taskTitle: string, background: boolean) => Promise<void>;
@@ -897,7 +926,7 @@ export default class Preview extends YargsCommand {
       serviceLogWriter?: ServiceLogWriter
     ) => Promise<FxError | null>;
   } {
-    const taskEnv = taskDefinition.env;
+    const taskEnv = env ?? taskDefinition.env;
     const task = new Task(
       taskDefinition.name,
       taskDefinition.isBackground,

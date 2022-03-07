@@ -4,7 +4,6 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
-  AzureSolutionSettings,
   ConfigFolderName,
   err,
   FxError,
@@ -16,8 +15,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CoreHookContext, TOOLS } from "..";
 import { WriteFileError } from "../error";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**

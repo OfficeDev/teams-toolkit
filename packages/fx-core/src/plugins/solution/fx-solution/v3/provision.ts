@@ -25,6 +25,7 @@ import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
+import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import {
   CustomizeResourceGroupType,
@@ -32,18 +33,11 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
-import { hasAzureResource } from "../../../../core/collaborator";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
-import {
-  configLocalDebugSettings,
-  configLocalEnvironment,
-  setupLocalDebugSettings,
-  setupLocalEnvironment,
-} from "../debug/provisionLocal";
-import { TabSPFxItem } from "../question";
+import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";

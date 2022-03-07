@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   FxError,
@@ -16,7 +16,6 @@ import {
   Platform,
   ProjectSettings,
   Inputs,
-  Json,
   TokenProvider,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
@@ -45,11 +44,13 @@ import {
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
+import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -385,16 +386,16 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     expect(result.isOk()).to.be.true;
   });
 
-  it("should return error if m365 account doesn't match", async () => {
+  it("should return error if m365 account doesn't match for SPFx projects", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
+        hostType: HostTypeOptionSPFx.id,
         capabilities: [TabOptionItem.id],
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
+        activeResourcePlugins: [SpfxPluginV2.name],
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
@@ -423,6 +424,45 @@ describe("API v2 cases: deploy() for Azure projects", () => {
 
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.TeamsAppTenantIdNotRight);
+  });
+
+  it("shouldn't check m365 accounts for Azure projects", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, new AadAppForTeamsPlugin().name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "mock",
+    };
+    mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        // MockedAppStudioTokenProvider will return fake token with tenantId "222", any teamsAppTenantId other than "222" will do
+        solution: { provisionSucceeded: true, teamsAppTenantId: "333" },
+      },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
+
+    expect(result.isOk()).to.be.true;
   });
 
   it("should return error if Azure account doesn't match", async () => {

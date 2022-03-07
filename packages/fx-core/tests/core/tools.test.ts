@@ -5,9 +5,14 @@ import { ProjectSettings } from "@microsoft/teamsfx-api/build/types";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import "mocha";
-import { convertDotenvToEmbeddedJson, redactObject, replaceTemplateWithUserData } from "../../src";
-import { validateProjectSettings } from "../../src/common/projectSettingsValidator";
-import { isValidProject, newEnvInfo } from "../../src/core/tools";
+import {
+  convertDotenvToEmbeddedJson,
+  isValidProject,
+  newEnvInfo,
+  redactObject,
+  replaceTemplateWithUserData,
+  validateProjectSettings,
+} from "../../src";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("tools", () => {
   // it("base64 encode", () => {

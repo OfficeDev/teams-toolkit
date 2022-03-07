@@ -37,19 +37,15 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-  ResourcePluginsV2,
-} from "../ResourcePluginContainer";
+import { getActivatedResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
+import { PluginsWithContext } from "../types";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,

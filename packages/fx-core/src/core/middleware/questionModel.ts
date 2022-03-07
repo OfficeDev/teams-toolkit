@@ -24,9 +24,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { Container } from "typedi";
-import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import { deepCopy } from "../../common";
+import { createV2Context, deepCopy } from "../../common/tools";
+import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
@@ -34,6 +33,8 @@ import {
   BuiltInSolutionNames,
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
+import { CoreSource, FunctionRouterError } from "../error";
+import { TOOLS } from "../globalVars";
 import {
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
@@ -45,14 +46,16 @@ import {
   ScratchOptionYes,
 } from "../question";
 import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "../types";
 import { getProjectSettingsPath } from "./projectSettingsLoader";
+import { ISanitizer } from "../../plugins/resource/apim/utils/namingRules";
 /**
  * This middleware will help to collect input from question flow
  */
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
+  const core = ctx.self as any;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV2") {
@@ -318,22 +321,18 @@ export async function getQuestionsForInit(
     }
   }
   const node = new QTreeNode({ type: "group" });
-  const globalSolutions = getGlobalSolutionsV3();
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
+  node.addChild(new QTreeNode(QuestionAppName));
+  node.addChild(new QTreeNode(QuestionRootFolder));
+  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
-  for (const solution of globalSolutions) {
-    if (solution.getQuestionsForInit) {
-      const res = await solution.getQuestionsForInit(context, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        if (solutionNode.data) capNode.addChild(solutionNode);
-      }
+  if (solution.getQuestionsForInit) {
+    const res = await solution.getQuestionsForInit(context, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      if (solutionNode.data) node.addChild(solutionNode);
     }
   }
-  node.addChild(new QTreeNode(QuestionAppName));
   return ok(node.trim());
 }
 

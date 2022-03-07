@@ -99,6 +99,7 @@ import {
   getTeamsAppTelemetryInfoByEnv,
   isSPFxProject,
   isTeamsfx,
+  isTriggerFromWalkThrough,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -117,12 +118,17 @@ import { registerAccountTreeHandler } from "./accountTree";
 import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
-import { exp } from "./exp/index";
+import * as exp from "./exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
-import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
-import { AzureAssignRoleHelpUrl, AzurePortalUrl, SpfxManageSiteAdminUrl } from "./constants";
+import {
+  AzureAssignRoleHelpUrl,
+  AzurePortalUrl,
+  GlobalKey,
+  SpfxManageSiteAdminUrl,
+} from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
@@ -212,8 +218,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     registerCoreEvents();
     await registerAccountTreeHandler();
     await envTree.registerEnvTreeHandler();
-    await openMarkdownHandler();
-    await openSampleReadmeHandler();
+    await autoOpenProjectHandler();
     automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
@@ -359,6 +364,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
+    await updateAutoOpenGlobalKey(args);
     await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
@@ -369,6 +375,17 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
+export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
+  if (isTriggerFromWalkThrough(args)) {
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
+    await globalStateUpdate(GlobalKey.OpenReadMe, false);
+  } else {
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+    await globalStateUpdate(GlobalKey.OpenReadMe, true);
+  }
+  await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
+}
+
 export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
@@ -376,7 +393,7 @@ export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();
   await processResult(TelemetryEvent.RunIconDebug, result);
   return result;
@@ -391,14 +408,59 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+
+  const LocalEnvName = environmentManager.getLocalEnvName();
+  let result: Result<null, FxError>;
+  if (env === LocalEnvName) {
+    result = await previewLocal();
+  } else {
+    result = await previewRemote(env);
+  }
+
+  if (result.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, result.error);
+    return result;
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
+}
+
+async function previewLocal(): Promise<Result<null, FxError>> {
+  let debugConfig = await commonUtils.getDebugConfig(true);
+  if (!debugConfig?.appId) {
+    const result = await runCommand(Stage.debug);
+    if (result.isErr()) {
+      return result;
+    }
+
+    debugConfig = await commonUtils.getDebugConfig(true);
+  }
+
+  return launch(debugConfig);
+}
+
+async function previewRemote(env: string): Promise<Result<null, FxError>> {
   const debugConfig = await commonUtils.getDebugConfig(false, env);
+  return launch(debugConfig);
+}
+
+async function launch(
+  debugConfig:
+    | {
+        appId: string;
+        env?: string;
+      }
+    | undefined
+): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = returnUserError(
       new Error(StringResources.vsc.handlers.teamsAppIdNotFound),
       ExtensionSource,
       ExtensionErrors.TeamsAppIdNotFoundError
     );
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, error);
     return err(error);
   }
 
@@ -406,9 +468,6 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
   await vscode.env.openExternal(Uri.parse(uri));
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
   return ok(null);
 }
 
@@ -519,7 +578,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, "local");
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
@@ -532,7 +595,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     const isLocalDebug = env === "local";
     if (isLocalDebug) {
       func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       func.params.type = "remote";
       return await runUserTask(func, TelemetryEvent.Build, false, env);
@@ -877,14 +944,26 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
+  if (commonUtils.checkAndSkipDebugging()) {
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+
   const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve(deps);
 
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+  });
+
   if (!shouldContinue) {
     await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -894,10 +973,23 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
 export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
+  if (commonUtils.checkAndSkipDebugging()) {
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
+    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+  });
+
   if (!shouldContinue) {
     await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -907,8 +999,14 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  if (commonUtils.checkAndSkipDebugging()) {
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
+    commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -917,7 +1015,13 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 /**
  * Check required prerequisites in Get Started Page.
  */
-export async function validateGetStartedPrerequisitesHandler(): Promise<string | undefined> {
+export async function validateGetStartedPrerequisitesHandler(
+  args?: any[]
+): Promise<string | undefined> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ClickValidatePrerequisites,
+    getTriggerFromProperty(args)
+  );
   const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
@@ -970,30 +1074,23 @@ export async function getFuncPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
-  try {
-    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
-      [TelemetryProperty.DebugAppId]: localAppId,
-    });
-  } catch {
-    // ignore telemetry error
-  }
+  const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheckStart, {
+    [TelemetryProperty.DebugAppId]: localAppId,
+  });
 
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
-    try {
-      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
-        [TelemetryProperty.DebugAppId]: localAppId,
-      });
-    } finally {
-      // ignore telemetry error
-      terminateAllRunningTeamsfxTasks();
-      await debug.stopDebugging();
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      return "1";
-    }
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
+    terminateAllRunningTeamsfxTasks();
+    await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 
   const portsInUse = await commonUtils.getPortsInUse();
@@ -1008,29 +1105,27 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
-    try {
-      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
-        [TelemetryProperty.DebugAppId]: localAppId,
-      });
-    } finally {
-      // ignore telemetry error
-      terminateAllRunningTeamsfxTasks();
-      await debug.stopDebugging();
-      VS_CODE_UI.showMessage(
-        "error",
-        message,
-        false,
-        StringResources.vsc.localDebug.learnMore
-      ).then(async (result) => {
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
+    terminateAllRunningTeamsfxTasks();
+    await debug.stopDebugging();
+    commonUtils.endLocalDebugSession();
+    VS_CODE_UI.showMessage("error", message, false, StringResources.vsc.localDebug.learnMore).then(
+      async (result) => {
         if (result.isOk() && result.value === StringResources.vsc.localDebug.learnMore) {
           await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
         }
-      });
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      return "1";
-    }
+      }
+    );
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
 }
 
 export async function openDocumentHandler(args: any[]): Promise<boolean> {
@@ -1098,6 +1193,12 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
     case TelemetryTiggerFrom.SideBar:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
+    case TelemetryTiggerFrom.Notification:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
+    case TelemetryTiggerFrom.WalkThrough:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
+    case TelemetryTiggerFrom.Auto:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:
@@ -1105,49 +1206,34 @@ function getTriggerFromProperty(args?: any[]) {
   }
 }
 
-async function openMarkdownHandler() {
-  const afterScaffold = globalStateGet("openReadme", false);
-  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    await globalStateUpdate("openReadme", false);
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    let targetFolder: string | undefined;
-    if (await isSPFxProject(workspacePath)) {
-      showLocalDebugMessage();
-      targetFolder = `${workspacePath}/SPFx`;
-    } else {
-      showLocalDebugMessage();
-      const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
-      const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
-      if (tabFolder && botFolder) {
-        targetFolder = workspacePath;
-      } else if (tabFolder) {
-        targetFolder = tabFolder;
-      } else {
-        targetFolder = botFolder;
-      }
-    }
-    // When tab and bot coexist, readme file would reside in project root folder.
-    // Naming it README.md could accidently overwrite our users' own readme file.
-    // So we name it README-auto-generated.md here.
-    const autoGeneratedReadmePath = `${targetFolder}/${AutoGeneratedReadme}`;
-    const uri = (await fs.pathExists(autoGeneratedReadmePath))
-      ? Uri.file(autoGeneratedReadmePath)
-      : Uri.file(`${targetFolder}/README.md`);
-
-    workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
-    });
+async function autoOpenProjectHandler(): Promise<void> {
+  const isOpenWalkThrough = globalStateGet(GlobalKey.OpenWalkThrough, false);
+  const isOpenReadMe = globalStateGet(GlobalKey.OpenReadMe, false);
+  const isOpenSampleReadMe = globalStateGet(GlobalKey.OpenSampleReadMe, false);
+  if (isOpenWalkThrough) {
+    showLocalDebugMessage();
+    await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+  }
+  if (isOpenReadMe) {
+    showLocalDebugMessage();
+    await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
+    await globalStateUpdate(GlobalKey.OpenReadMe, false);
+  }
+  if (isOpenSampleReadMe) {
+    showLocalDebugMessage();
+    await openSampleReadmeHandler([TelemetryTiggerFrom.Auto]);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
 }
 
 export async function openReadMeHandler(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
   if (!(await isTeamsfx())) {
     const createProject = {
       title: StringResources.vsc.handlers.createProjectTitle,
       run: async (): Promise<void> => {
-        createNewProjectHandler();
+        Correlator.run(() => createNewProjectHandler([TelemetryTiggerFrom.Notification]));
       },
     };
 
@@ -1173,6 +1259,8 @@ export async function openReadMeHandler(args: any[]) {
     let targetFolder: string | undefined;
     if (await isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
+    } else if (await getIsFromSample()) {
+      openSampleReadmeHandler(args);
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
@@ -1192,10 +1280,24 @@ export async function openReadMeHandler(args: any[]) {
       ? Uri.file(autoGeneratedReadmePath)
       : Uri.file(`${targetFolder}/README.md`);
 
-    workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
-    });
+    let isToSide = false;
+    if (args && args.length === 2) {
+      isToSide = args[1] as boolean;
+    }
+
+    // if it is open from walk through, "isToSide" flag is set to true.
+    // Otherwise, "isToSide" flag is false, which mean open the markdown in new windws.
+    if (isToSide) {
+      workspace.openTextDocument(uri).then(() => {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      });
+    } else {
+      workspace.openTextDocument(uri).then(() => {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      });
+    }
   }
 }
 
@@ -1267,22 +1369,32 @@ async function openUpgradeChangeLogsHandler() {
   }
 }
 
-async function openSampleReadmeHandler() {
-  const afterScaffold = globalStateGet("openSampleReadme", false);
-  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    globalStateUpdate("openSampleReadme", false);
-    showLocalDebugMessage();
+async function openSampleReadmeHandler(args?: any) {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
     workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
+      if (isTriggerFromWalkThrough(args)) {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      } else {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      }
     });
   }
 }
 
 async function showLocalDebugMessage() {
+  const isShowLocalDebugMessage = globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
+
+  if (!isShowLocalDebugMessage) {
+    return;
+  } else {
+    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);
+  }
+
   const localDebug = {
     title: StringResources.vsc.handlers.localDebugTitle,
     run: async (): Promise<void> => {
@@ -1320,7 +1432,7 @@ async function showLocalDebugMessage() {
 
 export async function openSamplesHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.SampleGallery);
+  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
 }
 
 export async function openAppManagement(args?: any[]) {
@@ -1917,36 +2029,44 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
   }
 
   let isLocalDebug = false;
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath;
-    if (filePath && filePath.endsWith("manifest.local.template.json")) {
-      isLocalDebug = true;
+  let envName = "";
+  if (isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    envName = selectedEnv.value;
+    isLocalDebug = envName === "local";
+  } else {
+    if (args && args.length > 0) {
+      const filePath = args[0].fsPath;
+      if (filePath && filePath.endsWith("manifest.local.template.json")) {
+        isLocalDebug = true;
+      }
+    }
+
+    if (!isLocalDebug) {
+      const inputs = getSystemInputs();
+      inputs.ignoreEnvInfo = false;
+      const env = await core.getSelectedEnv(inputs);
+      if (env.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
+        return err(env.error);
+      }
+      envName = env.value!;
     }
   }
 
-  let manifestFile;
-  if (isLocalDebug) {
-    const res = await buildPackageHandler(["localDebug"]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
-    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
-  } else {
-    const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = false;
-    const env = await core.getSelectedEnv(inputs);
-    if (env.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
-      return err(env.error);
-    }
-    const res = await buildPackageHandler(["remote", env.value]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
-    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+  const res = await buildPackageHandler(isLocalDebug ? ["localDebug"] : ["remote", envName]);
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+    return err(res.error);
   }
+  const manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${
+    isLocalDebug ? "local" : envName
+  }.json`;
+
   if (fs.existsSync(manifestFile)) {
     workspace.openTextDocument(manifestFile).then((document) => {
       window.showTextDocument(document);
@@ -1997,12 +2117,17 @@ export async function openConfigStateFile(args: any[]) {
     return err(invalidProjectError);
   }
 
-  const inputs = getSystemInputs();
-  inputs.ignoreEnvInfo = false;
-  const envName = await core.getSelectedEnv(inputs);
-  if (envName.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, envName.error);
-    return err(envName.error);
+  let env: Result<string | undefined, FxError>;
+  if (isConfigUnifyEnabled()) {
+    env = await askTargetEnvironment();
+  } else {
+    const inputs = getSystemInputs();
+    inputs.ignoreEnvInfo = false;
+    env = await core.getSelectedEnv(inputs);
+  }
+  if (env.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, env.error);
+    return err(env.error);
   }
 
   let sourcePath: string;
@@ -2011,12 +2136,12 @@ export async function openConfigStateFile(args: any[]) {
     isConfig = true;
     sourcePath = path.resolve(
       `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
     );
   } else {
     sourcePath = path.resolve(
       `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
     );
   }
 
@@ -2024,7 +2149,7 @@ export async function openConfigStateFile(args: any[]) {
     if (isConfig) {
       const noEnvError = new UserError(
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(StringResources.vsc.handlers.findEnvFailed, envName.value),
+        util.format(StringResources.vsc.handlers.findEnvFailed, env.value),
         ExtensionSource
       );
       showError(noEnvError);
@@ -2033,7 +2158,7 @@ export async function openConfigStateFile(args: any[]) {
     } else {
       const noEnvError = new UserError(
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(StringResources.vsc.handlers.stateFileNotFound, envName.value),
+        util.format(StringResources.vsc.handlers.stateFileNotFound, env.value),
         ExtensionSource
       );
       const provision = {
@@ -2089,12 +2214,17 @@ export async function updatePreviewManifest(args: any[]) {
     },
   };
 
-  const result = await runUserTask(
-    func,
-    TelemetryEvent.UpdatePreviewManifest,
-    env && env === "local" ? true : false,
-    env
-  );
+  let result;
+  if (isConfigUnifyEnabled()) {
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  } else {
+    result = await runUserTask(
+      func,
+      TelemetryEvent.UpdatePreviewManifest,
+      env && env === "local" ? true : false,
+      env
+    );
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = getWorkspacePath();
@@ -2383,4 +2513,16 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     });
   }
   return result;
+}
+
+export async function openDeploymentTreeview(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ClickOpenDeploymentTreeview,
+    getTriggerFromProperty(args)
+  );
+  if (await isTeamsfx()) {
+    vscode.commands.executeCommand("teamsfx-deployment.focus");
+  } else {
+    vscode.commands.executeCommand("workbench.view.extension.teamsfx");
+  }
 }

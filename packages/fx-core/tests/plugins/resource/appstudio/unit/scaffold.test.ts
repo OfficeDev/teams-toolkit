@@ -23,9 +23,11 @@ import {
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
   MANIFEST_TEMPLATE,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { newEnvInfo } from "../../../../../src/core/tools";
+import { newEnvInfo } from "../../../../../src";
+import * as commonTools from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
@@ -300,5 +302,58 @@ describe("Scaffold", () => {
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(manifest.webApplicationInfo).to.be.undefined;
+  });
+
+  it("scaffold bot - consolidate", async () => {
+    // consolidate one template
+    sandbox.stub(commonTools, "isConfigUnifyEnabled").returns(true);
+
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(
+        path.normalize(
+          `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE_CONSOLIDATE}`
+        )
+      )
+    );
+    chai
+      .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.configurableTabs,
+        "configurableTabs should be empty, because only bot is chosen"
+      )
+      .to.deep.equal([]);
+    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL_FOR_MULTI_ENV);
+    chai
+      .expect(
+        manifest.composeExtensions,
+        "ComposeExtensions should be empty, because only bot is chosen"
+      )
+      .to.deep.equal([]);
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+      )
+    ).to.be.true;
   });
 });

@@ -17,21 +17,21 @@ Before you run or Start Debugging for the first time, follow these steps:
 
 2. For projects that contain a Bot capability, first use a Command Prompt to run this command: ngrok http 2544.
 
-3. Select the Project > TeamsFx > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
+3. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
 
 4. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
 
 5. Once Microsoft Teams is loaded, select the Add button to install your app in Teams.
 
-If you want to know more about SDK usage, please check the GitHub page(https://github.com/OfficeDev/TeamsFx/tree/dev/packages/dotnet-sdk).
+If you just want to launch the web app instead of Teams side-loading, first remove the 'launchUrl' in \Properties\launchSettings.json, then right click the solution, in Properties > Configuration Properties > Configuration, uncheck the 'Deploy' process and select 'OK'.
 
 
-Building your app UI
---------------------
+Building your Tab app
+----------------------
 
-Fluent UI is a front-end framework designed to build experiences that fit seamlessly into a broad range of Microsoft products. To make it simpler for you to build applications that fit seamlessly into Microsoft Teams, this template showcases Fluent UI Blazor components that are part of the Microsoft.Fast.Components.FluentUI package. 
+Fluent UI is a front-end framework designed to build experiences that fit seamlessly into a broad range of Microsoft products. To make it simpler for you to build applications that fit seamlessly into Microsoft Teams, this template showcases Fluent UI Blazor components that are part of the Microsoft.Fast.Components.FluentUI package. Learn more about these components here: https://github.com/microsoft/fast-blazor
 
-Learn more about these components here: https://github.com/microsoft/fast-blazor
+If you want to know more about SDK usage, please check the GitHub page: https://github.com/OfficeDev/TeamsFx/tree/dev/packages/dotnet-sdk
 
 
 Deploy your first Teams app on Azure
@@ -53,11 +53,14 @@ If you meet any problem when you are using out Toolkit or building your own Team
 Q&A
 ---------------
 
-1. How do I request more permissions and scopes in a Graph call?
+1. How do I logout or switch my M365 / Azure account in Teams Toolkit?
+   Please remove the account in Visual Studio account settings, you can find it in the right side of the menu bar. Then the Teams Toolkit commands will prompt the dialog for you to log in.
+
+2. How do I request more permissions and scopes in a Graph call?
    If you have selected Personal Tab capability and you want to change the scope in a Graph call, you can first change the parameter _scope in Components/Graph.razor. Then go to Azure Portal -> Azure Active Directory -> App Registrations, find the AAD application Toolkit created for you (default name is the same as the project name), under Manage, select API Permissions. Select Add a permission > Microsoft Graph > Delegated permissions, then add the permissions you want.
 
-2. Why is my bot not working in Teams?
+3. Why is my bot not working in Teams?
    Please check if the ngrok is running correctly in your local environment. ngrok will expire every 2 hours and you need to restart it unless you log in with a paid subscription. After the restart, the endpoint will change and you need to click the command Project > TeamsFx > Configure Microsoft Teams app to update the new endpoint.
 
-3. Why does the command Configure Microsoft Teams app show that ngrok is not running correctly?
+4. Why does the command Configure Microsoft Teams app show that ngrok is not running correctly?
    We only support the ngrok is running with default settings. Please make sure the ngrok web interface is http://127.0.0.1:4040.

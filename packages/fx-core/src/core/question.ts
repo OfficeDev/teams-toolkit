@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory } from "..";
+import { getRootDirectory } from "../common/tools";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -105,8 +105,9 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     if (inputs.platform === Platform.VS) {
       return [{ id: "csharp", label: "C#" }];
     }
-    const caps = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (caps.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },
@@ -114,13 +115,15 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "typescript";
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return "typescript";
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
   },
 };

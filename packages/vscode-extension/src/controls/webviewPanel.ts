@@ -20,6 +20,7 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import { GlobalKey } from "../constants";
 import { ext } from "../extensionVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
@@ -44,7 +45,7 @@ export class WebviewPanel {
   private panelType: PanelType = PanelType.QuickStart;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(panelType: PanelType) {
+  public static createOrShow(panelType: PanelType, isToSide?: boolean) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -56,7 +57,13 @@ export class WebviewPanel {
         .find((panel) => panel.panelType === panelType)!
         .panel.reveal(column);
     } else {
-      WebviewPanel.currentPanels.push(new WebviewPanel(panelType, column || vscode.ViewColumn.One));
+      isToSide
+        ? WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.Two)
+          )
+        : WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.One)
+          );
     }
   }
 
@@ -165,6 +172,8 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+      await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
+      await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
       await ExtTelemetry.dispose();
       setTimeout(() => {
         vscode.commands.executeCommand("vscode.openFolder", res.value);

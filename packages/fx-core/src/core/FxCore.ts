@@ -765,6 +765,13 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
+    if (
+      isConfigUnifyEnabled() &&
+      inputs.env === environmentManager.getLocalEnvName() &&
+      ctx?.envInfoV2
+    ) {
+      ctx.envInfoV2.config.isLocalDebug = true;
+    }
     if ("" !== namespace && array.length > 0) {
       if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2) {
         const name = undefinedName(

@@ -331,6 +331,10 @@ export class FxCore implements v3.ICore {
         throw ProjectFolderInvalidError(folder);
       }
     }
+    if (!folder) {
+      return err(InvalidInputError("folder is undefined"));
+    }
+    inputs.folder = folder;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
@@ -1340,6 +1344,8 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+    const folder = inputs[QuestionRootFolder.name] as string;
+    inputs.projectPath = path.join(folder, appName);
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();
@@ -1415,13 +1421,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-  ])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -1451,6 +1451,10 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.solutionV3.addFeature) {
+      const res = await ensureBasicFolderStructure(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      }
       return await ctx.solutionV3.addFeature(ctx.contextV2, inputs as v3.SolutionAddFeatureInputs);
     }
     return ok(Void);

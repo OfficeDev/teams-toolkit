@@ -6,7 +6,7 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import {
   BotOptionItem,

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -43,7 +43,7 @@
     "@typescript-eslint/parser": "^4.19.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
-    "cpy-cli": "^3.1.1",
+    "cpy-cli": "^4.0.0",
     "eslint": "^7.22.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
@@ -61,13 +61,13 @@
   },
   "dependencies": {
     "@azure/core-http": "^1.2.2",
-    "@azure/ms-rest-nodeauth": "^3.0.7",
+    "@azure/ms-rest-nodeauth": "^3.1.1",
+    "@microsoft/teams-manifest": "^0.0.2",
     "@types/fs-extra": "^9.0.10",
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
-    "neverthrow": "^3.2.0",
-    "@microsoft/teams-manifest": "^0.0.1"
+    "neverthrow": "^3.2.0"
   },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

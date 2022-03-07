@@ -662,12 +662,19 @@ export default class Preview extends YargsCommand {
 
     const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
     const funcCommand = func.command;
+    let funcEnv = undefined;
+    if (func.details.binFolders !== undefined) {
+      funcEnv = {
+        PATH: `${process.env.PATH}${path.delimiter}${func.details.binFolders.join(path.delimiter)}`,
+      };
+    }
     const backendStartTask = includeBackend
       ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !== undefined
         ? this.prepareTaskNext(
             TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
             constants.backendStartStartMessageNext,
-            false
+            false,
+            funcEnv
           )
         : this.prepareTask(
             TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, true),
@@ -907,7 +914,8 @@ export default class Preview extends YargsCommand {
   private prepareTaskNext(
     taskDefinition: ITaskDefinition,
     startMessage: string,
-    isWatchTask: boolean
+    isWatchTask: boolean,
+    env?: { [key: string]: string }
   ): {
     task: Task;
     startCb: (taskTitle: string, background: boolean) => Promise<void>;
@@ -918,7 +926,7 @@ export default class Preview extends YargsCommand {
       serviceLogWriter?: ServiceLogWriter
     ) => Promise<FxError | null>;
   } {
-    const taskEnv = taskDefinition.env;
+    const taskEnv = env ?? taskDefinition.env;
     const task = new Task(
       taskDefinition.name,
       taskDefinition.isBackground,

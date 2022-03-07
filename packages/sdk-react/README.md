@@ -1,6 +1,6 @@
 # TeamsFx SDK for React
 
-TeamsFx SDK provides React hooks to reduce the developer tasks of integrating TeamsFx with React and leverage Teams SSO.
+TeamsFx SDK provides [React hooks](https://reactjs.org/docs/hooks-intro.html) to reduce the developer tasks of integrating TeamsFx with React and leverage Teams SSO.
 
 Use the library to:
 
@@ -13,7 +13,7 @@ Use the library to:
 
 ## Getting started
 
-> Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
+> Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application and perform any sensitive operations from server-side code that your client has to authenticate with.
 
 TeamsFx SDK and React hooks are pre-configured in scaffolded project using Teams Toolkit extension for Visual Studio and vscode, or the `teamsfx` cli from the `teamsfx-cli` npm package.
 Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md) to see how to create a Teams App project.
@@ -39,7 +39,7 @@ npm install @microsoft/teamsfx@^0.6.0 react@^16.8.6 @fluentui/react-northstar@^0
 
 ### Scenario
 
-TeamsFx SDK for React is built to be used in React application. You can develope a new react web app for Teams Tab scenario.
+TeamsFx SDK for React is built to be used in React application. You can develop a new react web app for Teams Tab scenario.
 
 ### Calling the Microsoft Graph API
 
@@ -100,7 +100,7 @@ If you want to customize TeamsFx like customizing setting, please pass the confi
 ### useGraph
 This hook function leverage `useData` to call Graph API. It will execute the fetchGraphDataAsync function that the developer passes in first.
 If user has not consented to the scopes of AAD resources, `useGraph()` will automatically call `teamsfx.login()` to pop up the consent dialog.
-So developers can focus on the business logic of how to fetch Microsoft Graph data.
+So, developers can focus on the business logic of how to fetch Microsoft Graph data.
 
 ## Next steps
 

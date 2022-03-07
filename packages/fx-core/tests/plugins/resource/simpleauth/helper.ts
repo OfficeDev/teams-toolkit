@@ -5,7 +5,7 @@ import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
 import { newEnvInfo } from "../../../../src";
-import { ARM_TEMPLATE_OUTPUT, isMultiEnvEnabled } from "../../../../src";
+import { ARM_TEMPLATE_OUTPUT } from "../../../../src";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
@@ -143,21 +143,19 @@ export class TestHelper {
           ],
         },
       },
-      localSettings: isMultiEnvEnabled()
-        ? ({
-            teamsApp: new ConfigMap(),
-            auth: new ConfigMap([
-              [LocalSettingsAuthKeys.ClientId, "mock-local-clientId"],
-              [LocalSettingsAuthKeys.ClientSecret, "mock-local-clientSecret"],
-              [
-                LocalSettingsAuthKeys.OauthAuthority,
-                "https://login.microsoftonline.com/mock-teamsAppTenantId",
-              ],
-              [LocalSettingsAuthKeys.ApplicationIdUris, "mock-local-applicationIdUris"],
-            ]),
-            frontend: new ConfigMap([[LocalSettingsFrontendKeys.TabEndpoint, mockEndpoint]]),
-          } as LocalSettings)
-        : undefined,
+      localSettings: {
+        teamsApp: new ConfigMap(),
+        auth: new ConfigMap([
+          [LocalSettingsAuthKeys.ClientId, "mock-local-clientId"],
+          [LocalSettingsAuthKeys.ClientSecret, "mock-local-clientSecret"],
+          [
+            LocalSettingsAuthKeys.OauthAuthority,
+            "https://login.microsoftonline.com/mock-teamsAppTenantId",
+          ],
+          [LocalSettingsAuthKeys.ApplicationIdUris, "mock-local-applicationIdUris"],
+        ]),
+        frontend: new ConfigMap([[LocalSettingsFrontendKeys.TabEndpoint, mockEndpoint]]),
+      } as LocalSettings,
     } as unknown as PluginContext;
 
     return pluginContext;

@@ -12,7 +12,6 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -26,14 +25,10 @@ export class SimpleAuthPluginImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-    if (isMultiEnvEnabled()) {
-      ctx.localSettings?.auth?.set(
-        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
-        simpleAuthFilePath
-      );
-    } else {
-      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
-    }
+    ctx.localSettings?.auth?.set(
+      LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
+      simpleAuthFilePath
+    );
 
     await Utils.downloadZip(simpleAuthFilePath);
 
@@ -52,17 +47,10 @@ export class SimpleAuthPluginImpl {
       configArray.push(`${key}="${value}"`);
     }
 
-    if (isMultiEnvEnabled()) {
-      ctx.localSettings?.auth?.set(
-        LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
-        configArray.join(" ")
-      );
-    } else {
-      ctx.config.set(
-        Constants.SimpleAuthPlugin.configKeys.environmentVariableParams,
-        configArray.join(" ")
-      );
-    }
+    ctx.localSettings?.auth?.set(
+      LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
+      configArray.join(" ")
+    );
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostLocalDebug);
     return ResultFactory.Success();

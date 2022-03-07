@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { TeamsBot, isMultiEnvEnabled } from "../../../../../src";
+import { TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -413,9 +413,7 @@ describe("Teams Bot Resource Plugin", () => {
       const pluginContext = testUtils.newPluginContext();
       botPluginImpl.config.provision.siteEndpoint = "https://abc.azurewebsites.net";
       botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
-      if (isMultiEnvEnabled()) {
-        botPluginImpl.config.provision.botWebAppResourceId = "botWebAppResourceId";
-      }
+      botPluginImpl.config.provision.botWebAppResourceId = "botWebAppResourceId";
       pluginContext.root = rootDir;
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
       // Act
@@ -652,12 +650,10 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      if (isMultiEnvEnabled()) {
-        pluginContext.localSettings?.bot?.set(
-          LocalSettingsBotKeys.BotEndpoint,
-          "https://bot.local.endpoint"
-        );
-      }
+      pluginContext.localSettings?.bot?.set(
+        LocalSettingsBotKeys.BotEndpoint,
+        "https://bot.local.endpoint"
+      );
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 

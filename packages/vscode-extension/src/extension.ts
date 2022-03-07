@@ -27,6 +27,7 @@ import {
   isMultiEnvEnabled,
   isValidProject,
   isConfigUnifyEnabled,
+  isInitAppEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -86,6 +87,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
+
+  const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
+    Correlator.run(handlers.initProjectHandler, args)
+  );
+  context.subscriptions.push(initCmd);
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
@@ -436,6 +442,8 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.isSPFx",
     workspacePath && (await isSPFxProject(workspacePath))
   );
+
+  vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
   vscode.commands.executeCommand(
     "setContext",

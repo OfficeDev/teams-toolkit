@@ -36,7 +36,7 @@ import {
   questionNames,
 } from "./questions";
 import { Logger } from "./logger";
-import { environmentManager } from "../../..";
+import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
 
 @Service(ResourcePluginsV2.CICDPlugin)

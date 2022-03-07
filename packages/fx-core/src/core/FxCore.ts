@@ -1514,6 +1514,10 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
           "subscriptionInfo.json",
           BuildFolderName,
         ];
+        if (isConfigUnifyEnabled()) {
+          gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
+          gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
+        }
         if (inputs.platform === Platform.VS) {
           gitIgnoreContent.push("appsettings.Development.json");
         }

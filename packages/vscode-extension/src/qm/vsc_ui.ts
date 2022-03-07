@@ -4,7 +4,6 @@
 import {
   Disposable,
   InputBox,
-  QuickInputButton,
   QuickInputButtons,
   QuickPick,
   QuickPickItem,
@@ -126,16 +125,13 @@ export class VsCodeUI implements UserInteraction {
         )
       );
     }
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
-      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      if (option.step && option.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
@@ -210,16 +206,13 @@ export class VsCodeUI implements UserInteraction {
         )
       );
     }
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
-      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      if (option.step && option.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.placeholder = option.placeholder
         ? option.placeholder + StringResources.vsc.qm.multiSelectKeyboard
         : StringResources.vsc.qm.multiSelectKeyboard;
@@ -320,16 +313,13 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async inputText(option: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
       inputBox.title = option.title;
-      if (option.step && option.step > 1) inputBox.buttons = [QuickInputButtons.Back, okButton];
-      else inputBox.buttons = [okButton];
+      if (option.step && option.step > 1) {
+        inputBox.buttons = [QuickInputButtons.Back];
+      }
       inputBox.placeholder = option.placeholder;
       inputBox.value = option.default || "";
       inputBox.ignoreFocusOut = true;
@@ -413,16 +403,13 @@ export class VsCodeUI implements UserInteraction {
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
     /// TODO: use generic constraints.
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       quickPick.title = config.title;
-      if (config.step && config.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      if (config.step && config.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.ignoreFocusOut = true;
       quickPick.placeholder = config.placeholder;
       quickPick.matchOnDescription = false;

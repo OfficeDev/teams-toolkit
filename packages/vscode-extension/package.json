@@ -794,7 +794,7 @@
         "properties": {
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
+            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requires reload of VS Code)",
             "default": "${homeDir}/TeamsApps"
           },
           "fx-extension.automaticNpmInstall": {
@@ -846,6 +846,17 @@
               "ngrok": true,
               "devCert": true
             }
+          }
+        }
+      },
+      {
+        "title": "Experimental Features",
+        "order": 3,
+        "properties": {
+          "fx-extension.enableIncrementalAppBuilding": {
+            "type": "boolean",
+            "description": "Enable incremental app building and unify the local & remote configs. (requires reload of VS Code)",
+            "default": false
           }
         }
       }

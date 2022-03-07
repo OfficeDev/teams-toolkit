@@ -211,11 +211,16 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
     ConfigurationKey.RootDirectory
   ).toString();
+
+  process.env["TEAMSFX_INCREMENTAL_APP"] = getConfiguration(
+    ConfigurationKey.EnableIncrementalAppBuilding
+  ).toString();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly EnableIncrementalAppBuilding = "TEAMSFX_INCREMENTAL_APP";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

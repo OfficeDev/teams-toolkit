@@ -3,6 +3,7 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
+  EnableIncrementalAppBuilding = "enableIncrementalAppBuilding",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

@@ -30,7 +30,7 @@
     "@fluentui/react-northstar": "^0.60.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/teams-js": "^1.9.0",
-    "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
+    "@microsoft/teamsfx": "^0.6.0",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@testing-library/react-hooks": "^7.0.2",
@@ -60,7 +60,7 @@
   },
   "peerDependencies": {
     "@fluentui/react-northstar": "^0.60.1",
-    "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
+    "@microsoft/teamsfx": "^0.6.0",
     "msteams-react-base-component": "^3.1.1",
     "react": "^16.8.6"
   },

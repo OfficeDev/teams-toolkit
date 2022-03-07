@@ -381,6 +381,10 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
+export function isInitAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+}
+
 export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }

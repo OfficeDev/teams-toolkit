@@ -21,6 +21,10 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+export function yeomanScaffoldEnabled(): boolean {
+  return featureFlagEnabled(FeatureFlagName.YeomanScaffold);
+}
+
 export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;

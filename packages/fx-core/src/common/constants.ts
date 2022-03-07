@@ -66,6 +66,7 @@ export class FeatureFlagName {
   static readonly EnableInitApp = "TEAMSFX_INIT_APP";
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
+  static readonly YeomanScaffold = "YEOMAN_SCAFFOLD";
 }
 
 export class ManifestVariables {

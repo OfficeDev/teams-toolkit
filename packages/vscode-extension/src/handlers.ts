@@ -2272,7 +2272,12 @@ export async function editManifestTemplate(args: any[]) {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2] === "local" ? "local" : "remote";
     const workspacePath = getWorkspacePath();
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    let manifestPath: string;
+    if (isConfigUnifyEnabled()) {
+      manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    } else {
+      manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    }
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
     });

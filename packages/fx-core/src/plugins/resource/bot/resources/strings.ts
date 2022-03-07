@@ -86,6 +86,7 @@ export class PluginBot {
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
   public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";
+  public static readonly HOST_TYPE = "host-type";
 }
 
 export class TelemetryStrings {

@@ -1467,11 +1467,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     return err(invalidProjectError);
   }
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
+  let env = "remote";
+  if (!isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    env = selectedEnv.value;
   }
-  const env = selectedEnv.value;
 
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-appstudio",
@@ -1480,7 +1484,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       type: env === "local" ? "localDebug" : "remote",
     },
   };
-  const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+  const res = await runUserTask(func, TelemetryEvent.OpenManifestEditor, true);
   if (res.isOk()) {
     const manifestFile = res.value as string;
     if (fs.existsSync(manifestFile)) {

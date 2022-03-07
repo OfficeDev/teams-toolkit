@@ -401,6 +401,10 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   );
 }
 
+export function isBotNotificationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {

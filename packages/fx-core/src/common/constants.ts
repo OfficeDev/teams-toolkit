@@ -67,6 +67,7 @@ export class FeatureFlagName {
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly YeomanScaffold = "YEOMAN_SCAFFOLD";
+  static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
 }
 
 export class ManifestVariables {

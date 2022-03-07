@@ -443,11 +443,7 @@ export async function activate(context: vscode.ExtensionContext) {
     workspacePath && (await isSPFxProject(workspacePath))
   );
 
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isInitAppEnabled",
-    workspacePath && isInitAppEnabled()
-  );
+  vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
   vscode.commands.executeCommand(
     "setContext",

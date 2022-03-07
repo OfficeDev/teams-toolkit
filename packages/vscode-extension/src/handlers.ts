@@ -542,11 +542,12 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   if (isConfigUnifyEnabled()) {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;
     func.params.type = env === environmentManager.getLocalEnvName() ? "localDebug" : "remote";
-    return await runUserTask(func, TelemetryEvent.Build, false, env);
+    return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
   } else {
     return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
   }

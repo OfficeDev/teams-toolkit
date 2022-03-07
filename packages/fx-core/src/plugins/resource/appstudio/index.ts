@@ -33,7 +33,6 @@ import "./v2";
 import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
-import { shouldIgnored } from "../../../core/middleware";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {

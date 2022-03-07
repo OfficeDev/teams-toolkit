@@ -56,15 +56,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: v2.EnvInfoV2
   ): Promise<Result<any, FxError>> {
     Logger.setLogger(context.logProvider);
-    const result = await this.runWithExceptionCatching(
-      context,
-      envInfo,
-      () => this.cicdImpl.addCICDWorkflows(context, inputs, envInfo),
-      true,
-      LifecycleFuncNames.ADD_CICD_WORKFLOWS
-    );
-
-    return result;
+    return await this.cicdImpl.addCICDWorkflows(context, inputs, envInfo);
   }
 
   public async getQuestionsForUserTask(
@@ -94,7 +86,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
-    if (inputs.platform == Platform.VSCode) {
+    if (inputs.platform === Platform.VSCode) {
       if (!inputs.projectPath) {
         throw new NoProjectOpenedError();
       }

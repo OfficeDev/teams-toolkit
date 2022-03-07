@@ -534,8 +534,22 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "validateManifest",
+    params: {
+      type: "",
+    },
   };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+
+  if (isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    func.params.type = env === environmentManager.getLocalEnvName() ? "localDebug" : "remote";
+    return await runUserTask(func, TelemetryEvent.Build, false, env);
+  } else {
+    return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+  }
 }
 
 /**

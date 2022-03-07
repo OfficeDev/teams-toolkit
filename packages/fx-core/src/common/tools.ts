@@ -378,7 +378,11 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.EnableIncrementalAppBuilding, false);
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
+export function isInitAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
 }
 
 export function isAadManifestEnabled(): boolean {

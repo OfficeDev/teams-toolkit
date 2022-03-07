@@ -2038,36 +2038,44 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
   }
 
   let isLocalDebug = false;
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath;
-    if (filePath && filePath.endsWith("manifest.local.template.json")) {
-      isLocalDebug = true;
+  let envName = "";
+  if (isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    envName = selectedEnv.value;
+    isLocalDebug = envName === "local";
+  } else {
+    if (args && args.length > 0) {
+      const filePath = args[0].fsPath;
+      if (filePath && filePath.endsWith("manifest.local.template.json")) {
+        isLocalDebug = true;
+      }
+    }
+
+    if (!isLocalDebug) {
+      const inputs = getSystemInputs();
+      inputs.ignoreEnvInfo = false;
+      const env = await core.getSelectedEnv(inputs);
+      if (env.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
+        return err(env.error);
+      }
+      envName = env.value!;
     }
   }
 
-  let manifestFile;
-  if (isLocalDebug) {
-    const res = await buildPackageHandler(["localDebug"]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
-    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
-  } else {
-    const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = false;
-    const env = await core.getSelectedEnv(inputs);
-    if (env.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
-      return err(env.error);
-    }
-    const res = await buildPackageHandler(["remote", env.value]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
-    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+  const res = await buildPackageHandler(isLocalDebug ? ["localDebug"] : ["remote", envName]);
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+    return err(res.error);
   }
+  const manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${
+    isLocalDebug ? "local" : envName
+  }.json`;
+
   if (fs.existsSync(manifestFile)) {
     workspace.openTextDocument(manifestFile).then((document) => {
       window.showTextDocument(document);
@@ -2118,12 +2126,17 @@ export async function openConfigStateFile(args: any[]) {
     return err(invalidProjectError);
   }
 
-  const inputs = getSystemInputs();
-  inputs.ignoreEnvInfo = false;
-  const envName = await core.getSelectedEnv(inputs);
-  if (envName.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, envName.error);
-    return err(envName.error);
+  let env: Result<string | undefined, FxError>;
+  if (isConfigUnifyEnabled()) {
+    env = await askTargetEnvironment();
+  } else {
+    const inputs = getSystemInputs();
+    inputs.ignoreEnvInfo = false;
+    env = await core.getSelectedEnv(inputs);
+  }
+  if (env.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, env.error);
+    return err(env.error);
   }
 
   let sourcePath: string;
@@ -2132,12 +2145,12 @@ export async function openConfigStateFile(args: any[]) {
     isConfig = true;
     sourcePath = path.resolve(
       `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
     );
   } else {
     sourcePath = path.resolve(
       `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
     );
   }
 
@@ -2145,7 +2158,7 @@ export async function openConfigStateFile(args: any[]) {
     if (isConfig) {
       const noEnvError = new UserError(
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(StringResources.vsc.handlers.findEnvFailed, envName.value),
+        util.format(StringResources.vsc.handlers.findEnvFailed, env.value),
         ExtensionSource
       );
       showError(noEnvError);
@@ -2154,7 +2167,7 @@ export async function openConfigStateFile(args: any[]) {
     } else {
       const noEnvError = new UserError(
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(StringResources.vsc.handlers.stateFileNotFound, envName.value),
+        util.format(StringResources.vsc.handlers.stateFileNotFound, env.value),
         ExtensionSource
       );
       const provision = {

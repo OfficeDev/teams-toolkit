@@ -63,7 +63,7 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
   run: async (context: ScaffoldContext) => {
     const isDebugMode = () => {
       const DebugTemplateFlag = process.env[FeatureFlagName.DebugTemplate];
-      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.VSCODE_PID;
+      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.NODE_ENV === "development";
     };
 
     if (!isDebugMode()) {

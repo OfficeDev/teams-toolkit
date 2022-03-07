@@ -542,7 +542,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   if (isConfigUnifyEnabled()) {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;

@@ -31,6 +31,7 @@ import {
   SolutionTelemetrySuccess,
   SolutionSource,
   PluginNames,
+  DEFAULT_PERMISSION_REQUEST,
 } from "../constants";
 import * as util from "util";
 import {
@@ -53,9 +54,12 @@ import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotSupportedForExistingAppError } from "../../../../core/error";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import fs from "fs-extra";
+import { CoreQuestionNames } from "../../../../core/question";
+import { Certificate } from "crypto";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -217,6 +221,12 @@ export async function addCapability(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
+  // 0. set programming language if it is empty
+  const programmingLanguageInputs = inputs[CoreQuestionNames.ProgrammingLanguage];
+  if (!ctx.projectSetting.programmingLanguage && programmingLanguageInputs) {
+    ctx.projectSetting.programmingLanguage = programmingLanguageInputs;
+  }
+
   // 1. checking addable
   let solutionSettings = getAzureSolutionSettings(ctx);
   if (!solutionSettings) {
@@ -230,6 +240,10 @@ export async function addCapability(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
+    //aad need this file
+    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+      spaces: 4,
+    });
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew = {
@@ -311,6 +325,12 @@ export async function addCapability(
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   const vsProject = isVSProject(ctx.projectSetting);
+  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
+    pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
+  }
+  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
+  }
 
   // 4. check Tab
   if (capabilitiesAnswer.includes(TabOptionItem.id)) {
@@ -318,13 +338,11 @@ export async function addCapability(
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasTab) {
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     } else {
       if (!alreadyHasTab) {
         pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     }
     capabilitiesToAddManifest.push({ name: "staticTab" });
@@ -366,6 +384,10 @@ export async function addCapability(
   // 7. update solution settings
   solutionSettings.capabilities = Array.from(newCapabilitySet);
   setActivatedResourcePluginsV2(ctx.projectSetting);
+
+  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    solutionSettings.activeResourcePlugins.push(BuiltInFeaturePluginNames.aad);
+  }
 
   // 8. scaffold and update arm
   const pluginsToScaffold = Array.from(pluginNamesToScaffold).map((name) =>

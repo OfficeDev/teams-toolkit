@@ -12,6 +12,7 @@ import {
   FxError,
   Json,
   ok,
+  Platform,
   QTreeNode,
   Result,
   SystemError,
@@ -393,6 +394,7 @@ export async function fillInAzureConfigs(
   const rmClient = new ResourceManagementClient(azureToken, envInfo.state.solution.subscriptionId);
 
   // Resource group info precedence are:
+  //   0. ctx.answers, for VS targetResourceGroupName and targetResourceLocationName to create a new rg
   //   1. ctx.answers, for CLI --resource-group argument, only support existing resource group
   //   2. env config (config.{envName}.json), for user customization, only support existing resource group
   //   3. states (state.{envName}.json), for re-provision
@@ -413,20 +415,30 @@ export async function fillInAzureConfigs(
       inputs.targetResourceGroupName,
       rmClient
     );
-    if (getRes.isErr()) return err(getRes.error);
-    if (!getRes.value) {
-      // Currently we do not support creating resource group from command line arguments
-      return err(
-        new UserError(
-          SolutionError.ResourceGroupNotFound,
-          `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`,
-          SolutionSource
-        )
-      );
+    if (getRes.isErr()) {
+      // support vs to create a new resource group
+      if (inputs.platform === Platform.VS && inputs.targetResourceLocationName) {
+        resourceGroupInfo = {
+          createNewResourceGroup: true,
+          name: inputs.targetResourceGroupName,
+          location: inputs.targetResourceLocationName,
+        };
+      } else return err(getRes.error);
+    } else {
+      if (!getRes.value) {
+        // Currently we do not support creating resource group from command line arguments
+        return err(
+          new UserError(
+            SolutionError.ResourceGroupNotFound,
+            `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`,
+            SolutionSource
+          )
+        );
+      }
+      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+        CustomizeResourceGroupType.CommandLine;
+      resourceGroupInfo = getRes.value;
     }
-    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-      CustomizeResourceGroupType.CommandLine;
-    resourceGroupInfo = getRes.value;
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
     const getRes = await resourceGroupHelper.getResourceGroupInfo(resourceGroupName, rmClient);

@@ -87,15 +87,13 @@ export async function deploy(
     };
   });
   ctx.logProvider.info(
-    util.format(
-      getStrings().solution.SelectedPluginsToDeployNotice,
+    getLocalizedString(
+      "core.deploy.selectedPluginsToDeployNotice",
       PluginDisplayName.Solution,
       JSON.stringify(thunks.map((p) => p.pluginName))
     )
   );
-  ctx.logProvider.info(
-    util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
-  );
+  ctx.logProvider.info(getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution));
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind === "success") {

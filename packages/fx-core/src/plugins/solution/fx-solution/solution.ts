@@ -556,7 +556,7 @@ export class TeamsAppSolution implements Solution {
       postProvisionWithCtx,
       async () => {
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
         );
         return ok(undefined);
       },
@@ -592,7 +592,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
         );
 
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
@@ -610,7 +610,7 @@ export class TeamsAppSolution implements Solution {
       },
       async () => {
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
         );
         return ok(undefined);
       }
@@ -702,8 +702,8 @@ export class TeamsAppSolution implements Solution {
       }
     }
     ctx.logProvider?.info(
-      util.format(
-        getStrings().solution.SelectedPluginsToDeployNotice,
+      getLocalizedString(
+        "core.deploy.selectedPluginsToDeployNotice",
         PluginDisplayName.Solution,
         JSON.stringify(pluginsToDeploy.map((p) => p.name))
       )
@@ -727,7 +727,7 @@ export class TeamsAppSolution implements Solution {
     });
 
     ctx.logProvider?.info(
-      util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
     );
 
     return executeLifecycles(preDeployWithCtx, deployWithCtx, postDeployWithCtx);
@@ -769,7 +769,7 @@ export class TeamsAppSolution implements Solution {
       });
 
       ctx.logProvider?.info(
-        util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
+        getLocalizedString("core.publish.startNotice", PluginDisplayName.Solution)
       );
 
       const results = await executeConcurrently("", publishWithCtx);

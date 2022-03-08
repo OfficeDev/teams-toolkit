@@ -49,6 +49,7 @@ import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 import * as util from "util";
 import { Container } from "typedi";
 import { PluginsWithContext } from "../types";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 async function grantPermissionImpl(
   param: CollabApiParam,
@@ -66,7 +67,7 @@ async function grantPermissionImpl(
   });
 
   const progressBar = ui?.createProgressBar(
-    getStrings().solution.Collaboration.GrantingPermission,
+    getLocalizedString("core.collaboration.GrantingPermission"),
     1
   );
   try {
@@ -100,7 +101,7 @@ async function grantPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.GrantPermission,
           returnUserError(
-            new Error(getStrings().solution.Collaboration.EmailCannotBeEmptyOrSame),
+            new Error(getLocalizedString("core.collaboration.EmailCannotBeEmptyOrSame")),
             SolutionSource,
             SolutionError.EmailCannotBeEmptyOrSame
           ),
@@ -116,7 +117,7 @@ async function grantPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.GrantPermission,
           returnUserError(
-            new Error(getStrings().solution.Collaboration.CannotFindUserInCurrentTenant),
+            new Error(getLocalizedString("core.collaboration.CannotFindUserInCurrentTenant")),
             SolutionSource,
             SolutionError.CannotFindUserInCurrentTenant
           ),
@@ -126,7 +127,7 @@ async function grantPermissionImpl(
     }
 
     progressBar?.start();
-    progressBar?.next(getStrings().solution.Collaboration.GrantPermissionForUser + ` ${email}`);
+    progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
 
     if (platform === Platform.CLI) {
       const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
@@ -135,7 +136,7 @@ async function grantPermissionImpl(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.GrantPermission,
             returnSystemError(
-              new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
+              new Error(getLocalizedString("core.collaboration.FailedToGetEnvName")),
               SolutionSource,
               SolutionError.FailedToGetEnvName
             ),
@@ -146,16 +147,16 @@ async function grantPermissionImpl(
 
       const message = [
         {
-          content: getStrings().solution.Collaboration.AccountToGrantPermission,
+          content: getLocalizedString("core.collaboration.AccountToGrantPermission"),
           color: Colors.BRIGHT_WHITE,
         },
         { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
         {
-          content: getStrings().solution.Collaboration.StartingGrantPermission,
+          content: getLocalizedString("core.collaboration.StartingGrantPermission"),
           color: Colors.BRIGHT_WHITE,
         },
         { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-        { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+        { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
 
@@ -175,7 +176,7 @@ async function grantPermissionImpl(
 
     let errorMsg = "";
     if (errors.length > 0) {
-      errorMsg += util.format(getStrings().solution.Collaboration.FailedToGrantPermission, email);
+      errorMsg += getLocalizedString("core.collaboration.FailedToGrantPermission", email);
       for (const fxError of errors) {
         errorMsg += fxError.error.message + "\n";
       }
@@ -186,12 +187,12 @@ async function grantPermissionImpl(
         const message = [
           { content: `${permission.roles?.join(",")} `, color: Colors.BRIGHT_MAGENTA },
           {
-            content: getStrings().solution.Collaboration.PermissionHasBeenGrantTo,
+            content: getLocalizedString("core.collaboration.PermissionHasBeenGrantTo"),
             color: Colors.BRIGHT_WHITE,
           },
           { content: permission.name, color: Colors.BRIGHT_MAGENTA },
           {
-            content: getStrings().solution.Collaboration.GrantPermissionResourceId,
+            content: getLocalizedString("core.collaboration.GrantPermissionResourceId"),
             color: Colors.BRIGHT_WHITE,
           },
           { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
@@ -203,13 +204,14 @@ async function grantPermissionImpl(
       if (CollaborationUtil.isSpfxProject(param.ctx)) {
         ui?.showMessage(
           "info",
-          getStrings().solution.Collaboration.SharePointTip + SharePointManageSiteAdminHelpLink,
+          getLocalizedString("core.collaboration.SharePointTip") +
+            SharePointManageSiteAdminHelpLink,
           false
         );
       } else {
         ui?.showMessage(
           "info",
-          getStrings().solution.Collaboration.AzureTip + AzureRoleAssignmentsHelpLink,
+          getLocalizedString("core.collaboration.AzureTip") + AzureRoleAssignmentsHelpLink,
           false
         );
       }
@@ -277,7 +279,7 @@ export async function grantPermission(
       return err(
         returnSystemError(
           new Error(
-            getStrings().solution.Collaboration.FailedToConvertProfile +
+            getLocalizedString("core.collaboration.FailedToConvertProfile") +
               JSON.stringify(param.envInfo.state)
           ),
           PluginNames.SOLUTION,

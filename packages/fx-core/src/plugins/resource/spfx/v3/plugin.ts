@@ -39,6 +39,7 @@ import { SPOClient } from "../spoClient";
 import axios from "axios";
 import { getTemplatesFolder } from "../../../../folder";
 import { getAppDirectory, getStrings } from "../../../../common/tools";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export class SPFxPluginImpl {
   async scaffold(
@@ -253,7 +254,7 @@ export class SPFxPluginImpl {
         ];
         ctx.userInteraction.showMessage("info", guidance, false);
       } else {
-        const guidance = util.format(getStrings().plugins.SPFx.buildNotice, dir);
+        const guidance = getLocalizedString("plugins.spfx.buildNotice", dir);
         ctx.userInteraction?.showMessage("info", guidance, false, "OK");
       }
       return ok(undefined);
@@ -288,7 +289,7 @@ export class SPFxPluginImpl {
       } else {
         const res = await ctx.userInteraction?.showMessage(
           "warn",
-          util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
+          getLocalizedString("plugins.spfx.createAppCatalogNotice", tenant.value),
           true,
           "OK",
           Constants.READ_MORE
@@ -348,7 +349,7 @@ export class SPFxPluginImpl {
         if (e.response?.status === 403) {
           ctx.userInteraction?.showMessage(
             "error",
-            util.format(getStrings().plugins.SPFx.deployFailedNotice, appCatalogSite!),
+            getLocalizedString("plugins.spfx.deployFailedNotice", appCatalogSite!),
             false,
             "OK"
           );
@@ -360,9 +361,8 @@ export class SPFxPluginImpl {
 
       const appID = await this.getAppID(inputs.projectPath);
       await SPOClient.deployAppPackage(spoToken, appID);
-
-      const guidance = util.format(
-        getStrings().plugins.SPFx.deployNotice,
+      const guidance = getLocalizedString(
+        "plugins.spfx.deployNotice",
         appPackage,
         appCatalogSite,
         appCatalogSite

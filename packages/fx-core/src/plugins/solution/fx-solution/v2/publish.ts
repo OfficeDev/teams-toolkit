@@ -61,9 +61,7 @@ export async function publishApplication(
       };
     });
 
-  ctx.logProvider.info(
-    util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
-  );
+  ctx.logProvider.info(getLocalizedString("core.publish.startNotice", PluginDisplayName.Solution));
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
 

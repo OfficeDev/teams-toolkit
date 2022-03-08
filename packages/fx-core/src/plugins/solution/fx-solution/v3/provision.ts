@@ -175,7 +175,7 @@ export async function provisionResources(
         };
       });
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
     );
     const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
     if (provisionResult.kind !== "success") {
@@ -183,7 +183,7 @@ export async function provisionResources(
     }
 
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
     );
 
     if (envInfo.envName === "local") {
@@ -195,10 +195,7 @@ export async function provisionResources(
     } else {
       //5.2 deploy arm templates for remote
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.StartNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
       );
       const armRes = await arm.deployArmTemplates(
         ctx,
@@ -210,10 +207,7 @@ export async function provisionResources(
         return err(armRes.error);
       }
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.SuccessNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.SuccessNotice", PluginDisplayName.Solution)
       );
     }
 
@@ -237,7 +231,7 @@ export async function provisionResources(
       ctx.logProvider
     );
     ctx.logProvider.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
     );
     const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
     if (configureResourceResult.kind !== "success") {

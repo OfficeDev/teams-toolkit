@@ -174,7 +174,7 @@ export async function provisionResource(
     });
   // call provisionResources
   ctx.logProvider?.info(
-    util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+    getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
   if (provisionResult.kind === "failure" || provisionResult.kind === "partialSuccess") {
@@ -182,7 +182,7 @@ export async function provisionResource(
   }
 
   ctx.logProvider?.info(
-    util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+    getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
   );
 
   const teamsAppId = envInfo.state[PluginNames.APPST][Constants.TEAMS_APP_ID] as string;
@@ -249,7 +249,7 @@ export async function provisionResource(
     ctx.logProvider
   );
   ctx.logProvider?.info(
-    util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+    getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
   );
   if (
     configureResourceResult.kind === "failure" ||

@@ -447,7 +447,7 @@ export async function addCapability(
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
-  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
+  const msg: string = getLocalizedString("core.updateArmTemplate.successNotice");
   ui?.showMessage("info", msg, false);
 }
 

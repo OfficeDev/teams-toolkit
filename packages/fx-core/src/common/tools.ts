@@ -273,11 +273,6 @@ export const deepCopy = <T>(target: T): T => {
   return target;
 };
 
-export function getStrings(): any {
-  const filepath = path.resolve(getResourceFolder(), "strings.json");
-  return fs.readJSONSync(filepath);
-}
-
 export function isUserCancelError(error: Error): boolean {
   const errorName = "name" in error ? (error as any)["name"] : "";
   return (

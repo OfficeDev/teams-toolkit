@@ -1,9 +1,7 @@
 import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
-export enum DeployArmTemplatesSteps {
-  ExecuteDeployment = "Deploying solution ARM templates to Azure. This could take several minutes.",
-}
 export class ProgressHelper {
   static deployArmTemplatesProgress: IProgressHandler | undefined;
 
@@ -13,11 +11,11 @@ export class ProgressHelper {
     await this.deployArmTemplatesProgress?.end(true);
 
     this.deployArmTemplatesProgress = ui?.createProgressBar(
-      getStrings().solution.DeployArmTemplates.Progress.Title,
-      Object.entries(DeployArmTemplatesSteps).length
+      getLocalizedString("core.deployArmTemplates.Progress.Title"),
+      1
     );
     await this.deployArmTemplatesProgress?.start(
-      getStrings().solution.DeployArmTemplates.Progress.Start
+      getLocalizedString("core.deployArmTemplates.Progress.Start")
     );
     return this.deployArmTemplatesProgress;
   }

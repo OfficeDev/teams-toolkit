@@ -51,6 +51,7 @@ import { canAddCapability, canAddResource } from "./executeUserTask";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { NotificationOptionItem } from "../../../../core/question";
+import { ProgrammingLanguageQuestion } from "../../../../core/question";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -437,7 +438,13 @@ export async function getQuestionsForAddCapability(
   if (isBotAddable) options.push(BotOptionItem);
   if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;
-  return ok(new QTreeNode(addCapQuestion));
+  const addCapNode = new QTreeNode(addCapQuestion);
+  if (!ctx.projectSetting.programmingLanguage) {
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    addCapNode.addChild(programmingLanguage);
+  }
+  return ok(addCapNode);
 }
 
 export async function getQuestionsForAddResource(

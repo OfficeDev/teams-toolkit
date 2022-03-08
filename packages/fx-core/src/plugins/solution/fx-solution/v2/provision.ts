@@ -42,7 +42,7 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { hasAAD, isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -96,17 +96,18 @@ export async function provisionResource(
     solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
   if (isAzureProject(azureSolutionSettings)) {
-    if (ctx.permissionRequestProvider === undefined) {
-      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+    if (hasAAD(ctx.projectSetting)) {
+      if (ctx.permissionRequestProvider === undefined) {
+        ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+      }
+      const result = await ensurePermissionRequest(
+        azureSolutionSettings!,
+        ctx.permissionRequestProvider
+      );
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
-    const result = await ensurePermissionRequest(
-      azureSolutionSettings!,
-      ctx.permissionRequestProvider
-    );
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
     // ask common question and fill in solution config
     const solutionConfigRes = await fillInAzureConfigs(
       ctx,

@@ -222,6 +222,7 @@ export interface Inputs extends Json {
   targetEnvName?: string;
   sourceEnvName?: string;
   targetResourceGroupName?: string;
+  targetResourceLocationName?: string; // for vs to create a new resource group
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;
@@ -231,6 +232,7 @@ export interface Inputs extends Json {
   projectId?: string;
   existingResources?: string[];
   existingAppConfig?: ExistingAppConfig;
+  locale?: string;
 }
 
 // configs for existing app building

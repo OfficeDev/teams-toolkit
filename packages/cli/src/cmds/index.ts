@@ -20,6 +20,7 @@ import Manifest from "./manifest";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
+import { ManifestValidate } from "./validate";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -30,6 +31,7 @@ export const commands: YargsCommand[] = [
   new Deploy(),
   new Package(),
   new Manifest(),
+  new ManifestValidate(),
   new Publish(),
   new Config(),
   new Preview(),

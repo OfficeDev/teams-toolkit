@@ -18,11 +18,9 @@ import {
   Stage,
   SystemError,
   traverse,
-  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";

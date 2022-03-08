@@ -24,6 +24,7 @@ import {
 } from "../constants";
 import { executeConcurrently } from "./executor";
 import { getAzureSolutionSettings, getSelectedPlugins, isAzureProject } from "./utils";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function publishApplication(
   ctx: v2.Context,
@@ -37,9 +38,7 @@ export async function publishApplication(
   if (inAzureProject && !provisioned) {
     return err(
       returnUserError(
-        new Error(
-          util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
-        ),
+        new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)),
         SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
@@ -69,7 +68,7 @@ export async function publishApplication(
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind !== "success") {
-    const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.publish.failNotice", ctx.projectSetting.appName);
     ctx.logProvider?.info(msg);
     return err(result.error);
   }

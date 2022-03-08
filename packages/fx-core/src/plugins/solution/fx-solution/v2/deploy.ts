@@ -14,6 +14,7 @@ import {
 import { isUndefined } from "lodash";
 import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { getStrings } from "../../../../common/tools";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
@@ -45,9 +46,7 @@ export async function deploy(
   if (inAzureProject && !provisioned) {
     return err(
       returnUserError(
-        new Error(
-          util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
-        ),
+        new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)),
         SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
@@ -146,16 +145,13 @@ export async function deploy(
 
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = util.format(
-        `Success: ${getStrings().solution.DeploySuccessNotice}`,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
     return ok(Void);
   } else {
-    const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
     ctx.logProvider.info(msg);
     return err(result.error);
   }

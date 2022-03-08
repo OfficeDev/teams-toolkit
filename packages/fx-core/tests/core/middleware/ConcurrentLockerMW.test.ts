@@ -125,7 +125,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     inputs.projectPath = undefined;
     const my = new MyClass();
     const res = await my.methodReturnOK(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error.name === new NoProjectOpenedError().name);
     assert.isTrue(my.count === 0);
   });
 
@@ -134,7 +134,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res = await my.methodReturnOK(inputs);
-    assert.isTrue(res.isErr() && res.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res.isErr() && res.error.name === new PathNotExistError(inputs.projectPath).name);
     assert.isTrue(my.count === 0);
   });
 
@@ -145,7 +145,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     try {
       await fs.ensureDir(inputs.projectPath);
       const res = await my.methodReturnOK(inputs);
-      assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
+      assert.isTrue(res.isErr() && res.error.name === new InvalidProjectError().name);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

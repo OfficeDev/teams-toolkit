@@ -20,7 +20,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     try {
       await next();
     } catch (e) {
-      if ((e as any)["name"] === getStrings().solution.CancelProvision) throw e;
+      if ((e as any)["name"] === "CancelProvision") throw e;
       error1 = e;
     }
     let error2: any = undefined;

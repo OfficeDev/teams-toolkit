@@ -28,6 +28,7 @@ import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -240,10 +241,7 @@ export async function provisionResources(
     );
     const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
     if (configureResourceResult.kind !== "success") {
-      const msg = util.format(
-        getStrings().solution.ProvisionFailNotice,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.provision.failNotice", ctx.projectSetting.appName);
       ctx.logProvider.error(msg);
       envStates.solution.provisionSucceeded = false;
       return err(configureResourceResult.error);
@@ -262,7 +260,7 @@ export async function provisionResources(
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = getStrings().solution.ProvisionSuccessAzure;
+      const msg = getLocalizedString("core.provision.successAzure");
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -282,10 +280,7 @@ export async function provisionResources(
     return err(updateTeamsAppRes.error);
   }
   if (envInfo.envName !== "local") {
-    const msg = util.format(
-      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-      ctx.projectSetting.appName
-    );
+    const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.logProvider.info(msg);
   }
@@ -529,8 +524,8 @@ export async function askForProvisionConsent(
   const username = (azureToken as any).username || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
-  const msgNew = util.format(
-    getStrings().solution.ProvisionConfirmEnvNotice,
+  const msgNew = getLocalizedString(
+    "core.provision.confirmEnvNotice",
     envInfo.envName,
     username,
     subscriptionName ? subscriptionName : subscriptionId
@@ -542,13 +537,7 @@ export async function askForProvisionConsent(
     if (confirm === "Pricing calculator") {
       ctx.userInteraction.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
     }
-    return err(
-      new UserError(
-        getStrings().solution.CancelProvision,
-        getStrings().solution.CancelProvision,
-        SolutionSource
-      )
-    );
+    return err(new UserError("CancelProvision", "CancelProvision", SolutionSource));
   }
   return ok(Void);
 }

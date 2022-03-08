@@ -281,9 +281,7 @@ export function getStrings(): any {
 export function isUserCancelError(error: Error): boolean {
   const errorName = "name" in error ? (error as any)["name"] : "";
   return (
-    errorName === "User Cancel" ||
-    errorName === getStrings().solution.CancelProvision ||
-    errorName === "UserCancel"
+    errorName === "User Cancel" || errorName === "CancelProvision" || errorName === "UserCancel"
   );
 }
 

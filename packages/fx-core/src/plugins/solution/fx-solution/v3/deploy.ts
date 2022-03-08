@@ -21,6 +21,7 @@ import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "../v2/executor";
 import { selectMultiPluginsQuestion } from "../../utils/questions";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForDeploy(
   ctx: v2.Context,
@@ -98,15 +99,12 @@ export async function deploy(
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind === "success") {
-    const msg = util.format(
-      `Success: ${getStrings().solution.DeploySuccessNotice}`,
-      ctx.projectSetting.appName
-    );
+    const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
     ctx.logProvider.info(msg);
     ctx.userInteraction.showMessage("info", msg, false);
     return ok(Void);
   } else {
-    const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
     ctx.logProvider.info(msg);
     return err(result.error);
   }

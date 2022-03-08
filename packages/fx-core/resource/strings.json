@@ -1,38 +1,5 @@
 {
-  "core": {},
   "solution": {
-    "ScaffoldSuccessNotice": "[Teams Toolkit] Scaffold successfully.",
-    "ProvisionConfirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
-    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s environment?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
-    "ProvisionFailGuide": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision.",
-    "ProvisionSuccessAzure": "Azure resources successfully provisioned in the cloud.",
-    "ProvisionSuccessNotice": "'%s' successfully provisioned in the cloud.",
-    "ProvisionFailNotice": "fail to provision '%s' in the cloud!",
-    "DeploySuccessNotice": "'%s' successfully deployed to the cloud.",
-    "DeployFailNotice": "fail to deploy '%s' to the cloud!",
-    "PublishFailNotice": "fail to publish '%s' to the admin portal.",
-    "FailedToDeployBeforeProvision": "Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
-    "FailedToPublishBeforeProvision": "Failed to publish because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
-    "SPFxAskProvisionBeforePublish": "Failed to publish because the teams app has not been provisioned yet. Please provision first. Click Get Help to learn more about why you need to provision.",
-    "addCapability" : {
-      "OnlySupportAzure": "Add capability is only supported for project hosted in Azure",
-      "ExceedMaxLimit": "Your App reaches maximal limit for Tabs, Bot and Message Extension.",
-      "AddCapabilityNotice": "[Teams Toolkit] Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
-      "AddCapabilitiesNotice": "[Teams Toolkit] Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
-      "AddCapabilityNoticeForCli": "[Teams Toolkit] Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.",
-      "AddCapabilitiesNoticeForCli": "[Teams Toolkit] Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting."
-    },
-    "addResource": {
-      "OnlySupportAzure": "Add resource is only supported for project hosted in Azure",
-      "NotSupportForVSProject": "Add resource is not supported for csharp project",
-      "AddResourceNotice": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.",
-      "AddResourceNoticeForCli": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.",
-      "AddResourcesNotice": "[Teams Toolkit] Resources \"%s\" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.",
-      "AddResourcesNoticeForCli": "[Teams Toolkit] Resources \"%s\" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription."
-    },
-    "CancelProvision": "CancelProvision",
-    "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
-    "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
     "UpdateArmTemplateFailNotice": "'%s' Failed to update ARM template for required Azure services.",
     "UpdateArmTemplateNotice": "The Azure resource template is updated based on your resource and capability selection. We recommend to initialize your project workspace with git init to track all changes.",

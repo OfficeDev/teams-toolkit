@@ -43,6 +43,7 @@ import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import { hasAAD, isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -254,7 +255,7 @@ export async function provisionResource(
     configureResourceResult.kind === "failure" ||
     configureResourceResult.kind === "partialSuccess"
   ) {
-    const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.provision.failNotice", ctx.projectSetting.appName);
     ctx.logProvider.error(msg);
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
     return err(configureResourceResult.error);
@@ -269,10 +270,7 @@ export async function provisionResource(
         solutionInputs.tenantId,
         solutionInputs.resourceGroupName
       );
-      const msg = util.format(
-        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       ctx.logProvider?.info(msg);
       if (url) {
         const title = "View Provisioned Resources";

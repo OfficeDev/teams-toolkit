@@ -39,6 +39,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { getTemplatesFolder } from "../../../../folder";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
@@ -126,7 +127,7 @@ export async function scaffoldSourceCode(
     }
     ctx.userInteraction.showMessage(
       "info",
-      `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
+      `Success: ${getLocalizedString("core.create.successNotice")}`,
       false
     );
     return ok(Void);
@@ -165,7 +166,7 @@ export async function scaffoldByPlugins(
 
     ctx.userInteraction.showMessage(
       "info",
-      `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
+      `Success: ${getLocalizedString("core.create.successNotice")}`,
       false
     );
     ctx.logProvider?.info(`finish scaffolding ${plugins.map((p) => p.name).join(",")}!`);

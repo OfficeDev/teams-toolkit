@@ -27,7 +27,7 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { getHashedEnv, getStrings } from "../common/tools";
+import { getHashedEnv } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {

@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isConfigUnifyEnabled } from "../../../../common/tools";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,

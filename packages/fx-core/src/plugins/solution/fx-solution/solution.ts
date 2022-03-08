@@ -44,7 +44,6 @@ import {
   deepCopy,
   getHashedEnv,
   getResourceGroupInPortal,
-  getStrings,
   isCheckAccountError,
   isMultiEnvEnabled,
   isUserCancelError,

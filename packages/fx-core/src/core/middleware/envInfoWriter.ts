@@ -4,7 +4,6 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { getStrings } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";

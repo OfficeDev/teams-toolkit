@@ -20,7 +20,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { serializeDict, getStrings, isSPFxProject } from "../../common/tools";
+import { serializeDict, isSPFxProject } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";

@@ -25,7 +25,6 @@ import {
   CollaborationState,
   Collaborator,
   getHashedEnv,
-  getStrings,
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";

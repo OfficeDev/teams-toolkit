@@ -41,7 +41,7 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import { compileHandlebarsTemplateString, getStrings } from "../../../common";
+import { compileHandlebarsTemplateString } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";

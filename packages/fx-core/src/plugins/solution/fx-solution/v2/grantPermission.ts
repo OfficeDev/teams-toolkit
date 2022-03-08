@@ -20,12 +20,7 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  getStrings,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   AzureRoleAssignmentsHelpLink,

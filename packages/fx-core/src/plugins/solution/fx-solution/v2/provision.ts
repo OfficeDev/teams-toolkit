@@ -11,10 +11,9 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
-  combineRecords,
   ensurePermissionRequest,
   extractSolutionInputs,
   getAzureSolutionSettings,
@@ -29,7 +28,6 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
 } from "../constants";
-import * as util from "util";
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";

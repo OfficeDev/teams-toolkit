@@ -24,7 +24,6 @@ import { Container } from "typedi";
 import * as util from "util";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { getStrings, isFeatureFlagEnabled } from "../../../../common/tools";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {

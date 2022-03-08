@@ -34,11 +34,10 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { ProgressHelper } from "../utils/progress-helper";
-import * as util from "util";
 import { SPOClient } from "../spoClient";
 import axios from "axios";
 import { getTemplatesFolder } from "../../../../folder";
-import { getAppDirectory, getStrings } from "../../../../common/tools";
+import { getAppDirectory } from "../../../../common/tools";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export class SPFxPluginImpl {

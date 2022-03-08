@@ -18,7 +18,6 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { getStrings } from "../../../../common/tools";
 import { HelpLinks } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
 import {

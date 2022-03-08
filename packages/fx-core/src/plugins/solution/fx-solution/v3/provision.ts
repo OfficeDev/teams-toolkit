@@ -24,7 +24,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
-import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
@@ -34,7 +33,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";

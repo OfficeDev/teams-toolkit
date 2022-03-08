@@ -1,5 +1,4 @@
 import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
-import { getStrings } from "../../../../common";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export class ProgressHelper {

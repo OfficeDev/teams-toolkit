@@ -16,9 +16,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "../v2/executor";
 import { selectMultiPluginsQuestion } from "../../utils/questions";
 import { getLocalizedString } from "../../../../common/localizeUtils";

@@ -10,21 +10,19 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import * as util from "util";
 import Container from "typedi";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getStrings } from "../../../../common/tools";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 import {
   GLOBAL_CONFIG,
   SolutionError,
-  SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { executeConcurrently } from "./executor";
 import { getAzureSolutionSettings, getSelectedPlugins, isAzureProject } from "./utils";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function publishApplication(
   ctx: v2.Context,

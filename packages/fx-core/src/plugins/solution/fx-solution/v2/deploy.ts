@@ -12,11 +12,9 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { getStrings } from "../../../../common/tools";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
   GLOBAL_CONFIG,

@@ -232,6 +232,7 @@ export interface Inputs extends Json {
   projectId?: string;
   existingResources?: string[];
   existingAppConfig?: ExistingAppConfig;
+  locale?: string;
 }
 
 // configs for existing app building

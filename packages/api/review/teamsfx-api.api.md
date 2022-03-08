@@ -736,6 +736,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
+    locale?: string;
+    // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;

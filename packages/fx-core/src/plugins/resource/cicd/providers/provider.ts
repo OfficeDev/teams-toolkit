@@ -57,7 +57,7 @@ export class CICDProvider {
       }
     }
 
-    // 3. Read template from remote or local.
+    // 3. Read template from local.
     const targetTemplatePath = path.join(
       targetPath,
       this.targetTemplateName(templateName, replacements.env_name)

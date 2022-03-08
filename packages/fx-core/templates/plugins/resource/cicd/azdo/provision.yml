@@ -46,6 +46,7 @@ steps:
       npx teamsfx provision<%#hosting_type_contains_azure%> --subscription $(AZURE_SUBSCRIPTION_ID)<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name $(SQL_ADMIN_NAME) --sql-password $(SQL_PASSWORD)<%/cloud_resources_contains_sql%>
 
       # Commit provision configs if necessary.
+      # To enable scripts to run git commands, check https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/git-commands?view=azure-devops&tabs=yaml
       git config user.name "azdo-agent"
       git config user.email "azdo-agent@azure.com"
       git add .

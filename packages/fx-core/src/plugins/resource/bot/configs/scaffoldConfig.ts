@@ -38,7 +38,8 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.HOST_TYPE];
+    const rawHostType =
+      context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.HOST_TYPE];
     if (rawHostType && utils.existsInEnumValues(rawHostType, HostType)) {
       this.hostType = rawHostType as HostType;
     }

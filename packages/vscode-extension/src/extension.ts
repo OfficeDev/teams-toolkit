@@ -22,7 +22,12 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isMultiEnvEnabled,
+  isValidProject,
+  isConfigUnifyEnabled,
+} from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -38,6 +43,7 @@ import {
   AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
+  TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { getWorkspacePath } from "./handlers";
@@ -463,7 +469,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const manifestTemplateSelecctor = {
     language: "json",
     scheme: "file",
-    pattern: `**/manifest.*.template.json`,
+    pattern: isConfigUnifyEnabled()
+      ? `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`
+      : `**/manifest.*.template.json`,
   };
   const manifestPreviewSelector = {
     language: "json",

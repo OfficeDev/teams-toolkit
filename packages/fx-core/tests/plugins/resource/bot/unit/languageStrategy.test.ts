@@ -18,11 +18,13 @@ import {
   fetchTemplateZipFromLocalAction,
   unzipAction,
 } from "../../../../../src/common/template-utils/templatesActions";
+import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {
     const botConfig = {
       scaffold: { programmingLanguage: ProgrammingLanguage.JavaScript, workingDir: __dirname },
+      actRoles: [PluginActRoles.Bot],
     } as TeamsBotConfig;
     before(() => {
       const commonPath = path.join(getTemplatesFolder(), "plugins", "resource", "bot");

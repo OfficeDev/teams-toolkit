@@ -40,6 +40,7 @@ export class TemplateProjectsConstants {
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
   public static readonly DEFAULT_SCENARIO_NAME: string = "default";
+  public static readonly NOTIFICATION_SCENARIO_NAME: string = "notification";
   public static readonly VERSION_RANGE: string = "0.0.*";
 }
 

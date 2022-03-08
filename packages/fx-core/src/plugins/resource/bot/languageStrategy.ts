@@ -18,6 +18,7 @@ import {
   scaffoldFromTemplates,
 } from "../../../common/template-utils/templatesActions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
+import { PluginActRoles } from "./enums/pluginActRoles";
 
 export class LanguageStrategy {
   public static async getTemplateProject(
@@ -29,7 +30,9 @@ export class LanguageStrategy {
       {
         group: group_name,
         lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
-        scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+        scenario: config.actRoles.includes(PluginActRoles.Notification)
+          ? TemplateProjectsConstants.NOTIFICATION_SCENARIO_NAME
+          : TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
         templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
         dst: config.scaffold.workingDir!,
         onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {

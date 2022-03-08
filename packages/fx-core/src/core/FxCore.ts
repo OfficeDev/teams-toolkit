@@ -1329,10 +1329,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _init(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async _init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -1367,7 +1364,7 @@ export class FxCore implements v3.ICore {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
 
     // init manifest
-    const manifestInitRes = await appStudioV3.init(context, inputs);
+    const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
     if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
@@ -1419,13 +1416,11 @@ export class FxCore implements v3.ICore {
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    return ok(Void);
+    return ok(inputs.projectPath);
   }
+
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     return this._init(inputs, ctx);
   }
 

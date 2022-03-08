@@ -86,6 +86,10 @@
         "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
+        "view": "teamsfx-empty-project-and-init",
+        "contents": "To start Teams app development experience, create a new Teams app or initialize your application with Teams Toolkit.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Initialize an existing application](command:fx-extension.init?%5B%22SideBar%22%5D)\nYou can also explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+      },
+      {
         "view": "teamsfx-empty-project-and-check-upgrade",
         "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
       }
@@ -132,7 +136,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-and-init",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isInitAppEnabled"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -380,12 +389,12 @@
     "commands": [
       {
         "command": "fx-extension.signOut",
-        "title": "Sign Out",
+        "title": "%teamstoolkit.commands.signOut.title%",
         "icon": "$(sign-out)"
       },
       {
         "command": "fx-extension.signInGuideline",
-        "title": "Learn more about Teams development accounts",
+        "title": "%teamstoolkit.commands.signInGuideline.title%",
         "icon": "$(info)"
       },
       {
@@ -395,7 +404,7 @@
       },
       {
         "command": "fx-extension.refreshSideloading",
-        "title": "Refresh",
+        "title": "%teamstoolkit.commands.refresh.title%",
         "icon": "$(refresh)"
       },
       {
@@ -405,78 +414,83 @@
       },
       {
         "command": "fx-extension.specifySubscription",
-        "title": "Specify subscription",
+        "title": "%teamstoolkit.commands.specifySubscription.title%",
         "icon": "$(list-selection)"
       },
       {
         "command": "fx-extension.cmpAccounts",
-        "title": "Teams: Accounts"
+        "title": "%teamstoolkit.commands.accounts.title%"
       },
       {
         "command": "fx-extension.openWelcome",
-        "title": "Teams: Quick Start"
+        "title": "%teamstoolkit.commands.quickStart.title%"
       },
       {
         "command": "fx-extension.openSurvey",
-        "title": "Teams: Survey"
+        "title": "%teamstoolkit.commands.survey.title%"
       },
       {
         "command": "fx-extension.openSamples",
-        "title": "Teams: View samples"
+        "title": "%teamstoolkit.commands.viewSamples.title%"
       },
       {
         "command": "fx-extension.openDocument",
-        "title": "Teams: Documentation"
+        "title": "%teamstoolkit.commands.document.title%"
       },
       {
         "command": "fx-extension.create",
-        "title": "Teams: Create a new Teams app"
+        "title": "%teamstoolkit.commands.createProject.title%"
+      },
+      {
+        "command": "fx-extension.init",
+        "title": "Teams: Initialize your application with Teams Toolkit",
+        "enablement": "fx-extension.isInitAppEnabled"
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add cloud resources",
+        "title": "%teamstoolkit.commands.addCloudResource.title%",
         "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add capabilities",
+        "title": "%teamstoolkit.commands.addCapability.title%",
         "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.openManifest",
-        "title": "Teams: Edit manifest file"
+        "title": "%teamstoolkit.commands.editManifest.title%"
       },
       {
         "command": "fx-extension.validateManifest",
-        "title": "Teams: Validate manifest file"
+        "title": "%teamstoolkit.commands.validateManifest.title%"
       },
       {
         "command": "fx-extension.build",
-        "title": "Teams: Zip Teams metadata package"
+        "title": "%teamstoolkit.commands.zipPackage.title%"
       },
       {
         "command": "fx-extension.provision",
-        "title": "Teams: Provision in the cloud"
+        "title": "%teamstoolkit.commands.provision.title%"
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
-        "title": "Teams: Upgrade project"
+        "title": "%teamstoolkit.commands.upgradeProject.title%"
       },
       {
         "command": "fx-extension.deploy",
-        "title": "Teams: Deploy to the cloud"
+        "title": "%teamstoolkit.commands.deploy.title%"
       },
       {
         "command": "fx-extension.publish",
-        "title": "Teams: Publish to Teams"
+        "title": "%teamstoolkit.commands.publish.title%"
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: Developer Portal for Teams"
+        "title": "%teamstoolkit.commands.devPortal.title%"
       },
       {
         "command": "fx-extension.openReportIssues",
-        "title": "Teams: Report issues on GitHub"
+        "title": "%teamstoolkit.commands.reportIssue.title%"
       },
       {
         "command": "fx-extension.validate-dependencies",
@@ -515,120 +529,120 @@
       },
       {
         "command": "fx-extension.selectAndDebug",
-        "title": "Select and Start Debuging Teams App",
+        "title": "%teamstoolkit.commands.debug.title%",
         "icon": "$(run)"
       },
       {
         "command": "fx-extension.cicdGuide",
-        "title": "CI/CD guide",
+        "title": "%teamstoolkit.commands.cicd.title%",
         "icon": "$(sync)"
       },
       {
         "command": "fx-extension.openPreviewFile",
-        "title": "Preview manifest file",
+        "title": "%teamstoolkit.commands.previewManifest.title%",
         "icon": "$(file-code)"
       },
       {
         "command": "fx-extension.openSchema",
-        "title": "Open manifest schema",
+        "title": "%teamstoolkit.commands.openManifestSchema.title%",
         "icon": "$(file-code)"
       },
       {
         "command": "fx-extension.updatePreviewFile",
-        "title": "Teams: Update manifest to Teams platform",
+        "title": "%teamstoolkit.commands.updateManifest.title%",
         "icon": "$(sync)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.addEnvironment",
-        "title": "Teams: Create new environment",
+        "title": "%teamstoolkit.commands.createEnvironment.title%",
         "icon": "$(add)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.refreshEnvironment",
-        "title": "Refresh",
+        "title": "%teamstoolkit.commands.refresh.title%",
         "icon": "$(refresh)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview App",
+        "title": "%teamstoolkit.commands.previewApp.title%",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview App",
+        "title": "%teamstoolkit.commands.previewApp.title%",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.localdebug",
-        "title": "Local debug",
+        "title": "%teamstoolkit.commands.localDebug.title%",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.localdebugWithIcon",
-        "title": "Local debug",
+        "title": "%teamstoolkit.commands.localDebug.title%",
         "icon": "$(debug-alt)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.listCollaborator",
-        "title": "List M365 Teams App (with AAD App) Owners",
+        "title": "%teamstoolkit.commands.listAppOwner.title%",
         "icon": "$(organization)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.openSubscriptionInPortal",
-        "title": "Open in Portal",
+        "title": "%teamstoolkit.commands.openInPortal.title%",
         "icon": "$(ports-open-browser-icon)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.openResourceGroupInPortal",
-        "title": "Open in Portal",
+        "title": "%teamstoolkit.commands.openInPortal.title%",
         "icon": "$(ports-open-browser-icon)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.grantPermission",
-        "title": "Add M365 Teams App (with AAD App) Owners",
+        "title": "%teamstoolkit.commands.addAppOwner.title%",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
-        "title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
+        "title": "%teamstoolkit.commands.migrateApp.title%"
       },
       {
         "command": "fx-extension.migrateTeamsManifest",
-        "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
+        "title": "%teamstoolkit.commands.migrateManifest.title%"
       },
       {
         "command": "fx-extension.openAccountLink",
-        "title": "Learn more about accounts",
+        "title": "%teamstoolkit.commands.accountsLink.title%",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openEnvLink",
-        "title": "Learn more about enviornments",
+        "title": "%teamstoolkit.commands.environmentsLink.title%",
         "icon": "$(info)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.openDevelopmentLink",
-        "title": "Learn more about development",
+        "title": "%teamstoolkit.commands.developmentLink.title%",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openDeploymentLink",
-        "title": "Learn more about deployment",
+        "title": "%teamstoolkit.commands.deploymentLink.title%",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openHelpFeedbackLink",
-        "title": "Learn more about help and feedback",
+        "title": "%teamstoolkit.commands.feedbackLink.title%",
         "icon": "$(info)"
       },
       {

@@ -18,7 +18,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from "./utils/questions";
-import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
+import { Utils, sleep } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
@@ -40,19 +40,19 @@ import {
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
+import { getStrings, getAppDirectory } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
-  REMOTE_MANIFEST,
 } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
 import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
+import { yeomanScaffoldEnabled } from "../../../core/globalVars";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -101,6 +101,10 @@ export class SPFxPluginImpl {
           ``
         );
         await fs.writeFile(webpartFile, codeString);
+
+        // remove .vscode
+        const debugPath = `${newPath}/.vscode`;
+        await fs.remove(debugPath);
 
         const solutionPath = `${newPath}/config/package-solution.json`;
         const solution = await fs.readJson(solutionPath);

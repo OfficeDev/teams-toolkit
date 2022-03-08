@@ -141,10 +141,16 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
+  public async validateManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx, false);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(
+      ctx,
+      isLocalDebug
+    );
     if (validationpluginResult.isErr()) {
       return err(validationpluginResult.error);
     }
@@ -467,7 +473,8 @@ export class AppStudioPlugin implements Plugin {
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
-      return await this.validateManifest(ctx);
+      const isLocalDebug = (func?.params?.type as string) === "localDebug";
+      return await this.validateManifest(ctx, isLocalDebug);
     } else if (func.method === "buildPackage") {
       if (func.params && func.params.type) {
         const isLocalDebug = (func.params.type as string) === "localDebug";

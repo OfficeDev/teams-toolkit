@@ -765,6 +765,13 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
+    if (
+      isConfigUnifyEnabled() &&
+      inputs.env === environmentManager.getLocalEnvName() &&
+      ctx?.envInfoV2
+    ) {
+      ctx.envInfoV2.config.isLocalDebug = true;
+    }
     if ("" !== namespace && array.length > 0) {
       if (!ctx || !ctx.solutionV2 || !ctx.envInfoV2) {
         const name = undefinedName(
@@ -1322,10 +1329,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _init(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async _init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -1360,7 +1364,7 @@ export class FxCore implements v3.ICore {
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
 
     // init manifest
-    const manifestInitRes = await appStudioV3.init(context, inputs);
+    const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
     if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
@@ -1412,13 +1416,11 @@ export class FxCore implements v3.ICore {
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    return ok(Void);
+    return ok(inputs.projectPath);
   }
+
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     return this._init(inputs, ctx);
   }
 
@@ -1514,6 +1516,10 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
           "subscriptionInfo.json",
           BuildFolderName,
         ];
+        if (isConfigUnifyEnabled()) {
+          gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
+          gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
+        }
         if (inputs.platform === Platform.VS) {
           gitIgnoreContent.push("appsettings.Development.json");
         }

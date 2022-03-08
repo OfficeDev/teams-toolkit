@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { CICDProvider } from "./provider";
+import { ProviderKind } from "./enums";
 
 export class GitHubProvider extends CICDProvider {
   private static instance: GitHubProvider;
@@ -9,7 +10,7 @@ export class GitHubProvider extends CICDProvider {
     if (!GitHubProvider.instance) {
       GitHubProvider.instance = new GitHubProvider();
       GitHubProvider.instance.scaffoldTo = ".github/workflows";
-      GitHubProvider.instance.providerName = "github";
+      GitHubProvider.instance.providerName = ProviderKind.GitHub;
       GitHubProvider.instance.sourceTemplateName = (templateName: string) => {
         return `${templateName}.yml`;
       };

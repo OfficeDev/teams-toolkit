@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ProviderKind } from "./enums";
 import { CICDProvider } from "./provider";
 
 export class AzDoProvider extends CICDProvider {
@@ -9,7 +10,7 @@ export class AzDoProvider extends CICDProvider {
     if (!AzDoProvider.instance) {
       AzDoProvider.instance = new AzDoProvider();
       AzDoProvider.instance.scaffoldTo = ".azure/pipelines";
-      AzDoProvider.instance.providerName = "azdo";
+      AzDoProvider.instance.providerName = ProviderKind.AzDo;
       AzDoProvider.instance.sourceTemplateName = (templateName: string) => {
         return `${templateName}.yml`;
       };

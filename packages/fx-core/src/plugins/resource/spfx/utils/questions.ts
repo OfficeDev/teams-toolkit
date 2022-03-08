@@ -1,5 +1,5 @@
 import { Question } from "@microsoft/teamsfx-api";
-import { yeomanScaffoldEnabled } from "./utils";
+import { yeomanScaffoldEnabled } from "../../../../core/globalVars";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",

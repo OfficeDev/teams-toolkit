@@ -50,6 +50,15 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.initProjectTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.initProjectDescription,
+        "fx-extension.init",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "new-folder", custom: false }
+      ),
+      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.samplesDescription,
         "fx-extension.openSamples",

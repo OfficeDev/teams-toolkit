@@ -364,15 +364,28 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    await updateAutoOpenGlobalKey(args);
-    await ExtTelemetry.dispose();
-    // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
-    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-    setTimeout(() => {
-      commands.executeCommand("vscode.openFolder", result.value);
-    }, 2000);
+    await openFolder(result.value, args);
   }
   return result;
+}
+
+export async function initProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
+  const result = await runCommand(Stage.init);
+  if (result.isOk()) {
+    await openFolder(result.value, args);
+  }
+  return result;
+}
+
+async function openFolder(folderPath: string, args?: any[]) {
+  await updateAutoOpenGlobalKey(args);
+  await ExtTelemetry.dispose();
+  // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
+  // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+  setTimeout(() => {
+    commands.executeCommand("vscode.openFolder", folderPath);
+  }, 2000);
 }
 
 export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
@@ -534,8 +547,23 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "validateManifest",
+    params: {
+      type: "",
+    },
   };
-  return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+
+  if (isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    func.params.type = env === environmentManager.getLocalEnvName() ? "localDebug" : "remote";
+    return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+  } else {
+    return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+  }
 }
 
 /**
@@ -578,7 +606,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, "local");
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
@@ -591,7 +623,11 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     const isLocalDebug = env === "local";
     if (isLocalDebug) {
       func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+      if (isConfigUnifyEnabled()) {
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      }
     } else {
       func.params.type = "remote";
       return await runUserTask(func, TelemetryEvent.Build, false, env);
@@ -670,6 +706,16 @@ export async function runCommand(
           result = err(tmpResult.error);
         } else {
           const uri = Uri.file(tmpResult.value);
+          result = ok(uri);
+        }
+        break;
+      }
+      case Stage.init: {
+        const initResult = await core.init(inputs);
+        if (initResult.isErr()) {
+          result = err(initResult.error);
+        } else {
+          const uri = Uri.file(initResult.value);
           result = ok(uri);
         }
         break;
@@ -1484,11 +1530,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     return err(invalidProjectError);
   }
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
+  let env = "remote";
+  if (!isConfigUnifyEnabled()) {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    env = selectedEnv.value;
   }
-  const env = selectedEnv.value;
 
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-appstudio",
@@ -1497,7 +1547,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       type: env === "local" ? "localDebug" : "remote",
     },
   };
-  const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+  const res = await runUserTask(func, TelemetryEvent.OpenManifestEditor, true);
   if (res.isOk()) {
     const manifestFile = res.value as string;
     if (fs.existsSync(manifestFile)) {
@@ -2223,12 +2273,17 @@ export async function updatePreviewManifest(args: any[]) {
     },
   };
 
-  const result = await runUserTask(
-    func,
-    TelemetryEvent.UpdatePreviewManifest,
-    env && env === "local" ? true : false,
-    env
-  );
+  let result;
+  if (isConfigUnifyEnabled()) {
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  } else {
+    result = await runUserTask(
+      func,
+      TelemetryEvent.UpdatePreviewManifest,
+      env && env === "local" ? true : false,
+      env
+    );
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = getWorkspacePath();
@@ -2257,7 +2312,12 @@ export async function editManifestTemplate(args: any[]) {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2] === "local" ? "local" : "remote";
     const workspacePath = getWorkspacePath();
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    let manifestPath: string;
+    if (isConfigUnifyEnabled()) {
+      manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    } else {
+      manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    }
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
     });

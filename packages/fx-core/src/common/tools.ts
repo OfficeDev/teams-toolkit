@@ -381,6 +381,10 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
+export function isInitAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+}
+
 export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }
@@ -395,6 +399,10 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
     (!solutionSettings.activeResourcePlugins ||
       solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
   );
+}
+
+export function isBotNotificationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
 
 export function getRootDirectory(): string {

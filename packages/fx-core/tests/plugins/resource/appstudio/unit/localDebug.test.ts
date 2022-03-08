@@ -39,7 +39,7 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import fs from "fs-extra";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
-import { isMultiEnvEnabled, newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   LocalSettingsAuthKeys,
@@ -111,45 +111,29 @@ describe("Post Local Debug", () => {
     manifest = new TeamsAppManifest();
     configOfOtherPlugins = new Map();
 
-    if (isMultiEnvEnabled()) {
-      localSettings = {
-        auth: new ConfigMap([
-          [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
-          [LocalSettingsAuthKeys.ClientId, localDebugClientId],
-        ]),
-        bot: new ConfigMap([
-          [LocalSettingsBotKeys.BotId, localDebugBotId],
-          [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
-        ]),
-        frontend: new ConfigMap([
-          [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
-          [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
-        ]),
-        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
-      };
-    }
+    localSettings = {
+      auth: new ConfigMap([
+        [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
+        [LocalSettingsAuthKeys.ClientId, localDebugClientId],
+      ]),
+      bot: new ConfigMap([
+        [LocalSettingsBotKeys.BotId, localDebugBotId],
+        [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
+      ]),
+      frontend: new ConfigMap([
+        [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
+        [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
+      ]),
+      teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
+    };
 
     AAD_ConfigMap = new ConfigMap();
-    if (!isMultiEnvEnabled()) {
-      AAD_ConfigMap.set(LOCAL_DEBUG_AAD_ID, localDebugClientId);
-      AAD_ConfigMap.set(LOCAL_WEB_APPLICATION_INFO_SOURCE, localDebugApplicationIdUris);
-    }
     AAD_ConfigMap.set(REMOTE_AAD_ID, uuid.v4());
     AAD_ConfigMap.set(WEB_APPLICATION_INFO_SOURCE, "web application info source");
 
     BOT_ConfigMap = new ConfigMap();
-    if (!isMultiEnvEnabled()) {
-      BOT_ConfigMap.set(LOCAL_BOT_ID, localDebugBotId);
-    }
     BOT_ConfigMap.set(BOT_ID, uuid.v4());
     BOT_ConfigMap.set(BOT_DOMAIN, "bot domain");
-
-    if (!isMultiEnvEnabled()) {
-      LDEBUG_ConfigMap = new ConfigMap();
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_ENDPOINT, "local debug tab endpoint");
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_DOMAIN, "local debug tab domain");
-      LDEBUG_ConfigMap.set(LOCAL_DEBUG_BOT_DOMAIN, "local debug bot domain");
-    }
 
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
@@ -270,8 +254,8 @@ describe("Post Local Debug", () => {
           isAdministrator: true,
         },
       ],
-      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+      outlineIcon: "resources/outline.png",
+      colorIcon: "resources/color.png",
     };
 
     const fakeAxiosInstance = axios.create();
@@ -327,8 +311,8 @@ describe("Post Local Debug", () => {
           isAdministrator: true,
         },
       ],
-      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+      outlineIcon: "resources/outline.png",
+      colorIcon: "resources/color.png",
     };
 
     const fakeAxiosInstance = axios.create();

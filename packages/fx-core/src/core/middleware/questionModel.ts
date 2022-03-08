@@ -18,11 +18,9 @@ import {
   Stage,
   SystemError,
   traverse,
-  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
@@ -306,20 +304,6 @@ export async function getQuestionsForPublish(
 export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.projectPath) {
-    const projectSettingsPath = getProjectSettingsPath(inputs.projectPath);
-    if (await fs.pathExists(projectSettingsPath)) {
-      const res = await TOOLS.ui.showMessage(
-        "warn",
-        "projectSettings.json already exists, 'init' operation will replace it, please confirm!",
-        true,
-        "Confirm"
-      );
-      if (!(res.isOk() && res.value === "Confirm")) {
-        return err(UserCancelError);
-      }
-    }
-  }
   const node = new QTreeNode({ type: "group" });
   node.addChild(new QTreeNode(QuestionAppName));
   node.addChild(new QTreeNode(QuestionRootFolder));

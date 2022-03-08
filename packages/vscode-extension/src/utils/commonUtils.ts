@@ -211,6 +211,10 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
     ConfigurationKey.RootDirectory
   ).toString();
+
+  process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
+
+  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableInitApp).toString();
 }
 
 export class FeatureFlags {
@@ -328,7 +332,7 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
     return undefined;
   }
 
-  return provisionResult.solution.provisionSucceeded;
+  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {

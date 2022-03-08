@@ -38,7 +38,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    const rawHostType = context.config.get(PluginBot.HOST_TYPE);
+    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.HOST_TYPE];
     if (rawHostType && utils.existsInEnumValues(rawHostType, HostType)) {
       this.hostType = rawHostType as HostType;
     }
@@ -48,6 +48,6 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_ID, this.botId);
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
-    utils.checkAndSaveConfig(context, PluginBot.HOST_TYPE, this.hostType);
+    utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
   }
 }

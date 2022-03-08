@@ -53,9 +53,14 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  isBotNotificationEnabled,
+  isConfigUnifyEnabled,
+} from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
+import { HostType } from "./enums/hostType";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -82,6 +87,11 @@ export class TeamsBotImpl implements PluginImpl {
       this.ctx
     );
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
+
+    if (isBotNotificationEnabled()) {
+      // TODO: set host type from input
+      this.config.scaffold.hostType = HostType.AppService;
+    }
 
     // 1. Copy the corresponding template project into target directory.
     // Get group name.

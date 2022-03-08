@@ -89,6 +89,21 @@ export function checkAndSaveConfig(context: PluginContext, key: string, value: C
   context.config.set(key, value);
 }
 
+export function checkAndSavePluginSetting(
+  context: PluginContext,
+  key: string,
+  value: ConfigValue
+): void {
+  if (!value || !context.projectSettings) {
+    return;
+  }
+
+  if (!context.projectSettings.pluginSettings) {
+    context.projectSettings.pluginSettings = {};
+  }
+  context.projectSettings.pluginSettings[key] = value;
+}
+
 export function existsInEnumValues<T extends string>(
   value: string,
   targetEnum: { [key: string]: T }

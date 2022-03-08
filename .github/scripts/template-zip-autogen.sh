@@ -8,6 +8,7 @@ TEMPLATE_LIST=(
     function-triggers.HTTPTrigger
     tab.default
     bot.default
+    bot.notification
     blazor-base.default
 )
 

@@ -23,13 +23,13 @@ export class CICDImpl {
     const projectPath = inputs.projectPath;
     // By default(VSC), get env name from plugin's own `target-env` question.
     let envName = inputs[questionNames.Environment];
-    if (inputs.platform == Platform.CLI) {
+    if (inputs.platform === Platform.CLI) {
       // In CLI, get env name from the default `env` question.
       envName = envInfo.envName;
     }
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
-    if (!envName || !providerName || templateNames.length == 0) {
+    if (!envName || !providerName || templateNames.length === 0) {
       throw new InternalError("Some preconditions of inputs are not met.");
     }
 
@@ -48,8 +48,8 @@ export class CICDImpl {
     const replacements = {
       env_name: envName,
       build_script: generateBuildScript(context.projectSetting),
-      hosting_type_contains_spfx: hostType == "SPFx",
-      hosting_type_contains_azure: hostType == "Azure",
+      hosting_type_contains_spfx: hostType === "SPFx",
+      hosting_type_contains_azure: hostType === "Azure",
       cloud_resources_contains_sql:
         context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
       api_prefix: context.projectSetting.appName,
@@ -62,23 +62,49 @@ export class CICDImpl {
       templateNames.length
     );
 
+    const scaffoldedArr: boolean[] = [];
     await progressBar.start(`Scaffolding workflow file for ${templateNames[0]}.`);
-    await providerInstance.scaffold(projectPath, templateNames[0], replacements);
-
+    let scaffolded = await providerInstance.scaffold(projectPath, templateNames[0], replacements);
+    scaffolded.isOk() && scaffoldedArr.push(scaffolded.value);
     //  3.2 Call scaffold.
     for (const templateName of templateNames.slice(1)) {
       await progressBar.next(`Scaffolding workflow file for ${templateName}.`);
-      await providerInstance.scaffold(projectPath, templateName, replacements);
+      scaffolded = await providerInstance.scaffold(projectPath, templateName, replacements);
+      scaffolded.isOk() && scaffoldedArr.push(scaffolded.value);
     }
 
     await progressBar.end(true);
 
     // 4. Notification & Preview scaffolded readme.
-    context.userInteraction.showMessage(
-      "info",
-      `Workflow automation files for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`,
-      false
-    );
+    const scaffoldedTemplates: string[] = [];
+    const notScaffoldedTemplates: string[] = [];
+    scaffoldedArr.map((value, index) => {
+      if (value) {
+        scaffoldedTemplates.push(templateNames[index]);
+      } else {
+        notScaffoldedTemplates.push(templateNames[index]);
+      }
+    });
+
+    if (notScaffoldedTemplates.length > 0) {
+      context.userInteraction.showMessage(
+        "info",
+        `Workflow automation files of ${notScaffoldedTemplates.join(
+          ","
+        )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`,
+        false
+      );
+    }
+
+    if (scaffoldedTemplates.length > 0) {
+      context.userInteraction.showMessage(
+        "info",
+        `You have already created template/s of ${scaffoldedTemplates.join(
+          ","
+        )} for ${providerName}, please customize it or remove it to create a new one.`,
+        false
+      );
+    }
     return ResultFactory.Success();
   }
 }

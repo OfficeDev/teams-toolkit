@@ -21,7 +21,7 @@ import {
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { CICDImpl } from "./plugin";
 import { ErrorType, InternalError, NoProjectOpenedError, PluginError } from "./errors";
-import { LifecycleFuncNames } from "./constants";
+import { Alias, LifecycleFuncNames, PluginCICD } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ResourcePlugin, Context, DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
@@ -41,8 +41,8 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
-  name = "fx-resource-cicd";
-  displayName = "CICD";
+  name = PluginCICD.PLUGIN_NAME;
+  displayName = Alias.TEAMS_CICD_PLUGIN;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activate(projectSettings: ProjectSettings): boolean {
     return true;
@@ -101,7 +101,6 @@ export class CICDPluginV2 implements ResourcePlugin {
         name: questionNames.Environment,
         title: "Select an environment",
         staticOptions: [],
-        skipSingleOption: false,
       };
       whichEnvironment.staticOptions = envProfilesResult.value;
       cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));

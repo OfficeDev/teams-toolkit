@@ -7,7 +7,7 @@ import { FileSystemError, InternalError, NoProjectOpenedError } from "../errors"
 import { TemplateKind } from "./enums";
 import path from "path";
 import Mustache from "mustache";
-import { getTemplatesFolder } from "../../../..";
+import { getTemplatesFolder } from "../../../../folder";
 
 export class CICDProvider {
   public scaffoldTo = "";
@@ -38,7 +38,7 @@ export class CICDProvider {
       throw new FileSystemError(`Fail to create path: ${targetPath}`, e as Error);
     }
 
-    // 2. Read README from local.
+    // 2. Generate README file.
     const targetReadMePath = path.join(targetPath, "README.md");
     if (!(await fs.pathExists(targetReadMePath))) {
       const localReadMePath = path.join(
@@ -49,15 +49,15 @@ export class CICDProvider {
         this.providerName,
         "README.md"
       );
-      const readmeContent = await this.readLocalFile(localReadMePath);
+
       try {
-        await fs.writeFile(targetReadMePath, readmeContent);
+        await fs.copyFile(localReadMePath, targetReadMePath);
       } catch (e) {
         throw new FileSystemError(`Fail to write file: ${targetReadMePath}`, e as Error);
       }
     }
 
-    // 3. Read template from local.
+    // 3. Generate template file.
     const targetTemplatePath = path.join(
       targetPath,
       this.targetTemplateName(templateName, replacements.env_name)
@@ -78,6 +78,8 @@ export class CICDProvider {
       } catch (e) {
         throw new FileSystemError(`Fail to write file: ${targetTemplatePath}`, e as Error);
       }
+    } else {
+      return ok(false);
     }
 
     return ok(true);

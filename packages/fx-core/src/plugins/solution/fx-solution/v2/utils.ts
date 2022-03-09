@@ -30,6 +30,7 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
@@ -38,10 +39,10 @@ import {
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
-import * as util from "util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { NotificationOptionItem } from "../../../../core/question";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -229,8 +230,19 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (
-    capabilities.includes(BotOptionItem.id) ||
+  if (capabilities.includes(NotificationOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+    // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+    const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
+    if (notificationIndex !== -1) {
+      capabilities[notificationIndex] = BotOptionItem.id;
+      // dedup
+      capabilities = [...new Set(capabilities)];
+      answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
+    }
+    // TODO(aochengwang): handle other bot scenarios
+
+    hostType = HostTypeOptionAzure.id;
+  } else if (
     capabilities.includes(MessageExtensionItem.id) ||
     capabilities.includes(TabOptionItem.id)
   ) {

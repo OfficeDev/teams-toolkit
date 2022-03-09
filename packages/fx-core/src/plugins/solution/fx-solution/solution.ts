@@ -44,7 +44,6 @@ import {
   deepCopy,
   getHashedEnv,
   getResourceGroupInPortal,
-  getStrings,
   isCheckAccountError,
   isMultiEnvEnabled,
   isUserCancelError,
@@ -144,6 +143,7 @@ import { isVsCallingCli } from "../../../core/globalVars";
 import { AppStudioPlugin } from "../../resource/appstudio";
 import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { LoadedPlugin, PluginsWithContext, SolutionRunningState } from "./types";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
@@ -296,7 +296,11 @@ export class TeamsAppSolution implements Solution {
     const selectedPlugins = maybeSelectedPlugins.value;
     const result = await this.doScaffold(ctx, selectedPlugins, true);
     if (result.isOk()) {
-      ctx.ui?.showMessage("info", `Success: ${getStrings().solution.ScaffoldSuccessNotice}`, false);
+      ctx.ui?.showMessage(
+        "info",
+        `Success: ${getLocalizedString("core.create.successNotice")}`,
+        false
+      );
     }
     return result;
   }
@@ -438,8 +442,8 @@ export class TeamsAppSolution implements Solution {
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId"),
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME)
         );
-        const msg = util.format(
-          `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+        const msg = getLocalizedString(
+          "core.provision.successNotice",
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
@@ -467,10 +471,7 @@ export class TeamsAppSolution implements Solution {
           !isUserCancelError(provisionResult.error) &&
           !isCheckAccountError(provisionResult.error)
         ) {
-          const msg = util.format(
-            getStrings().solution.ProvisionFailNotice,
-            ctx.projectSettings?.appName
-          );
+          const msg = getLocalizedString("core.provision.failNotice", ctx.projectSettings?.appName);
           ctx.logProvider?.error(msg);
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
         }
@@ -557,7 +558,7 @@ export class TeamsAppSolution implements Solution {
       postProvisionWithCtx,
       async () => {
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
         );
         return ok(undefined);
       },
@@ -593,7 +594,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
         );
 
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
@@ -611,7 +612,7 @@ export class TeamsAppSolution implements Solution {
       },
       async () => {
         ctx.logProvider?.info(
-          util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+          getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
         );
         return ok(undefined);
       }
@@ -625,9 +626,7 @@ export class TeamsAppSolution implements Solution {
     if (isAzureProject && !provisioned) {
       return err(
         returnUserError(
-          new Error(
-            util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
-          ),
+          new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSettings?.appName)),
           SolutionSource,
           SolutionError.CannotDeployBeforeProvision
         )
@@ -660,18 +659,12 @@ export class TeamsAppSolution implements Solution {
       const result = await this.doDeploy(ctx);
       if (result.isOk()) {
         if (this.isAzureProject(ctx)) {
-          const msg = util.format(
-            `Success: ${getStrings().solution.DeploySuccessNotice}`,
-            ctx.projectSettings?.appName
-          );
+          const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSettings?.appName);
           ctx.logProvider?.info(msg);
           ctx.ui?.showMessage("info", msg, false);
         }
       } else {
-        const msg = util.format(
-          getStrings().solution.DeployFailNotice,
-          ctx.projectSettings?.appName
-        );
+        const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSettings?.appName);
         ctx.logProvider?.info(msg);
       }
 
@@ -711,8 +704,8 @@ export class TeamsAppSolution implements Solution {
       }
     }
     ctx.logProvider?.info(
-      util.format(
-        getStrings().solution.SelectedPluginsToDeployNotice,
+      getLocalizedString(
+        "core.deploy.selectedPluginsToDeployNotice",
         PluginDisplayName.Solution,
         JSON.stringify(pluginsToDeploy.map((p) => p.name))
       )
@@ -736,7 +729,7 @@ export class TeamsAppSolution implements Solution {
     });
 
     ctx.logProvider?.info(
-      util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
     );
 
     return executeLifecycles(preDeployWithCtx, deployWithCtx, postDeployWithCtx);
@@ -750,9 +743,7 @@ export class TeamsAppSolution implements Solution {
     if (!provisioned) {
       return err(
         returnUserError(
-          new Error(
-            util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
-          ),
+          new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSettings?.appName)),
           SolutionSource,
           SolutionError.CannotPublishBeforeProvision
         )
@@ -780,17 +771,14 @@ export class TeamsAppSolution implements Solution {
       });
 
       ctx.logProvider?.info(
-        util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
+        getLocalizedString("core.publish.startNotice", PluginDisplayName.Solution)
       );
 
       const results = await executeConcurrently("", publishWithCtx);
 
       for (const result of results) {
         if (result.isErr()) {
-          const msg = util.format(
-            getStrings().solution.PublishFailNotice,
-            ctx.projectSettings?.appName
-          );
+          const msg = getLocalizedString("core.publish.failNotice", ctx.projectSettings?.appName);
           ctx.logProvider?.info(msg);
           return result;
         }
@@ -949,7 +937,7 @@ export class TeamsAppSolution implements Solution {
         if (isAzureProject && !provisioned) {
           return err(
             returnUserError(
-              new Error(getStrings().solution.FailedToDeployBeforeProvision),
+              new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
               SolutionSource,
               SolutionError.CannotDeployBeforeProvision,
               HelpLinks.WhyNeedProvision
@@ -1018,8 +1006,8 @@ export class TeamsAppSolution implements Solution {
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (!provisioned) {
           const errorMsg = isAzureProject
-            ? getStrings().solution.FailedToPublishBeforeProvision
-            : getStrings().solution.SPFxAskProvisionBeforePublish;
+            ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
+            : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
           return err(
             returnUserError(
               new Error(errorMsg),
@@ -1593,8 +1581,8 @@ export class TeamsAppSolution implements Solution {
         "info",
         util.format(
           ctx.answers.platform === Platform.CLI
-            ? getStrings().solution.AddResourceNoticeForCli
-            : getStrings().solution.AddResourceNotice,
+            ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+            : getLocalizedString("core.addResource.addResourceNotice"),
           notifications.join(",")
         ),
         false
@@ -1701,11 +1689,11 @@ export class TeamsAppSolution implements Solution {
       const template =
         ctx.answers.platform === Platform.CLI
           ? single
-            ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
-            : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
+            ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+            : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
           : single
-          ? getStrings().solution.addCapability.AddCapabilityNotice
-          : getStrings().solution.addCapability.AddCapabilitiesNotice;
+          ? getLocalizedString("core.addCapability.addCapabilityNotice")
+          : getLocalizedString("core.addCapability.addCapabilitiesNotice");
       const msg = util.format(template, addNames);
       ctx.ui?.showMessage("info", msg, false);
 
@@ -2013,16 +2001,15 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   const username = (azureToken as any).username ? (azureToken as any).username : "";
   const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
   const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
-
-  const msg = util.format(
-    getStrings().solution.ProvisionConfirmNotice,
+  const msg = getLocalizedString(
+    "core.provision.confirmNotice",
     username,
     subscriptionName ? subscriptionName : subscriptionId
   );
   let confirmRes = undefined;
   if (isMultiEnvEnabled()) {
-    const msgNew = util.format(
-      getStrings().solution.ProvisionConfirmEnvNotice,
+    const msgNew = getLocalizedString(
+      "core.provision.confirmEnvNotice",
       ctx.envInfo.envName,
       username,
       subscriptionName ? subscriptionName : subscriptionId
@@ -2039,13 +2026,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
       ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
     }
 
-    return err(
-      returnUserError(
-        new Error(getStrings().solution.CancelProvision),
-        SolutionSource,
-        getStrings().solution.CancelProvision
-      )
-    );
+    return err(returnUserError(new Error("CancelProvision"), SolutionSource, "CancelProvision"));
   }
 
   return ok(Void);

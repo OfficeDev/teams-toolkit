@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory } from "../common/tools";
+import { getRootDirectory, isBotNotificationEnabled } from "../common/tools";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -144,6 +144,14 @@ export const BotOptionItem: OptionItem = {
   detail: "Running simple and repetitive automated tasks through conversations",
 };
 
+export const NotificationOptionItem: OptionItem = {
+  id: "Notification",
+  label: "Notification",
+  cliName: "notification",
+  description: "Notification",
+  detail: "Sending a message in response to stimulus not originating from the user",
+};
+
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",
@@ -160,12 +168,21 @@ export const TabSPFxItem: OptionItem = {
   detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
 };
 
+function hasCapability(items: string[], optionItem: OptionItem): boolean {
+  return items.includes(optionItem.id) || items.includes(optionItem.label);
+}
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
+  const staticOptions = [
+    ...[TabOptionItem, BotOptionItem],
+    ...(isBotNotificationEnabled() ? [NotificationOptionItem] : []),
+    ...[MessageExtensionItem, TabSPFxItem],
+  ];
   return {
     name: CoreQuestionNames.Capabilities,
     title: "Select capabilities",
     type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+    staticOptions: staticOptions,
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
     validation: {
@@ -174,11 +191,20 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         if (name.length === 0) {
           return "Select at least 1 capability";
         }
-        if (
-          name.length > 1 &&
-          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
-        ) {
+
+        if (name.length > 1 && hasCapability(name, TabSPFxItem)) {
           return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
+        }
+
+        if (hasCapability(name, BotOptionItem) && hasCapability(name, NotificationOptionItem)) {
+          return "Bot and Notification capability are in conflict";
+        }
+
+        if (
+          hasCapability(name, MessageExtensionItem) &&
+          hasCapability(name, NotificationOptionItem)
+        ) {
+          return "Messaging extension and Notification capability are in conflict";
         }
 
         return undefined;

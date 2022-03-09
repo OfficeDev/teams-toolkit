@@ -3,7 +3,6 @@ import * as spies from "chai-spies";
 import { Stage, returnUserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
-import { NoneFxError } from "../../../../fx-core/build";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 

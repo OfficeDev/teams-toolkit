@@ -80,7 +80,7 @@ class EnvironmentManager {
     isV3 = false
   ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     envName = envName ?? this.getDefaultEnvName();
@@ -156,7 +156,7 @@ class EnvironmentManager {
     envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -184,7 +184,7 @@ class EnvironmentManager {
     isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envStatesFolder = this.getEnvStatesFolder(projectPath);
@@ -213,7 +213,7 @@ class EnvironmentManager {
 
   public async listAllEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -231,7 +231,7 @@ class EnvironmentManager {
 
   public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);

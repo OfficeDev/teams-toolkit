@@ -572,7 +572,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = getWorkspacePath();
   if (!isValidProject(projectPath)) {
-    return err(InvalidProjectError());
+    return err(new InvalidProjectError());
   }
   const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
@@ -1519,12 +1519,15 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
   );
   const projectPath = getWorkspacePath();
   if (!projectPath) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, InvalidProjectError());
-    return err(InvalidProjectError());
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.OpenManifestEditor,
+      new InvalidProjectError()
+    );
+    return err(new InvalidProjectError());
   }
   const appDirectory = await getAppDirectory(projectPath!);
   if (!(await fs.pathExists(appDirectory))) {
-    const invalidProjectError: FxError = InvalidProjectError();
+    const invalidProjectError: FxError = new InvalidProjectError();
     showError(invalidProjectError);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
     return err(invalidProjectError);
@@ -2083,8 +2086,11 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
   const workspacePath = getWorkspacePath();
   const validProject = isValidProject(workspacePath);
   if (!validProject) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, InvalidProjectError());
-    return err(InvalidProjectError());
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PreviewManifestFile,
+      new InvalidProjectError()
+    );
+    return err(new InvalidProjectError());
   }
 
   let isLocalDebug = false;

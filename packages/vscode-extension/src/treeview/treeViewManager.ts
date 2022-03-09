@@ -12,6 +12,7 @@ import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewPro
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject } from "../utils/commonUtils";
+import { isInitAppEnabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -50,15 +51,6 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.initProjectTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.initProjectDescription,
-        "fx-extension.init",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "new-folder", custom: false }
-      ),
-      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
         StringResources.vsc.commandsTreeViewProvider.samplesDescription,
         "fx-extension.openSamples",
@@ -68,6 +60,23 @@ class TreeViewManager {
         { name: "library", custom: false }
       ),
     ];
+
+    if (isInitAppEnabled()) {
+      // insert the init tree view command after the create project command
+      developmentCommand.splice(
+        1,
+        0,
+        new TreeViewCommand(
+          StringResources.vsc.commandsTreeViewProvider.initProjectTitleNew,
+          StringResources.vsc.commandsTreeViewProvider.initProjectDescription,
+          "fx-extension.init",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          { name: "new-folder", custom: false }
+        )
+      );
+    }
 
     if (workspacePath && !(await isSPFxProject(workspacePath))) {
       developmentCommand.push(

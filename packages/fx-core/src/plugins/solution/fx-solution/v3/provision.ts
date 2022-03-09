@@ -24,16 +24,16 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
-import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
@@ -174,7 +174,7 @@ export async function provisionResources(
         };
       });
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
     );
     const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
     if (provisionResult.kind !== "success") {
@@ -182,7 +182,7 @@ export async function provisionResources(
     }
 
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
     );
 
     if (envInfo.envName === "local") {
@@ -194,10 +194,7 @@ export async function provisionResources(
     } else {
       //5.2 deploy arm templates for remote
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.StartNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
       );
       const armRes = await arm.deployArmTemplates(
         ctx,
@@ -209,10 +206,7 @@ export async function provisionResources(
         return err(armRes.error);
       }
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.SuccessNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.SuccessNotice", PluginDisplayName.Solution)
       );
     }
 
@@ -236,14 +230,11 @@ export async function provisionResources(
       ctx.logProvider
     );
     ctx.logProvider.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
     );
     const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
     if (configureResourceResult.kind !== "success") {
-      const msg = util.format(
-        getStrings().solution.ProvisionFailNotice,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.provision.failNotice", ctx.projectSetting.appName);
       ctx.logProvider.error(msg);
       envStates.solution.provisionSucceeded = false;
       return err(configureResourceResult.error);
@@ -262,7 +253,7 @@ export async function provisionResources(
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = getStrings().solution.ProvisionSuccessAzure;
+      const msg = getLocalizedString("core.provision.successAzure");
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -282,10 +273,7 @@ export async function provisionResources(
     return err(updateTeamsAppRes.error);
   }
   if (envInfo.envName !== "local") {
-    const msg = util.format(
-      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-      ctx.projectSetting.appName
-    );
+    const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.logProvider.info(msg);
   }
@@ -529,8 +517,8 @@ export async function askForProvisionConsent(
   const username = (azureToken as any).username || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
-  const msgNew = util.format(
-    getStrings().solution.ProvisionConfirmEnvNotice,
+  const msgNew = getLocalizedString(
+    "core.provision.confirmEnvNotice",
     envInfo.envName,
     username,
     subscriptionName ? subscriptionName : subscriptionId
@@ -542,13 +530,7 @@ export async function askForProvisionConsent(
     if (confirm === "Pricing calculator") {
       ctx.userInteraction.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
     }
-    return err(
-      new UserError(
-        getStrings().solution.CancelProvision,
-        getStrings().solution.CancelProvision,
-        SolutionSource
-      )
-    );
+    return err(new UserError("CancelProvision", "CancelProvision", SolutionSource));
   }
   return ok(Void);
 }

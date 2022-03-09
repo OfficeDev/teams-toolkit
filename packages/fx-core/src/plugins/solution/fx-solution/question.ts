@@ -12,6 +12,7 @@ import {
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
+import { NotificationOptionItem } from "../../../core/question";
 import { SolutionError, SolutionSource } from "./constants";
 
 export const TabOptionItem: OptionItem = {
@@ -57,6 +58,7 @@ export enum AzureSolutionQuestionNames {
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
+  Scenario = "scenario",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -93,6 +95,11 @@ export const AzureResourceKeyVault: OptionItem = {
   label: "Azure Key Vault",
   description: "Secure runtime application secrets with Azure Key Vault",
 };
+
+export enum BotScenario {
+  NotificationBot = "notificationBot",
+  CommandBot = "commandBot",
+}
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
   return {

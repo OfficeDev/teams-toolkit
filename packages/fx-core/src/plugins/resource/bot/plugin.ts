@@ -24,7 +24,13 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
+import {
+  CommonStrings,
+  PluginBot,
+  ConfigNames,
+  PluginLocalDebug,
+  HostTypes,
+} from "./resources/strings";
 import {
   CheckAndThrowIfMissing,
   CheckThrowSomethingMissing,
@@ -53,7 +59,11 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  isBotNotificationEnabled,
+  isConfigUnifyEnabled,
+} from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
 
@@ -82,6 +92,11 @@ export class TeamsBotImpl implements PluginImpl {
       this.ctx
     );
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
+
+    if (isBotNotificationEnabled()) {
+      // TODO: set host type from input
+      this.config.scaffold.hostType = HostTypes.APP_SERVICE;
+    }
 
     // 1. Copy the corresponding template project into target directory.
     // Get group name.

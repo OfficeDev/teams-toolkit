@@ -10,6 +10,9 @@ import { BotValidator, FrontendValidator, FunctionValidator } from "../../common
 
 import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
 
+import { describe } from "mocha";
+import { it } from "../../commonlib/it";
+
 describe("Azure App Scaffold", function () {
   let testFolder: string;
   let appName: string;
@@ -28,7 +31,7 @@ describe("Azure App Scaffold", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it(`Tab + Bot + Function in TypeScript`, async function () {
+  it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 9863654 }, async function () {
     const lang = "typescript";
 
     // new a project (tab + bot + function) in TypeScript

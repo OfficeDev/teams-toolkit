@@ -8,6 +8,7 @@
 import { environmentManager } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
+import { describe } from "mocha";
 import { SqlValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -21,6 +22,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   setSkipAddingSqlUserToConfig,
 } from "../commonUtils";
+import { it } from "../../commonlib/it";
 
 describe("Provision to Azure with SQL", function () {
   const testFolder = getTestFolder();
@@ -29,7 +31,7 @@ describe("Provision to Azure with SQL", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
-  it(`Provision SQL with skip adding user`, async function () {
+  it(`Provision SQL with skip adding user`, { testPlanCaseId: 12730645 }, async function () {
     // new a project ( tab + function + sql )
     await CliHelper.createProjectWithCapability(
       appName,

@@ -14,7 +14,7 @@ export function Graph() {
       const profile = await graph.api("/me").get();
 
       // Initialize Graph Toolkit TeamsFx provider
-      const provider = new TeamsFxProvider(teamsfx.getCredential(), scope);
+      const provider = new TeamsFxProvider(teamsfx, scope);
       Providers.globalProvider = provider;
       Providers.globalProvider.setState(ProviderState.SignedIn);
 

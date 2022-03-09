@@ -18,7 +18,6 @@ import { Service } from "typedi";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
-import { TabSPFxItem } from "../../../solution/fx-solution/question";
 import { SPFxAlreadyExistError } from "./error";
 import * as uuid from "uuid";
 import {
@@ -31,6 +30,7 @@ import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import { SPFxPluginImpl } from "./plugin";
 import { ManifestTemplate } from "../utils/constants";
 import * as util from "util";
+import { TabSPFxItem } from "../../../../core/question";
 
 @Service(BuiltInFeaturePluginNames.spfx)
 export class SPFxPluginV3 implements v3.PluginV3 {

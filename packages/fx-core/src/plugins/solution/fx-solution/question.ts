@@ -11,7 +11,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../../core/question";
-import { getLocalAppName } from "../../resource/appstudio/utils/utils";
 
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { MultiSelectQuestion, SingleSelectQuestion } from "@microsoft/teamsfx-api";
-import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../fx-solution/question";
+import { MultiSelectQuestion } from "@microsoft/teamsfx-api";
+import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../../core/question";
 
 export enum SolutionV3QuestionNames {
   capabilities = "capabilities",

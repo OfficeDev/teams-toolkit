@@ -29,11 +29,7 @@ import {
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
-import {
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  MessageExtensionItem,
-} from "../../../solution/fx-solution/question";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import {
   AzureConstants,
@@ -77,6 +73,7 @@ import {
   UnzipError,
 } from "./error";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
+import { BotOptionItem, MessageExtensionItem } from "../../../../core/question";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {

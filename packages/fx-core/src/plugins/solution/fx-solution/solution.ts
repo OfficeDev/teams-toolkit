@@ -100,14 +100,9 @@ import {
   AzureResourceSQL,
   AzureResourcesQuestion,
   AzureSolutionQuestionNames,
-  BotOptionItem,
   createAddAzureResourceQuestion,
-  createCapabilityQuestion,
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
-  MessageExtensionItem,
-  TabOptionItem,
-  TabSPFxItem,
   AzureResourceKeyVault,
   getUserEmailQuestion,
 } from "./question";
@@ -143,6 +138,13 @@ import { AppStudioPlugin } from "../../resource/appstudio";
 import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { LoadedPlugin, PluginsWithContext, SolutionRunningState } from "./types";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import {
+  BotOptionItem,
+  createCapabilityQuestion,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../../core/question";
 
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {

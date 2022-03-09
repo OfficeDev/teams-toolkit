@@ -21,7 +21,7 @@ import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { FrontendPluginInfo, TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
+import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
@@ -30,6 +30,7 @@ import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
 import { PluginImpl } from "./interface";
 import { isVSProject } from "../../../common/projectSettingsHelper";
+import { TabOptionItem } from "../../../core/question";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {

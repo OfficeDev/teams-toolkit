@@ -13,11 +13,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import {
-  AzureResourceFunction,
-  HostTypeOptionAzure,
-  TabOptionItem,
-} from "../../solution/fx-solution/question";
+import { AzureResourceFunction, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { FunctionEvent } from "./enums";
 import { FunctionPluginImpl } from "./plugin";

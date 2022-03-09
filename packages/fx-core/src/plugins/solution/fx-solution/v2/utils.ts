@@ -29,20 +29,22 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
-  BotOptionItem,
   BotScenario,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  MessageExtensionItem,
-  TabOptionItem,
-  TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { NotificationOptionItem } from "../../../../core/question";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../../../core/question";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);

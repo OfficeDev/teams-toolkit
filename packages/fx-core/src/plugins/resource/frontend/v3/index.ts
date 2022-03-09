@@ -33,8 +33,8 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
+import { TabOptionItem } from "../../../../core/question";
 import { getTemplatesFolder } from "../../../../folder";
-import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";

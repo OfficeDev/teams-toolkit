@@ -53,7 +53,6 @@ import {
 } from "../common/tools";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
-import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -110,6 +109,7 @@ import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   BotOptionItem,
   CoreQuestionNames,
+  MessageExtensionItem,
   NotificationOptionItem,
   ProjectNamePattern,
   QuestionAppName,

@@ -18,11 +18,6 @@ import {
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
 import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../../solution/fx-solution/question";
-import {
   REMOTE_AAD_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
@@ -95,6 +90,7 @@ import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
+import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../../core/question";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};

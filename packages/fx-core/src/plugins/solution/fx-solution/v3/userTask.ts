@@ -25,6 +25,7 @@ import * as util from "util";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../../../core/question";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,
@@ -32,10 +33,7 @@ import {
   AzureResourceKeyVault,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
-  BotOptionItem,
   createAddAzureResourceQuestion,
-  MessageExtensionItem,
-  TabOptionItem,
 } from "../question";
 import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 import { canAddResource } from "../v2/executeUserTask";

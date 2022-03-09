@@ -8,6 +8,8 @@ import { TemplateKind } from "./enums";
 import path from "path";
 import Mustache from "mustache";
 import { getTemplatesFolder } from "../../../../folder";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { generateBuildScript } from "../utils/buildScripts";
 
 export class CICDProvider {
   public scaffoldTo = "";
@@ -17,7 +19,8 @@ export class CICDProvider {
   public async scaffold(
     projectPath: string,
     templateName: string,
-    replacements: any
+    envName: string,
+    context: Context
   ): Promise<Result<boolean, FxError>> {
     // 0. Preconditions check.
     if (!(await fs.pathExists(projectPath))) {
@@ -58,9 +61,22 @@ export class CICDProvider {
     }
 
     // 3. Generate template file.
+    const hostType = context.projectSetting.solutionSettings?.hostType;
+    const replacements = {
+      env_name: envName,
+      build_script: generateBuildScript(context.projectSetting),
+      hosting_type_contains_spfx: hostType === "SPFx",
+      hosting_type_contains_azure: hostType === "Azure",
+      cloud_resources_contains_sql:
+        context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
+      api_prefix: context.projectSetting.appName,
+      cloud_resources_contains_apim:
+        context.projectSetting.solutionSettings?.["azureResources"].includes("apim") ?? false,
+    };
+
     const targetTemplatePath = path.join(
       targetPath,
-      this.targetTemplateName(templateName, replacements.env_name)
+      this.targetTemplateName(templateName, envName)
     );
     if (!(await fs.pathExists(targetTemplatePath))) {
       const localTemplatePath = path.join(

@@ -86,6 +86,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       default: [ciOption.id],
     });
 
+    // TODO: add support for VS/.Net Projects.
     if (inputs.platform === Platform.VSCode) {
       if (!inputs.projectPath) {
         throw new NoProjectOpenedError();

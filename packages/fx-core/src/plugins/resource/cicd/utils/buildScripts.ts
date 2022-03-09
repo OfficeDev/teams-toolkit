@@ -3,6 +3,7 @@
 
 import { ProjectSettings } from "@microsoft/teamsfx-api";
 
+// TODO: add support for VS/.Net Projects.
 export function generateBuildScript(projectSettings: ProjectSettings): string {
   const parts: string[] = [];
 

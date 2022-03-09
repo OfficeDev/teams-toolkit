@@ -6,16 +6,12 @@
 import * as path from "path";
 import { Argv } from "yargs";
 
+import { err, FxError, ok, Result, LogLevel, Platform } from "@microsoft/teamsfx-api";
 import {
-  err,
-  FxError,
-  ok,
-  Result,
-  LogLevel,
-  Platform,
   PathNotExistError,
-} from "@microsoft/teamsfx-api";
-
+  environmentManager,
+  ProjectSettingsHelper,
+} from "@microsoft/teamsfx-core";
 import activate from "../activate";
 import { getSystemInputs, Json, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
@@ -28,7 +24,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+
 import { EnvNodeNoCreate } from "../constants";
 import {
   EnvNotFound,

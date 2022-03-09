@@ -1,9 +1,8 @@
 import { signInAzure } from "../handlers";
-
-import * as StringResources from "../resources/Strings.json";
+import { localize } from "./localizeUtils";
 
 export class StringContext {
-  private static signInAzure: string = StringResources.vsc.handlers.signInAzure;
+  private static signInAzure: string = localize("teamstoolkit.handlers.signInAzure");
 
   public static setSignInAzureContext(value: string): void {
     this.signInAzure = value;

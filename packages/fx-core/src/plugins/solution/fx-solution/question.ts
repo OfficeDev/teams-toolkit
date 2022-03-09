@@ -10,7 +10,46 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../../core/question";
+
+export const TabOptionItem: OptionItem = {
+  id: "Tab",
+  label: "Tab",
+  cliName: "tab",
+  description: getLocalizedString("core.TabOption.description"),
+  detail: getLocalizedString("core.TabOption.detail"),
+};
+
+export const BotOptionItem: OptionItem = {
+  id: "Bot",
+  label: "Bot",
+  cliName: "bot",
+  description: getLocalizedString("core.BotOption.description"),
+  detail: getLocalizedString("core.BotOption.detail"),
+};
+
+export const NotificationOptionItem: OptionItem = {
+  id: "Notification",
+  label: "Notification",
+  cliName: "notification",
+  description: getLocalizedString("core.NotificationOption.description"),
+  detail: getLocalizedString("core.NotificationOption.detail"),
+};
+
+export const MessageExtensionItem: OptionItem = {
+  id: "MessagingExtension",
+  label: "Messaging Extension",
+  cliName: "messaging-extension",
+  description: getLocalizedString("core.MessageExtensionOption.description"),
+  detail: getLocalizedString("core.MessageExtensionOption.detail"),
+};
+
+export const TabSPFxItem: OptionItem = {
+  id: "TabSPFx",
+  label: "Tab(SPFx)",
+  cliName: "tab-spfx",
+  description: getLocalizedString("core.TabSPFxOption.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
+};
 
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",

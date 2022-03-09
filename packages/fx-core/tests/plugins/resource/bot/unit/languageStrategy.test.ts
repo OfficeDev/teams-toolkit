@@ -7,7 +7,10 @@ import * as path from "path";
 
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { TemplateProjectsConstants } from "../../../../../src/plugins/resource/bot/constants";
+import {
+  TemplateProjectsConstants,
+  TemplateProjectsScenarios,
+} from "../../../../../src/plugins/resource/bot/constants";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { Messages } from "./messages";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
@@ -32,7 +35,7 @@ describe("Language Strategy", () => {
         commonPath,
         `${TemplateProjectsConstants.GROUP_NAME_BOT}.${utils.convertToLangKey(
           ProgrammingLanguage.JavaScript
-        )}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`
+        )}.${TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME}.zip`
       );
 
       const config: { [key: string]: any } = {};

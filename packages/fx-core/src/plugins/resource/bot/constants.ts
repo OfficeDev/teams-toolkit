@@ -39,9 +39,12 @@ export class TemplateProjectsConstants {
   public static readonly TEMPLATE_FOLDER_NAME: string = "bot";
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
-  public static readonly DEFAULT_SCENARIO_NAME: string = "default";
-  public static readonly NOTIFICATION_SCENARIO_NAME: string = "notification";
   public static readonly VERSION_RANGE: string = "0.0.*";
+}
+
+export enum TemplateProjectsScenarios {
+  DEFAULT_SCENARIO_NAME = "default",
+  NOTIFICATION_SCENARIO_NAME = "notification",
 }
 
 export class ProgressBarConstants {

@@ -116,6 +116,13 @@ export function existsInEnumValues<T extends string>(
   return Object.values(targetEnum).find((itemValue: string) => value === itemValue) !== undefined;
 }
 
+export function convertToConstValues<V extends string, T extends { [key in string]: V }>(
+  value: string | undefined,
+  targetValues: T
+): V | undefined {
+  return Object.values(targetValues).find((itemValue) => value === itemValue);
+}
+
 export function isHttpCodeOkOrCreated(code: number): boolean {
   return [200, 201].includes(code);
 }

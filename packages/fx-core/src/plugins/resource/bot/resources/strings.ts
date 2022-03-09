@@ -131,7 +131,9 @@ export class ClientNames {
   public static readonly BOT_SERVICE_CLIENT = "botServiceClient";
 }
 
-export class HostTypes {
-  public static readonly APP_SERVICE = "app-service";
-  public static readonly AZURE_FUNCTIONS = "azure-functions";
-}
+export const HostTypes = {
+  APP_SERVICE: "app-service",
+  AZURE_FUNCTIONS: "azure-functions",
+} as const;
+
+export type HostType = typeof HostTypes[keyof typeof HostTypes];

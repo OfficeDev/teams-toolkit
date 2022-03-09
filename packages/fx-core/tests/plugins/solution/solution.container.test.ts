@@ -13,9 +13,9 @@ import {
 import {
   AzureResourceSQL,
   HostTypeOptionAzure,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { Container } from "typedi";
-import { TabOptionItem } from "../../../src/core/question";
 
 describe("Resource plugin container", () => {
   beforeEach(() => {});

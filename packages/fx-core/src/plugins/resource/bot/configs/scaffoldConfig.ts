@@ -5,7 +5,6 @@ import { CommonStrings, PluginBot } from "../resources/strings";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
-import { HostType } from "../enums/hostType";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -13,7 +12,7 @@ export class ScaffoldConfig {
   public objectId?: string;
   public programmingLanguage?: ProgrammingLanguage;
   public workingDir?: string;
-  public hostType?: HostType;
+  public hostType?: string;
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -38,11 +37,9 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    const rawHostType =
-      context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.HOST_TYPE];
-    if (rawHostType && utils.existsInEnumValues(rawHostType, HostType)) {
-      this.hostType = rawHostType as HostType;
-    }
+    this.hostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

@@ -24,7 +24,13 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
+import {
+  CommonStrings,
+  PluginBot,
+  ConfigNames,
+  PluginLocalDebug,
+  HostTypes,
+} from "./resources/strings";
 import {
   CheckAndThrowIfMissing,
   CheckThrowSomethingMissing,
@@ -60,7 +66,6 @@ import {
 } from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
-import { HostType } from "./enums/hostType";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -90,7 +95,7 @@ export class TeamsBotImpl implements PluginImpl {
 
     if (isBotNotificationEnabled()) {
       // TODO: set host type from input
-      this.config.scaffold.hostType = HostType.AppService;
+      this.config.scaffold.hostType = HostTypes.APP_SERVICE;
     }
 
     // 1. Copy the corresponding template project into target directory.

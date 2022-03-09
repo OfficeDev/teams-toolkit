@@ -130,3 +130,8 @@ export class ClientNames {
   public static readonly WEB_SITE_MGMT_CLIENT = "webSiteMgmtClient";
   public static readonly BOT_SERVICE_CLIENT = "botServiceClient";
 }
+
+export class HostTypes {
+  public static readonly APP_SERVICE = "app-service";
+  public static readonly AZURE_FUNCTIONS = "azure-functions";
+}

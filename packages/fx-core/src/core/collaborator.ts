@@ -27,7 +27,7 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { getHashedEnv, getStrings } from "../common/tools";
+import { getHashedEnv } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
@@ -45,6 +45,7 @@ import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
 import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
+import { getLocalizedString } from "../common/localizeUtils";
 
 export async function listCollaborator(
   ctx: v2.Context,
@@ -108,28 +109,34 @@ export async function listCollaborator(
   if (inputs.platform === Platform.CLI || inputs.platform === Platform.VSCode) {
     const message = [
       {
-        content: getStrings().solution.Collaboration.ListingM365Permission,
+        content: getLocalizedString("core.collaboration.ListingM365Permission"),
         color: Colors.BRIGHT_WHITE,
       },
       {
-        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        content: getLocalizedString("core.collaboration.AccountUsedToCheck"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: user.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: getStrings().solution.Collaboration.StartingListAllTeamsAppOwners,
+        content: getLocalizedString("core.collaboration.StartingListAllTeamsAppOwners"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${envInfo.envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+      { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.M365TeamsAppId, color: Colors.BRIGHT_WHITE },
+      {
+        content: getLocalizedString("core.collaboration.M365TeamsAppId"),
+        color: Colors.BRIGHT_WHITE,
+      },
       { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
     ];
 
     if (hasAad) {
       message.push(
-        { content: getStrings().solution.Collaboration.SsoAadAppId, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.SsoAadAppId"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
         { content: `)\n`, color: Colors.BRIGHT_WHITE }
       );
@@ -139,14 +146,17 @@ export async function listCollaborator(
 
     for (const collaborator of collaborators) {
       message.push(
-        { content: getStrings().solution.Collaboration.TeamsAppOwner, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.TeamsAppOwner"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
         { content: `. `, color: Colors.BRIGHT_WHITE }
       );
 
       if (hasAad && !collaborator.isAadOwner) {
         message.push({
-          content: getStrings().solution.Collaboration.NotOwnerOfSsoAadApp,
+          content: getLocalizedString("core.collaboration.NotOwnerOfSsoAadApp"),
           color: Colors.BRIGHT_YELLOW,
         });
       }
@@ -159,9 +169,9 @@ export async function listCollaborator(
     } else if (inputs.platform === Platform.VSCode) {
       ctx.userInteraction.showMessage(
         "info",
-        util.format(
-          getStrings().solution.Collaboration.ListCollaboratorsSuccess,
-          hasAad ? getStrings().solution.Collaboration.WithAadApp : ""
+        getLocalizedString(
+          "core.collaboration.ListCollaboratorsSuccess",
+          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : ""
         ),
         false
       );
@@ -241,16 +251,16 @@ export async function checkPermission(
     const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
     const message = [
       {
-        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        content: getLocalizedString("core.collaboration.AccountUsedToCheck"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: getStrings().solution.Collaboration.StaringCheckPermission,
+        content: getLocalizedString("core.collaboration.StaringCheckPermission"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${inputs.envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+      { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
     ];
     ctx.userInteraction.showMessage("info", message, false);
@@ -281,20 +291,26 @@ export async function checkPermission(
     for (const permission of permissions) {
       const message = [
         {
-          content: getStrings().solution.Collaboration.CheckPermissionResourceId,
+          content: getLocalizedString("core.collaboration.CheckPermissionResourceId"),
           color: Colors.BRIGHT_WHITE,
         },
         {
-          content: permission.resourceId ?? getStrings().solution.Collaboration.Undefined,
+          content: permission.resourceId ?? getLocalizedString("core.collaboration.Undefined"),
           color: Colors.BRIGHT_MAGENTA,
         },
-        { content: getStrings().solution.Collaboration.ResourceName, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.ResourceName"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: permission.name, color: Colors.BRIGHT_MAGENTA },
-        { content: getStrings().solution.Collaboration.Permission, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.Permission"),
+          color: Colors.BRIGHT_WHITE,
+        },
         {
           content: permission.roles
             ? permission.roles.toString()
-            : getStrings().solution.Collaboration.Undefined + "\n",
+            : getLocalizedString("core.collaboration.Undefined") + "\n",
           color: Colors.BRIGHT_MAGENTA,
         },
       ];
@@ -306,10 +322,10 @@ export async function checkPermission(
   if (telemetryProps) {
     telemetryProps[SolutionTelemetryProperty.AadPermission] = aadPermission?.roles
       ? aadPermission.roles.join(";")
-      : getStrings().solution.Collaboration.Undefined;
+      : getLocalizedString("core.collaboration.Undefined");
     telemetryProps[SolutionTelemetryProperty.TeamsAppPermission] = teamsAppPermission?.roles
       ? teamsAppPermission.roles.join(";")
-      : getStrings().solution.Collaboration.Undefined;
+      : getLocalizedString("core.collaboration.Undefined");
   }
   return ok({
     state: CollaborationState.OK,
@@ -325,7 +341,7 @@ export async function grantPermission(
   telemetryProps?: Json
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(
-    getStrings().solution.Collaboration.GrantingPermission,
+    getLocalizedString("core.collaboration.GrantingPermission"),
     1
   );
   try {
@@ -350,7 +366,7 @@ export async function grantPermission(
       return err(
         new UserError(
           SolutionError.EmailCannotBeEmptyOrSame,
-          getStrings().solution.Collaboration.EmailCannotBeEmptyOrSame,
+          getLocalizedString("core.collaboration.EmailCannotBeEmptyOrSame"),
           CoreSource
         )
       );
@@ -362,29 +378,29 @@ export async function grantPermission(
       return err(
         new UserError(
           SolutionError.CannotFindUserInCurrentTenant,
-          getStrings().solution.Collaboration.CannotFindUserInCurrentTenant,
+          getLocalizedString("core.collaboration.CannotFindUserInCurrentTenant"),
           CoreSource
         )
       );
     }
 
     progressBar?.start();
-    progressBar?.next(getStrings().solution.Collaboration.GrantPermissionForUser + ` ${email}`);
+    progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
 
     if (inputs.platform === Platform.CLI) {
       const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
       const message = [
         {
-          content: getStrings().solution.Collaboration.AccountToGrantPermission,
+          content: getLocalizedString("core.collaboration.AccountToGrantPermission"),
           color: Colors.BRIGHT_WHITE,
         },
         { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
         {
-          content: getStrings().solution.Collaboration.StartingGrantPermission,
+          content: getLocalizedString("core.collaboration.StartingGrantPermission"),
           color: Colors.BRIGHT_WHITE,
         },
         { content: `${inputs.envName}\n`, color: Colors.BRIGHT_MAGENTA },
-        { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+        { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
 
@@ -416,12 +432,12 @@ export async function grantPermission(
         const message = [
           { content: `${permission.roles?.join(",")} `, color: Colors.BRIGHT_MAGENTA },
           {
-            content: getStrings().solution.Collaboration.PermissionHasBeenGrantTo,
+            content: getLocalizedString("core.collaboration.PermissionHasBeenGrantTo"),
             color: Colors.BRIGHT_WHITE,
           },
           { content: permission.name, color: Colors.BRIGHT_MAGENTA },
           {
-            content: getStrings().solution.Collaboration.GrantPermissionResourceId,
+            content: getLocalizedString("core.collaboration.GrantPermissionResourceId"),
             color: Colors.BRIGHT_WHITE,
           },
           { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
@@ -431,14 +447,15 @@ export async function grantPermission(
       if (hasSPFx(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
-          getStrings().solution.Collaboration.SharePointTip + SharePointManageSiteAdminHelpLink,
+          getLocalizedString("core.collaboration.SharePointTip") +
+            SharePointManageSiteAdminHelpLink,
           false
         );
       }
       if (hasAzureResource(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
-          getStrings().solution.Collaboration.AzureTip + AzureRoleAssignmentsHelpLink,
+          getLocalizedString("core.collaboration.AzureTip") + AzureRoleAssignmentsHelpLink,
           false
         );
       }

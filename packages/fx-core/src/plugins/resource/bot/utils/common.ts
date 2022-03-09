@@ -10,6 +10,7 @@ import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import * as appService from "@azure/arm-appservice";
+import { PluginBot } from "../resources/strings";
 
 export function toBase64(source: string): string {
   return Base64.encode(source);
@@ -89,11 +90,37 @@ export function checkAndSaveConfig(context: PluginContext, key: string, value: C
   context.config.set(key, value);
 }
 
+export function checkAndSavePluginSetting(
+  context: PluginContext,
+  key: string,
+  value: ConfigValue
+): void {
+  if (!value || !context.projectSettings) {
+    return;
+  }
+
+  if (!context.projectSettings.pluginSettings) {
+    context.projectSettings.pluginSettings = {};
+  }
+
+  if (!context.projectSettings.pluginSettings[PluginBot.PLUGIN_NAME]) {
+    context.projectSettings.pluginSettings[PluginBot.PLUGIN_NAME] = {};
+  }
+  context.projectSettings.pluginSettings[PluginBot.PLUGIN_NAME][key] = value;
+}
+
 export function existsInEnumValues<T extends string>(
   value: string,
   targetEnum: { [key: string]: T }
 ): boolean {
   return Object.values(targetEnum).find((itemValue: string) => value === itemValue) !== undefined;
+}
+
+export function convertToConstValues<V extends string, T extends { [key in string]: V }>(
+  value: string | undefined,
+  targetValues: T
+): V | undefined {
+  return Object.values(targetValues).find((itemValue) => value === itemValue);
 }
 
 export function isHttpCodeOkOrCreated(code: number): boolean {

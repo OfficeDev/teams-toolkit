@@ -19,7 +19,7 @@ describe("Plugin Version Manager: Broker(API layer)", async () => {
       await Broker.list(targetPath);
     } catch (e) {
       if (e instanceof UserError) {
-        expect(e.name).equals("InvalidProject");
+        expect(e.name).equals("InvalidProjectError");
       } else {
         expect(e).is.null;
       }

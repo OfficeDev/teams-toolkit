@@ -32,16 +32,16 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     return;
   }
   if (!inputs.projectPath) {
-    ctx.result = err(NoProjectOpenedError());
+    ctx.result = err(new NoProjectOpenedError());
     return;
   }
   if (!(await fs.pathExists(inputs.projectPath))) {
-    ctx.result = err(PathNotExistError(inputs.projectPath));
+    ctx.result = err(new PathNotExistError(inputs.projectPath));
     return;
   }
   const configFolder = path.join(inputs.projectPath, `.${ConfigFolderName}`);
   if (!(await fs.pathExists(configFolder))) {
-    ctx.result = err(InvalidProjectError());
+    ctx.result = err(new InvalidProjectError(configFolder));
     return;
   }
 

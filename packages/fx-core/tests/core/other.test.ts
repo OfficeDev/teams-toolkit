@@ -17,14 +17,13 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import Container from "typedi";
+import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
   FetchSampleError,
-  NoneFxError,
   ProjectFolderExistError,
   ReadFileError,
   TaskNotSupportError,
@@ -43,7 +42,7 @@ import { randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { execPowerShell, execShell } from "../../src/common/local/process";
-import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
+import { isValidProject } from "../../src/common/projectSettingsHelper";
 import "../../src/plugins/solution/fx-solution/v2/solution";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
@@ -89,7 +88,7 @@ describe("Other test case", () => {
   });
 
   it("error: ProjectFolderExistError", async () => {
-    const error = ProjectFolderExistError(os.tmpdir());
+    const error = new ProjectFolderExistError(os.tmpdir());
     assert.isTrue(error.name === "ProjectFolderExistError");
     assert.isTrue(
       error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
@@ -110,20 +109,13 @@ describe("Other test case", () => {
     assert.isTrue(error.message === msg);
   });
 
-  it("error: NoneFxError", async () => {
-    const msg = "hahahaha";
-    const error = NoneFxError(new Error(msg));
-    assert.isTrue(error.name === "NoneFxError");
-    assert.isTrue(error.message === msg);
-  });
-
   it("error: TaskNotSupportError", async () => {
     const error = new TaskNotSupportError(Stage.createEnv);
     assert.isTrue(error.name === "TaskNotSupportError");
   });
 
   it("error: FetchSampleError", async () => {
-    const error = FetchSampleError("hello world app");
+    const error = new FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
     assert.isTrue(error.message.includes("hello world app"));
   });

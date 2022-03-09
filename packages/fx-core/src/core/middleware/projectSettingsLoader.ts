@@ -42,12 +42,12 @@ export const ProjectSettingsLoaderMW: Middleware = async (
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!shouldIgnored(ctx)) {
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
     const projectPathExist = await fs.pathExists(inputs.projectPath);
     if (!projectPathExist) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
+      ctx.result = err(new PathNotExistError(inputs.projectPath));
       return;
     }
     const loadRes = await loadProjectSettings(inputs, true);
@@ -60,11 +60,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
-      ctx.result = err(
-        InvalidProjectSettingsFileError(
-          `reason: ${validRes}, projectSettings: ${JSON.stringify(projectSettings)}`
-        )
-      );
+      ctx.result = err(new InvalidProjectSettingsFileError(validRes));
       return;
     }
 
@@ -84,7 +80,7 @@ export async function loadProjectSettings(
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (!inputs.projectPath) {
-      return err(NoProjectOpenedError());
+      return err(new NoProjectOpenedError());
     }
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);

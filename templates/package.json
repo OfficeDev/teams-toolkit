@@ -13,6 +13,7 @@
         "bot/csharp/default",
         "bot/js/default",
         "bot/ts/default",
+        "bot/ts/notification",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",

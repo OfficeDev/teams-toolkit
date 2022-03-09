@@ -11,6 +11,7 @@ import {
   TokenProvider,
   v2,
   Void,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -23,7 +24,6 @@ import {
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
-import { AzureSolutionSettings } from "../../../../../../api/build/types";
 import {
   ResourcePlugins,
   ResourcePluginsV2,

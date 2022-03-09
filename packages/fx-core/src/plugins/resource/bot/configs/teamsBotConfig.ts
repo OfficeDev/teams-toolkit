@@ -9,6 +9,7 @@ import { PluginSolution, PluginAAD } from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
+import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
 
 export class TeamsBotConfig {
   public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -49,7 +50,14 @@ export class TeamsBotConfig {
       .capabilities;
 
     if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
-      this.actRoles.push(PluginActRoles.Bot);
+      if (
+        context.answers &&
+        context.answers[AzureSolutionQuestionNames.Scenario] === BotScenario.NotificationBot
+      ) {
+        this.actRoles.push(PluginActRoles.Notification);
+      } else {
+        this.actRoles.push(PluginActRoles.Bot);
+      }
     }
 
     if (

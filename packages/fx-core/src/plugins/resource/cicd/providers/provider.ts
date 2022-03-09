@@ -79,10 +79,10 @@ export class CICDProvider {
         throw new FileSystemError(`Fail to write file: ${targetTemplatePath}`, e as Error);
       }
     } else {
-      return ok(false);
+      return ok(true);
     }
 
-    return ok(true);
+    return ok(false);
   }
 
   public async readLocalFile(localPath: string): Promise<string> {

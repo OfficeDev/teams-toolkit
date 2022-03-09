@@ -6,6 +6,7 @@
  */
 
 import { it } from "../../commonlib/it";
+import { describe } from "mocha";
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator } from "../../commonlib";
@@ -34,7 +35,7 @@ describe("Create single tab", function () {
     // clean up
     await cleanUp(appName, projectPath, true, false, false);
   });
-  describe("feature flags for API v3", async function () {
+  describe("feature flags for API v3", { testPlanCaseId: 10306848 }, async function () {
     const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
     let mockedEnvRestore: RestoreFn;
     for (const envParam of envs) {

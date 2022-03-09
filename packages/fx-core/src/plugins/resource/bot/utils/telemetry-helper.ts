@@ -13,6 +13,10 @@ export class telemetryHelper {
       (ctx.envInfo.state
         .get(PluginSolution.PLUGIN_NAME)
         ?.get(PluginSolution.REMOTE_TEAMS_APPID) as string) || "";
+    properties[TelemetryKeys.HostType] =
+      (ctx.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+        PluginBot.HOST_TYPE
+      ] as string) ?? "";
   }
 
   static sendStartEvent(

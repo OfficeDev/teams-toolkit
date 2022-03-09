@@ -6,7 +6,15 @@
 import * as path from "path";
 import { Argv } from "yargs";
 
-import { err, FxError, ok, Result, LogLevel, Platform } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  ok,
+  Result,
+  LogLevel,
+  Platform,
+  PathNotExistError,
+} from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { getSystemInputs, Json, setSubscriptionId } from "../utils";
@@ -42,7 +50,7 @@ async function checkAndReadEnvJson(
   }
   const envsResult = await environmentManager.listRemoteEnvConfigs(rootFolder);
   if (envsResult.isErr()) {
-    if (envsResult.error.name === "PathNotExist") {
+    if (envsResult.error instanceof PathNotExistError) {
       return err(NotSupportedProjectType());
     }
     return envsResult;

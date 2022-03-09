@@ -50,6 +50,7 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { NotificationOptionItem } from "../../../../core/question";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 
 export async function getQuestionsForScaffolding(
@@ -66,7 +67,13 @@ export async function getQuestionsForScaffolding(
 
   if (!isV3()) {
     node.condition = {
-      containsAny: [TabSPFxItem.id, TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id],
+      containsAny: [
+        TabSPFxItem.id,
+        TabOptionItem.id,
+        BotOptionItem.id,
+        NotificationOptionItem.id,
+        MessageExtensionItem.id,
+      ],
     };
     // 1.1.1 SPFX Tab
     const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(

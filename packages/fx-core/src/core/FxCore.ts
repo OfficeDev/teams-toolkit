@@ -110,6 +110,7 @@ import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   BotOptionItem,
   CoreQuestionNames,
+  NotificationOptionItem,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
@@ -398,7 +399,8 @@ export class FxCore implements v3.ICore {
           }
           if (
             capabilities.includes(BotOptionItem.id) ||
-            capabilities.includes(MessageExtensionItem.id)
+            capabilities.includes(MessageExtensionItem.id) ||
+            capabilities.includes(NotificationOptionItem.id)
           ) {
             features.push(BuiltInFeaturePluginNames.bot);
           }

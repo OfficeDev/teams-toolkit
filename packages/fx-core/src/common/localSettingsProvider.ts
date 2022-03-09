@@ -108,7 +108,9 @@ export class LocalSettingsProvider {
     localSettingsJson: Json,
     addBackaned: boolean,
     addBot: boolean,
-    addFrontend: boolean
+    addFrontend: boolean,
+    addAad = true,
+    addSimpleAuth = false
   ): Json {
     const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
     if (!localSettings.backend && addBackaned) {
@@ -121,6 +123,10 @@ export class LocalSettingsProvider {
 
     if (!localSettings.frontend && addFrontend) {
       localSettings.frontend = this.initFrontend();
+    }
+
+    if (!localSettings.auth && addAad) {
+      localSettings.auth = this.initAuth(addSimpleAuth);
     }
 
     return this.convertToLocalSettingsJson(localSettings);

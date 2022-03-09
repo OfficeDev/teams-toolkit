@@ -21,6 +21,7 @@ import CICD from "./cicd";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
+import { ManifestValidate } from "./validate";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -32,6 +33,7 @@ export const commands: YargsCommand[] = [
   new Package(),
   new Manifest(),
   new CICD(),
+  new ManifestValidate(),
   new Publish(),
   new Config(),
   new Preview(),

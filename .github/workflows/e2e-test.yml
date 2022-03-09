@@ -192,7 +192,7 @@ jobs:
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter mochawesome --timeout 900000 $file --parallel
+            npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 
       - name: get report name

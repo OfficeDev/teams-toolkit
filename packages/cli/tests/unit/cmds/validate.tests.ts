@@ -13,11 +13,12 @@ import {
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Manifest from "../../../src/cmds/manifest";
+import { ManifestValidate } from "../../../src/cmds/validate";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
 
-describe("Manifest Command Tests", function () {
+describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let options: string[] = [];
@@ -67,59 +68,57 @@ describe("Manifest Command Tests", function () {
       });
   });
 
-  it("Builder Check", () => {
-    const cmd = new Manifest();
+  it("should pass builder check", () => {
+    const cmd = new ManifestValidate();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["manifest <action>", "update"]);
+    expect(registeredCommands).deep.equals(["validate"]);
   });
 
-  it("Update Command Running Check", async () => {
+  it("Validate Command Running Check", async () => {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
         expect(func).deep.equals({
-          namespace: "fx-solution-azure/fx-resource-appstudio",
-          method: "updateManifest",
+          namespace: "fx-solution-azure",
+          method: "validateManifest",
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
-    const cmd = new Manifest();
-    const update = cmd.subCommands.find((cmd) => cmd.commandHead === "update");
+    const cmd = new ManifestValidate();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
     };
-    await update!.handler(args);
+    await cmd.handler(args);
     expect(telemetryEvents).deep.equals([
-      TelemetryEvent.UpdateManifestStart,
-      TelemetryEvent.UpdateManifest,
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
     ]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
-  it("Update Command Running Check with Error", async () => {
+  it("Validate Command Running Check with Error", async () => {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
         expect(func).deep.equals({
-          namespace: "fx-solution-azure/fx-resource-appstudio",
-          method: "updateManifest",
+          namespace: "fx-solution-azure",
+          method: "validateManifest",
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
-    const cmd = new Manifest();
-    const update = cmd.subCommands.find((cmd) => cmd.commandHead === "update");
+    const cmd = new ManifestValidate();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };
     try {
-      await update!.handler(args);
+      await cmd.handler(args);
       throw new Error("Should throw an error.");
     } catch (e) {
       expect(telemetryEvents).deep.equals([
-        TelemetryEvent.UpdateManifestStart,
-        TelemetryEvent.UpdateManifest,
+        TelemetryEvent.ValidateManifestStart,
+        TelemetryEvent.ValidateManifest,
       ]);
       expect(telemetryEventStatus).equals(TelemetrySuccess.No);
       expect(e).instanceOf(UserError);

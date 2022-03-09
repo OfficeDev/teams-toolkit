@@ -736,6 +736,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
+    locale?: string;
+    // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;
@@ -749,6 +751,8 @@ export interface Inputs extends Json {
     targetEnvName?: string;
     // (undocumented)
     targetResourceGroupName?: string;
+    // (undocumented)
+    targetResourceLocationName?: string;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }

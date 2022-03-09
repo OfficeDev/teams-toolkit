@@ -67,8 +67,8 @@ class TreeViewManager {
         1,
         0,
         new TreeViewCommand(
-          StringResources.vsc.commandsTreeViewProvider.initProjectTitleNew,
-          StringResources.vsc.commandsTreeViewProvider.initProjectDescription,
+          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
           "fx-extension.init",
           vscode.TreeItemCollapsibleState.None,
           undefined,

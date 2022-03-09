@@ -53,6 +53,13 @@ import {
 } from "../common/tools";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -107,16 +114,11 @@ import {
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
-  BotOptionItem,
   CoreQuestionNames,
-  MessageExtensionItem,
-  NotificationOptionItem,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
   ScratchOptionNo,
-  TabOptionItem,
-  TabSPFxItem,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";

@@ -3,11 +3,13 @@
 "use strict";
 
 import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
-import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../../core/question";
 import {
   AzureResourceFunction,
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  MessageExtensionItem,
+  TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../constants";
 import { IsSimpleAuthEnabled } from "../tools";

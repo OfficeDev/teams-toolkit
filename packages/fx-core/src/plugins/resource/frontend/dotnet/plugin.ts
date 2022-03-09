@@ -51,6 +51,7 @@ import { ArmTemplateResult } from "../../../../common/armInterface";
 import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
+import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -58,7 +59,6 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../../common/localSettingsConstants";
 import { PluginNames } from "../../../solution/fx-solution/constants";
-import { BotOptionItem, TabOptionItem } from "../../../../core/question";
 
 type Site = WebSiteManagementModels.Site;
 type TeamsFxResult = Result<any, FxError>;

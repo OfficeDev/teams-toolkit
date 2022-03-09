@@ -16,6 +16,7 @@ import { LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
@@ -23,7 +24,6 @@ import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
 import { isVSProject } from "../../../common/projectSettingsHelper";
-import { BotOptionItem, MessageExtensionItem } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

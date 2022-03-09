@@ -28,9 +28,14 @@ import {
   AzureResourceSQL,
   AzureResourcesQuestion,
   AzureSolutionQuestionNames,
+  BotOptionItem,
   createAddAzureResourceQuestion,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -45,14 +50,7 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  NotificationOptionItem,
-  TabOptionItem,
-  TabSPFxItem,
-  ProgrammingLanguageQuestion,
-} from "../../../../core/question";
+import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(

@@ -41,8 +41,10 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
@@ -76,7 +78,6 @@ import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { BotOptionItem, MessageExtensionItem } from "../question";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

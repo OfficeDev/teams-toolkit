@@ -39,7 +39,10 @@ import {
   AzureResourceKeyVault,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
+  BotOptionItem,
   HostTypeOptionAzure,
+  MessageExtensionItem,
+  TabOptionItem,
 } from "../question";
 import { cloneDeep } from "lodash";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -54,12 +57,9 @@ import { OperationNotSupportedForExistingAppError } from "../../../../core/error
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import fs from "fs-extra";
-import {
-  BotOptionItem,
-  CoreQuestionNames,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../../../../core/question";
+import { CoreQuestionNames } from "../../../../core/question";
+import { Certificate } from "crypto";
+import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 export async function executeUserTask(
   ctx: v2.Context,

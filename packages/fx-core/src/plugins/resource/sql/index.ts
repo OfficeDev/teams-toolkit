@@ -14,7 +14,11 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
+import {
+  AzureResourceSQL,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Constants, Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";

@@ -8,6 +8,7 @@ import {
   err,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
+import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Messages, Telemetry, Constants } from "./constants";
 import { UnhandledError } from "./errors";
 import { SimpleAuthPluginImpl } from "./plugin";

@@ -25,6 +25,7 @@ import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
+import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -41,7 +42,6 @@ import {
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
-  TabSPFxItem,
 } from "../question";
 import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";

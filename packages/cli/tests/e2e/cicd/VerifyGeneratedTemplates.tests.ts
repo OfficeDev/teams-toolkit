@@ -22,7 +22,7 @@ describe("Verify generated templates & readme", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 
   it(`Verify generated templates & readme`, async function () {

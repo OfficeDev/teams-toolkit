@@ -21,7 +21,7 @@
     "teamstoolkit.commands.devPortal.title": "Teams: Developer Portal for Teams",
     "teamstoolkit.commands.reportIssue.title": "Teams: Report issues on GitHub",
     "teamstoolkit.commands.debug.title": "Select and Start Debuging Teams App",
-    "teamstoolkit.commands.cicd.title": "CI/CD guide",
+    "teamstoolkit.commands.addCICDWorkflows.title": "Teams: Add CI/CD Workflows",
     "teamstoolkit.commands.previewManifest.title": "Preview manifest file",
     "teamstoolkit.commands.openManifestSchema.title": "Open manifest schema",
     "teamstoolkit.commands.updateManifest.title": "Teams: Update manifest to Teams platform",

@@ -89,7 +89,7 @@ export class CICDImpl {
     if (notScaffoldedTemplates.length > 0) {
       context.userInteraction.showMessage(
         "info",
-        `Workflow automation files of ${notScaffoldedTemplates.join(
+        `Workflow automation file(s) of ${notScaffoldedTemplates.join(
           ","
         )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`,
         false
@@ -99,7 +99,7 @@ export class CICDImpl {
     if (scaffoldedTemplates.length > 0) {
       context.userInteraction.showMessage(
         "info",
-        `You have already created template/s of ${scaffoldedTemplates.join(
+        `You have already created template(s) of ${scaffoldedTemplates.join(
           ","
         )} for ${providerName}, please customize it or remove it to create a new one.`,
         false

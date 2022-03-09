@@ -856,11 +856,6 @@ export class TeamsAppSolution implements Solution {
       const capNode = new QTreeNode(capQuestion);
       node.addChild(capNode);
 
-      // 1.1 hostType
-      //const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-      //hostTypeNode.condition = { contains: TabOptionItem.id };
-      //capNode.addChild(hostTypeNode);
-
       // 1.1.1 SPFX Tab
       const spfxPlugin: Plugin = this.SpfxPlugin;
       if (spfxPlugin.getQuestions) {

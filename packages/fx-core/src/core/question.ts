@@ -289,7 +289,7 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
 export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.SourceEnvName,
-  title: "Select an environment to create copy",
+  title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -298,7 +298,7 @@ export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
 export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetResourceGroupName,
-  title: "Select a resource group",
+  title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -307,20 +307,20 @@ export const QuestionSelectResourceGroup: SingleSelectQuestion = {
 export const QuestionNewResourceGroupName: TextInputQuestion = {
   type: "text",
   name: CoreQuestionNames.NewResourceGroupName,
-  title: "New resource group name",
+  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
       const name = input as string;
       // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
       const match = name.match(/^[-\w._()]+$/);
       if (!match) {
-        return "The name can only contain alphanumeric characters or the symbols ._-()";
+        return getLocalizedString("core.QuestionNewResourceGroupName.validation");
       }
 
       return undefined;
     },
   },
-  placeholder: "New resource group name",
+  placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
   // default resource group name will change with env name
   forgetLastValue: true,
 };
@@ -328,53 +328,45 @@ export const QuestionNewResourceGroupName: TextInputQuestion = {
 export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.NewResourceGroupLocation,
-  title: "Location for the new resource group",
+  title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
   staticOptions: [],
-};
-
-export const QuestionSelectSolution: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.Solution,
-  title: "Select a solution",
-  staticOptions: [],
-  skipSingleOption: true,
 };
 
 export const ScratchOptionYesVSC: OptionItem = {
   id: "yes",
-  label: "$(new-folder) Create a new Teams app",
-  detail: "Use the Teams Toolkit to create a new application.",
+  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
 };
 
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
-  label: "$(heart) Start from a sample",
-  detail: "Use an existing sample as a starting point for your new application.",
+  label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
-  label: "Create a new Teams app",
-  detail: "Use the Teams Toolkit to create a new application.",
+  label: getLocalizedString("core.ScratchOptionYes.label"),
+  detail: getLocalizedString("core.ScratchOptionYes.detail"),
 };
 
 export const ScratchOptionNo: OptionItem = {
   id: "no",
-  label: "Start from a sample",
-  detail: "Use an existing sample as a starting point for your new application.",
+  label: getLocalizedString("core.ScratchOptionNo.label"),
+  detail: getLocalizedString("core.ScratchOptionNo.detail"),
 };
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
-    title: "Teams Toolkit: Create a new Teams app",
+    title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
     staticOptions:
       platform === Platform.VSCode
         ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
         : [ScratchOptionYes, ScratchOptionNo],
     default: ScratchOptionYes.id,
-    placeholder: "Select an option",
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
   };
 }
@@ -382,7 +374,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
 export const SampleSelect: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.Samples,
-  title: "Start from a sample",
+  title: getLocalizedString("core.SampleSelect.title"),
   staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
     return {
       id: sample.id,
@@ -391,5 +383,5 @@ export const SampleSelect: SingleSelectQuestion = {
       data: sample.link,
     } as OptionItem;
   }),
-  placeholder: "Select a sample",
+  placeholder: getLocalizedString("core.SampleSelect.placeholder"),
 };

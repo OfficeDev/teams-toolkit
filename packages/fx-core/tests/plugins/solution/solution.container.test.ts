@@ -3,7 +3,7 @@
 
 import { assert } from "chai";
 import "mocha";
-import { Inputs, Platform, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import {
   getAllResourcePluginMap,
   getAllResourcePlugins,
@@ -12,14 +12,10 @@ import {
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
   AzureResourceSQL,
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  FrontendHostTypeQuestion,
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { Container } from "typedi";
+import { TabOptionItem } from "../../../src/core/question";
 
 describe("Resource plugin container", () => {
   beforeEach(() => {});
@@ -47,23 +43,5 @@ describe("Resource plugin container", () => {
     const names = plugins.map((p) => p.name);
     assert.isTrue(names.includes(Container.get<Plugin>(ResourcePlugins.FrontendPlugin).name));
     assert.isTrue(names.includes(Container.get<Plugin>(ResourcePlugins.SqlPlugin).name));
-  });
-
-  it("solution FrontendHostTypeQuestion", async () => {
-    let inputs: Inputs = {
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id],
-    };
-    if (FrontendHostTypeQuestion.dynamicOptions) {
-      let options = FrontendHostTypeQuestion.dynamicOptions(inputs);
-      assert.deepEqual(options, [HostTypeOptionAzure]);
-
-      inputs = {
-        platform: Platform.VSCode,
-        [AzureSolutionQuestionNames.Capabilities]: [TabOptionItem.id],
-      };
-      options = FrontendHostTypeQuestion.dynamicOptions(inputs);
-      assert.deepEqual(options, [HostTypeOptionAzure, HostTypeOptionSPFx]);
-    }
   });
 });

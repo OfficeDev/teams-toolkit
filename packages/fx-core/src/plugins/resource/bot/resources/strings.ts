@@ -86,6 +86,7 @@ export class PluginBot {
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
   public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";
+  public static readonly HOST_TYPE = "host-type";
 }
 
 export class TelemetryStrings {
@@ -129,3 +130,10 @@ export class ClientNames {
   public static readonly WEB_SITE_MGMT_CLIENT = "webSiteMgmtClient";
   public static readonly BOT_SERVICE_CLIENT = "botServiceClient";
 }
+
+export const HostTypes = {
+  APP_SERVICE: "app-service",
+  AZURE_FUNCTIONS: "azure-functions",
+} as const;
+
+export type HostType = typeof HostTypes[keyof typeof HostTypes];

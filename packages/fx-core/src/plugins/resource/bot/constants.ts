@@ -39,8 +39,12 @@ export class TemplateProjectsConstants {
   public static readonly TEMPLATE_FOLDER_NAME: string = "bot";
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
-  public static readonly DEFAULT_SCENARIO_NAME: string = "default";
   public static readonly VERSION_RANGE: string = "0.0.*";
+}
+
+export enum TemplateProjectsScenarios {
+  DEFAULT_SCENARIO_NAME = "default",
+  NOTIFICATION_SCENARIO_NAME = "notification",
 }
 
 export class ProgressBarConstants {
@@ -239,6 +243,7 @@ export class TelemetryKeys {
   public static readonly ErrorMessage = "error-message";
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
+  public static readonly HostType = "bot-host-type";
 }
 
 export class TelemetryValues {

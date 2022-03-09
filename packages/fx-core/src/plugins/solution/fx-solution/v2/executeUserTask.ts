@@ -21,7 +21,6 @@ import {
   ProjectSettings,
   v3,
 } from "@microsoft/teamsfx-api";
-import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 import {
   SolutionError,
@@ -60,6 +59,8 @@ import { isVSProject } from "../../../../common/projectSettingsHelper";
 import fs from "fs-extra";
 import { CoreQuestionNames } from "../../../../core/question";
 import { Certificate } from "crypto";
+import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -171,7 +172,7 @@ export function canAddCapability(
   if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddCapabilityNotSupport,
-      getStrings().solution.addCapability.OnlySupportAzure,
+      getLocalizedString("core.addCapability.onlySupportAzure"),
       SolutionSource
     );
     return err(
@@ -189,7 +190,7 @@ export function canAddResource(
   if (isVS) {
     const e = new UserError(
       SolutionError.AddResourceNotSupport,
-      getStrings().solution.addResource.NotSupportForVSProject,
+      getLocalizedString("core.addResource.notSupportForVSProject"),
       SolutionSource
     );
     return err(
@@ -200,7 +201,7 @@ export function canAddResource(
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddResourceNotSupport,
-      getStrings().solution.addResource.OnlySupportAzure,
+      getLocalizedString("core.addResource.onlySupportAzure"),
       SolutionSource
     );
     return err(
@@ -307,7 +308,7 @@ export async function addCapability(
   if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
       SolutionError.FailedToAddCapability,
-      getStrings().solution.addCapability.ExceedMaxLimit,
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
       SolutionSource
     );
     return err(
@@ -425,11 +426,11 @@ export async function addCapability(
     const template =
       inputs.platform === Platform.CLI
         ? single
-          ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
-          : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
+          ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+          : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
         : single
-        ? getStrings().solution.addCapability.AddCapabilityNotice
-        : getStrings().solution.addCapability.AddCapabilitiesNotice;
+        ? getLocalizedString("core.addCapability.addCapabilityNotice")
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
     const msg = util.format(template, addNames);
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
@@ -445,7 +446,7 @@ export async function addCapability(
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
-  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
+  const msg: string = getLocalizedString("core.updateArmTemplate.successNotice");
   ui?.showMessage("info", msg, false);
 }
 
@@ -631,11 +632,11 @@ export async function addResource(
     const template =
       inputs.platform === Platform.CLI
         ? single
-          ? getStrings().solution.addResource.AddResourceNoticeForCli
-          : getStrings().solution.addResource.AddResourcesNoticeForCli
+          ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+          : getLocalizedString("core.addResource.addResourcesNoticeForCli")
         : single
-        ? getStrings().solution.addResource.AddResourceNotice
-        : getStrings().solution.addResource.AddResourcesNotice;
+        ? getLocalizedString("core.addResource.addResourceNotice")
+        : getLocalizedString("core.addResource.addResourcesNotice");
     ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
   }
 

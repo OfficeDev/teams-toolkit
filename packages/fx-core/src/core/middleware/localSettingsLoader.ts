@@ -19,13 +19,13 @@ export const LocalSettingsLoaderMW: Middleware = async (
   if (!shouldIgnored(ctx) && !isConfigUnifyEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 
     const projectPathExist = await fs.pathExists(inputs.projectPath);
     if (!projectPathExist) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
+      ctx.result = err(new PathNotExistError(inputs.projectPath));
       return;
     }
 

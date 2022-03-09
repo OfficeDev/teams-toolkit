@@ -103,8 +103,6 @@ describe("solution.debug.scaffolding", () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
         chai.assert.equal(Object.keys(settings).length, 4);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -157,8 +155,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
 
       it(`happy path: tab with Simple Auth and without function (${parameter.programmingLanguage})`, async () => {
@@ -193,12 +189,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
-        );
       });
 
       it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -233,13 +223,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        // When AAD plugin is not activated, loginUrl and clientId will not be added.
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs - numAADLocalEnvs
-        );
       });
     });
 
@@ -291,8 +274,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -350,8 +331,6 @@ describe("solution.debug.scaffolding", () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
         chai.assert.equal(Object.keys(settings).length, 4);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -404,8 +383,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
 
       it(`happy path: tab with Simple Auth and without function and bot (${parameter.programmingLanguage})`, async () => {
@@ -440,12 +417,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
-        );
       });
 
       it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -480,12 +451,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs - numAADLocalEnvs
-        );
       });
     });
 
@@ -547,7 +512,6 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.isTrue(fs.existsSync(expectedLaunchFile));
       chai.assert.isTrue(fs.existsSync(expectedTasksFile));
       chai.assert.isTrue(fs.existsSync(expectedSettingsFile));
-      chai.assert.isTrue(fs.existsSync(expectedLocalSettingsFile));
     });
 
     it("vs", async () => {
@@ -634,8 +598,6 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 7);
-
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
 
     it("happy path: add capability to old project", async () => {
@@ -681,26 +643,6 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 9);
-
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
   });
-
-  async function assertLocalDebugLocalEnvs(
-    ctx: v2.Context,
-    inputs: Inputs,
-    numLocalEnvs: number
-  ): Promise<void> {
-    // assert output: localSettings.json
-    chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
-
-    const localEnvManager = new LocalEnvManager();
-    const localSettings = await localEnvManager.getLocalSettings(inputs.projectPath!);
-    const result = await localEnvManager.getLocalDebugEnvs(
-      inputs.projectPath!,
-      ctx.projectSetting,
-      localSettings
-    );
-    chai.assert.equal(Object.keys(result).length, numLocalEnvs);
-  }
 });

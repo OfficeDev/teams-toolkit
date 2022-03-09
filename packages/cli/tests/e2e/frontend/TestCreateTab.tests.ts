@@ -35,7 +35,7 @@ describe("Create single tab", function () {
     // clean up
     await cleanUp(appName, projectPath, true, false, false);
   });
-  describe("feature flags for API v3", { testPlanCaseId: 10306848 }, async function () {
+  describe("feature flags for API v3", { testPlanCaseId: 10298738 }, async function () {
     const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
     let mockedEnvRestore: RestoreFn;
     for (const envParam of envs) {

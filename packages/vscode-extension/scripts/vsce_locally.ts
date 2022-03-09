@@ -28,7 +28,7 @@ function output(title: string, body: string[]): void;
 function output(first: string | string[], second?: string[]) {
   if (typeof first == "string") {
     console.log(
-      `━━━ ${first} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.substr(
+      `━━━ ${first} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.substring(
         0,
         70
       )
@@ -57,7 +57,6 @@ async function overwrite(from: string, to: string) {
 const execAsync = promisify(exec);
 
 async function publishLocally(
-  env: string,
   name: string,
   deps?: Record<string, string>,
   scripts?: Record<string, string>,
@@ -89,11 +88,11 @@ async function publishLocally(
 
     await writeFile(join(folder, "package.json"), JSON.stringify(json, null, 2));
 
-    await execAsync(`${env} npm install`, {
+    await execAsync(`npm install`, {
       cwd: folder,
     });
 
-    await execAsync(`${env} npm publish`, {
+    await execAsync(`npm publish`, {
       cwd: folder,
     });
 
@@ -101,10 +100,10 @@ async function publishLocally(
 
     if (vsce) {
       output(name, [`vsce packaging...`]);
-      await execAsync(`${env} npm run package`, {
+      await execAsync(`npm run package`, {
         cwd: folder,
       });
-      await execAsync(`${env} npx vsce package`, {
+      await execAsync(`npx vsce package`, {
         cwd: folder,
       });
       output([`[ DONE ] vscode ${json.version} packed`]);
@@ -122,7 +121,8 @@ async function publishLocally(
 async function packLocally() {
   const port = await detectPort(4873);
 
-  const env = `NPM_CONFIG_REGISTRY=http://localhost:${port} NPM_TOKEN=9527 `;
+  process.env.NPM_CONFIG_REGISTRY = `http://localhost:${port}`;
+  process.env.NPM_TOKEN = "9527";
 
   output("tips", [
     "1. each step may take a little while, please be patient.",
@@ -136,16 +136,14 @@ async function packLocally() {
   output([`[ DONE ] verdaccio is running at http://localhost:${port}...\n`]);
 
   try {
-    const apiVersion = await publishLocally(env, "api", {}, { prepublishOnly: "npm run build" });
+    const apiVersion = await publishLocally("api", {}, { prepublishOnly: "npm run build" });
     const coreVersion = await publishLocally(
-      env,
       "fx-core",
       { "@microsoft/teamsfx-api": apiVersion },
       { prepublishOnly: "npm run build" }
     );
 
-    const vscVersion = await publishLocally(
-      env,
+    await publishLocally(
       "vscode-extension",
       {
         "@microsoft/teamsfx-api": apiVersion,

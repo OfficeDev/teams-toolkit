@@ -36,7 +36,7 @@ export function convert2PluginContext(
   inputs: Inputs,
   ignoreEmptyProjectPath = false
 ): PluginContext {
-  if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
+  if (!ignoreEmptyProjectPath && !inputs.projectPath) throw new NoProjectOpenedError();
   const envInfo = newEnvInfo(inputs.env);
   const config = new ConfigMap();
   envInfo.state.set(pluginName, config);
@@ -56,7 +56,7 @@ export function convert2PluginContext(
 }
 
 export function convert2Context(ctx: PluginContext, ignoreEmptyProjectPath = false) {
-  if (!ignoreEmptyProjectPath && !ctx.answers!.projectPath) throw NoProjectOpenedError();
+  if (!ignoreEmptyProjectPath && !ctx.answers!.projectPath) throw new NoProjectOpenedError();
   const inputs: InputsWithProjectPath = {
     projectPath: ctx.root,
     env: ctx.envInfo.envName,
@@ -81,7 +81,7 @@ export async function scaffoldSourceCodeAdapter(
   if (!plugin.scaffold && !plugin.postScaffold)
     return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   const localSettingsProvider = new LocalSettingsProvider(pluginContext.root);

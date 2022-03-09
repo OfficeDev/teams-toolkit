@@ -12,9 +12,9 @@ import {
   v2,
   v3,
   Void,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { selectMultipleFeaturesQuestion } from "../../utils/questions";
 import arm from "../arm";

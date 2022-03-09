@@ -3,8 +3,8 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Func, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { isV3, TOOLS } from "../globalVars";
+import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { isV3, setLocale, TOOLS } from "../globalVars";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -14,6 +14,9 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
   const taskName = `${ctx.method} ${
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
+  // if locale is set in inputs, set it globally.
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (inputs.locale) setLocale(inputs.locale);
   try {
     TOOLS?.logProvider?.info(`[core] start task:${taskName}, API v3: ${isV3()}`);
     const time = new Date().getTime();

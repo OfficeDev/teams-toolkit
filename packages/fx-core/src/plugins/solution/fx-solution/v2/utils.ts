@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isConfigUnifyEnabled } from "../../../../common/tools";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -39,9 +39,9 @@ import {
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
-import * as util from "util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { NotificationOptionItem } from "../../../../core/question";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
@@ -177,13 +177,12 @@ export async function checkWhetherLocalDebugM365TenantMatches(
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
-      const errorMessage: string = util.format(
-        getStrings().solution.LocalDebugTenantConfirmNotice,
+      const errorMessage = getLocalizedString(
+        "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
         "localSettings.json"
       );
-
       return err(
         returnUserError(
           new Error(errorMessage),

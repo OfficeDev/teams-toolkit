@@ -166,7 +166,7 @@ export class FxCore implements v3.ICore {
       try {
         await fs.ensureDir(folder);
       } catch (e) {
-        throw ProjectFolderInvalidError(folder);
+        throw new ProjectFolderInvalidError(folder);
       }
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
@@ -195,7 +195,7 @@ export class FxCore implements v3.ICore {
       inputs.projectPath = projectPath;
       const folderExist = await fs.pathExists(projectPath);
       if (folderExist) {
-        return err(ProjectFolderExistError(projectPath));
+        return err(new ProjectFolderExistError(projectPath));
       }
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
@@ -329,7 +329,7 @@ export class FxCore implements v3.ICore {
       try {
         await fs.ensureDir(folder);
       } catch (e) {
-        throw ProjectFolderInvalidError(folder);
+        throw new ProjectFolderInvalidError(folder);
       }
     }
     if (!folder) {
@@ -362,7 +362,7 @@ export class FxCore implements v3.ICore {
       inputs.projectPath = projectPath;
       const folderExist = await fs.pathExists(projectPath);
       if (folderExist) {
-        return err(ProjectFolderExistError(projectPath));
+        return err(new ProjectFolderExistError(projectPath));
       }
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));

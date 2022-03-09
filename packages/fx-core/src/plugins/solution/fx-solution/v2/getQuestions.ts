@@ -18,7 +18,6 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { getStrings } from "../../../../common/tools";
 import { HelpLinks } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
 import {
@@ -52,6 +51,7 @@ import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { NotificationOptionItem } from "../../../../core/question";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -250,7 +250,7 @@ export async function getQuestions(
       if (isAzure && !provisioned) {
         return err(
           returnUserError(
-            new Error(getStrings().solution.FailedToDeployBeforeProvision),
+            new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
             SolutionSource,
             SolutionError.CannotDeployBeforeProvision,
             HelpLinks.WhyNeedProvision
@@ -311,8 +311,8 @@ export async function getQuestions(
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
         const errorMsg = isAzure
-          ? getStrings().solution.FailedToPublishBeforeProvision
-          : getStrings().solution.SPFxAskProvisionBeforePublish;
+          ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
+          : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
         return err(
           returnUserError(
             new Error(errorMsg),
@@ -428,7 +428,7 @@ export async function getQuestionsForAddCapability(
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
-      getStrings().solution.addCapability.ExceedMaxLimit,
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
       false
     );
     return ok(undefined);

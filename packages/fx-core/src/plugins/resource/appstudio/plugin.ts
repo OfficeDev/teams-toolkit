@@ -181,6 +181,7 @@ export class AppStudioPluginImpl {
     }
 
     const view = {
+      config: ctx.envInfo.config,
       localSettings: {
         teamsApp: {
           teamsAppId: localTeamsAppID,

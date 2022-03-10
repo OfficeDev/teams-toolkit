@@ -127,9 +127,9 @@ suite("[Checker UT - Extension]", () => {
 
       sandbox
         .stub(vscodeHelper, "isNgrokCheckerEnabled")
-        .onCall(0)
+        .onFirstCall()
         .returns(false)
-        .onCall(1)
+        .onSecondCall()
         .returns(true);
 
       sandbox.stub(vscodeHelper, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);

@@ -13,7 +13,7 @@ import {
 } from "../../plugins/solution/fx-solution/question";
 import { isAADEnabled, IsSimpleAuthEnabled } from "../tools";
 import { ResourcePlugins } from "../constants";
-import { BotHostTypeName, HostTypes } from "./constants";
+import { BotHostTypeName, BotHostTypes } from "./constants";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
@@ -39,7 +39,7 @@ export class ProjectSettingsHelper {
   public static includeFuncHostedBot(projectSettings: ProjectSettings | undefined): boolean {
     const botHostType = projectSettings?.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
     const cap = (projectSettings?.solutionSettings as AzureSolutionSettings)?.capabilities || [];
-    return cap.includes(BotOptionItem.id) && botHostType === HostTypes.AzureFunctions;
+    return cap.includes(BotOptionItem.id) && botHostType === BotHostTypes.AzureFunctions;
   }
 
   public static includeBot(projectSettings: ProjectSettings | undefined): boolean {

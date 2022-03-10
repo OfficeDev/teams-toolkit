@@ -85,7 +85,7 @@ export class LocalDebugCertificate {
 }
 
 export const BotHostTypeName = "host-type";
-export const HostTypes = Object.freeze({
+export const BotHostTypes = Object.freeze({
   AppService: "app-service",
   AzureFunctions: "azure-functions",
 });

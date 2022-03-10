@@ -11,8 +11,7 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { ResourcePlugins } from "../constants";
-import { IsSimpleAuthEnabled } from "../tools";
+import { isAADEnabled, IsSimpleAuthEnabled } from "../tools";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
@@ -41,9 +40,7 @@ export class ProjectSettingsHelper {
   }
 
   public static includeAAD = (projectSettings: ProjectSettings | undefined): boolean =>
-    !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.includes(
-      ResourcePlugins.Aad
-    );
+    !!isAADEnabled(projectSettings?.solutionSettings as AzureSolutionSettings);
 
   public static includeSimpleAuth = (projectSettings: ProjectSettings | undefined): boolean =>
     // TODO: update this when retiring simple auth service

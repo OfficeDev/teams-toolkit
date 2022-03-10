@@ -18,6 +18,7 @@ import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { newEnvInfo } from "../../../../../src";
 import * as core from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 
 describe("Publish Teams app with Azure", () => {
   let plugin: AppStudioPlugin;
@@ -80,7 +81,24 @@ describe("Publish Teams app with Azure", () => {
       teamsAppId: uuid(),
     });
 
-    const teamsAppId = await plugin.publish(ctx);
+    const newCtx: PluginContext = Object.create(ctx);
+    const links: string[] = [];
+    newCtx.ui = new MockUserInteraction();
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .callsFake((level, message, modal, ...items) => {
+        if (items.includes(Constants.ADMIN_PORTAL)) {
+          return Promise.resolve(ok(Constants.ADMIN_PORTAL));
+        }
+        return Promise.resolve(ok(undefined));
+      });
+    sandbox.stub(MockUserInteraction.prototype, "openUrl").callsFake((link) => {
+      links.push(link);
+      return Promise.resolve(ok(true));
+    });
+
+    const teamsAppId = await plugin.publish(newCtx);
+    chai.assert.include(links, Constants.TEAMS_ADMIN_PORTAL);
     chai.assert.isTrue(teamsAppId.isOk());
     if (teamsAppId.isOk()) {
       chai.assert.isNotEmpty(teamsAppId.value);

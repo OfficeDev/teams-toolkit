@@ -46,12 +46,12 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
-import * as StringResources from "../resources/Strings.json";
 import { ProgressHandler } from "../progressHandler";
 import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import * as packageJson from "../../package.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { localize } from "../utils/localizeUtils";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -119,7 +119,7 @@ export class VsCodeUI implements UserInteraction {
     if (option.options.length === 0) {
       return err(
         returnSystemError(
-          new Error(StringResources.vsc.qm.emptySelection),
+          new Error(localize("teamstoolkit.qm.emptySelection")),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
@@ -200,7 +200,7 @@ export class VsCodeUI implements UserInteraction {
     if (option.options.length === 0) {
       return err(
         returnSystemError(
-          new Error(StringResources.vsc.qm.emptySelection),
+          new Error(localize("teamstoolkit.qm.emptySelection")),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
@@ -214,8 +214,8 @@ export class VsCodeUI implements UserInteraction {
         quickPick.buttons = [QuickInputButtons.Back];
       }
       quickPick.placeholder = option.placeholder
-        ? option.placeholder + StringResources.vsc.qm.multiSelectKeyboard
-        : StringResources.vsc.qm.multiSelectKeyboard;
+        ? option.placeholder + localize("teamstoolkit.qm.multiSelectKeyboard")
+        : localize("teamstoolkit.qm.multiSelectKeyboard");
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
@@ -441,7 +441,7 @@ export class VsCodeUI implements UserInteraction {
         /// set items
         quickPick.items = [
           {
-            label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+            label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
             detail: defaultValue,
           },
         ];
@@ -461,7 +461,7 @@ export class VsCodeUI implements UserInteraction {
               const resultString = results.join(";");
               quickPick.items = [
                 {
-                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
                   detail: resultString,
                 },
               ];
@@ -470,7 +470,7 @@ export class VsCodeUI implements UserInteraction {
               const result = uriList[0].fsPath;
               quickPick.items = [
                 {
-                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
                   detail: result,
                 },
               ];
@@ -580,7 +580,7 @@ export class VsCodeUI implements UserInteraction {
           let lastReport = 0;
           const showProgress = config.showProgress === true;
           const total = task.total ? task.total : 1;
-          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${
+          const head = `${localize("teamstoolkit.progressHandler.teamsToolkitComponent")} ${
             task.name ? task.name : ""
           }`;
           const report = (task: RunnableTask<T>) => {
@@ -590,7 +590,7 @@ export class VsCodeUI implements UserInteraction {
               : `: [${current + 1}/${total}]`;
             const tail = task.message
               ? ` ${task.message}`
-              : StringResources.vsc.progressHandler.prepareTask;
+              : localize("teamstoolkit.progressHandler.prepareTask");
             const message = `${head}${body}${tail}`;
             if (showProgress)
               progress.report({

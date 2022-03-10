@@ -21,6 +21,8 @@ import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
+import Init from "./init";
+import { isInitAppEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -37,6 +39,11 @@ export const commands: YargsCommand[] = [
   new Preview(),
   new Env(),
 ];
+
+if (isInitAppEnabled()) {
+  // add Init command after the New command.
+  commands.splice(2, 0, new Init());
+}
 
 /**
  * Registers cli and partner commands with yargs.

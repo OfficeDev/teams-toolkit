@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 import { globalStateGet, globalStateUpdate, isValidProject } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import * as StringResources from "../resources/Strings.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { ext } from "../extensionVariables";
+import { localize } from "./localizeUtils";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
@@ -110,10 +110,10 @@ export class ExtensionSurvey {
 
     const extensionVersion = extension.packageJSON.version || "unknown";
     const take = {
-      title: StringResources.vsc.survey.takeSurvey.title,
+      title: localize("teamstoolkit.survey.takeSurvey.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.takeSurvey.message,
+          message: localize("teamstoolkit.survey.takeSurvey.message"),
         });
 
         if (TreatmentVariableValue.isEmbeddedSurvey) {
@@ -138,10 +138,10 @@ export class ExtensionSurvey {
     };
 
     const remind = {
-      title: StringResources.vsc.survey.remindMeLater.title,
+      title: localize("teamstoolkit.survey.remindMeLater.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.remindMeLater.message,
+          message: localize("teamstoolkit.survey.remindMeLater.message"),
         });
         const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
         await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
@@ -149,17 +149,17 @@ export class ExtensionSurvey {
     };
 
     const never = {
-      title: StringResources.vsc.survey.dontShowAgain.title,
+      title: localize("teamstoolkit.survey.dontShowAgain.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.dontShowAgain.message,
+          message: localize("teamstoolkit.survey.dontShowAgain.message"),
         });
         await globalStateUpdate(ExtensionSurveyStateKeys.DoNotShowAgain, true);
       },
     };
 
     const selection = await vscode.window.showInformationMessage(
-      StringResources.vsc.survey.banner.title,
+      localize("teamstoolkit.survey.banner.title"),
       take,
       remind,
       never
@@ -172,12 +172,12 @@ export class ExtensionSurvey {
 
     if (selection) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: StringResources.vsc.survey.banner.message,
+        message: localize("teamstoolkit.survey.banner.message"),
       });
       await selection.run();
     } else {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: StringResources.vsc.survey.cancelMessage,
+        message: localize("teamstoolkit.survey.cancelMessage"),
       });
       const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
       await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);

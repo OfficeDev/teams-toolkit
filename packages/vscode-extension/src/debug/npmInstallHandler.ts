@@ -16,7 +16,6 @@ import { VS_CODE_UI } from "../extension";
 import { ext } from "../extensionVariables";
 import { getConfiguration } from "../utils/commonUtils";
 import { loadPackageJson } from "./commonUtils";
-import * as StringResources from "../resources/Strings.json";
 import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
 import VsCodeLogInstance from "../commonlib/log";
@@ -28,6 +27,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { returnUserError } from "@microsoft/teamsfx-api";
 import { ExtensionSource } from "../error";
+import { localize } from "../utils/localizeUtils";
 
 export async function automaticNpmInstallHandler(
   excludeFrontend: boolean,
@@ -90,13 +90,13 @@ export async function automaticNpmInstallHandler(
 
           VS_CODE_UI.showMessage(
             "info",
-            StringResources.vsc.handlers.automaticNpmInstall,
+            localize("teamstoolkit.handlers.automaticNpmInstall"),
             false,
-            StringResources.vsc.handlers.disableAutomaticNpmInstall
+            localize("teamstoolkit.handlers.disableAutomaticNpmInstall")
           ).then((selection) => {
             if (
               selection.isOk() &&
-              selection.value === StringResources.vsc.handlers.disableAutomaticNpmInstall
+              selection.value === localize("teamstoolkit.handlers.disableAutomaticNpmInstall")
             ) {
               vscode.commands.executeCommand(
                 "workbench.action.openSettings",

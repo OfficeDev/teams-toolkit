@@ -5,18 +5,18 @@ import * as path from "path";
 import * as fs from "fs-extra";
 
 const EXTENSION_ROOT_DIR = path.join(__dirname, "..", "..");
-let loadedCollection: Record<string, string> | undefined;
-let defaultCollection: Record<string, string> | undefined;
+let loadedCollection: Record<string, string> | undefined = undefined;
+let defaultCollection: Record<string, string> | undefined = undefined;
 let askedForCollection: Record<string, string> = {};
 let loadedLocale: string;
 
-export async function localize(key: string, defValue?: string) {
-  return await getString(key, defValue);
+export function localize(key: string, defValue?: string) {
+  return getString(key, defValue);
 }
 
-async function getString(key: string, defValue?: string) {
+function getString(key: string, defValue?: string) {
   if (shouldReloadLocale()) {
-    await loadLocalizedStrings();
+    loadLocalizedStrings();
   }
   return getLocalizedString(key, defValue);
 }
@@ -68,20 +68,20 @@ function getLocalizedString(key: string, defValue?: string): string {
 /**
  * Load localized strings according to current locale. By default, load package.nls.json if target locale doesn't exist.
  */
-export async function loadLocalizedStrings(): Promise<void> {
+export function loadLocalizedStrings(): void {
   loadedLocale = parseLocale();
 
   const nlsFile = path.join(EXTENSION_ROOT_DIR, "..", `package.nls.${loadedLocale}.json`);
-  if (await fs.pathExists(nlsFile)) {
-    loadedCollection = await fs.readJson(nlsFile);
+  if (fs.pathExistsSync(nlsFile)) {
+    loadedCollection = fs.readJsonSync(nlsFile);
   } else {
     loadedCollection = {};
   }
 
   if (!defaultCollection) {
-    const defaultNlsFile = path.join(EXTENSION_ROOT_DIR, "package.nls.json");
-    if (await fs.pathExists(defaultNlsFile)) {
-      defaultCollection = await fs.readJson(defaultNlsFile);
+    const defaultNlsFile = path.join(EXTENSION_ROOT_DIR, "..", "package.nls.json");
+    if (fs.pathExistsSync(defaultNlsFile)) {
+      defaultCollection = fs.readJsonSync(defaultNlsFile);
     } else {
       defaultCollection = {};
     }

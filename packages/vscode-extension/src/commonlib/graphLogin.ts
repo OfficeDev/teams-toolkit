@@ -13,7 +13,6 @@ import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import * as StringResources from "../resources/Strings.json";
 import { CryptoCachePlugin } from "./cacheAccess";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -23,6 +22,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
 const scopes = ["Application.ReadWrite.All"];
@@ -97,12 +97,14 @@ export class GraphLogin extends login implements GraphTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+            [TelemetryProperty.ErrorCode]: `${localize(
+              "teamstoolkit.codeFlowLogin.loginComponent"
+            )}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
           });
           throw new UserError(
             ExtensionErrors.UserCancel,
-            StringResources.vsc.common.userCancel,
+            localize("teamstoolkit.common.userCancel"),
             "Login"
           );
         }
@@ -146,8 +148,8 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = StringResources.vsc.graphLogin.warningMsg;
-    const confirm = StringResources.vsc.common.confirm;
+    const warningMsg = localize("teamstoolkit.graphLogin.warningMsg");
+    const confirm = localize("teamstoolkit.common.confirm");
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
       { modal: true },

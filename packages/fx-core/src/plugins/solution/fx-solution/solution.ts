@@ -102,7 +102,6 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   createAddAzureResourceQuestion,
-  createCapabilityQuestion,
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
   MessageExtensionItem,
@@ -143,6 +142,7 @@ import { AppStudioPlugin } from "../../resource/appstudio";
 import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { LoadedPlugin, PluginsWithContext, SolutionRunningState } from "./types";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { createCapabilityQuestion } from "../../../core/question";
 
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {
@@ -855,11 +855,6 @@ export class TeamsAppSolution implements Solution {
       const capQuestion = createCapabilityQuestion();
       const capNode = new QTreeNode(capQuestion);
       node.addChild(capNode);
-
-      // 1.1 hostType
-      //const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-      //hostTypeNode.condition = { contains: TabOptionItem.id };
-      //capNode.addChild(hostTypeNode);
 
       // 1.1.1 SPFX Tab
       const spfxPlugin: Plugin = this.SpfxPlugin;

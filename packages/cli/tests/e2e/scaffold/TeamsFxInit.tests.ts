@@ -17,9 +17,6 @@ describe("teamsfx init", function () {
   let appName: string;
   let projectPath: string;
 
-  // Should succeed on the 3rd try
-  this.retries(2);
-
   beforeEach(() => {
     testFolder = getTestFolder();
     appName = getUniqueAppName();

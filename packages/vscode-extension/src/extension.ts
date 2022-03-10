@@ -12,7 +12,6 @@ import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
-import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
 import * as exp from "./exp";
@@ -51,12 +50,12 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
-import { loadLocalizedStrings } from "./utils/localizeUtils";
+import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  VsCodeLogInstance.info(StringResources.vsc.extension.activate);
+  VsCodeLogInstance.info(localize("teamstoolkit.common.activate"));
 
   // load the feature flags.
   syncFeatureFlags();
@@ -573,7 +572,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   showDebugChangesNotification();
 
-  await loadLocalizedStrings();
+  loadLocalizedStrings();
 }
 
 // this method is called when your extension is deactivated

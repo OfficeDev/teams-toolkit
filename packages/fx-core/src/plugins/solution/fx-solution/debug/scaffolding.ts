@@ -216,6 +216,8 @@ async function scaffoldLocalSettingsJson(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource
@@ -223,12 +225,20 @@ async function scaffoldLocalSettingsJson(
       localSettings,
       includeBackend,
       includeBot,
-      includeFrontend
+      includeFrontend,
+      includeAAD,
+      includeSimpleAuth
     );
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   } else {
     // Initialize a local settings on scaffolding
-    localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
+    localSettings = localSettingsProvider.initV2(
+      includeFrontend,
+      includeBackend,
+      includeBot,
+      includeSimpleAuth,
+      includeAAD
+    );
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
   return localSettings;

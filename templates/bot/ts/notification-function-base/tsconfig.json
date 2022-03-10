@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"]
+}

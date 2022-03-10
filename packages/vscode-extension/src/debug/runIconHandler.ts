@@ -3,7 +3,7 @@ import { isValidProject } from "@microsoft/teamsfx-core";
 import { ext } from "../extensionVariables";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as vscode from "vscode";
-import * as StringResources from "../resources/Strings.json";
+import { localize } from "../utils/localizeUtils";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
@@ -12,7 +12,7 @@ export async function selectAndDebug(): Promise<Result<null, FxError>> {
     return ok(null);
   } else {
     const error = returnUserError(
-      new Error(StringResources.vsc.handlers.invalidProject),
+      new Error(localize("teamstoolkit.handlers.invalidProject")),
       ExtensionSource,
       ExtensionErrors.InvalidProject
     );

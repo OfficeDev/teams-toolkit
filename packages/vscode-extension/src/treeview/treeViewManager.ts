@@ -7,11 +7,11 @@ import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import { CommandsWebviewProvider } from "./webViewProvider/commandsWebviewProvider";
 import { TreeContainerType } from "./webViewProvider/treeContainerType";
-import * as StringResources from "../resources/Strings.json";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject } from "../utils/commonUtils";
+import { localize } from "../utils/localizeUtils";
 import { isInitAppEnabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
@@ -42,8 +42,8 @@ class TreeViewManager {
 
     const developmentCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -51,8 +51,8 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.samplesDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -67,8 +67,8 @@ class TreeViewManager {
         1,
         0,
         new TreeViewCommand(
-          StringResources.vsc.commandsTreeViewProvider.initProjectTitleNew,
-          StringResources.vsc.commandsTreeViewProvider.initProjectDescription,
+          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
           "fx-extension.init",
           vscode.TreeItemCollapsibleState.None,
           undefined,
@@ -81,8 +81,8 @@ class TreeViewManager {
     if (workspacePath && !(await isSPFxProject(workspacePath))) {
       developmentCommand.push(
         new TreeViewCommand(
-          StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
-          StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
+          localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
           "fx-extension.addCapability",
           vscode.TreeItemCollapsibleState.None,
           undefined,
@@ -90,8 +90,8 @@ class TreeViewManager {
           { name: "addCapability", custom: true }
         ),
         new TreeViewCommand(
-          StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
-          StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+          localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
           "fx-extension.update",
           vscode.TreeItemCollapsibleState.None,
           undefined,
@@ -103,8 +103,8 @@ class TreeViewManager {
 
     developmentCommand.push(
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
         "fx-extension.openManifest",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -116,8 +116,8 @@ class TreeViewManager {
     if (await AdaptiveCardCodeLensProvider.detectedAdaptiveCards()) {
       developmentCommand.push(
         new TreeViewCommand(
-          StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard,
-          StringResources.vsc.commandsTreeViewProvider.previewACDescription,
+          localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
+          localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
           "fx-extension.OpenAdaptiveCardExt",
           vscode.TreeItemCollapsibleState.None,
           undefined,
@@ -153,8 +153,8 @@ class TreeViewManager {
 
     const deployCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.provisionTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.provisionDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.provisionDescription"),
         "fx-extension.provision",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -162,8 +162,8 @@ class TreeViewManager {
         { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.buildPackageTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -171,8 +171,8 @@ class TreeViewManager {
         { name: "package", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.deployTitle,
-        StringResources.vsc.commandsTreeViewProvider.deployDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.deployTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.deployDescription"),
         "fx-extension.deploy",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -180,8 +180,8 @@ class TreeViewManager {
         { name: "cloud-upload", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.publishTitle,
-        StringResources.vsc.commandsTreeViewProvider.publishDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.publishTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.publishDescription"),
         "fx-extension.publish",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -189,8 +189,8 @@ class TreeViewManager {
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -198,8 +198,8 @@ class TreeViewManager {
         { name: "developerPortal", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideDescription"),
         "fx-extension.cicdGuide",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -231,8 +231,8 @@ class TreeViewManager {
 
     const helpCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.quickStartTitle,
-        StringResources.vsc.commandsTreeViewProvider.quickStartDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.quickStartTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -240,8 +240,8 @@ class TreeViewManager {
         { name: "lightningBolt_16", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.documentationTitle,
-        StringResources.vsc.commandsTreeViewProvider.documentationDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -249,8 +249,8 @@ class TreeViewManager {
         { name: "book", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openReportIssues",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.Feedback,
@@ -285,8 +285,8 @@ class TreeViewManager {
 
     const developmentCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -294,8 +294,8 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.samplesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.samplesDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -310,8 +310,8 @@ class TreeViewManager {
 
     const deployCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.teamsDevPortalDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -319,8 +319,8 @@ class TreeViewManager {
         { name: "developerPortal", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideDescription"),
         "fx-extension.cicdGuide",
         vscode.TreeItemCollapsibleState.None,
         undefined,
@@ -333,8 +333,8 @@ class TreeViewManager {
 
     const helpCommand = [
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.quickStartTitle,
-        StringResources.vsc.commandsTreeViewProvider.quickStartDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.quickStartTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -342,8 +342,8 @@ class TreeViewManager {
         { name: "lightningBolt_16", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.documentationTitle,
-        StringResources.vsc.commandsTreeViewProvider.documentationDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
@@ -351,8 +351,8 @@ class TreeViewManager {
         { name: "book", custom: false }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription,
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openReportIssues",
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.Feedback,

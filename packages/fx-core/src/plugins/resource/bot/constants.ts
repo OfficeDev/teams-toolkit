@@ -45,6 +45,7 @@ export class TemplateProjectsConstants {
 export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
   NOTIFICATION_SCENARIO_NAME = "notification",
+  NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
 }
 
 export class ProgressBarConstants {

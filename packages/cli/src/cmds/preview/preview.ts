@@ -213,6 +213,7 @@ export default class Preview extends YargsCommand {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
@@ -244,7 +245,12 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    const envCheckerResult = await this.handleDependences(includeBackend, includeBot);
+    const envCheckerResult = await this.handleDependences(
+      includeBackend,
+      includeBot,
+      includeFuncHostedBot
+    );
+
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
@@ -847,23 +853,25 @@ export default class Preview extends YargsCommand {
 
   private async handleDependences(
     hasBackend: boolean,
-    hasBot: boolean
+    hasBot: boolean,
+    hasFuncHostedBot: boolean
   ): Promise<Result<CliDepsChecker, FxError>> {
     const depsChecker = new CliDepsChecker(
       cliEnvCheckerLogger,
       cliEnvCheckerTelemetry,
       hasBackend,
-      hasBot
+      hasBot,
+      hasFuncHostedBot
     );
     let node = DepsType.AzureNode;
-    if (hasBackend) {
+    if (hasBackend || hasFuncHostedBot) {
       node = DepsType.FunctionNode;
     }
 
     const shouldContinue = await depsChecker.resolve([
       node,
       DepsType.Dotnet,
-      DepsType.FunctionNode,
+      DepsType.FuncCoreTools,
       DepsType.Ngrok,
     ]);
 

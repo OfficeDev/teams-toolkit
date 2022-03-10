@@ -83,3 +83,9 @@ export class LocalDebugCertificate {
   public static readonly KeyFileName: string = "localhost.key";
   public static readonly FriendlyName: string = "TeamsFx Development Certificate";
 }
+
+export const BotHostTypeName = "host-type";
+export const HostTypes = Object.freeze({
+  AppService: "app-service",
+  AzureFunctions: "azure-functions",
+});

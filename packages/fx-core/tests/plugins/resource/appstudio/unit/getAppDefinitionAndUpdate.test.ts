@@ -25,6 +25,7 @@ import {
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
+  TEAMS_APP_ID,
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
@@ -77,6 +78,7 @@ describe("Get AppDefinition and Update", () => {
   };
 
   let AAD_ConfigMap: ConfigMap;
+  let APPSTUDIO_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
   let LDEBUG_ConfigMap: ConfigMap;
   let FE_ConfigMap: ConfigMap;
@@ -113,12 +115,21 @@ describe("Get AppDefinition and Update", () => {
     BOT_ConfigMap.set(BOT_ID, uuid.v4());
     BOT_ConfigMap.set(BOT_DOMAIN, "bot domain");
 
+    APPSTUDIO_ConfigMap = new ConfigMap();
+    APPSTUDIO_ConfigMap.set(TEAMS_APP_ID, uuid.v4());
+
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
 
     APPST_ConfigMap = new ConfigMap();
     APPST_ConfigMap.set(Constants.TEAMS_APP_ID, "my app");
+
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.APPST, APPSTUDIO_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.FE, FE_ConfigMap);
   });
 
   afterEach(() => {
@@ -194,6 +205,7 @@ describe("Get AppDefinition and Update", () => {
 
   it("failed to get clientId from local config and should return error", async () => {
     localSettings.auth?.delete(LocalSettingsAuthKeys.ClientId);
+    configOfOtherPlugins!.get(PluginNames.AAD)!.delete(REMOTE_AAD_ID);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -223,6 +235,8 @@ describe("Get AppDefinition and Update", () => {
   it("failed to get tab endpoint and botId from local config and should return error", async () => {
     localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
     localSettings.bot?.delete(LocalSettingsBotKeys.BotId);
+    configOfOtherPlugins.get(PluginNames.FE)!.delete(FRONTEND_ENDPOINT);
+    configOfOtherPlugins.get(PluginNames.BOT)!.delete(BOT_ID);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -250,6 +264,7 @@ describe("Get AppDefinition and Update", () => {
 
   it("failed to get bot domain from local config and should return error", async () => {
     localSettings.bot?.delete(LocalSettingsBotKeys.BotDomain);
+    configOfOtherPlugins!.get(PluginNames.BOT)!.delete(BOT_DOMAIN);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -271,16 +286,15 @@ describe("Get AppDefinition and Update", () => {
     if (getAppDefinitionAndResult.isErr()) {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_BOT_DOMAIN);
+        .equals(AppStudioError.GetRemoteConfigFailedError.name);
+      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes(BOT_DOMAIN);
     }
   });
 
   it("should work for bot only project local debug", async () => {
     localSettings.frontend = undefined;
     localSettings.teamsApp = undefined;
+    configOfOtherPlugins.get(PluginNames.AAD)!.delete(REMOTE_AAD_ID);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -302,6 +316,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
 
+    // TODO: why get capabilities via manifest
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     console.log(getAppDefinitionAndResult);
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());

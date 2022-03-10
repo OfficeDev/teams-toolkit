@@ -96,6 +96,7 @@ describe("Provision Teams app with Azure", () => {
       teamsAppId: uuid(),
     });
 
+    // TODO: why get capabilities via manifest
     const teamsAppId = await plugin.postProvision(ctx);
     console.log(teamsAppId);
     chai.assert.isTrue(teamsAppId.isOk());

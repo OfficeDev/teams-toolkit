@@ -24,6 +24,7 @@ import {
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
+  TEAMS_APP_ID,
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
@@ -100,6 +101,7 @@ describe("Post Local Debug", () => {
   const localDebugBotDomain = "local debug bot domain";
 
   let AAD_ConfigMap: ConfigMap;
+  let APPSTUDIO_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
   let LDEBUG_ConfigMap: ConfigMap;
   let FE_ConfigMap: ConfigMap;
@@ -135,9 +137,18 @@ describe("Post Local Debug", () => {
     BOT_ConfigMap.set(BOT_ID, uuid.v4());
     BOT_ConfigMap.set(BOT_DOMAIN, "bot domain");
 
+    APPSTUDIO_ConfigMap = new ConfigMap();
+    APPSTUDIO_ConfigMap.set(TEAMS_APP_ID, uuid.v4());
+
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+
+    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.APPST, APPSTUDIO_ConfigMap);
+    configOfOtherPlugins.set(PluginNames.FE, FE_ConfigMap);
 
     sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
@@ -147,9 +158,6 @@ describe("Post Local Debug", () => {
   });
 
   it("read an invalid manifest and should return error", async () => {
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -221,9 +229,6 @@ describe("Post Local Debug", () => {
   });
 
   it("should return Ok for postLocalDebug happy path", async () => {
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),

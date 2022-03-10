@@ -88,8 +88,10 @@ def find_string_in_content(pattern, diffFile):
         for i, line in enumerate(open(diffFile)):
             if exclude_key_words in line:
                 continue
-            new_line=line.replace('"','')
-            match = re.findall(pattern, new_line)
+            new_line=line.replace('"',' ')
+            new_line=new_line.replace(',',' ')
+            x = new_line.split()
+            match = list(filter(pattern.match, x))
             if match: 
                 print("Sensitive Content: ", line, " in file: ", diffFile)
                 raise  Exception("Sensitive content detected! please take action to this file: ", diffFile)

@@ -7,7 +7,6 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ext } from "../extensionVariables";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { VS_CODE_UI } from "../extension";
-import * as StringResources from "../resources/Strings.json";
 import {
   skipNgrokHelpLink,
   skipNgrokRetiredNotification,
@@ -15,6 +14,7 @@ import {
   trustDevCertRetiredNotification,
 } from "./constants";
 import { commands } from "vscode";
+import { localize } from "../utils/localizeUtils";
 
 // TODO: remove the notification
 export async function showDebugChangesNotification(): Promise<void> {
@@ -37,14 +37,14 @@ function showNotification(message: string, url: string): void {
     "warn",
     message,
     false,
-    StringResources.vsc.localDebug.openSettings,
-    StringResources.vsc.localDebug.learnMore
+    localize("teamstoolkit.localDebug.openSettings"),
+    localize("teamstoolkit.localDebug.learnMore")
   ).then(async (result) => {
     if (result.isOk()) {
-      if (result.value === StringResources.vsc.localDebug.learnMore) {
+      if (result.value === localize("teamstoolkit.localDebug.learnMore")) {
         await VS_CODE_UI.openUrl(url);
       }
-      if (result.value === StringResources.vsc.localDebug.openSettings) {
+      if (result.value === localize("teamstoolkit.localDebug.openSettings")) {
         await commands.executeCommand(
           "workbench.action.openSettings",
           "fx-extension.prerequisiteCheck"

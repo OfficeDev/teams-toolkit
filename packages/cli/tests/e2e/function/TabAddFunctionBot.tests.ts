@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import "mocha";
+import { describe } from "mocha";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -20,6 +20,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -32,7 +33,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it(`tab + function + bot`, async function () {
+  it(`tab + function + bot`, { testPlanCaseId: 10308358 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

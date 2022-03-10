@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, PluginBot } from "../resources/strings";
+import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
@@ -12,6 +12,7 @@ export class ScaffoldConfig {
   public objectId?: string;
   public programmingLanguage?: ProgrammingLanguage;
   public workingDir?: string;
+  public hostType?: HostType;
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -35,11 +36,18 @@ export class ScaffoldConfig {
     ) {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
+
+    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
+
+    this.hostType = utils.convertToConstValues(rawHostType, HostTypes);
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
     utils.checkAndSaveConfig(context, PluginBot.BOT_ID, this.botId);
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
+    utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
   }
 }

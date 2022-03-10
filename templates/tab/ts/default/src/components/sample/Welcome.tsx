@@ -6,7 +6,7 @@ import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
 import { useTeamsFx } from "./lib/useTeamsFx";
-import { TeamsUserCredential } from "@microsoft/teamsfx";
+import { TeamsFx } from "@microsoft/teamsfx";
 import { useData } from "./lib/useData";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
@@ -40,8 +40,8 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
 
   const { isInTeams } = useTeamsFx();
   const userProfile = useData(async () => {
-    const credential = new TeamsUserCredential();
-    return isInTeams ? await credential.getUserInfo() : undefined;
+    const teamsfx = new TeamsFx();
+    return isInTeams ? await teamsfx.getUserInfo() : undefined;
   })?.data;
   const userName = userProfile ? userProfile.displayName : "";
   return (

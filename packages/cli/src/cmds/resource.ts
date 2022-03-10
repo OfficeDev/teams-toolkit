@@ -7,7 +7,11 @@ import * as path from "path";
 import { Argv } from "yargs";
 
 import { err, FxError, ok, Result, LogLevel, Platform } from "@microsoft/teamsfx-api";
-
+import {
+  PathNotExistError,
+  environmentManager,
+  ProjectSettingsHelper,
+} from "@microsoft/teamsfx-core";
 import activate from "../activate";
 import { getSystemInputs, Json, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
@@ -20,7 +24,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+
 import { EnvNodeNoCreate } from "../constants";
 import {
   EnvNotFound,
@@ -42,7 +46,7 @@ async function checkAndReadEnvJson(
   }
   const envsResult = await environmentManager.listRemoteEnvConfigs(rootFolder);
   if (envsResult.isErr()) {
-    if (envsResult.error.name === "PathNotExist") {
+    if (envsResult.error instanceof PathNotExistError) {
       return err(NotSupportedProjectType());
     }
     return envsResult;

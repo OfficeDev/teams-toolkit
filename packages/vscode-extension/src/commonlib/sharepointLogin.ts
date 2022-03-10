@@ -12,7 +12,6 @@ import { loggedIn, loggingIn, signedIn, signedOut, signingIn } from "./common/co
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { CryptoCachePlugin } from "./cacheAccess";
-import * as StringResources from "../resources/Strings.json";
 import axios from "axios";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -22,6 +21,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
 const cachePlugin = new CryptoCachePlugin(accountName);
@@ -155,12 +155,14 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+            [TelemetryProperty.ErrorCode]: `${localize(
+              "teamstoolkit.codeFlowLogin.loginComponent"
+            )}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
           });
           throw new UserError(
             ExtensionErrors.UserCancel,
-            StringResources.vsc.common.userCancel,
+            localize("teamstoolkit.common.userCancel"),
             "Login"
           );
         }
@@ -185,9 +187,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const message = StringResources.vsc.appStudioLogin.message;
-    const signin = StringResources.vsc.common.signin;
-    const readMore = StringResources.vsc.common.readMore;
+    const message = localize("teamstoolkit.appStudioLogin.message");
+    const signin = localize("teamstoolkit.common.signin");
+    const readMore = localize("teamstoolkit.common.readMore");
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(

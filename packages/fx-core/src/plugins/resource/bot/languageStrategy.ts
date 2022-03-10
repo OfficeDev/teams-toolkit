@@ -2,8 +2,12 @@
 // Licensed under the MIT license.
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
-import { DownloadConstants, TemplateProjectsConstants } from "./constants";
-import { Commands } from "./resources/strings";
+import {
+  DownloadConstants,
+  TemplateProjectsConstants,
+  TemplateProjectsScenarios,
+} from "./constants";
+import { Commands, HostTypes } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
@@ -18,6 +22,7 @@ import {
   scaffoldFromTemplates,
 } from "../../../common/template-utils/templatesActions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
+import { PluginActRoles } from "./enums/pluginActRoles";
 
 export class LanguageStrategy {
   public static async getTemplateProject(
@@ -29,7 +34,7 @@ export class LanguageStrategy {
       {
         group: group_name,
         lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
-        scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+        scenario: this.resolveScenarioFromTeamsBotConfig(config),
         templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
         dst: config.scaffold.workingDir!,
         onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
@@ -114,6 +119,20 @@ export class LanguageStrategy {
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
       }
+    }
+  }
+
+  private static resolveScenarioFromTeamsBotConfig(
+    config: TeamsBotConfig
+  ): TemplateProjectsScenarios {
+    if (config.actRoles.includes(PluginActRoles.Notification)) {
+      if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
+        return TemplateProjectsScenarios.NOTIFICATION_SCENARIO_NAME;
+      } else {
+        return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;
+      }
+    } else {
+      return TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
     }
   }
 }

@@ -29,7 +29,7 @@ export async function fetchCodeZip(
 ): Promise<Result<AxiosResponse<any> | undefined, FxError>> {
   let retries = 3;
   let result = undefined;
-  const error = FetchSampleError(sampleId);
+  const error = new FetchSampleError(sampleId);
   while (retries > 0) {
     retries--;
     try {
@@ -136,7 +136,7 @@ export async function downloadSample(
     if (fetchRes.isErr()) {
       throw fetchRes.error;
     } else if (!fetchRes.value) {
-      throw FetchSampleError(sample.id);
+      throw new FetchSampleError(sample.id);
     }
     progress.next("Unzipping the sample package");
     await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);

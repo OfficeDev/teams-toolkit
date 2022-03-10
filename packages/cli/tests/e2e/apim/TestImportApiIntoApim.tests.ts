@@ -21,6 +21,8 @@ import GraphLogin from "../../../src/commonlib/graphLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import { describe } from "mocha";
+import { it } from "../../commonlib/it";
 
 describe("Import API into API Management", function () {
   const testProcessEnv = Object.assign({}, process.env);
@@ -54,31 +56,39 @@ describe("Import API into API Management", function () {
     );
   });
 
-  it(`Create a new API version in Azure API Management`, async function () {
-    await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await CliHelper.deployProject(
-      ResourceToDeploy.Apim,
-      projectPath,
-      `--api-version v2`,
-      testProcessEnv
-    );
+  it(
+    `Create a new API version in Azure API Management`,
+    { testPlanCaseId: 10107968 },
+    async function () {
+      await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+      await CliHelper.deployProject(
+        ResourceToDeploy.Apim,
+        projectPath,
+        `--api-version v2`,
+        testProcessEnv
+      );
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
-  });
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
+      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
+    }
+  );
 
-  it(`Update an existing API version in Azure API Management`, async function () {
-    await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await CliHelper.deployProject(
-      ResourceToDeploy.Apim,
-      projectPath,
-      `--api-version v1`,
-      testProcessEnv
-    );
+  it(
+    `Update an existing API version in Azure API Management`,
+    { testPlanCaseId: 10116782 },
+    async function () {
+      await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+      await CliHelper.deployProject(
+        ResourceToDeploy.Apim,
+        projectPath,
+        `--api-version v1`,
+        testProcessEnv
+      );
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
-  });
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
+      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    }
+  );
 
   after(async () => {
     // clean up

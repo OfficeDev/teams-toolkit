@@ -33,6 +33,7 @@ import {
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
   MessageExtensionItem,
+  NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -49,7 +50,6 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { OperationNotSupportedForExistingAppError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { NotificationOptionItem } from "../../../../core/question";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 

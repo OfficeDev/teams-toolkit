@@ -34,6 +34,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
+  NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -42,7 +43,6 @@ import { getPluginContext } from "../utils/util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { NotificationOptionItem } from "../../../../core/question";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);

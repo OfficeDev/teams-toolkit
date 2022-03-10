@@ -7,7 +7,7 @@ import {
   TemplateProjectsConstants,
   TemplateProjectsScenarios,
 } from "./constants";
-import { Commands } from "./resources/strings";
+import { Commands, HostTypes } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
@@ -125,9 +125,14 @@ export class LanguageStrategy {
   private static resolveScenarioFromTeamsBotConfig(
     config: TeamsBotConfig
   ): TemplateProjectsScenarios {
-    // TODO: support more scenarios
-    return config.actRoles.includes(PluginActRoles.Notification)
-      ? TemplateProjectsScenarios.NOTIFICATION_SCENARIO_NAME
-      : TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
+    if (config.actRoles.includes(PluginActRoles.Notification)) {
+      if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
+        return TemplateProjectsScenarios.NOTIFICATION_SCENARIO_NAME;
+      } else {
+        return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;
+      }
+    } else {
+      return TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
+    }
   }
 }

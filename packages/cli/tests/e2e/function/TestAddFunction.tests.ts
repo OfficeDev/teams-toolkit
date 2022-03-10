@@ -21,6 +21,8 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import { describe } from "mocha";
+import { it } from "../../commonlib/it";
 
 describe("Test Add Function", function () {
   let testFolder: string;
@@ -46,7 +48,7 @@ describe("Test Add Function", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`Create Tab Then Add Function`, async function () {
+  it(`Create Tab Then Add Function`, { testPlanCaseId: 10306830 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 

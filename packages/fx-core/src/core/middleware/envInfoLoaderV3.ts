@@ -34,7 +34,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 

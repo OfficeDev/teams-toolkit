@@ -44,6 +44,7 @@ import {
   PathInfo,
   ProgressBarConstants,
   TemplateProjectsConstants,
+  TemplateProjectsScenarios,
 } from "../constants";
 import { LanguageStrategy } from "../languageStrategy";
 import { ProgressBarFactory } from "../progressBars";
@@ -125,7 +126,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     await scaffoldFromTemplates({
       group: group_name,
       lang: lang,
-      scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+      scenario: TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME,
       templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
       dst: workingDir,
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {

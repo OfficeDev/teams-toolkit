@@ -9,7 +9,7 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { NoProjectOpenedError, ObjectIsUndefinedError, PathNotExistError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
-import { isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
+import { isAADEnabled, isConfigUnifyEnabled, IsSimpleAuthEnabled } from "../../common/tools";
 import { CoreHookContext } from "../types";
 
 export const LocalSettingsLoaderMW: Middleware = async (
@@ -19,13 +19,13 @@ export const LocalSettingsLoaderMW: Middleware = async (
   if (!shouldIgnored(ctx) && !isConfigUnifyEnabled()) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 
     const projectPathExist = await fs.pathExists(inputs.projectPath);
     if (!projectPathExist) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
+      ctx.result = err(new PathNotExistError(inputs.projectPath));
       return;
     }
 
@@ -43,7 +43,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
       const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
       const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
       const hasSimpleAuth = IsSimpleAuthEnabled(ctx.projectSettings);
-      const hasAAD = selectedPlugins?.some((plugin) => plugin.name === PluginNames.AAD);
+      const hasAAD = isAADEnabled(solutionSettings);
 
       const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
       let exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);

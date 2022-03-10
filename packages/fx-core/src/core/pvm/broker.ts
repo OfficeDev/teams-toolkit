@@ -25,7 +25,7 @@ const validate = () => {
     descriptor.value = async function (...args: any[]) {
       const root = args[0];
       if (!(await pathExists(root))) {
-        throw InvalidProjectError();
+        throw new InvalidProjectError();
       }
 
       await ensureDir(join(root, ConfigFolderName));

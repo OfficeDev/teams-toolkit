@@ -1,17 +1,17 @@
 import { useData } from "./useData";
-import { TeamsUserCredential, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/teamsfx";
+import { TeamsFx, createMicrosoftGraphClient, ErrorWithCode } from "@microsoft/teamsfx";
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
 
 export function useGraph<T>(
-  asyncFunc: (graph: Client, credential: TeamsUserCredential, scope: string[]) => Promise<T>,
+  asyncFunc: (graph: Client, teamsfx: TeamsFx, scope: string[]) => Promise<T>,
   options?: { scope: string[] }
 ) {
   const { scope } = { scope: ["User.Read"], ...options };
   const initial = useData(async () => {
     try {
-      const credential = new TeamsUserCredential();
-      const graph = createMicrosoftGraphClient(credential, scope);
-      return await asyncFunc(graph, credential, scope);
+      const teamsfx = new TeamsFx();
+      const graph = createMicrosoftGraphClient(teamsfx, scope);
+      return await asyncFunc(graph, teamsfx, scope);
     } catch (err: unknown) {
       if (err instanceof GraphError && err.code?.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
@@ -24,11 +24,11 @@ export function useGraph<T>(
   const { data, error, loading, reload } = useData(
     async () => {
       try {
-        const credential = new TeamsUserCredential();
-        await credential.login(scope);
+        const teamsfx = new TeamsFx();
+        await teamsfx.login(scope);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
-        const graph = createMicrosoftGraphClient(credential, scope);
-        return await asyncFunc(graph, credential, scope);
+        const graph = createMicrosoftGraphClient(teamsfx, scope);
+        return await asyncFunc(graph, teamsfx, scope);
       } catch (err: unknown) {
         if (err instanceof ErrorWithCode && err.message?.includes("CancelledByUser")) {
           const helpLink = "https://aka.ms/teamsfx-auth-code-flow";

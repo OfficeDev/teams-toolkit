@@ -1,17 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants } from "../aad/constants";
 import { GraphErrorCodes } from "../aad/errorCodes";
 import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
-import { CommonStrings } from "./resources/strings";
 import { FxBotPluginResultFactory } from "./result";
 
 export enum ErrorType {
   User,
   System,
+}
+
+function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>): void {
+  if (!target.innerError) return;
+
+  const statusCode = target.innerError.response?.status;
+  if (statusCode) {
+    if (statusCode >= 400 && statusCode < 500) {
+      target.errorType = ErrorType.User;
+    } else {
+      target.errorType = ErrorType.System;
+    }
+  }
+
+  const errorCode = target.innerError.response?.data?.error?.code;
+  if (errorCode) {
+    const helpLink = helpLinkMap.get(errorCode);
+    if (helpLink) target.helpLink = helpLink;
+  }
 }
 
 export class PluginError extends Error {
@@ -37,7 +54,6 @@ export class PluginError extends Error {
     this.errorType = type;
     this.innerError = innerError;
     this.helpLink = helpLink;
-    this.inferFromInnerError();
     Object.setPrototypeOf(this, PluginError.prototype);
   }
 
@@ -47,25 +63,6 @@ export class PluginError extends Error {
       msg += `Suggestions: ${this.suggestions.join(" ")}`;
     }
     return msg;
-  }
-
-  inferFromInnerError() {
-    if (!this.innerError) return;
-
-    const errorCode = this.innerError.response?.data?.error?.code;
-    const helpLink = GraphErrorCodes.get(errorCode);
-    if (helpLink) this.helpLink = helpLink;
-
-    const statusCode = this.innerError.response?.status;
-    if (
-      statusCode &&
-      statusCode >= Constants.statusCodeUserError &&
-      statusCode < Constants.statusCodeServerError
-    ) {
-      this.errorType = ErrorType.User;
-    } else {
-      this.errorType = ErrorType.System;
-    }
   }
 }
 
@@ -112,12 +109,14 @@ export class AADAppCheckingError extends PluginError {
 export class CreateAADAppError extends PluginError {
   constructor(innerError?: any) {
     super(ErrorType.User, CreateAppError.name, CreateAppError.message(), [], innerError);
+    resolveInnerError(this, GraphErrorCodes);
   }
 }
 
 export class CreateAADSecretError extends PluginError {
   constructor(innerError?: any) {
     super(ErrorType.User, CreateSecretError.name, CreateSecretError.message(), [], innerError);
+    resolveInnerError(this, GraphErrorCodes);
   }
 }
 
@@ -319,19 +318,6 @@ export class RegisterResourceProviderError extends PluginError {
         Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
         Messages.CheckOutputLogAndTryToFix,
       ],
-      innerError
-    );
-  }
-}
-
-// for the use of migrating v1 project
-export class MigrateV1ProjectError extends PluginError {
-  constructor(innerError?: any) {
-    super(
-      ErrorType.User,
-      "MigrateV1ProjectError",
-      `Failed to migrate Teams Toolkit V1 project into '${CommonStrings.BOT_WORKING_DIR_NAME}'.`,
-      [Messages.RollbackToV1Project, Messages.CheckOutputLogAndTryToFix],
       innerError
     );
   }

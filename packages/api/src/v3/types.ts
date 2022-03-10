@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IStaticTab, IConfigurableTab, IBot, IComposeExtension } from "../manifest";
+import {
+  IStaticTab,
+  IConfigurableTab,
+  IBot,
+  IComposeExtension,
+  IWebApplicationInfo,
+} from "@microsoft/teams-manifest";
 import { EnvInfoV2 } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
 
@@ -29,5 +35,10 @@ export type ManifestCapability =
   | {
       name: "MessageExtension";
       snippet?: { local: IComposeExtension; remote: IComposeExtension };
+      existingApp?: boolean;
+    }
+  | {
+      name: "WebApplicationInfo";
+      snippet?: IWebApplicationInfo;
       existingApp?: boolean;
     };

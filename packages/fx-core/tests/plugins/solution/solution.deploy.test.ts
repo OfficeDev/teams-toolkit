@@ -16,8 +16,8 @@ import {
   Platform,
   ProjectSettings,
   Inputs,
-  Json,
   TokenProvider,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -49,6 +49,7 @@ import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
+import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -382,5 +383,134 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
 
     expect(result.isOk()).to.be.true;
+  });
+
+  it("should return error if m365 account doesn't match for SPFx projects", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        capabilities: [TabOptionItem.id],
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [SpfxPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "mock",
+    };
+    mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        // MockedAppStudioTokenProvider will return fake token with tenantId "222", any teamsAppTenantId other than "222" will do
+        solution: { provisionSucceeded: true, teamsAppTenantId: "333" },
+      },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.TeamsAppTenantIdNotRight);
+  });
+
+  it("shouldn't check m365 accounts for Azure projects", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, new AadAppForTeamsPlugin().name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "mock",
+    };
+    mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        // MockedAppStudioTokenProvider will return fake token with tenantId "222", any teamsAppTenantId other than "222" will do
+        solution: { provisionSucceeded: true, teamsAppTenantId: "333" },
+      },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
+
+    expect(result.isOk()).to.be.true;
+  });
+
+  it("should return error if Azure account doesn't match", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+
+    class FakeAzureAccountProvider extends MockedAzureAccountProvider {
+      async listSubscriptions(): Promise<SubscriptionInfo[]> {
+        return [{ subscriptionId: "111", subscriptionName: "sub1", tenantId: "222" }];
+      }
+    }
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new FakeAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "mock",
+    };
+    mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        // MockedAppStudioTokenProvider will return fake token with tenantId "222"
+        // MockedAzureAccountProvider will return fake subscriptionId "mock"
+        solution: {
+          provisionSucceeded: true,
+          teamsAppTenantId: "222",
+          subscriptionId: "someDifferentSubId",
+        },
+      },
+    };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.SubscriptionNotFound);
   });
 });

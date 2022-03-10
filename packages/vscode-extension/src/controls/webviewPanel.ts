@@ -165,7 +165,10 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      vscode.commands.executeCommand("vscode.openFolder", res.value);
+      await ExtTelemetry.dispose();
+      setTimeout(() => {
+        vscode.commands.executeCommand("vscode.openFolder", res.value);
+      }, 2000);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

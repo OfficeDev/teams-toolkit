@@ -6,7 +6,7 @@ import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
-import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../../src";
+import { getTediousConnectionConfig, TeamsFx } from "../../../src";
 import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../helper";
 
 chaiUse(chaiPromises);
@@ -20,7 +20,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
   // let subscriptionId: string | undefined;
   before(async () => {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
     // resourceGroup = process.env.SDK_INTEGRATION_RESOURCE_GROUP_NAME;
     // subscriptionId = process.env.SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID;
     // const sqlEndpoint: string | undefined = process.env.SDK_INTEGRATION_SQL_ENDPOINT;
@@ -72,8 +71,8 @@ async function clearUpLocalFirewall(client: SqlManagementClient, rg: string, sql
 }
 
 async function getSQLConnection(): Promise<Connection> {
-  const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
-  const config = await sqlConnectConfig.getConfig();
+  const teamsfx = new TeamsFx();
+  const config = await getTediousConnectionConfig(teamsfx);
   const connection = new Connection(config);
   return new Promise((resolve, reject) => {
     connection.on("connect", (error) => {

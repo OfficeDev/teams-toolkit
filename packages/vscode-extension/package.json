@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.3.0",
+  "version": "3.5.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -20,7 +20,7 @@
     ]
   },
   "engines": {
-    "vscode": "^1.51.0"
+    "vscode": "^1.58.0"
   },
   "license": "MIT",
   "keywords": [
@@ -58,6 +58,8 @@
     "onCommand:fx-extension.openAppManagement",
     "onCommand:fx-extension.openBotManagement",
     "onCommand:fx-extension.openReportIssues",
+    "onCommand:fx-extension.getNewProjectPath",
+    "onCommand:fx-extension.openReadMe",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -622,6 +624,16 @@
         "command": "fx-extension.openHelpFeedbackLink",
         "title": "Learn more about help and feedback",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.getNewProjectPath",
+        "title": "Teams: Get Path",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.openReadMe",
+        "title": "Teams: Open Read Me",
+        "enablement": "never"
       }
     ],
     "taskDefinitions": [
@@ -769,11 +781,6 @@
         "title": "General",
         "order": 1,
         "properties": {
-          "fx-extension.stopTeamsToolkitTasksPostDebug": {
-            "type": "boolean",
-            "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
-            "default": true
-          },
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
@@ -804,7 +811,7 @@
               },
               "funcCoreTools": {
                 "type": "boolean",
-                "description": "Ensure Azure Function Core Tools is installed."
+                "description": "Ensure Azure Functions Core Tools is installed."
               },
               "bicep": {
                 "type": "boolean",
@@ -812,7 +819,7 @@
               },
               "ngrok": {
                 "type": "boolean",
-                "description": "Ensure Ngrok is installed."
+                "description": "Ensure Ngrok is installed and started."
               },
               "devCert": {
                 "type": "boolean",
@@ -909,7 +916,18 @@
           {
             "id": "teamsToolkitBuildApp",
             "title": "Build your first Teams app",
-            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.create?%5B%22Webview%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
+            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.getNewProjectPath?%5B%22Webview%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
+            "when": "!fx-extension.isNotSupportAutoOpenAPI",
+            "media": {
+              "svg": "media/step_create.svg",
+              "altText": "Build your first Teams app"
+            }
+          },
+          {
+            "id": "teamsToolkitBuildAppOldApi",
+            "title": "Build your first Teams app",
+            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
+            "when": "fx-extension.isNotSupportAutoOpenAPI",
             "media": {
               "svg": "media/step_create.svg",
               "altText": "Build your first Teams app"
@@ -918,7 +936,7 @@
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, [sign in to M365](https://www.bing.com) (organizational account) with sideloading option.__",
+            "description": "Press [F5](command:fx-extension.selectAndDebug) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
             "media": {
               "svg": "media/preview.svg",
               "altText": "Preview your Teams app locally"
@@ -927,7 +945,7 @@
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
+            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:workbench.view.extension.teamsfx)\n__Tip: Learn more about ['Provision'](https://aka.ms/teamsfx-provision).__",
             "media": {
               "svg": "media/openExtensionIcon.svg",
               "altText": "Deploy Teams apps"
@@ -936,7 +954,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README.md](https://aka.ms/teamsfx-arm-templates)",
+            "description": "What's next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://aka.ms/teamsfx-landing-doc).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README](command:fx-extension.openReadMe?%5B%22Webview%22%5D)",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"
@@ -997,7 +1015,7 @@
     "@types/tmp": "^0.2.0",
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
-    "@types/vscode": "^1.51.0",
+    "@types/vscode": "^1.58.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
@@ -1057,12 +1075,12 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.14.0",
-    "@microsoft/teamsfx-core": "^1.3.0",
+    "@microsoft/teamsfx-api": "^0.16.0",
+    "@microsoft/teamsfx-core": "^1.5.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
-    "async-mutex": "^0.3.1",
     "ajv": "^8.5.0",
+    "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

@@ -5,7 +5,6 @@ import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { app, authentication } from "@microsoft/teams-js";
-import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import {
   validateScopesType,
@@ -40,8 +39,7 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Constructor of TeamsUserCredential.
-   * Developer need to call loadConfiguration(config) before using this class.
-   * 
+   *
    * @example
    * ```typescript
    * const config = {
@@ -50,18 +48,22 @@ export class TeamsUserCredential implements TokenCredential {
    *    clientId: "xxx"
    *   }
    * }
-     loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-     const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
+   * // Use default configuration provided by Teams Toolkit
+   * const credential = new TeamsUserCredential();
+   * // Use a customized configuration
+   * const anotherCredential = new TeamsUserCredential(config);
    * ```
+   *
+   * @param {AuthenticationConfiguration} authConfig - The authentication configuration. Use environment variables if not provided.
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   * 
+   *
    * @beta
    */
-  constructor() {
+  constructor(authConfig: AuthenticationConfiguration) {
     internalLogger.info("Create teams user credential");
-    this.config = this.loadAndValidateConfig();
+    this.config = this.loadAndValidateConfig(authConfig);
     this.ssoToken = null;
     this.initialized = false;
   }
@@ -336,21 +338,13 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Load and validate authentication configuration
+   *
+   * @param {AuthenticationConfiguration?} config - The authentication configuration. Use environment variables if not provided.
+   *
    * @returns Authentication configuration
    */
-  private loadAndValidateConfig(): AuthenticationConfiguration {
+  private loadAndValidateConfig(config: AuthenticationConfiguration): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
-    const config = getAuthenticationConfiguration();
-
-    if (!config) {
-      internalLogger.error(ErrorMessage.AuthenticationConfigurationNotExists);
-
-      throw new ErrorWithCode(
-        ErrorMessage.AuthenticationConfigurationNotExists,
-        ErrorCode.InvalidConfiguration
-      );
-    }
-
     if (config.initiateLoginEndpoint && config.clientId) {
       return config;
     }

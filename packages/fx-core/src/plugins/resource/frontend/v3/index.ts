@@ -37,6 +37,7 @@ import { getTemplatesFolder } from "../../../../folder";
 import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { FRONTEND_INDEX_PATH } from "../../appstudio/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
 import {
@@ -58,18 +59,17 @@ import { Scenario, TemplateInfo } from "../resources/templateInfo";
 import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 
 @Service(BuiltInFeaturePluginNames.frontend)
-export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
+export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
   name = BuiltInFeaturePluginNames.frontend;
   displayName = "NodeJS Tab frontend";
   description = "Tab frontend with React Framework using Javascript/Typescript";
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
-  async scaffold(
+  async generateCode(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void | undefined, FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
+  ): Promise<Result<Void, FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok(Void);
     ctx.logProvider.info(Messages.StartScaffold(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.ScaffoldProgressTitle,
@@ -116,7 +116,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     });
     await progress.end(true);
     ctx.logProvider.info(Messages.EndScaffold(this.name));
-    return ok(undefined);
+    return ok(Void);
   }
   @hooks([
     CommonErrorHandlerMW({
@@ -126,14 +126,13 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
       },
     }),
   ])
-  async generateResourceTemplate(
+  async generateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    inputs: v3.AddFeatureInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok([]);
+    const pluginCtx = { plugins: inputs.allPluginsAfterAdd };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.BicepTemplateRelativeDir
@@ -156,50 +155,37 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
         domain: FrontendOutputBicepSnippet.Domain,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
-  async addFeature(
+  async addInstance(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+  ): Promise<Result<string[], FxError>> {
     ensureSolutionSettings(ctx.projectSetting);
+    const res = await ctx.appManifestProvider.addCapabilities(ctx, inputs, [{ name: "staticTab" }]);
+    if (res.isErr()) return err(res.error);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
-    let templates: v2.ResourceTemplate[] = [];
     if (!capabilities.includes(TabOptionItem.id)) {
-      // tab is added for first time, scaffold and generate resource template
-      const scaffoldRes = await this.scaffold(ctx, inputs);
-      if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-      const armRes = await this.generateResourceTemplate(ctx, inputs);
-      if (armRes.isErr()) return err(armRes.error);
-      templates = armRes.value;
       capabilities.push(TabOptionItem.id);
     }
-    const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-    capabilitiesToAddManifest.push({ name: "staticTab" });
-    const update = await ctx.appManifestProvider.addCapabilities(
-      ctx,
-      inputs,
-      capabilitiesToAddManifest
-    );
-    if (update.isErr()) return err(update.error);
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    return ok(templates);
+    return ok([]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
-  async afterOtherFeaturesAdded(
+  async updateBicep(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    const result: ArmTemplateResult = {
+    inputs: v3.UpdateInputs
+  ): Promise<Result<v3.BicepTemplate[], FxError>> {
+    const result: v3.BicepTemplate = {
       Reference: {
         endpoint: FrontendOutputBicepSnippet.Endpoint,
         domain: FrontendOutputBicepSnippet.Domain,
       },
     };
-    return ok([{ kind: "bicep", template: result }]);
+    return ok([result]);
   }
   private async buildFrontendConfig(
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
@@ -278,6 +264,10 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    if (envInfo.envName === "local") {
+      envInfo.state[this.name][FRONTEND_INDEX_PATH] = Constants.FrontendIndexPath;
+      return ok(Void);
+    }
     ctx.logProvider.info(Messages.StartPostProvision(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.PostProvisionProgressTitle,
@@ -308,7 +298,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.StartDeploy(this.name));
     const progress = ctx.userInteraction.createProgressBar(
@@ -316,7 +306,10 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
       Object.entries(DeployProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
-    const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);
+    const frontendConfigRes = await this.buildFrontendConfig(
+      envInfo,
+      tokenProvider.azureAccountProvider
+    );
     if (frontendConfigRes.isErr()) {
       return err(frontendConfigRes.error);
     }

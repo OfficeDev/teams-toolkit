@@ -35,10 +35,3 @@ export const DeployProgress: IProgress = {
     Upload: Messages.ProgressUpload,
   },
 };
-
-export const MigrateProgress: IProgress = {
-  title: Messages.MigrateProgressTitle,
-  steps: {
-    Migrate: Messages.ProgressMigrate,
-  },
-};

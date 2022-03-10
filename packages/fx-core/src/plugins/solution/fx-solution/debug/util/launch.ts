@@ -8,8 +8,7 @@ import { LaunchBrowser } from "../constants";
 export function generateConfigurations(
   includeFrontend: boolean,
   includeBackend: boolean,
-  includeBot: boolean,
-  isMigrateFromV1: boolean
+  includeBot: boolean
 ): Record<string, unknown>[] {
   let edgeOrder = 2,
     chromeOrder = 1;
@@ -18,202 +17,25 @@ export function generateConfigurations(
     chromeOrder = 2;
   }
 
-  const launchConfigurations: Record<string, unknown>[] = isMigrateFromV1
-    ? []
-    : [
-        {
-          name: "Launch Remote (Edge)",
-          type: LaunchBrowser.edge,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          presentation: {
-            group: "remote",
-            order: edgeOrder,
-          },
-        },
-        {
-          name: "Launch Remote (Chrome)",
-          type: LaunchBrowser.chrome,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          presentation: {
-            group: "remote",
-            order: chromeOrder,
-          },
-        },
-      ];
+  const launchConfigurations: Record<string, unknown>[] = [
+    launchRemote(LaunchBrowser.edge, "Edge", edgeOrder),
+    launchRemote(LaunchBrowser.chrome, "Chrome", chromeOrder),
+  ];
 
-  // Tab only
-  if (includeFrontend && !includeBot) {
-    // hidden configurations
-    if (includeBackend) {
-      launchConfigurations.push(
-        {
-          name: "Start and Attach to Frontend (Edge)",
-          type: LaunchBrowser.edge,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          preLaunchTask: "Start Frontend",
-          cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
-          presentation: {
-            group: "all",
-            hidden: true,
-          },
-        },
-        {
-          name: "Start and Attach to Frontend (Chrome)",
-          type: LaunchBrowser.chrome,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          preLaunchTask: "Start Frontend",
-          cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
-          presentation: {
-            group: "all",
-            hidden: true,
-          },
-        },
-        {
-          name: "Start and Attach to Backend",
-          type: "pwa-node",
-          request: "attach",
-          port: 9229,
-          restart: true,
-          preLaunchTask: "Start Backend",
-          presentation: {
-            group: "all",
-            hidden: true,
-          },
-          internalConsoleOptions: "neverOpen",
-        }
-      );
-    } else {
-      launchConfigurations.push(
-        {
-          name: "Start and Attach to Frontend (Edge)",
-          type: LaunchBrowser.edge,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          preLaunchTask: "Start Frontend",
-          presentation: {
-            group: "all",
-            hidden: true,
-          },
-        },
-        {
-          name: "Start and Attach to Frontend (Chrome)",
-          type: LaunchBrowser.chrome,
-          request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-          preLaunchTask: "Start Frontend",
-          presentation: {
-            group: "all",
-            hidden: true,
-          },
-        }
-      );
-    }
+  if (includeFrontend) {
+    launchConfigurations.push(startAndAttachToFrontend(LaunchBrowser.edge, "Edge"));
+    launchConfigurations.push(startAndAttachToFrontend(LaunchBrowser.chrome, "Chrome"));
+  } else if (includeBot) {
+    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge"));
+    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome"));
   }
 
-  // Bot only
-  if (!includeFrontend && includeBot) {
-    launchConfigurations.push(
-      {
-        name: "Launch Bot (Edge)",
-        type: LaunchBrowser.edge,
-        request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-      },
-      {
-        name: "Launch Bot (Chrome)",
-        type: LaunchBrowser.chrome,
-        request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-      },
-      {
-        name: "Start and Attach to Bot",
-        type: "pwa-node",
-        request: "attach",
-        port: 9239,
-        restart: true,
-        preLaunchTask: "Start Bot",
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-      }
-    );
+  if (includeBot) {
+    launchConfigurations.push(attachToBot());
   }
 
-  // Tab and bot
-  if (includeFrontend && includeBot) {
-    launchConfigurations.push(
-      {
-        name: "Start and Attach to Frontend (Edge)",
-        type: LaunchBrowser.edge,
-        request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        preLaunchTask: "Start Frontend",
-        cascadeTerminateToConfigurations: includeBackend
-          ? ["Start and Attach to Bot", "Start and Attach to Backend"]
-          : ["Start and Attach to Bot"],
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-      },
-      {
-        name: "Start and Attach to Frontend (Chrome)",
-        type: LaunchBrowser.chrome,
-        request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        preLaunchTask: "Start Frontend",
-        cascadeTerminateToConfigurations: includeBackend
-          ? ["Start and Attach to Bot", "Start and Attach to Backend"]
-          : ["Start and Attach to Bot"],
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-      },
-      {
-        name: "Start and Attach to Bot",
-        type: "pwa-node",
-        request: "attach",
-        port: 9239,
-        restart: true,
-        preLaunchTask: "Start Bot",
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-        internalConsoleOptions: "neverOpen",
-      }
-    );
-    if (includeBackend) {
-      launchConfigurations.push({
-        name: "Start and Attach to Backend",
-        type: "pwa-node",
-        request: "attach",
-        port: 9229,
-        restart: true,
-        preLaunchTask: "Start Backend",
-        presentation: {
-          group: "all",
-          hidden: true,
-        },
-        internalConsoleOptions: "neverOpen",
-      });
-    }
+  if (includeBackend) {
+    launchConfigurations.push(attachToBackend());
   }
 
   return launchConfigurations;
@@ -232,130 +54,8 @@ export function generateCompounds(
     chromeOrder = 2;
   }
 
-  // Tab only
-  if (includeFrontend && !includeBot) {
-    launchCompounds.push(
-      {
-        name: "Debug (Edge)",
-        configurations: includeBackend
-          ? ["Start and Attach to Frontend (Edge)", "Start and Attach to Backend"]
-          : ["Start and Attach to Frontend (Edge)"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: edgeOrder,
-        },
-        stopAll: true,
-      },
-      {
-        name: "Debug (Chrome)",
-        configurations: includeBackend
-          ? ["Start and Attach to Frontend (Chrome)", "Start and Attach to Backend"]
-          : ["Start and Attach to Frontend (Chrome)"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: chromeOrder,
-        },
-        stopAll: true,
-      }
-    );
-  }
-
-  // Bot only
-  if (!includeFrontend && includeBot) {
-    launchCompounds.push(
-      {
-        name: "Debug (Edge)",
-        configurations: ["Launch Bot (Edge)", "Start and Attach to Bot"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: edgeOrder,
-        },
-        stopAll: true,
-      },
-      {
-        name: "Debug (Chrome)",
-        configurations: ["Launch Bot (Chrome)", "Start and Attach to Bot"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: chromeOrder,
-        },
-        stopAll: true,
-      }
-    );
-  }
-
-  // Tab and bot
-  if (includeFrontend && includeBot) {
-    launchCompounds.push(
-      {
-        name: "Debug (Edge)",
-        configurations: includeBackend
-          ? [
-              "Start and Attach to Frontend (Edge)",
-              "Start and Attach to Bot",
-              "Start and Attach to Backend",
-            ]
-          : ["Start and Attach to Frontend (Edge)", "Start and Attach to Bot"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: edgeOrder,
-        },
-        stopAll: true,
-      },
-      {
-        name: "Debug (Chrome)",
-        configurations: includeBackend
-          ? [
-              "Start and Attach to Frontend (Chrome)",
-              "Start and Attach to Bot",
-              "Start and Attach to Backend",
-            ]
-          : ["Start and Attach to Frontend (Chrome)", "Start and Attach to Bot"],
-        preLaunchTask: "Pre Debug Check",
-        presentation: {
-          group: "all",
-          order: chromeOrder,
-        },
-        stopAll: true,
-      }
-    );
-  }
-
-  /* No attach until CLI ready
-    if (includeBackend) {
-        launchCompounds.push(
-            {
-                name: "Attach to Frontend and Backend (Chrome)",
-                configurations: [
-                    "Attach to Frontend (Chrome)",
-                    "Attach to Backend"
-                ],
-                presentation: {
-                    group: "partial",
-                    order: 1
-                },
-                stopAll: true
-            },
-            {
-                name: "Attach to Frontend and Backend (Edge)",
-                configurations: [
-                    "Attach to Frontend (Edge)",
-                    "Attach to Backend"
-                ],
-                presentation: {
-                    group: "partial",
-                    order: 3
-                },
-                stopAll: true
-            }
-        );
-    }
-    */
+  launchCompounds.push(debug(includeFrontend, includeBackend, includeBot, "Edge", edgeOrder));
+  launchCompounds.push(debug(includeFrontend, includeBackend, includeBot, "Chrome", chromeOrder));
 
   return launchCompounds;
 }
@@ -523,4 +223,113 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
     }
   );
   return launchCompounds;
+}
+
+function launchRemote(
+  browserType: string,
+  browserName: string,
+  order: number
+): Record<string, unknown> {
+  return {
+    name: `Launch Remote (${browserName})`,
+    type: browserType,
+    request: "launch",
+    url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    presentation: {
+      group: "remote",
+      order: order,
+    },
+  };
+}
+
+function startAndAttachToFrontend(
+  browserType: string,
+  browserName: string
+): Record<string, unknown> {
+  return {
+    name: `Start and Attach to Frontend (${browserName})`,
+    type: browserType,
+    request: "launch",
+    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    preLaunchTask: "Start Frontend",
+    presentation: {
+      group: "all",
+      hidden: true,
+    },
+  };
+}
+
+function launchBot(browserType: string, browserName: string): Record<string, unknown> {
+  return {
+    name: `Launch Bot (${browserName})`,
+    type: browserType,
+    request: "launch",
+    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    presentation: {
+      group: "all",
+      hidden: true,
+    },
+  };
+}
+
+function attachToBot(): Record<string, unknown> {
+  return {
+    name: "Start and Attach to Bot",
+    type: "pwa-node",
+    request: "attach",
+    port: 9239,
+    restart: true,
+    preLaunchTask: "Start Bot",
+    presentation: {
+      group: "all",
+      hidden: true,
+    },
+  };
+}
+
+function attachToBackend(): Record<string, unknown> {
+  return {
+    name: "Start and Attach to Backend",
+    type: "pwa-node",
+    request: "attach",
+    port: 9229,
+    restart: true,
+    preLaunchTask: "Start Backend",
+    presentation: {
+      group: "all",
+      hidden: true,
+    },
+    internalConsoleOptions: "neverOpen",
+  };
+}
+
+function debug(
+  includeFrontend: boolean,
+  includeBackend: boolean,
+  includeBot: boolean,
+  browserName: string,
+  order: number
+): Record<string, unknown> {
+  const configurations: string[] = [];
+  if (includeFrontend) {
+    configurations.push(`Start and Attach to Frontend (${browserName})`);
+  } else if (includeBot) {
+    configurations.push(`Launch Bot (${browserName})`);
+  }
+  if (includeBot) {
+    configurations.push("Start and Attach to Bot");
+  }
+  if (includeBackend) {
+    configurations.push("Start and Attach to Backend");
+  }
+  return {
+    name: `Debug (${browserName})`,
+    configurations,
+    preLaunchTask: "Pre Debug Check",
+    presentation: {
+      group: "all",
+      order: order,
+    },
+    stopAll: true,
+  };
 }

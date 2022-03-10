@@ -39,7 +39,6 @@ For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
     "Authentication": {
         "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
         "ClientSecret": "xxx", // 'User Secrets' is a better place to store secret string.
-        "InitiateLoginEndpoint": "https://localhost:44302/auth-start.html",
         "OAuthAuthority": "https://login.microsoftonline.com/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     }
 }
@@ -137,7 +136,7 @@ private void printLog(LogLevel level, string message)
 }
 ```
 
-### Upgrade from 0.3.0-rc to 0.4.0 (For projects created by Visual Studio 2022 17.1 Preview toolkit)
+### Upgrade from 0.3.0-rc to 0.4.0-rc (For projects created by Visual Studio 2022 17.1 Preview toolkit)
 If there is an existing project created in VS2022 17.1 Preview, you can use the following steps to upgrade:
 - In `appsettings.{Environment}.json` file:
 1. Add `OAuthAuthority` under `TeamsFx:Authentication` and copy the value from `OAUTH_AUTHORITY`.

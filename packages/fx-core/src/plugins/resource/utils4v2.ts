@@ -24,10 +24,11 @@ import {
 import _ from "lodash";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { ArmTemplateResult } from "../../common/armInterface";
-import { CryptoDataMatchers } from "../../common/tools";
+import { CryptoDataMatchers, isConfigUnifyEnabled, objectToMap } from "../../common/tools";
 import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -364,11 +365,17 @@ export async function provisionLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin
+  plugin: Plugin,
+  envInfo?: EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  if (isConfigUnifyEnabled() && envInfo) {
+    pluginContext.envInfo.state = objectToMap(envInfo!.state);
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -378,6 +385,9 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
+  if (isConfigUnifyEnabled() && envInfo) {
+    envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
+  }
   return ok(Void);
 }
 
@@ -386,11 +396,17 @@ export async function configureLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin
+  plugin: Plugin,
+  envInfo?: EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  if (isConfigUnifyEnabled() && envInfo) {
+    pluginContext.envInfo.state = objectToMap(envInfo!.state);
+  }
+  if (!pluginContext.envInfo.state.get(plugin.name)) {
+    pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
+  }
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -399,6 +415,9 @@ export async function configureLocalResourceAdapter(
   const res = await plugin.postLocalDebug(pluginContext);
   if (res.isErr()) {
     return err(res.error);
+  }
+  if (isConfigUnifyEnabled() && envInfo) {
+    envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
   }
   return ok(Void);
 }

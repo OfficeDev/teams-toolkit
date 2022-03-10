@@ -6,14 +6,15 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import path from "path";
-import { ConfigMap, PluginContext, v2, Platform } from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
+import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import { newEnvInfo } from "../../../../../src/core/tools";
 import { getAzureProjectRoot, MockUserInteraction } from "../helper";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
@@ -137,6 +138,174 @@ describe("Add capability", () => {
 
       chai.assert.equal(loadedManifestTemplate.value.local.staticTabs![1].entityId, "index1");
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs![1].entityId, "index1");
+    }
+  });
+});
+
+describe("Update capability", () => {
+  const sandbox = sinon.createSandbox();
+  let plugin: AppStudioPluginV3;
+  let ctx: v2.Context;
+  let inputs: v2.InputsWithProjectPath;
+
+  beforeEach(async () => {
+    plugin = new AppStudioPluginV3();
+    ctx = {
+      cryptoProvider: new LocalCrypto(""),
+      userInteraction: new MockUserInteraction(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectSetting: {
+        appName: "test",
+        projectId: "",
+        solutionSettings: {
+          name: "",
+          activeResourcePlugins: [plugin.name],
+        },
+      },
+    };
+    inputs = {
+      platform: Platform.VSCode,
+      projectPath: getAzureProjectRoot(),
+    };
+
+    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {});
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("Update static tab should succeed", async () => {
+    const tab: IStaticTab = {
+      entityId: "index",
+      scopes: ["personal", "team"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "staticTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isOk());
+  });
+
+  it("Update static tab should failed with StaticTabNotExistError", async () => {
+    const tab: IStaticTab = {
+      entityId: "index2",
+      scopes: ["personal", "team"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "staticTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.StaticTabNotExistError.name);
+    }
+  });
+
+  it("Update configurable tab should succeed", async () => {
+    const tab: IConfigurableTab = {
+      configurationUrl: "endpoint",
+      scopes: ["team", "groupchat"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "configurableTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isOk());
+  });
+
+  it("Update bot should failed", async () => {
+    const bot: IBot = {
+      botId: uuid.v4(),
+      scopes: ["team", "groupchat"],
+    };
+    const result = await plugin.updateCapability(ctx, inputs, {
+      name: "Bot",
+      snippet: { local: bot, remote: bot },
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
+    }
+  });
+});
+
+describe("Delete capability", () => {
+  const sandbox = sinon.createSandbox();
+  let plugin: AppStudioPluginV3;
+  let ctx: v2.Context;
+  let inputs: v2.InputsWithProjectPath;
+
+  beforeEach(async () => {
+    plugin = new AppStudioPluginV3();
+    ctx = {
+      cryptoProvider: new LocalCrypto(""),
+      userInteraction: new MockUserInteraction(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectSetting: {
+        appName: "test",
+        projectId: "",
+        solutionSettings: {
+          name: "",
+          activeResourcePlugins: [plugin.name],
+        },
+      },
+    };
+    inputs = {
+      platform: Platform.VSCode,
+      projectPath: getAzureProjectRoot(),
+    };
+
+    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {});
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("Delete static tab should succeed", async () => {
+    const tab: IStaticTab = {
+      entityId: "index",
+      scopes: ["personal", "team"],
+    };
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "staticTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isOk());
+  });
+
+  it("Delete static tab should failed with StaticTabNotExistError", async () => {
+    const tab: IStaticTab = {
+      entityId: "index2",
+      scopes: ["personal", "team"],
+    };
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "staticTab",
+      snippet: { local: tab, remote: tab },
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.StaticTabNotExistError.name);
+    }
+  });
+
+  it("Delete configurable tab should succeed", async () => {
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "configurableTab",
+    });
+    chai.assert.isTrue(result.isOk());
+  });
+
+  it("Delete bot should failed", async () => {
+    const result = await plugin.deleteCapability(ctx, inputs, {
+      name: "Bot",
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
     }
   });
 });

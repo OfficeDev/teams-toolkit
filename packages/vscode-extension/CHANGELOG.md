@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.5.0 - Mar 07, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- New sample app - Teams tab app without SSO.
+
+Enhancement:
+- Teams tab app generated from "create a new Teams app" can now use graph toolkit to retrieve user data.
+
+## 3.4.0 - Feb 21, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+- Improved local debug experience, more light weighted and more graceful.
+
 ## 3.3.0 - Feb 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

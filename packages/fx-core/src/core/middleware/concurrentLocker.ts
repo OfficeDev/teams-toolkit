@@ -25,8 +25,7 @@ import { shouldIgnored } from "./projectSettingsLoader";
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const ignoreLock = shouldIgnored(ctx);
-  if (ignoreLock) {
+  if (shouldIgnored(ctx)) {
     await next();
     return;
   }

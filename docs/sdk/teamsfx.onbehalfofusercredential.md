@@ -24,7 +24,6 @@ Can only be used in server side.
 
 
 ```typescript
-loadConfiguration(); // load configuration from environment variables
 const credential = new OnBehalfOfUserCredential(ssoToken);
 ```
 
@@ -32,7 +31,7 @@ const credential = new OnBehalfOfUserCredential(ssoToken);
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(ssoToken)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of OnBehalfOfUserCredential |
+|  [(constructor)(ssoToken, config)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of OnBehalfOfUserCredential |
 
 ## Methods
 

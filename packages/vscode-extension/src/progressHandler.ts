@@ -7,8 +7,8 @@ import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
-import * as StringResources from "./resources/Strings.json";
 import * as util from "util";
+import { localize } from "./utils/localizeUtils";
 
 export class ProgressHandler implements IProgressHandler {
   private totalSteps: number;
@@ -27,10 +27,12 @@ export class ProgressHandler implements IProgressHandler {
   }
 
   private generateWholeMessage(): string {
-    const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${this.title}`;
+    const head = `${localize("teamstoolkit.progressHandler.teamsToolkitComponent")} ${this.title}`;
     const body = `: [${this.currentStep}/${this.totalSteps}]`;
-    const tail = this.detail ? ` ${this.detail}` : StringResources.vsc.progressHandler.prepareTask;
-    return util.format(StringResources.vsc.progressHandler.reloadNotice, head, body, tail);
+    const tail = this.detail
+      ? ` ${this.detail}`
+      : localize("teamstoolkit.progressHandler.prepareTask");
+    return util.format(localize("teamstoolkit.progressHandler.reloadNotice"), head, body, tail);
   }
 
   public async start(detail?: string) {

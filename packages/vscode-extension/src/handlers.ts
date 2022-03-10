@@ -134,6 +134,7 @@ import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
+import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1044,6 +1045,25 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
+    commonUtils.endLocalDebugSession();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+}
+
+/*
+ * Prompt window to let user install the app in Teams
+ */
+export async function installAppInTeams(): Promise<string | undefined> {
+  let shouldContinue = false;
+  try {
+    shouldContinue = await showInstallAppInTeamsMessage(false);
+  } catch (error: any) {
+    showError(error);
+  }
+  if (!shouldContinue) {
+    terminateAllRunningTeamsfxTasks();
+    await debug.stopDebugging();
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

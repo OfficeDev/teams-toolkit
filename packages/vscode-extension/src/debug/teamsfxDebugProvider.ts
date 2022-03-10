@@ -5,6 +5,7 @@ import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
@@ -45,6 +46,17 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
         if (debugConfiguration.url === undefined) {
           return debugConfiguration;
+        }
+
+        const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalIdPlaceholder}";
+        if ((debugConfiguration.url as string).includes(localTeamsAppInternalIdPlaceholder)) {
+          const internalId = await getTeamsAppInternalId();
+          if (internalId !== undefined) {
+            debugConfiguration.url = (debugConfiguration.url as string).replace(
+              localTeamsAppInternalIdPlaceholder,
+              internalId
+            );
+          }
         }
 
         const localTeamsAppIdPlaceholder = "${localTeamsAppId}";

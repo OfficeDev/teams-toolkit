@@ -72,6 +72,9 @@ export enum TelemetryEvent {
   EnvList = "env-list",
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
+
+  // InitStart = "init-start",
+  // Init = "init",
 }
 
 export enum TelemetryProperty {

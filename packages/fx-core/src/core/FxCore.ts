@@ -871,6 +871,9 @@ export class FxCore implements v3.ICore {
     if (stage === Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProjectV2(inputs);
+    } else if (stage == Stage.init) {
+      delete inputs.projectPath;
+      return this._getQuestionsForInit(inputs);
     } else {
       const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];

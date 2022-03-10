@@ -12,12 +12,12 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import { ManifestValidate } from "../../../src/cmds/validate";
+import { InitCommand } from "../../../src/cmds/init";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
 
-describe("teamsfx validate", () => {
+describe("teamsfx init", () => {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let options: string[] = [];
@@ -68,60 +68,22 @@ describe("teamsfx validate", () => {
   });
 
   it("should pass builder check", () => {
-    const cmd = new ManifestValidate();
+    const cmd = new InitCommand();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["validate"]);
+    expect(registeredCommands).deep.equals(["init"]);
   });
 
   it("Validate Command Running Check", async () => {
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
-    const cmd = new ManifestValidate();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-    };
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([
-      TelemetryEvent.ValidateManifestStart,
-      TelemetryEvent.ValidateManifest,
-    ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
+    sandbox.stub(FxCore.prototype, "init").callsFake(async (_inputs: Inputs) => {
+      return ok("");
+    });
 
-  it("Validate Command Running Check with Error", async () => {
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
-    const cmd = new ManifestValidate();
+    const cmd = new InitCommand();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.ValidateManifestStart,
-        TelemetryEvent.ValidateManifest,
-      ]);
-      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.InitStart, TelemetryEvent.Init]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 });

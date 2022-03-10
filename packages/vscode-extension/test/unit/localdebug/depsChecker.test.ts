@@ -135,7 +135,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeHelper, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
 
       chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
-        chai.assert.equal(deps.length, 0);
+        chai.assert.equal(deps.length, 0, `Unexpected: ${deps}`);
         return [];
       });
 

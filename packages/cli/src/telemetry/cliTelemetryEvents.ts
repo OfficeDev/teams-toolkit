@@ -10,6 +10,9 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  InitProjectStart = "init-project-start",
+  InitProject = "init-project",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 

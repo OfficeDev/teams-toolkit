@@ -20,7 +20,7 @@ import HelpParamGenerator from "../helpParamGenerator";
 export class InitCommand extends YargsCommand {
   public readonly commandHead = `init`;
   public readonly command = this.commandHead;
-  public readonly description = "Initialize a basic Teams App project.";
+  public readonly description = "Initialize an existing application.";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("init");

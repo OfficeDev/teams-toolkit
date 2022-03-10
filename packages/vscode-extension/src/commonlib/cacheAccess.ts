@@ -11,8 +11,8 @@ import * as fs from "fs-extra";
 import * as keytarType from "keytar";
 import VsCodeLogInstance from "./log";
 import * as os from "os";
-import * as StringResources from "../resources/Strings.json";
 import { env } from "vscode";
+import { localize } from "../utils/localizeUtils";
 
 const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
 const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
@@ -161,7 +161,7 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        VsCodeLogInstance.error(StringResources.vsc.cacheAccess.readTokenFail + err.message);
+        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.readTokenFail") + err.message);
       }
     } else {
       try {
@@ -169,7 +169,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error(StringResources.vsc.cacheAccess.writeTokenFail + err.message);
+        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message);
       }
     }
   }
@@ -183,7 +183,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveTokenFail + err.message);
+        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message);
       }
     }
   }
@@ -203,7 +203,9 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveHomeAccountIdFail + err.message);
+    VsCodeLogInstance.error(
+      localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + err.message
+    );
   }
 }
 
@@ -212,7 +214,9 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.error(StringResources.vsc.cacheAccess.readHomeAccountIdFail + err.message);
+      VsCodeLogInstance.error(
+        localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + err.message
+      );
     }
   }
 

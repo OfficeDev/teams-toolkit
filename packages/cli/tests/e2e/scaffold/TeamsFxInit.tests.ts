@@ -31,6 +31,7 @@ describe("teamsfx init", function () {
   });
 
   it(`should scaffold a basic project`, async function () {
+    process.env["TEAMSFX_INIT_APP"] = "true";
     // new a project (tab + bot + function) in TypeScript
     await execAsync(
       `teamsfx init --interactive false --app-name ${appName} --folder ${testFolder}`,

@@ -121,19 +121,41 @@ export class CliDepsChecker {
     this.telemetry.sendEvent(DepsCheckerEvent.clickCancel);
   }
 
+  public static async getEnabledDeps(
+    deps: DepsType[],
+    hasBackend: boolean,
+    hasBot: boolean
+  ): Promise<DepsType[]> {
+    const res: DepsType[] = [];
+    for (const dep of deps) {
+      if (await CliDepsChecker.isEnabled(dep, hasBackend, hasBot)) {
+        res.push(dep);
+      }
+    }
+    return res;
+  }
+
   private async isEnabled(dep: DepsType): Promise<boolean> {
+    return CliDepsChecker.isEnabled(dep, this.hasBackend, this.hasBot);
+  }
+
+  public static async isEnabled(
+    dep: DepsType,
+    hasBackend: boolean,
+    hasBot: boolean
+  ): Promise<boolean> {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
         return await isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return (await isNodeCheckerEnabled()) && this.hasBackend;
+        return (await isNodeCheckerEnabled()) && hasBackend;
       case DepsType.Dotnet:
         return await isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return (await isFuncCoreToolsEnabled()) && this.hasBackend;
+        return (await isFuncCoreToolsEnabled()) && hasBackend;
       case DepsType.Ngrok:
-        return this.hasBot && (await isNgrokCheckerEnabled());
+        return hasBot && (await isNgrokCheckerEnabled());
       default:
         return false;
     }

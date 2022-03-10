@@ -48,7 +48,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           return debugConfiguration;
         }
 
-        const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalIdPlaceholder}";
+        const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalId}";
         if ((debugConfiguration.url as string).includes(localTeamsAppInternalIdPlaceholder)) {
           const internalId = await getTeamsAppInternalId();
           if (internalId !== undefined) {

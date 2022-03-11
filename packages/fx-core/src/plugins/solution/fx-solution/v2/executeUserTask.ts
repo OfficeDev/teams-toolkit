@@ -42,6 +42,7 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,
+  SsoItem,
   TabOptionItem,
 } from "../question";
 import { cloneDeep } from "lodash";
@@ -61,6 +62,7 @@ import { CoreQuestionNames } from "../../../../core/question";
 import { Certificate } from "crypto";
 import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -550,8 +552,16 @@ export async function addResource(
   if (addFunc) {
     // AAD plugin needs to be activated when adding function.
     // Since APIM also have dependency on Function, will only add depenedency here.
-    if (!solutionSettings.activeResourcePlugins?.includes(PluginNames.AAD)) {
-      solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+    if (!isAADEnabled(solutionSettings)) {
+      if (isAadManifestEnabled()) {
+        const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+        pluginsToScaffold.push(aadPlugin);
+        pluginsToDoArm.push(aadPlugin);
+
+        solutionSettings.capabilities.push(SsoItem.id);
+      } else {
+        solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+      }
     }
     const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);

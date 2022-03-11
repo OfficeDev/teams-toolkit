@@ -5,7 +5,7 @@ import { VS_CODE_UI } from "../extension";
 import graphLoginInstance from "../commonlib/graphLogin";
 import * as commonUtils from "./commonUtils";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import * as StringResources from "../resources/Strings.json";
+import { localize } from "../utils/localizeUtils";
 
 import axios from "axios";
 import { returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
@@ -13,18 +13,18 @@ import { returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
 export async function showInstallAppInTeamsMessage(detected: boolean): Promise<boolean> {
   const message = `${
     detected
-      ? StringResources.vsc.localDebug.installApp.detection
-      : StringResources.vsc.localDebug.installApp.description
-  }${StringResources.vsc.localDebug.installApp.guide}`;
+      ? localize("teamstoolkit.localDebug.installApp.detection")
+      : localize("teamstoolkit.localDebug.installApp.description")
+  }${localize("teamstoolkit.localDebug.installApp.guide")}`;
   const result = await VS_CODE_UI.showMessage(
     "info",
     message,
     true,
-    StringResources.vsc.localDebug.installApp.installInTeams,
-    StringResources.vsc.localDebug.installApp.continue
+    localize("teamstoolkit.localDebug.installApp.installInTeams"),
+    localize("teamstoolkit.localDebug.installApp.continue")
   );
   if (result.isOk()) {
-    if (result.value === StringResources.vsc.localDebug.installApp.installInTeams) {
+    if (result.value === localize("teamstoolkit.localDebug.installApp.installInTeams")) {
       const loginStatus = await graphLoginInstance.getStatus();
       if (loginStatus.accountInfo?.upn === undefined) {
         throw returnUserError(
@@ -44,10 +44,10 @@ export async function showInstallAppInTeamsMessage(detected: boolean): Promise<b
       const url = `https://teams.microsoft.com/l/app/${debugConfig?.appId}?installAppPackage=true&webjoin=true&login_hint=${loginStatus.accountInfo.upn}`;
       await VS_CODE_UI.openUrl(url);
       return await showInstallAppInTeamsMessage(false);
-    } else if (result.value === StringResources.vsc.localDebug.installApp.continue) {
+    } else if (result.value === localize("teamstoolkit.localDebug.installApp.continue")) {
       const internalId = await getTeamsAppInternalId();
       return internalId === undefined ? await showInstallAppInTeamsMessage(true) : true;
-    } else if (result.value === StringResources.vsc.localDebug.installApp.cancel) {
+    } else if (result.value === localize("teamstoolkit.localDebug.installApp.cancel")) {
       return false;
     }
   }

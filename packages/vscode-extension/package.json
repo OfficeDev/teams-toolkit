@@ -508,6 +508,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.install-app-in-teams",
+        "title": "Teams - Install App in Teams",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.validate-getStarted-prerequisites",
         "title": "Teams - Validate Get Started Prerequisites",
         "enablement": "never"

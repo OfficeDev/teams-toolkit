@@ -55,7 +55,7 @@ import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  VsCodeLogInstance.info(localize("teamstoolkit.common.activate"));
+  VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // load the feature flags.
   syncFeatureFlags();

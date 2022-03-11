@@ -3,8 +3,8 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
+import { ext } from "../extensionVariables";
 
-const EXTENSION_ROOT_DIR = path.join(__dirname, "..", "..");
 let loadedCollection: Record<string, string> | undefined = undefined;
 let defaultCollection: Record<string, string> | undefined = undefined;
 let askedForCollection: Record<string, string> = {};
@@ -71,7 +71,7 @@ function getLocalizedString(key: string, defValue?: string): string {
 export function loadLocalizedStrings(): void {
   loadedLocale = parseLocale();
 
-  const nlsFile = path.join(EXTENSION_ROOT_DIR, "..", `package.nls.${loadedLocale}.json`);
+  const nlsFile = path.join(ext.context.extensionPath, `package.nls.${loadedLocale}.json`);
   if (fs.pathExistsSync(nlsFile)) {
     loadedCollection = fs.readJsonSync(nlsFile);
   } else {
@@ -79,7 +79,7 @@ export function loadLocalizedStrings(): void {
   }
 
   if (!defaultCollection) {
-    const defaultNlsFile = path.join(EXTENSION_ROOT_DIR, "..", "package.nls.json");
+    const defaultNlsFile = path.join(ext.context.extensionPath, "package.nls.json");
     if (fs.pathExistsSync(defaultNlsFile)) {
       defaultCollection = fs.readJsonSync(defaultNlsFile);
     } else {

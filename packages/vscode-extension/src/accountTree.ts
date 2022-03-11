@@ -26,7 +26,6 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import axios from "axios";
 import * as util from "util";
-import { StringContext } from "./utils/stringContext";
 import { registerEnvTreeHandler } from "./envTree";
 import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
 import { localize } from "./utils/localizeUtils";
@@ -393,7 +392,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",
-            label: StringContext.getSignInAzureContext(),
+            label: localize("teamstoolkit.handlers.signInAzure"),
             callback: signinAzureCallback,
             parent: TreeCategory.Account,
             icon: "azure",
@@ -437,7 +436,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   const signinAzureTreeItem: TreeItem = {
     commandId: "fx-extension.signinAzure",
-    label: StringContext.getSignInAzureContext(),
+    label: localize("teamstoolkit.handlers.signInAzure"),
     callback: async (args?: any[]) => {
       return signinAzureCallback(args);
     },

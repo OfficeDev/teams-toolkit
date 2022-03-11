@@ -70,7 +70,7 @@ import { BOT_ID } from "../appstudio/constants";
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
-  private ctx?: PluginContext;
+  protected ctx?: PluginContext;
 
   private async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =

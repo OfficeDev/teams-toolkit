@@ -50,4 +50,18 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
     utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
   }
+
+  public static getBotHostType(context: PluginContext): HostType | undefined {
+    // TODO: retrieve host type from context.answers
+    // Since the UI design is not finalized yet,
+    // for testing purpose we currently use an environment variable to select hostType.
+    // Change the logic after question model is implemented.
+    if (process.env.TEAMSFX_BOT_HOST_TYPE) {
+      return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
+        ? HostTypes.AZURE_FUNCTIONS
+        : HostTypes.APP_SERVICE;
+    } else {
+      return undefined;
+    }
+  }
 }

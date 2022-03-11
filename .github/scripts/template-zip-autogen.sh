@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -x
 
+if [ "$1" = "" ]; then
+    echo "Must input a path for templates folder"
+    exit -1
+fi
+
+TEMPLATE_OUTPUT_DIR=$1
+mkdir -p ${TEMPLATE_OUTPUT_DIR}
+
 LANGUAGE_LIST=(js ts csharp)
 
 TEMPLATE_LIST=(
@@ -31,10 +39,10 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
         if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
             echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
             continue
-        fi        
+        fi
 
         cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
-        zip -rq ../../../../${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
+        zip -rq ${TEMPLATE_OUTPUT_DIR}/${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
         cd -
     done
 done

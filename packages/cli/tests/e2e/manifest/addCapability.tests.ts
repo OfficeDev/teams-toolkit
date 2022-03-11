@@ -37,7 +37,7 @@ describe("Add capabilities", function () {
     const manifest: TeamsAppManifest = await fs.readJSON(
       `${projectPath}/templates/appPackage/manifest.local.template.json`
     );
-    chai.assert.equal(manifest.staticTabs.length, 2);
+    chai.assert.equal(manifest.staticTabs!.length, 2);
   });
 
   it("tab project can add bot capability with correct manifest template", async function () {
@@ -48,7 +48,7 @@ describe("Add capabilities", function () {
     const manifest: TeamsAppManifest = await fs.readJSON(
       `${projectPath}/templates/appPackage/manifest.local.template.json`
     );
-    chai.assert.equal(manifest.staticTabs.length, 1);
-    chai.assert.equal(manifest.bots.length, 1);
+    chai.assert.equal(manifest.staticTabs!.length, 1);
+    chai.assert.equal(manifest.bots!.length, 1);
   });
 });

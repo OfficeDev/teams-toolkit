@@ -43,9 +43,6 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
-  InitStart = "init-start",
-  Init = "init",
-
   PreviewStart = "preview-start",
   Preview = "preview",
   PreviewNpmInstallStart = "preview-npm-install-start",

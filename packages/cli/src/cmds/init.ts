@@ -16,7 +16,9 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
 import * as uuid from "uuid";
+import * as fs from "fs-extra";
 import * as path from "path";
+import { NotFoundInputedFolder } from "../error";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
@@ -36,6 +38,14 @@ export default class Init extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.InitProjectStart);
+
+    if (!(await fs.pathExists(rootFolder))) {
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.InitProject,
+        NotFoundInputedFolder(rootFolder)
+      );
+      return err(NotFoundInputedFolder(rootFolder));
+    }
 
     const result = await activate(rootFolder);
     if (result.isErr()) {

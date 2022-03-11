@@ -7,7 +7,7 @@ import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
 import {
-  CheckThrowSomethingMissing,
+  checkAndThrowIfMissing,
   CreateAADAppError,
   CreateAADSecretError,
   ProvisionError,
@@ -50,10 +50,8 @@ export class AADRegistration {
       result.clientId = regResponse.data.appId;
       result.objectId = regResponse.data.id;
     } else {
-      CheckThrowSomethingMissing("objectId", objectId);
-      CheckThrowSomethingMissing("msAppId", msAppId);
-      result.objectId = objectId;
-      result.clientId = msAppId;
+      result.objectId = checkAndThrowIfMissing("objectId", objectId);
+      result.clientId = checkAndThrowIfMissing("msAppId", msAppId);
     }
 
     // 2. Generate client secret.
@@ -98,10 +96,8 @@ export class AADRegistration {
       result.clientId = app.appId;
       result.objectId = app.id;
     } else {
-      CheckThrowSomethingMissing("objectId", objectId);
-      CheckThrowSomethingMissing("msAppId", msAppId);
-      result.objectId = objectId;
-      result.clientId = msAppId;
+      result.objectId = checkAndThrowIfMissing("objectId", objectId);
+      result.clientId = checkAndThrowIfMissing("msAppId", msAppId);
     }
 
     // create password for this AAD

@@ -320,7 +320,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateOrUpdateAppServicePlan").resolves();
       sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 

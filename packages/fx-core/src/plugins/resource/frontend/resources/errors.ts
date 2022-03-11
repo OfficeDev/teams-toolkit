@@ -235,8 +235,8 @@ export class TemplateManifestError extends FrontendPluginError {
   constructor(msg: string) {
     super(
       ErrorType.User,
-      "TemplateManifestError ",
-      getLocalizedString("error.frontend.TemplateManifestError", msg),
+      "TemplateManifestError",
+      `${getLocalizedString("error.frontend.TemplateManifestError")} ${msg}`,
       [tips.checkNetwork]
     );
   }

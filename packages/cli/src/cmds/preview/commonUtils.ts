@@ -93,7 +93,7 @@ export function createTaskStartCb(
             color: Colors.BRIGHT_GREEN,
           },
         ];
-        await cliLogger.log(LogLevel.Debug, getColorizedString(message));
+        cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
       }
     }
     await progressBar.next(startMessage);

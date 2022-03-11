@@ -1350,7 +1350,7 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
-    const projectPath = inputs.projectPath || inputs.folder;
+    const projectPath = inputs.folder;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }

@@ -51,6 +51,14 @@ export const TabSPFxItem: OptionItem = {
   detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
+export const SsoItem: OptionItem = {
+  id: "SSO",
+  label: "SSO",
+  cliName: "sso",
+  description: getLocalizedString("core.Sso.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   TabScopes = "tab-scopes",

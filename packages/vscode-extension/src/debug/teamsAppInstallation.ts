@@ -56,7 +56,7 @@ export async function showInstallAppInTeamsMessage(detected: boolean): Promise<b
 
 export async function getTeamsAppInternalId(): Promise<string | undefined> {
   const loginStatus = await graphLoginInstance.getStatus();
-  if (loginStatus.accountInfo?.upn === undefined || loginStatus.token === undefined) {
+  if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
     throw returnUserError(
       new Error("M365 account info not found"),
       ExtensionSource,
@@ -71,7 +71,7 @@ export async function getTeamsAppInternalId(): Promise<string | undefined> {
       ExtensionErrors.GetTeamsAppInstallationFailed
     );
   }
-  const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.upn}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${debugConfig?.appId}'`;
+  const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${debugConfig?.appId}'`;
   try {
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${loginStatus.token}` },

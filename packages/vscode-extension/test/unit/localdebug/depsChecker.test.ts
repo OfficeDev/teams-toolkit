@@ -108,7 +108,7 @@ suite("[Checker UT - Extension]", () => {
       expect(shouldContinue).to.be.false;
     });
 
-    test("azure + f5: all disabled", async () => {
+    test("azure + f5: all disabled 1", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
@@ -124,26 +124,44 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeHelper, "isFuncCoreToolsEnabled").returns(true);
       sandbox.stub(vscodeHelper, "isNodeCheckerEnabled").returns(false);
       sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
-
-      sandbox
-        .stub(vscodeHelper, "isNgrokCheckerEnabled")
-        .onCall(0)
-        .resolves(false)
-        .onCall(1)
-        .resolves(true);
-
-      sandbox.stub(vscodeHelper, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
+      sandbox.stub(vscodeHelper, "isNgrokCheckerEnabled").returns(false);
+      sandbox.stub(vscodeHelper, "hasBot").onCall(0).resolves(true);
 
       chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
-        chai.assert.equal(deps.length, 0);
+        chai.assert.equal(deps.length, 0, `Unexpected: ${deps}`);
         return [];
       });
 
       const shouldContinue = await checker.resolve(deps);
       expect(shouldContinue).to.be.true;
+    });
 
-      const secondRes = await checker.resolve(deps);
-      expect(secondRes).to.be.true;
+    test("azure + f5: all disabled 2", async () => {
+      const checker = new VSCodeDepsChecker(logger, telemetry);
+      const deps = [
+        DepsType.SpfxNode,
+        DepsType.FunctionNode,
+        DepsType.AzureNode,
+        DepsType.Dotnet,
+        DepsType.FuncCoreTools,
+        DepsType.Ngrok,
+      ];
+
+      sandbox.stub(os, "type").returns("Windows_NT");
+      sandbox.stub(vscodeHelper, "hasFunction").resolves(true);
+      sandbox.stub(vscodeHelper, "isFuncCoreToolsEnabled").returns(false);
+      sandbox.stub(vscodeHelper, "isNodeCheckerEnabled").returns(false);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      sandbox.stub(vscodeHelper, "isNgrokCheckerEnabled").returns(true);
+      sandbox.stub(vscodeHelper, "hasBot").resolves(false);
+
+      chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
+        chai.assert.equal(deps.length, 0, `Unexpected: ${deps}`);
+        return [];
+      });
+
+      const shouldContinue = await checker.resolve(deps);
+      expect(shouldContinue).to.be.true;
     });
   });
 });

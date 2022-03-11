@@ -29,7 +29,7 @@ export class VSCodeDepsChecker {
   }
 
   public async resolve(deps: DepsType[]): Promise<boolean> {
-    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDepsWithFolder(deps);
     const depsStatus = await this.ensure(enabledDeps);
 
     const shouldContinue = await this.handleLinux(depsStatus);
@@ -49,10 +49,22 @@ export class VSCodeDepsChecker {
     return true;
   }
 
+  // Used in fx-extension.validate-local-prerequisites
   public static async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
     const res: DepsType[] = [];
     for (const dep of deps) {
-      if (await VSCodeDepsChecker.isEnabled(dep)) {
+      if (VSCodeDepsChecker.isEnabled(dep)) {
+        res.push(dep);
+      }
+    }
+    return res;
+  }
+
+  // Used in fx-extension.validate-dependencies
+  private static async getEnabledDepsWithFolder(deps: DepsType[]): Promise<DepsType[]> {
+    const res: DepsType[] = [];
+    for (const dep of deps) {
+      if (VSCodeDepsChecker.isEnabled(dep) && (await VSCodeDepsChecker.containsFolder(dep))) {
         res.push(dep);
       }
     }
@@ -119,21 +131,32 @@ export class VSCodeDepsChecker {
     this.telemetry.sendEvent(DepsCheckerEvent.clickCancel);
   }
 
-  private static async isEnabled(dep: DepsType): Promise<boolean> {
+  private static isEnabled(dep: DepsType): boolean {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return vscodeHelper.isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return vscodeHelper.isNodeCheckerEnabled() && (await vscodeHelper.hasFunction());
+        return vscodeHelper.isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return vscodeHelper.isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return vscodeHelper.isFuncCoreToolsEnabled() && (await vscodeHelper.hasFunction());
+        return vscodeHelper.isFuncCoreToolsEnabled();
       case DepsType.Ngrok:
-        return (await vscodeHelper.hasBot()) && (await vscodeHelper.isNgrokCheckerEnabled());
+        return vscodeHelper.isNgrokCheckerEnabled();
       default:
         return false;
+    }
+  }
+
+  private static async containsFolder(dep: DepsType): Promise<boolean> {
+    switch (dep) {
+      case DepsType.FunctionNode:
+      case DepsType.FuncCoreTools:
+        return await vscodeHelper.hasFunction();
+      case DepsType.Ngrok:
+        return await vscodeHelper.hasBot();
+      default:
+        return true;
     }
   }
 }

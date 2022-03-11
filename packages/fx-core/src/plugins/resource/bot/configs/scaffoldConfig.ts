@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
 import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
 

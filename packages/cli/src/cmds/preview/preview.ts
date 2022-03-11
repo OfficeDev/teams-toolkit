@@ -250,6 +250,7 @@ export default class Preview extends YargsCommand {
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
@@ -283,7 +284,7 @@ export default class Preview extends YargsCommand {
 
     // check node
     const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
-    const nodeRes = await this.checkNode(includeBackend, depsManager);
+    const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
     if (nodeRes.isErr()) {
       return err(nodeRes.error);
     }
@@ -301,7 +302,12 @@ export default class Preview extends YargsCommand {
     }
 
     // check deps
-    const envCheckerResult = await this.handleDependences(includeBackend, includeBot, depsManager);
+    const envCheckerResult = await this.handleDependences(
+      includeBackend,
+      includeBot,
+      includeFuncHostedBot,
+      depsManager
+    );
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
@@ -918,13 +924,15 @@ export default class Preview extends YargsCommand {
   private async handleDependences(
     hasBackend: boolean,
     hasBot: boolean,
+    hasFuncHostedBot: boolean,
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     let shouldContinue = true;
     const enabledDeps = await CliDepsChecker.getEnabledDeps(
       [DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
       hasBackend,
-      hasBot
+      hasBot,
+      hasFuncHostedBot
     );
 
     for (const dep of enabledDeps) {
@@ -970,9 +978,10 @@ export default class Preview extends YargsCommand {
 
   private async checkNode(
     hasBackend: boolean,
+    hasFuncHostedBot: boolean,
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
-    const node = hasBackend ? DepsType.FunctionNode : DepsType.AzureNode;
+    const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
     const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
     await nodeBar.start(ProgressMessage[node]);
 

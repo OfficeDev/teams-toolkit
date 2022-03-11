@@ -6,6 +6,7 @@ import {
   DownloadConstants,
   TemplateProjectsConstants,
   TemplateProjectsScenarios,
+  TriggerTemplateScenarioMappings,
 } from "./constants";
 import { Commands, HostTypes } from "./resources/strings";
 
@@ -23,10 +24,46 @@ import {
 } from "../../../common/template-utils/templatesActions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { PluginActRoles } from "./enums/pluginActRoles";
+import * as path from "path";
 
 export class LanguageStrategy {
+  public static async scaffoldProject(
+    group_name: string,
+    config: TeamsBotConfig,
+    actions: ScaffoldAction[] = defaultActionSeq
+  ): Promise<void> {
+    await this.getTemplateProject(
+      group_name,
+      this.resolveScenarioFromTeamsBotConfig(config),
+      config.scaffold.workingDir!,
+      config,
+      actions
+    );
+  }
+
+  public static async scaffoldTriggers(
+    group_name: string,
+    config: TeamsBotConfig,
+    actions: ScaffoldAction[] = defaultActionSeq
+  ): Promise<void> {
+    const triggerScenarios = config.scaffold.triggers.map((trigger) => {
+      return TriggerTemplateScenarioMappings[trigger];
+    });
+    for (const scenario of triggerScenarios) {
+      await this.getTemplateProject(
+        group_name,
+        scenario.scenario,
+        path.join(config.scaffold.workingDir!, scenario.dirPath),
+        config,
+        actions
+      );
+    }
+  }
+
   public static async getTemplateProject(
     group_name: string,
+    scenario: string,
+    dst: string,
     config: TeamsBotConfig,
     actions: ScaffoldAction[] = defaultActionSeq
   ): Promise<void> {
@@ -34,9 +71,9 @@ export class LanguageStrategy {
       {
         group: group_name,
         lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
-        scenario: this.resolveScenarioFromTeamsBotConfig(config),
+        scenario: scenario,
         templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
-        dst: config.scaffold.workingDir!,
+        dst: dst,
         onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
           if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
             Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));

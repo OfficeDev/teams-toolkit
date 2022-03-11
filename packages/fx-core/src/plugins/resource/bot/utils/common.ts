@@ -112,7 +112,7 @@ export function checkAndSavePluginSetting(
 export function existsInEnumValues<T extends string>(
   value: string,
   targetEnum: { [key: string]: T }
-): boolean {
+): value is T {
   return Object.values(targetEnum).find((itemValue: string) => value === itemValue) !== undefined;
 }
 

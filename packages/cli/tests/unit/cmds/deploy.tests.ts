@@ -4,13 +4,17 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import { err, Func, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../../src/telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
-import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
 import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
@@ -134,6 +138,113 @@ describe("Deploy Command Tests", function () {
       await cmd.handler(args);
     } catch (e) {
       expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+});
+
+describe("teamsfx deploy manifest", function () {
+  const sandbox = sinon.createSandbox();
+  let registeredCommands: string[] = [];
+  let options: string[] = [];
+  let telemetryEvents: string[] = [];
+  let telemetryEventStatus: string | undefined = undefined;
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
+    registeredCommands = [];
+    options = [];
+    telemetryEvents = [];
+    telemetryEventStatus = undefined;
+    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
+    sandbox
+      .stub<any, any>(yargs, "command")
+      .callsFake((command: string, description: string, builder: any, handler: any) => {
+        registeredCommands.push(command);
+        builder(yargs);
+      });
+    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
+      if (typeof ops === "string") {
+        options.push(ops);
+      } else {
+        options = options.concat(...Object.keys(ops));
+      }
+      return yargs;
+    });
+    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
+      throw err;
+    });
+    sandbox
+      .stub(CliTelemetry, "sendTelemetryEvent")
+      .callsFake((eventName: string, options?: { [_: string]: string }) => {
+        telemetryEvents.push(eventName);
+        if (options && TelemetryProperty.Success in options) {
+          telemetryEventStatus = options[TelemetryProperty.Success];
+        }
+      });
+    sandbox
+      .stub(CliTelemetry, "sendTelemetryErrorEvent")
+      .callsFake((eventName: string, error: FxError) => {
+        telemetryEvents.push(eventName);
+        telemetryEventStatus = TelemetrySuccess.No;
+      });
+  });
+
+  it("should pass Update Command Running Check", async () => {
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure/fx-resource-appstudio",
+          method: "updateManifest",
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
+    const cmd = new Deploy();
+    const update = cmd.subCommands.find((cmd) => cmd.commandHead === "manifest");
+    expect(update).not.undefined;
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    await update!.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.UpdateManifestStart,
+      TelemetryEvent.UpdateManifest,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("should pass Update Command Running Check with Error", async () => {
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure/fx-resource-appstudio",
+          method: "updateManifest",
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
+    const cmd = new Deploy();
+    const update = cmd.subCommands.find((cmd) => cmd.commandHead === "manifest");
+    expect(update).not.undefined;
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+    };
+    try {
+      await update!.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([
+        TelemetryEvent.UpdateManifestStart,
+        TelemetryEvent.UpdateManifest,
+      ]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }

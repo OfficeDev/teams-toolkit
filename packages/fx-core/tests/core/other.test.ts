@@ -44,6 +44,7 @@ import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import "../../src/plugins/solution/fx-solution/v2/solution";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -59,10 +60,7 @@ describe("Other test case", () => {
       inputs
     );
 
-    assert.isTrue(
-      validRes ===
-        "Application name must start with a letter and can only contain letters and digits."
-    );
+    assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
 
     appName = randomAppName();
     const folder = os.tmpdir();
@@ -70,16 +68,17 @@ describe("Other test case", () => {
     const projectPath = path.resolve(folder, appName);
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
-
+    inputs.folder = folder;
     validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
-    assert.isTrue(validRes === `Path exists: ${projectPath}. Select a different application name.`);
+    assert.isTrue(
+      validRes === getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath)
+    );
 
     sandbox.restore();
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
-
     validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs

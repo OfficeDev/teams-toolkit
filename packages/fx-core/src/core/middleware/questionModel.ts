@@ -38,16 +38,13 @@ import {
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
-  ProjectPathQuestion,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
-import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
+import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
-import { getProjectSettingsPath } from "./projectSettingsLoader";
-import { ISanitizer } from "../../plugins/resource/apim/utils/namingRules";
 /**
  * This middleware will help to collect input from question flow
  */

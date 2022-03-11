@@ -24,7 +24,7 @@ import { Container } from "typedi";
 import * as util from "util";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotPermittedError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,
@@ -70,7 +70,7 @@ export async function getQuestionsForAddResource(
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
     if (!settings) {
-      return err(new OperationNotSupportedForExistingAppError("addResource"));
+      return err(new OperationNotPermittedError("addResource"));
     }
     const alreadyHaveFunction = settings.activeResourcePlugins.includes(
       BuiltInFeaturePluginNames.function

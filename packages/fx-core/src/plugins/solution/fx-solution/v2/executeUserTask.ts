@@ -53,7 +53,7 @@ import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { OperationNotSupportedForExistingAppError } from "../../../../core/error";
+import { OperationNotPermittedError } from "../../../../core/error";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import fs from "fs-extra";
@@ -491,7 +491,7 @@ export async function addResource(
   // 1. checking addable
   const solutionSettings = getAzureSolutionSettings(ctx);
   if (!solutionSettings) {
-    return err(new OperationNotSupportedForExistingAppError("addResource"));
+    return err(new OperationNotPermittedError("addResource"));
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {

@@ -26,6 +26,7 @@ import {
   StatesFolderName,
   Tools,
   UserCancelError,
+  UserError,
   v2,
   v3,
   Void,
@@ -41,6 +42,7 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
   isPureExistingApp,
+  isValidProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -73,7 +75,7 @@ import {
   LoadSolutionError,
   NonExistEnvNameError,
   ObjectIsUndefinedError,
-  OperationNotSupportedForExistingAppError,
+  OperationNotPermittedError,
   ProjectFolderExistError,
   ProjectFolderInvalidError,
   TaskNotSupportError,
@@ -557,7 +559,7 @@ export class FxCore implements v3.ICore {
     }
     if (isPureExistingApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
-      return err(new OperationNotSupportedForExistingAppError("deploy"));
+      return err(new OperationNotPermittedError("deploy"));
     }
     if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       const name = undefinedName(
@@ -1353,6 +1355,12 @@ export class FxCore implements v3.ICore {
     const projectPath = inputs.folder;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
+    }
+    const isValid = await isValidProject(projectPath);
+    if (isValid) {
+      return err(
+        new OperationNotPermittedError("initialize a project in existing teamsfx project")
+      );
     }
     await fs.ensureDir(projectPath);
     inputs.projectPath = projectPath;

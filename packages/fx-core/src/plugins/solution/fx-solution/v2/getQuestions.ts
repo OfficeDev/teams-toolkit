@@ -48,7 +48,7 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotPermittedError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
@@ -461,7 +461,7 @@ export async function getQuestionsForAddResource(
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
     if (!settings) {
-      return err(new OperationNotSupportedForExistingAppError("addResource"));
+      return err(new OperationNotPermittedError("addResource"));
     }
     const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
     const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);

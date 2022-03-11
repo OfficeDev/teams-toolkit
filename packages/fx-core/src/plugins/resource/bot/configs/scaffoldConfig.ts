@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
 import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
 
@@ -37,11 +37,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
-      PluginBot.HOST_TYPE
-    ] as string;
-
-    this.hostType = utils.convertToConstValues(rawHostType, HostTypes);
+    this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
@@ -51,17 +47,35 @@ export class ScaffoldConfig {
     utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
   }
 
+  /**
+   * Get bot host type from plugin context.
+   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For later stages, the host type is persisted in projectSettings.json.
+   */
   public static getBotHostType(context: PluginContext): HostType | undefined {
-    // TODO: retrieve host type from context.answers
-    // Since the UI design is not finalized yet,
-    // for testing purpose we currently use an environment variable to select hostType.
-    // Change the logic after question model is implemented.
-    if (process.env.TEAMSFX_BOT_HOST_TYPE) {
-      return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
-        ? HostTypes.AZURE_FUNCTIONS
-        : HostTypes.APP_SERVICE;
+    // TODO: support other stages (maybe addCapability)
+    const fromInputs = context.answers?.stage === Stage.create;
+    if (fromInputs) {
+      // TODO: retrieve host type from context.answers
+      // Since the UI design is not finalized yet,
+      // for testing purpose we currently use an environment variable to select hostType.
+      // Change the logic after question model is implemented.
+      if (process.env.TEAMSFX_BOT_HOST_TYPE) {
+        return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
+          ? HostTypes.AZURE_FUNCTIONS
+          : HostTypes.APP_SERVICE;
+      } else {
+        return undefined;
+      }
     } else {
-      return undefined;
+      return this.getHostTypeFromProjectSettings(context);
     }
+  }
+
+  private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {
+    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
+    return utils.convertToConstValues(rawHostType, HostTypes);
   }
 }

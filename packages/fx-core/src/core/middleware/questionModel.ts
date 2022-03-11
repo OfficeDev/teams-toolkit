@@ -34,11 +34,11 @@ import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
+  createAppNameQuestion,
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
-  QuestionAppName,
-  QuestionAppNameForInit,
+  ProjectPathQuestion,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
@@ -306,8 +306,8 @@ export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({ type: "group" });
-  node.addChild(new QTreeNode(QuestionRootFolder));
-  node.addChild(new QTreeNode(QuestionAppNameForInit));
+  node.addChild(new QTreeNode(ProjectPathQuestion));
+  node.addChild(new QTreeNode(createAppNameQuestion(false)));
   const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
   if (solution.getQuestionsForInit) {
@@ -361,7 +361,7 @@ export async function getQuestionsForCreateProjectV3(
   if (inputs.platform === Platform.CLI) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
@@ -416,7 +416,7 @@ export async function getQuestionsForCreateProjectV2(
   if (CLIPlatforms.includes(inputs.platform)) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

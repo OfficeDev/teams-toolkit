@@ -29,7 +29,7 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "../../src/core/error";
-import { QuestionAppName } from "../../src/core/question";
+import { createAppNameQuestion } from "../../src/core/question";
 import {
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
@@ -50,11 +50,11 @@ describe("Other test case", () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("question: QuestionAppName validation", async () => {
+  it("question: app name question validation", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     let appName = "1234";
-
-    let validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    const appNameQuestion = createAppNameQuestion();
+    let validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
@@ -71,7 +71,7 @@ describe("Other test case", () => {
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
 
-    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
@@ -80,7 +80,7 @@ describe("Other test case", () => {
     sandbox.restore();
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
 
-    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );

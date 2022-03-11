@@ -32,6 +32,7 @@ export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
   Folder = "folder",
+  ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   Capabilities = "capabilities",
   Solution = "solution",
@@ -49,61 +50,43 @@ export enum CoreQuestionNames {
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
 
-export const QuestionAppName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.AppName,
-  title: "Application name",
-  validation: {
-    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const schema = {
-        pattern: ProjectNamePattern,
-        maxLength: 30,
-      };
-      const appName = input as string;
-      const validateResult = jsonschema.validate(appName, schema);
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        if (validateResult.errors[0].name === "pattern") {
-          return getLocalizedString("core.QuestionAppName.validation.pattern");
+export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
+  const question: TextInputQuestion = {
+    type: "text",
+    name: CoreQuestionNames.AppName,
+    title: "Application name",
+    validation: {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const schema = {
+          pattern: ProjectNamePattern,
+          maxLength: 30,
+        };
+        const appName = input as string;
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          if (validateResult.errors[0].name === "pattern") {
+            return getLocalizedString("core.QuestionAppName.validation.pattern");
+          }
         }
-      }
-      const projectPath = path.resolve(getRootDirectory(), appName);
-      const exists = await fs.pathExists(projectPath);
-      if (exists)
-        return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
-      return undefined;
-    },
-  },
-  placeholder: "Application name",
-};
-
-export const QuestionAppNameForInit: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.AppName,
-  title: "Application name",
-  validation: {
-    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const schema = {
-        pattern: ProjectNamePattern,
-        maxLength: 30,
-      };
-      const appName = input as string;
-      const validateResult = jsonschema.validate(appName, schema);
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        if (validateResult.errors[0].name === "pattern") {
-          return getLocalizedString("core.QuestionAppName.validation.pattern");
+        if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
+          let folder = previousInputs.folder as string;
+          if (previousInputs.platform === Platform.VSCode) {
+            folder = getRootDirectory();
+          }
+          if (folder) {
+            const projectPath = path.resolve(folder, appName);
+            const exists = await fs.pathExists(projectPath);
+            if (exists)
+              return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
+          }
         }
-      }
-      if (previousInputs) {
-        const projectPath = path.resolve(previousInputs.folder, appName);
-        const exists = await fs.pathExists(projectPath);
-        if (exists)
-          return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
-      }
-      return undefined;
+        return undefined;
+      },
     },
-  },
-  placeholder: "Application name",
-};
+    placeholder: "Application name",
+  };
+  return question;
+}
 
 export const DefaultAppNameFunc: FuncQuestion = {
   type: "func",
@@ -121,6 +104,12 @@ export const DefaultAppNameFunc: FuncQuestion = {
 
     return appName;
   },
+};
+
+export const ProjectPathQuestion: FolderQuestion = {
+  type: "folder",
+  name: CoreQuestionNames.ProjectPath,
+  title: "Project folder",
 };
 
 export const QuestionRootFolder: FolderQuestion = {

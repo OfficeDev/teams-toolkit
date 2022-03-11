@@ -116,7 +116,6 @@ import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
-  QuestionAppName,
   QuestionRootFolder,
   ScratchOptionNo,
 } from "./question";
@@ -183,7 +182,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -350,7 +349,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -1338,15 +1337,17 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
     // validate app name
-    const appName = inputs[QuestionAppName.name] as string;
+    const appName = inputs[CoreQuestionNames.AppName] as string;
     const validateResult = jsonschema.validate(appName, {
       pattern: ProjectNamePattern,
     });
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
-    const folder = inputs[QuestionRootFolder.name] as string;
-    inputs.projectPath = path.join(folder, appName);
+    if (!inputs.projectPath) {
+      return err(InvalidInputError("projectPath is empty", inputs));
+    }
+    await fs.ensureDir(inputs.projectPath);
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();
@@ -1479,7 +1480,7 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
   }
   try {
     {
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (inputs.platform !== Platform.VS) {
         const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
         const exists = await fs.pathExists(packageJsonFilePath);

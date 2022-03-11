@@ -37,11 +37,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
     }
 
-    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
-      PluginBot.HOST_TYPE
-    ] as string;
-
-    this.hostType = utils.convertToConstValues(rawHostType, HostTypes);
+    this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

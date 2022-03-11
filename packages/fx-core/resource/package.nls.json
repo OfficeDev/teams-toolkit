@@ -122,7 +122,6 @@
   "error.frontend.UploadToStorageError": "Failed to upload local path %s to Azure Storage Account.",
   "error.frontend.GetContainerError": "Failed to get container %s from Azure Storage Account.",
   "error.frontend.UnknownScaffoldError": "Failed to scaffold project causes unknown reason.",
-  "error.frontend.TemplateManifestError": "Failed to find template from manifest.",
   "error.frontend.TemplateZipFallbackError": "Failed to download zip package and open local zip package.",
   "error.frontend.UnzipTemplateError": "Failed to unzip template package.",
   "error.frontend.NoBuildPathError": "Failed to find '%s' folder.",

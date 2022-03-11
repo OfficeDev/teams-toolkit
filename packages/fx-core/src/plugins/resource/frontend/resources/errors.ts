@@ -231,17 +231,6 @@ export class UnknownScaffoldError extends FrontendPluginError {
   }
 }
 
-export class TemplateManifestError extends FrontendPluginError {
-  constructor(msg: string) {
-    super(
-      ErrorType.User,
-      "TemplateManifestError",
-      `${getLocalizedString("error.frontend.TemplateManifestError")} ${msg}`,
-      [tips.checkNetwork]
-    );
-  }
-}
-
 export class TemplateZipFallbackError extends FrontendPluginError {
   constructor() {
     super(

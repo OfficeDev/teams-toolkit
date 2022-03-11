@@ -70,7 +70,7 @@ import { BOT_ID } from "../appstudio/constants";
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
-  private ctx?: PluginContext;
+  protected ctx?: PluginContext;
 
   private async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
@@ -94,15 +94,7 @@ export class TeamsBotImpl implements PluginImpl {
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
 
     if (isBotNotificationEnabled()) {
-      // TODO: set host type from input
-      // Since the UI design is not finalized yet,
-      // for testing purpose we currently use an environment variable to select hostType.
-      // Change the logic after question model is implemented.
-      if (process.env.TEAMSFX_BOT_HOST_TYPE === "function") {
-        this.config.scaffold.hostType = HostTypes.AZURE_FUNCTIONS;
-      } else {
-        this.config.scaffold.hostType = HostTypes.APP_SERVICE;
-      }
+      this.config.scaffold.hostType = HostTypes.APP_SERVICE;
     }
 
     // 1. Copy the corresponding template project into target directory.

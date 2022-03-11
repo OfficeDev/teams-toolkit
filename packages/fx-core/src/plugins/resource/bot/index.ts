@@ -24,6 +24,9 @@ import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
 import { isVSProject } from "../../../common/projectSettingsHelper";
+import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
+import { BotHostTypes, isBotNotificationEnabled } from "../../../common";
+import { ScaffoldConfig } from "./configs/scaffoldConfig";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -35,9 +38,16 @@ export class TeamsBot implements Plugin {
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
+  public functionsBotImpl: FunctionsHostedBotImpl = new FunctionsHostedBotImpl();
 
   public getImpl(context: PluginContext): PluginImpl {
-    return isVSProject(context.projectSettings!) ? this.dotnetBotImpl : this.teamsBotImpl;
+    if (isVSProject(context.projectSettings!)) {
+      return this.dotnetBotImpl;
+    } else if (this.isFunctionsHostedBot(context)) {
+      return this.functionsBotImpl;
+    } else {
+      return this.teamsBotImpl;
+    }
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
@@ -235,6 +245,10 @@ export class TeamsBot implements Plugin {
       await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
       return this.wrapError(e, context, sendTelemetry, name);
     }
+  }
+
+  private isFunctionsHostedBot(context: PluginContext): boolean {
+    return ScaffoldConfig.getBotHostType(context) === BotHostTypes.AzureFunctions;
   }
 }
 

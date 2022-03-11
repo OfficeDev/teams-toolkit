@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ["@shared/eslint-config"],
+  extends: ["../packages/eslint-config"],
 };

@@ -373,6 +373,7 @@ export class FxCore implements v3.ICore {
       // init
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
+        folder: projectPath,
         projectPath: projectPath,
       };
       const initRes = await this._init(initInputs, ctx);
@@ -1344,10 +1345,11 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
-    if (!inputs.projectPath) {
-      return err(InvalidInputError("projectPath is empty", inputs));
+    if (!inputs.folder) {
+      return err(InvalidInputError("folder is empty", inputs));
     }
-    await fs.ensureDir(inputs.projectPath);
+    await fs.ensureDir(inputs.folder);
+    inputs.projectPath = inputs.folder;
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();
@@ -1355,8 +1357,8 @@ export class FxCore implements v3.ICore {
     ctx.projectSettings = projectSettings;
 
     // create folder structure
-    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
+    await fs.ensureDir(path.join(inputs.projectPath!, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(inputs.projectPath!, "templates", `${AppPackageFolderName}`));
     const basicFolderRes = await ensureBasicFolderStructure(inputs);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
@@ -1375,7 +1377,7 @@ export class FxCore implements v3.ICore {
     if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
       const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
       const writeEnvResult = await environmentManager.writeEnvConfig(
-        inputs.projectPath,
+        inputs.projectPath!,
         newEnvConfig,
         environmentManager.getDefaultEnvName()
       );
@@ -1421,7 +1423,7 @@ export class FxCore implements v3.ICore {
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    return ok(inputs.projectPath);
+    return ok(inputs.projectPath!);
   }
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])

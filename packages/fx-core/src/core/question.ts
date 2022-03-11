@@ -106,12 +106,6 @@ export const DefaultAppNameFunc: FuncQuestion = {
   },
 };
 
-export const ProjectPathQuestion: FolderQuestion = {
-  type: "folder",
-  name: CoreQuestionNames.ProjectPath,
-  title: "Project folder",
-};
-
 export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
   name: CoreQuestionNames.Folder,

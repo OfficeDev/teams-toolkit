@@ -51,17 +51,35 @@ export class ScaffoldConfig {
     utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
   }
 
+  /**
+   * Get bot host type from plugin context.
+   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For later stages, the host type is persisted in projectSettings.json.
+   */
   public static getBotHostType(context: PluginContext): HostType | undefined {
-    // TODO: retrieve host type from context.answers
-    // Since the UI design is not finalized yet,
-    // for testing purpose we currently use an environment variable to select hostType.
-    // Change the logic after question model is implemented.
-    if (process.env.TEAMSFX_BOT_HOST_TYPE) {
-      return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
-        ? HostTypes.AZURE_FUNCTIONS
-        : HostTypes.APP_SERVICE;
+    // TODO: support other stages (maybe addCapability)
+    const fromInputs = context.answers?.stage === Stage.create;
+    if (fromInputs) {
+      // TODO: retrieve host type from context.answers
+      // Since the UI design is not finalized yet,
+      // for testing purpose we currently use an environment variable to select hostType.
+      // Change the logic after question model is implemented.
+      if (process.env.TEAMSFX_BOT_HOST_TYPE) {
+        return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
+          ? HostTypes.AZURE_FUNCTIONS
+          : HostTypes.APP_SERVICE;
+      } else {
+        return undefined;
+      }
     } else {
-      return undefined;
+      return this.getHostTypeFromProjectSettings(context);
     }
+  }
+
+  private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {
+    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
+    return utils.convertToConstValues(rawHostType, HostTypes);
   }
 }

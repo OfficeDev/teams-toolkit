@@ -31,7 +31,8 @@ export class CliDepsChecker {
     private logger: DepsLogger,
     private telemetry: DepsTelemetry,
     private hasBackend: boolean,
-    private hasBot: boolean
+    private hasBot: boolean,
+    private hasFuncHostedBot: boolean
   ) {
     this.depsManager = new DepsManager(logger, telemetry);
   }
@@ -127,11 +128,11 @@ export class CliDepsChecker {
       case DepsType.SpfxNode:
         return await isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return (await isNodeCheckerEnabled()) && this.hasBackend;
+        return (await isNodeCheckerEnabled()) && (this.hasBackend || this.hasFuncHostedBot);
       case DepsType.Dotnet:
         return await isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return (await isFuncCoreToolsEnabled()) && this.hasBackend;
+        return (await isFuncCoreToolsEnabled()) && (this.hasBackend || this.hasFuncHostedBot);
       case DepsType.Ngrok:
         return this.hasBot && (await isNgrokCheckerEnabled());
       default:

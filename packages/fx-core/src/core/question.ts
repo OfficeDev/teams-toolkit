@@ -76,6 +76,35 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
+export const QuestionAppNameForInit: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.AppName,
+  title: "Application name",
+  validation: {
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const schema = {
+        pattern: ProjectNamePattern,
+        maxLength: 30,
+      };
+      const appName = input as string;
+      const validateResult = jsonschema.validate(appName, schema);
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        if (validateResult.errors[0].name === "pattern") {
+          return getLocalizedString("core.QuestionAppName.validation.pattern");
+        }
+      }
+      if (previousInputs) {
+        const projectPath = path.resolve(previousInputs.folder, appName);
+        const exists = await fs.pathExists(projectPath);
+        if (exists)
+          return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
+      }
+      return undefined;
+    },
+  },
+  placeholder: "Application name",
+};
+
 export const DefaultAppNameFunc: FuncQuestion = {
   type: "func",
   name: CoreQuestionNames.DefaultAppNameFunc,

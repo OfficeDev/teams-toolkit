@@ -38,6 +38,7 @@ import {
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
   QuestionAppName,
+  QuestionAppNameForInit,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
@@ -305,8 +306,8 @@ export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({ type: "group" });
-  node.addChild(new QTreeNode(QuestionAppName));
   node.addChild(new QTreeNode(QuestionRootFolder));
+  node.addChild(new QTreeNode(QuestionAppNameForInit));
   const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
   if (solution.getQuestionsForInit) {

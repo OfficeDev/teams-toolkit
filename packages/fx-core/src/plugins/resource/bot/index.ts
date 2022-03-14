@@ -198,14 +198,12 @@ export class TeamsBot implements Plugin {
     Logger.setLogger(context.logProvider);
 
     if (stage === Stage.create) {
-      const result = await TeamsBot.runWithExceptionCatching(
+      return await TeamsBot.runWithExceptionCatching(
         context,
         () => this.getImpl(context).getQuestionsForScaffolding(context),
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING
       );
-
-      return result;
     } else {
       return ok(undefined);
     }
@@ -217,14 +215,12 @@ export class TeamsBot implements Plugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     Logger.setLogger(context.logProvider);
 
-    const result = await TeamsBot.runWithExceptionCatching(
+    return await TeamsBot.runWithExceptionCatching(
       context,
       () => this.getImpl(context).getQuestionsForUserTask(func, context),
       true,
       LifecycleFuncNames.GET_QUETSIONS_FOR_USER_TASK
     );
-
-    return result;
   }
 
   private static wrapError(

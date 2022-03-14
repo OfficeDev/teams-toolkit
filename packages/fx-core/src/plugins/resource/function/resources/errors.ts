@@ -94,17 +94,6 @@ export class ValidationError extends FunctionPluginError {
   }
 }
 
-export class TemplateManifestError extends FunctionPluginError {
-  constructor(msg: string) {
-    super(
-      ErrorType.User,
-      "TemplateManifestError",
-      `Failed to find template from manifest: ${msg}.`,
-      [tips.checkNetwork, tips.retryRequest]
-    );
-  }
-}
-
 export class TemplateZipNetworkError extends FunctionPluginError {
   constructor(url: string) {
     super(

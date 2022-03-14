@@ -29,6 +29,7 @@ import {
   ProjectSettingsFileName,
   EnvStateFileNameTemplate,
   InputConfigsFolderName,
+  SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
@@ -44,6 +45,7 @@ import {
   isValidProject,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import CLIUIInstance from "./userInteraction";
 
 export type Json = { [_: string]: any };
 
@@ -339,6 +341,27 @@ export function getTeamsAppTelemetryInfoByEnv(
     }
   } catch (e) {
     return undefined;
+  }
+}
+
+/**
+ * Ask user to select environment, local is included
+ */
+export async function askTargetEnvironment(projectDir: string): Promise<Result<string, FxError>> {
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectDir);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+  const config: SingleSelectConfig = {
+    name: "targetEnvName",
+    title: "Select an environment",
+    options: envProfilesResult.value.concat([environmentManager.getLocalEnvName()]),
+  };
+  const selectedEnv = await CLIUIInstance.selectOption(config);
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  } else {
+    return ok(selectedEnv.value.result as string);
   }
 }
 

@@ -1,5 +1,6 @@
 {
   "core.create.successNotice": "[Teams Toolkit] Scaffold successfully.",
+  "core.init.successNotice": "Your project has been successfully initialized to operate with TeamsFx.\n\nSome next steps:\nteamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.\n\nPro tip:\nRead on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.",
   "core.provision.confirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
   "core.provision.confirmEnvNotice": "Do you want to provision resources in %s environment?\n%s (Azure account) with %s (subscription) will be used to provision. the resources. Cost may incur according to the usage.",
   "core.provision.successAzure": "Azure resources successfully provisioned in the cloud.",

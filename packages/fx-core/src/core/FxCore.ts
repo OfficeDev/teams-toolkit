@@ -123,6 +123,7 @@ import {
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
+import { getLocalizedString } from "../common/localizeUtils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -1442,7 +1443,12 @@ export class FxCore implements v3.ICore {
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    return this._init(inputs, ctx);
+    const result = await this._init(inputs, ctx);
+    if (result.isOk()) {
+      TOOLS.ui.showMessage("info", getLocalizedString("core.init.successNotice"), false);
+    }
+
+    return result;
   }
 
   @hooks([

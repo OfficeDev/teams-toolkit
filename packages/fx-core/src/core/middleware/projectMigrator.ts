@@ -875,7 +875,7 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
   }
 }
 
-async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
+export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;

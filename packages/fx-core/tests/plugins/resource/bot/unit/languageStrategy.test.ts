@@ -29,6 +29,7 @@ import {
   HostTypes,
   NotificationTriggers,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
+import { BotNotificationTriggers } from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {
@@ -216,12 +217,12 @@ describe("Language Strategy", () => {
       chai.assert.equal(scaffoldContexts[0].lang, "ts");
       chai.assert.equal(
         scaffoldContexts[0].scenario,
-        TriggerTemplateScenarioMappings.http.scenario
+        TriggerTemplateScenarioMappings[BotNotificationTriggers.Http]
       );
       chai.assert.isTrue(scaffoldContexts[0].dst !== undefined);
       chai.assert.equal(
         path.normalize(scaffoldContexts[0].dst as string),
-        path.normalize(path.join(botDir, TriggerTemplateScenarioMappings.http.dirPath))
+        path.normalize(path.join(botDir))
       );
     });
   });

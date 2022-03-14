@@ -4,6 +4,7 @@ import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import {
   DownloadConstants,
+  SourceCodeDir,
   TemplateProjectsConstants,
   TemplateProjectsScenarios,
   TriggerTemplateScenarioMappings,
@@ -25,6 +26,7 @@ import {
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import * as path from "path";
+import * as fs from "fs-extra";
 
 export class LanguageStrategy {
   public static async scaffoldProject(
@@ -46,17 +48,12 @@ export class LanguageStrategy {
     config: TeamsBotConfig,
     actions: ScaffoldAction[] = defaultActionSeq
   ): Promise<void> {
-    const triggerScenarios = config.scaffold.triggers.map((trigger) => {
+    const scenarios = config.scaffold.triggers.map((trigger) => {
       return TriggerTemplateScenarioMappings[trigger];
     });
-    for (const scenario of triggerScenarios) {
-      await this.getTemplateProject(
-        group_name,
-        scenario.scenario,
-        path.join(config.scaffold.workingDir!, scenario.dirPath),
-        config,
-        actions
-      );
+    const projectRoot = config.scaffold.workingDir!;
+    for (const scenario of scenarios) {
+      await this.getTemplateProject(group_name, scenario, path.join(projectRoot), config, actions);
     }
   }
 

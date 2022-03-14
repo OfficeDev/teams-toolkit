@@ -30,7 +30,7 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
 
     // 1. Copy the corresponding template project into target directory.
     const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
-    if (!this.config.actRoles || this.config.actRoles.length === 0) {
+    if (!this.config.actRoles) {
       throw new SomethingMissingError("act roles");
     }
 

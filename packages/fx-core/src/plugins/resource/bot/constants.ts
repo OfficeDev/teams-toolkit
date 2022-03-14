@@ -54,21 +54,14 @@ export enum TemplateProjectsScenarios {
   NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
 }
 
-const TriggerDirPaths = {
-  Http: "notifyHttpTrigger",
-  Timer: "notifyTimerTrigger",
+export const TriggerTemplateScenarioMappings = {
+  [BotNotificationTriggers.Http]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+  [BotNotificationTriggers.Timer]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
 } as const;
 
-export const TriggerTemplateScenarioMappings = {
-  [BotNotificationTriggers.Http]: {
-    scenario: TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
-    dirPath: TriggerDirPaths.Http,
-  },
-  [BotNotificationTriggers.Timer]: {
-    scenario: TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
-    dirPath: TriggerDirPaths.Timer,
-  },
-} as const;
+export const SourceCodeDir = "src";
 
 export class ProgressBarConstants {
   public static readonly SCAFFOLD_TITLE: string = "Scaffolding bot";

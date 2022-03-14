@@ -55,7 +55,9 @@ export function generateTasks(
     if (includeFuncHostedBot) {
       tasks.push(startFuncHostedBot(includeFrontend, programmingLanguage));
       tasks.push(startAzuriteEmulator());
-      tasks.push(watchFuncHostedBot());
+      if (programmingLanguage === ProgrammingLanguage.typescript) {
+        tasks.push(watchFuncHostedBot());
+      }
     } else {
       tasks.push(startBot(includeFrontend));
     }

@@ -5,9 +5,7 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { Site, StringDictionary } from "@azure/arm-appservice/esm/models";
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  AzureAccountProvider,
   AzureSolutionSettings,
-  err,
   FxError,
   Inputs,
   ok,
@@ -21,7 +19,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import { CheckerFactory } from "../../../../common/deps-checker/checkerFactory";
 import { DepsChecker, DepsType } from "../../../../common/deps-checker/depsChecker";
@@ -39,7 +36,6 @@ import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solu
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import {
   DefaultValues,
-  DependentPluginInfo,
   FunctionBicep,
   FunctionBicepFile,
   FunctionPluginInfo,

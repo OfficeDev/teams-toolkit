@@ -3,7 +3,7 @@
 import * as path from "path";
 import { ConfigFolderName, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
+import { FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -57,7 +57,7 @@ export class FunctionPluginError extends Error {
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
+    return getLocalizedString("plugins.baseErrorMessage", this.message, this.suggestions.join(" "));
   }
 }
 

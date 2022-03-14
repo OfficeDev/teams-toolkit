@@ -98,7 +98,7 @@
   "plugins.frontend.checkStoragePermissionsTip": "Check if you have permissions to your Azure Storage Account.",
   "plugins.frontend.checkSystemTimeTip": "You may get expired credentials, check if your system time is correct.",
   "plugins.frontend.restoreEnvironmentTip": "If you manually updated configuration files (under directory .%s), recover them.",
-  "plugins.frontend.baseErrorMessage": "%s Suggestions: %s",
+  "plugins.baseErrorMessage": "%s Suggestions: %s",
   "plugins.function.recoverTeamsFxConfigFilesTip": "If you manually updated configuration files (under directory .%s), recover them.",
   "plugins.function.recreateProject": "If you can not recover configuration files, create a new project.",
   "plugins.function.checkNetwork": "Check your network connection.",

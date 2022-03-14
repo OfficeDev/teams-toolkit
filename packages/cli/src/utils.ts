@@ -306,7 +306,6 @@ export function isWorkspaceSupported(workspace: string): boolean {
 
   const checklist: string[] = [
     p,
-    `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
   ];

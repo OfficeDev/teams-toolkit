@@ -23,7 +23,7 @@ export default class Manifest extends YargsCommand {
   public readonly description =
     "Manage Teams app manifest. The supported actions are 'validate' and 'update'.";
 
-  public readonly subCommands: YargsCommand[] = [new ManifestValidate(), new ManifestUpdate()];
+  public readonly subCommands: YargsCommand[] = [new ManifestUpdate()];
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {
@@ -38,58 +38,6 @@ export default class Manifest extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
-  }
-}
-
-class ManifestValidate extends YargsCommand {
-  public readonly commandHead = `validate`;
-  public readonly command = this.commandHead;
-  public readonly description = "Validate the Teams app manifest.";
-
-  public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("validate");
-    return yargs.version(false).options(this.params);
-  }
-
-  public async runCommand(args: {
-    [argName: string]: string | string[];
-  }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
-      TelemetryEvent.ValidateManifestStart
-    );
-
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
-      return err(result.error);
-    }
-    const core = result.value;
-    let inputs: Inputs;
-    {
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "validateManifest",
-      };
-
-      inputs = getSystemInputs(rootFolder, args.env as any);
-      const result = await core.executeUserTask!(func, inputs);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(
-          TelemetryEvent.ValidateManifest,
-          result.error,
-          makeEnvRelatedProperty(rootFolder, inputs)
-        );
-
-        return err(result.error);
-      }
-    }
-
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvRelatedProperty(rootFolder, inputs),
-    });
     return ok(null);
   }
 }

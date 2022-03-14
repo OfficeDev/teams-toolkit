@@ -18,7 +18,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from "./utils/questions";
-import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
+import { Utils, sleep } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
@@ -40,19 +40,20 @@ import {
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
+import { getAppDirectory } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
-  REMOTE_MANIFEST,
 } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
 import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
+import { yeomanScaffoldEnabled } from "../../../core/globalVars";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -101,6 +102,10 @@ export class SPFxPluginImpl {
           ``
         );
         await fs.writeFile(webpartFile, codeString);
+
+        // remove .vscode
+        const debugPath = `${newPath}/.vscode`;
+        await fs.remove(debugPath);
 
         const solutionPath = `${newPath}/config/package-solution.json`;
         const solution = await fs.readJson(solutionPath);
@@ -357,7 +362,7 @@ export class SPFxPluginImpl {
         ];
         ctx.ui?.showMessage("info", guidance, false);
       } else {
-        const guidance = util.format(getStrings().plugins.SPFx.buildNotice, dir);
+        const guidance = getLocalizedString("plugins.spfx.buildNotice", dir);
         ctx.ui?.showMessage("info", guidance, false, "OK");
       }
       return ok(undefined);
@@ -392,7 +397,7 @@ export class SPFxPluginImpl {
       } else {
         const res = await ctx.ui?.showMessage(
           "warn",
-          util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
+          getLocalizedString("plugins.spfx.createAppCatalogNotice", tenant.value),
           true,
           "OK",
           Constants.READ_MORE
@@ -452,7 +457,7 @@ export class SPFxPluginImpl {
         if (e.response?.status === 403) {
           ctx.ui?.showMessage(
             "error",
-            util.format(getStrings().plugins.SPFx.deployFailedNotice, appCatalogSite!),
+            getLocalizedString("plugins.spfx.deployFailedNotice", appCatalogSite!),
             false,
             "OK"
           );
@@ -465,8 +470,8 @@ export class SPFxPluginImpl {
       const appID = await this.getAppID(ctx.root);
       await SPOClient.deployAppPackage(spoToken, appID);
 
-      const guidance = util.format(
-        getStrings().plugins.SPFx.deployNotice,
+      const guidance = getLocalizedString(
+        "plugins.spfx.deployNotice",
         appPackage,
         appCatalogSite,
         appCatalogSite

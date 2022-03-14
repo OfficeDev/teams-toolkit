@@ -4,9 +4,9 @@ import addCapability_dark from "../../../media/dark/addCapability.svg";
 import addCapability_light from "../../../media/light/addCapability.svg";
 import addResources_dark from "../../../media/dark/addResources.svg";
 import addResources_light from "../../../media/light/addResources.svg";
-import * as StringResources from "../../resources/Strings.json";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
+import { localize } from "../../utils/localizeUtils";
 
 export class DevelopmentView extends React.Component<any, any> {
   constructor(props: any) {
@@ -49,40 +49,40 @@ export class DevelopmentView extends React.Component<any, any> {
     return (
       <div>
         <TreeItem
-          label={StringResources.vsc.commandsTreeViewProvider.createProjectTitleNew}
-          tooltip={StringResources.vsc.commandsTreeViewProvider.createProjectDescription}
+          label={localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew")}
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription")}
           icon="codicon codicon-new-folder"
           customized={false}
           disable={false}
           command="fx-extension.create"
         ></TreeItem>
         <TreeItem
-          label={StringResources.vsc.commandsTreeViewProvider.samplesTitleNew}
-          tooltip={StringResources.vsc.commandsTreeViewProvider.samplesDescription}
+          label={localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew")}
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.samplesDescription")}
           icon="codicon codicon-library"
           customized={false}
           disable={false}
           command="fx-extension.openSamples"
         ></TreeItem>
         <TreeItem
-          label={StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew}
-          tooltip={StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription}
+          label={localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew")}
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription")}
           icon={this.state.colorTheme === Theme.Dark ? addCapability_dark : addCapability_light}
           customized={true}
           disable={this.state.locked}
           command="fx-extension.addCapability"
         ></TreeItem>
         <TreeItem
-          label={StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew}
-          tooltip={StringResources.vsc.commandsTreeViewProvider.addResourcesDescription}
+          label={localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew")}
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription")}
           icon={this.state.colorTheme === Theme.Dark ? addResources_dark : addResources_light}
           customized={true}
           disable={this.state.locked}
           command="fx-extension.update"
         ></TreeItem>
         <TreeItem
-          label={StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew}
-          tooltip={StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription}
+          label={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew")}
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription")}
           icon="codicon codicon-edit"
           customized={false}
           disable={false}

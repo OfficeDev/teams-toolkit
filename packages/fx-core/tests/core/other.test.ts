@@ -17,20 +17,19 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import Container from "typedi";
+import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
   FetchSampleError,
-  NoneFxError,
   ProjectFolderExistError,
   ReadFileError,
   TaskNotSupportError,
   WriteFileError,
 } from "../../src/core/error";
-import { QuestionAppName } from "../../src/core/question";
+import { createAppNameQuestion } from "../../src/core/question";
 import {
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
@@ -43,27 +42,25 @@ import { randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { execPowerShell, execShell } from "../../src/common/local/process";
-import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
+import { isValidProject } from "../../src/common/projectSettingsHelper";
 import "../../src/plugins/solution/fx-solution/v2/solution";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
     sandbox.restore();
   });
-  it("question: QuestionAppName validation", async () => {
+  it("question: app name question validation", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     let appName = "1234";
-
-    let validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    const appNameQuestion = createAppNameQuestion();
+    let validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
 
-    assert.isTrue(
-      validRes ===
-        "Application name must start with a letter and can only contain letters and digits."
-    );
+    assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
 
     appName = randomAppName();
     const folder = os.tmpdir();
@@ -71,17 +68,18 @@ describe("Other test case", () => {
     const projectPath = path.resolve(folder, appName);
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
-
-    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    inputs.folder = folder;
+    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
-    assert.isTrue(validRes === `Path exists: ${projectPath}. Select a different application name.`);
+    assert.isTrue(
+      validRes === getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath)
+    );
 
     sandbox.restore();
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
-
-    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
+    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
       appName,
       inputs
     );
@@ -89,7 +87,7 @@ describe("Other test case", () => {
   });
 
   it("error: ProjectFolderExistError", async () => {
-    const error = ProjectFolderExistError(os.tmpdir());
+    const error = new ProjectFolderExistError(os.tmpdir());
     assert.isTrue(error.name === "ProjectFolderExistError");
     assert.isTrue(
       error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
@@ -110,20 +108,13 @@ describe("Other test case", () => {
     assert.isTrue(error.message === msg);
   });
 
-  it("error: NoneFxError", async () => {
-    const msg = "hahahaha";
-    const error = NoneFxError(new Error(msg));
-    assert.isTrue(error.name === "NoneFxError");
-    assert.isTrue(error.message === msg);
-  });
-
   it("error: TaskNotSupportError", async () => {
     const error = new TaskNotSupportError(Stage.createEnv);
     assert.isTrue(error.name === "TaskNotSupportError");
   });
 
   it("error: FetchSampleError", async () => {
-    const error = FetchSampleError("hello world app");
+    const error = new FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
     assert.isTrue(error.message.includes("hello world app"));
   });

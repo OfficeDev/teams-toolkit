@@ -23,7 +23,6 @@ import {
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
-import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -85,12 +84,6 @@ describe("Remote Collaboration", () => {
   it("Check permission", async () => {
     const appId = faker.datatype.uuid();
 
-    if (!isMultiEnvEnabled()) {
-      const soltuionContext = new ConfigMap();
-      soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
-      configOfOtherPlugins.set(SOLUTION, soltuionContext);
-    }
-
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -107,11 +100,9 @@ describe("Remote Collaboration", () => {
         version: "1.0",
       },
     };
-    if (isMultiEnvEnabled()) {
-      const appStudioConfig = new ConfigMap();
-      appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
-      ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
-    }
+    const appStudioConfig = new ConfigMap();
+    appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
+    ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
@@ -157,13 +148,6 @@ describe("Remote Collaboration", () => {
   it("Grant permission", async () => {
     const appId = faker.datatype.uuid();
 
-    if (!isMultiEnvEnabled()) {
-      const soltuionContext = new ConfigMap();
-      soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
-
-      configOfOtherPlugins.set(SOLUTION, soltuionContext);
-    }
-
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -180,11 +164,9 @@ describe("Remote Collaboration", () => {
         version: "1.0",
       },
     };
-    if (isMultiEnvEnabled()) {
-      const appStudioConfig = new ConfigMap();
-      appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
-      ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
-    }
+    const appStudioConfig = new ConfigMap();
+    appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
+    ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
@@ -230,12 +212,6 @@ describe("Remote Collaboration", () => {
   it("List collaborator", async () => {
     const appId = faker.datatype.uuid();
 
-    if (!isMultiEnvEnabled()) {
-      const soltuionContext = new ConfigMap();
-      soltuionContext.set(REMOTE_TEAMS_APP_ID, appId);
-      configOfOtherPlugins.set(SOLUTION, soltuionContext);
-    }
-
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -252,11 +228,9 @@ describe("Remote Collaboration", () => {
         version: "1.0",
       },
     };
-    if (isMultiEnvEnabled()) {
-      const appStudioConfig = new ConfigMap();
-      appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
-      ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
-    }
+    const appStudioConfig = new ConfigMap();
+    appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
+    ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
     sandbox.stub(AppStudioClient, "getUserList").resolves([

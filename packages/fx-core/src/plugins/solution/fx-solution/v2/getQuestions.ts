@@ -18,7 +18,6 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { getStrings } from "../../../../common/tools";
 import { HelpLinks } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
 import {
@@ -34,6 +33,7 @@ import {
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
   MessageExtensionItem,
+  NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -48,8 +48,10 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotPermittedError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -65,7 +67,13 @@ export async function getQuestionsForScaffolding(
 
   if (!isV3()) {
     node.condition = {
-      containsAny: [TabSPFxItem.id, TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id],
+      containsAny: [
+        TabSPFxItem.id,
+        TabOptionItem.id,
+        BotOptionItem.id,
+        NotificationOptionItem.id,
+        MessageExtensionItem.id,
+      ],
     };
     // 1.1.1 SPFX Tab
     const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
@@ -242,7 +250,7 @@ export async function getQuestions(
       if (isAzure && !provisioned) {
         return err(
           returnUserError(
-            new Error(getStrings().solution.FailedToDeployBeforeProvision),
+            new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
             SolutionSource,
             SolutionError.CannotDeployBeforeProvision,
             HelpLinks.WhyNeedProvision
@@ -303,8 +311,8 @@ export async function getQuestions(
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
         const errorMsg = isAzure
-          ? getStrings().solution.FailedToPublishBeforeProvision
-          : getStrings().solution.SPFxAskProvisionBeforePublish;
+          ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
+          : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
         return err(
           returnUserError(
             new Error(errorMsg),
@@ -420,7 +428,7 @@ export async function getQuestionsForAddCapability(
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
-      getStrings().solution.addCapability.ExceedMaxLimit,
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
       false
     );
     return ok(undefined);
@@ -430,7 +438,13 @@ export async function getQuestionsForAddCapability(
   if (isBotAddable) options.push(BotOptionItem);
   if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;
-  return ok(new QTreeNode(addCapQuestion));
+  const addCapNode = new QTreeNode(addCapQuestion);
+  if (!ctx.projectSetting.programmingLanguage) {
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    addCapNode.addChild(programmingLanguage);
+  }
+  return ok(addCapNode);
 }
 
 export async function getQuestionsForAddResource(
@@ -447,7 +461,7 @@ export async function getQuestionsForAddResource(
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
     if (!settings) {
-      return err(new OperationNotSupportedForExistingAppError("addResource"));
+      return err(new OperationNotPermittedError("addResource"));
     }
     const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
     const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);

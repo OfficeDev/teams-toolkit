@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
-import * as StringResources from "./resources/Strings.json";
 import * as fs from "fs-extra";
 import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
 import { isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
+import { localize } from "./utils/localizeUtils";
 
 /**
  * CodelensProvider
@@ -82,7 +82,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     const codeLenses: vscode.CodeLens[] = [];
     const topOfFile = new vscode.Range(0, 0, 0, 0);
     const command = {
-      title: `👀${StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard}`,
+      title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
       command: "fx-extension.OpenAdaptiveCardExt",
       arguments: [TelemetryTiggerFrom.CodeLens],
     };

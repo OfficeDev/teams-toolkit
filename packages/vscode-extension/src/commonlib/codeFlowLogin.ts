@@ -17,7 +17,6 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
-import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -26,6 +25,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -124,7 +124,7 @@ export class CodeFlowLogin {
               } else {
                 // do not break if result file has issue
                 VsCodeLogInstance.error(
-                  "[Login] " + StringResources.vsc.codeFlowLogin.resultFileNotFound
+                  "[Login] " + localize("teamstoolkit.codeFlowLogin.resultFileNotFound")
                 );
                 res.sendStatus(200);
               }
@@ -137,7 +137,7 @@ export class CodeFlowLogin {
           this.status = loggedOut;
           VsCodeLogInstance.error("[Login] " + error.message);
           deferredRedirect.reject(
-            new UserError(error, StringResources.vsc.codeFlowLogin.loginComponent)
+            new UserError(error, localize("teamstoolkit.codeFlowLogin.loginComponent"))
           );
           res.status(500).send(error);
         });
@@ -151,9 +151,9 @@ export class CodeFlowLogin {
       }
       deferredRedirect.reject(
         returnUserError(
-          new Error(StringResources.vsc.codeFlowLogin.loginTimeoutDescription),
-          StringResources.vsc.codeFlowLogin.loginComponent,
-          StringResources.vsc.codeFlowLogin.loginTimeoutTitle
+          new Error(localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")),
+          localize("teamstoolkit.codeFlowLogin.loginComponent"),
+          localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle")
         )
       );
     }, 5 * 60 * 1000); // keep the same as azure login
@@ -255,7 +255,7 @@ export class CodeFlowLogin {
             VsCodeLogInstance.error(
               "[Login] " +
                 stringUtil.format(
-                  StringResources.vsc.codeFlowLogin.silentAcquireToken,
+                  localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
                   error.message
                 )
             );
@@ -274,8 +274,8 @@ export class CodeFlowLogin {
     } catch (error) {
       VsCodeLogInstance.error("[Login] " + error.message);
       if (
-        error.name !== StringResources.vsc.codeFlowLogin.loginTimeoutTitle &&
-        error.name !== StringResources.vsc.codeFlowLogin.loginPortConflictTitle
+        error.name !== localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
+        error.name !== localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
       ) {
         throw LoginCodeFlowError(error);
       } else {
@@ -293,9 +293,9 @@ export class CodeFlowLogin {
     const portTimer = setTimeout(() => {
       defferedPort.reject(
         returnUserError(
-          new Error(StringResources.vsc.codeFlowLogin.loginPortConflictDescription),
-          StringResources.vsc.codeFlowLogin.loginComponent,
-          StringResources.vsc.codeFlowLogin.loginPortConflictTitle
+          new Error(localize("teamstoolkit.codeFlowLogin.loginPortConflictDescription")),
+          localize("teamstoolkit.codeFlowLogin.loginComponent"),
+          localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
         )
       );
     }, 5000);
@@ -336,8 +336,8 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
 
 export function LoginFailureError(innerError?: any): UserError {
   return new UserError(
-    StringResources.vsc.codeFlowLogin.loginFailureTitle,
-    StringResources.vsc.codeFlowLogin.loginFailureDescription,
+    localize("teamstoolkit.codeFlowLogin.loginFailureTitle"),
+    localize("teamstoolkit.codeFlowLogin.loginFailureDescription"),
     "Login",
     new Error().stack,
     undefined,
@@ -347,9 +347,9 @@ export function LoginFailureError(innerError?: any): UserError {
 
 export function LoginCodeFlowError(innerError?: any): UserError {
   return new UserError(
-    StringResources.vsc.codeFlowLogin.loginCodeFlowFailureTitle,
-    StringResources.vsc.codeFlowLogin.loginCodeFlowFailureDescription,
-    StringResources.vsc.codeFlowLogin.loginComponent,
+    localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle"),
+    localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
+    localize("teamstoolkit.codeFlowLogin.loginComponent"),
     new Error().stack,
     undefined,
     innerError

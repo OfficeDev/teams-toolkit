@@ -15,8 +15,8 @@ import {
   Result,
   TokenProvider,
   Void,
+  v2,
 } from "@microsoft/teamsfx-api";
-import { Context, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import "mocha";
 import { newEnvInfo, setTools } from "../../../../src";
@@ -74,7 +74,7 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "v1" },
       plugin2: { k2: "v2" },
     };
-    const envInfo: EnvInfoV2 = {
+    const envInfo: v2.EnvInfoV2 = {
       envName: "default",
       config: {},
       state: provisionOutputs,
@@ -115,7 +115,7 @@ describe("API V2 adapter", () => {
       return ok(Void);
     };
     const appName = randomAppName();
-    const inputs: ProvisionInputs = {
+    const inputs: v2.ProvisionInputs = {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), randomAppName()),
       resourceNameSuffix: "pref",
@@ -139,7 +139,7 @@ describe("API V2 adapter", () => {
         ],
       },
     };
-    const context: Context = {
+    const context: v2.Context = {
       userInteraction: tools.ui,
       logProvider: tools.logProvider,
       telemetryReporter: tools.telemetryReporter,
@@ -151,7 +151,7 @@ describe("API V2 adapter", () => {
       azure: { subscriptionId: "123455", resourceGroupName: "rg" },
       manifest: { appName: { short: appName } },
     };
-    const envInfo: EnvInfoV2 = {
+    const envInfo: v2.EnvInfoV2 = {
       envName: "default",
       config: provisionInputConfig,
       state: {},

@@ -46,11 +46,12 @@ export class LocalEnvManager {
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
 
     // NodeJS
     if (isSPFx) {
       depsTypes.push(DepsType.SpfxNode);
-    } else if (includeBackend) {
+    } else if (includeBackend || includeFuncHostedBot) {
       depsTypes.push(DepsType.FunctionNode);
     } else {
       depsTypes.push(DepsType.AzureNode);
@@ -62,7 +63,7 @@ export class LocalEnvManager {
     }
 
     // Function core tool
-    if (includeBackend) {
+    if (includeBackend || includeFuncHostedBot) {
       depsTypes.push(DepsType.FuncCoreTools);
     }
 

@@ -39,8 +39,13 @@ export class TemplateProjectsConstants {
   public static readonly TEMPLATE_FOLDER_NAME: string = "bot";
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
-  public static readonly DEFAULT_SCENARIO_NAME: string = "default";
   public static readonly VERSION_RANGE: string = "0.0.*";
+}
+
+export enum TemplateProjectsScenarios {
+  DEFAULT_SCENARIO_NAME = "default",
+  NOTIFICATION_SCENARIO_NAME = "notification",
+  NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
 }
 
 export class ProgressBarConstants {
@@ -135,7 +140,6 @@ export class ErrorNames {
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
   public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR =
     "MissingSubscriptionRegistrationError";
-  public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
   public static readonly INVALID_BOT_DATA_ERROR = "InvalidBotDataError";
 }
 
@@ -239,6 +243,7 @@ export class TelemetryKeys {
   public static readonly ErrorMessage = "error-message";
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
+  public static readonly HostType = "bot-host-type";
 }
 
 export class TelemetryValues {

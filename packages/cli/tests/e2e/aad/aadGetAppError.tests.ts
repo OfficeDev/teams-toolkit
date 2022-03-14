@@ -11,7 +11,7 @@ import path from "path";
 
 import { expect } from "chai";
 
-import { describe, it } from "mocha";
+import { describe } from "mocha";
 
 import {
   execAsync,
@@ -23,6 +23,7 @@ import {
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { it } from "../../commonlib/it";
 
 describe("aadGetAppError", function () {
   let testFolder: string;
@@ -57,7 +58,7 @@ describe("aadGetAppError", function () {
     console.log(`[Successfully] scaffold to ${projectPath}`);
   });
 
-  it(`AAD: AadGetAppError`, async function () {
+  it(`AAD: AadGetAppError`, { testPlanCaseId: 10988682 }, async function () {
     {
       // set fake object id in context
       const state = {

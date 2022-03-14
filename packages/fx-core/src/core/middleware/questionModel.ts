@@ -18,11 +18,9 @@ import {
   Stage,
   SystemError,
   traverse,
-  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
@@ -36,19 +34,17 @@ import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
+  createAppNameQuestion,
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
-  QuestionAppName,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
-import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
+import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
-import { getProjectSettingsPath } from "./projectSettingsLoader";
-import { ISanitizer } from "../../plugins/resource/apim/utils/namingRules";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -306,23 +302,12 @@ export async function getQuestionsForPublish(
 export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.projectPath) {
-    const projectSettingsPath = getProjectSettingsPath(inputs.projectPath);
-    if (await fs.pathExists(projectSettingsPath)) {
-      const res = await TOOLS.ui.showMessage(
-        "warn",
-        "projectSettings.json already exists, 'init' operation will replace it, please confirm!",
-        true,
-        "Confirm"
-      );
-      if (!(res.isOk() && res.value === "Confirm")) {
-        return err(UserCancelError);
-      }
-    }
-  }
   const node = new QTreeNode({ type: "group" });
-  node.addChild(new QTreeNode(QuestionAppName));
-  node.addChild(new QTreeNode(QuestionRootFolder));
+  // no need to ask workspace folder for CLI.
+  if (inputs.platform !== Platform.CLI) {
+    node.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  node.addChild(new QTreeNode(createAppNameQuestion(false)));
   const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
   if (solution.getQuestionsForInit) {
@@ -376,7 +361,7 @@ export async function getQuestionsForCreateProjectV3(
   if (inputs.platform === Platform.CLI) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
@@ -431,7 +416,7 @@ export async function getQuestionsForCreateProjectV2(
   if (CLIPlatforms.includes(inputs.platform)) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

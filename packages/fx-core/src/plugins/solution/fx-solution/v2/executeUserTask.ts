@@ -21,7 +21,6 @@ import {
   ProjectSettings,
   v3,
 } from "@microsoft/teamsfx-api";
-import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 import {
   SolutionError,
@@ -31,6 +30,7 @@ import {
   SolutionTelemetrySuccess,
   SolutionSource,
   PluginNames,
+  DEFAULT_PERMISSION_REQUEST,
 } from "../constants";
 import * as util from "util";
 import {
@@ -42,6 +42,7 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,
+  SsoItem,
   TabOptionItem,
 } from "../question";
 import { cloneDeep } from "lodash";
@@ -53,9 +54,15 @@ import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { OperationNotPermittedError } from "../../../../core/error";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import fs from "fs-extra";
+import { CoreQuestionNames } from "../../../../core/question";
+import { Certificate } from "crypto";
+import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -167,7 +174,7 @@ export function canAddCapability(
   if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddCapabilityNotSupport,
-      getStrings().solution.addCapability.OnlySupportAzure,
+      getLocalizedString("core.addCapability.onlySupportAzure"),
       SolutionSource
     );
     return err(
@@ -185,7 +192,7 @@ export function canAddResource(
   if (isVS) {
     const e = new UserError(
       SolutionError.AddResourceNotSupport,
-      getStrings().solution.addResource.NotSupportForVSProject,
+      getLocalizedString("core.addResource.notSupportForVSProject"),
       SolutionSource
     );
     return err(
@@ -196,7 +203,7 @@ export function canAddResource(
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddResourceNotSupport,
-      getStrings().solution.addResource.OnlySupportAzure,
+      getLocalizedString("core.addResource.onlySupportAzure"),
       SolutionSource
     );
     return err(
@@ -217,6 +224,12 @@ export async function addCapability(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
+  // 0. set programming language if it is empty
+  const programmingLanguageInputs = inputs[CoreQuestionNames.ProgrammingLanguage];
+  if (!ctx.projectSetting.programmingLanguage && programmingLanguageInputs) {
+    ctx.projectSetting.programmingLanguage = programmingLanguageInputs;
+  }
+
   // 1. checking addable
   let solutionSettings = getAzureSolutionSettings(ctx);
   if (!solutionSettings) {
@@ -230,6 +243,10 @@ export async function addCapability(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
+    //aad need this file
+    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+      spaces: 4,
+    });
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew = {
@@ -293,7 +310,7 @@ export async function addCapability(
   if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
       SolutionError.FailedToAddCapability,
-      getStrings().solution.addCapability.ExceedMaxLimit,
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
       SolutionSource
     );
     return err(
@@ -311,6 +328,12 @@ export async function addCapability(
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   const vsProject = isVSProject(ctx.projectSetting);
+  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
+    pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
+  }
+  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
+  }
 
   // 4. check Tab
   if (capabilitiesAnswer.includes(TabOptionItem.id)) {
@@ -318,13 +341,11 @@ export async function addCapability(
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasTab) {
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     } else {
       if (!alreadyHasTab) {
         pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     }
     capabilitiesToAddManifest.push({ name: "staticTab" });
@@ -367,6 +388,10 @@ export async function addCapability(
   solutionSettings.capabilities = Array.from(newCapabilitySet);
   setActivatedResourcePluginsV2(ctx.projectSetting);
 
+  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+    solutionSettings.activeResourcePlugins.push(BuiltInFeaturePluginNames.aad);
+  }
+
   // 8. scaffold and update arm
   const pluginsToScaffold = Array.from(pluginNamesToScaffold).map((name) =>
     Container.get<v2.ResourcePlugin>(name)
@@ -403,11 +428,11 @@ export async function addCapability(
     const template =
       inputs.platform === Platform.CLI
         ? single
-          ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
-          : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
+          ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+          : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
         : single
-        ? getStrings().solution.addCapability.AddCapabilityNotice
-        : getStrings().solution.addCapability.AddCapabilitiesNotice;
+        ? getLocalizedString("core.addCapability.addCapabilityNotice")
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
     const msg = util.format(template, addNames);
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
@@ -423,7 +448,7 @@ export async function addCapability(
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
-  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
+  const msg: string = getLocalizedString("core.updateArmTemplate.successNotice");
   ui?.showMessage("info", msg, false);
 }
 
@@ -468,7 +493,7 @@ export async function addResource(
   // 1. checking addable
   const solutionSettings = getAzureSolutionSettings(ctx);
   if (!solutionSettings) {
-    return err(new OperationNotSupportedForExistingAppError("addResource"));
+    return err(new OperationNotPermittedError("addResource"));
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
@@ -527,8 +552,16 @@ export async function addResource(
   if (addFunc) {
     // AAD plugin needs to be activated when adding function.
     // Since APIM also have dependency on Function, will only add depenedency here.
-    if (!solutionSettings.activeResourcePlugins?.includes(PluginNames.AAD)) {
-      solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+    if (!isAADEnabled(solutionSettings)) {
+      if (isAadManifestEnabled()) {
+        const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+        pluginsToScaffold.push(aadPlugin);
+        pluginsToDoArm.push(aadPlugin);
+
+        solutionSettings.capabilities.push(SsoItem.id);
+      } else {
+        solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+      }
     }
     const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);
@@ -609,11 +642,11 @@ export async function addResource(
     const template =
       inputs.platform === Platform.CLI
         ? single
-          ? getStrings().solution.addResource.AddResourceNoticeForCli
-          : getStrings().solution.addResource.AddResourcesNoticeForCli
+          ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+          : getLocalizedString("core.addResource.addResourcesNoticeForCli")
         : single
-        ? getStrings().solution.addResource.AddResourceNotice
-        : getStrings().solution.addResource.AddResourcesNotice;
+        ? getLocalizedString("core.addResource.addResourceNotice")
+        : getLocalizedString("core.addResource.addResourcesNotice");
     ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
   }
 

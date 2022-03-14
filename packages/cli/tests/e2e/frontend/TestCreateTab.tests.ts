@@ -6,6 +6,7 @@
  */
 
 import { it } from "../../commonlib/it";
+import { describe } from "mocha";
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator } from "../../commonlib";

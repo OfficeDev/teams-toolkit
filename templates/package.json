@@ -13,6 +13,7 @@
         "bot/csharp/default",
         "bot/js/default",
         "bot/ts/default",
+        "bot/ts/notification",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",
@@ -22,8 +23,6 @@
         "tab/ts/default"
     ],
     "devDependencies": {
-        "@shared/eslint-config": "file:../packages/eslint-config",
-        "@shared/prettier-config": "file:../packages/prettier-config",
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",
         "eslint": "^7.22.0",

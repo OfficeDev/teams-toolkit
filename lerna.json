@@ -11,6 +11,7 @@
         "packages/failpoint-ts",
         "packages/adaptivecards-tools-sdk",
         "packages/manifest",
+        "packages/eslint-config",
         "templates"
     ],
     "command": {

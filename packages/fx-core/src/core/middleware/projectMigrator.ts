@@ -20,7 +20,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { serializeDict, getStrings, isSPFxProject } from "../../common/tools";
+import { serializeDict, isSPFxProject } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
@@ -77,6 +77,7 @@ import { setActivatedResourcePluginsV2 } from "../../plugins/solution/fx-solutio
 import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -154,7 +155,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
     const res = await TOOLS?.ui.showMessage(
       "warn",
-      getStrings().solution.MigrationToArmAndMultiEnvMessage,
+      getLocalizedString("core.migrationToArmAndMultiEnv.Message"),
       true,
       upgradeButton
     );
@@ -348,7 +349,7 @@ async function preReadJsonFile(path: string): Promise<void> {
     TOOLS?.ui
       .showMessage(
         "info",
-        util.format(getStrings().solution.MigrationToArmAndMultiEnvPreCheckErrorMessage, path),
+        getLocalizedString("core.migrationToArmAndMultiEnv.PreCheckErrorMessage", path),
         false,
         learnMoreText
       )
@@ -376,7 +377,7 @@ async function handleError(
   TOOLS?.ui
     .showMessage(
       "info",
-      getStrings().solution.MigrationToArmAndMultiEnvErrorMessage,
+      getLocalizedString("core.migrationToArmAndMultiEnv.ErrorMessage"),
       false,
       learnMoreText
     )
@@ -426,7 +427,7 @@ async function postMigration(
     });
     await TOOLS?.ui.reload?.();
   } else {
-    TOOLS?.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
+    TOOLS?.logProvider.info(getLocalizedString("core.migrationToArmAndMultiEnv.SuccessMessage"));
   }
 }
 

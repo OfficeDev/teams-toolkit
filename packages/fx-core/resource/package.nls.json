@@ -90,7 +90,7 @@
   "error.ProjectEnvNotExistError": "Environment %s not found. Make sure the config.%s.json file exist.",
   "error.InvalidEnvNameError": "Environment name can only contain letters, digits, _ and -.",
   "error.UpgradeCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
-  "error.OperationNotSupportedForExistingAppError": "Operation is not supported for existing app: %s.",
+  "error.OperationNotPermittedError": "Operation is not permitted: %s",
   "error.TaskNotSupportError": "Operation is not supported: %s.",
   "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",

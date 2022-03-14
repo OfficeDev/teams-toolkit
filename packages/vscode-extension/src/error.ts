@@ -28,4 +28,5 @@ export enum ExtensionErrors {
   TeamsAppIdNotFoundError = "TeamsAppIdNotFoundError",
   GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
+  GetTeamsAppInstallationFailed = "GetTeamsAppInstallationFailed",
 }

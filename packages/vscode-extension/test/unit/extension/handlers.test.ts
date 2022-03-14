@@ -47,6 +47,7 @@ suite("handlers", () => {
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
       sandbox.stub(ExtTelemetry, "dispose");
+      sandbox.stub(ext, "context").returns({ extensionPath: "" });
     });
 
     this.afterAll(() => {

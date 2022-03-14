@@ -229,6 +229,15 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
+export function ConsolidateCanceledError(): UserError {
+  return new UserError(
+    // @see tools.isUserCancelError()
+    "UserCancel",
+    getLocalizedString("error.UpgradeCanceledError"),
+    CoreSource
+  );
+}
+
 export function NotJsonError(err: Error): UserError {
   return new UserError(err, CoreSource, "NotJsonError");
 }

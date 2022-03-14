@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Func, PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { FxResult } from "./result";
 
 export interface PluginImpl {
@@ -15,6 +15,4 @@ export interface PluginImpl {
   postProvision(ctx: PluginContext): Promise<FxResult>;
   preDeploy(ctx: PluginContext): Promise<FxResult>;
   deploy(ctx: PluginContext): Promise<FxResult>;
-  getQuestionsForScaffolding(ctx: PluginContext): Promise<FxResult>;
-  getQuestionsForUserTask(func: Func, ctx: PluginContext): Promise<FxResult>;
 }

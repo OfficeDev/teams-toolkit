@@ -75,7 +75,7 @@ export class CICDImpl {
         .filter((_value, index) => !scaffoldedArr[index])
         .join(
           ","
-        )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`;
+        )} for ${providerName} have been successfully added for your project. Follow the instructions in Readme file to setup the workflow(s).`;
     }
     if (scaffoldedArr.includes(true)) {
       message += `You have already created template(s) of ${templateNames

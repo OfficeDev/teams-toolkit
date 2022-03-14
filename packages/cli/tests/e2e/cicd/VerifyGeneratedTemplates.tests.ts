@@ -12,8 +12,8 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core/src";
 import Mustache from "mustache";
-import { CICDProviderFactory } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/providers/factory";
-import { ProviderKind } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/providers/enums";
+import { CICDProviderFactory } from "../../../../fx-core/src/plugins/resource/cicd/providers/factory";
+import { ProviderKind } from "../../../../fx-core/src/plugins/resource/cicd/providers/enums";
 import * as fs from "fs-extra";
 
 describe("Verify generated templates & readme", function () {

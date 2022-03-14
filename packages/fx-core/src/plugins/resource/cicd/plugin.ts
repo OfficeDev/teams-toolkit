@@ -69,35 +69,22 @@ export class CICDImpl {
     await progressBar.end(true);
 
     // 4. Send notification messages.
-    const scaffoldedTemplates: string[] = [];
-    const notScaffoldedTemplates: string[] = [];
-    scaffoldedArr.map((value, index) => {
-      if (value) {
-        scaffoldedTemplates.push(templateNames[index]);
-      } else {
-        notScaffoldedTemplates.push(templateNames[index]);
-      }
-    });
-
-    if (notScaffoldedTemplates.length > 0) {
-      const message = `Workflow automation file(s) of ${notScaffoldedTemplates.join(
-        ","
-      )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`;
-
-      context.userInteraction.showMessage("info", message, false);
-
-      Logger.info(message);
+    let message = "";
+    if (scaffoldedArr.find((value) => !value)) {
+      message += `Workflow automation file(s) of ${templateNames
+        .filter((_value, index) => !scaffoldedArr[index])
+        .join(
+          ","
+        )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`;
+    }
+    if (scaffoldedArr.find((value) => value)) {
+      message += `You have already created template(s) of ${templateNames
+        .filter((_value, index) => scaffoldedArr[index])
+        .join(",")} for ${providerName}, please customize it or remove it to create a new one.`;
     }
 
-    if (scaffoldedTemplates.length > 0) {
-      const message = `You have already created template(s) of ${scaffoldedTemplates.join(
-        ","
-      )} for ${providerName}, please customize it or remove it to create a new one.`;
-
-      context.userInteraction.showMessage("info", message, false);
-
-      Logger.info(message);
-    }
+    context.userInteraction.showMessage("info", message, false);
+    Logger.info(message);
 
     return ResultFactory.Success();
   }

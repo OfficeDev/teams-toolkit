@@ -66,6 +66,9 @@
     "react": "^16.8.6"
   },
   "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

@@ -3,6 +3,10 @@
 import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import path from "path";
+import {
+  BotNotificationTriggers,
+  BotNotificationTrigger,
+} from "../../solution/fx-solution/question";
 
 export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z0-9]/g;
@@ -46,7 +50,18 @@ export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
   NOTIFICATION_SCENARIO_NAME = "notification",
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
+  NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
+  NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
 }
+
+export const TriggerTemplateScenarioMappings = {
+  [BotNotificationTriggers.Http]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+  [BotNotificationTriggers.Timer]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+} as const;
+
+export const SourceCodeDir = "src";
 
 export class ProgressBarConstants {
   public static readonly SCAFFOLD_TITLE: string = "Scaffolding bot";
@@ -55,6 +70,16 @@ export class ProgressBarConstants {
   public static readonly SCAFFOLD_STEP_UNZIP = "Extracting templates target folder.";
 
   public static readonly SCAFFOLD_STEPS_NUM: number = 2;
+
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE = "Scaffolding notification bot";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_START =
+    "Scaffolding notification bot.";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_PROJECT_TEMPLATE =
+    "Retrieving project templates.";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_TRIGGER_TEMPLATE =
+    "Retrieving trigger templates.";
+
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEPS_NUM: number = 3;
 
   public static readonly PROVISION_TITLE: string = "Provisioning bot";
   public static readonly PROVISION_STEP_START = "Provisioning bot.";

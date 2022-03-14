@@ -10,6 +10,7 @@ import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enu
 import {
   TemplateProjectsConstants,
   TemplateProjectsScenarios,
+  TriggerTemplateScenarioMappings,
 } from "../../../../../src/plugins/resource/bot/constants";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { Messages } from "./messages";
@@ -23,7 +24,12 @@ import {
   unzipAction,
 } from "../../../../../src/common/template-utils/templatesActions";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
-import { HostType, HostTypes } from "../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  HostType,
+  HostTypes,
+  NotificationTriggers,
+} from "../../../../../src/plugins/resource/bot/resources/strings";
+import { BotNotificationTriggers } from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {
@@ -55,7 +61,7 @@ describe("Language Strategy", () => {
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
         // Act
-        await LanguageStrategy.getTemplateProject(group_name, botConfig);
+        await LanguageStrategy.scaffoldProject(group_name, botConfig);
       } catch (e) {
         // Assert
         chai.assert.fail(Messages.ShouldNotReachHere);
@@ -68,7 +74,7 @@ describe("Language Strategy", () => {
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
         // Act
-        await LanguageStrategy.getTemplateProject(group_name, botConfig, [
+        await LanguageStrategy.scaffoldProject(group_name, botConfig, [
           fetchTemplateZipFromLocalAction,
           unzipAction,
         ]);
@@ -79,19 +85,20 @@ describe("Language Strategy", () => {
     });
   });
 
-  describe("Scaffold templates for different types of project", () => {
-    function createBotConfig(actRoles: PluginActRoles, hostType?: HostType) {
-      return {
-        scaffold: {
-          programmingLanguage: ProgrammingLanguage.TypeScript,
-          workingDir: __dirname,
-          hostType: hostType,
-        },
-        actRoles: [actRoles],
-      } as TeamsBotConfig;
-    }
+  function createBotConfig(dirName: string, actRoles: PluginActRoles, hostType?: HostType) {
+    return {
+      scaffold: {
+        programmingLanguage: ProgrammingLanguage.TypeScript,
+        workingDir: dirName,
+        hostType: hostType,
+      },
+      actRoles: [actRoles],
+    } as TeamsBotConfig;
+  }
 
+  describe("Scaffold templates for different types of project", () => {
     let scaffoldContext: ScaffoldContext;
+    const botDir = "some-dir";
     const mockScaffoldAction = {
       name: "mockScaffoldAction",
       run: async (context: ScaffoldContext): Promise<void> => {
@@ -118,11 +125,11 @@ describe("Language Strategy", () => {
 
     it("Fetch Legacy Bot", async () => {
       // Arrange
-      const botConfig = createBotConfig(PluginActRoles.Bot);
+      const botConfig = createBotConfig(botDir, PluginActRoles.Bot);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
-      await LanguageStrategy.getTemplateProject(group_name, botConfig, [mockScaffoldAction]);
+      await LanguageStrategy.scaffoldProject(group_name, botConfig, [mockScaffoldAction]);
 
       // Assert
       chai.assert.equal(scaffoldContext.group, group_name);
@@ -132,11 +139,11 @@ describe("Language Strategy", () => {
 
     it("Fetch Notification with App Service hosting", async () => {
       // Arrange
-      const botConfig = createBotConfig(PluginActRoles.Notification, HostTypes.APP_SERVICE);
+      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostTypes.APP_SERVICE);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
-      await LanguageStrategy.getTemplateProject(group_name, botConfig, [mockScaffoldAction]);
+      await LanguageStrategy.scaffoldProject(group_name, botConfig, [mockScaffoldAction]);
 
       // Assert
       chai.assert.equal(scaffoldContext.group, group_name);
@@ -146,16 +153,77 @@ describe("Language Strategy", () => {
 
     it("Fetch Notification with Functions hosting", async () => {
       // Arrange
-      const botConfig = createBotConfig(PluginActRoles.Notification, HostTypes.AZURE_FUNCTIONS);
+      const botConfig = createBotConfig(
+        botDir,
+        PluginActRoles.Notification,
+        HostTypes.AZURE_FUNCTIONS
+      );
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
-      await LanguageStrategy.getTemplateProject(group_name, botConfig, [mockScaffoldAction]);
+      await LanguageStrategy.scaffoldProject(group_name, botConfig, [mockScaffoldAction]);
 
       // Assert
       chai.assert.equal(scaffoldContext.group, group_name);
       chai.assert.equal(scaffoldContext.lang, "ts");
       chai.assert.equal(scaffoldContext.scenario, "notification-function-base");
+    });
+  });
+
+  describe("Scaffold templates for different triggers of Functions", () => {
+    let scaffoldContexts: ScaffoldContext[];
+    const mockScaffoldAction = {
+      name: "mockScaffoldAction",
+      run: async (context: ScaffoldContext): Promise<void> => {
+        scaffoldContexts.push(context);
+      },
+    };
+    before(() => {
+      scaffoldContexts = [];
+      const commonPath = path.join(getTemplatesFolder(), "plugins", "resource", "bot");
+      const botJsPath = path.join(
+        commonPath,
+        `${TemplateProjectsConstants.GROUP_NAME_BOT}.${utils.convertToLangKey(
+          ProgrammingLanguage.JavaScript
+        )}.${TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME}.zip`
+      );
+
+      const config: { [key: string]: any } = {};
+      config[botJsPath] = new AdmZip().toBuffer();
+      mock(config);
+    });
+
+    after(() => {
+      mock.restore();
+    });
+
+    it("Fetch notification triggers", async () => {
+      const botDir = "some-dir";
+      // Arrange
+      const botConfig = createBotConfig(
+        botDir,
+        PluginActRoles.Notification,
+        HostTypes.AZURE_FUNCTIONS
+      );
+      const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+      botConfig.scaffold.triggers = [NotificationTriggers.HTTP];
+
+      // Act
+      await LanguageStrategy.scaffoldTriggers(group_name, botConfig, [mockScaffoldAction]);
+
+      // Assert
+      chai.assert.equal(scaffoldContexts.length, 1);
+      chai.assert.equal(scaffoldContexts[0].group, group_name);
+      chai.assert.equal(scaffoldContexts[0].lang, "ts");
+      chai.assert.equal(
+        scaffoldContexts[0].scenario,
+        TriggerTemplateScenarioMappings[BotNotificationTriggers.Http]
+      );
+      chai.assert.isTrue(scaffoldContexts[0].dst !== undefined);
+      chai.assert.equal(
+        path.normalize(scaffoldContexts[0].dst as string),
+        path.normalize(path.join(botDir))
+      );
     });
   });
 

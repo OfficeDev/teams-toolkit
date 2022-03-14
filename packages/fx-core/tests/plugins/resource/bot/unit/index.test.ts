@@ -801,15 +801,6 @@ describe("Teams Bot Resource Plugin", () => {
     it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.projectSettings!.appName = "anything";
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
-      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
-      const botAuthCreds = new BotAuthCredential();
-      botAuthCreds.clientId = "anything";
-      botAuthCreds.clientSecret = "anything";
-      botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
-      sinon.stub(AppStudio, "createBotRegistration").resolves();
 
       // Act
       const result = await botPlugin.getQuestions(Stage.create, pluginContext);
@@ -822,15 +813,6 @@ describe("Teams Bot Resource Plugin", () => {
     it("Lifecycles other than create", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.projectSettings!.appName = "anything";
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
-      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
-      const botAuthCreds = new BotAuthCredential();
-      botAuthCreds.clientId = "anything";
-      botAuthCreds.clientSecret = "anything";
-      botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
-      sinon.stub(AppStudio, "createBotRegistration").resolves();
 
       // Act
       const result = await botPlugin.getQuestions(Stage.provision, pluginContext);
@@ -858,15 +840,6 @@ describe("Teams Bot Resource Plugin", () => {
     it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.projectSettings!.appName = "anything";
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
-      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
-      const botAuthCreds = new BotAuthCredential();
-      botAuthCreds.clientId = "anything";
-      botAuthCreds.clientSecret = "anything";
-      botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
-      sinon.stub(AppStudio, "createBotRegistration").resolves();
 
       // Act
       const func: Func = {
@@ -883,15 +856,6 @@ describe("Teams Bot Resource Plugin", () => {
     it("Lifecycles other than addCapability", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      pluginContext.projectSettings!.appName = "anything";
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
-      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
-      const botAuthCreds = new BotAuthCredential();
-      botAuthCreds.clientId = "anything";
-      botAuthCreds.clientSecret = "anything";
-      botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
-      sinon.stub(AppStudio, "createBotRegistration").resolves();
 
       // Act
       const func: Func = {

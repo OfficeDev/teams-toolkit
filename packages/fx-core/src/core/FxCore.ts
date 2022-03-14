@@ -123,6 +123,7 @@ import {
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
+import { getTemplatesFolder } from "../folder";
 import { getLocalizedString } from "../common/localizeUtils";
 
 export class FxCore implements v3.ICore {
@@ -1437,6 +1438,11 @@ export class FxCore implements v3.ICore {
     );
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
+    }
+    const sourceReadmePath = path.join(getTemplatesFolder(), "core", "README.md");
+    if (await fs.pathExists(sourceReadmePath)) {
+      const targetReadmePath = path.join(projectPath, "README.md");
+      await fs.copy(sourceReadmePath, targetReadmePath);
     }
     return ok(inputs.projectPath!);
   }

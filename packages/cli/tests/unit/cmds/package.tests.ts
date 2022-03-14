@@ -67,6 +67,9 @@ describe("Package Command Tests", function () {
         expect(func).deep.equals({
           namespace: "fx-solution-azure",
           method: "buildPackage",
+          params: {
+            type: "remote",
+          },
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
@@ -95,6 +98,7 @@ describe("Package Command Tests", function () {
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
+      env: "dev",
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.BuildStart, TelemetryEvent.Build]);
@@ -105,6 +109,7 @@ describe("Package Command Tests", function () {
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
+      env: "dev",
     };
     try {
       await cmd.handler(args);

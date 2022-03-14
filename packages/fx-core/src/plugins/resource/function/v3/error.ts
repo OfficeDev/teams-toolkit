@@ -9,7 +9,7 @@ export class ValidationError extends UserError {
   constructor(key: string) {
     super(
       new.target.name,
-      `Invalid ${key}. Suggestions: ${[tips.recoverTeamsfxConfigFiles, tips.recreateProject].join(
+      `Invalid ${key}. Suggestions: ${[tips.recoverTeamsFxConfigFiles, tips.recreateProject].join(
         " "
       )}`,
       FunctionPluginInfo.alias
@@ -22,7 +22,7 @@ export class FetchConfigError extends UserError {
     super(
       new.target.name,
       `Failed to find ${key} from configuration. Suggestions: ${[
-        tips.recoverTeamsfxConfigFiles,
+        tips.recoverTeamsFxConfigFiles,
         tips.recreateProject,
       ].join(" ")}`,
       FunctionPluginInfo.alias
@@ -87,7 +87,7 @@ export class ConfigFunctionAppError extends UserError {
   }
 }
 
-export class InstallTeamsfxBindingError extends UserError {
+export class InstallTeamsFxBindingError extends UserError {
   constructor() {
     super(
       new.target.name,

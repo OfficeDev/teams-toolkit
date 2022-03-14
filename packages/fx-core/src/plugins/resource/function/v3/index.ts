@@ -81,7 +81,7 @@ import {
   FunctionNameConflictError,
   InitAzureSDKError,
   InstallNpmPackageError,
-  InstallTeamsfxBindingError,
+  InstallTeamsFxBindingError,
   ValidationError,
 } from "./error";
 
@@ -511,7 +511,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     functionLanguage: FunctionLanguage
   ): Promise<void> {
     await runWithErrorCatchAndThrow(
-      new InstallTeamsfxBindingError(),
+      new InstallTeamsFxBindingError(),
       async () =>
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
           try {

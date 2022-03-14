@@ -5,6 +5,7 @@ import { ConfigFolderName, FxError, SystemError, UserError } from "@microsoft/te
 
 import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export enum ErrorType {
   User,
@@ -12,27 +13,32 @@ export enum ErrorType {
 }
 
 export const tips = {
-  recoverTeamsfxConfigFiles: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
-  recreateProject: "If you can not recover configuration files, create a new project.",
-  checkNetwork: "Check your network connection.",
-  retryRequest: "Retry the command after network connection is restored.",
-  chooseAnotherCompose: "Create a project with another template.",
-  checkDiskLock: "Check log to see whether there is a file locked by some process.",
-  checkPathAccess: "Check log to see whether target path exists and you have write access to it.",
-  checkSubscriptionId: "Check whether you choose the correct Azure subscription.",
-  checkCredit: "Check Azure subscription credit.",
-  checkLog: "Read log for more information.",
-  recreateStorageAccount: "Remove your Azure Storage account instance and re-run provision.",
-  checkPackageJson: "Check that package.json is valid.",
-  checkCredential: "Check that you have logged in to Azure with the correct account.",
-  doFullDeploy: `Remove ${PathInfo.solutionFolderName}/${PathInfo.funcDeploymentFolderName}.`,
-  doProvision: "Run 'Provision'.",
-  retryRequestForZip:
-    "If the template zip file was broken, retry the command to download a new one.",
-  checkFunctionExtVersion: `Check function extension version and ${PathInfo.solutionFolderName}${path.sep}${PathInfo.functionExtensionsFileName}.`,
-  registerRequiredRP: `Register ${AzureInfo.requiredResourceProviders.join(
-    ","
-  )} resource provider for your subscription manually.`,
+  recoverTeamsFxConfigFiles: getLocalizedString(
+    "plugins.function.recoverTeamsFxConfigFilesTip",
+    ConfigFolderName
+  ),
+  recreateProject: getLocalizedString("plugins.function.recreateProject"),
+  checkNetwork: getLocalizedString("plugins.function.checkNetwork"),
+  retryRequest: getLocalizedString("plugins.function.retryRequest"),
+  chooseAnotherCompose: getLocalizedString("Create a project with another template."),
+  checkDiskLock: getLocalizedString("plugins.function.checkDiskLock"),
+  checkPathAccess: getLocalizedString("plugins.function.checkPathAccess"),
+  checkSubscriptionId: getLocalizedString("plugins.function.checkSubscriptionId"),
+  checkCredit: getLocalizedString("plugins.function.checkCredit"),
+  checkLog: getLocalizedString("plugins.function.checkLog"),
+  recreateStorageAccount: getLocalizedString("plugins.function.recreateStorageAccount"),
+  checkPackageJson: getLocalizedString("plugins.function.checkPackageJson"),
+  checkCredential: getLocalizedString("plugins.function.checkCredential"),
+  doFullDeploy: getLocalizedString(
+    "plugins.function.doFullDeploy",
+    path.join(PathInfo.solutionFolderName, PathInfo.funcDeploymentFolderName)
+  ),
+  doProvision: getLocalizedString("plugins.function.doProvision"),
+  retryRequestForZip: getLocalizedString("plugins.function.retryRequestForZip"),
+  checkFunctionExtVersion: getLocalizedString(
+    "plugins.function.checkFunctionExtVersion",
+    path.join(PathInfo.solutionFolderName, PathInfo.functionExtensionsFileName)
+  ),
 };
 
 export class FunctionPluginError extends Error {
@@ -60,27 +66,31 @@ export class FunctionNameConflictError extends FunctionPluginError {
     super(
       ErrorType.User,
       "FunctionNameConflictError",
-      "Function already exists, please choose another name.",
-      []
+      getLocalizedString("error.function.FunctionNameConflictError"),
+      [tips.checkLog]
     );
   }
 }
 
 export class FetchConfigError extends FunctionPluginError {
   constructor(key: string) {
-    super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration.`, [
-      tips.recoverTeamsfxConfigFiles,
-      tips.recreateProject,
-    ]);
+    super(
+      ErrorType.User,
+      "FetchConfigError",
+      getLocalizedString("error.function.FetchConfigError", key),
+      [tips.recoverTeamsFxConfigFiles, tips.recreateProject]
+    );
   }
 }
 
 export class ValidationError extends FunctionPluginError {
   constructor(key: string) {
-    super(ErrorType.User, "ValidationError", `Invalid ${key}.`, [
-      tips.recoverTeamsfxConfigFiles,
-      tips.recreateProject,
-    ]);
+    super(
+      ErrorType.User,
+      "ValidationError",
+      getLocalizedString("error.function.ValidationError", key),
+      [tips.recoverTeamsFxConfigFiles, tips.recreateProject]
+    );
   }
 }
 
@@ -100,7 +110,7 @@ export class TemplateZipNetworkError extends FunctionPluginError {
     super(
       ErrorType.User,
       "TemplateZipNetworkError",
-      `Failed to download zip package from ${url}.`,
+      getLocalizedString("error.function.TemplateZipNetworkError", url),
       [tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -111,7 +121,7 @@ export class TemplateZipFallbackError extends FunctionPluginError {
     super(
       ErrorType.User,
       "TemplateZipFallbackError",
-      "Failed to download zip package and open local zip package.",
+      getLocalizedString("error.function.TemplateZipFallbackError"),
       [tips.checkLog, tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -119,47 +129,11 @@ export class TemplateZipFallbackError extends FunctionPluginError {
 
 export class UnzipError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "UnzipError", "Failed to unzip templates and write to disk.", [
+    super(ErrorType.User, "UnzipError", getLocalizedString("error.function.UnzipError"), [
       tips.checkDiskLock,
       tips.checkPathAccess,
       tips.retryRequestForZip,
     ]);
-  }
-}
-
-// TODO: help link for the error
-export class RegisterResourceProviderError extends FunctionPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "RegisterResourceProviderError",
-      "Failed to register required resource provider for function app.",
-      [tips.registerRequiredRP, tips.checkLog]
-    );
-  }
-}
-
-export class ProvisionError extends FunctionPluginError {
-  constructor(resource: string, innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "ProvisionError",
-      `Failed to check/create '${resource}' for function app${
-        innerErrorCode ? `: ${innerErrorCode}` : ""
-      }.`,
-      [tips.checkSubscriptionId, tips.checkCredit, tips.checkNetwork, tips.retryRequest]
-    );
-  }
-}
-
-export class GetConnectionStringError extends FunctionPluginError {
-  constructor() {
-    super(
-      ErrorType.System,
-      "GetConnectionStringError",
-      "Failed to get connection string of Azure Storage account.",
-      [tips.recreateStorageAccount, tips.checkNetwork, tips.retryRequest]
-    );
   }
 }
 
@@ -168,7 +142,7 @@ export class ConfigFunctionAppError extends FunctionPluginError {
     super(
       ErrorType.User,
       "ConfigFunctionAppError",
-      "Failed to retrieve or update function app settings.",
+      getLocalizedString("error.function.ConfigFunctionAppError"),
       [tips.checkSubscriptionId, tips.checkNetwork, tips.retryRequest]
     );
   }
@@ -179,18 +153,18 @@ export class FunctionAppOpError extends FunctionPluginError {
     super(
       ErrorType.User,
       "RestartFunctionAppError",
-      `Failed to execute '${op}' on the function app.`,
+      getLocalizedString("error.function.FunctionAppOpError", op),
       [tips.checkNetwork, tips.retryRequest]
     );
   }
 }
 
-export class InstallTeamsfxBindingError extends FunctionPluginError {
+export class InstallTeamsFxBindingError extends FunctionPluginError {
   constructor() {
     super(
       ErrorType.User,
-      "InstallTeamsfxBindingError",
-      "Failed to install Azure Functions bindings.",
+      "InstallTeamsFxBindingError",
+      getLocalizedString("error.function.InstallTeamsFxBindingError"),
       [tips.checkFunctionExtVersion]
     );
   }
@@ -198,24 +172,29 @@ export class InstallTeamsfxBindingError extends FunctionPluginError {
 
 export class InstallNpmPackageError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "InstallNpmPackageError", "Failed to install NPM packages.", [
-      tips.checkPackageJson,
-    ]);
+    super(
+      ErrorType.User,
+      "InstallNpmPackageError",
+      getLocalizedString("error.function.InstallNpmPackageError"),
+      [tips.checkPackageJson]
+    );
   }
 }
 
 export class InitAzureSDKError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "InitAzureSDKError", "Failed to initialize Azure SDK Client.", [
-      tips.checkCredential,
-      tips.checkSubscriptionId,
-    ]);
+    super(
+      ErrorType.User,
+      "InitAzureSDKError",
+      getLocalizedString("error.function.InitAzureSDKError"),
+      [tips.checkCredential, tips.checkSubscriptionId]
+    );
   }
 }
 
 export class ZipError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "ZipError", "Failed to generate zip package.", [
+    super(ErrorType.User, "ZipError", getLocalizedString("error.functionZipError"), [
       tips.checkDiskLock,
       tips.checkPathAccess,
       tips.doFullDeploy,
@@ -225,25 +204,32 @@ export class ZipError extends FunctionPluginError {
 
 export class PublishCredentialError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "PublishCredentialError", "Failed to retrieve publish credential.", [
-      tips.checkCredential,
-      tips.checkSubscriptionId,
-      tips.checkNetwork,
-      tips.retryRequest,
-      tips.doProvision,
-    ]);
+    super(
+      ErrorType.User,
+      "PublishCredentialError",
+      getLocalizedString("error.function.PublishCredentialError"),
+      [
+        tips.checkCredential,
+        tips.checkSubscriptionId,
+        tips.checkNetwork,
+        tips.retryRequest,
+        tips.doProvision,
+      ]
+    );
   }
 }
 
 export class FindAppError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.System, "FindAppError", "Failed to find the function app.", [tips.doProvision]);
+    super(ErrorType.System, "FindAppError", getLocalizedString("error.function.FindAppError"), [
+      tips.doProvision,
+    ]);
   }
 }
 
 export class UploadZipError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [
+    super(ErrorType.User, "UploadZipError", getLocalizedString("error.function.UploadZipError"), [
       tips.checkNetwork,
       tips.retryRequest,
     ]);
@@ -255,8 +241,8 @@ export class UnknownFallbackError extends FunctionPluginError {
     super(
       ErrorType.System,
       "UnknownFallbackError",
-      "Trigger fallback caused by unknown reason.",
-      []
+      getLocalizedString("error.function.UnknownFallbackError"),
+      [tips.checkLog]
     );
   }
 }

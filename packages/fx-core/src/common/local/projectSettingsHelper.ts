@@ -12,6 +12,8 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { isAADEnabled, IsSimpleAuthEnabled } from "../tools";
+import { ResourcePlugins } from "../constants";
+import { BotHostTypeName, BotHostTypes } from "./constants";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
@@ -32,6 +34,12 @@ export class ProjectSettingsHelper {
       solutionSettings?.hostType === HostTypeOptionAzure.id &&
       azureResources.includes(AzureResourceFunction.id)
     );
+  }
+
+  public static includeFuncHostedBot(projectSettings: ProjectSettings | undefined): boolean {
+    const botHostType = projectSettings?.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    const cap = (projectSettings?.solutionSettings as AzureSolutionSettings)?.capabilities || [];
+    return cap.includes(BotOptionItem.id) && botHostType === BotHostTypes.AzureFunctions;
   }
 
   public static includeBot(projectSettings: ProjectSettings | undefined): boolean {

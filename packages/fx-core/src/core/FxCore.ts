@@ -26,6 +26,7 @@ import {
   StatesFolderName,
   Tools,
   UserCancelError,
+  UserError,
   v2,
   v3,
   Void,
@@ -41,6 +42,7 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
   isPureExistingApp,
+  isValidProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -73,7 +75,7 @@ import {
   LoadSolutionError,
   NonExistEnvNameError,
   ObjectIsUndefinedError,
-  OperationNotSupportedForExistingAppError,
+  OperationNotPermittedError,
   ProjectFolderExistError,
   ProjectFolderInvalidError,
   TaskNotSupportError,
@@ -116,7 +118,6 @@ import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
-  QuestionAppName,
   QuestionRootFolder,
   ScratchOptionNo,
 } from "./question";
@@ -183,7 +184,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -350,7 +351,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -374,6 +375,7 @@ export class FxCore implements v3.ICore {
       // init
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
+        folder: projectPath,
         projectPath: projectPath,
       };
       const initRes = await this._init(initInputs, ctx);
@@ -557,7 +559,7 @@ export class FxCore implements v3.ICore {
     }
     if (isPureExistingApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
-      return err(new OperationNotSupportedForExistingAppError("deploy"));
+      return err(new OperationNotPermittedError("deploy"));
     }
     if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       const name = undefinedName(
@@ -870,17 +872,22 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    if (stage === Stage.create) {
-      delete inputs.projectPath;
-      return await this._getQuestionsForCreateProjectV2(inputs);
-    } else {
-      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
-      const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
-      const envInfoV2 = ctx.envInfoV2
-        ? ctx.envInfoV2
-        : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
-      inputs.stage = stage;
-      return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
+
+    switch (stage) {
+      case Stage.create:
+        delete inputs.projectPath;
+        return await this._getQuestionsForCreateProjectV2(inputs);
+      case Stage.init:
+        delete inputs.projectPath;
+        return await this._getQuestionsForInit(inputs);
+      default:
+        const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
+        const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+        const envInfoV2 = ctx.envInfoV2
+          ? ctx.envInfoV2
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
+        inputs.stage = stage;
+        return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
     }
   }
 
@@ -1338,15 +1345,25 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
     // validate app name
-    const appName = inputs[QuestionAppName.name] as string;
+    const appName = inputs[CoreQuestionNames.AppName] as string;
     const validateResult = jsonschema.validate(appName, {
       pattern: ProjectNamePattern,
     });
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
-    const folder = inputs[QuestionRootFolder.name] as string;
-    inputs.projectPath = path.join(folder, appName);
+    const projectPath = inputs.folder;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is empty", inputs));
+    }
+    const isValid = await isValidProject(projectPath);
+    if (isValid) {
+      return err(
+        new OperationNotPermittedError("initialize a project in existing teamsfx project")
+      );
+    }
+    await fs.ensureDir(projectPath);
+    inputs.projectPath = projectPath;
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();
@@ -1354,8 +1371,8 @@ export class FxCore implements v3.ICore {
     ctx.projectSettings = projectSettings;
 
     // create folder structure
-    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
+    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
     const basicFolderRes = await ensureBasicFolderStructure(inputs);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
@@ -1374,7 +1391,7 @@ export class FxCore implements v3.ICore {
     if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
       const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
       const writeEnvResult = await environmentManager.writeEnvConfig(
-        inputs.projectPath,
+        projectPath,
         newEnvConfig,
         environmentManager.getDefaultEnvName()
       );
@@ -1420,7 +1437,7 @@ export class FxCore implements v3.ICore {
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    return ok(inputs.projectPath);
+    return ok(inputs.projectPath!);
   }
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
@@ -1479,7 +1496,7 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
   }
   try {
     {
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (inputs.platform !== Platform.VS) {
         const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
         const exists = await fs.pathExists(packageJsonFilePath);

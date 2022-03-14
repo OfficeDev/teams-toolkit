@@ -126,6 +126,6 @@ export function newProjectSettings(): ProjectSettings {
   };
   return projectSettings;
 }
-export function isVSProject(projectSettings: ProjectSettings): boolean {
-  return projectSettings.programmingLanguage === "csharp";
+export function isVSProject(projectSettings?: ProjectSettings): boolean {
+  return projectSettings?.programmingLanguage === "csharp";
 }

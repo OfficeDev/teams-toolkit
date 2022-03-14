@@ -122,11 +122,11 @@ jobs:
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
-      
+
       - name: generate templates
         run: |
           curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
-          .github/scripts/template-zip-autogen.sh
+          .github/scripts/template-zip-autogen.sh ${{ runner.temp }}/teamsfx_templates
 
       - name: update tag
         uses: richardsimko/update-tag@v1
@@ -143,9 +143,9 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates-0.0.0-alpha"
-          artifacts: ./*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
-      
+
       - name: update tag
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
@@ -161,14 +161,14 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ./*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
 
       - name: Create Templates Stable Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
-          artifacts: ./*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
@@ -176,25 +176,22 @@ jobs:
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates > ./template-tags.txt
+        run: git tag | grep templates > ${{ runner.temp }}/template-tags.txt
 
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
-          artifacts: ./template-tags.txt
+          artifacts: ${{ runner.temp }}/template-tags.txt
           name: 'Template Tag List'
           body: 'Release to maintain template tag list.'
           token: ${{ secrets.github_token }}
           tag: 'template-tag-list'
-          allowUpdates: true  
-    
-      - name: cleanup templates
-        run: rm -rf ./*.zip && git clean -df
+          allowUpdates: true
 
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2
-        with: 
+        with:
           timeout_minutes: 10
           max_attempts: 10
           retry_on: error
@@ -221,7 +218,7 @@ jobs:
           file: ./packages/vscode-extension/package.json
           field: aiKey
           value: ${{ secrets.EXT_PUBLIC_AIKEY }}
-      
+
       - name: commit change on local
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
         run: |
@@ -258,7 +255,7 @@ jobs:
           tag: '@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
-      
+
       - name: release RC server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
         uses: ncipollo/release-action@v1.7.3
@@ -267,7 +264,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
-      
+
       - name: release stable server bits to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3
@@ -306,7 +303,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
           prerelease: true
-      
+
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.7.3

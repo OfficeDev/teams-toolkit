@@ -19,7 +19,6 @@ import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { Messages, Plugins, Telemetry } from "./constants";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
@@ -27,17 +26,13 @@ import { AadOwner, ResourcePermission } from "../../../common/permissionInterfac
 import "./v2";
 import "./v3";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { isAADEnabled } from "../../../common";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
-      // For scaffold, activeResourecPlugins is undefined
-      (!solutionSettings.activeResourcePlugins ||
-        solutionSettings.activeResourcePlugins?.includes(Plugins.pluginNameComplex))
-    );
+    return isAADEnabled(solutionSettings);
   }
 
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();

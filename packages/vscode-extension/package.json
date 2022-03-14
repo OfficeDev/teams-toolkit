@@ -508,6 +508,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.install-app-in-teams",
+        "title": "Teams - Install App in Teams",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.validate-getStarted-prerequisites",
         "title": "Teams - Validate Get Started Prerequisites",
         "enablement": "never"
@@ -965,8 +970,6 @@
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@shared/eslint-config": "file:../eslint-config",
-    "@shared/prettier-config": "file:../prettier-config",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

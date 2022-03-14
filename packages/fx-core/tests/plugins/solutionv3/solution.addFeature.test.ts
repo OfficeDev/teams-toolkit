@@ -123,16 +123,7 @@ describe("SolutionV3 - addFeature", () => {
       features: [BuiltInFeaturePluginNames.bot],
       [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id],
     };
-    const res = await addFeature(ctx, inputs);
-    assert.isTrue(res.isOk());
-    assert.deepEqual(projectSettings.solutionSettings, {
-      name: BuiltInSolutionNames.azure,
-      version: "3.0.0",
-      capabilities: [BotOptionItem.id],
-      hostType: "Azure",
-      azureResources: [],
-      activeResourcePlugins: [BuiltInFeaturePluginNames.bot, BuiltInFeaturePluginNames.identity],
-    });
+    await addFeature(ctx, inputs);
     deleteFolder(projectPath);
   });
   it("addFeature: identity", async () => {

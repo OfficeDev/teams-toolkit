@@ -103,7 +103,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -383,7 +383,7 @@ describe("APIs of Environment Manager", () => {
 
     afterEach(async () => {
       fileMap.clear();
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -433,7 +433,7 @@ describe("APIs of Environment Manager", () => {
 
     afterEach(async () => {
       fileMap.clear();
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -513,7 +513,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     it("list all the env configs with correct naming convention", async () => {

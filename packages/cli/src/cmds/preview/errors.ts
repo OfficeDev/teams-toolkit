@@ -118,11 +118,21 @@ export function NoUrlForSPFxRemotePreview(): UserError {
 export function InvalidSharePointSiteURL(error: Error): UserError {
   return returnUserError(new Error(error.message), constants.cliSource, "InvalidSharePointSiteURL");
 }
+
 export function DependencyCheckerFailed(): SystemError {
   return returnSystemError(
     new Error("dependency checker failed."),
     constants.cliSource,
     "DependencyCheckerFailed"
+  );
+}
+
+export function PrerequisitesValidationError(error: string | Error, helpLink?: string): UserError {
+  return returnUserError(
+    error instanceof Error ? error : new Error(error),
+    constants.cliSource,
+    "PrerequisitesValidationError",
+    helpLink
   );
 }
 

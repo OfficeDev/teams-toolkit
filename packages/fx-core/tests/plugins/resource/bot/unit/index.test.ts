@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { TeamsBot } from "../../../../../src";
+import { BotHostTypes, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -16,7 +16,10 @@ import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/pl
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
-import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  CommonStrings,
+  HostTypes,
+} from "../../../../../src/plugins/resource/bot/resources/strings";
 import { AzureOperations } from "../../../../../src/plugins/resource/bot/azureOps";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
@@ -38,8 +41,58 @@ import {
 } from "../../../solution/util";
 import { randomAppName } from "../../../../core/utils";
 import * as os from "os";
+import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
+import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
+import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 
 describe("Teams Bot Resource Plugin", () => {
+  describe("Test plugin implementation dispatching", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+    });
+
+    it("dispatches to vs", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.programmingLanguage = "csharp";
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof DotnetBotImpl);
+    });
+
+    it("dispatches to function hosted bot", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostTypes.AZURE_FUNCTIONS);
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof FunctionsHostedBotImpl);
+    });
+
+    it("dispatches to app service hosted bot", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof TeamsBotImpl);
+    });
+  });
+
   describe("Test preScaffold", () => {
     afterEach(() => {
       sinon.restore();
@@ -267,7 +320,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateOrUpdateAppServicePlan").resolves();
       sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 

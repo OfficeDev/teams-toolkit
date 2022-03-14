@@ -139,9 +139,6 @@ export class DotnetChecker implements DepsChecker {
       await this.handleInstall(installVersion, installDir);
     }, this._logger);
 
-    await this._logger.info(
-      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
-    );
     await this._logger.debug(`[end] install dotnet ${installVersion}`);
 
     await this._logger.debug(`[start] validate dotnet version`);
@@ -206,6 +203,9 @@ export class DotnetChecker implements DepsChecker {
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       await this._logger.debug(`[end] write dotnet path to config`);
+      await this._logger.info(
+        Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+      );
     } catch (error) {
       await this._logger.error(
         `${Messages.failToInstallDotnet

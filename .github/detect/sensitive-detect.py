@@ -7,6 +7,8 @@ import re
 import json
 import fnmatch
 
+exclude_key_words = "http"
+
 def read_pattern(r):
     if r.startswith("regex:"):
         return re.compile(r[6:])
@@ -81,6 +83,22 @@ def filter_diffFiles(rootDir):
     excludeFiles = read_files(excludeFilePath)
     return excludeFiles
 
+def find_string_in_content(pattern, diffFile):
+    try:
+        for i, line in enumerate(open(diffFile)):
+            if exclude_key_words in line:
+                continue
+            new_line=line.replace('"',' ')
+            new_line=new_line.replace(',',' ')
+            x = new_line.split()
+            match = list(filter(pattern.match, x))
+            if match: 
+                print("Sensitive Content: ", line, " in file: ", diffFile)
+                raise  Exception("Sensitive content detected! please take action to this file: ", diffFile)
+    except (IOError, ValueError) as e:
+        print("============ read file fail: ", diffFile)
+        raise Exception("Error Reading rules file")
+
 def main():
     currentDir = os.path.dirname(os.path.realpath(__file__))
     regexesFilePath = os.path.join(currentDir, "regexes.json")
@@ -93,10 +111,7 @@ def main():
     else:
         targetDiffFiles = read_allRepoFile(rootDir)
     for diffFile in targetDiffFiles:
-        try:
-            content = read_content(diffFile, rootDir)
-            find_string(patterns, content, diffFile)
-        except IOError:
-            print("============== error file: ", diffFile)
+        for pattern in patterns:
+            find_string_in_content(patterns[pattern], diffFile)
     
 main()

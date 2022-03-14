@@ -48,7 +48,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import { HostTypeOptionAzure } from "../plugins/solution/fx-solution/question";
+import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 
@@ -386,12 +386,19 @@ export function isAadManifestEnabled(): boolean {
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
 export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
-  return (
-    solutionSettings.hostType === HostTypeOptionAzure.id &&
-    // For scaffold, activeResourecPlugins is undefined
-    (!solutionSettings.activeResourcePlugins ||
-      solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
-  );
+  if (isAadManifestEnabled()) {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      solutionSettings.capabilities.includes(SsoItem.id)
+    );
+  } else {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      // For scaffold, activeResourecPlugins is undefined
+      (!solutionSettings.activeResourcePlugins ||
+        solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
+    );
+  }
 }
 
 export function isBotNotificationEnabled(): boolean {

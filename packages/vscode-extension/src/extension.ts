@@ -186,6 +186,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
+  const installAppInTeamsCmd = vscode.commands.registerCommand(
+    "fx-extension.install-app-in-teams",
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
+  );
+  context.subscriptions.push(installAppInTeamsCmd);
+
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)

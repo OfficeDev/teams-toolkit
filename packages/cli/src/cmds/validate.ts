@@ -47,9 +47,7 @@ export class ManifestValidate extends YargsCommand {
       const func: Func = {
         namespace: "fx-solution-azure",
         method: "validateManifest",
-        params: {
-          type: "",
-        },
+        params: {},
       };
 
       if (!args.env) {

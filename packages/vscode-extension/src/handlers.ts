@@ -547,9 +547,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "validateManifest",
-    params: {
-      type: "",
-    },
+    params: {},
   };
 
   const selectedEnv = await askTargetEnvironment();

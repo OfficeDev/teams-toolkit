@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { BotHostTypes, TeamsBot } from "../../../../../src";
+import { BotHostTypes, PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -27,7 +27,15 @@ import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/app
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
 import { LocalSettingsBotKeys } from "../../../../../src/common/localSettingsConstants";
 import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
-import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  Func,
+  Platform,
+  ProjectSettings,
+  Stage,
+  TokenProvider,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -44,6 +52,7 @@ import * as os from "os";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
+import { TeamsFxAzureSolution } from "../../../../../src/plugins/solution/fx-solution/v3/solution";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {
@@ -772,6 +781,128 @@ describe("Teams Bot Resource Plugin", () => {
 
       // Assert
       chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("Test getQuestionsForScaffolding", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+    let botPluginImpl: TeamsBotImpl;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+      botPluginImpl = new TeamsBotImpl();
+      botPlugin.teamsBotImpl = botPluginImpl;
+    });
+
+    it("Happy Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
+      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
+      const botAuthCreds = new BotAuthCredential();
+      botAuthCreds.clientId = "anything";
+      botAuthCreds.clientSecret = "anything";
+      botAuthCreds.objectId = "anything";
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
+      sinon.stub(AppStudio, "createBotRegistration").resolves();
+
+      // Act
+      const result = await botPlugin.getQuestions(Stage.create, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+
+    it("Lifecycles other than create", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
+      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
+      const botAuthCreds = new BotAuthCredential();
+      botAuthCreds.clientId = "anything";
+      botAuthCreds.clientSecret = "anything";
+      botAuthCreds.objectId = "anything";
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
+      sinon.stub(AppStudio, "createBotRegistration").resolves();
+
+      // Act
+      const result = await botPlugin.getQuestions(Stage.provision, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+  });
+
+  describe("Test getQuestionsForUserTask", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+    let botPluginImpl: TeamsBotImpl;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+      botPluginImpl = new TeamsBotImpl();
+      botPlugin.teamsBotImpl = botPluginImpl;
+    });
+
+    it("Happy Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
+      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
+      const botAuthCreds = new BotAuthCredential();
+      botAuthCreds.clientId = "anything";
+      botAuthCreds.clientSecret = "anything";
+      botAuthCreds.objectId = "anything";
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
+      sinon.stub(AppStudio, "createBotRegistration").resolves();
+
+      // Act
+      const func: Func = {
+        namespace: `${BuiltInSolutionNames.azure}/${PluginNames.BOT}`,
+        method: "addCapability",
+      };
+      const result = await botPlugin.getQuestionsForUserTask(func, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+
+    it("Lifecycles other than addCapability", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.appName = "anything";
+      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
+      const botAuthCreds = new BotAuthCredential();
+      botAuthCreds.clientId = "anything";
+      botAuthCreds.clientSecret = "anything";
+      botAuthCreds.objectId = "anything";
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
+      sinon.stub(AppStudio, "createBotRegistration").resolves();
+
+      // Act
+      const func: Func = {
+        namespace: `${BuiltInSolutionNames.azure}/${PluginNames.BOT}`,
+        method: "test func",
+      };
+      const result = await botPlugin.getQuestionsForUserTask(func, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
     });
   });
 });

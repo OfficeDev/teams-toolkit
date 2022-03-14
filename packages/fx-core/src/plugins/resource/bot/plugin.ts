@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { Func, ok, PluginContext } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as utils from "./utils/common";
@@ -75,6 +75,13 @@ export class TeamsBotImpl implements PluginImpl {
       throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
     }
     return serviceClientCredentials;
+  }
+
+  public async getQuestionsForScaffolding(context: PluginContext): Promise<FxResult> {
+    return ok(undefined);
+  }
+  public async getQuestionsForUserTask(func: Func, context: PluginContext): Promise<FxResult> {
+    return ok(undefined);
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

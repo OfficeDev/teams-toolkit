@@ -3,8 +3,14 @@
 import {
   AzureSolutionSettings,
   err,
+  Func,
+  FxError,
+  ok,
   Plugin,
   PluginContext,
+  QTreeNode,
+  Result,
+  Stage,
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -183,6 +189,42 @@ export class TeamsBot implements Plugin {
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
+  }
+
+  public async getQuestions(
+    stage: Stage,
+    context: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    Logger.setLogger(context.logProvider);
+
+    if (stage === Stage.create) {
+      const result = await TeamsBot.runWithExceptionCatching(
+        context,
+        () => this.getImpl(context).getQuestionsForScaffolding(context),
+        true,
+        LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING
+      );
+
+      return result;
+    } else {
+      return ok(undefined);
+    }
+  }
+
+  public async getQuestionsForUserTask(
+    func: Func,
+    context: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    Logger.setLogger(context.logProvider);
+
+    const result = await TeamsBot.runWithExceptionCatching(
+      context,
+      () => this.getImpl(context).getQuestionsForUserTask(func, context),
+      true,
+      LifecycleFuncNames.GET_QUETSIONS_FOR_USER_TASK
+    );
+
+    return result;
   }
 
   private static wrapError(

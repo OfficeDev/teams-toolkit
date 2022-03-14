@@ -55,8 +55,8 @@ export enum TemplateProjectsScenarios {
 }
 
 const TriggerDirPaths = {
-  Http: path.join("src", "notifyHttpTrigger"),
-  Timer: path.join("src", "notifyTimerTrigger"),
+  Http: "notifyHttpTrigger",
+  Timer: "notifyTimerTrigger",
 } as const;
 
 export const TriggerTemplateScenarioMappings = {

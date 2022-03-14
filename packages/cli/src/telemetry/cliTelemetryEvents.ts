@@ -28,9 +28,6 @@ export enum TelemetryEvent {
   UpdateManifestStart = "update-manifest-start",
   UpdateManifest = "update-manifest",
 
-  CICDStart = "cicd-start",
-  CICD = "cicd",
-
   BuildStart = "build-start",
   Build = "build",
 

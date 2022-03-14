@@ -51,7 +51,6 @@ export class HelpParamGenerator {
     Stage.checkPermission,
     "validate",
     "update",
-    "addCICDWorkflows",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",
@@ -99,8 +98,7 @@ export class HelpParamGenerator {
 
   private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
-      namespace:
-        stage === "addCICDWorkflows" ? "fx-solution-azure/fx-resource-cicd" : "fx-solution-azure",
+      namespace: "fx-solution-azure",
       method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);
@@ -132,7 +130,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(stage, result.value);
       }
     }
-    const userTasks = ["addCapability", "addResource", "addCICDWorkflows"];
+    const userTasks = ["addCapability", "addResource"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
@@ -158,7 +156,6 @@ export class HelpParamGenerator {
       stage = "addCapability";
     }
     const root = this.getQuestionRootNodeForHelp(stage);
-
     let nodes: QTreeNode[] = [];
     if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {

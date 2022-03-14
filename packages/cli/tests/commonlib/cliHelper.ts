@@ -70,22 +70,6 @@ export class CliHelper {
     }
   }
 
-  static async addCICDWorkflows(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
-    const result = await execAsyncWithRetry(`teamsfx cicd ${option}`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
-
-    if (result.stderr) {
-      console.error(
-        `[Failed] addCICDWorkflows for ${projectPath}. Error message: ${result.stderr}`
-      );
-    } else {
-      console.log(`[Successfully] addCICDWorkflows for ${projectPath}`);
-    }
-  }
-
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,

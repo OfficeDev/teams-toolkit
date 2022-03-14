@@ -10,8 +10,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvent } from "./constants";
 import { Utils } from "./utils";
 import { Logger } from "./utils/logger";
-import { FileSystemError } from "./resources/errors";
-import { Messages } from "./resources/messages";
+import { ErrorMessages as Messages, FileSystemError } from "./resources/errors";
 
 export interface RemoteEnvs {
   teamsfxRemoteEnvs: { [key: string]: string };

@@ -26,6 +26,7 @@ import {
   StatesFolderName,
   Tools,
   UserCancelError,
+  UserError,
   v2,
   v3,
   Void,
@@ -41,6 +42,7 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
   isPureExistingApp,
+  isValidProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -73,7 +75,7 @@ import {
   LoadSolutionError,
   NonExistEnvNameError,
   ObjectIsUndefinedError,
-  OperationNotSupportedForExistingAppError,
+  OperationNotPermittedError,
   ProjectFolderExistError,
   ProjectFolderInvalidError,
   TaskNotSupportError,
@@ -116,12 +118,13 @@ import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
-  QuestionAppName,
   QuestionRootFolder,
   ScratchOptionNo,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
+import { getTemplatesFolder } from "../folder";
+import { getLocalizedString } from "../common/localizeUtils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -183,7 +186,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -350,7 +353,7 @@ export class FxCore implements v3.ICore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
       const validateResult = jsonschema.validate(appName, {
@@ -374,6 +377,7 @@ export class FxCore implements v3.ICore {
       // init
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
+        folder: projectPath,
         projectPath: projectPath,
       };
       const initRes = await this._init(initInputs, ctx);
@@ -557,7 +561,7 @@ export class FxCore implements v3.ICore {
     }
     if (isPureExistingApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
-      return err(new OperationNotSupportedForExistingAppError("deploy"));
+      return err(new OperationNotPermittedError("deploy"));
     }
     if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       const name = undefinedName(
@@ -1343,15 +1347,25 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
     // validate app name
-    const appName = inputs[QuestionAppName.name] as string;
+    const appName = inputs[CoreQuestionNames.AppName] as string;
     const validateResult = jsonschema.validate(appName, {
       pattern: ProjectNamePattern,
     });
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
-    const folder = inputs[QuestionRootFolder.name] as string;
-    inputs.projectPath = path.join(folder, appName);
+    const projectPath = inputs.folder;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is empty", inputs));
+    }
+    const isValid = await isValidProject(projectPath);
+    if (isValid) {
+      return err(
+        new OperationNotPermittedError("initialize a project in existing teamsfx project")
+      );
+    }
+    await fs.ensureDir(projectPath);
+    inputs.projectPath = projectPath;
 
     // create ProjectSettings
     const projectSettings = newProjectSettings();
@@ -1359,8 +1373,8 @@ export class FxCore implements v3.ICore {
     ctx.projectSettings = projectSettings;
 
     // create folder structure
-    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
+    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
     const basicFolderRes = await ensureBasicFolderStructure(inputs);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
@@ -1379,7 +1393,7 @@ export class FxCore implements v3.ICore {
     if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
       const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
       const writeEnvResult = await environmentManager.writeEnvConfig(
-        inputs.projectPath,
+        projectPath,
         newEnvConfig,
         environmentManager.getDefaultEnvName()
       );
@@ -1425,12 +1439,22 @@ export class FxCore implements v3.ICore {
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    return ok(inputs.projectPath);
+    const sourceReadmePath = path.join(getTemplatesFolder(), "core", "README.md");
+    if (await fs.pathExists(sourceReadmePath)) {
+      const targetReadmePath = path.join(projectPath, "README.md");
+      await fs.copy(sourceReadmePath, targetReadmePath);
+    }
+    return ok(inputs.projectPath!);
   }
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    return this._init(inputs, ctx);
+    const result = await this._init(inputs, ctx);
+    if (result.isOk()) {
+      TOOLS.ui.showMessage("info", getLocalizedString("core.init.successNotice"), false);
+    }
+
+    return result;
   }
 
   @hooks([
@@ -1484,7 +1508,7 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
   }
   try {
     {
-      const appName = inputs[QuestionAppName.name] as string;
+      const appName = inputs[CoreQuestionNames.AppName] as string;
       if (inputs.platform !== Platform.VS) {
         const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
         const exists = await fs.pathExists(packageJsonFilePath);

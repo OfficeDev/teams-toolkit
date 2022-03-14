@@ -1413,6 +1413,9 @@ export class AppStudioPluginImpl {
     if (tabDomain) {
       validDomains.push(tabDomain);
     }
+    if (tabEndpoint && isLocalDebug) {
+      validDomains.push(tabEndpoint.slice(8));
+    }
 
     if (botId) {
       if (!botDomain) {

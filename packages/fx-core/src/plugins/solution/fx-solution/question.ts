@@ -71,7 +71,6 @@ export enum AzureSolutionQuestionNames {
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
   Scenario = "scenario",
-  BotNotificationTriggers = "bot-notification-triggers",
 }
 
 export const HostTypeOptionAzure: OptionItem = {

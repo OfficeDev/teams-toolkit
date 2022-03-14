@@ -239,13 +239,6 @@ export function fillInSolutionSettings(
       // dedup
       capabilities = [...new Set(capabilities)];
       answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
-
-      // TODO(aochengwang): use question model to multi-select bot notification triggers
-      // Currently assuming all triggers are select for testing.
-      answers[AzureSolutionQuestionNames.BotNotificationTriggers] = [
-        BotNotificationTriggers.Http,
-        BotNotificationTriggers.Timer,
-      ];
     }
 
     hostType = HostTypeOptionAzure.id;

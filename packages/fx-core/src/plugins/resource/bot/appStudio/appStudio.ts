@@ -12,7 +12,7 @@ import {
 } from "../errors";
 import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
-import { getAppStudioEndpoint } from "../../../..";
+import { getAppStudioEndpoint } from "../../../../common/tools";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
 

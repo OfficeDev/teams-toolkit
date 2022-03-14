@@ -19,7 +19,6 @@ import { Storage as Storage_2 } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
-import { TurnContext } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -38,36 +37,24 @@ export interface AuthenticationConfiguration {
     readonly tenantId?: string;
 }
 
-// @public (undocumented)
+// @beta
 export class BotNotification {
-    // (undocumented)
-    static Initialize(connector: BotFrameworkAdapter, options?: BotNotificationOptions): void;
-    // (undocumented)
+    static initialize(adapter: BotFrameworkAdapter, options?: BotNotificationOptions): void;
     static installations(): Promise<TeamsBotInstallation[]>;
 }
 
-// @public (undocumented)
+// @beta
 export interface BotNotificationOptions {
-    // (undocumented)
     storage?: Storage_2;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "Channel" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
-    // (undocumented)
     readonly info: ChannelInfo;
-    // (undocumented)
     readonly parent: TeamsBotInstallation;
-    // (undocumented)
     sendAdaptiveCard(card: unknown): Promise<void>;
-    // (undocumented)
     sendMessage(text: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
-    //
-    // (undocumented)
     readonly type: NotificationTargetType;
 }
 
@@ -111,20 +98,12 @@ export enum IdentityType {
     User = "User"
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "IncomingWebhookTarget" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export class IncomingWebhookTarget implements NotificationTarget {
     constructor(webhook: URL);
-    // (undocumented)
     sendAdaptiveCard(card: unknown): Promise<void>;
-    // (undocumented)
     sendMessage(text: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
-    //
-    // (undocumented)
     readonly type: NotificationTargetType;
-    // (undocumented)
     readonly webhook: URL;
 }
 
@@ -147,22 +126,13 @@ export enum LogLevel {
     Warn = 2
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "Member" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export class Member implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
-    // (undocumented)
     readonly account: TeamsChannelAccount;
-    // (undocumented)
     readonly parent: TeamsBotInstallation;
-    // (undocumented)
     sendAdaptiveCard(card: unknown): Promise<void>;
-    // (undocumented)
     sendMessage(text: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
-    //
-    // (undocumented)
     readonly type: NotificationTargetType;
 }
 
@@ -189,14 +159,10 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     getUserInfo(): UserInfo;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "sendAdaptiveCard" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void>;
 
-// Warning: (ae-incompatible-release-tags) The symbol "sendMessage" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export function sendMessage(target: NotificationTarget, text: string): Promise<void>;
 
 // @beta
@@ -208,28 +174,15 @@ export function setLogger(logger?: Logger): void;
 // @beta
 export function setLogLevel(level: LogLevel): void;
 
-// Warning: (ae-incompatible-release-tags) The symbol "TeamsBotInstallation" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
-//
-// @public (undocumented)
+// @beta
 export class TeamsBotInstallation implements NotificationTarget {
     constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
-    // (undocumented)
     readonly adapter: BotFrameworkAdapter;
-    // (undocumented)
     channels(): Promise<Channel[]>;
-    // (undocumented)
-    continueConversation(logic: (context: TurnContext) => Promise<void>): Promise<void>;
-    // (undocumented)
     readonly conversationReference: Partial<ConversationReference>;
-    // (undocumented)
     members(): Promise<Member[]>;
-    // (undocumented)
     sendAdaptiveCard(card: unknown): Promise<void>;
-    // (undocumented)
     sendMessage(text: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
-    //
-    // (undocumented)
     readonly type?: NotificationTargetType;
 }
 

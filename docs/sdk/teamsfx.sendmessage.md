@@ -4,6 +4,11 @@
 
 ## sendMessage() function
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Send a plain text message to a notification target.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,10 +19,12 @@ export declare function sendMessage(target: NotificationTarget, text: string): P
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  target | [NotificationTarget](./teamsfx.notificationtarget.md) |  |
-|  text | string |  |
+|  target | [NotificationTarget](./teamsfx.notificationtarget.md) | the notification target. |
+|  text | string | the plain text message. |
 
 <b>Returns:</b>
 
 Promise&lt;void&gt;
+
+A `Promise` representing the asynchronous operation.
 

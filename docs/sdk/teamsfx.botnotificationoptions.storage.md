@@ -4,8 +4,18 @@
 
 ## BotNotificationOptions.storage property
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+An optional storage to persist bot notification connections.
+
 <b>Signature:</b>
 
 ```typescript
 storage?: Storage;
 ```
+
+## Remarks
+
+If `storage` is not provided, a default local file storage will be used. You could also use the `BlobsStorage` provided by botbuilder-azure-blobs or `CosmosDbPartitionedStorage` provided by botbuilder-azure
+

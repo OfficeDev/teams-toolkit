@@ -19,7 +19,7 @@ sendMessage(text: string): Promise<void>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  text | string | the message to be sent. |
+|  text | string | the plain text message. |
 
 <b>Returns:</b>
 

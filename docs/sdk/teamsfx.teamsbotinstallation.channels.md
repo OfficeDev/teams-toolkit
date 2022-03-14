@@ -4,6 +4,11 @@
 
 ## TeamsBotInstallation.channels() method
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Get channels from this bot installation.
+
 <b>Signature:</b>
 
 ```typescript
@@ -12,4 +17,6 @@ channels(): Promise<Channel[]>;
 <b>Returns:</b>
 
 Promise&lt;[Channel](./teamsfx.channel.md)<!-- -->\[\]&gt;
+
+an array of channels if bot is installed into a team, otherwise returns an empty array.
 

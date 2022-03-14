@@ -4,6 +4,11 @@
 
 ## Channel class
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel.
+
 <b>Signature:</b>
 
 ```typescript
@@ -11,24 +16,28 @@ export declare class Channel implements NotificationTarget
 ```
 <b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
 
+## Remarks
+
+It's recommended to get channels from .
+
 ## Constructors
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | Constructs a new instance of the <code>Channel</code> class |
+|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | <b><i>(BETA)</i></b> Constuctor. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [info](./teamsfx.channel.info.md) |  | ChannelInfo |  |
-|  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) |  |
-|  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) |  |
+|  [info](./teamsfx.channel.info.md) |  | ChannelInfo | <b><i>(BETA)</i></b> Detailed channel information. |
+|  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
+|  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> Notification target type. For channel it's always "Channel". |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.channel.sendadaptivecard.md) |  |  |
-|  [sendMessage(text)](./teamsfx.channel.sendmessage.md) |  |  |
+|  [sendAdaptiveCard(card)](./teamsfx.channel.sendadaptivecard.md) |  | <b><i>(BETA)</i></b> Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.channel.sendmessage.md) |  | <b><i>(BETA)</i></b> Send a plain text message. |
 

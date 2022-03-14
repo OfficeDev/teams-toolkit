@@ -5,6 +5,7 @@
  * The target type where the notification will be sent to.
  *
  * @remarks
+ * Only work on server side.
  * - "Channel" means to a team channel. (By default, notification to a team will be sent to its "General" channel.)
  * - "Group" means to a group chat.
  * - "Person" means to a personal chat.
@@ -16,11 +17,17 @@ export type NotificationTargetType = "Channel" | "Group" | "Person";
 /**
  * Represent a notification target.
  *
+ * @remarks
+ * Only work on server side.
+ *
  * @beta
  */
 export interface NotificationTarget {
   /**
    * The type of target, could be "Channel" or "Group" or "Person".
+   *
+   * @remarks
+   * Only work on server side.
    *
    * @beta
    */
@@ -28,6 +35,9 @@ export interface NotificationTarget {
 
   /**
    * Send a plain text message.
+   *
+   * @remarks
+   * Only work on server side.
    *
    * @param text - the plain text message.
    *
@@ -37,6 +47,9 @@ export interface NotificationTarget {
 
   /**
    * Send an adaptive card message.
+   *
+   * @remarks
+   * Only work on server side.
    *
    * @param card - the adaptive card raw JSON.
    *

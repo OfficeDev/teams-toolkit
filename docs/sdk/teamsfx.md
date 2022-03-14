@@ -9,14 +9,14 @@
 |  Class | Description |
 |  --- | --- |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
-|  [BotNotification](./teamsfx.botnotification.md) |  |
-|  [Channel](./teamsfx.channel.md) |  |
+|  [BotNotification](./teamsfx.botnotification.md) | <b><i>(BETA)</i></b> Provide static utilities for bot notification. |
+|  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
-|  [IncomingWebhookTarget](./teamsfx.incomingwebhooktarget.md) |  |
-|  [Member](./teamsfx.member.md) |  |
+|  [IncomingWebhookTarget](./teamsfx.incomingwebhooktarget.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel, creating from incoming webhook. |
+|  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
-|  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) |  |
+|  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | <b><i>(BETA)</i></b> Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
 |  [TeamsFx](./teamsfx.teamsfx.md) | <b><i>(BETA)</i></b> A class providing credential and configuration. |
 |  [TeamsUserCredential](./teamsfx.teamsusercredential.md) | <b><i>(BETA)</i></b> Represent Teams current user's identity, and it is used within Teams client applications. |
@@ -36,8 +36,8 @@
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
-|  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) |  |
-|  [sendMessage(target, text)](./teamsfx.sendmessage.md) |  |
+|  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | <b><i>(BETA)</i></b> Send an adaptive card message to a notification target. |
+|  [sendMessage(target, text)](./teamsfx.sendmessage.md) | <b><i>(BETA)</i></b> Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | <b><i>(BETA)</i></b> Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
 |  [setLogger(logger)](./teamsfx.setlogger.md) | <b><i>(BETA)</i></b> Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction. |
 |  [setLogLevel(level)](./teamsfx.setloglevel.md) | <b><i>(BETA)</i></b> Update log level helper. |
@@ -47,7 +47,7 @@
 |  Interface | Description |
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
-|  [BotNotificationOptions](./teamsfx.botnotificationoptions.md) |  |
+|  [BotNotificationOptions](./teamsfx.botnotificationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [BotNotification](./teamsfx.botnotification.md)<!-- -->. |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | <b><i>(BETA)</i></b> Represent a notification target. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |

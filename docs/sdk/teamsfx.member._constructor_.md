@@ -4,7 +4,10 @@
 
 ## Member.(constructor)
 
-Constructs a new instance of the `Member` class
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Constuctor.
 
 <b>Signature:</b>
 
@@ -16,6 +19,10 @@ constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) |  |
-|  account | TeamsChannelAccount |  |
+|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this member is created from. |
+|  account | TeamsChannelAccount | Detailed member account information. |
+
+## Remarks
+
+It's recommended to get members from , instead of using this constructor.
 

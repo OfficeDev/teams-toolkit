@@ -17,5 +17,5 @@ export declare type NotificationTargetType = "Channel" | "Group" | "Person";
 
 ## Remarks
 
-"Channel" means to a team channel. (By default, notification to a team will be sent to its "General" channel.) "Group" means to a group chat. "Person" means to an individual.
+- "Channel" means to a team channel. (By default, notification to a team will be sent to its "General" channel.) - "Group" means to a group chat. - "Person" means to a personal chat.
 

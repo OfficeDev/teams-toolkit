@@ -4,7 +4,10 @@
 
 ## Channel.(constructor)
 
-Constructs a new instance of the `Channel` class
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Constuctor.
 
 <b>Signature:</b>
 
@@ -16,6 +19,10 @@ constructor(parent: TeamsBotInstallation, info: ChannelInfo);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) |  |
-|  info | ChannelInfo |  |
+|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
+|  info | ChannelInfo | Detailed channel information. |
+
+## Remarks
+
+It's recommended to get channels from , instead of using this constructor.
 

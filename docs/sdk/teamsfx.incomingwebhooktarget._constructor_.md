@@ -4,7 +4,10 @@
 
 ## IncomingWebhookTarget.(constructor)
 
-Constructs a new instance of the `IncomingWebhookTarget` class
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Constructor.
 
 <b>Signature:</b>
 
@@ -16,5 +19,5 @@ constructor(webhook: URL);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  webhook | URL |  |
+|  webhook | URL | the incoming webhook URL. |
 

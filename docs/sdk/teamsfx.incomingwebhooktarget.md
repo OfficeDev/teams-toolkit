@@ -4,6 +4,11 @@
 
 ## IncomingWebhookTarget class
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel, creating from incoming webhook.
+
 <b>Signature:</b>
 
 ```typescript
@@ -11,23 +16,32 @@ export declare class IncomingWebhookTarget implements NotificationTarget
 ```
 <b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
 
+## Example
+
+Here's an example on how to send notification via incoming webhook.
+
+```typescript
+const target = new IncomingWebhookTarget(new URL("your-webhook-url"));
+await target.sendMessage("Hello Notification");
+```
+
 ## Constructors
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(webhook)](./teamsfx.incomingwebhooktarget._constructor_.md) |  | Constructs a new instance of the <code>IncomingWebhookTarget</code> class |
+|  [(constructor)(webhook)](./teamsfx.incomingwebhooktarget._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [type](./teamsfx.incomingwebhooktarget.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) |  |
-|  [webhook](./teamsfx.incomingwebhooktarget.webhook.md) |  | URL |  |
+|  [type](./teamsfx.incomingwebhooktarget.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> Notification target type. For incoming webhook it's always "Channel". |
+|  [webhook](./teamsfx.incomingwebhooktarget.webhook.md) |  | URL | <b><i>(BETA)</i></b> The bound incoming webhook URL. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.incomingwebhooktarget.sendadaptivecard.md) |  |  |
-|  [sendMessage(text)](./teamsfx.incomingwebhooktarget.sendmessage.md) |  |  |
+|  [sendAdaptiveCard(card)](./teamsfx.incomingwebhooktarget.sendadaptivecard.md) |  | <b><i>(BETA)</i></b> Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.incomingwebhooktarget.sendmessage.md) |  | <b><i>(BETA)</i></b> Send a plain text message. |
 

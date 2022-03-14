@@ -4,6 +4,11 @@
 
 ## sendAdaptiveCard() function
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Send an adaptive card message to a notification target.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,10 +19,12 @@ export declare function sendAdaptiveCard(target: NotificationTarget, card: unkno
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  target | [NotificationTarget](./teamsfx.notificationtarget.md) |  |
-|  card | unknown |  |
+|  target | [NotificationTarget](./teamsfx.notificationtarget.md) | the notification target. |
+|  card | unknown | the adaptive card raw JSON. |
 
 <b>Returns:</b>
 
 Promise&lt;void&gt;
+
+A `Promise` representing the asynchronous operation.
 

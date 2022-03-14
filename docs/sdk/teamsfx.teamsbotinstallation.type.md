@@ -4,8 +4,18 @@
 
 ## TeamsBotInstallation.type property
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Notification target type.
+
 <b>Signature:</b>
 
 ```typescript
 readonly type?: NotificationTargetType;
 ```
+
+## Remarks
+
+- "Channel" means bot is installed into a team and notification will be sent to its "General" channel. - "Group" means bot is installed into a group chat. - "Person" means bot is installed into a personal scope and notification will be sent to personal chat.
+

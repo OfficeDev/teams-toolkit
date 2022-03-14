@@ -4,6 +4,11 @@
 
 ## Member.sendMessage() method
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
+Send a plain text message.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,9 +19,11 @@ sendMessage(text: string): Promise<void>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  text | string |  |
+|  text | string | the plain text message. |
 
 <b>Returns:</b>
 
 Promise&lt;void&gt;
+
+A `Promise` representing the asynchronous operation.
 

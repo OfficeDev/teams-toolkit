@@ -5,8 +5,8 @@
  * @author Ivan He <ruhe@microsoft.com>
  */
 
-import path from "path";
-import fs from "fs-extra";
+import * as path from "path";
+import * as fs from "fs-extra";
 import * as chai from "chai";
 
 import {
@@ -19,7 +19,7 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
-import { ErrorType, PluginError } from "../../../../fx-core/src/plugins/resource/bot/errors";
+import { PluginError, ErrorType } from "../../../../fx-core/src/plugins/resource/bot/errors";
 
 describe("Error type should be expected", function () {
   const testFolder = getTestFolder();
@@ -29,7 +29,7 @@ describe("Error type should be expected", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false, env);
   });
 
   it(`CommandExecutionError should be in UserError`, async function () {
@@ -53,7 +53,7 @@ describe("Error type should be expected", function () {
       await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
     } catch (e) {
       chai.assert.isTrue(e instanceof PluginError);
-      chai.assert.isTrue(e.ErrorType == ErrorType.User);
+      chai.assert.isTrue(e.ErrorType === ErrorType.USER);
       return;
     }
 

@@ -10,13 +10,12 @@ import {
   ZipDeployError,
   MessageEndpointUpdatingError,
   MissingSubscriptionRegistrationError,
-  FreeServerFarmsQuotaError,
   InvalidBotDataError,
+  isErrorWithCode,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
-import { ErrorMessagesForChecking } from "./constants";
 
 export class AzureOperations {
   public static async CreateBotChannelRegistration(
@@ -38,9 +37,9 @@ export class AzureOperations {
         },
       });
     } catch (e) {
-      if (e.code === "MissingSubscriptionRegistration") {
+      if (isErrorWithCode(e) && e.code === "MissingSubscriptionRegistration") {
         throw new MissingSubscriptionRegistrationError();
-      } else if (e.code === "InvalidBotData") {
+      } else if (isErrorWithCode(e) && e.code === "InvalidBotData") {
         throw new InvalidBotDataError(e);
       } else {
         throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
@@ -106,32 +105,6 @@ export class AzureOperations {
 
     if (!channelResponse || !utils.isHttpCodeOkOrCreated(channelResponse._response.status)) {
       throw new ProvisionError(CommonStrings.MS_TEAMS_CHANNEL);
-    }
-  }
-
-  public static async CreateOrUpdateAppServicePlan(
-    webSiteMgmtClient: appService.WebSiteManagementClient,
-    resourceGroup: string,
-    appServicePlanName: string,
-    appServicePlan: appService.WebSiteManagementModels.AppServicePlan
-  ): Promise<void> {
-    let planResponse = undefined;
-    try {
-      planResponse = await webSiteMgmtClient.appServicePlans.createOrUpdate(
-        resourceGroup,
-        appServicePlanName,
-        appServicePlan
-      );
-    } catch (e) {
-      if (e.message?.includes(ErrorMessagesForChecking.FreeServerFarmsQuotaErrorFromAzure)) {
-        throw new FreeServerFarmsQuotaError(e);
-      } else {
-        throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN, e);
-      }
-    }
-
-    if (!planResponse || !utils.isHttpCodeOkOrCreated(planResponse._response.status)) {
-      throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN);
     }
   }
 

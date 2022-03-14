@@ -21,15 +21,15 @@
     "build": "rimraf build && npx tsc -p ./",
     "format-check": "echo test",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged"
+    "precommit": "npm run check-sensitive && lint-staged",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:staged": "lint-staged"
   },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@shared/eslint-config": "file:../eslint-config",
-    "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
     "@types/node": "^16.0.0",

@@ -75,3 +75,17 @@ export const botLocalEnvPrefix = "BOT_";
 
 export const automaticNpmInstallHintMessage =
   'Automatically installing packages required for your project. You can disable this by setting the global config "automatic-npm-install" to "off".';
+
+export const doctorResult = {
+  NodeNotFound: `Cannot find Node.js.`,
+  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).`,
+  NodeSuccess: `Supported Node.js version (@Version) is installed`,
+  InstallNode:
+    "Go to https://nodejs.org/about/releases/ to install Node.js (recommended version v14)",
+  SideLoadingDisabled:
+    "Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
+  NotSignIn: "No M365 account login",
+  SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
+  SkipTrustingCert: "Skip trusting development certificate for localhost",
+  HelpLink: `Please refer to @Link for more information.`,
+};

@@ -253,8 +253,12 @@ export function LoadPluginError(): SystemError {
   return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
 }
 
-export class OperationNotSupportedForExistingAppError extends UserError {
-  constructor(task: string) {
-    super(new.target.name, getLocalizedString("error.InvalidEnvNameError", task), CoreSource);
+export class OperationNotPermittedError extends UserError {
+  constructor(operation: string) {
+    super(
+      new.target.name,
+      getLocalizedString("error.OperationNotPermittedError", operation),
+      CoreSource
+    );
   }
 }

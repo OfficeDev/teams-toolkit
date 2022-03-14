@@ -124,7 +124,7 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[7].label, "Start Bot");
     });
     it("func hosted bot", () => {
-      const tasks = generateTasks(false, true, true, false, "typescript");
+      const tasks = generateTasks(false, false, true, true, "typescript");
       chai.assert.isDefined(tasks);
       chai.assert.equal(tasks.length, 8);
       chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");

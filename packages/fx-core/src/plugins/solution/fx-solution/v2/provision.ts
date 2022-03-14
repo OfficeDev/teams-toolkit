@@ -262,14 +262,14 @@ export async function provisionResource(
       delete envInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
+    const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
+    ctx.logProvider?.info(msg);
     if (!pureExistingApp) {
       const url = getResourceGroupInPortal(
         solutionInputs.subscriptionId,
         solutionInputs.tenantId,
         solutionInputs.resourceGroupName
       );
-      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
-      ctx.logProvider?.info(msg);
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
@@ -281,6 +281,8 @@ export async function provisionResource(
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }
+    } else {
+      ctx.userInteraction.showMessage("info", msg, false);
     }
     envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     return ok(Void);

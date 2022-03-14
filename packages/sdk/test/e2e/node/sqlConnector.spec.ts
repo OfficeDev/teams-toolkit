@@ -82,7 +82,11 @@ async function getSQLConnection(): Promise<Connection> {
       }
       resolve(connection);
     });
-    connection.connect();
+    connection.connect((err: any) => {
+      if (err) {
+        reject(err);
+      }
+    });
   });
 }
 

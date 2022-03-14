@@ -2,16 +2,16 @@ import React from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "./lib/useData";
 import * as axios from "axios";
-import { TeamsUserCredential, getResourceConfiguration, ResourceType } from "@microsoft/teamsfx";
+import { TeamsFx } from "@microsoft/teamsfx";
 
 var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
 async function callFunction() {
   try {
-    const credential = new TeamsUserCredential();
-    const accessToken = await credential.getToken("");
-    const apiConfig = getResourceConfiguration(ResourceType.API);
-    const response = await axios.default.get(apiConfig.endpoint + "/api/" + functionName, {
+    const teamsfx = new TeamsFx();
+    const accessToken = await teamsfx.getCredential().getToken("");
+    const endpoint = teamsfx.getConfig("apiEndpoint");
+    const response = await axios.default.get(endpoint + "/api/" + functionName, {
       headers: {
         authorization: "Bearer " + accessToken?.token || "",
       },

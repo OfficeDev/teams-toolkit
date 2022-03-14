@@ -10,6 +10,9 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  InitProjectStart = "init-project-start",
+  InitProject = "init-project",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 
@@ -42,9 +45,6 @@ export enum TelemetryEvent {
 
   PublishStart = "publish-start",
   Publish = "publish",
-
-  InitStart = "init-start",
-  Init = "init",
 
   PreviewStart = "preview-start",
   Preview = "preview",

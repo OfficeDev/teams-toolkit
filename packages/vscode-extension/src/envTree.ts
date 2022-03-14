@@ -23,7 +23,6 @@ import * as vscode from "vscode";
 import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import * as StringResources from "./resources/Strings.json";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import {
@@ -36,6 +35,7 @@ import {
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
 import { ext } from "./extensionVariables";
+import { localize } from "./utils/localizeUtils";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -190,13 +190,13 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
           isMarkdown: false,
           value: subscriptionInfo.subscriptionName
             ? util.format(
-                StringResources.vsc.envTree.subscriptionTooltip,
+                localize("teamstoolkit.envTree.subscriptionTooltip"),
                 env,
                 subscriptionInfo.subscriptionName,
                 subscriptionInfo.subscriptionId
               )
             : util.format(
-                StringResources.vsc.envTree.subscriptionTooltipWithoutName,
+                localize("teamstoolkit.envTree.subscriptionTooltipWithoutName"),
                 env,
                 subscriptionInfo.subscriptionId
               ),
@@ -253,12 +253,12 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
     const m365TenantId = await getM365TenantFromEnv(env);
     if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
       checkResult = false;
-      warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
+      warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch"));
     }
   } else {
     // Not signed in
     checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotSignedIn);
+    warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn"));
   }
 
   // Check Azure account status
@@ -277,7 +277,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
           checkResult = false;
           warnings.push(
             util.format(
-              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotMatch"),
               subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
             )
           );
@@ -285,7 +285,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
       }
     } else {
       checkResult = false;
-      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
+      warnings.push(localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotSignedIn"));
     }
   }
 

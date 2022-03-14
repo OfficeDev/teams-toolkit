@@ -45,6 +45,7 @@ export class TemplateProjectsConstants {
 export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
   NOTIFICATION_SCENARIO_NAME = "notification",
+  NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
 }
 
 export class ProgressBarConstants {
@@ -139,7 +140,6 @@ export class ErrorNames {
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
   public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR =
     "MissingSubscriptionRegistrationError";
-  public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
   public static readonly INVALID_BOT_DATA_ERROR = "InvalidBotDataError";
 }
 

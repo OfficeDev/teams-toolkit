@@ -12,8 +12,6 @@
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "^1.0.1",
-        "@shared/eslint-config": "file:../eslint-config",
-        "@shared/prettier-config": "file:../prettier-config",
         "@types/chai": "^4.2.21",
         "@types/chai-as-promised": "^7.1.3",
         "@types/mocha": "^8.2.3",
@@ -41,7 +39,10 @@
     "scripts": {
         "build": "rimraf build && npx tsc -p ./",
         "test": "npm run test:unit",
-        "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts"
+        "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+        "lint": "eslint \"**/*.ts\"",
+        "precommit": "lint-staged",
+        "lint:staged": "lint-staged"
     },
     "files": [
         "build/**/*"

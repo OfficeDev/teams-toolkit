@@ -23,8 +23,6 @@
         "tab/ts/default"
     ],
     "devDependencies": {
-        "@shared/eslint-config": "file:../packages/eslint-config",
-        "@shared/prettier-config": "file:../packages/prettier-config",
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",
         "eslint": "^7.22.0",

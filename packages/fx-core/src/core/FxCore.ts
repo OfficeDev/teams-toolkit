@@ -53,7 +53,13 @@ import {
 } from "../common/tools";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
-import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -108,15 +114,11 @@ import {
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
-  BotOptionItem,
   CoreQuestionNames,
-  NotificationOptionItem,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
   ScratchOptionNo,
-  TabOptionItem,
-  TabSPFxItem,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
@@ -868,17 +870,22 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    if (stage === Stage.create) {
-      delete inputs.projectPath;
-      return await this._getQuestionsForCreateProjectV2(inputs);
-    } else {
-      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
-      const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
-      const envInfoV2 = ctx.envInfoV2
-        ? ctx.envInfoV2
-        : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
-      inputs.stage = stage;
-      return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
+
+    switch (stage) {
+      case Stage.create:
+        delete inputs.projectPath;
+        return await this._getQuestionsForCreateProjectV2(inputs);
+      case Stage.init:
+        delete inputs.projectPath;
+        return await this._getQuestionsForInit(inputs);
+      default:
+        const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
+        const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+        const envInfoV2 = ctx.envInfoV2
+          ? ctx.envInfoV2
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
+        inputs.stage = stage;
+        return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
     }
   }
 

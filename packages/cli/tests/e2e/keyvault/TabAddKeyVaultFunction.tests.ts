@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import "mocha";
+import { describe } from "mocha";
 import { AadValidator, FunctionValidator } from "../../commonlib";
 import {
   getSubscriptionId,
@@ -21,6 +21,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 
 describe("Test Azure Key Vault", function () {
   const testFolder = getTestFolder();
@@ -33,33 +34,37 @@ describe("Test Azure Key Vault", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab + key vault + function project happy path`, async function () {
-    // Create tab + key vault + function project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
+  it(
+    `tab + key vault + function project happy path`,
+    { testPlanCaseId: 12889038 },
+    async function () {
+      // Create tab + key vault + function project
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
 
-    // Provision
-    await CliHelper.provisionProject(projectPath);
+      // Provision
+      await CliHelper.provisionProject(projectPath);
 
-    // Validate Provision
-    {
-      const context = await readContextMultiEnv(projectPath, env);
+      // Validate Provision
+      {
+        const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
 
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
+        // Validate Function App
+        const functionValidator = new FunctionValidator(context, projectPath, env);
+        await functionValidator.validateProvision();
 
-      // Validate Key Vault
-      const keyVault = new KeyVaultValidator(context, projectPath, env);
-      await keyVault.validate();
+        // Validate Key Vault
+        const keyVault = new KeyVaultValidator(context, projectPath, env);
+        await keyVault.validate();
+      }
     }
-  });
+  );
 });

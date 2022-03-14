@@ -20,8 +20,8 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as constants from "./constants";
-import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
+import { localize } from "../utils/localizeUtils";
 const PackageJson = require("@npmcli/package-json");
 
 export class TeamsAppMigrationHandler {
@@ -134,7 +134,7 @@ async function updateCodeInplace(
     const sourceCode = (await fs.readFile(filePath)).toString();
     vsCodeLogProvider.info(
       util.format(
-        StringResources.vsc.migrateTeamsTabApp.updatingCode,
+        localize("teamstoolkit.migrateTeamsTabApp.updatingCode"),
         type === "ts" ? "typescript" : "javascript",
         filePath
       )
@@ -158,7 +158,7 @@ async function updateCodeInplace(
     return ok(null);
   } catch (error: any) {
     const message = util.format(
-      StringResources.vsc.migrateTeamsTabApp.updateCodeError,
+      localize("teamstoolkit.migrateTeamsTabApp.updateCodeError"),
       filePath,
       error.code,
       error.message

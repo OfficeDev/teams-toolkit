@@ -9,12 +9,12 @@ import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
 
 export function Graph() {
   const { loading, error, data, reload } = useGraph(
-    async (graph, credential, scope) => {
+    async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
 
       // Initialize Graph Toolkit TeamsFx provider
-      const provider = new TeamsFxProvider(credential, scope);
+      const provider = new TeamsFxProvider(teamsfx, scope);
       Providers.globalProvider = provider;
       Providers.globalProvider.setState(ProviderState.SignedIn);
 
@@ -36,7 +36,7 @@ export function Graph() {
       <h3>Example: Get the user's profile</h3>
       <div className="section-margin">
         <p>Click below to authorize button to grant permission to using Microsoft Graph.</p>
-        <pre>{`const credential = new TeamsUserCredential(); \nawait credential.login(scope);`}</pre>
+        <pre>{`const teamsfx = new TeamsFx(); \nawait teamsfx.login(scope);`}</pre>
         <Button primary content="Authorize" disabled={loading} onClick={reload} />
 
         <p>Below are two different implementations of retrieving profile photo for currently signed-in user using Fluent UI component and Graph Toolkit respectively.</p>

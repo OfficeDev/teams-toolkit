@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 import * as versionUtil from "./versionUtil";
 import { SyncedState, UserState } from "../constants";
-import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as folder from "../folder";
+import { localize } from "./localizeUtils";
 
 export class ExtensionUpgrade {
   private context: vscode.ExtensionContext;
@@ -33,7 +33,7 @@ export class ExtensionUpgrade {
       this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
 
       const whatIsNew = {
-        title: StringResources.vsc.upgrade.whatIsNewTitle,
+        title: localize("teamstoolkit.upgrade.whatIsNewTitle"),
         run: async (): Promise<void> => {
           const uri = vscode.Uri.file(`${folder.getResourceFolder()}/WHATISNEW.md`);
           vscode.workspace.openTextDocument(uri).then(() => {
@@ -45,11 +45,11 @@ export class ExtensionUpgrade {
 
       vscode.window
         .showInformationMessage(
-          util.format(StringResources.vsc.upgrade.banner, teamsToolkitVersion),
+          util.format(localize("teamstoolkit.upgrade.banner"), teamsToolkitVersion),
           whatIsNew
         )
         .then((selection) => {
-          if (selection?.title === StringResources.vsc.upgrade.whatIsNewTitle) {
+          if (selection?.title === localize("teamstoolkit.upgrade.whatIsNewTitle")) {
             ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
             selection.run();
           }

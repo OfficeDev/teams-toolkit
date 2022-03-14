@@ -6,14 +6,20 @@
 
 import { AccessToken } from '@azure/identity';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
+import { BotFrameworkAdapter } from 'botbuilder';
+import { ChannelInfo } from 'botbuilder';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConnectionConfig } from 'tedious';
+import { ConversationReference } from 'botbuilder';
 import { Dialog } from 'botbuilder-dialogs';
 import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
+import { Storage as Storage_2 } from 'botbuilder';
+import { TeamsChannelAccount } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
+import { TurnContext } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -30,6 +36,39 @@ export interface AuthenticationConfiguration {
     readonly clientSecret?: string;
     readonly initiateLoginEndpoint?: string;
     readonly tenantId?: string;
+}
+
+// @public (undocumented)
+export class BotNotification {
+    // (undocumented)
+    static Initialize(connector: BotFrameworkAdapter, options?: BotNotificationOptions): void;
+    // (undocumented)
+    static installations(): Promise<TeamsBotInstallation[]>;
+}
+
+// @public (undocumented)
+export interface BotNotificationOptions {
+    // (undocumented)
+    storage?: Storage_2;
+}
+
+// Warning: (ae-incompatible-release-tags) The symbol "Channel" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export class Channel implements NotificationTarget {
+    constructor(parent: TeamsBotInstallation, info: ChannelInfo);
+    // (undocumented)
+    readonly info: ChannelInfo;
+    // (undocumented)
+    readonly parent: TeamsBotInstallation;
+    // (undocumented)
+    sendAdaptiveCard(card: unknown): Promise<void>;
+    // (undocumented)
+    sendMessage(text: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
+    //
+    // (undocumented)
+    readonly type: NotificationTargetType;
 }
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
@@ -72,6 +111,23 @@ export enum IdentityType {
     User = "User"
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "IncomingWebhookTarget" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export class IncomingWebhookTarget implements NotificationTarget {
+    constructor(webhook: URL);
+    // (undocumented)
+    sendAdaptiveCard(card: unknown): Promise<void>;
+    // (undocumented)
+    sendMessage(text: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
+    //
+    // (undocumented)
+    readonly type: NotificationTargetType;
+    // (undocumented)
+    readonly webhook: URL;
+}
+
 // @beta
 export type LogFunction = (level: LogLevel, message: string) => void;
 
@@ -91,6 +147,25 @@ export enum LogLevel {
     Warn = 2
 }
 
+// Warning: (ae-incompatible-release-tags) The symbol "Member" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export class Member implements NotificationTarget {
+    constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
+    // (undocumented)
+    readonly account: TeamsChannelAccount;
+    // (undocumented)
+    readonly parent: TeamsBotInstallation;
+    // (undocumented)
+    sendAdaptiveCard(card: unknown): Promise<void>;
+    // (undocumented)
+    sendMessage(text: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
+    //
+    // (undocumented)
+    readonly type: NotificationTargetType;
+}
+
 // @beta
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
@@ -98,11 +173,31 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 }
 
 // @beta
+export interface NotificationTarget {
+    sendAdaptiveCard(card: unknown): Promise<void>;
+    sendMessage(text: string): Promise<void>;
+    readonly type?: NotificationTargetType;
+}
+
+// @beta
+export type NotificationTargetType = "Channel" | "Group" | "Person";
+
+// @beta
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
 }
+
+// Warning: (ae-incompatible-release-tags) The symbol "sendAdaptiveCard" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void>;
+
+// Warning: (ae-incompatible-release-tags) The symbol "sendMessage" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export function sendMessage(target: NotificationTarget, text: string): Promise<void>;
 
 // @beta
 export function setLogFunction(logFunction?: LogFunction): void;
@@ -112,6 +207,31 @@ export function setLogger(logger?: Logger): void;
 
 // @beta
 export function setLogLevel(level: LogLevel): void;
+
+// Warning: (ae-incompatible-release-tags) The symbol "TeamsBotInstallation" is marked as @public, but its signature references "NotificationTarget" which is marked as @beta
+//
+// @public (undocumented)
+export class TeamsBotInstallation implements NotificationTarget {
+    constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
+    // (undocumented)
+    readonly adapter: BotFrameworkAdapter;
+    // (undocumented)
+    channels(): Promise<Channel[]>;
+    // (undocumented)
+    continueConversation(logic: (context: TurnContext) => Promise<void>): Promise<void>;
+    // (undocumented)
+    readonly conversationReference: Partial<ConversationReference>;
+    // (undocumented)
+    members(): Promise<Member[]>;
+    // (undocumented)
+    sendAdaptiveCard(card: unknown): Promise<void>;
+    // (undocumented)
+    sendMessage(text: string): Promise<void>;
+    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @public, but its signature references "NotificationTargetType" which is marked as @beta
+    //
+    // (undocumented)
+    readonly type?: NotificationTargetType;
+}
 
 // @beta
 export class TeamsBotSsoPrompt extends Dialog {

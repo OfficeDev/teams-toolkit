@@ -69,7 +69,7 @@
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
 /packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
 /packages/fx-core/src/plugins/resource/bot/functionHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/tests/plugins/resource/bot/unit/functionHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/tests/plugins/resource/bot/unit/functionsHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs

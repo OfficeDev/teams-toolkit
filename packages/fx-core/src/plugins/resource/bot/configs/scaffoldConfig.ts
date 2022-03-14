@@ -51,16 +51,7 @@ export class ScaffoldConfig {
     const rawTriggers = context.answers?.[AzureSolutionQuestionNames.BotNotificationTriggers];
     if (Array.isArray(rawTriggers)) {
       this.triggers = rawTriggers
-        .map((rawTrigger: unknown): NotificationTrigger | undefined => {
-          if (
-            typeof rawTrigger === "string" &&
-            utils.existsInEnumValues(rawTrigger, NotificationTriggers)
-          ) {
-            return rawTrigger;
-          } else {
-            return undefined;
-          }
-        })
+        .map((rawTrigger) => utils.convertToConstValues(rawTrigger, NotificationTriggers))
         .filter((item) => item !== undefined) as NotificationTrigger[];
     }
   }

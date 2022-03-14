@@ -117,7 +117,7 @@ export function existsInEnumValues<T extends string>(
 }
 
 export function convertToConstValues<V extends string, T extends { [key in string]: V }>(
-  value: string | undefined,
+  value: unknown,
   targetValues: T
 ): V | undefined {
   return Object.values(targetValues).find((itemValue) => value === itemValue);

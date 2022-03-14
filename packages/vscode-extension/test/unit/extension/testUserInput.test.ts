@@ -16,19 +16,9 @@ import {
 import { sleep } from "../../../src/utils/commonUtils";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtensionContext } from "vscode";
-import { ext } from "../../../src/extensionVariables";
-import * as sinon from "sinon";
 
 suite("Mock Tests", () => {
   suite("User Input", function () {
-    this.beforeAll(() => {
-      sinon.stub(ext, "context").returns({ extensionPath: "" });
-    });
-
-    this.afterAll(() => {
-      sinon.restore();
-    });
-
     test("Creation", () => {
       const ui: TestUserInput = new TestUserInput();
       chai.assert(ui["inputs"].length === 0);

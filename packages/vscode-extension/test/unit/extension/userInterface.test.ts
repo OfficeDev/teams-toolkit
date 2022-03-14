@@ -8,13 +8,11 @@ import { ext } from "../../../src/extensionVariables";
 import { TestUserInput } from "./mocks/testUserInput";
 import { sleep } from "../../../src/utils/commonUtils";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
-import * as sinon from "sinon";
 
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {
     // Mock user input.
     ext.ui = new TestUserInput();
-    sinon.stub(ext, "context").returns({ extensionPath: "" });
   });
 
   suite("Manually", () => {

@@ -365,7 +365,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    await openFolder(result.value, args);
+    await openFolder(result.value, true, args);
   }
   return result;
 }
@@ -374,22 +374,25 @@ export async function initProjectHandler(args?: any[]): Promise<Result<any, FxEr
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.init);
   if (result.isOk()) {
-    await openFolder(result.value, args);
+    await openFolder(result.value, false, args);
   }
   return result;
 }
 
-async function openFolder(folderPath: string, args?: any[]) {
-  await updateAutoOpenGlobalKey(args);
+async function openFolder(folderPath: string, showLocalDebugMessage: boolean, args?: any[]) {
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, args);
   await ExtTelemetry.dispose();
-  // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
+  // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
   // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
   setTimeout(() => {
     commands.executeCommand("vscode.openFolder", folderPath);
   }, 2000);
 }
 
-export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
+export async function updateAutoOpenGlobalKey(
+  showLocalDebugMessage: boolean,
+  args?: any[]
+): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
     await globalStateUpdate(GlobalKey.OpenReadMe, false);
@@ -397,7 +400,10 @@ export async function updateAutoOpenGlobalKey(args?: any[]): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
     await globalStateUpdate(GlobalKey.OpenReadMe, true);
   }
-  await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
+
+  if (showLocalDebugMessage) {
+    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
+  }
 }
 
 export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
@@ -1327,12 +1333,16 @@ export async function openReadMeHandler(args: any[]) {
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
+
       if (tabFolder && botFolder) {
         targetFolder = workspacePath;
       } else if (tabFolder) {
         targetFolder = tabFolder;
-      } else {
+      } else if (botFolder) {
         targetFolder = botFolder;
+      } else {
+        // minimal teamsfx project
+        targetFolder = workspacePath;
       }
     }
     // When tab and bot coexist, readme file would reside in project root folder.

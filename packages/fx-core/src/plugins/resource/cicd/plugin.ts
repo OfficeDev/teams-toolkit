@@ -70,14 +70,14 @@ export class CICDImpl {
 
     // 4. Send notification messages.
     let message = "";
-    if (scaffoldedArr.find((value) => !value)) {
+    if (scaffoldedArr.includes(false)) {
       message += `Workflow automation file(s) of ${templateNames
         .filter((_value, index) => !scaffoldedArr[index])
         .join(
           ","
         )} for ${providerName} have been successfully added for your project. Follow the instructuons in Readme file to setup the workflow.`;
     }
-    if (scaffoldedArr.find((value) => value)) {
+    if (scaffoldedArr.includes(true)) {
       message += `You have already created template(s) of ${templateNames
         .filter((_value, index) => scaffoldedArr[index])
         .join(",")} for ${providerName}, please customize it or remove it to create a new one.`;

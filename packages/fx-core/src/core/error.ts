@@ -12,7 +12,9 @@ import {
   Json,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  Stage,
 } from "@microsoft/teamsfx-api";
+import { HelpLinks } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
@@ -259,6 +261,17 @@ export class OperationNotPermittedError extends UserError {
       new.target.name,
       getLocalizedString("error.OperationNotPermittedError", operation),
       CoreSource
+    );
+  }
+}
+
+export class NoCapabilityFoundError extends UserError {
+  constructor(operation: Stage) {
+    super(
+      new.target.name,
+      getLocalizedString("core.deploy.noCapabilityFound", operation),
+      CoreSource,
+      HelpLinks.HowToAddCapability
     );
   }
 }

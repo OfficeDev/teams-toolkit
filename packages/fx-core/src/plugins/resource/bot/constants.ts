@@ -114,6 +114,8 @@ export class LifecycleFuncNames {
   public static readonly PRE_SCAFFOLD = "pre-scaffold";
   public static readonly SCAFFOLD = "scaffold";
   public static readonly POST_SCAFFOLD = "post-scaffold";
+  public static readonly GET_QUETSIONS_FOR_SCAFFOLDING = "get-questions-for-scaffolding";
+  public static readonly GET_QUETSIONS_FOR_USER_TASK = "get-questions-for-user-task";
 
   public static readonly PRE_PROVISION = "pre-provision";
   public static readonly PROVISION = "provision";
@@ -298,3 +300,9 @@ export class BotBicep {
   static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
   static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }
+
+export const CustomizedTasks = {
+  addCapability: "addCapability",
+} as const;
+
+export type CustomizedTask = typeof CustomizedTasks[keyof typeof CustomizedTasks];

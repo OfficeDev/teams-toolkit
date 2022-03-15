@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { Inputs, v2, Result, FxError, Platform } from "@microsoft/teamsfx-api";
-import { FxCICDPluginResultFactory as ResultFactory } from "./result";
+import { Inputs, v2, Platform } from "@microsoft/teamsfx-api";
+import { FxCICDPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
 import { questionNames } from "./questions";
@@ -15,7 +15,7 @@ export class CICDImpl {
     context: Context,
     inputs: Inputs,
     envInfo: v2.EnvInfoV2
-  ): Promise<Result<any, FxError>> {
+  ): Promise<FxResult> {
     // 1. Key inputs (envName, provider, template) x (hostingType, ).
     if (!inputs.projectPath) {
       throw new NoProjectOpenedError();
@@ -50,7 +50,9 @@ export class CICDImpl {
       templateNames.length
     );
 
-    const scaffoldedArr: boolean[] = [];
+    const created: string[] = [];
+    const skipped: string[] = [];
+
     await progressBar.start(`Scaffolding workflow file for ${templateNames[0]}.`);
     let scaffolded = await providerInstance.scaffold(
       projectPath,
@@ -58,29 +60,36 @@ export class CICDImpl {
       envName,
       context
     );
-    scaffolded.isOk() && scaffoldedArr.push(scaffolded.value);
+    if (scaffolded.isOk() && !scaffolded.value) {
+      created.push(templateNames[0]);
+    } else {
+      skipped.push(templateNames[0]);
+    }
+
     //  3.2 Call the next scaffold.
     for (const templateName of templateNames.slice(1)) {
       await progressBar.next(`Scaffolding workflow file for ${templateName}.`);
       scaffolded = await providerInstance.scaffold(projectPath, templateName, envName, context);
-      scaffolded.isOk() && scaffoldedArr.push(scaffolded.value);
+      if (scaffolded.isOk() && !scaffolded.value) {
+        created.push(templateName);
+      } else {
+        skipped.push(templateName);
+      }
     }
 
     await progressBar.end(true);
 
     // 4. Send notification messages.
     let message = "";
-    if (scaffoldedArr.includes(false)) {
-      message += `Workflow automation file(s) of ${templateNames
-        .filter((_value, index) => !scaffoldedArr[index])
-        .join(
-          ","
-        )} for ${providerName} have been successfully added for your project. Follow the instructions in Readme file to setup the workflow(s).`;
+    if (created.length > 0) {
+      message += `Workflow automation file(s) of ${created.join(
+        ","
+      )} for (${providerName}, ${envName}) have been successfully added for your project. Follow the instructions in Readme file to setup the workflow(s).`;
     }
-    if (scaffoldedArr.includes(true)) {
-      message += `You have already created template(s) of ${templateNames
-        .filter((_value, index) => scaffoldedArr[index])
-        .join(",")} for ${providerName}, please customize it or remove it to create a new one.`;
+    if (skipped.length > 0) {
+      message += `You have already created template(s) of ${skipped.join(
+        ","
+      )} for (${providerName}, ${envName}), please customize it or remove it to create a new one.`;
     }
 
     context.userInteraction.showMessage("info", message, false);

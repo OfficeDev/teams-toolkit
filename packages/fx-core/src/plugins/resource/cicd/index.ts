@@ -6,8 +6,6 @@ import {
   SystemError,
   v2,
   TokenProvider,
-  FxError,
-  Result,
   Inputs,
   Json,
   Func,
@@ -54,7 +52,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     context: Context,
     inputs: Inputs,
     envInfo: v2.EnvInfoV2
-  ): Promise<Result<any, FxError>> {
+  ): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
     return await this.cicdImpl.addCICDWorkflows(context, inputs, envInfo);
   }
@@ -65,7 +63,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     func: Func,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
+  ): Promise<FxResult> {
     const cicdWorkflowQuestions = new QTreeNode({
       type: "group",
     });
@@ -120,7 +118,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<any, FxError>> {
+  ): Promise<FxResult> {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,

@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
+import { FxResult } from "../result";
 import * as fs from "fs-extra";
 import { FileSystemError, InternalError, NoProjectOpenedError } from "../errors";
 import { TemplateKind } from "./enums";
@@ -21,7 +22,7 @@ export class CICDProvider {
     templateName: string,
     envName: string,
     context: Context
-  ): Promise<Result<boolean, FxError>> {
+  ): Promise<FxResult> {
     // 0. Preconditions check.
     if (!(await fs.pathExists(projectPath))) {
       throw new NoProjectOpenedError();
@@ -95,10 +96,10 @@ export class CICDProvider {
         throw new FileSystemError(`Fail to write file: ${targetTemplatePath}`, e as Error);
       }
     } else {
-      return ok(true);
+      return ok(true); // indicate that the template is existing before this scaffold.
     }
 
-    return ok(false);
+    return ok(false); // indicate it's newly scaffolded template.
   }
 
   public async readLocalFile(localPath: string): Promise<string> {

@@ -49,13 +49,6 @@ export class Constants {
   public static readonly identityPlugin: string = "fx-resource-identity";
   public static readonly identityName: string = "identityName";
 
-  public static readonly userQuestion = {
-    adminName: "Admin name of SQL",
-    adminPassword: "Admin password of SQL",
-    confirmPassword: "Confirm admin password of SQL",
-    skipAddingUser: "Skip adding database user",
-  };
-
   public static readonly questionKey = {
     adminName: "sql-admin-name",
     adminPassword: "sql-password",

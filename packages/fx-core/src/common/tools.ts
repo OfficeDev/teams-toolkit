@@ -386,6 +386,10 @@ export function isAadManifestEnabled(): boolean {
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
 export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  if (!solutionSettings) {
+    return false;
+  }
+
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&

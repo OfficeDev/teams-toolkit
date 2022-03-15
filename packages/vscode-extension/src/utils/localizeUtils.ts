@@ -71,7 +71,10 @@ function getLocalizedString(key: string, defValue?: string): string {
 export function loadLocalizedStrings(): void {
   loadedLocale = parseLocale();
 
-  const nlsFile = path.join(ext.context.extensionPath, `package.nls.${loadedLocale}.json`);
+  const nlsFile = path.join(
+    ext.context ? ext.context.extensionPath : "",
+    `package.nls.${loadedLocale}.json`
+  );
   if (fs.pathExistsSync(nlsFile)) {
     loadedCollection = fs.readJsonSync(nlsFile);
   } else {
@@ -79,7 +82,10 @@ export function loadLocalizedStrings(): void {
   }
 
   if (!defaultCollection) {
-    const defaultNlsFile = path.join(ext.context.extensionPath, "package.nls.json");
+    const defaultNlsFile = path.join(
+      ext.context ? ext.context.extensionPath : "",
+      "package.nls.json"
+    );
     if (fs.pathExistsSync(defaultNlsFile)) {
       defaultCollection = fs.readJsonSync(defaultNlsFile);
     } else {

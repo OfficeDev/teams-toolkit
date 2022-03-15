@@ -236,8 +236,8 @@ export function getBotLocalEnv(
 }
 
 export async function getPortsInUse(workspaceFolder: string): Promise<number[]> {
-  const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
   try {
+    const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
     return await localEnvManager.getPortsInUse(workspaceFolder, projectSettings);
   } catch (error: any) {

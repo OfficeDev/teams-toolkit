@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
+  assembleError,
   AzureSolutionSettings,
   Colors,
   err,
@@ -16,6 +17,9 @@ import {
   ok,
   Platform,
   Result,
+  SystemError,
+  UnknownError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   DepsType,
@@ -29,12 +33,16 @@ import {
   ProgrammingLanguage,
   isConfigUnifyEnabled,
   environmentManager,
+  DepsManager,
+  getSideloadingStatus,
+  NodeNotSupportedError,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
+import { doctorResult } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
@@ -53,6 +61,35 @@ import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { URL } from "url";
 import { CliDepsChecker } from "./depsChecker/cliChecker";
 import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
+import { signedOut } from "../../commonlib/common/constant";
+import { cliSource } from "../../constants";
+
+enum Checker {
+  M365Account = "M365 Account",
+  LocalCertificate = "Development certificate for localhost",
+  Ports = "Ports",
+}
+
+const DepsDisplayName = {
+  [DepsType.FunctionNode]: "Node.js",
+  [DepsType.SpfxNode]: "Node.js",
+  [DepsType.AzureNode]: "Node.js",
+  [DepsType.Dotnet]: ".NET Core SDK",
+  [DepsType.Ngrok]: "Ngrok",
+  [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+};
+
+const ProgressMessage: { [key: string]: string } = Object.freeze({
+  [Checker.M365Account]: `Checking ${Checker.M365Account}`,
+  [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
+  [Checker.Ports]: `Checking ${Checker.Ports}`,
+  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
+  [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
+  [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
+  [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
+});
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -245,16 +282,35 @@ export default class Preview extends YargsCommand {
       );
     }
 
+    // check node
+    const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
+    const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+    if (nodeRes.isErr()) {
+      return err(nodeRes.error);
+    }
+
+    // check account
+    const accountRes = await this.checkM365Account();
+    if (accountRes.isErr()) {
+      return err(accountRes.error);
+    }
+
+    // check cert
+    const certRes = await this.resolveLocalCertificate(localEnvManager);
+    if (certRes.isErr()) {
+      return err(certRes.error);
+    }
+
+    // check deps
     const envCheckerResult = await this.handleDependences(
       includeBackend,
       includeBot,
-      includeFuncHostedBot
+      includeFuncHostedBot,
+      depsManager
     );
-
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
-    const depsChecker: CliDepsChecker = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -264,7 +320,7 @@ export default class Preview extends YargsCommand {
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {
-      const result = await this.startNgrok(workspaceFolder, depsChecker);
+      const result = await this.startNgrok(workspaceFolder, depsManager);
       if (result.isErr()) {
         return result;
       }
@@ -278,7 +334,7 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      depsChecker
+      depsManager
     );
     if (result.isErr()) {
       return result;
@@ -289,9 +345,9 @@ export default class Preview extends YargsCommand {
     ) as string;
 
     /* === check ports === */
-    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
-    if (portsInUse.length > 0) {
-      return err(errors.PortsAlreadyInUse(portsInUse));
+    const portsRes = await this.checkPorts(workspaceFolder);
+    if (portsRes.isErr()) {
+      return portsRes;
     }
 
     /* === start services === */
@@ -306,7 +362,7 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      depsChecker,
+      depsManager,
       includeSimpleAuth
     );
     if (result.isErr()) {
@@ -353,6 +409,19 @@ export default class Preview extends YargsCommand {
 
     cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
 
+    return ok(null);
+  }
+
+  private async checkPorts(workspaceFolder: string): Promise<Result<null, FxError>> {
+    const portsBar = CLIUIInstance.createProgressBar(Checker.Ports, 1);
+    await portsBar.start(ProgressMessage[Checker.Ports]);
+    await portsBar.next(ProgressMessage[Checker.Ports]);
+    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
+    if (portsInUse.length > 0) {
+      await portsBar.end(false);
+      return err(errors.PortsAlreadyInUse(portsInUse));
+    }
+    await portsBar.end(true);
     return ok(null);
   }
 
@@ -416,17 +485,6 @@ export default class Preview extends YargsCommand {
     const previewBar = CLIUIInstance.createProgressBar(constants.previewSPFxTitle, 1);
     await previewBar.start(constants.previewSPFxStartMessage);
     await previewBar.next(constants.previewSPFxStartMessage);
-    const message = [
-      {
-        content: `preview url: `,
-        color: Colors.WHITE,
-      },
-      {
-        content: url,
-        color: Colors.BRIGHT_CYAN,
-      },
-    ];
-    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
       await commonUtils.openBrowser(browser, url, browserArguments);
     } catch {
@@ -441,7 +499,19 @@ export default class Preview extends YargsCommand {
       await previewBar.end(false);
       return ok(null);
     }
+
     await previewBar.end(true);
+    const message = [
+      {
+        content: `preview url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: url,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
       ...this.telemetryProperties,
@@ -538,7 +608,7 @@ export default class Preview extends YargsCommand {
 
   private async startNgrok(
     workspaceFolder: string,
-    depsChecker: CliDepsChecker
+    depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     // bot npm install
     const botInstallTask = this.prepareTask(
@@ -551,7 +621,7 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
-    const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
+    const ngrok = (await depsManager.getStatus([DepsType.Ngrok]))[0];
     const ngrokBinFolders = ngrok.details.binFolders;
     const ngrokStartTask = this.prepareTask(
       TaskDefinition.ngrokStart(workspaceFolder, false, ngrokBinFolders),
@@ -577,7 +647,7 @@ export default class Preview extends YargsCommand {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    depsChecker: CliDepsChecker
+    depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     const frontendInstallTask = includeFrontend
       ? this.prepareTask(
@@ -593,7 +663,7 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
 
-    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     const dotnetExecPath = dotnet.command;
     const backendExtensionsInstallTask = includeBackend
       ? this.prepareTask(
@@ -637,7 +707,7 @@ export default class Preview extends YargsCommand {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    depsChecker: CliDepsChecker,
+    depsManager: DepsManager,
     includeSimpleAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
@@ -656,7 +726,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
 
-    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     const authStartTask =
       includeFrontend && includeSimpleAuth
         ? this.prepareTask(
@@ -666,7 +736,7 @@ export default class Preview extends YargsCommand {
           )
         : undefined;
 
-    const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
+    const func = (await depsManager.getStatus([DepsType.FuncCoreTools]))[0];
     const funcCommand = func.command;
     let funcEnv = undefined;
     if (func.details.binFolders !== undefined) {
@@ -811,17 +881,6 @@ export default class Preview extends YargsCommand {
     const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
     await previewBar.start(constants.previewStartMessage);
     await previewBar.next(constants.previewStartMessage);
-    const message = [
-      {
-        content: `preview url: `,
-        color: Colors.WHITE,
-      },
-      {
-        content: sideloadingUrl,
-        color: Colors.BRIGHT_CYAN,
-      },
-    ];
-    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
       await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
     } catch {
@@ -836,6 +895,17 @@ export default class Preview extends YargsCommand {
       return ok(null);
     }
     await previewBar.end(true);
+    const message = [
+      {
+        content: `preview url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: sideloadingUrl,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
       ...this.telemetryProperties,
@@ -854,32 +924,188 @@ export default class Preview extends YargsCommand {
   private async handleDependences(
     hasBackend: boolean,
     hasBot: boolean,
-    hasFuncHostedBot: boolean
-  ): Promise<Result<CliDepsChecker, FxError>> {
-    const depsChecker = new CliDepsChecker(
-      cliEnvCheckerLogger,
-      cliEnvCheckerTelemetry,
+    hasFuncHostedBot: boolean,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    let shouldContinue = true;
+    const enabledDeps = await CliDepsChecker.getEnabledDeps(
+      [DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
       hasBackend,
       hasBot,
       hasFuncHostedBot
     );
-    let node = DepsType.AzureNode;
-    if (hasBackend || hasFuncHostedBot) {
-      node = DepsType.FunctionNode;
-    }
 
-    const shouldContinue = await depsChecker.resolve([
-      node,
-      DepsType.Dotnet,
-      DepsType.FuncCoreTools,
-      DepsType.Ngrok,
-    ]);
+    for (const dep of enabledDeps) {
+      const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
+      await bar.start(ProgressMessage[dep]);
+      await bar.next(ProgressMessage[dep]);
+      const depStatus = (
+        await depsManager.ensureDependencies([dep], {
+          fastFail: false,
+          doctor: true,
+        })
+      )[0];
+
+      let result;
+      let summaryMsg;
+
+      if (depStatus.isInstalled) {
+        result = true;
+        summaryMsg = depStatus.details.binFolders
+          ? `${depStatus.name} (installed at ${depStatus.details.binFolders?.[0]})`
+          : DepsDisplayName[dep];
+      } else {
+        result = false;
+        summaryMsg = depStatus.error ? depStatus.error.message : DepsDisplayName[dep];
+      }
+      shouldContinue = shouldContinue && result;
+      await bar.next(summaryMsg);
+      await bar.end(result);
+      if (!result && depStatus.error && depStatus.error.helpLink) {
+        cliLogger.necessaryLog(
+          LogLevel.Info,
+          doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
+        );
+      }
+    }
 
     if (!shouldContinue) {
       return err(errors.DependencyCheckerFailed());
     }
 
-    return ok(depsChecker);
+    return ok(null);
+  }
+
+  private async checkNode(
+    hasBackend: boolean,
+    hasFuncHostedBot: boolean,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
+    await nodeBar.start(ProgressMessage[node]);
+
+    let nodeStatus;
+    let result = true;
+    let summaryMsg = doctorResult.NodeSuccess;
+    let helpLink = undefined;
+
+    try {
+      nodeStatus = (
+        await depsManager.ensureDependencies([node], {
+          fastFail: false,
+          doctor: true,
+        })
+      )[0];
+
+      if (!nodeStatus.isInstalled) {
+        summaryMsg = doctorResult.NodeNotFound;
+        result = false;
+        if (nodeStatus.error) {
+          helpLink = nodeStatus.error.helpLink;
+        }
+        if (nodeStatus.error instanceof NodeNotSupportedError) {
+          const supportedVersions = nodeStatus?.details.supportedVersions
+            .map((v) => "v" + v)
+            .join(" ,");
+          summaryMsg = doctorResult.NodeNotSupported.split("@CurrentVersion")
+            .join(nodeStatus?.details.installVersion)
+            .split("@SupportedVersions")
+            .join(supportedVersions);
+        }
+      }
+    } catch (err) {
+      result = false;
+      summaryMsg = doctorResult.NodeNotFound;
+    }
+
+    await nodeBar.next(summaryMsg);
+    await nodeBar.end(result);
+    if (!result) {
+      cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
+      return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
+    }
+
+    return ok(null);
+  }
+
+  private async checkM365Account(): Promise<Result<null, FxError>> {
+    let result = true;
+    let summaryMsg = `${Checker.M365Account}`;
+    let error = undefined;
+    const accountBar = CLIUIInstance.createProgressBar(Checker.M365Account, 1);
+    await accountBar.start(ProgressMessage[Checker.M365Account]);
+    await accountBar.next(ProgressMessage[Checker.M365Account]);
+    let loginHint = undefined;
+    try {
+      const loginStatus = await AppStudioTokenInstance.getStatus();
+      let token = loginStatus.token;
+      if (loginStatus.status === signedOut) {
+        token = await AppStudioTokenInstance.getAccessToken(true);
+      }
+
+      if (token === undefined) {
+        result = false;
+        summaryMsg = doctorResult.NotSignIn;
+      } else {
+        const isSideloadingEnabled = await getSideloadingStatus(token);
+        if (isSideloadingEnabled === false) {
+          // sideloading disabled
+          result = false;
+          summaryMsg = doctorResult.SideLoadingDisabled;
+        }
+      }
+
+      const tokenObject = loginStatus.accountInfo;
+      if (tokenObject && tokenObject.upn) {
+        loginHint = tokenObject.upn;
+      }
+    } catch (err: any) {
+      result = false;
+      error = this.assembleError(err, cliSource);
+    }
+
+    if (result && loginHint) {
+      summaryMsg = doctorResult.SignInSuccess.split("@account").join(`${loginHint}`);
+    }
+    await accountBar.next(summaryMsg);
+    await accountBar.end(result);
+
+    if (!result) {
+      return error ? err(error) : err(errors.PrerequisitesValidationError(summaryMsg));
+    }
+    return ok(null);
+  }
+
+  private async resolveLocalCertificate(
+    localEnvManager: LocalEnvManager
+  ): Promise<Result<null, FxError>> {
+    let result = true;
+    let summaryMsg;
+    let error = undefined;
+    const certBar = CLIUIInstance.createProgressBar(Checker.LocalCertificate, 1);
+    await certBar.start(ProgressMessage[Checker.LocalCertificate]);
+    await certBar.next(ProgressMessage[Checker.LocalCertificate]);
+    try {
+      const trustDevCert = await isTrustDevCertEnabled();
+      const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+      if (localCertResult.isTrusted === false) {
+        result = false;
+        error = localCertResult.error;
+      } else if (typeof localCertResult.isTrusted === "undefined") {
+        summaryMsg = doctorResult.SkipTrustingCert;
+      }
+    } catch (err: any) {
+      result = false;
+      error = assembleError(err);
+    }
+
+    await certBar.next(summaryMsg);
+    await certBar.end(result);
+    if (!result && error) {
+      return err(error);
+    }
+    return ok(null);
   }
 
   private prepareTask(
@@ -955,5 +1181,21 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(task);
     }
     return { task: task, startCb: startCb, stopCb: stopCb };
+  }
+
+  private assembleError(e: any, source?: string): FxError {
+    if (e instanceof UserError || e instanceof SystemError) return e;
+    if (!source) source = "unknown";
+    const type = typeof e;
+    if (type === "string") {
+      return new UnknownError(source, e as string);
+    } else if (e instanceof Error) {
+      const err = e as Error;
+      const fxError = new SystemError(err, source);
+      fxError.stack = err.stack;
+      return fxError;
+    } else {
+      return new UnknownError(source, JSON.stringify(e));
+    }
   }
 }

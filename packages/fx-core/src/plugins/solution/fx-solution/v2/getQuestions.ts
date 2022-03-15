@@ -48,7 +48,7 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { OperationNotSupportedForExistingAppError } from "../../../../core";
+import { NoCapabilityFoundError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
@@ -266,13 +266,7 @@ export async function getQuestions(
     }
     plugins = plugins.filter((plugin) => !!plugin.deploy);
     if (plugins.length === 0) {
-      return err(
-        returnUserError(
-          new Error("No resource to deploy"),
-          SolutionSource,
-          SolutionError.NoResourceToDeploy
-        )
-      );
+      return err(new NoCapabilityFoundError(Stage.deploy));
     }
 
     // On VS, users are not expected to select plugins to deploy.
@@ -461,7 +455,7 @@ export async function getQuestionsForAddResource(
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
     if (!settings) {
-      return err(new OperationNotSupportedForExistingAppError("addResource"));
+      return err(new NoCapabilityFoundError(Stage.addResource));
     }
     const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
     const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);

@@ -100,7 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
         if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(args);
+          await handlers.updateAutoOpenGlobalKey(true, args);
           await ExtTelemetry.dispose();
           await delay(2000);
           return { openFolder: targetUri.value };
@@ -185,6 +185,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  const installAppInTeamsCmd = vscode.commands.registerCommand(
+    "fx-extension.install-app-in-teams",
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
+  );
+  context.subscriptions.push(installAppInTeamsCmd);
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",

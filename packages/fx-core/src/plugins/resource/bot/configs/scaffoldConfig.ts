@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext, Stage } from "@microsoft/teamsfx-api";
+import {
+  CommonStrings,
+  HostType,
+  HostTypes,
+  NotificationTrigger,
+  NotificationTriggers,
+  PluginBot,
+} from "../resources/strings";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -13,6 +21,7 @@ export class ScaffoldConfig {
   public programmingLanguage?: ProgrammingLanguage;
   public workingDir?: string;
   public hostType?: HostType;
+  public triggers: NotificationTrigger[] = [];
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -34,14 +43,17 @@ export class ScaffoldConfig {
       rawProgrammingLanguage &&
       utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
     ) {
-      this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
+      this.programmingLanguage = rawProgrammingLanguage;
     }
 
-    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
-      PluginBot.HOST_TYPE
-    ] as string;
+    this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
 
-    this.hostType = utils.convertToConstValues(rawHostType, HostTypes);
+    const rawTriggers = context.answers?.[AzureSolutionQuestionNames.BotNotificationTriggers];
+    if (Array.isArray(rawTriggers)) {
+      this.triggers = rawTriggers
+        .map((rawTrigger) => utils.convertToConstValues(rawTrigger, NotificationTriggers))
+        .filter((item) => item !== undefined) as NotificationTrigger[];
+    }
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
@@ -49,5 +61,37 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
     utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
+  }
+
+  /**
+   * Get bot host type from plugin context.
+   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For later stages, the host type is persisted in projectSettings.json.
+   */
+  public static getBotHostType(context: PluginContext): HostType | undefined {
+    // TODO: support other stages (maybe addCapability)
+    const fromInputs = context.answers?.stage === Stage.create;
+    if (fromInputs) {
+      // TODO: retrieve host type from context.answers
+      // Since the UI design is not finalized yet,
+      // for testing purpose we currently use an environment variable to select hostType.
+      // Change the logic after question model is implemented.
+      if (process.env.TEAMSFX_BOT_HOST_TYPE) {
+        return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
+          ? HostTypes.AZURE_FUNCTIONS
+          : HostTypes.APP_SERVICE;
+      } else {
+        return undefined;
+      }
+    } else {
+      return this.getHostTypeFromProjectSettings(context);
+    }
+  }
+
+  private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {
+    const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
+    return utils.convertToConstValues(rawHostType, HostTypes);
   }
 }

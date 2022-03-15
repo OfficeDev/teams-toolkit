@@ -51,6 +51,14 @@ export const TabSPFxItem: OptionItem = {
   detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
+export const SsoItem: OptionItem = {
+  id: "SSO",
+  label: "SSO",
+  cliName: "sso",
+  description: getLocalizedString("core.Sso.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   TabScopes = "tab-scopes",
@@ -63,6 +71,7 @@ export enum AzureSolutionQuestionNames {
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
   Scenario = "scenario",
+  BotNotificationTriggers = "bot-notification-triggers",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -104,6 +113,14 @@ export enum BotScenario {
   NotificationBot = "notificationBot",
   CommandBot = "commandBot",
 }
+
+export const BotNotificationTriggers = {
+  Timer: "timer",
+  Http: "http",
+} as const;
+
+export type BotNotificationTrigger =
+  typeof BotNotificationTriggers[keyof typeof BotNotificationTriggers];
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.AzureResources,

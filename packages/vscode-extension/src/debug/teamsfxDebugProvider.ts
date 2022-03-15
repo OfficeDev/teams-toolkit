@@ -5,7 +5,10 @@ import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
+import { showError } from "../handlers";
+import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxEnv?: string;
@@ -46,17 +49,24 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         if (debugConfiguration.url === undefined) {
           return debugConfiguration;
         }
+        let url: string = debugConfiguration.url as string;
 
         const localTeamsAppIdPlaceholder = "${localTeamsAppId}";
-        const isLocalSideloadingConfiguration: boolean = (
-          debugConfiguration.url as string
-        ).includes(localTeamsAppIdPlaceholder);
+        const isLocalSideloadingConfiguration: boolean = url.includes(localTeamsAppIdPlaceholder);
         const teamsAppIdPlaceholder = "${teamsAppId}";
-        const isSideloadingConfiguration: boolean = (debugConfiguration.url as string).includes(
-          teamsAppIdPlaceholder
+        const isSideloadingConfiguration: boolean = url.includes(teamsAppIdPlaceholder);
+        const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalId}";
+        const isLocalM365SideloadingConfiguration: boolean = url.includes(
+          localTeamsAppInternalIdPlaceholder
         );
+        const isLocalSideloading: boolean =
+          isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
 
-        if (!isLocalSideloadingConfiguration && !isSideloadingConfiguration) {
+        if (
+          !isLocalSideloadingConfiguration &&
+          !isSideloadingConfiguration &&
+          !isLocalM365SideloadingConfiguration
+        ) {
           return debugConfiguration;
         }
 
@@ -65,13 +75,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         let debugConfig = undefined;
-        if (isLocalSideloadingConfiguration && isConfigUnifyEnabled()) {
+        if (isLocalSideloading && isConfigUnifyEnabled()) {
           debugConfig = await commonUtils.getDebugConfig(
             false,
             environmentManager.getLocalEnvName()
           );
         } else {
-          debugConfig = await commonUtils.getDebugConfig(isLocalSideloadingConfiguration);
+          debugConfig = await commonUtils.getDebugConfig(isLocalSideloading);
         }
         if (!debugConfig) {
           // The user cancels env selection.
@@ -82,25 +92,28 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
         debugConfiguration.teamsfxEnv = debugConfig.env;
         debugConfiguration.teamsfxAppId = debugConfig.appId;
-        debugConfiguration.url = (debugConfiguration.url as string).replace(
-          isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
-          debugConfig.appId
-        );
+
+        url = url.replace(localTeamsAppIdPlaceholder, debugConfig.appId);
+        url = url.replace(teamsAppIdPlaceholder, debugConfig.appId);
+        const internalId = await getTeamsAppInternalId(debugConfig.appId);
+        if (internalId !== undefined) {
+          url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
+        }
 
         const accountHintPlaceholder = "${account-hint}";
-        const isaccountHintConfiguration: boolean = (debugConfiguration.url as string).includes(
-          accountHintPlaceholder
-        );
+        const isaccountHintConfiguration: boolean = url.includes(accountHintPlaceholder);
         if (isaccountHintConfiguration) {
           const accountHint = await generateAccountHint();
-          debugConfiguration.url = (debugConfiguration.url as string).replace(
-            accountHintPlaceholder,
-            accountHint
-          );
+          url = url.replace(accountHintPlaceholder, accountHint);
         }
+
+        debugConfiguration.url = url;
       }
-    } catch (err) {
-      // TODO(kuojianlu): add log and telemetry
+    } catch (error: any) {
+      showError(error);
+      terminateAllRunningTeamsfxTasks();
+      await vscode.debug.stopDebugging();
+      commonUtils.endLocalDebugSession();
     }
     return debugConfiguration;
   }

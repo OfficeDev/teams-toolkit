@@ -12,7 +12,9 @@ import {
   Json,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  Stage,
 } from "@microsoft/teamsfx-api";
+import { HelpLinks } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
@@ -262,8 +264,24 @@ export function LoadPluginError(): SystemError {
   return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
 }
 
-export class OperationNotSupportedForExistingAppError extends UserError {
-  constructor(task: string) {
-    super(new.target.name, getLocalizedString("error.InvalidEnvNameError", task), CoreSource);
+export class OperationNotPermittedError extends UserError {
+  constructor(operation: string) {
+    super(
+      new.target.name,
+      getLocalizedString("error.OperationNotPermittedError", operation),
+      CoreSource
+    );
+  }
+}
+
+export class NoCapabilityFoundError extends UserError {
+  constructor(operation: Stage) {
+    super(
+      new.target.name,
+      getLocalizedString("core.deploy.noCapabilityFound", operation),
+      CoreSource,
+      undefined,
+      HelpLinks.HowToAddCapability
+    );
   }
 }

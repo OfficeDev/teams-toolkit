@@ -81,6 +81,9 @@ describe("teamsfx validate", () => {
         expect(func).deep.equals({
           namespace: "fx-solution-azure",
           method: "validateManifest",
+          params: {
+            type: "remote",
+          },
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
@@ -88,6 +91,7 @@ describe("teamsfx validate", () => {
     const cmd = new ManifestValidate();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
+      env: "dev",
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([
@@ -104,6 +108,9 @@ describe("teamsfx validate", () => {
         expect(func).deep.equals({
           namespace: "fx-solution-azure",
           method: "validateManifest",
+          params: {
+            type: "remote",
+          },
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
@@ -111,6 +118,7 @@ describe("teamsfx validate", () => {
     const cmd = new ManifestValidate();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
+      env: "dev",
     };
     try {
       await cmd.handler(args);

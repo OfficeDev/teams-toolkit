@@ -250,7 +250,7 @@
   "plugins.aad.StepFailedAndSkipped": "Failed in step: %s. You need to go to Azure Protal and mannually %s for the provided Azure AD app.",
   "plugins.aad.UpdatePermissionHelpMessage": "update the permission under \"API permissions\"",
   "plugins.aad.UpdateAppIdUriHelpMessage": "set \"%s\" as \"Application ID URI\" under \"Expose an API\"",
-  "plugins.aad.UpdateRedirectUriHelpMessage": "set \"%s\" as \"Redirect URIs\" under \"Authentication\""
+  "plugins.aad.UpdateRedirectUriHelpMessage": "set \"%s\" as \"Redirect URIs\" under \"Authentication\"",
   "plugins.apim.QuestionConstants.VSCode.OpenApiDocument.description": "Select Open API document.",
   "plugins.apim.QuestionConstants.VSCode.ApiPrefix.description": "Input the API name prefix.",
   "plugins.apim.QuestionConstants.VSCode.ApiPrefix.prompt": "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.",

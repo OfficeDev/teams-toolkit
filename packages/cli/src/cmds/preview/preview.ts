@@ -320,12 +320,6 @@ export default class Preview extends YargsCommand {
         return err(envCheckerResult.error);
       }
 
-      // clear background tasks
-      this.backgroundTasks = [];
-      // init service log writer
-      this.serviceLogWriter = new ServiceLogWriter();
-      await this.serviceLogWriter.init();
-
       /* === check ports === */
       const portsRes = await this.checkPorts(workspaceFolder);
       if (portsRes.isErr()) {
@@ -337,6 +331,12 @@ export default class Preview extends YargsCommand {
         ((performance.now() - start) / 1000).toFixed(2)
       );
     }
+
+    // clear background tasks
+    this.backgroundTasks = [];
+    // init service log writer
+    this.serviceLogWriter = new ServiceLogWriter();
+    await this.serviceLogWriter.init();
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {

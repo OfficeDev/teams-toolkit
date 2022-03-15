@@ -10,6 +10,7 @@ export function generateTasks(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
+  includeFuncHostedBot: boolean,
   programmingLanguage: string
 ): Record<string, unknown>[] {
   /**
@@ -51,7 +52,15 @@ export function generateTasks(
   }
 
   if (includeBot) {
-    tasks.push(startBot(includeFrontend));
+    if (includeFuncHostedBot) {
+      tasks.push(startFuncHostedBot(includeFrontend, programmingLanguage));
+      tasks.push(startAzuriteEmulator());
+      if (programmingLanguage === ProgrammingLanguage.typescript) {
+        tasks.push(watchFuncHostedBot());
+      }
+    } else {
+      tasks.push(startBot(includeFrontend));
+    }
   }
 
   return tasks;
@@ -143,6 +152,22 @@ function watchBackend(): Record<string, unknown> {
   };
 }
 
+function watchFuncHostedBot(): Record<string, unknown> {
+  return {
+    label: "Watch Bot",
+    type: "shell",
+    command: "npm run watch:teamsfx",
+    isBackground: true,
+    problemMatcher: "$tsc-watch",
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+    presentation: {
+      reveal: "silent",
+    },
+  };
+}
+
 function startBot(includeFrontend: boolean): Record<string, unknown> {
   const result = {
     label: "Start Bot",
@@ -176,6 +201,37 @@ function startBot(includeFrontend: boolean): Record<string, unknown> {
   return result;
 }
 
+function startFuncHostedBot(
+  includeFrontend: boolean,
+  programmingLanguage: string
+): Record<string, unknown> {
+  const result = {
+    label: "Start Bot",
+    type: "shell",
+    command: "npm run dev:teamsfx",
+    isBackground: true,
+    problemMatcher: "$teamsfx-backend-watch",
+    options: {
+      cwd: "${workspaceFolder}/bot",
+      env: {
+        PATH: "${env:PATH}${command:fx-extension.get-func-path}",
+      },
+    },
+  } as Record<string, unknown>;
+
+  if (includeFrontend) {
+    result.presentation = { reveal: "silent" };
+  }
+
+  const dependsOn: string[] = ["Start Azurite Emulator"];
+  if (programmingLanguage === ProgrammingLanguage.typescript) {
+    dependsOn.push("Watch Bot");
+  }
+  result.dependsOn = dependsOn;
+
+  return result;
+}
+
 function startNgrok(): Record<string, unknown> {
   return {
     label: "start ngrok",
@@ -201,5 +257,33 @@ function startAll(
   return {
     label: "Start All",
     dependsOn,
+  };
+}
+
+function startAzuriteEmulator(): Record<string, unknown> {
+  return {
+    label: "Start Azurite Emulator",
+    type: "shell",
+    command: "npm run prepare-storage:teamsfx",
+    isBackground: true,
+    problemMatcher: {
+      pattern: [
+        {
+          regexp: "^.*$",
+          file: 0,
+          location: 1,
+          message: 2,
+        },
+      ],
+      background: {
+        activeOnStart: true,
+        beginsPattern: "Azurite",
+        endsPattern: "successfully listening",
+      },
+    },
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+    presentation: { reveal: "silent" },
   };
 }

@@ -100,10 +100,7 @@ export class FunctionPlugin implements Plugin {
 
   public async preProvision(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preProvision, () =>
-      this.functionPluginImpl.preProvision(ctx)
-    );
-    return res;
+    return ResultFactory.Success();
   }
 
   public async provision(ctx: PluginContext): Promise<FxResult> {

@@ -89,7 +89,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
     }
     if (commandLine !== undefined) {
-      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
+      return /(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine);
     }
   }
 

@@ -31,4 +31,5 @@ packages/sdk/test/unit/node/appCredential.spec.ts
 packages/sdk/test/unit/node/core/onBehalfOfUserCredential.spec.ts
 packages/fx-core/tests/core/samples_v2.zip
 packages/cli/tests/e2e/manifest/appPackage.dev.zip
+packages/fx-core/templates/plugins/resource/cicd/azdo/*.yml
 packages/vscode-extension/src/debug/teamsfxDebugProvider.ts

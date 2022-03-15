@@ -29,10 +29,5 @@
   "bin": {
     "teamsfx": "./packages/cli/cli.js"
   },
-  "dependencies": {},
-  "lint-staged": {
-    "*": [
-      "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package-lock.json' --ignore-pattern 'package.json'"
-    ]
-  }
+  "dependencies": {}
 }

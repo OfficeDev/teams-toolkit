@@ -119,7 +119,6 @@ import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import * as exp from "./exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import {
@@ -670,12 +669,29 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDInsiderGuide, getTriggerFromProperty(args));
+export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AddCICDWorkflowsStart,
+    getTriggerFromProperty(args)
+  );
 
-  const cicdGuideLink = "https://aka.ms/teamsfx-cicd-insider-guide";
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-cicd",
+    method: "addCICDWorkflows",
+    params: {},
+  };
 
-  return await env.openExternal(Uri.parse(cicdGuideLink));
+  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, true);
+  if (!res.isOk()) {
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCICDWorkflows, res.error);
+    return err(res.error);
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
 }
 
 export async function runCommand(
@@ -2367,7 +2383,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringContext.getSignInAzureContext(),
+        label: localize("teamstoolkit.handlers.signInAzure"),
         contextValue: "signinAzure",
       },
     ]);

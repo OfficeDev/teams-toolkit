@@ -61,6 +61,7 @@ jobs:
 
       - name: Install wine64
         run: |
+          sudo apt update
           sudo apt install wine64 -y
 
       - name: Setup .NET

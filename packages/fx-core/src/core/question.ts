@@ -151,6 +151,37 @@ function hasCapability(items: string[], optionItem: OptionItem): boolean {
   return items.includes(optionItem.id) || items.includes(optionItem.label);
 }
 
+// Items in set1 and set2 are mutally exclusive. Handle conflict by removing conflicting items with the newly added items.
+// Assuming intersection of set1 and set2 are empty sets and no conflicts in newly added items.
+export function handleSelectionConflict<T>(
+  set1: Set<T>,
+  set2: Set<T>,
+  previous: Set<T>,
+  current: Set<T>
+): Set<T> {
+  const addedItems = [...current].filter((item) => !previous.has(item));
+
+  let conflicts: Set<T> | undefined = undefined;
+  for (const addedItem of addedItems) {
+    if (set1.has(addedItem)) {
+      conflicts = set2;
+      break;
+    }
+    if (set2.has(addedItem)) {
+      conflicts = set1;
+      break;
+    }
+  }
+
+  const result = new Set<T>();
+  for (const item of current) {
+    if (!conflicts || !conflicts.has(item)) {
+      result.add(item);
+    }
+  }
+  return result;
+}
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   const staticOptions = [
     ...[TabOptionItem, BotOptionItem],
@@ -193,12 +224,22 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>
     ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
-        if (previousSelectedIds.has(TabSPFxItem.id)) {
-          currentSelectedIds.delete(TabSPFxItem.id);
-        } else {
-          currentSelectedIds.clear();
-          currentSelectedIds.add(TabSPFxItem.id);
+      if (currentSelectedIds.size > 1) {
+        if (currentSelectedIds.has(TabSPFxItem.id)) {
+          if (previousSelectedIds.has(TabSPFxItem.id)) {
+            currentSelectedIds.delete(TabSPFxItem.id);
+          } else {
+            currentSelectedIds.clear();
+            currentSelectedIds.add(TabSPFxItem.id);
+          }
+        }
+        if (isBotNotificationEnabled()) {
+          currentSelectedIds = handleSelectionConflict(
+            new Set([BotOptionItem.id, MessageExtensionItem.id]),
+            new Set([NotificationOptionItem.id]),
+            previousSelectedIds,
+            currentSelectedIds
+          );
         }
       }
 

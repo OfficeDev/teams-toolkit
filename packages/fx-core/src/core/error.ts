@@ -271,6 +271,7 @@ export class NoCapabilityFoundError extends UserError {
       new.target.name,
       getLocalizedString("core.deploy.noCapabilityFound", operation),
       CoreSource,
+      undefined,
       HelpLinks.HowToAddCapability
     );
   }

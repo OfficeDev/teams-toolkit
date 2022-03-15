@@ -326,32 +326,6 @@ export default class Preview extends YargsCommand {
       this.serviceLogWriter = new ServiceLogWriter();
       await this.serviceLogWriter.init();
 
-      /* === start ngrok === */
-      if (includeBot && !skipNgrok) {
-        const result = await this.startNgrok(workspaceFolder, depsManager);
-        if (result.isErr()) {
-          return result;
-        }
-      }
-
-      /* === prepare dev env === */
-      const result = await this.prepareDevEnv(
-        core,
-        inputs,
-        workspaceFolder,
-        includeFrontend,
-        includeBackend,
-        includeBot,
-        depsManager
-      );
-      if (result.isErr()) {
-        return result;
-      }
-
-      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
-        workspaceFolder
-      ) as string;
-
       /* === check ports === */
       const portsRes = await this.checkPorts(workspaceFolder);
       if (portsRes.isErr()) {
@@ -364,13 +338,39 @@ export default class Preview extends YargsCommand {
       );
     }
 
+    /* === start ngrok === */
+    if (includeBot && !skipNgrok) {
+      const result = await this.startNgrok(workspaceFolder, depsManager);
+      if (result.isErr()) {
+        return result;
+      }
+    }
+
+    /* === prepare dev env === */
+    let result = await this.prepareDevEnv(
+      core,
+      inputs,
+      workspaceFolder,
+      includeFrontend,
+      includeBackend,
+      includeBot,
+      depsManager
+    );
+    if (result.isErr()) {
+      return result;
+    }
+
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+      workspaceFolder
+    ) as string;
+
     /* === start services === */
     const programmingLanguage = projectSettings.programmingLanguage as string;
     if (programmingLanguage === undefined || programmingLanguage.length === 0) {
       return err(errors.MissingProgrammingLanguageSetting());
     }
 
-    let result = await this.startServices(
+    result = await this.startServices(
       workspaceFolder,
       programmingLanguage,
       includeFrontend,

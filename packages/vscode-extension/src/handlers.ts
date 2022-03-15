@@ -119,7 +119,6 @@ import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import * as exp from "./exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import {
@@ -2367,7 +2366,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
-        label: StringContext.getSignInAzureContext(),
+        label: localize("teamstoolkit.handlers.signInAzure"),
         contextValue: "signinAzure",
       },
     ]);

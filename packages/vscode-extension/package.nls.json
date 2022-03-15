@@ -143,7 +143,6 @@
     "teamstoolkit.commandsTreeViewProvider.validateManifestDescription": "Validate the Teams app manifest file",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitle": "Validate App Manifest File",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitleNew": "Validate manifest file",
-    "teamstoolkit.common.activate": "Teams Toolkit extension is now active!",
     "teamstoolkit.common.cancel": "Cancel",
     "teamstoolkit.common.confirm": "Confirm",
     "teamstoolkit.common.readMore": "Read more",

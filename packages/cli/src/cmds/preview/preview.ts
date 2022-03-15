@@ -289,9 +289,9 @@ export default class Preview extends YargsCommand {
     }
 
     const start = performance.now();
+    const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
     try {
       // check node
-      const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
       const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
       if (nodeRes.isErr()) {
         return err(nodeRes.error);
@@ -370,7 +370,7 @@ export default class Preview extends YargsCommand {
       return err(errors.MissingProgrammingLanguageSetting());
     }
 
-    result = await this.startServices(
+    let result = await this.startServices(
       workspaceFolder,
       programmingLanguage,
       includeFrontend,

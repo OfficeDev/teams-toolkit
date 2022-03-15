@@ -12,7 +12,7 @@ export class UnauthenticatedError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.UnauthenticatedError"),
         tips.doLogin
       ),
@@ -26,7 +26,7 @@ export class EnableStaticWebsiteError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.EnableStaticWebsiteError"),
         [tips.checkSystemTime, tips.checkStoragePermissions].join(" ")
       ),
@@ -42,7 +42,7 @@ export class NpmInstallError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.NpmInstallError"),
         [tips.doNpmInstall, tips.checkLog].join(" ")
       ),
@@ -56,7 +56,7 @@ export class BuildError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.BuildError"),
         [tips.doBuild, tips.checkLog].join(" ")
       ),
@@ -70,7 +70,7 @@ export class GetContainerError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
         [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork].join(" ")
       ),
@@ -84,7 +84,7 @@ export class ClearStorageError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         getLocalizedString("error.frontend.ClearStorageError"),
         [tips.checkSystemTime, tips.checkNetwork].join(" ")
       ),
@@ -98,7 +98,7 @@ export class UploadToStorageError extends UserError {
     super(
       new.target.name,
       getLocalizedString(
-        "error.frontend.BaseErrorMessage",
+        "plugins.baseErrorMessage",
         path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath),
         [tips.checkSystemTime, tips.checkNetwork].join(" ")
       ),

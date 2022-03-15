@@ -8,6 +8,9 @@ export class ConstantString {
 export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
   static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+
+  // TODO: short link to the docs
+  static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
 export class Bicep {

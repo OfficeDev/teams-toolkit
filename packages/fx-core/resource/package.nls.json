@@ -110,7 +110,7 @@
   "plugins.bot.triggers.functionsHttp.label": "HTTP Trigger",
   "plugins.bot.triggers.functionsHttp.cliName": "http",
   "plugins.bot.triggers.functionsHttp.description": "A function that will be run whenever it receives an HTTP request.",
-  "plugins.bot.triggers.functionsHttp.detail": "A function hosted Azure Functions that will be run whenever it receives an HTTP request.",
+  "plugins.bot.triggers.functionsHttp.detail": "A function hosted on Azure Functions that will be run whenever it receives an HTTP request.",
   "plugins.bot.triggers.appService.label": "HTTP Trigger (Restify)",
   "plugins.bot.triggers.appService.cliName": "http-restify",
   "plugins.bot.triggers.appService.description": "A restify server that will be run whenever it receives an HTTP request.",

@@ -1,4 +1,7 @@
 // Copyright (c) Microsoft Corporation.
+
+import { getLocalizedString } from "../../../common/localizeUtils";
+
 // Licensed under the MIT license.
 export class Constants {
   static readonly SolutionPlugin = {
@@ -96,13 +99,16 @@ export class Constants {
   };
 
   static readonly RegisterRersourceProviderFailed = (message: string) =>
-    `Failed to register required resource provider for Simple Auth. Reason: ${message}. Register required resource provider ${Constants.RequiredResourceProviders.join(
-      ","
-    )} manually.`;
+    getLocalizedString(
+      "plugins.sa.RegisterRersourceProviderFailed",
+      message,
+      Constants.RequiredResourceProviders.join(",")
+    );
   static readonly FreeServerFarmsQuotaErrorFromAzure =
     "The maximum number of Free ServerFarms allowed in a Subscription is 10";
-  static readonly FreeServerFarmsQuotaErrorToUser =
-    "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again.";
+  static readonly FreeServerFarmsQuotaErrorToUser = getLocalizedString(
+    "plugins.sa.FreeServerFarmsQuotaErrorToUser"
+  );
   static readonly MissingSubscriptionRegistrationErrorFromAzure =
     "The subscription is not registered to use namespace 'Microsoft.Web'";
   static readonly HelpLink = "https://aka.ms/teamsfx-sa-help";

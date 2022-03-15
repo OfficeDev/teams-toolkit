@@ -428,9 +428,7 @@ export class SPFxPluginImpl {
             } else {
               return err(
                 CreateAppCatalogFailedError(
-                  new Error(
-                    "Cannot get app catalog site url after creation. You may need wait a few minutes and retry."
-                  )
+                  new Error(getLocalizedString("plugins.spfx,cannotGetAppcatalog"))
                 )
               );
             }

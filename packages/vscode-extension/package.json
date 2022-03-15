@@ -317,8 +317,8 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.cicdGuide",
-          "when": "false"
+          "command": "fx-extension.migrateV1Project",
+          "when": "fx-extension.v1Project"
         },
         {
           "command": "fx-extension.refreshEnvironment",
@@ -538,8 +538,8 @@
         "icon": "$(run)"
       },
       {
-        "command": "fx-extension.cicdGuide",
-        "title": "%teamstoolkit.commands.cicd.title%",
+        "command": "fx-extension.addCICDWorkflows",
+        "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
         "icon": "$(sync)"
       },
       {

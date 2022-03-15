@@ -137,3 +137,10 @@ export const HostTypes = {
 } as const;
 
 export type HostType = typeof HostTypes[keyof typeof HostTypes];
+
+export const NotificationTriggers = {
+  HTTP: "http",
+  TIMER: "timer",
+} as const;
+
+export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];

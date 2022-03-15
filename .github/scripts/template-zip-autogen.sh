@@ -18,6 +18,7 @@ TEMPLATE_LIST=(
     bot.default
     bot.notification
     blazor-base.default
+    tab.non-sso
 )
 
 for LANGUAGE in ${LANGUAGE_LIST[@]}; do

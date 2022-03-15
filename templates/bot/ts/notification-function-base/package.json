@@ -7,7 +7,7 @@
   "scripts": {
     "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
     "dev": "func start --typescript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
-    "dev:teamsfx:prepare-storage": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
+    "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
     "watch:teamsfx": "tsc --watch",
     "build": "tsc",
     "watch": "tsc -w",

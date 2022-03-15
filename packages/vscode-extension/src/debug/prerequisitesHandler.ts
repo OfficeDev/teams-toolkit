@@ -66,6 +66,7 @@ import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
 import { ProgressHelper } from "./progressHelper";
 import { localize } from "../utils/localizeUtils";
+import * as commonUtils from "./commonUtils";
 
 enum Checker {
   SPFx = "SPFx",
@@ -199,7 +200,9 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
   let progressHelper: ProgressHelper | undefined;
   try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart, {
+      [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+    });
 
     // terminate all running teamsfx tasks
     if (allRunningTeamsfxTasks.size > 0) {

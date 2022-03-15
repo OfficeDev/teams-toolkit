@@ -78,13 +78,12 @@ export class TelemetryHelper {
   }
 
   static sendScaffoldFallbackEvent(
-    e: FunctionPluginError,
+    message: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
     this.fillCommonProperty(properties);
-    properties[TelemetryKey.ErrorMessage] = e.message;
-    properties[TelemetryKey.ErrorCode] = e.code;
+    properties[TelemetryKey.ErrorMessage] = message;
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(
       FunctionEvent.scaffoldFallback,

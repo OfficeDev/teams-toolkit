@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
 import { PluginContext, Stage } from "@microsoft/teamsfx-api";
+import {
+  CommonStrings,
+  HostType,
+  HostTypes,
+  NotificationTrigger,
+  NotificationTriggers,
+  PluginBot,
+} from "../resources/strings";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -13,6 +21,7 @@ export class ScaffoldConfig {
   public programmingLanguage?: ProgrammingLanguage;
   public workingDir?: string;
   public hostType?: HostType;
+  public triggers: NotificationTrigger[] = [];
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -34,10 +43,17 @@ export class ScaffoldConfig {
       rawProgrammingLanguage &&
       utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
     ) {
-      this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
+      this.programmingLanguage = rawProgrammingLanguage;
     }
 
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
+
+    const rawTriggers = context.answers?.[AzureSolutionQuestionNames.BotNotificationTriggers];
+    if (Array.isArray(rawTriggers)) {
+      this.triggers = rawTriggers
+        .map((rawTrigger) => utils.convertToConstValues(rawTrigger, NotificationTriggers))
+        .filter((item) => item !== undefined) as NotificationTrigger[];
+    }
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

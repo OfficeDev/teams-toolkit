@@ -173,6 +173,7 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings?: SolutionSettings;
   isFromSample?: boolean;
+  isM365?: boolean;
   /**
    * pluginSettings is used for plugin settings irrelevant to environments
    */
@@ -233,6 +234,7 @@ export interface Inputs extends Json {
   existingResources?: string[];
   existingAppConfig?: ExistingAppConfig;
   locale?: string;
+  isM365?: boolean;
 }
 
 // configs for existing app building

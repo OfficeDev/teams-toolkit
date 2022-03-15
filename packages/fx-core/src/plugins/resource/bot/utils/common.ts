@@ -112,12 +112,12 @@ export function checkAndSavePluginSetting(
 export function existsInEnumValues<T extends string>(
   value: string,
   targetEnum: { [key: string]: T }
-): boolean {
+): value is T {
   return Object.values(targetEnum).find((itemValue: string) => value === itemValue) !== undefined;
 }
 
 export function convertToConstValues<V extends string, T extends { [key in string]: V }>(
-  value: string | undefined,
+  value: unknown,
   targetValues: T
 ): V | undefined {
   return Object.values(targetValues).find((itemValue) => value === itemValue);

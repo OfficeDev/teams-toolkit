@@ -13,8 +13,6 @@ export function getLocalizedString(key: string, ...params: any[]): string {
   const json = fs.readJSONSync(nlsFilePath);
   let value = json[key];
   if (value && params && params.length > 0) {
-    console.log(value);
-    console.log(params);
     value = util.format(value, ...params);
   }
   return value || "";

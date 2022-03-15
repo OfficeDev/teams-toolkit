@@ -182,44 +182,6 @@ describe("Post Local Debug", () => {
     }
   });
 
-  it("should return AppDefinition error", async () => {
-    ctx = {
-      root: "./tests/plugins/resource/appstudio/resources-multi-env/",
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      cryptoProvider: new LocalCrypto(""),
-      localSettings,
-    };
-    ctx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-        capabilities: ["Bot"],
-      },
-    };
-    sandbox
-      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
-      .returns(
-        err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.UnhandledError.name,
-            AppStudioError.UnhandledError.message
-          )
-        )
-      );
-
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
-    try {
-      const postLocalDebugResult = await plugin.postLocalDebug(ctx);
-      chai.assert.isTrue(postLocalDebugResult.isErr());
-    } catch (error) {
-      chai.expect(error._unsafeUnwrapErr().name).equals(AppStudioError.UnhandledError.name);
-    }
-  });
-
   it("should return Ok for postLocalDebug happy path", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);

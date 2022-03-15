@@ -20,7 +20,9 @@
         "function-triggers/ts/HTTPTrigger",
         "tab/csharp/default",
         "tab/js/default",
-        "tab/ts/default"
+        "tab/ts/default",
+        "tab/js/non-sso",
+        "tab/ts/non-sso"
     ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",

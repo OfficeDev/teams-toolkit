@@ -71,6 +71,7 @@ export enum AzureSolutionQuestionNames {
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
   Scenario = "scenario",
+  BotNotificationTriggers = "bot-notification-triggers",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -112,6 +113,14 @@ export enum BotScenario {
   NotificationBot = "notificationBot",
   CommandBot = "commandBot",
 }
+
+export const BotNotificationTriggers = {
+  Timer: "timer",
+  Http: "http",
+} as const;
+
+export type BotNotificationTrigger =
+  typeof BotNotificationTriggers[keyof typeof BotNotificationTriggers];
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.AzureResources,

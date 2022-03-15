@@ -111,7 +111,7 @@ export class TeamsBotImpl implements PluginImpl {
     // }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    await LanguageStrategy.getTemplateProject(group_name, this.config);
+    await LanguageStrategy.scaffoldProject(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
 import * as path from "path";
-import AdmZip from "adm-zip";
 
 import {
   CommonConstants,
@@ -15,12 +14,7 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import {
-  TemplateZipFallbackError,
-  UnknownFallbackError,
-  UnzipError,
-  TemplateManifestError,
-} from "../resources/errors";
+import { TemplateZipFallbackError, UnknownFallbackError, UnzipError } from "../resources/errors";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import {
   genTemplateRenderReplaceFn,
@@ -84,7 +78,7 @@ export class FunctionScaffold {
         switch (action.name) {
           case ScaffoldActionName.FetchTemplatesUrlWithTag:
           case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+            TelemetryHelper.sendScaffoldFallbackEvent(error.message);
             Logger.info(InfoMessages.getTemplateFromLocal);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:

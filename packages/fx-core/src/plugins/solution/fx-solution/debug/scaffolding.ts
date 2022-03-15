@@ -28,6 +28,7 @@ import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { BotHostTypes } from "../../../../common";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -61,6 +62,7 @@ export async function _scaffoldLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
   const isM365 = projectSetting.isM365;
 
@@ -71,6 +73,7 @@ export async function _scaffoldLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
+    botHostType: includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);
@@ -145,6 +148,7 @@ export async function _scaffoldLocalDebugSettings(
               includeFrontend,
               includeBackend,
               includeBot,
+              includeFuncHostedBot,
               programmingLanguage
             )
           : Tasks.generateTasks(

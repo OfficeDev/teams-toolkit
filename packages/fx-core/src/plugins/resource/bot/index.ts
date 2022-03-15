@@ -3,8 +3,14 @@
 import {
   AzureSolutionSettings,
   err,
+  Func,
+  FxError,
+  ok,
   Plugin,
   PluginContext,
+  QTreeNode,
+  Result,
+  Stage,
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -12,7 +18,7 @@ import {
 import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { TeamsBotImpl } from "./plugin";
 import { ProgressBarFactory } from "./progressBars";
-import { LifecycleFuncNames, ProgressBarConstants } from "./constants";
+import { CustomizedTasks, LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import {
   ErrorType,
   InnerError,
@@ -30,7 +36,7 @@ import "./v2";
 import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import { isVSProject, BotHostTypes } from "../../../common";
+import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 
@@ -182,6 +188,58 @@ export class TeamsBot implements Plugin {
       () => this.getImpl(context).postLocalDebug(context),
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
+    );
+  }
+
+  public async getQuestions(
+    stage: Stage,
+    context: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    Logger.setLogger(context.logProvider);
+
+    if (stage === Stage.create) {
+      return await TeamsBot.runWithExceptionCatching(
+        context,
+        async () => {
+          if (isBotNotificationEnabled()) {
+            const res = new QTreeNode({
+              type: "group",
+            });
+            // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+            return ok(res);
+          } else {
+            return ok(undefined);
+          }
+        },
+        true,
+        LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING
+      );
+    } else {
+      return ok(undefined);
+    }
+  }
+
+  public async getQuestionsForUserTask(
+    func: Func,
+    context: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    Logger.setLogger(context.logProvider);
+
+    return await TeamsBot.runWithExceptionCatching(
+      context,
+      async () => {
+        if (func.method === CustomizedTasks.addCapability && isBotNotificationEnabled()) {
+          const res = new QTreeNode({
+            type: "group",
+          });
+          // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          return ok(res);
+        } else {
+          return ok(undefined);
+        }
+      },
+      true,
+      LifecycleFuncNames.GET_QUETSIONS_FOR_USER_TASK
     );
   }
 

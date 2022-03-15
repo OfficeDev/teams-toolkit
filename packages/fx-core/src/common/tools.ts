@@ -382,10 +382,18 @@ export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }
 
+export function isM365AppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
 export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  if (!solutionSettings) {
+    return false;
+  }
+
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&

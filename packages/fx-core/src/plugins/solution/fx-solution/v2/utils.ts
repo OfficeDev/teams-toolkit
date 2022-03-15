@@ -29,6 +29,7 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
+  BotNotificationTriggers,
   BotOptionItem,
   BotScenario,
   HostTypeOptionAzure,
@@ -230,7 +231,7 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(NotificationOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+  if (capabilities.includes(NotificationOptionItem.id)) {
     // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
     const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
     if (notificationIndex !== -1) {
@@ -238,11 +239,18 @@ export function fillInSolutionSettings(
       // dedup
       capabilities = [...new Set(capabilities)];
       answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
+
+      // TODO(aochengwang): use question model to multi-select bot notification triggers
+      // Currently assuming all triggers are select for testing.
+      answers[AzureSolutionQuestionNames.BotNotificationTriggers] = [
+        BotNotificationTriggers.Http,
+        BotNotificationTriggers.Timer,
+      ];
     }
-    // TODO(aochengwang): handle other bot scenarios
 
     hostType = HostTypeOptionAzure.id;
   } else if (
+    capabilities.includes(BotOptionItem.id) ||
     capabilities.includes(MessageExtensionItem.id) ||
     capabilities.includes(TabOptionItem.id)
   ) {

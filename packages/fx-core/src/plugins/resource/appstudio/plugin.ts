@@ -29,6 +29,7 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
+  SolutionError,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -95,6 +96,7 @@ import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -230,7 +232,9 @@ export class AppStudioPluginImpl {
         return err(result.error);
       }
       remoteTeamsAppId = result.value.teamsAppId!;
-      ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
+      ctx.logProvider?.info(
+        getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", remoteTeamsAppId)
+      );
     }
     ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
     return ok(remoteTeamsAppId);
@@ -282,7 +286,9 @@ export class AppStudioPluginImpl {
       return err(result.error);
     }
 
-    ctx.logProvider?.info(`Teams app updated: ${result.value}`);
+    ctx.logProvider?.info(
+      getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
+    );
     return ok(remoteTeamsAppId);
   }
 
@@ -301,7 +307,7 @@ export class AppStudioPluginImpl {
     } else {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appDefinitionAndManifest.isErr()) {
-        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+        ctx.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
         return err(appDefinitionAndManifest.error);
       } else {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
@@ -323,11 +329,11 @@ export class AppStudioPluginImpl {
         manifest.icons.outline.startsWith("https://") ||
         manifest.icons.outline.startsWith("http://")
       ) {
-        errors.push("icons.outline should be a relative path, URL is not supported");
+        errors.push(getLocalizedString("plugins.appstudio.relativePathTip", "icons.outline"));
       } else {
         const outlineFile = path.join(appDirectory, manifest.icons.outline);
         if (!(await fs.pathExists(outlineFile))) {
-          errors.push(`icons.outline "${outlineFile}" cannot be found.`);
+          errors.push(getLocalizedString("error.appstudio.fileNotFoundError", outlineFile));
         }
       }
     }
@@ -337,11 +343,11 @@ export class AppStudioPluginImpl {
         manifest.icons.color.startsWith("https://") ||
         manifest.icons.color.startsWith("http://")
       ) {
-        errors.push("icons.color should be a relative path, URL is not supported");
+        errors.push(getLocalizedString("plugins.appstudio.relativePathTip", "icons.color"));
       } else {
         const colorFile = path.join(appDirectory, manifest.icons.color);
         if (!(await fs.pathExists(colorFile))) {
-          errors.push(`icons.color "${colorFile}" cannot be found.`);
+          errors.push(getLocalizedString("error.appstudio.fileNotFoundError", colorFile));
         }
       }
     }
@@ -374,7 +380,7 @@ export class AppStudioPluginImpl {
     } else {
       const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
-        ctx.logProvider?.error("[Teams Toolkit] Update manifest failed!");
+        ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
         const isProvisionSucceeded = !!(ctx.envInfo.state
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
@@ -384,8 +390,11 @@ export class AppStudioPluginImpl {
         ) {
           return err(
             AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Update manifest failed"),
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                getLocalizedString("error.appstudio.updateManifestFailed"),
+                isProvisionSucceeded
+              ),
               HelpLinks.WhyNeedProvision
             )
           );
@@ -410,7 +419,7 @@ export class AppStudioPluginImpl {
           AppStudioResultFactory.UserError(
             AppStudioError.FileNotFoundError.name,
             AppStudioError.FileNotFoundError.message(manifestFileName) +
-              " Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision.",
+              getLocalizedString("plugins.appstudio.provisionTip"),
             HelpLinks.WhyNeedProvision
           )
         );
@@ -423,7 +432,7 @@ export class AppStudioPluginImpl {
     if (!_.isEqual(manifest, existingManifest)) {
       const res = await ctx.ui?.showMessage(
         "warn",
-        "The manifest file configurations has been modified already. Do you want to continue to regenerate the manifest file and update to Teams platform?",
+        getLocalizedString("plugins.appstudio.updateManifestTip"),
         true,
         "Preview only",
         "Preview and update"
@@ -454,7 +463,7 @@ export class AppStudioPluginImpl {
         if (localUpdateTime < devPortalUpdateTime) {
           const res = await ctx.ui?.showMessage(
             "warn",
-            "The manifest file on Teams platform has been changed since your last update. Do you want to continue to update and overwrite the manifest file on Teams platform?",
+            getLocalizedString("plugins.appstudio.updateOverwriteTip"),
             true,
             "Overwrite and update"
           );
@@ -484,10 +493,12 @@ export class AppStudioPluginImpl {
         return err(result.error);
       }
 
-      ctx.logProvider?.info(`Teams app updated: ${result.value}`);
+      ctx.logProvider?.info(
+        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
+      );
       ctx.ui?.showMessage(
         "info",
-        `Successfully updated manifest for [${manifest.name.short}]`,
+        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value),
         false
       );
       return ok(teamsAppId);
@@ -588,7 +599,7 @@ export class AppStudioPluginImpl {
     let manifestString: string | undefined = undefined;
 
     if (!ctx.envInfo?.envName) {
-      throw new Error("Failed to get target environment name from plugin context.");
+      throw new Error(getLocalizedString("error.appstudio.noEnvInfo"));
     }
 
     const appDirectory = await getAppDirectory(ctx.root);
@@ -611,7 +622,7 @@ export class AppStudioPluginImpl {
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value[1], null, 4);
       } else {
-        ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
+        ctx.logProvider?.error(getLocalizedString("plugins.appstudio.buildFailedNotice"));
         const isProvisionSucceeded = !!(ctx.envInfo.state
           .get("solution")
           ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
@@ -620,8 +631,11 @@ export class AppStudioPluginImpl {
           !isProvisionSucceeded
         ) {
           throw AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Teams package build failed"),
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.buildFailedNotice"),
+              isProvisionSucceeded
+            ),
             HelpLinks.WhyNeedProvision
           );
         } else {
@@ -764,12 +778,20 @@ export class AppStudioPluginImpl {
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
     if (existApp) {
       let executePublishUpdate = false;
-      let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
+      let description = getLocalizedString(
+        "plugins.appstudio.updatePublishedAppNotice",
+        existApp.displayName,
+        existApp.publishingState
+      );
       if (existApp.lastModifiedDateTime) {
         description =
-          description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
+          description +
+          getLocalizedString(
+            "plugins.appstudio.lastModifiedTip",
+            existApp.lastModifiedDateTime?.toLocaleString()
+          );
       }
-      description = description + "Do you want to submit a new update?";
+      description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
       const res = await ctx.ui?.showMessage("warn", description, true, "Confirm");
       if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
 
@@ -922,7 +944,7 @@ export class AppStudioPluginImpl {
     const publishProgress = ctx.ui?.createProgressBar(`Publishing ${manifest.name.short}`, 3);
     try {
       // Validate manifest
-      await publishProgress?.start("Validating manifest file");
+      await publishProgress?.start(getLocalizedString("plugins.appstudio.validateProgressStart"));
       const validationResult = await this.validateManifestAgainstSchema(manifest);
       if (validationResult.isErr()) {
         throw validationResult.error;
@@ -936,7 +958,7 @@ export class AppStudioPluginImpl {
       // Update App in App Studio
       const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
       await publishProgress?.next(
-        `Updating app definition for app ${remoteTeamsAppId} in app studio`
+        getLocalizedString("plugins.appstudio.publishProgressUpdate", remoteTeamsAppId)
       );
       const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
       if (appDefinitionRes.isErr()) {
@@ -975,12 +997,16 @@ export class AppStudioPluginImpl {
 
       // Build Teams App package
       // Platforms will be checked in buildTeamsAppPackage(ctx)
-      await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
+      await publishProgress?.next(
+        getLocalizedString("plugins.appstudio.publishProgressBuild", appDirectory)
+      );
       const appPackage = await this.buildTeamsAppPackage(ctx, false);
 
       const appContent = await fs.readFile(appPackage);
       appStudioToken = await ctx.appStudioToken?.getAccessToken();
-      await publishProgress?.next(`Publishing ${manifest.name.short}`);
+      await publishProgress?.next(
+        getLocalizedString("plugins.appstudio.publishProgressPublish", manifest.name.short)
+      );
       if (update) {
         // Update existing app in App Catalog
         return await AppStudioClient.publishTeamsAppUpdate(
@@ -1289,8 +1315,8 @@ export class AppStudioPluginImpl {
     if (appStudioToken === undefined || appStudioToken.length === 0) {
       return err(
         AppStudioResultFactory.SystemError(
-          AppStudioError.AppStudioTokenGetFailedError.name,
-          AppStudioError.AppStudioTokenGetFailedError.message
+          SolutionError.NoAppStudioToken,
+          getLocalizedString("error.appstudio.noAppStudioToken")
         )
       );
     }
@@ -1374,7 +1400,11 @@ export class AppStudioPluginImpl {
           AppStudioResultFactory.UserError(
             AppStudioError.ValidationFailedError.name,
             AppStudioError.ValidationFailedError.message([
-              `Failed to get schema from ${manifest.$schema}, message: ${e.message}`,
+              getLocalizedString(
+                "error.appstudio.validateFetchSchemaFailed",
+                manifest.$schema,
+                e.message
+              ),
             ]),
             HelpLinks.WhyNeedProvision
           )
@@ -1384,7 +1414,9 @@ export class AppStudioPluginImpl {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message(["Manifest schema is not defined"]),
+          AppStudioError.ValidationFailedError.message([
+            getLocalizedString("error.appstudio.validateSchemaNotDefined"),
+          ]),
           HelpLinks.WhyNeedProvision
         )
       );
@@ -1424,7 +1456,9 @@ export class AppStudioPluginImpl {
             AppStudioResultFactory.SystemError(
               AppStudioError.GetLocalDebugConfigFailedError.name,
               AppStudioError.GetLocalDebugConfigFailedError.message(
-                new Error(`Data required: ${LOCAL_DEBUG_BOT_DOMAIN}`)
+                new Error(
+                  getLocalizedString("plugins.appstudio.dataRequired", LOCAL_DEBUG_BOT_DOMAIN)
+                )
               )
             )
           );
@@ -1433,7 +1467,7 @@ export class AppStudioPluginImpl {
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
               AppStudioError.GetRemoteConfigFailedError.message(
-                new Error(`Data required: ${BOT_DOMAIN}`),
+                getLocalizedString("plugins.appstudio.dataRequired", BOT_DOMAIN),
                 isProvisionSucceeded
               ),
               HelpLinks.WhyNeedProvision
@@ -1561,7 +1595,7 @@ export class AppStudioPluginImpl {
           AppStudioResultFactory.UserError(
             AppStudioError.GetLocalDebugConfigFailedError.name,
             AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(`Data required: ${tokens.join(",")}`)
+              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
             )
           )
         );
@@ -1570,7 +1604,7 @@ export class AppStudioPluginImpl {
           AppStudioResultFactory.UserError(
             AppStudioError.GetRemoteConfigFailedError.name,
             AppStudioError.GetRemoteConfigFailedError.message(
-              new Error(`Data required: ${tokens.join(",")}`),
+              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
               isProvisionSucceeded
             ),
             HelpLinks.WhyNeedProvision

@@ -736,6 +736,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
+    isM365?: boolean;
+    // (undocumented)
     locale?: string;
     // (undocumented)
     platform: Platform;
@@ -1129,6 +1131,8 @@ export interface ProjectSettings {
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
+    // (undocumented)
+    isM365?: boolean;
     pluginSettings?: Json;
     // (undocumented)
     programmingLanguage?: string;

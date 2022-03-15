@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  TemplateManifestError,
   TemplateZipFallbackError,
   UnknownScaffoldError,
   UnzipTemplateError,
@@ -20,8 +19,10 @@ import {
 } from "../../../../../common/template-utils/templatesActions";
 import { TemplateInfo } from "../resources/templateInfo";
 
-export async function scaffoldFromZipPackage(componentPath: string, templateInfo: TemplateInfo) {
-  //TODO: Fallback part need to update download script
+export async function scaffoldFromZipPackage(
+  componentPath: string,
+  templateInfo: TemplateInfo
+): Promise<void> {
   await scaffoldFromTemplates({
     group: templateInfo.group,
     lang: templateInfo.language,
@@ -40,7 +41,7 @@ export async function scaffoldFromZipPackage(componentPath: string, templateInfo
       switch (action.name) {
         case ScaffoldActionName.FetchTemplatesUrlWithTag:
         case ScaffoldActionName.FetchTemplatesZipFromUrl:
-          TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+          TelemetryHelper.sendScaffoldFallbackEvent(error.message);
           Logger.info(Messages.FailedFetchTemplate);
           break;
         case ScaffoldActionName.FetchTemplateZipFromLocal:
@@ -54,10 +55,10 @@ export async function scaffoldFromZipPackage(componentPath: string, templateInfo
   });
 }
 
-export function renderTemplateName(name: string, data: Buffer, appName: string) {
+export function renderTemplateName(name: string, data: Buffer, appName: string): string {
   return name.replace(/BlazorAppServer/, appName).replace(/\.tpl/, "");
 }
 
 export function genTemplateNameRenderReplaceFn(appName: string) {
-  return (name: string, data: Buffer) => renderTemplateName(name, data, appName);
+  return (name: string, data: Buffer): string => renderTemplateName(name, data, appName);
 }

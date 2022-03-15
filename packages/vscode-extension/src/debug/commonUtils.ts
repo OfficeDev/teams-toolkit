@@ -18,6 +18,7 @@ import {
   isV3,
   isConfigUnifyEnabled,
   environmentManager,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -279,4 +280,29 @@ export function checkAndSkipDebugging(): boolean {
     return true;
   }
   return false;
+}
+
+// for telemetry use only
+export async function getProjectComponents(): Promise<string | undefined> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  try {
+    const projectPath = ext.workspaceUri.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    const components: string[] = [];
+    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+      components.push("spfx");
+    }
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      components.push("frontend");
+    }
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      components.push("bot");
+    }
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      components.push("backend");
+    }
+    return components.join("+");
+  } catch (error: any) {
+    return undefined;
+  }
 }

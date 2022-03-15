@@ -68,6 +68,7 @@ export class FeatureFlagName {
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly YeomanScaffold = "YEOMAN_SCAFFOLD";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
+  static readonly M365App = "TEAMSFX_M365_APP";
 }
 
 export class ManifestVariables {

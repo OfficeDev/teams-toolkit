@@ -15,38 +15,22 @@ export interface HostTypeTriggerOptionItem extends OptionItem {
   trigger?: NotificationTrigger;
 }
 
-export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = {
-  id: "functions-timer",
-  label: getLocalizedString("plugins.bot.triggers.functionsTimer.label"),
-  cliName: getLocalizedString("plugins.bot.triggers.functionsHttp.cliName"),
-  description: getLocalizedString("plugins.bot.triggers.functionsTimer.description"),
-  detail: getLocalizedString("plugins.bot.triggers.functionsTimer.detail"),
-
-  // additional properties for notification
+export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
+  id: "functionsTimer",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.TIMER,
-};
-export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = {
-  id: "functions-http",
-  label: getLocalizedString("plugins.bot.triggers.functionsHttp.label"),
-  cliName: getLocalizedString("plugins.bot.triggers.functionsHttp.cliName"),
-  description: getLocalizedString("plugins.bot.triggers.functionsHttp.description"),
-  detail: getLocalizedString("plugins.bot.triggers.functionsHttp.detail"),
+});
 
-  // additional properties for notification
+export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
+  id: "functionsHttp",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.HTTP,
-};
-export const AppServiceOptionItem: HostTypeTriggerOptionItem = {
-  id: "app-service",
-  label: getLocalizedString("plugins.bot.triggers.appService.label"),
-  cliName: getLocalizedString("plugins.bot.triggers.appService.cliName"),
-  description: getLocalizedString("plugins.bot.triggers.appService.description"),
-  detail: getLocalizedString("plugins.bot.triggers.appService.detail"),
+});
 
-  // additional properties for notification
+export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
+  id: "appService",
   hostType: HostTypes.APP_SERVICE,
-};
+});
 
 export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
   FunctionsTimerTriggerOptionItem,
@@ -58,22 +42,23 @@ export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
 //   - appService and function are mutually exclusive
 //   - users must select at least one trigger.
 export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
+  const prefix = "plugins.bot.questionHostTypeTrigger";
   return {
     name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
-    title: getLocalizedString("plugins.bot.questionHostTypeTrigger.title"),
+    title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
     staticOptions: HostTypeTriggerOptions,
     default: [FunctionsTimerTriggerOptionItem.id],
-    placeholder: getLocalizedString("plugins.bot.questionHostTypeTrigger.placeholder"),
+    placeholder: getLocalizedString(`${prefix}.placeholder`),
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
         if (name.length === 0) {
-          return getLocalizedString("plugins.bot.questionHostTypeTrigger.error.emptySelection");
+          return getLocalizedString(`${prefix}.error.emptySelection`);
         }
 
         if (name.includes(AppServiceOptionItem.id) && name.length > 1) {
-          return getLocalizedString("plugins.bot.questionHostTypeTrigger.error.hostTypeConflict");
+          return getLocalizedString(`${prefix}.error.hostTypeConflict`);
         }
 
         return undefined;
@@ -93,5 +78,22 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
 
       return currentSelectedIds;
     },
+  };
+}
+
+type HostTypeTriggerOptionItemWithoutText = Omit<
+  HostTypeTriggerOptionItem,
+  "label" | "cliName" | "description" | "detail"
+>;
+
+function optionWithL10n(option: HostTypeTriggerOptionItemWithoutText): HostTypeTriggerOptionItem {
+  // e.g. expands to plugins.bot.triggers.functionsTimer.label
+  const prefix = "plugins.bot.triggers";
+  return {
+    ...option,
+    label: getLocalizedString(`${prefix}.${option.id}.label`),
+    cliName: getLocalizedString(`${prefix}.${option.id}.cliName`),
+    description: getLocalizedString(`${prefix}.${option.id}.description`),
+    detail: getLocalizedString(`${prefix}.${option.id}.detail`),
   };
 }

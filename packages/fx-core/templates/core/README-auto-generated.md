@@ -16,16 +16,7 @@ After initializing the project, you can view the project folders and files in th
 
 Now, you're able to build a Teams app with Teams Toolkit. However, as the Teams app is still an empty app, nothing would be happened after installed the Teams app. To continue development, you have below options.
 
-### Option 1: Add components
-// TODO
-
-### Option 2: Integrate with existing app
-
-To integrate with existing app, you need to figure out what kind of Teams app you want to build with existing application. There're two supported types:
-1. [Teams Tab app](https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/what-are-tabs).
-2. [Teams Bot app](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/what-are-bots).
-
-#### Build Tab app with existing app
+### Option 1: Embed your existing web pages in Teams
 
 * Step 1: launch your existing app, and get the exposed public endpoint.
 * Step 2: define variables with above endpoint inside the config file.
@@ -79,43 +70,8 @@ Notes:
 * The endpoint of your existing application must be HTTPS secured.
 * Remote environments (e.g. `dev`) need to be provisioned first before preview. The provision step will help to register a Teams app with your M365 account.
 
-#### Build Bot app with existing app
+### Option 2: Send Notification to Teams
+// TODO
 
-* Step 1: prepare the existing bot id.
-* Step 2: define key value pairs inside the config file.
-
-  Here's an example of `config.local.json`:
-  ```json
-  {
-    ...
-    "manifest": {
-      ...
-      "botId": "00000000-0000-0000-0000-000000000000"
-    }
-    ...
-  }
-  ```
-* Step 3: insert the bot app definition and update Teams app manifest template with above keys.
-
-  ```json
-  {
-    ...
-    "bots": [
-      {
-        "botId": "{{config.manifest.botId}}",
-        // you could customize the bot app's scopes.
-        "scopes": [
-          "personal",
-          "team",
-          "groupchat"
-        ]
-      }
-    ],
-    ...
-  }
-  ```
-
-After above 3 steps, the Bot app integrated with existing app is ready. Now you could preview your Teams app via the Environment section in the sidebar.
-
-Notes:
-* Remote environments (e.g. `dev`) need to be provisioned first before preview. The provision step will help to register a Teams app with your M365 account.
+### Option 3: Build Command And Response
+// TODO

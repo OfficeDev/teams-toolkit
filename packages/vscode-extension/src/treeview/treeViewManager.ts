@@ -189,6 +189,15 @@ class TreeViewManager {
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
+        "fx-extension.addCICDWorkflows",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "sync", custom: false }
+      ),
+      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
@@ -196,15 +205,6 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "developerPortal", custom: true }
-      ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideDescription"),
-        "fx-extension.cicdGuide",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "sync", custom: false }
       ),
     ];
 
@@ -319,9 +319,9 @@ class TreeViewManager {
         { name: "developerPortal", custom: true }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.cicdGuideDescription"),
-        "fx-extension.cicdGuide",
+        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
+        "fx-extension.addCICDWorkflows",
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,

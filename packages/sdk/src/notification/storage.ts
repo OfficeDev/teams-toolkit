@@ -42,7 +42,13 @@ export class LocalFileStorage implements Storage {
   private storeFileExists(): Promise<boolean> {
     return new Promise((resolve) => {
       try {
-        fs.access(this.filePath, () => resolve(true));
+        fs.access(this.filePath, (err) => {
+          if (err) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        });
       } catch (error: unknown) {
         resolve(false);
       }
@@ -55,9 +61,9 @@ export class LocalFileStorage implements Storage {
         fs.readFile(this.filePath, { encoding: "utf-8" }, (err, rawData) => {
           if (err) {
             reject(err);
+          } else {
+            resolve(JSON.parse(rawData));
           }
-
-          resolve(JSON.parse(rawData));
         });
       } catch (error: unknown) {
         reject(error);
@@ -72,9 +78,9 @@ export class LocalFileStorage implements Storage {
         fs.writeFile(this.filePath, rawData, { encoding: "utf-8" }, (err) => {
           if (err) {
             reject(err);
+          } else {
+            resolve();
           }
-
-          resolve();
         });
       } catch (error: unknown) {
         reject(error);

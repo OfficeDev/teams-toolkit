@@ -44,6 +44,7 @@
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 /packages/sdk/src/notification @kimizhu @swatDong @a1exwang @XiaofuHuang
+/packages/sdk/test/unit/node/notification @kimizhu @swatDong @a1exwang @XiaofuHuang
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms

@@ -11,6 +11,7 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { Logger } from "./logger";
 
 export class CICDImpl {
+  public commonProperties: { [key: string]: string } = {};
   public async addCICDWorkflows(
     context: Context,
     inputs: Inputs,
@@ -34,11 +35,11 @@ export class CICDImpl {
       throw new InternalError("Some preconditions of inputs are not met.");
     }
 
-    telemetryHelper.sendSuccessEvent(context, envInfo, "collect-cicd-questions", {
+    this.commonProperties = {
       env: envName,
       provider: providerName,
       template: templateNames.join(","),
-    });
+    };
 
     // 2. Call factory to get provider instance.
     const providerInstance = CICDProviderFactory.create(providerName as ProviderKind);

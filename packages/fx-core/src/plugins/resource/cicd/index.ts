@@ -139,14 +139,29 @@ export class CICDPluginV2 implements ResourcePlugin {
     name: string
   ): Promise<FxResult> {
     try {
-      sendTelemetry && telemetryHelper.sendStartEvent(context, envInfo, name);
+      sendTelemetry &&
+        telemetryHelper.sendStartEvent(context, envInfo, name, this.cicdImpl.commonProperties);
       const res: FxResult = await fn();
-      sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, res);
+      sendTelemetry &&
+        telemetryHelper.sendResultEvent(
+          context,
+          envInfo,
+          name,
+          res,
+          this.cicdImpl.commonProperties
+        );
       return res;
     } catch (e) {
       if (e instanceof UserError || e instanceof SystemError) {
         const res = err(e);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, res);
+        sendTelemetry &&
+          telemetryHelper.sendResultEvent(
+            context,
+            envInfo,
+            name,
+            res,
+            this.cicdImpl.commonProperties
+          );
         return res;
       }
 
@@ -155,7 +170,14 @@ export class CICDPluginV2 implements ResourcePlugin {
           e.errorType === ErrorType.System
             ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
             : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
-        sendTelemetry && telemetryHelper.sendResultEvent(context, envInfo, name, result);
+        sendTelemetry &&
+          telemetryHelper.sendResultEvent(
+            context,
+            envInfo,
+            name,
+            result,
+            this.cicdImpl.commonProperties
+          );
         return result;
       } else {
         // Unrecognized Exception.
@@ -169,7 +191,8 @@ export class CICDPluginV2 implements ResourcePlugin {
               UnhandledErrorCode,
               `Got an unhandled error: ${e.message}`,
               e.innerError
-            )
+            ),
+            this.cicdImpl.commonProperties
           );
         return ResultFactory.SystemError(UnhandledErrorCode, e.message, e);
       }

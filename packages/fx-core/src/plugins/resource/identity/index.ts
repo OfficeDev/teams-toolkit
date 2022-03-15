@@ -1,36 +1,32 @@
-import * as fs from "fs-extra";
 import * as path from "path";
-import * as manager from "@azure/arm-resources";
-import { ErrorMessage } from "./errors";
 import {
   PluginContext,
   Plugin,
   ok,
-  err,
-  SystemError,
   AzureSolutionSettings,
   Func,
+  Result,
+  FxError,
+  SystemError,
+  UserError,
+  err,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
-
-import { IdentityConfig } from "./config";
 import { Constants, IdentityBicep, IdentityBicepFile, Telemetry } from "./constants";
-import { ContextUtils } from "./utils/contextUtils";
-import { ResultFactory, Result } from "./results";
-import { Message } from "./utils/messages";
-import { TelemetryUtils } from "./utils/telemetryUtil";
-import { formatEndpoint } from "./utils/commonUtils";
 import { getTemplatesFolder } from "../../../folder";
-import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
+import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
-import { Bicep, ConstantString } from "../../../common/constants";
+import {
+  ResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "../../solution/fx-solution/ResourcePluginContainer";
+import { Bicep } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
 import "./v2";
 import "./v3";
+import { TelemetryUtils } from "./utils/telemetryUtil";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
@@ -38,77 +34,10 @@ export class IdentityPlugin implements Plugin {
   activate(solutionSettings: AzureSolutionSettings): boolean {
     return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
-  template: any;
-  parameters: any;
-  armTemplateDir: string = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    "templates",
-    "plugins",
-    "resource",
-    "identity"
-  );
-  config: IdentityConfig = new IdentityConfig();
 
-  async provision(ctx: PluginContext): Promise<Result> {
-    return ok(undefined);
-  }
-
-  async postProvision(ctx: PluginContext): Promise<Result> {
-    return ok(undefined);
-  }
-
-  async provisionImplement(ctx: PluginContext): Promise<Result> {
-    ctx.logProvider?.info(Message.startProvision);
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
-
-    this.loadConfig(ctx);
-    try {
-      ctx.logProvider?.info(Message.checkProvider);
-      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-      const resourceManagementClient = new Providers(
-        new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
-      );
-      await resourceManagementClient.register(Constants.resourceProvider);
-    } catch (error) {
-      ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
-    }
-
-    let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
-    defaultIdentity = formatEndpoint(defaultIdentity);
-    this.config.identityName = defaultIdentity;
-    this.config.identityResourceId = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identityName}`;
-    ctx.logProvider?.debug(Message.identityResourceId(this.config.identityResourceId));
-
-    try {
-      await this.loadArmTemplate(ctx);
-      this.parameters.parameters.location.value = this.config.location;
-      this.parameters.parameters.identityName.value = this.config.identityName;
-      await this.provisionWithArmTemplate(ctx);
-    } catch (error) {
-      const errorCode = error.source + "." + error.name;
-      const errorType = error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      let errorMessage = error.message;
-      if (error.innerError) {
-        errorMessage += ` Detailed error: ${error.innerError.message}.`;
-      }
-      TelemetryUtils.sendErrorEvent(Telemetry.stage.provision, errorCode, errorType, errorMessage);
-      return err(error);
-    }
-
-    ctx.config.set(Constants.identityName, this.config.identityName);
-    ctx.config.set(Constants.identityClientId, this.config.identityClientId);
-    ctx.config.set(Constants.identityResourceId, this.config.identityResourceId);
-    TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
-    ctx.logProvider?.info(Message.endProvision);
-    return ok(undefined);
-  }
-
-  public async updateArmTemplates(ctx: PluginContext): Promise<Result> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx.telemetryReporter);
+    TelemetryUtils.sendEvent(Telemetry.stage.updateArmTemplates + Telemetry.startSuffix);
     const result: ArmTemplateResult = {
       Reference: {
         identityName: IdentityBicep.identityName,
@@ -117,122 +46,77 @@ export class IdentityPlugin implements Plugin {
         identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
-
+    TelemetryUtils.sendEvent(Telemetry.stage.updateArmTemplates, true);
     return ok(result);
   }
 
-  public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const bicepTemplateDirectory = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "identity",
-      "bicep"
-    );
-    const provisionOrchestration = await generateBicepFromFile(
-      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-      pluginCtx
-    );
-    const provisionModules = await generateBicepFromFile(
-      path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
-      pluginCtx
-    );
-    const result: ArmTemplateResult = {
-      Provision: {
-        Orchestration: provisionOrchestration,
-        Modules: { identity: provisionModules },
-      },
-      Reference: {
-        identityName: IdentityBicep.identityName,
-        identityClientId: IdentityBicep.identityClientId,
-        identityResourceId: IdentityBicep.identityResourceId,
-        identityPrincipalId: IdentityBicep.identityPrincipalId,
-      },
-    };
-
-    return ok(result);
-  }
-
-  public async executeUserTask(func: Func, context: PluginContext): Promise<Result> {
-    return ok(undefined);
-  }
-
-  async loadArmTemplate(ctx: PluginContext) {
+  public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
     try {
-      const templatesFolder = path.resolve(getTemplatesFolder(), "plugins", "resource", "identity");
-      const templatePath: string = path.resolve(templatesFolder, "template.json");
-      this.template = await fs.readJson(templatePath);
-      const paraPath: string = path.resolve(templatesFolder, "parameters.json");
-      this.parameters = await fs.readJson(paraPath);
-    } catch (_error) {
-      ctx.logProvider?.error(ErrorMessage.IdentityLoadFileError.message() + `:${_error.message}`);
-      const error = ResultFactory.SystemError(
-        ErrorMessage.IdentityLoadFileError.name,
-        ErrorMessage.IdentityLoadFileError.message(),
-        _error
+      TelemetryUtils.init(ctx.telemetryReporter);
+      TelemetryUtils.sendEvent(Telemetry.stage.generateArmTemplates + Telemetry.startSuffix);
+
+      const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+        (p) => new NamedArmResourcePluginAdaptor(p)
       );
-      throw error;
-    }
-  }
-
-  async provisionWithArmTemplate(ctx: PluginContext) {
-    try {
-      const model: manager.ResourceManagementModels.Deployment = {
-        properties: {
-          template: this.template,
-          parameters: this.parameters.parameters,
-          mode: "Incremental",
+      const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+      const bicepTemplateDirectory = path.join(
+        getTemplatesFolder(),
+        "plugins",
+        "resource",
+        "identity",
+        "bicep"
+      );
+      const provisionOrchestration = await generateBicepFromFile(
+        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+        pluginCtx
+      );
+      const provisionModules = await generateBicepFromFile(
+        path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
+        pluginCtx
+      );
+      const result: ArmTemplateResult = {
+        Provision: {
+          Orchestration: provisionOrchestration,
+          Modules: { identity: provisionModules },
+        },
+        Reference: {
+          identityName: IdentityBicep.identityName,
+          identityClientId: IdentityBicep.identityClientId,
+          identityResourceId: IdentityBicep.identityResourceId,
+          identityPrincipalId: IdentityBicep.identityPrincipalId,
         },
       };
-
-      const credential = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-      const client = new manager.ResourceManagementClient(
-        credential!,
-        this.config.azureSubscriptionId
+      TelemetryUtils.sendEvent(Telemetry.stage.generateArmTemplates, true);
+      return ok(result);
+    } catch (e) {
+      if (!(e instanceof Error || e instanceof SystemError || e instanceof UserError)) {
+        e = new Error(e.toString());
+      }
+      if (!(e instanceof SystemError) && !(e instanceof UserError)) {
+        ctx.logProvider?.error(e.message);
+      }
+      let res: Result<any, FxError>;
+      if (e instanceof SystemError || e instanceof UserError) {
+        res = err(e);
+      } else {
+        res = err(returnSystemError(e, Constants.pluginNameShort, "UnhandledError"));
+      }
+      const errorCode = res.error.source + "." + res.error.name;
+      const errorType =
+        res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+      TelemetryUtils.init(ctx.telemetryReporter);
+      let errorMessage = res.error.message;
+      if (res.error.innerError) {
+        errorMessage += ` Detailed error: ${res.error.innerError.message}.`;
+      }
+      TelemetryUtils.sendErrorEvent(
+        Telemetry.stage.generateArmTemplates,
+        errorCode,
+        errorType,
+        errorMessage
       );
-      const deployName: string = Constants.deployName;
-      ctx.logProvider?.info(Message.provisionIdentity);
-      await client.deployments.createOrUpdate(this.config.resourceGroup, deployName, model);
-
-      ctx.logProvider?.info(Message.getIdentityId);
-      const response = await client.resources.getById(
-        this.config.identityResourceId,
-        Constants.apiVersion
-      );
-      this.config.identityClientId = response.properties.clientId;
-    } catch (_error) {
-      ctx.logProvider?.error(
-        ErrorMessage.IdentityProvisionError.message(this.config.identityName) + `:${_error.message}`
-      );
-      const error = ResultFactory.UserError(
-        ErrorMessage.IdentityProvisionError.name,
-        ErrorMessage.IdentityProvisionError.message(this.config.identityName),
-        _error
-      );
-      throw error;
+      return res;
     }
-  }
-
-  private loadConfig(ctx: PluginContext) {
-    this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
-      ctx,
-      Constants.solution,
-      Constants.subscriptionId
-    );
-    this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
-      ctx,
-      Constants.solution,
-      Constants.resourceNameSuffix
-    );
-    this.config.location = ContextUtils.getConfig<string>(
-      ctx,
-      Constants.solution,
-      Constants.location
-    );
   }
 }
 

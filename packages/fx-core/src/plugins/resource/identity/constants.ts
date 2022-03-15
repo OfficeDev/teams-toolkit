@@ -29,7 +29,8 @@ export class Telemetry {
   static systemError = "system";
 
   static readonly stage = {
-    provision: "provision",
+    generateArmTemplates: "generate-arm-templates",
+    updateArmTemplates: "update-arm-templates",
   };
 
   static readonly properties = {

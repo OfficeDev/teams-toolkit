@@ -384,5 +384,20 @@
   "plugins.apim.error.InvalidPropertyType": "Property '%s' is not type '%s'.",
   "plugins.apim.error.ShortenToEmpty": "The value '%s' cannot be shorten to empty.",
   "plugins.apim.error.UnhandledError": "Unhandled error.",
-  "plugins.apim.error.FailedToParseResourceIdError": "Failed to get '%s' from resource id: '%s'."
+  "plugins.apim.error.FailedToParseResourceIdError": "Failed to get '%s' from resource id: '%s'.",
+  "error.sa.NoConfigError": "Failed to get config value of '%s' from '%s'.",
+  "error.sa.UnauthenticatedError": "Failed to get user login information.",
+  "error.sa.CreateAppServicePlanError": "Failed to create App Service plan: %s",
+  "error.sa.FreeServerFarmsQuotaError": "Failed to create App Service plan: %s",
+  "error.sa.MissingSubscriptionRegistrationError": "Failed to create App Service plan: ${message}",
+  "error.sa.CreateWebAppError": "Failed to create Web App: %s",
+  "error.sa.ZipDeployError": "Failed to deploy Simple Auth bits: %s",
+  "error.sa.UpdateApplicationSettingsError": "Failed to update application settings: %s",
+  "error.sa.UnhandledError": "Unhandled error: %s",
+  "error.sa.EndpointInvalidError": "Failed to verify endpoint: %s. Reason: %s",
+  "error.sa.ZipDownloadError": "Failed to download Simple Auth bits: %s",
+  "error.sa.VersionFileNotExist": "`Failed to load version file from %s",
+  "plugins.sa.RegisterRersourceProviderFailed": "Failed to register required resource provider for Simple Auth. Reason: %s. Register required resource provider %s manually.",
+  "plugins.sa.FreeServerFarmsQuotaErrorToUser": "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again."
+
 }

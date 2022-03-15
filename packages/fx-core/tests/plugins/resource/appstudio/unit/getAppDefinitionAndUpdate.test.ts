@@ -25,6 +25,7 @@ import {
   LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
+  SolutionError,
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
@@ -36,7 +37,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import sinon from "sinon";
-import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -123,45 +123,6 @@ describe("Get AppDefinition and Update", () => {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("should return maybeAppDefinition error", async () => {
-    ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      cryptoProvider: new LocalCrypto(""),
-      localSettings,
-    };
-    ctx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-        capabilities: ["Bot"],
-      },
-    };
-    sandbox
-      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
-      .returns(
-        err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.UnhandledError.name,
-            AppStudioError.UnhandledError.message
-          )
-        )
-      );
-
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
-    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
-    if (getAppDefinitionAndResult.isErr()) {
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.UnhandledError.name);
-    }
   });
 
   it("failed to get webApplicationInfoResource from local config and should return error", async () => {
@@ -307,46 +268,6 @@ describe("Get AppDefinition and Update", () => {
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
 
-  it("should work and get config for creating manifest for happy path", async () => {
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
-      config: new ConfigMap(),
-      cryptoProvider: new LocalCrypto(""),
-      localSettings,
-    };
-    ctx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-        capabilities: ["Bot"],
-      },
-    };
-
-    sandbox
-      .stub(AppStudioPluginImpl.prototype, "getAppDefinitionAndManifest" as any)
-      .returns(
-        err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.UnhandledError.name,
-            AppStudioError.UnhandledError.message
-          )
-        )
-      );
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
-    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
-    if (getAppDefinitionAndResult.isErr()) {
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.UnhandledError.name);
-    }
-  });
-
   it("failed to get app studio token and should return error", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
@@ -374,7 +295,7 @@ describe("Get AppDefinition and Update", () => {
     if (getAppDefinitionAndResult.isErr()) {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.AppStudioTokenGetFailedError.name);
+        .equals(SolutionError.NoAppStudioToken);
     }
   });
 

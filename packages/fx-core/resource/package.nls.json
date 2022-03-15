@@ -122,6 +122,7 @@
   "plugins.appstudio.dataRequired": "Data required: %s",
   "plugins.appstudio.manuallySubmitTip": "Manually submit Teams app package file",
   "plugins.appstudio.manuallySubmitDescription": "Build the Teams app package. You will need to send it to your Teams administrator manually",
+  "plugins.appstudio.autoPublishTip": "Install for your organization",
   "plugins.appstudio.autoPublishDescription": "Send your app to your Teams administrator for approval via the Teams App Portal.",
   "error.ProjectFolderExistError": "Path %s already exists. Select a different folder.",
   "error.PathNotExistError": "Path does not exist: %s",

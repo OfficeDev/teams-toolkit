@@ -103,6 +103,7 @@ export enum TelemetryProperty {
   PreviewServiceName = "preview-service-name",
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
+  PreviewPrerequisitesCheckTime = "preview-prerequisites-check-time",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",

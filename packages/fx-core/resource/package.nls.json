@@ -112,6 +112,7 @@
   "plugins.frontend.checkStoragePermissionsTip": "Check if you have permissions to your Azure Storage Account.",
   "plugins.frontend.checkSystemTimeTip": "You may get expired credentials, check if your system time is correct.",
   "plugins.frontend.restoreEnvironmentTip": "If you manually updated configuration files (under directory .%s), recover them.",
+  "plugins.baseErrorMessage": "%s Suggestions: %s",
   "plugins.appstudio.publishTip": "Teams: Publish to Teams",
   "plugins.appstudio.validationFailedNotice": "Manifest Validation failed!",
   "plugins.appstudio.validationSucceedNotice": "Manifest Validation succeed!",

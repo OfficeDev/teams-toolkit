@@ -264,5 +264,6 @@
     "teamstoolkit.webview.quickStartPageTitle": "Quick Start",
     "teamstoolkit.webview.samplePageTitle": "Samples",
     "teamstoolkit.webview.surveyPageTitle": "Teams Toolkit Survey",
-    "teamstoolkit.webview.unzipPackage": "Unzipping the sample package"
+    "teamstoolkit.webview.unzipPackage": "Unzipping the sample package",
+    "teamstoolkit.consolidateLocalRemote.outputMsg": "Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug and manifest.template.json for both Teams app running locally and remotely. And we have backed up localSettings.json, manifest.local.template.json and manifest.remote.template.json to .backup folder."
 }

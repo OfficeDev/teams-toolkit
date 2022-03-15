@@ -4,10 +4,14 @@
 import {
   assembleError,
   AzureSolutionSettings,
+  ConfigFolderName,
   err,
+  InputConfigsFolderName,
   Inputs,
+  LogProvider,
   ok,
   Platform,
+  StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { isSPFxProject, isAADEnabled } from "../../common/tools";
@@ -25,6 +29,7 @@ import { APP_PACKAGE_FOLDER_FOR_MULTI_ENV } from "../../plugins/resource/appstud
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 import {
   Component,
+  ProjectMigratorGuideStatus,
   ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
@@ -38,10 +43,13 @@ import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
 import { getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
-import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
+import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
+import { globalStateUpdate } from "../../common";
 
 const upgradeButton = "Upgrade";
 let fromReloadFlag = false;
+const backupFolder = ".backup";
+const showConsolidateLogsFlag = "showConsolidateChangelogs";
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -74,7 +82,6 @@ export const ProjectConsolidateMW: Middleware = async (
       await consolidateLocalRemote(ctx);
       // return ok for the lifecycle functions to prevent breaking error handling logic.
       ctx.result = ok({});
-      await TOOLS?.ui.reload?.();
     } catch (error) {
       sendTelemetryErrorEvent(
         Component.core,
@@ -217,7 +224,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   }
 
   // move old configs
-  const backupPath = path.join(inputs.projectPath as string, ".backup");
+  const backupPath = path.join(inputs.projectPath as string, backupFolder);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfigStart);
   const localSettingsFile = path.join(
     inputs.projectPath as string,
@@ -255,6 +262,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade);
+
+  postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder);
   return true;
 }
 
@@ -263,4 +272,52 @@ function checkMethod(ctx: CoreHookContext): boolean {
   if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
   fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
+}
+
+async function postConsolidate(
+  projectPath: string,
+  ctx: CoreHookContext,
+  inputs: Inputs,
+  backupFolder: string | undefined
+): Promise<void> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuideStart);
+  await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
+
+  TOOLS?.logProvider.warning(
+    `[core] Upgrade success! Old localSettings.json, manifest.local.template.json and manifest.remote.template.json have been backed up to the .backup folder and you can delete it.`
+  );
+
+  if (inputs.platform === Platform.VSCode) {
+    await globalStateUpdate(showConsolidateLogsFlag, true);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuide, {
+      [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+    });
+    await TOOLS?.ui.reload?.();
+  } else {
+    TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));
+  }
+}
+
+async function updateGitIgnore(
+  projectPath: string,
+  log: LogProvider,
+  backupFolder: string | undefined
+): Promise<void> {
+  // add config.local.json to .gitignore
+  await addPathToGitignore(
+    projectPath,
+    `.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`,
+    log
+  );
+
+  // add state.local.json to .gitignore
+  await addPathToGitignore(
+    projectPath,
+    `.${ConfigFolderName}/${StatesFolderName}/state.local.json`,
+    log
+  );
+
+  if (backupFolder) {
+    await addPathToGitignore(projectPath, backupFolder, log);
+  }
 }

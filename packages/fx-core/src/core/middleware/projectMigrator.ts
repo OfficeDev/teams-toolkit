@@ -793,7 +793,7 @@ async function backup(projectPath: string, backupFolder: string): Promise<void> 
 }
 
 // append folder path to .gitignore under the project root.
-async function addPathToGitignore(
+export async function addPathToGitignore(
   projectPath: string,
   ignoredPath: string,
   log: LogProvider

@@ -66,6 +66,8 @@ export enum TelemetryEvent {
   ProjectConsolidateAddAzureManifest = "project-consolidate-add-azure-manifest",
   ProjectConsolidateBackupConfigStart = "project-consolidate-backup-config-start",
   ProjectConsolidateBackupConfig = "project-consolidate-backup-config",
+  ProjectConsolidateGuideStart = "project-Consolidate-guide-start",
+  ProjectConsolidateGuide = "project-consolidate-guide",
   ProjectConsolidateError = "project-consolidate-error",
   DetectPortStart = "detect-port-start",
   DetectPort = "detect-port",

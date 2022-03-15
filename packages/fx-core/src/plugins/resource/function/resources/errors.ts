@@ -20,7 +20,7 @@ export const tips = {
   recreateProject: getLocalizedString("plugins.function.recreateProject"),
   checkNetwork: getLocalizedString("plugins.function.checkNetwork"),
   retryRequest: getLocalizedString("plugins.function.retryRequest"),
-  chooseAnotherCompose: getLocalizedString("Create a project with another template."),
+  chooseAnotherCompose: getLocalizedString("plugins.function.chooseAnotherCompose"),
   checkDiskLock: getLocalizedString("plugins.function.checkDiskLock"),
   checkPathAccess: getLocalizedString("plugins.function.checkPathAccess"),
   checkSubscriptionId: getLocalizedString("plugins.function.checkSubscriptionId"),
@@ -183,7 +183,7 @@ export class InitAzureSDKError extends FunctionPluginError {
 
 export class ZipError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "ZipError", getLocalizedString("error.functionZipError"), [
+    super(ErrorType.User, "ZipError", getLocalizedString("error.function.ZipError"), [
       tips.checkDiskLock,
       tips.checkPathAccess,
       tips.doFullDeploy,

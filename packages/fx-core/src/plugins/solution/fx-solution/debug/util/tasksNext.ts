@@ -57,12 +57,89 @@ export function generateTasks(
   return tasks;
 }
 
+export function generateM365Tasks(
+  includeFrontend: boolean,
+  includeBackend: boolean,
+  includeBot: boolean,
+  programmingLanguage: string
+): Record<string, unknown>[] {
+  /**
+   * Referenced by launch.json
+   *   - Pre Debug Check & Start All
+   *   - Pre Debug Check & Start All & Install App
+   *
+   * Referenced inside tasks.json
+   *   - validate local prerequisites
+   *   - start ngrok
+   *   - prepare local environment
+   *   - Start All
+   *   - install app in Teams
+   *   - Start Frontend
+   *   - Start Backend
+   *   - Watch Backend
+   *   - Start Bot
+   */
+  const tasks: Record<string, unknown>[] = [
+    preDebugCheckAndStartAll(includeBot),
+    preDebugCheckAndStartAllAndInstallApp(includeBot),
+    validateLocalPrerequisites(),
+  ];
+
+  if (includeBot) {
+    tasks.push(startNgrok());
+  }
+
+  tasks.push(prepareLocalEnvironment());
+
+  tasks.push(startAll(includeFrontend, includeBackend, includeBot));
+
+  tasks.push(installAppInTeams());
+
+  if (includeFrontend) {
+    tasks.push(startFrontend());
+  }
+
+  if (includeBackend) {
+    tasks.push(startBackend(programmingLanguage));
+    if (programmingLanguage === ProgrammingLanguage.typescript) {
+      tasks.push(watchBackend());
+    }
+  }
+
+  if (includeBot) {
+    tasks.push(startBot(includeFrontend));
+  }
+
+  return tasks;
+}
+
 function preDebugCheckAndStartAll(includeBot: boolean): Record<string, unknown> {
   return {
     label: "Pre Debug Check & Start All",
     dependsOn: includeBot
       ? ["validate local prerequisites", "start ngrok", "prepare local environment", "Start All"]
       : ["validate local prerequisites", "prepare local environment", "Start All"],
+    dependsOrder: "sequence",
+  };
+}
+
+function preDebugCheckAndStartAllAndInstallApp(includeBot: boolean): Record<string, unknown> {
+  return {
+    label: "Pre Debug Check & Start All & Install App",
+    dependsOn: includeBot
+      ? [
+          "validate local prerequisites",
+          "start ngrok",
+          "prepare local environment",
+          "Start All",
+          "install app in Teams",
+        ]
+      : [
+          "validate local prerequisites",
+          "prepare local environment",
+          "Start All",
+          "install app in Teams",
+        ],
     dependsOrder: "sequence",
   };
 }
@@ -201,5 +278,16 @@ function startAll(
   return {
     label: "Start All",
     dependsOn,
+  };
+}
+
+function installAppInTeams(): Record<string, unknown> {
+  return {
+    label: "install app in Teams",
+    type: "shell",
+    command: "exit ${command:fx-extension.install-app-in-teams}",
+    presentation: {
+      reveal: "never",
+    },
   };
 }

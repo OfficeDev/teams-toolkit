@@ -224,23 +224,22 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>
     ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1) {
-        if (currentSelectedIds.has(TabSPFxItem.id)) {
-          if (previousSelectedIds.has(TabSPFxItem.id)) {
-            currentSelectedIds.delete(TabSPFxItem.id);
-          } else {
-            currentSelectedIds.clear();
-            currentSelectedIds.add(TabSPFxItem.id);
-          }
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
+        if (previousSelectedIds.has(TabSPFxItem.id)) {
+          currentSelectedIds.delete(TabSPFxItem.id);
+        } else {
+          currentSelectedIds.clear();
+          currentSelectedIds.add(TabSPFxItem.id);
         }
-        if (isBotNotificationEnabled()) {
-          currentSelectedIds = handleSelectionConflict(
-            new Set([BotOptionItem.id, MessageExtensionItem.id]),
-            new Set([NotificationOptionItem.id]),
-            previousSelectedIds,
-            currentSelectedIds
-          );
-        }
+      }
+
+      if (isBotNotificationEnabled()) {
+        currentSelectedIds = handleSelectionConflict(
+          new Set([BotOptionItem.id, MessageExtensionItem.id]),
+          new Set([NotificationOptionItem.id]),
+          previousSelectedIds,
+          currentSelectedIds
+        );
       }
 
       return currentSelectedIds;

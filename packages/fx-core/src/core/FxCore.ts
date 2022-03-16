@@ -1429,35 +1429,35 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
     return err(new ObjectIsUndefinedError("projectPath"));
   }
   try {
-    {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (inputs.platform !== Platform.VS) {
-        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-        const exists = await fs.pathExists(packageJsonFilePath);
-        if (!exists) {
-          await fs.writeFile(
-            packageJsonFilePath,
-            JSON.stringify(
-              {
-                name: appName,
-                version: "0.0.1",
-                description: "",
-                author: "",
-                scripts: {
-                  test: 'echo "Error: no test specified" && exit 1',
-                },
-                devDependencies: {
-                  "@microsoft/teamsfx-cli": "0.*",
-                },
-                license: "MIT",
-              },
-              null,
-              4
-            )
-          );
-        }
-      }
-    }
+    // {
+    //   const appName = inputs[CoreQuestionNames.AppName] as string;
+    //   if (inputs.platform !== Platform.VS) {
+    //     const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
+    //     const exists = await fs.pathExists(packageJsonFilePath);
+    //     if (!exists) {
+    //       await fs.writeFile(
+    //         packageJsonFilePath,
+    //         JSON.stringify(
+    //           {
+    //             name: appName,
+    //             version: "0.0.1",
+    //             description: "",
+    //             author: "",
+    //             scripts: {
+    //               test: 'echo "Error: no test specified" && exit 1',
+    //             },
+    //             devDependencies: {
+    //               "@microsoft/teamsfx-cli": "0.*",
+    //             },
+    //             license: "MIT",
+    //           },
+    //           null,
+    //           4
+    //         )
+    //       );
+    //     }
+    //   }
+    // }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
       const exists = await fs.pathExists(gitIgnoreFilePath);

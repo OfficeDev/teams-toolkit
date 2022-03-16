@@ -22,18 +22,12 @@ async function step(desc, fn) {
   }
 }
 
-async function getTemplateNames(tag) {
+async function getTemplateMetadata(tag) {
   const url = `${config.templateReleaseURL}/${tag}`;
-  const templateMetadata = await step(`Download release metadata from ${url}`, async () => {
+  return await step(`Download release metadata from ${url}`, async () => {
     const res = await axios.get(url);
     return res.data.assets;
   });
-
-  let templateNames = [];
-  for (let template of templateMetadata) {
-    templateNames.push(template.name);
-  }
-  return templateNames;
 }
 
 async function downloadTemplates(version) {
@@ -43,8 +37,9 @@ async function downloadTemplates(version) {
   const folder = path.join(__dirname, "..", "templates", "fallback");
   await fs.ensureDir(folder);
 
-  const templateNames = await getTemplateNames(tag);
-  for (let filename of templateNames) {
+  const templates = await getTemplateMetadata(tag);
+  for (let template of templates) {
+    const filename = template.name;
     step(`Download ${config.templateDownloadBaseURL}/${tag}/${filename}`, async () => {
       const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
         responseType: "arraybuffer",

@@ -14,9 +14,9 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
+import { NotificationMiddleware } from "../../../../src/notification/middleware";
 import {
   BotNotification,
-  BotNotificationOptions,
   Channel,
   IncomingWebhookTarget,
   Member,
@@ -25,7 +25,7 @@ import {
   TeamsBotInstallation,
 } from "../../../../src/notification/notification";
 import * as utils from "../../../../src/notification/utils";
-import { TestTarget } from "./testUtils";
+import { TestStorage, TestTarget } from "./testUtils";
 
 chaiUse(chaiPromises);
 
@@ -332,6 +332,62 @@ describe("Notification Tests - Node", () => {
           },
         ],
       });
+    });
+  });
+
+  describe("BotNotification Tests - Node", () => {
+    const sandbox = sinon.createSandbox();
+    let adapter: BotFrameworkAdapter;
+    let storage: TestStorage;
+    let middlewares: any[];
+
+    beforeEach(() => {
+      middlewares = [];
+      const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
+      stubAdapter.use.callsFake((args) => {
+        middlewares.push(args);
+        return stubAdapter;
+      });
+      adapter = stubAdapter;
+      storage = new TestStorage();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("initialize should create correct middleware", () => {
+      BotNotification.initialize(adapter, {
+        storage: storage,
+      });
+      assert.strictEqual(middlewares.length, 1);
+      assert.isTrue(middlewares[0] instanceof NotificationMiddleware);
+    });
+
+    it("", async () => {
+      BotNotification.initialize(adapter, {
+        storage: storage,
+      });
+      storage.items = {
+        "teamfx-notification-targets": {
+          conversations: [
+            {
+              conversation: {
+                id: "1",
+              },
+            },
+            {
+              conversation: {
+                id: "2",
+              },
+            },
+          ],
+        },
+      };
+      const installations = await BotNotification.installations();
+      assert.strictEqual(installations.length, 2);
+      assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+      assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
     });
   });
 });

@@ -7,26 +7,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
-const scenrioSupportedLanguages = new Map([
-  [
-    ["function-base", "default", "function"],
-    ["js", "ts"],
-  ],
-  [
-    ["function-triggers", "HTTPTrigger", "function"],
-    ["js", "ts"],
-  ],
-  [
-    ["tab", "default", "frontend"],
-    ["js", "ts", "csharp"],
-  ],
-  [
-    ["bot", "default", "bot"],
-    ["js", "ts", "csharp"],
-  ],
-  [["blazor-base", "default", "dotnet"], ["csharp"]],
-]);
-
 let stepId = 0;
 
 async function step(desc, fn) {
@@ -42,22 +22,35 @@ async function step(desc, fn) {
   }
 }
 
+async function getTemplateNames(tag) {
+  const url = `${config.templateReleaseURL}/${tag}`;
+  const templateMetadata = await step(`Download release metadata from ${url}`, async () => {
+    const res = await axios.get(url);
+    return res.data.assets;
+  });
+
+  let templateNames = [];
+  for (let template of templateMetadata) {
+    templateNames.push(template.name);
+  }
+  return templateNames;
+}
+
 async function downloadTemplates(version) {
   const tag = config.tagPrefix + version;
   console.log(`Start to download templates with tag: ${tag}`);
 
-  for (let scenrio of Array.from(scenrioSupportedLanguages.keys())) {
-    for (let lang of scenrioSupportedLanguages.get(scenrio)) {
-      const fileName = `${scenrio[0]}.${lang}.${scenrio[1]}.zip`;
-      step(`Download ${config.templateDownloadBaseURL}/${tag}/${fileName}`, async () => {
-        const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${fileName}`, {
-          responseType: "arraybuffer",
-        });
-        const folder = path.join(__dirname, "..", "templates", "plugins", "resource", scenrio[2]);
-        await fs.ensureDir(folder);
-        await fs.writeFile(path.join(folder, `${fileName}`), res.data);
+  const folder = path.join(__dirname, "..", "templates", "fallback");
+  await fs.ensureDir(folder);
+
+  const templateNames = await getTemplateNames(tag);
+  for (let filename of templateNames) {
+    step(`Download ${config.templateDownloadBaseURL}/${tag}/${filename}`, async () => {
+      const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
+        responseType: "arraybuffer",
       });
-    }
+      await fs.writeFile(path.join(folder, `${filename}`), res.data);
+    });
   }
 }
 
@@ -75,7 +68,7 @@ function selectVersionFromShellArgument() {
 
 async function selectVersionFromRemoteTagList() {
   const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
-    res = await axios.get(config.tagListURL);
+    const res = await axios.get(config.tagListURL);
     return res.data;
   });
   const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");

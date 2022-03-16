@@ -7,10 +7,10 @@
 
 ## Steps
 After the pre-cooked pipelines are scaffolded successfully, the following steps are expected to be performed:
-1. Commit and push your project source code to azure devops remote repository, including the CI/CD yml files.
+1. Commit and push your project source code to Azure DevOps remote repository, including the CI/CD yml files.
 1. Create corresponding Azure DevOps pipelines by following [Create your first Azure DevOps Pipeline](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser).
 1. Configure necessary Azure DevOps Pipeline variables if your pipelines require credentials by checking into the yml files.
-1. Trigger your pipelines automatically, manually or do customization (Check the `trigger:` or `pr:` section in yml files to find the triggers). More about triggers in azure devops, refer to [Triggers in Azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops).
+1. Trigger your pipelines automatically, manually or do customization (Check the `trigger:` or `pr:` section in yml files to find the triggers). More about triggers in Azure DevOps, refer to [Triggers in Azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops).
 
 ## Azure DevOps Pipeline Variables 
 Steps to create Pipeline variables in Azure DevOps:

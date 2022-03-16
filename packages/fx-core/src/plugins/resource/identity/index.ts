@@ -35,6 +35,10 @@ export class IdentityPlugin implements Plugin {
     return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
 
+  async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return ok(undefined);
+  }
+
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx.telemetryReporter);
     TelemetryUtils.sendEvent(Telemetry.stage.updateArmTemplates + Telemetry.startSuffix);

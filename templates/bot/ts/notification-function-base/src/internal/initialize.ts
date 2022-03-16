@@ -1,5 +1,3 @@
-// try better naming to hide for user
-
 import { BotFrameworkAdapter, TurnContext } from "botbuilder";
 import { BotNotification } from "@microsoft/teamsfx";
 

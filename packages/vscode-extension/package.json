@@ -62,6 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.addApiConnector",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
@@ -466,6 +467,10 @@
       {
         "command": "fx-extension.validateManifest",
         "title": "%teamstoolkit.commands.validateManifest.title%"
+      },
+      {
+        "command": "fx-extension.addApiConnector",
+        "title": "%teamstoolkit.commands.addApiConnector.title%"
       },
       {
         "command": "fx-extension.build",

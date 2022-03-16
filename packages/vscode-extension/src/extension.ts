@@ -156,6 +156,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateManifestCmd);
 
+  const addApiConnector = vscode.commands.registerCommand(
+    "fx-extension.addApiConnector",
+    (...args) => Correlator.run(handlers.addApiConnectorHandler, args)
+  );
+
   const buildPackageCmd = vscode.commands.registerCommand("fx-extension.build", (...args) =>
     Correlator.run(handlers.buildPackageHandler, args)
   );

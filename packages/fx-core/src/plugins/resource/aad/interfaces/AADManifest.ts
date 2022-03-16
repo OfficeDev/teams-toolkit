@@ -1,6 +1,6 @@
 export interface AADManifest {
-  id: string;
-  appId: string;
+  id?: string | null;
+  appId?: string | null;
   acceptMappedClaims?: boolean | null; // api.acceptMappedClaims
   accessTokenAcceptedVersion?: number | null; // api.requestedAccessTokenVersion
   addIns: AddIn[];
@@ -21,7 +21,6 @@ export interface AADManifest {
   oauth2Permissions: Oauth2Permission[]; // api.Oauth2PermissionScope
   optionalClaims?: OptionalClaims | null;
   parentalControlSettings?: ParentalControlSettings | null;
-  passwordCredentials: PasswordCredential[]; // This will be handled by separate logic
   preAuthorizedApplications: PreAuthorizedApplication[]; // api.preAuthorizedApplications
   replyUrlsWithType: ReplyUrlsWithType[];
   requiredResourceAccess: RequiredResourceAccess[];
@@ -32,6 +31,7 @@ export interface AADManifest {
   tokenEncryptionKeyId?: string | null;
 
   // ***Not supported properties***
+  // passwordCredentials: PasswordCredential[]; // This will be handled by separate logic
   // logoUrl: string; // info.logoUrl  readonly cannot change
   // createdDateTime: string; // readonly cannot change
   // publisherDomain: string; // readonly cannot change

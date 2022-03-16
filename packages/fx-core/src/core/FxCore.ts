@@ -10,7 +10,6 @@ import {
   CoreCallbackEvent,
   CoreCallbackFunc,
   err,
-  ExistingTeamsAppType,
   Func,
   FunctionRouter,
   FxError,
@@ -217,103 +216,58 @@ export class FxCore implements v3.ICore {
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
-      if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
-        // there is no solution settings if created from existing app
-        // create default env
-        ctx.projectSettings = projectSettings;
-        const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
-        const writeEnvResult = await environmentManager.writeEnvConfig(
-          projectPath,
-          newEnvConfig,
-          environmentManager.getDefaultEnvName()
-        );
-        if (writeEnvResult.isErr()) {
-          return err(writeEnvResult.error);
-        }
-        // call App Studio V3 API to create manifest with placeholder
-        const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-        const contextV2 = createV2Context(projectSettings);
-        const initRes = await appStudio.init(contextV2, inputs as v2.InputsWithProjectPath);
-        if (initRes.isErr()) return err(initRes.error);
-        const manifestCaps: v3.ManifestCapability[] = [];
-        inputs.existingAppConfig.newAppTypes.forEach((t) => {
-          if (t === ExistingTeamsAppType.Bot) manifestCaps.push({ name: "Bot", existingApp: true });
-          else if (t === ExistingTeamsAppType.StaticTab)
-            manifestCaps.push({ name: "staticTab", existingApp: true });
-          else if (t === ExistingTeamsAppType.ConfigurableTab)
-            manifestCaps.push({ name: "configurableTab", existingApp: true });
-          else if (t === ExistingTeamsAppType.MessageExtension)
-            manifestCaps.push({ name: "MessageExtension", existingApp: true });
-        });
-        const addCapabilitiesRes = await appStudio.addCapabilities(
-          contextV2,
-          inputs as v2.InputsWithProjectPath,
-          manifestCaps
-        );
-        if (addCapabilitiesRes.isErr()) return err(addCapabilitiesRes.error);
-        if (isConfigUnifyEnabled()) {
-          const createLocalEnvResult = await this.createEnvWithName(
-            environmentManager.getLocalEnvName(),
-            projectSettings,
-            inputs
-          );
-          if (createLocalEnvResult.isErr()) {
-            return err(createLocalEnvResult.error);
-          }
-        }
-      } else {
-        projectSettings.solutionSettings = {
-          name: "",
-          version: "1.0.0",
-        };
-        projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-        ctx.projectSettings = projectSettings;
-        const createEnvResult = await this.createEnvWithName(
-          environmentManager.getDefaultEnvName(),
+
+      projectSettings.solutionSettings = {
+        name: "",
+        version: "1.0.0",
+      };
+      projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+      ctx.projectSettings = projectSettings;
+      const createEnvResult = await this.createEnvWithName(
+        environmentManager.getDefaultEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createEnvResult.isErr()) {
+        return err(createEnvResult.error);
+      }
+
+      if (isConfigUnifyEnabled()) {
+        const createLocalEnvResult = await this.createEnvWithName(
+          environmentManager.getLocalEnvName(),
           projectSettings,
           inputs
         );
-        if (createEnvResult.isErr()) {
-          return err(createEnvResult.error);
+        if (createLocalEnvResult.isErr()) {
+          return err(createLocalEnvResult.error);
         }
+      }
 
-        if (isConfigUnifyEnabled()) {
-          const createLocalEnvResult = await this.createEnvWithName(
-            environmentManager.getLocalEnvName(),
-            projectSettings,
-            inputs
-          );
-          if (createLocalEnvResult.isErr()) {
-            return err(createLocalEnvResult.error);
-          }
-        }
-
-        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
-        if (!solution) {
-          return err(new LoadSolutionError());
-        }
-        ctx.solutionV2 = solution;
-        projectSettings.solutionSettings.name = solution.name;
-        const contextV2 = createV2Context(projectSettings);
-        ctx.contextV2 = contextV2;
-        const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
-        if (scaffoldSourceCodeRes.isErr()) {
-          return err(scaffoldSourceCodeRes.error);
-        }
-        const generateResourceTemplateRes = await solution.generateResourceTemplate(
-          contextV2,
-          inputs
-        );
-        if (generateResourceTemplateRes.isErr()) {
-          return err(generateResourceTemplateRes.error);
-        }
-        // ctx.provisionInputConfig = generateResourceTemplateRes.value;
-        if (solution.createEnv) {
-          inputs.copy = false;
-          const createEnvRes = await solution.createEnv(contextV2, inputs);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
-          }
+      const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
+      if (!solution) {
+        return err(new LoadSolutionError());
+      }
+      ctx.solutionV2 = solution;
+      projectSettings.solutionSettings.name = solution.name;
+      const contextV2 = createV2Context(projectSettings);
+      ctx.contextV2 = contextV2;
+      const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
+      if (scaffoldSourceCodeRes.isErr()) {
+        return err(scaffoldSourceCodeRes.error);
+      }
+      const generateResourceTemplateRes = await solution.generateResourceTemplate(
+        contextV2,
+        inputs
+      );
+      if (generateResourceTemplateRes.isErr()) {
+        return err(generateResourceTemplateRes.error);
+      }
+      // ctx.provisionInputConfig = generateResourceTemplateRes.value;
+      if (solution.createEnv) {
+        inputs.copy = false;
+        const createEnvRes = await solution.createEnv(contextV2, inputs);
+        if (createEnvRes.isErr()) {
+          return err(createEnvRes.error);
         }
       }
     }
@@ -1391,46 +1345,13 @@ export class FxCore implements v3.ICore {
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
-    if (inputs.existingAppConfig?.isCreatedFromExistingApp) {
-      const newEnvConfig = environmentManager.newEnvConfigData(appName, inputs.existingAppConfig);
-      const writeEnvResult = await environmentManager.writeEnvConfig(
-        projectPath,
-        newEnvConfig,
-        environmentManager.getDefaultEnvName()
-      );
-      if (writeEnvResult.isErr()) {
-        return err(writeEnvResult.error);
-      }
-      // call App Studio V3 API to create manifest with placeholder
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-      const contextV2 = createV2Context(projectSettings);
-      const initRes = await appStudio.init(contextV2, inputs as v2.InputsWithProjectPath);
-      if (initRes.isErr()) return err(initRes.error);
-      const manifestCaps: v3.ManifestCapability[] = [];
-      inputs.existingAppConfig.newAppTypes.forEach((t) => {
-        if (t === ExistingTeamsAppType.Bot) manifestCaps.push({ name: "Bot", existingApp: true });
-        else if (t === ExistingTeamsAppType.StaticTab)
-          manifestCaps.push({ name: "staticTab", existingApp: true });
-        else if (t === ExistingTeamsAppType.ConfigurableTab)
-          manifestCaps.push({ name: "configurableTab", existingApp: true });
-        else if (t === ExistingTeamsAppType.MessageExtension)
-          manifestCaps.push({ name: "MessageExtension", existingApp: true });
-      });
-      const addCapabilitiesRes = await appStudio.addCapabilities(
-        contextV2,
-        inputs as v2.InputsWithProjectPath,
-        manifestCaps
-      );
-      if (addCapabilitiesRes.isErr()) return err(addCapabilitiesRes.error);
-    } else {
-      const createEnvResult = await this.createEnvWithName(
-        environmentManager.getDefaultEnvName(),
-        projectSettings,
-        inputs
-      );
-      if (createEnvResult.isErr()) {
-        return err(createEnvResult.error);
-      }
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
+    if (createEnvResult.isErr()) {
+      return err(createEnvResult.error);
     }
     const createLocalEnvResult = await this.createEnvWithName(
       environmentManager.getLocalEnvName(),

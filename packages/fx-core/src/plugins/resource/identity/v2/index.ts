@@ -5,19 +5,13 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
-  Json,
   ProjectSettings,
   Result,
   TokenProvider,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
-import {
-  Context,
-  ProvisionInputs,
-  ResourcePlugin,
-  ResourceProvisionOutput,
-} from "@microsoft/teamsfx-api/build/v2";
+import { Context, ProvisionInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { IdentityPlugin } from "..";
 import {

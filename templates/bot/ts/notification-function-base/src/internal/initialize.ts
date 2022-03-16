@@ -1,5 +1,7 @@
+// try better naming to hide for user
+
 import { BotFrameworkAdapter, TurnContext } from "botbuilder";
-import { AppNotification } from "../sdk/notification";
+import { BotNotification } from "@microsoft/teamsfx";
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
 export const adapter = new BotFrameworkAdapter({
@@ -28,4 +30,4 @@ adapter.onTurnError = async (context: TurnContext, error: Error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-export const appNotification = new AppNotification(adapter);
+BotNotification.initialize(adapter);

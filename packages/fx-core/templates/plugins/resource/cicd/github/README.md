@@ -2,8 +2,8 @@
 
 ## Prerequisites
 - Teams app projects are version controlled by GitHub.
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- An Azure service princial with necessary permissions.
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects.
+- An Azure service principal with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps
 After the pre-cooked workflows are scaffolded successfully, the following steps are expected to be performed:

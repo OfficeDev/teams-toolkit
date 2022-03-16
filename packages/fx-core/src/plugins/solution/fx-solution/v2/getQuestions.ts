@@ -142,7 +142,11 @@ export async function getQuestionsForScaffolding(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-          if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id)) {
+          if (
+            cap.includes(BotOptionItem.id) ||
+            cap.includes(MessageExtensionItem.id) ||
+            cap.includes(NotificationOptionItem.id)
+          ) {
             return undefined;
           }
           return "Bot/Message Extension is not selected";

@@ -39,6 +39,7 @@ import { PluginImpl } from "./interface";
 import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
+import { createHostTypeTriggerQuestion } from "./question";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.BotPlugin)
@@ -206,7 +207,7 @@ export class TeamsBot implements Plugin {
             const res = new QTreeNode({
               type: "group",
             });
-            // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+            res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
             return ok(res);
           } else {
             return ok(undefined);
@@ -233,7 +234,7 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
           return ok(res);
         } else {
           return ok(undefined);

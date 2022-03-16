@@ -629,6 +629,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   } else {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
       showError(selectedEnv.error);
       return err(selectedEnv.error);
     }

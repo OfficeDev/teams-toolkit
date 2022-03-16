@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ext, initializeExtensionVariables } from "./extensionVariables";
+import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -12,22 +12,25 @@ import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
-import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
-import { exp } from "./exp";
+import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isValidProject,
+  isConfigUnifyEnabled,
+  isInitAppEnabled,
+} from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
-  isTeamsfx,
   syncFeatureFlags,
   isValidNode,
   delay,
@@ -36,22 +39,22 @@ import {
 import {
   ConfigFolderName,
   InputConfigsFolderName,
-  StatesFolderName,
   AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
+  TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
-import { version } from "os";
+import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  VsCodeLogInstance.info(StringResources.vsc.extension.activate);
+  VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // load the feature flags.
   syncFeatureFlags();
@@ -84,13 +87,23 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
+  const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
+    Correlator.run(handlers.initProjectHandler, args)
+  );
+  context.subscriptions.push(initCmd);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
-      if (targetUri.isOk()) {
-        await ExtTelemetry.dispose();
-        await delay(2000);
-        return { openFolder: targetUri.value };
+      if (!isSupportAutoOpenAPI()) {
+        Correlator.run(handlers.createNewProjectHandler, args);
+      } else {
+        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
+        if (targetUri.isOk()) {
+          await handlers.updateAutoOpenGlobalKey(true, args);
+          await ExtTelemetry.dispose();
+          await delay(2000);
+          return { openFolder: targetUri.value };
+        }
       }
     })
   );
@@ -99,6 +112,12 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.openReadMeHandler, args)
   );
   context.subscriptions.push(openReadMeCmd);
+
+  const openDeploymentTreeview = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentTreeview",
+    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
+  );
+  context.subscriptions.push(openDeploymentTreeview);
 
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
     Correlator.run(handlers.addResourceHandler, args)
@@ -139,10 +158,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(publishCmd);
 
-  const cicdGuideCmd = vscode.commands.registerCommand("fx-extension.cicdGuide", (...args) =>
-    Correlator.run(handlers.cicdGuideHandler, args)
+  const addCICDWorkflowsCmd = vscode.commands.registerCommand(
+    "fx-extension.addCICDWorkflows",
+    (...args) => Correlator.run(handlers.addCICDWorkflowsHandler, args)
   );
-  context.subscriptions.push(cicdGuideCmd);
+  context.subscriptions.push(addCICDWorkflowsCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
@@ -165,6 +185,18 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  const installAppInTeamsCmd = vscode.commands.registerCommand(
+    "fx-extension.install-app-in-teams",
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
+  );
+  context.subscriptions.push(installAppInTeamsCmd);
+
+  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-getStarted-prerequisites",
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
+  );
+  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
   // Referenced by tasks.json
   const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
@@ -407,15 +439,11 @@ export async function activate(context: vscode.ExtensionContext) {
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && isValidProject(workspacePath)
-  );
-
-  vscode.commands.executeCommand(
-    "setContext",
     "fx-extension.isSPFx",
     workspacePath && (await isSPFxProject(workspacePath))
   );
+
+  vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
   vscode.commands.executeCommand(
     "setContext",
@@ -448,7 +476,9 @@ export async function activate(context: vscode.ExtensionContext) {
   const manifestTemplateSelecctor = {
     language: "json",
     scheme: "file",
-    pattern: `**/manifest.*.template.json`,
+    pattern: isConfigUnifyEnabled()
+      ? `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`
+      : `**/manifest.*.template.json`,
   };
   const manifestPreviewSelector = {
     language: "json",
@@ -535,6 +565,8 @@ export async function activate(context: vscode.ExtensionContext) {
   openWelcomePageAfterExtensionInstallation();
 
   showDebugChangesNotification();
+
+  loadLocalizedStrings();
 }
 
 // this method is called when your extension is deactivated
@@ -549,11 +581,5 @@ function initializeContextKey() {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
-  }
-
-  if (isSupportAutoOpenAPI()) {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", false);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotSupportAutoOpenAPI", true);
   }
 }

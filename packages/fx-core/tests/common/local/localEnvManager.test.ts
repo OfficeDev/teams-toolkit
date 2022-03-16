@@ -157,7 +157,12 @@ describe("LocalEnvManager", () => {
     });
   });
 
-  const testData: { message: string; solutionSettings: any; depsTypes: DepsType[] }[] = [
+  const testData: {
+    message: string;
+    solutionSettings: any;
+    pluginSettings?: any;
+    depsTypes: DepsType[];
+  }[] = [
     {
       message: "tab",
       solutionSettings: {
@@ -226,6 +231,34 @@ describe("LocalEnvManager", () => {
       },
       depsTypes: [DepsType.SpfxNode],
     },
+    {
+      message: "azure functions hosted bot",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Bot"],
+      },
+      pluginSettings: {
+        "fx-resource-bot": {
+          "host-type": "azure-functions",
+        },
+      },
+      depsTypes: [DepsType.FunctionNode, DepsType.FuncCoreTools, DepsType.Ngrok],
+    },
+    {
+      message: "app service hosted bot",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Bot"],
+      },
+      pluginSettings: {
+        "fx-resource-bot": {
+          "host-type": "app-service",
+        },
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
+    },
   ];
 
   describe("getActiveDependencies()", () => {
@@ -240,6 +273,7 @@ describe("LocalEnvManager", () => {
           appName: "",
           projectId: "",
           solutionSettings: data.solutionSettings,
+          pluginSettings: data.pluginSettings,
         };
         const result = localEnvManager.getActiveDependencies(projectSettings);
         chai.assert.sameDeepMembers(data.depsTypes, result);

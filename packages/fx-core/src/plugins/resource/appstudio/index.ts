@@ -33,6 +33,7 @@ import "./v2";
 import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -57,7 +58,7 @@ export class AppStudioPlugin implements Plugin {
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
           staticOptions: [manuallySubmitOption, autoPublishOption],
-          title: "Teams: Publish to Teams",
+          title: getLocalizedString("plugins.appstudio.publishTip"),
           default: autoPublishOption.id,
         });
         appStudioQuestions.addChild(buildOrPublish);
@@ -141,17 +142,23 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} manifestString - the string of manifest.json file
    * @returns {string[]} an array of errors
    */
-  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
+  public async validateManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx, false);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(
+      ctx,
+      isLocalDebug
+    );
     if (validationpluginResult.isErr()) {
       return err(validationpluginResult.error);
     }
     const validationResult = validationpluginResult.value;
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
-      ctx.logProvider?.error("Manifest Validation failed!");
+      ctx.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(
@@ -165,7 +172,7 @@ export class AppStudioPlugin implements Plugin {
       );
       return err(validationFailed);
     }
-    const validationSuccess = "Manifest Validation succeed!";
+    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
     ctx.ui?.showMessage("info", validationSuccess, false);
     TelemetryUtils.sendSuccessEvent(
       TelemetryEventName.validateManifest,
@@ -278,9 +285,11 @@ export class AppStudioPlugin implements Plugin {
         //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         try {
           const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
-          const msg = `Successfully created ${
-            ctx.projectSettings!.appName
-          } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
+          const msg = getLocalizedString(
+            "plugins.appstudio.adminApprovalTip",
+            ctx.projectSettings!.appName,
+            appPackagePath
+          );
           ctx.ui?.showMessage("info", msg, false, "OK", Constants.READ_MORE).then((value) => {
             if (value.isOk() && value.value === Constants.READ_MORE) {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);
@@ -307,7 +316,11 @@ export class AppStudioPlugin implements Plugin {
       ctx.ui
         ?.showMessage(
           "info",
-          `Success: ${result.name} successfully published to the [admin portal](${Constants.TEAMS_ADMIN_PORTAL}). Once approved, your app will be available for your organization.`,
+          getLocalizedString(
+            "plugins.appstudio.publishSucceedNotice",
+            result.name,
+            Constants.TEAMS_ADMIN_PORTAL
+          ),
           false,
           Constants.LEARN_MORE,
           Constants.ADMIN_PORTAL
@@ -467,7 +480,8 @@ export class AppStudioPlugin implements Plugin {
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
-      return await this.validateManifest(ctx);
+      const isLocalDebug = (func?.params?.type as string) === "localDebug";
+      return await this.validateManifest(ctx, isLocalDebug);
     } else if (func.method === "buildPackage") {
       if (func.params && func.params.type) {
         const isLocalDebug = (func.params.type as string) === "localDebug";
@@ -503,7 +517,7 @@ export class AppStudioPlugin implements Plugin {
       new SystemError(
         Constants.PLUGIN_NAME,
         "FunctionRouterError",
-        `Failed to route function call:${JSON.stringify(func)}`,
+        getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
         Links.ISSUE_LINK
       )
     );

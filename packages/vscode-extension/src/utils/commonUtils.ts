@@ -23,6 +23,7 @@ import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 import { execSync } from "child_process";
 import * as versionUtil from "./versionUtil";
+import { TelemetryTiggerFrom } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -327,7 +328,7 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
     return undefined;
   }
 
-  return provisionResult.solution.provisionSucceeded;
+  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
@@ -410,4 +411,17 @@ export function delay(ms: number) {
 
 export function isSupportAutoOpenAPI(): boolean {
   return versionUtil.compare(vscode.version, "1.64.2") > 0;
+}
+
+export function isTriggerFromWalkThrough(args?: any[]): boolean {
+  if (!args || (args && args.length === 0)) {
+    return false;
+  } else if (
+    args[0].toString() === TelemetryTiggerFrom.WalkThrough ||
+    args[0].toString() === TelemetryTiggerFrom.Notification
+  ) {
+    return true;
+  }
+
+  return false;
 }

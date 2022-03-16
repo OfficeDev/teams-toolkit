@@ -70,61 +70,7 @@ describe("Manifest Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new Manifest();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["manifest <action>", "validate", "update"]);
-  });
-
-  it("Validate Command Running Check", async () => {
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
-    const cmd = new Manifest();
-    const validate = cmd.subCommands.find((cmd) => cmd.commandHead === "validate");
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-    };
-    await validate!.handler(args);
-    expect(telemetryEvents).deep.equals([
-      TelemetryEvent.ValidateManifestStart,
-      TelemetryEvent.ValidateManifest,
-    ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
-
-  it("Validate Command Running Check with Error", async () => {
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
-    const cmd = new Manifest();
-    const validate = cmd.subCommands.find((cmd) => cmd.commandHead === "validate");
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "fake",
-    };
-    try {
-      await validate!.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.ValidateManifestStart,
-        TelemetryEvent.ValidateManifest,
-      ]);
-      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
+    expect(registeredCommands).deep.equals(["manifest <action>", "update"]);
   });
 
   it("Update Command Running Check", async () => {

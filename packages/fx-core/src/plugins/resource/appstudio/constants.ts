@@ -42,6 +42,7 @@ export class ErrorMessages {
 export const REMOTE_MANIFEST = "manifest.source.json";
 export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
 export const MANIFEST_LOCAL = "manifest.local.template.json";
+export const MANIFEST_TEMPLATE_CONSOLIDATE = "manifest.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_INDEX_PATH = "indexPath";
@@ -493,6 +494,16 @@ export const BOTS_TPL_LOCAL_DEBUG: IBot[] = [
     ],
   },
 ];
+
+export const WEB_APPLICATION_INFO_LOCAL_DEBUG = {
+  id: "{{localSettings.auth.clientId}}",
+  resource: "{{{localSettings.auth.applicationIdUris}}}",
+};
+
+export const WEB_APPLICATION_INFO_MULTI_ENV = {
+  id: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+  resource: "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
+};
 
 // Default values for the developer fields in manifest.
 export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";

@@ -20,12 +20,7 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  getStrings,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
@@ -37,19 +32,16 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-  ResourcePluginsV2,
-} from "../ResourcePluginContainer";
+import { getActivatedResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
+import { PluginsWithContext } from "../types";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,
@@ -168,7 +160,7 @@ async function checkPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.CheckPermission,
           returnSystemError(
-            new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
+            new Error(getLocalizedString("core.collaboration.FailedToGetEnvName")),
             SolutionSource,
             SolutionError.FailedToGetEnvName
           ),
@@ -179,16 +171,16 @@ async function checkPermissionImpl(
 
     const message = [
       {
-        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        content: getLocalizedString("core.collaboration.AccountUsedToCheck"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: getStrings().solution.Collaboration.StaringCheckPermission,
+        content: getLocalizedString("core.collaboration.StaringCheckPermission"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+      { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
     ];
 
@@ -207,7 +199,7 @@ async function checkPermissionImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += getStrings().solution.Collaboration.FailedToCheckPermission;
+    errorMsg += getLocalizedString("core.collaboration.FailedToCheckPermission");
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -217,20 +209,26 @@ async function checkPermissionImpl(
     for (const permission of permissions) {
       const message = [
         {
-          content: getStrings().solution.Collaboration.CheckPermissionResourceId,
+          content: getLocalizedString("core.collaboration.CheckPermissionResourceId"),
           color: Colors.BRIGHT_WHITE,
         },
         {
-          content: permission.resourceId ?? getStrings().solution.Collaboration.Undefined,
+          content: permission.resourceId ?? getLocalizedString("core.collaboration.Undefined"),
           color: Colors.BRIGHT_MAGENTA,
         },
-        { content: getStrings().solution.Collaboration.ResourceName, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.ResourceName"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: permission.name, color: Colors.BRIGHT_MAGENTA },
-        { content: getStrings().solution.Collaboration.Permission, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.Permission"),
+          color: Colors.BRIGHT_WHITE,
+        },
         {
           content: permission.roles
             ? permission.roles.toString()
-            : getStrings().solution.Collaboration.Undefined + "\n",
+            : getLocalizedString("core.collaboration.Undefined") + "\n",
           color: Colors.BRIGHT_MAGENTA,
         },
       ];
@@ -257,10 +255,10 @@ async function checkPermissionImpl(
     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     [SolutionTelemetryProperty.AadPermission]: aadPermission?.roles
       ? aadPermission.roles.join(";")
-      : getStrings().solution.Collaboration.Undefined,
+      : getLocalizedString("core.collaboration.Undefined"),
     [SolutionTelemetryProperty.TeamsAppPermission]: teamsAppPermission?.roles
       ? teamsAppPermission.roles.join(";")
-      : getStrings().solution.Collaboration.Undefined,
+      : getLocalizedString("core.collaboration.Undefined"),
   });
 
   return ok({
@@ -296,7 +294,7 @@ export async function checkPermission(
       return err(
         returnSystemError(
           new Error(
-            getStrings().solution.Collaboration.FailedToConvertProfile +
+            getLocalizedString("core.collaboration.FailedToConvertProfile") +
               JSON.stringify(param.envInfo.state)
           ),
           PluginNames.SOLUTION,

@@ -3,6 +3,7 @@
 "use strict";
 
 import * as os from "os";
+import { yeomanScaffoldEnabled } from "../../../../../core/globalVars";
 import { LaunchBrowser } from "../constants";
 
 export function generateConfigurations(
@@ -68,7 +69,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
     chromeOrder = 2;
   }
 
-  return [
+  const localWorkbench: Record<string, unknown>[] = [
     {
       name: "Local workbench (Edge)",
       type: LaunchBrowser.edge,
@@ -111,6 +112,9 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
         order: chromeOrder,
       },
     },
+  ];
+
+  const configurations: Record<string, unknown>[] = [
     {
       name: "Hosted workbench (Edge)",
       type: LaunchBrowser.edge,
@@ -190,6 +194,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       },
     },
   ];
+  return yeomanScaffoldEnabled() ? configurations : localWorkbench.concat(configurations);
 }
 
 export function generateSpfxCompounds(): Record<string, unknown>[] {

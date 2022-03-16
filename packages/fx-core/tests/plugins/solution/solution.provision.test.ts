@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   FxError,
@@ -83,7 +83,7 @@ import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plu
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import Container from "typedi";
 import {
   askResourceGroupInfo,
@@ -104,6 +104,7 @@ import { AadAppForTeamsPlugin } from "../../../src";
 import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

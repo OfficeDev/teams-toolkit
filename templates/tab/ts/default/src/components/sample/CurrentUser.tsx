@@ -9,7 +9,7 @@ export function CurrentUser(props: { userName?: string }) {
     <div>
       <h2>Get the current user</h2>
       <p>Access basic information about the user like this:</p>
-      <pre>{`const credential = new TeamsUserCredential(); \nconst user = await credential.getUserInfo();`}</pre>
+      <pre>{`const teamsfx = new TeamsFx(); \nconst user = await teamsfx.getUserInfo();`}</pre>
       {!!userName && (
         <p>
           The currently logged in user's name is <b>{userName}</b>

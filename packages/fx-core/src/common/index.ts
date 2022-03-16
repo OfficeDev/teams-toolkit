@@ -9,3 +9,4 @@ export * from "./local";
 export * from "./permissionInterface";
 export * from "./samples";
 export * from "./deps-checker";
+export * from "./projectSettingsHelper";

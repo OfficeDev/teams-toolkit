@@ -19,8 +19,6 @@ import {
   EnvInfo,
   Json,
   v3,
-  ExistingAppConfig,
-  ExistingTeamsAppType,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -28,22 +26,24 @@ import * as dotenv from "dotenv";
 import {
   dataNeedEncryption,
   replaceTemplateWithUserData,
-  PathNotExistError,
   serializeDict,
   separateSecretData,
-  WriteFileError,
   mapToJson,
   objectToMap,
-  ProjectEnvNotExistError,
-  InvalidEnvConfigError,
-} from "..";
+  compileHandlebarsTemplateString,
+} from "../common/tools";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString, ManifestVariables } from "../common/constants";
+import {
+  InvalidEnvConfigError,
+  PathNotExistError,
+  ProjectEnvNotExistError,
+  WriteFileError,
+} from "./error";
 
 export interface EnvStateFiles {
   envState: string;
@@ -78,7 +78,7 @@ class EnvironmentManager {
     isV3 = false
   ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     envName = envName ?? this.getDefaultEnvName();
@@ -105,7 +105,7 @@ class EnvironmentManager {
       });
   }
 
-  public newEnvConfigData(appName: string, existingAppConfig?: ExistingAppConfig): EnvConfig {
+  public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       description: this.envConfigDescription,
@@ -117,34 +117,6 @@ class EnvironmentManager {
       },
     };
 
-    if (!existingAppConfig || !existingAppConfig.isCreatedFromExistingApp) {
-      return envConfig;
-    }
-
-    // Common settings for existing app.
-    envConfig.manifest[ManifestVariables.DeveloperWebsiteUrl] = "";
-    envConfig.manifest[ManifestVariables.DeveloperPrivacyUrl] = "";
-    envConfig.manifest[ManifestVariables.DeveloperTermsOfUseUrl] = "";
-
-    // Settings to build a static Tab app from existing app.
-    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.StaticTab) !== -1) {
-      envConfig.manifest[ManifestVariables.TabContentUrl] = "";
-      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = "";
-    }
-
-    // Settings to build a configurable Tab app from existing app.
-    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.ConfigurableTab) !== -1) {
-      envConfig.manifest[ManifestVariables.TabConfigurationUrl] = "";
-    }
-
-    // Settings to build a Bot/ME app from existing app.
-    if (
-      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.Bot) !== -1 ||
-      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.MessageExtension) !== -1
-    ) {
-      envConfig.manifest[ManifestVariables.BotId] = "";
-    }
-
     return envConfig;
   }
 
@@ -154,7 +126,7 @@ class EnvironmentManager {
     envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -182,7 +154,7 @@ class EnvironmentManager {
     isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envStatesFolder = this.getEnvStatesFolder(projectPath);
@@ -211,7 +183,7 @@ class EnvironmentManager {
 
   public async listAllEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -229,7 +201,7 @@ class EnvironmentManager {
 
   public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -465,3 +437,39 @@ export function separateSecretDataV3(envState: v3.ResourceStates): Record<string
 }
 
 export const environmentManager = new EnvironmentManager();
+
+export function newEnvInfo(
+  envName?: string,
+  config?: EnvConfig,
+  state?: Map<string, any>
+): EnvInfo {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
+}
+
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
+  };
+}

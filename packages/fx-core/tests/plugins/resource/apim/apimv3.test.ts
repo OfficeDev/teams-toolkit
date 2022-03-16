@@ -50,7 +50,7 @@ describe("APIM V3 API", () => {
       config: {},
       state: { solution: {}, "fx-resource-apim": {} },
     };
-    const apimPlugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.apim);
+    const apimPlugin = Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.apim);
     const res = await apimPlugin.getQuestionsForDeploy!(
       ctx,
       inputs,

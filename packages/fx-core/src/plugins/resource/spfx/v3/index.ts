@@ -80,18 +80,6 @@ export class SPFxPluginV3 implements v3.PluginV3 {
     capabilities.push(TabSPFxItem.id);
 
     const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-    const localStaticSnippet: IStaticTab = {
-      entityId: componentId,
-      name: webpartName,
-      contentUrl: util.format(ManifestTemplate.LOCAL_CONTENT_URL, componentId),
-      websiteUrl: ManifestTemplate.WEBSITE_URL,
-      scopes: ["personal"],
-    };
-    const localConfigurableSnippet: IConfigurableTab = {
-      configurationUrl: util.format(ManifestTemplate.LOCAL_CONFIGURATION_URL, componentId),
-      canUpdateConfiguration: true,
-      scopes: ["team"],
-    };
     const remoteStaticSnippet: IStaticTab = {
       entityId: componentId,
       name: webpartName,
@@ -105,10 +93,10 @@ export class SPFxPluginV3 implements v3.PluginV3 {
       scopes: ["team"],
     };
     capabilitiesToAddManifest.push(
-      { name: "staticTab", snippet: { local: localStaticSnippet, remote: remoteStaticSnippet } },
+      { name: "staticTab", snippet: remoteStaticSnippet },
       {
         name: "configurableTab",
-        snippet: { local: localConfigurableSnippet, remote: remoteConfigurableSnippet },
+        snippet: remoteConfigurableSnippet,
       }
     );
 

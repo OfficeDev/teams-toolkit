@@ -117,6 +117,11 @@ export class SqlValidator {
     };
     const connection = new tedious.Connection(config);
     return new Promise((resolve, reject) => {
+      connection.connect((err: any) => {
+        if (err) {
+          reject(err);
+        }
+      });
       connection.on("connect", (err) => {
         if (err) {
           reject(err);

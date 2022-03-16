@@ -21,6 +21,7 @@ import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import {
+  initializing,
   loggedIn,
   loggedOut,
   loggingIn,
@@ -30,7 +31,6 @@ import {
   subscriptionInfoFile,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import VsCodeLogInstance from "./log";
@@ -48,6 +48,7 @@ import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
+import { localize } from "../utils/localizeUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -151,7 +152,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         // throw user cancel error
         throw new UserError(
           ExtensionErrors.UserCancel,
-          StringResources.vsc.common.userCancel,
+          localize("teamstoolkit.common.userCancel"),
           "Login"
         );
       }
@@ -164,9 +165,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount = this.getAzureAccount();
     if (azureAccount.status != loggedIn) {
       throw new UserError(
-        StringResources.vsc.codeFlowLogin.loginTimeoutTitle,
-        StringResources.vsc.codeFlowLogin.loginTimeoutDescription,
-        StringResources.vsc.codeFlowLogin.loginComponent
+        localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+        localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
+        localize("teamstoolkit.codeFlowLogin.loginComponent")
       );
     }
   }
@@ -217,9 +218,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const message = StringResources.vsc.azureLogin.message;
-    const signin = StringResources.vsc.common.signin;
-    const readMore = StringResources.vsc.common.readMore;
+    const message = localize("teamstoolkit.azureLogin.message");
+    const signin = localize("teamstoolkit.common.signin");
+    const readMore = localize("teamstoolkit.common.readMore");
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
@@ -243,9 +244,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private async doesUserConfirmSignout(): Promise<boolean> {
     const accountInfo = (await this.getStatus()).accountInfo;
     const email = (accountInfo as any).upn ? (accountInfo as any).upn : (accountInfo as any).email;
-    const confirm = StringResources.vsc.common.signout;
+    const confirm = localize("teamstoolkit.common.signout");
     const userSelected: string | undefined = await vscode.window.showInformationMessage(
-      util.format(StringResources.vsc.common.signOutOf, email),
+      util.format(localize("teamstoolkit.common.signOutOf"), email),
       { modal: true },
       confirm
     );
@@ -277,7 +278,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       // throw user cancel error
       throw new UserError(
         ExtensionErrors.UserCancel,
-        StringResources.vsc.common.userCancel,
+        localize("teamstoolkit.common.userCancel"),
         "SignOut"
       );
     }
@@ -366,7 +367,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     throw new UserError(
       ExtensionErrors.UnknownSubscription,
-      StringResources.vsc.azureLogin.unknownSubscription,
+      localize("teamstoolkit.azureLogin.unknownSubscription"),
       "Login"
     );
   }
@@ -379,8 +380,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getStatus(): Promise<LoginStatus> {
     const azureAccount = this.getAzureAccount();
-    // add this to make sure Azure Account Extension has fully initialized
-    await azureAccount.waitForSubscriptions();
+    if (this.isLegacyVersion()) {
+      // add this to make sure Azure Account Extension has fully initialized
+      // this will wait for login finish when version >= 0.10.0, so loggingIn status will be ignored
+      await azureAccount.waitForSubscriptions();
+    }
     if (azureAccount.status === loggedIn) {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();
@@ -408,27 +412,54 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     azureAccount.onStatusChanged(async (event) => {
-      if (AzureAccountManager.currentStatus === "Initializing") {
-        AzureAccountManager.currentStatus = event;
-        if (AzureAccountManager.currentStatus === "LoggedIn") {
-          const subscriptioninfo = await this.readSubscription();
-          if (subscriptioninfo) {
-            this.setSubscription(subscriptioninfo.subscriptionId);
+      if (this.isLegacyVersion()) {
+        if (AzureAccountManager.currentStatus === "Initializing") {
+          AzureAccountManager.currentStatus = event;
+          if (AzureAccountManager.currentStatus === "LoggedIn") {
+            const subscriptioninfo = await this.readSubscription();
+            if (subscriptioninfo) {
+              this.setSubscription(subscriptioninfo.subscriptionId);
+            }
           }
+          return;
         }
-        return;
-      }
-      AzureAccountManager.currentStatus = event;
-      if (event === loggedOut) {
-        if (AzureAccountManager.statusChange !== undefined) {
-          await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+        AzureAccountManager.currentStatus = event;
+        if (event === loggedOut) {
+          if (AzureAccountManager.statusChange !== undefined) {
+            await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+          }
+          await this.notifyStatus();
+        } else if (event === loggedIn) {
+          await this.updateLoginStatus();
+          await this.notifyStatus();
+        } else if (event === loggingIn) {
+          await this.notifyStatus();
         }
-        await this.notifyStatus();
-      } else if (event === loggedIn) {
-        await this.updateLoginStatus();
-        await this.notifyStatus();
-      } else if (event === loggingIn) {
-        await this.notifyStatus();
+      } else {
+        if (AzureAccountManager.currentStatus === initializing) {
+          if (event === loggedIn) {
+            const subscriptioninfo = await this.readSubscription();
+            if (subscriptioninfo) {
+              this.setSubscription(subscriptioninfo.subscriptionId);
+            }
+            AzureAccountManager.currentStatus = event;
+          } else if (event === loggedOut) {
+            AzureAccountManager.currentStatus = event;
+          }
+          return;
+        }
+        AzureAccountManager.currentStatus = event;
+        if (event === loggedOut) {
+          if (AzureAccountManager.statusChange !== undefined) {
+            await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+          }
+          await this.notifyStatus();
+        } else if (event === loggedIn) {
+          await this.updateLoginStatus();
+          await this.notifyStatus();
+        } else if (event === loggingIn) {
+          await this.notifyStatus();
+        }
       }
     });
   }
@@ -475,9 +506,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const subscriptionList = await this.listSubscriptions();
     if (!subscriptionList || subscriptionList.length == 0) {
       throw new UserError(
-        StringResources.vsc.azureLogin.noSubscriptionFound,
-        StringResources.vsc.azureLogin.failToFindSubscription,
-        StringResources.vsc.codeFlowLogin.loginComponent
+        localize("teamstoolkit.azureLogin.noSubscriptionFound"),
+        localize("teamstoolkit.azureLogin.failToFindSubscription"),
+        localize("teamstoolkit.codeFlowLogin.loginComponent")
       );
     }
     if (subscriptionList && subscriptionList.length == 1) {
@@ -491,8 +522,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         } as OptionItem;
       });
       const config: SingleSelectConfig = {
-        name: StringResources.vsc.azureLogin.subscription,
-        title: StringResources.vsc.azureLogin.selectSubscription,
+        name: localize("teamstoolkit.azureLogin.subscription"),
+        title: localize("teamstoolkit.azureLogin.selectSubscription"),
         options: options,
       };
       const result = await VS_CODE_UI.selectOption(config);
@@ -563,6 +594,19 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return subscriptionFile;
     } else {
       return undefined;
+    }
+  }
+
+  isLegacyVersion(): boolean {
+    try {
+      const version: string =
+        vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.packageJSON
+          .version;
+      const versionDetail = version.split(".");
+      return parseInt(versionDetail[0]) === 0 && parseInt(versionDetail[1]) < 10;
+    } catch (e) {
+      VsCodeLogInstance.error("[Get Azure extension] " + e.message);
+      return false;
     }
   }
 }

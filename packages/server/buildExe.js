@@ -36,15 +36,7 @@ const [nodeRange, platform, arch] = target.split("-");
     const built = path.join(dirname, filename.replace("fetched", "built"));
     await fs.rename(fetched, built);
 
-    await pkg.exec([
-      "./lib/index.js",
-      "-t",
-      target,
-      "-o",
-      "./lib/server",
-      "-c",
-      "pkg.json",
-      "--build",
-    ]);
+    const output = path.join("lib", `server-${arch}-${version}.exe`);
+    await pkg.exec(["./lib/index.js", "-t", target, "-o", output, "-c", "pkg.json", "--build"]);
   }
 })();

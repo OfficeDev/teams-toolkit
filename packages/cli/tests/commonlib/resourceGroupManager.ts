@@ -16,11 +16,10 @@ function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 export class ResourceGroupManager {
   private static instance: ResourceGroupManager;
 
-  private static client?: arm.ResourceManagementClient;
+  private static client?: arm.ResourceManagementClient.ResourceManagementClient;
 
   private constructor() {
     ResourceGroupManager.client = undefined;
@@ -32,7 +31,10 @@ export class ResourceGroupManager {
       const c = await msRestAzure.loginWithUsernamePassword(user, password, {
         domain: azureConfig.AZURE_TENANT_ID,
       });
-      ResourceGroupManager.client = new arm.ResourceManagementClient(c, subscriptionId);
+      ResourceGroupManager.client = new arm.ResourceManagementClient.ResourceManagementClient(
+        c,
+        subscriptionId
+      );
     }
     return Promise.resolve(ResourceGroupManager.instance);
   }

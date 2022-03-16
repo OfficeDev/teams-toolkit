@@ -20,8 +20,6 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, isV3 } from "..";
-import { CoreHookContext, FxCore } from "../..";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {
@@ -31,7 +29,11 @@ import {
   ReadFileError,
 } from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo, validateSettings } from "../tools";
+import { newEnvInfo } from "../environment";
+import { validateProjectSettings } from "../../common/projectSettingsHelper";
+import { CoreHookContext } from "../types";
+import { createV2Context } from "../../common/tools";
+import { isV3 } from "../globalVars";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -40,12 +42,12 @@ export const ProjectSettingsLoaderMW: Middleware = async (
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!shouldIgnored(ctx)) {
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
     const projectPathExist = await fs.pathExists(inputs.projectPath);
     if (!projectPathExist) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
+      ctx.result = err(new PathNotExistError(inputs.projectPath));
       return;
     }
     const loadRes = await loadProjectSettings(inputs, true);
@@ -56,20 +58,16 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     const projectSettings = loadRes.value;
 
-    const validRes = validateSettings(projectSettings);
+    const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
-      ctx.result = err(
-        InvalidProjectSettingsFileError(
-          `reason: ${validRes}, projectSettings: ${JSON.stringify(projectSettings)}`
-        )
-      );
+      ctx.result = err(new InvalidProjectSettingsFileError(validRes));
       return;
     }
 
     ctx.projectSettings = projectSettings;
-    (ctx.self as FxCore).isFromSample = projectSettings.isFromSample === true;
-    (ctx.self as FxCore).settingsVersion = projectSettings.version;
-    (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
+    (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
+    (ctx.self as any).settingsVersion = projectSettings.version;
+    (ctx.self as any).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
     ctx.contextV2 = createV2Context(projectSettings);
   }
 
@@ -82,7 +80,7 @@ export async function loadProjectSettings(
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (!inputs.projectPath) {
-      return err(NoProjectOpenedError());
+      return err(new NoProjectOpenedError());
     }
 
     const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);

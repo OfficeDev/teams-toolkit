@@ -14,7 +14,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { QuestionAppName } from "../../../src/core/question";
+import { createAppNameQuestion } from "../../../src/core/question";
 
 export const MockFeaturePluginNames = {
   tab: "fx-feature-test-tab",
@@ -53,6 +53,6 @@ export class MockTabFrontendPlugin implements v3.PluginV3 {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(new QTreeNode(QuestionAppName));
+    return ok(new QTreeNode(createAppNameQuestion()));
   }
 }

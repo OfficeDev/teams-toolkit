@@ -166,7 +166,6 @@ interface AzureResourcePlugin {
     name: string;
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<BicepTemplate_2[], FxError>>;
-    updateCode?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<Void, FxError>>;
 }
 
 // @public
@@ -547,45 +546,9 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
-export interface ExistingAppConfig {
-    // (undocumented)
-    isCreatedFromExistingApp: boolean;
-    // (undocumented)
-    newAppTypes: ExistingTeamsAppType[];
-}
-
-// @public (undocumented)
-export enum ExistingTeamsAppType {
-    // (undocumented)
-    Bot = 2,
-    // (undocumented)
-    ConfigurableTab = 1,
-    // (undocumented)
-    MessageExtension = 3,
-    // (undocumented)
-    StaticTab = 0
-}
-
-// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
-}
-
-// @public (undocumented)
-interface FeaturePlugin {
-    addFeature: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
-    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
-    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    description?: string;
-    displayName?: string;
-    getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    name: string;
-    pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -745,13 +708,15 @@ export interface Inputs extends Json {
     // (undocumented)
     env?: string;
     // (undocumented)
-    existingAppConfig?: ExistingAppConfig;
-    // (undocumented)
     existingResources?: string[];
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
+    // (undocumented)
+    isM365?: boolean;
+    // (undocumented)
+    locale?: string;
     // (undocumented)
     platform: Platform;
     // (undocumented)
@@ -766,6 +731,8 @@ export interface Inputs extends Json {
     targetEnvName?: string;
     // (undocumented)
     targetResourceGroupName?: string;
+    // (undocumented)
+    targetResourceLocationName?: string;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
@@ -923,31 +890,19 @@ export interface LogProvider {
 // @public (undocumented)
 type ManifestCapability = {
     name: "staticTab";
-    snippet?: {
-        local: IStaticTab;
-        remote: IStaticTab;
-    };
+    snippet?: IStaticTab;
     existingApp?: boolean;
 } | {
     name: "configurableTab";
-    snippet?: {
-        local: IConfigurableTab;
-        remote: IConfigurableTab;
-    };
+    snippet?: IConfigurableTab;
     existingApp?: boolean;
 } | {
     name: "Bot";
-    snippet?: {
-        local: IBot;
-        remote: IBot;
-    };
+    snippet?: IBot;
     existingApp?: boolean;
 } | {
     name: "MessageExtension";
-    snippet?: {
-        local: IComposeExtension;
-        remote: IComposeExtension;
-    };
+    snippet?: IComposeExtension;
     existingApp?: boolean;
 } | {
     name: "WebApplicationInfo";
@@ -1022,15 +977,6 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
-}
-
-// @public (undocumented)
-interface OtherFeaturesAddedInputs extends AddFeatureInputs {
-    // (undocumented)
-    addedPlugins: {
-        name: string;
-        value: ResourceTemplate_2[];
-    }[];
 }
 
 // @public (undocumented)
@@ -1163,6 +1109,8 @@ export interface ProjectSettings {
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
+    // (undocumented)
+    isM365?: boolean;
     pluginSettings?: Json;
     // (undocumented)
     programmingLanguage?: string;
@@ -1869,8 +1817,6 @@ declare namespace v3 {
         AppManifestProvider,
         ContextWithManifestProvider,
         AddFeatureInputs,
-        OtherFeaturesAddedInputs,
-        FeaturePlugin,
         BicepTemplate_2 as BicepTemplate,
         UpdateInputs,
         AzureResourcePlugin,

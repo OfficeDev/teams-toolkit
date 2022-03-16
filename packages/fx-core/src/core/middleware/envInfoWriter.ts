@@ -4,10 +4,10 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, TOOLS } from "..";
-import { getStrings } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
@@ -19,7 +19,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     try {
       await next();
     } catch (e) {
-      if ((e as any)["name"] === getStrings().solution.CancelProvision) throw e;
+      if ((e as any)["name"] === "CancelProvision") throw e;
       error1 = e;
     }
     let error2: any = undefined;

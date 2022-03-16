@@ -21,7 +21,6 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
@@ -35,6 +34,7 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import mockLocalSettings from "./localSettings.json";
 
@@ -71,10 +71,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     const res = await my.other(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error instanceof NoProjectOpenedError);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res2 = await my.other(inputs);
-    assert.isTrue(res2.isErr() && res2.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res2.isErr() && res2.error instanceof PathNotExistError);
   });
 });
 

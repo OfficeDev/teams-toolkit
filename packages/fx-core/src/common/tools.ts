@@ -18,15 +18,11 @@ import {
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
-  SolutionContext,
-  v3,
-  PluginContext,
+  v2,
 } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as Handlebars from "handlebars";
 import * as path from "path";
 import { promisify } from "util";
@@ -52,6 +48,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
+import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
+import { TOOLS } from "../core/globalVars";
+import { LocalCrypto } from "../core/crypto";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -274,17 +273,10 @@ export const deepCopy = <T>(target: T): T => {
   return target;
 };
 
-export function getStrings(): any {
-  const filepath = path.resolve(getResourceFolder(), "strings.json");
-  return fs.readJSONSync(filepath);
-}
-
 export function isUserCancelError(error: Error): boolean {
   const errorName = "name" in error ? (error as any)["name"] : "";
   return (
-    errorName === "User Cancel" ||
-    errorName === getStrings().solution.CancelProvision ||
-    errorName === "UserCancel"
+    errorName === "User Cancel" || errorName === "CancelProvision" || errorName === "UserCancel"
   );
 }
 
@@ -380,6 +372,45 @@ export function isBicepEnvCheckerEnabled(): boolean {
 
 export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+}
+
+export function isInitAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+}
+
+export function isAadManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
+}
+
+export function isM365AppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
+}
+
+// This method is for deciding whether AAD should be activated.
+// Currently AAD plugin will always be activated when scaffold.
+// This part will be updated when we support adding aad separately.
+export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  if (!solutionSettings) {
+    return false;
+  }
+
+  if (isAadManifestEnabled()) {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      solutionSettings.capabilities.includes(SsoItem.id)
+    );
+  } else {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      // For scaffold, activeResourecPlugins is undefined
+      (!solutionSettings.activeResourcePlugins ||
+        solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
+    );
+  }
+}
+
+export function isBotNotificationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
 
 export function getRootDirectory(): string {
@@ -649,5 +680,26 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
     }
   } while (++retry < 3);
 
+  return undefined;
+}
+
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
+  const context: v2.Context = {
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: TOOLS.permissionRequest,
+    projectSetting: projectSettings,
+  };
+  return context;
+}
+
+export function undefinedName(objs: any[], names: string[]) {
+  for (let i = 0; i < objs.length; ++i) {
+    if (objs[i] === undefined) {
+      return names[i];
+    }
+  }
   return undefined;
 }

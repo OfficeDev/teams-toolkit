@@ -2,31 +2,177 @@
 // Licensed under the MIT license.
 
 import {
-  PluginContext,
   ConfigValue,
-  v2,
   err,
   Result,
   FxError,
   ok,
   v3,
+  EnvConfig,
+  GraphTokenProvider,
+  LogProvider,
+  PluginContext,
+  v2,
 } from "@microsoft/teamsfx-api";
-import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
+import {
+  Plugins,
+  ConfigKeysOfOtherPlugin,
+  ConfigFilePath,
+  ConfigKeys,
+  Constants,
+  Messages,
+} from "../constants";
 import {
   ConfigErrorMessages as Errors,
   GetConfigError,
   MissingPermissionsRequestProvider,
+  GetSkipAppConfigError,
 } from "../errors";
 import { format, Formats } from "./format";
-import { Utils } from "./common";
-import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
-import { getPermissionRequest } from "../v3";
+import { IAADDefinition } from "../interfaces/IAADDefinition";
+import { TelemetryUtils } from "./telemetry";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { ResultFactory } from "../results";
+import { getPermissionRequest } from "../permissions";
+
+export class Utils {
+  public static addLogAndTelemetryWithLocalDebug(
+    logProvider: LogProvider | undefined,
+    message: Messages,
+    messageLocal: Messages,
+    isLocalDebug = false,
+    properties?: { [key: string]: string }
+  ): void {
+    if (!isLocalDebug) {
+      logProvider?.info(message.log);
+      TelemetryUtils.sendSuccessEvent(message.telemetry, properties);
+    } else {
+      logProvider?.info(messageLocal.log);
+      TelemetryUtils.sendSuccessEvent(messageLocal.telemetry, properties);
+    }
+  }
+
+  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages): void {
+    logProvider?.info(message.log);
+    TelemetryUtils.sendSuccessEvent(message.telemetry);
+  }
+
+  public static addLocalDebugPrefix(isLocalDebug: boolean, key: string): string {
+    return isLocalDebug ? Constants.localDebugPrefix + key : key;
+  }
+
+  public static getConfigFileName(envName?: string): string {
+    if (!envName) {
+      return ConfigFilePath.LocalSettings;
+    } else {
+      return ConfigFilePath.State(envName);
+    }
+  }
+
+  public static getInputFileName(envName: string): string {
+    return ConfigFilePath.Input(envName);
+  }
+
+  public static async getCurrentTenantId(graphTokenProvider?: GraphTokenProvider): Promise<string> {
+    const tokenObject = await graphTokenProvider?.getJsonObject();
+    const tenantId: string = (tokenObject as any)?.tid;
+    return tenantId;
+  }
+
+  public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
+    const envConfig: EnvConfig = envInfo.config as EnvConfig;
+    const envState: v3.AADApp = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const objectId = envConfig.auth?.objectId;
+    const clientId = envConfig.auth?.clientId;
+    const clientSecret = envConfig.auth?.clientSecret;
+    const oauth2PermissionScopeId = envConfig.auth?.accessAsUserScopeId;
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      envState.objectId = objectId;
+      envState.clientId = clientId;
+      envState.clientSecret = clientSecret;
+      envState.oauth2PermissionScopeId = oauth2PermissionScopeId;
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(Utils.getInputFileName(envInfo.envName))
+      );
+    } else {
+      return false;
+    }
+  }
+  public static skipCreateAadForLocalProvision(localSettings: v2.LocalSettings): boolean {
+    const objectId = localSettings.auth?.objectId;
+    const clientId = localSettings.auth?.clientId;
+    const clientSecret = localSettings.auth?.clientSecret;
+    const oauth2PermissionScopeId = localSettings.auth?.oauth2PermissionScopeId;
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(ConfigFilePath.LocalSettings)
+      );
+    } else {
+      return false;
+    }
+  }
+  public static skipAADProvision(ctx: PluginContext, isLocalDebug = false): boolean {
+    const objectId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, true)
+      : ctx.envInfo.config.auth?.objectId;
+    const clientId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientId, true)
+      : ctx.envInfo.config.auth?.clientId;
+    const oauth2PermissionScopeId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.oauth2PermissionScopeId, true)
+      : ctx.envInfo.config.auth?.accessAsUserScopeId;
+    const clientSecret = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, true)
+      : ctx.envInfo.config.auth?.clientSecret;
+
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      if (!isLocalDebug) {
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
+        ConfigUtils.checkAndSaveConfig(
+          ctx,
+          ConfigKeys.oauth2PermissionScopeId,
+          oauth2PermissionScopeId as string
+        );
+      }
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(Utils.getInputFileName(ctx.envInfo.envName))
+      );
+    } else {
+      return false;
+    }
+  }
+
+  public static parseRedirectUriMessage(redirectUris: IAADDefinition): string {
+    let message = "";
+    if (redirectUris.web && redirectUris.web.redirectUris) {
+      message += `Platform: Web, RedirectUri: ${redirectUris.web.redirectUris.join(",")}; `;
+    }
+
+    if (redirectUris.spa && redirectUris.spa.redirectUris) {
+      message += `Platform: Single Page Application, RedirectUri: ${redirectUris.spa.redirectUris.join(
+        ","
+      )}; `;
+    }
+
+    return message;
+  }
+}
 
 export class ConfigUtils {
   public static getAadConfig(
@@ -588,11 +734,21 @@ export class CheckGrantPermissionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        Utils.getPermissionErrorMessage(
+        getPermissionErrorMessage(
           GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)),
           this.isGrantPermission
         )
       );
     }
   }
+}
+
+export function getPermissionErrorMessage(
+  message: string,
+  isGrantPermission = false,
+  objectId?: string
+): string {
+  return isGrantPermission
+    ? `${Constants.permissions.name}: ${objectId}. Error: ${message}`
+    : message;
 }

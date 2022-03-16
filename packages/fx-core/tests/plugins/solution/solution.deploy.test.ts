@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   FxError,
@@ -44,11 +44,12 @@ import {
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
 
 chai.use(chaiAsPromised);

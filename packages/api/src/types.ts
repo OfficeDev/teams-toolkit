@@ -173,6 +173,7 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings?: SolutionSettings;
   isFromSample?: boolean;
+  isM365?: boolean;
   /**
    * pluginSettings is used for plugin settings irrelevant to environments
    */
@@ -222,6 +223,7 @@ export interface Inputs extends Json {
   targetEnvName?: string;
   sourceEnvName?: string;
   targetResourceGroupName?: string;
+  targetResourceLocationName?: string; // for vs to create a new resource group
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;
@@ -230,20 +232,8 @@ export interface Inputs extends Json {
   env?: string;
   projectId?: string;
   existingResources?: string[];
-  existingAppConfig?: ExistingAppConfig;
-}
-
-// configs for existing app building
-export interface ExistingAppConfig {
-  isCreatedFromExistingApp: boolean;
-  newAppTypes: ExistingTeamsAppType[];
-}
-
-export enum ExistingTeamsAppType {
-  StaticTab, // scopes: personal tab
-  ConfigurableTab, // scopes: team/group chat
-  Bot,
-  MessageExtension,
+  locale?: string;
+  isM365?: boolean;
 }
 
 export interface ProjectConfig {

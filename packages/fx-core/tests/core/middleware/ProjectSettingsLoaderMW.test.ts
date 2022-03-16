@@ -19,9 +19,10 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import { CoreHookContext, NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
+import { NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
+import { CoreHookContext } from "../../../src/core/types";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -55,10 +56,10 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () =
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     const res = await my.other(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error instanceof NoProjectOpenedError);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res2 = await my.other(inputs);
-    assert.isTrue(res2.isErr() && res2.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res2.isErr() && res2.error instanceof PathNotExistError);
   });
 });
 

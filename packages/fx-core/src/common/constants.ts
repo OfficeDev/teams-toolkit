@@ -8,6 +8,9 @@ export class ConstantString {
 export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
   static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+
+  // TODO: short link to the docs
+  static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
 export class Bicep {
@@ -63,6 +66,12 @@ export class FeatureFlagName {
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
   static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
+  static readonly EnableInitApp = "TEAMSFX_INIT_APP";
+  static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
+  static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
+  static readonly YeomanScaffold = "YEOMAN_SCAFFOLD";
+  static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
+  static readonly M365App = "TEAMSFX_M365_APP";
 }
 
 export class ManifestVariables {

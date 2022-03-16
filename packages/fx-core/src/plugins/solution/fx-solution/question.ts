@@ -6,44 +6,57 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
-  returnSystemError,
-  SingleSelectQuestion,
-  StaticOptions,
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
-import { SolutionError, SolutionSource } from "./constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
   label: "Tab",
   cliName: "tab",
-  description: "UI-based app",
-  detail: "Teams-aware webpages embedded in Microsoft Teams",
+  description: getLocalizedString("core.TabOption.description"),
+  detail: getLocalizedString("core.TabOption.detail"),
 };
 
 export const BotOptionItem: OptionItem = {
   id: "Bot",
   label: "Bot",
   cliName: "bot",
-  description: "Conversational Agent",
-  detail: "Running simple and repetitive automated tasks through conversations",
+  description: getLocalizedString("core.BotOption.description"),
+  detail: getLocalizedString("core.BotOption.detail"),
+};
+
+export const NotificationOptionItem: OptionItem = {
+  id: "Notification",
+  label: "Notification",
+  cliName: "notification",
+  description: getLocalizedString("core.NotificationOption.description"),
+  detail: getLocalizedString("core.NotificationOption.detail"),
 };
 
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",
   cliName: "messaging-extension",
-  description: "Custom UI when users compose messages in Teams",
-  detail: "Inserting app content or acting on a message without leaving the conversation",
+  description: getLocalizedString("core.MessageExtensionOption.description"),
+  detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
 
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
   label: "Tab(SPFx)",
   cliName: "tab-spfx",
-  description: "UI-base app with SPFx framework",
-  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
+  description: getLocalizedString("core.TabSPFxOption.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
+};
+
+export const SsoItem: OptionItem = {
+  id: "SSO",
+  label: "SSO",
+  cliName: "sso",
+  description: getLocalizedString("core.Sso.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
 export enum AzureSolutionQuestionNames {
@@ -57,108 +70,56 @@ export enum AzureSolutionQuestionNames {
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
+  Scenario = "scenario",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
   id: "Azure",
-  label: "Azure",
+  label: getLocalizedString("core.HostTypeOptionAzure.label"),
   cliName: "azure",
 };
 
 export const HostTypeOptionSPFx: OptionItem = {
   id: "SPFx",
-  label: "SharePoint Framework (SPFx)",
+  label: getLocalizedString("core.HostTypeOptionSPFx.label"),
   cliName: "spfx",
 };
 
 export const AzureResourceSQL: OptionItem = {
   id: "sql",
-  label: "Azure SQL Database",
-  description: "Azure Function App will be also selected to access Azure SQL Database",
+  label: getLocalizedString("core.AzureResourceSQL.label"),
+  description: getLocalizedString("core.AzureResourceSQL.description"),
 };
 
 export const AzureResourceFunction: OptionItem = {
   id: "function",
-  label: "Azure Function App",
+  label: getLocalizedString("core.AzureResourceFunction.label"),
 };
 
 export const AzureResourceApim: OptionItem = {
   id: "apim",
-  label: "Register APIs in Azure API Management",
-  description: "Azure Function App will be also selected to be published as an API",
+  label: getLocalizedString("core.AzureResourceApim.label"),
+  description: getLocalizedString("core.AzureResourceApim.description"),
 };
 
 export const AzureResourceKeyVault: OptionItem = {
   id: "keyvault",
-  label: "Azure Key Vault",
-  description: "Secure runtime application secrets with Azure Key Vault",
+  label: getLocalizedString("core.AzureResourceKeyVault.label"),
+  description: getLocalizedString("core.AzureResourceKeyVault.description"),
 };
 
-export function createCapabilityQuestion(): MultiSelectQuestion {
-  return {
-    name: AzureSolutionQuestionNames.Capabilities,
-    title: "Select capabilities",
-    type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
-    default: [TabOptionItem.id],
-    placeholder: "Select at least 1 capability",
-    validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return "Select at least 1 capability";
-        }
-        if (
-          name.length > 1 &&
-          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
-        ) {
-          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
-        }
-
-        return undefined;
-      },
-    },
-    onDidChangeSelection: async function (
-      currentSelectedIds: Set<string>,
-      previousSelectedIds: Set<string>
-    ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
-        if (previousSelectedIds.has(TabSPFxItem.id)) {
-          currentSelectedIds.delete(TabSPFxItem.id);
-        } else {
-          currentSelectedIds.clear();
-          currentSelectedIds.add(TabSPFxItem.id);
-        }
-      }
-
-      return currentSelectedIds;
-    },
-  };
+export enum BotScenario {
+  NotificationBot = "notificationBot",
+  CommandBot = "commandBot",
 }
 
-export const FrontendHostTypeQuestion: SingleSelectQuestion = {
-  name: AzureSolutionQuestionNames.HostType,
-  title: "Frontend hosting type",
-  type: "singleSelect",
-  staticOptions: [HostTypeOptionAzure, HostTypeOptionSPFx],
-  dynamicOptions: (previousAnswers: Inputs): StaticOptions => {
-    const cap = previousAnswers[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cap) {
-      if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
-        return [HostTypeOptionAzure];
-      if (cap.includes(TabOptionItem.id)) return [HostTypeOptionAzure, HostTypeOptionSPFx];
-      return [];
-    }
-    throw returnSystemError(
-      new Error("Capabilities is undefined"),
-      SolutionSource,
-      SolutionError.InternelError
-    );
-  },
-  default: HostTypeOptionAzure.id,
-  placeholder: "Select a hosting type",
-  skipSingleOption: true,
-};
+export const BotNotificationTriggers = {
+  Timer: "timer",
+  Http: "http",
+} as const;
+
+export type BotNotificationTrigger =
+  typeof BotNotificationTriggers[keyof typeof BotNotificationTriggers];
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.AzureResources,
@@ -251,23 +212,23 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
   return {
     name: "email",
     type: "text",
-    title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
+    title: getLocalizedString("core.getUserEmailQuestion.title"),
     default: defaultUserEmail,
     validation: {
       validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
         if (!input || input.trim() === "") {
-          return "Email address cannot be null or empty";
+          return getLocalizedString("core.getUserEmailQuestion.validation1");
         }
 
         input = input.trim();
 
         if (input === defaultUserEmail) {
-          return "Please change [UserName] to the real user name";
+          return getLocalizedString("core.getUserEmailQuestion.validation2");
         }
 
         const re = /\S+@\S+\.\S+/;
         if (!re.test(input)) {
-          return "Email address is not valid";
+          return getLocalizedString("core.getUserEmailQuestion.validation3");
         }
         return undefined;
       },

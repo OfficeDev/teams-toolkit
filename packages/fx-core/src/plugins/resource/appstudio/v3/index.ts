@@ -63,10 +63,14 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+  async init(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    existingApp = false
+  ): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.init);
-    const res = await init(inputs.projectPath, ctx.projectSetting.appName);
+    const res = await init(inputs.projectPath, ctx.projectSetting.appName, existingApp);
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
@@ -271,7 +275,7 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider
+    tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);

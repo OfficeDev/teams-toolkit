@@ -14,7 +14,6 @@ import {
   EnvConfigFileNameTemplate,
   EnvInfo,
   EnvNamePlaceholder,
-  ExistingTeamsAppType,
   FxError,
   InputConfigsFolderName,
   Json,
@@ -103,7 +102,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -383,7 +382,7 @@ describe("APIs of Environment Manager", () => {
 
     afterEach(async () => {
       fileMap.clear();
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -433,7 +432,7 @@ describe("APIs of Environment Manager", () => {
 
     afterEach(async () => {
       fileMap.clear();
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {
@@ -513,7 +512,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     it("list all the env configs with correct naming convention", async () => {
@@ -615,86 +614,6 @@ describe("APIs of Environment Manager", () => {
     it("create new env config for normal project", () => {
       const envConfig = environmentManager.newEnvConfigData(appName);
       assert.deepEqual(envConfig, basicConfig);
-    });
-
-    it("create new env config for existing static tab project", () => {
-      const envConfig = environmentManager.newEnvConfigData(appName, {
-        isCreatedFromExistingApp: true,
-        newAppTypes: [ExistingTeamsAppType.StaticTab],
-      });
-      const expected = Object.assign({}, configForExistingApp, {
-        manifest: {
-          ...configForExistingApp.manifest,
-          [ManifestVariables.TabContentUrl]: "",
-          [ManifestVariables.TabWebsiteUrl]: "",
-        },
-      });
-
-      assert.deepEqual(envConfig, expected);
-    });
-
-    it("create new env config for existing configurable tab project", () => {
-      const envConfig = environmentManager.newEnvConfigData(appName, {
-        isCreatedFromExistingApp: true,
-        newAppTypes: [ExistingTeamsAppType.ConfigurableTab],
-      });
-      const expected = Object.assign({}, configForExistingApp, {
-        manifest: {
-          ...configForExistingApp.manifest,
-          [ManifestVariables.TabConfigurationUrl]: "",
-        },
-      });
-
-      assert.deepEqual(envConfig, expected);
-    });
-
-    it("create new env config for existing static & configurable tab project", () => {
-      const envConfig = environmentManager.newEnvConfigData(appName, {
-        isCreatedFromExistingApp: true,
-        newAppTypes: [ExistingTeamsAppType.StaticTab, ExistingTeamsAppType.ConfigurableTab],
-      });
-      const expected = Object.assign({}, configForExistingApp, {
-        manifest: {
-          ...configForExistingApp.manifest,
-          [ManifestVariables.TabContentUrl]: "",
-          [ManifestVariables.TabWebsiteUrl]: "",
-          [ManifestVariables.TabConfigurationUrl]: "",
-        },
-      });
-
-      assert.deepEqual(envConfig, expected);
-    });
-
-    it("create new env config for existing bot project", () => {
-      const envConfig = environmentManager.newEnvConfigData(appName, {
-        isCreatedFromExistingApp: true,
-        newAppTypes: [ExistingTeamsAppType.Bot],
-      });
-
-      const expected = Object.assign({}, configForExistingApp, {
-        manifest: {
-          ...configForExistingApp.manifest,
-          [ManifestVariables.BotId]: "",
-        },
-      });
-
-      assert.deepEqual(envConfig, expected);
-    });
-
-    it("create new env config for existing bot/ME project", () => {
-      const envConfig = environmentManager.newEnvConfigData(appName, {
-        isCreatedFromExistingApp: true,
-        newAppTypes: [ExistingTeamsAppType.Bot, ExistingTeamsAppType.MessageExtension],
-      });
-
-      const expected = Object.assign({}, configForExistingApp, {
-        manifest: {
-          ...configForExistingApp.manifest,
-          [ManifestVariables.BotId]: "",
-        },
-      });
-
-      assert.deepEqual(envConfig, expected);
     });
   });
 });

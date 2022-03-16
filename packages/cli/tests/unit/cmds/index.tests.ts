@@ -39,6 +39,7 @@ describe("Register Commands Tests", function () {
     expect(registeredCommands).includes("deploy");
     expect(registeredCommands).includes("package");
     expect(registeredCommands).includes("manifest");
+    expect(registeredCommands).includes("validate");
     expect(registeredCommands).includes("publish");
     expect(registeredCommands).includes("config");
     expect(registeredCommands).includes("preview");

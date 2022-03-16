@@ -4,18 +4,19 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, isV3, TOOLS } from "..";
+import { isV3, setLocale, TOOLS } from "../globalVars";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
  * to catch exceptions and return specific error.
  */
 export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  const core = ctx.self as FxCore;
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const taskName = `${ctx.method} ${
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
+  // if locale is set in inputs, set it globally.
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (inputs.locale) setLocale(inputs.locale);
   try {
     TOOLS?.logProvider?.info(`[core] start task:${taskName}, API v3: ${isV3()}`);
     const time = new Date().getTime();

@@ -11,14 +11,18 @@ import {
   TreeItem,
   SubscriptionInfo,
   LocalEnvironmentName,
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
+import * as fs from "fs-extra";
+import * as path from "path";
 import * as vscode from "vscode";
 import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import * as StringResources from "./resources/Strings.json";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import {
@@ -31,6 +35,7 @@ import {
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
 import { ext } from "./extensionVariables";
+import { localize } from "./utils/localizeUtils";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -39,6 +44,13 @@ const mutex = new Mutex();
 interface accountStatus {
   isOk: boolean;
   warnings: string[];
+}
+
+enum EnvInfo {
+  Local = "local",
+  LocalForExistingApp = "local-existing-app",
+  RemoteEnv = "environment",
+  ProvisionedRemoteEnv = "environment-provisioned",
 }
 
 export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
@@ -61,30 +73,19 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
       for (const item of envNames) {
         showEnvList.push(item);
-        const provisionSucceeded = await getProvisionSucceedFromEnv(item);
-        const isLocal = item === LocalEnvironmentName;
-
-        let contextValue = "environment";
-
-        if (isLocal) {
-          contextValue = "local";
-        } else {
-          if (provisionSucceeded) {
-            contextValue = contextValue + "-provisioned";
-          }
-        }
+        const envInfo = await getCurrentEnvInfo(workspacePath, item);
         const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
 
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
-            description: provisionSucceeded ? "(Provisioned)" : "",
+            description: envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: contextValue,
-            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
+            contextValue: envInfo,
+            icon: envInfo === EnvInfo.ProvisionedRemoteEnv ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: isLocal || isSpfxProject ? undefined : true,
+            expanded: envInfo === EnvInfo.Local || isSpfxProject ? undefined : true,
           },
         ]);
       }
@@ -93,6 +94,36 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
     });
   }
   return ok(Void);
+}
+
+// Get the environment info for the given environment name.
+async function getCurrentEnvInfo(workspacePath: string, envName: string): Promise<EnvInfo> {
+  const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
+
+  if (envName === LocalEnvironmentName) {
+    return (await isExistingApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+  } else if (provisionSucceeded) {
+    return EnvInfo.ProvisionedRemoteEnv;
+  } else {
+    return EnvInfo.RemoteEnv;
+  }
+}
+
+async function isExistingApp(workspacePath: string): Promise<boolean> {
+  // Check if solution settings is empty.
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return !projectSettings.solutionSettings;
+  } else {
+    return false;
+  }
 }
 
 async function checkAllEnv(itemList: Array<string>) {
@@ -159,13 +190,13 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
           isMarkdown: false,
           value: subscriptionInfo.subscriptionName
             ? util.format(
-                StringResources.vsc.envTree.subscriptionTooltip,
+                localize("teamstoolkit.envTree.subscriptionTooltip"),
                 env,
                 subscriptionInfo.subscriptionName,
                 subscriptionInfo.subscriptionId
               )
             : util.format(
-                StringResources.vsc.envTree.subscriptionTooltipWithoutName,
+                localize("teamstoolkit.envTree.subscriptionTooltipWithoutName"),
                 env,
                 subscriptionInfo.subscriptionId
               ),
@@ -222,12 +253,12 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
     const m365TenantId = await getM365TenantFromEnv(env);
     if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
       checkResult = false;
-      warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
+      warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch"));
     }
   } else {
     // Not signed in
     checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotSignedIn);
+    warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn"));
   }
 
   // Check Azure account status
@@ -246,7 +277,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
           checkResult = false;
           warnings.push(
             util.format(
-              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotMatch"),
               subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
             )
           );
@@ -254,7 +285,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
       }
     } else {
       checkResult = false;
-      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
+      warnings.push(localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotSignedIn"));
     }
   }
 

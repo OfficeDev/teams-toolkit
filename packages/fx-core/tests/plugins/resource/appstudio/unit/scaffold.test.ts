@@ -22,6 +22,8 @@ import {
   BOTS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
+  DEVELOPER_PREVIEW_SCHEMA,
+  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
@@ -127,6 +129,65 @@ describe("Scaffold", () => {
     ).to.be.true;
   });
 
+  it("should generate manifest for m365 launch page", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      isM365: true,
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
+    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
+    chai.expect(manifest.configurableTabs).to.deep.equal([]);
+    chai
+      .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.composeExtensions,
+        "ComposeExtensions should be empty, because only tab is chosen"
+      )
+      .to.deep.equal([]);
+
+    // NOTE(aochengwang):
+    // The `path.normalize` is a simple workaround.
+    //
+    // We need to normalize the file path when multi-env is turned on
+    //  because the code in appstudio plugin will use `path.join` to generate these file path (only when multi-env is enabled)
+    //  which implicitly calls `path.normalize`
+    //  and it removes the leading "./" in "./tests/plugins/resource/appstudio/...",
+    //  causing the test to fail.
+    // However the test case should not fail because these paths are essentially the same.
+    // A better approach to solve this issue is to write helper functions to:
+    //   1. normalize all paths in `fileContent.set`
+    //   2. normalize all paths before checking path existence in `fileContent`
+    // Maybe we can refactor this later.
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+      )
+    ).to.be.true;
+  });
+
   it("should generate manifest for bot", async () => {
     fileContent.clear();
     ctx.projectSettings = {
@@ -190,6 +251,52 @@ describe("Scaffold", () => {
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
     );
+    chai
+      .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.configurableTabs,
+        "configurableTabs should be empty, because msgext bot is chosen"
+      )
+      .to.deep.equal([]);
+    chai
+      .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
+      .to.deep.equal([]);
+    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+      )
+    ).to.be.true;
+  });
+
+  it("should generate manifest for m365 messaging extension", async () => {
+    fileContent.clear();
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      isM365: true,
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["MessagingExtension"],
+      },
+    };
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
+    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
       .to.deep.equal([]);

@@ -7,8 +7,9 @@
 
 ## Steps
 After the pre-cooked workflows are scaffolded successfully, the following steps are expected to be performed:
-1. Configure necessary GitHub secrets for your workflows.
-1. Add the scaffolded yml files into GitHub by `git add`,`git commit` and `git push`.
+1. Commit and push your project source code to GitHub remote repository, including the CI/CD yml files.
+1. Configure necessary GitHub secrets if your workflows require credentials by checking into the yml files.
+1. Trigger your workflows automatically, manually or do customization (Check the `on:` section in yml files to find the triggers). More about triggers in GitHub, refer to [trigger a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow).
 
 ## GitHub Secrets 
 Steps to create secrets by environment in GitHub:

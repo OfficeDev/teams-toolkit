@@ -2,14 +2,15 @@
 
 ## Prerequisites
 - Teams app projects are version controlled.
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- An Azure service princial with necessary permissions.
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects.
+- An Azure service princial with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps
 After the pre-cooked pipelines are scaffolded successfully, the following steps are expected to be performed:
-1. Add the scaffolded yml files into GitHub by `git add`,`git commit` and `git push`.
+1. Commit and push your project source code to your remote repository, including the CI/CD Jenkinsfiles.
 1. Create corresponding Jenkins pipelines by following [Create your first Jenkins Pipeline](https://www.jenkins.io/doc/pipeline/tour/hello-world/).
-1. Configure necessary Jenkins credentials for your pipelines.
+1. Configure necessary Jenkins credentials if your projects require credentials by checking into the Jenkinsfiles.
+1. Trigger your pipeline automatically, manually or do customization (Check the `triggers` section in Jenkinsfiles to find the triggers). More about triggers in Jenkins, refer to [Jenkins triggers](https://www.jenkins.io/doc/book/pipeline/syntax/#triggers).
 
 
 ## Jenkins Credentials 

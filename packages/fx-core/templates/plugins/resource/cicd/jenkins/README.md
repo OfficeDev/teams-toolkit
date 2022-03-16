@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Teams app projects are version controlled.
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects.
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects. Any extra interactive verification steps should be disabled for the M365 account, and please check details in sections below.
 - An Azure service princial with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps

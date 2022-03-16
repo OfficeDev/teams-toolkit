@@ -114,11 +114,7 @@ export class AppStudio {
     }
 
     const app = response.data as IAADDefinition;
-    if (!app || !app.id || !app.appId) {
-      return false;
-    }
-
-    return true;
+    return !(!app || !app.id || !app.appId);
   }
 
   public static async createAADAppPassword(
@@ -171,11 +167,11 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
-      throw new ProvisionError(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
+      throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
 
     if (!response || !response.data) {
-      throw new ProvisionError(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
+      throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
     }
 
     return;

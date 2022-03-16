@@ -1460,26 +1460,27 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
     // }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
-      const exists = await fs.pathExists(gitIgnoreFilePath);
-      if (!exists) {
-        const gitIgnoreContent = [
-          "node_modules",
-          `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-          `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-          ".DS_Store",
-          ".env.teamsfx.local",
-          "subscriptionInfo.json",
-          BuildFolderName,
-        ];
-        if (isConfigUnifyEnabled()) {
-          gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-          gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-        }
-        if (inputs.platform === Platform.VS) {
-          gitIgnoreContent.push("appsettings.Development.json");
-        }
-        await fs.writeFile(gitIgnoreFilePath, gitIgnoreContent.join("\n"));
+      const gitIgnoreContent = [
+        "\n# TeamsFx files",
+        "node_modules",
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
+        ".DS_Store",
+        ".env.teamsfx.local",
+        "subscriptionInfo.json",
+        BuildFolderName,
+      ];
+
+      if (isConfigUnifyEnabled()) {
+        gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
+        gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
       }
+
+      if (inputs.platform === Platform.VS) {
+        gitIgnoreContent.push("appsettings.Development.json");
+      }
+
+      await fs.appendFile(gitIgnoreFilePath, gitIgnoreContent.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
     return err(WriteFileError(e));

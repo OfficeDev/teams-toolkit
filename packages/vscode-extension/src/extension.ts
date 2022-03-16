@@ -23,7 +23,6 @@ import {
 } from "./codeLensProvider";
 import {
   Correlator,
-  isMultiEnvEnabled,
   isValidProject,
   isConfigUnifyEnabled,
   isInitAppEnabled,
@@ -438,12 +437,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(listCollaborator);
 
   const workspacePath = getWorkspacePath();
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && isValidProject(workspacePath)
-  );
-
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isSPFx",

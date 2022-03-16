@@ -63,6 +63,7 @@ import { CliDepsChecker } from "./depsChecker/cliChecker";
 import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
 import { signedOut } from "../../commonlib/common/constant";
 import { cliSource } from "../../constants";
+import { performance } from "perf_hooks";
 
 enum Checker {
   M365Account = "M365 Account",
@@ -98,6 +99,7 @@ export default class Preview extends YargsCommand {
 
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
+  private readonly telemetryMeasurements: { [key: string]: number } = {};
   private serviceLogWriter: ServiceLogWriter | undefined;
   private sharepointSiteUrl: string | undefined;
   public builder(yargs: Argv): Argv<any> {
@@ -198,10 +200,14 @@ export default class Preview extends YargsCommand {
       if (result.isErr()) {
         throw result.error;
       }
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.Preview, {
-        ...this.telemetryProperties,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+      cliTelemetry.sendTelemetryEvent(
+        TelemetryEvent.Preview,
+        {
+          ...this.telemetryProperties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        },
+        this.telemetryMeasurements
+      );
       return ok(null);
     } catch (error: any) {
       cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
@@ -282,34 +288,48 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    // check node
+    const start = performance.now();
     const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
-    const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
-    if (nodeRes.isErr()) {
-      return err(nodeRes.error);
-    }
+    try {
+      // check node
+      const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+      if (nodeRes.isErr()) {
+        return err(nodeRes.error);
+      }
 
-    // check account
-    const accountRes = await this.checkM365Account();
-    if (accountRes.isErr()) {
-      return err(accountRes.error);
-    }
+      // check account
+      const accountRes = await this.checkM365Account();
+      if (accountRes.isErr()) {
+        return err(accountRes.error);
+      }
 
-    // check cert
-    const certRes = await this.resolveLocalCertificate(localEnvManager);
-    if (certRes.isErr()) {
-      return err(certRes.error);
-    }
+      // check cert
+      const certRes = await this.resolveLocalCertificate(localEnvManager);
+      if (certRes.isErr()) {
+        return err(certRes.error);
+      }
 
-    // check deps
-    const envCheckerResult = await this.handleDependences(
-      includeBackend,
-      includeBot,
-      includeFuncHostedBot,
-      depsManager
-    );
-    if (envCheckerResult.isErr()) {
-      return err(envCheckerResult.error);
+      // check deps
+      const envCheckerResult = await this.handleDependences(
+        includeBackend,
+        includeBot,
+        includeFuncHostedBot,
+        depsManager
+      );
+      if (envCheckerResult.isErr()) {
+        return err(envCheckerResult.error);
+      }
+
+      /* === check ports === */
+      const portsRes = await this.checkPorts(workspaceFolder);
+      if (portsRes.isErr()) {
+        return portsRes;
+      }
+    } finally {
+      // use seconds
+      this.telemetryMeasurements[TelemetryProperty.PreviewPrerequisitesCheckTime] = Number(
+        ((performance.now() - start) / 1000).toFixed(2)
+      );
     }
 
     // clear background tasks
@@ -343,12 +363,6 @@ export default class Preview extends YargsCommand {
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
       workspaceFolder
     ) as string;
-
-    /* === check ports === */
-    const portsRes = await this.checkPorts(workspaceFolder);
-    if (portsRes.isErr()) {
-      return portsRes;
-    }
 
     /* === start services === */
     const programmingLanguage = projectSettings.programmingLanguage as string;

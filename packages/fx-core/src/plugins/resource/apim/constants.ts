@@ -3,6 +3,7 @@
 
 import path from "path";
 import { IName } from "./interfaces/IName";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class ProjectConstants {
   public static readonly pluginShortName: string = "APIM";
@@ -41,7 +42,9 @@ export class QuestionConstants {
     public static readonly OpenApiDocument = class {
       public static readonly questionName: string = "vsc-open-api-document";
       public static readonly funcName: string = "open-api-document-option";
-      public static readonly description: string = "Select Open API document";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.OpenApiDocument.description"
+      );
       public static readonly excludeFolders: string[] = ["node_modules"];
       public static readonly openApiDocumentFileExtensions: string[] = ["json", "yaml"];
     };
@@ -53,44 +56,60 @@ export class QuestionConstants {
 
     public static readonly ApiPrefix = class {
       public static readonly questionName: string = "vsc-api-prefix";
-      public static readonly description: string = "Input the API name prefix.";
-      public static readonly prompt: string =
-        "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.ApiPrefix.description"
+      );
+      public static readonly prompt: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.ApiPrefix.prompt"
+      );
     };
 
     public static readonly ApiVersion = class {
       public static readonly questionName: string = "vsc-api-version";
-      public static readonly description: string = "Select an API version.";
-      public static readonly createNewApiVersionOption: string = "+ Create a new API version";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.ApiVersion.description"
+      );
+      public static readonly createNewApiVersionOption: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption"
+      );
     };
 
     public static readonly NewApiVersion = class {
       public static readonly questionName: string = "vsc-new-api-version";
-      public static readonly description: string = "Input the API version.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.VSCode.NewApiVersion.description"
+      );
     };
   };
 
   public static readonly CLI = class {
     public static readonly OpenApiDocument = class {
       public static readonly questionName: string = "open-api-document";
-      public static readonly description: string = "The Open API document file path.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.CLI.OpenApiDocument.description"
+      );
     };
 
     public static readonly ApiPrefix = class {
       public static readonly questionName: string = "api-prefix";
-      public static readonly description: string =
-        "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.CLI.ApiPrefix.description"
+      );
     };
 
     public static readonly ApiId = class {
       // The api id is displayed as api name in the Azure Portal
       public static readonly questionName: string = "api-name";
-      public static readonly description: string = "The unique name of the api to be updated.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.CLI.ApiId.description"
+      );
     };
 
     public static readonly ApiVersion = class {
       public static readonly questionName: string = "api-version";
-      public static readonly description: string = "The API version.";
+      public static readonly description: string = getLocalizedString(
+        "plugins.apim.QuestionConstants.CLI.ApiVersion.description"
+      );
     };
   };
 }
@@ -101,27 +120,34 @@ export class ValidationConstants {
 
   public static readonly resourceIdValidPattern = {
     regex: /^[0-9a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
-    message:
-      "The value can contain only numbers, letters, and hyphens when preceded and followed by number or a letter.",
+    message: getLocalizedString("plugins.apim.ValidationConstants.resourceIdValidPattern.message"),
   };
 
   public static readonly defaultValidPattern = {
     regex: /^[^*#&+:<>?]+$/,
-    message: "The value cannot contain any characters in '*#&+:<>?'.",
+    message: getLocalizedString("plugins.apim.ValidationConstants.defaultValidPattern.message"),
   };
 
   public static readonly guidValidPattern = {
     regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    message: "The value should be a GUID.",
+    message: getLocalizedString("plugins.apim.ValidationConstants.guidValidPattern.message"),
   };
 
   public static readonly CLI = {
     invalidOptionMessage: (optionName: string) =>
-      `The value of option '--${optionName}' is invalid.`,
+      getLocalizedString("plugins.apim.ValidationConstants.CLI.invalidOptionMessage", optionName),
     emptyOptionMessage: (optionName: string) =>
-      `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+      getLocalizedString(
+        "plugins.apim.ValidationConstants.CLI.emptyOptionMessage",
+        optionName,
+        optionName
+      ),
     overrideOptionMessage: (optionName: string) =>
-      `Option '--${optionName}' cannot be overridden. Remove option '--${optionName}'`,
+      getLocalizedString(
+        "plugins.apim.ValidationConstants.CLI.overrideOptionMessage",
+        optionName,
+        optionName
+      ),
   };
 }
 
@@ -179,13 +205,15 @@ export enum TeamsToolkitComponent {
   ApimPlugin = "fx-resource-apim",
 }
 
-export enum RetryOperation {
-  Create = "create a new project",
-  Update = "add API Management resource",
-  Provision = "provision in the cloud",
-  Deploy = "deploy to the cloud",
-  Login = "sign in to Azure and choose a subscription",
-}
+export const RetryOperation = Object.freeze({
+  Create: getLocalizedString("plugins.apim.RetryOperation.Create"),
+  Update: getLocalizedString("plugins.apim.RetryOperation.Update"),
+  Provision: getLocalizedString("plugins.apim.RetryOperation.Provision"),
+  Deploy: getLocalizedString("plugins.apim.RetryOperation.Deploy"),
+  Login: getLocalizedString("plugins.apim.RetryOperation.Login"),
+});
+
+export type RetryOperation = typeof RetryOperation[keyof typeof RetryOperation];
 
 export const ComponentRetryOperations: {
   [key in TeamsToolkitComponent]: RetryOperation;
@@ -263,18 +291,20 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
 export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string } } = {
   [ProgressStep.None]: {},
   [ProgressStep.Scaffold]: {
-    Scaffold: "Scaffold OpenAPI document",
+    Scaffold: getLocalizedString("plugins.apim.ProgressMessages.Scaffold.Scaffold"),
   },
   [ProgressStep.Provision]: {
-    CreateApim: "Create API Management service",
-    CreateAad: "Create client AAD app registration",
+    CreateApim: getLocalizedString("plugins.apim.ProgressMessages.Provision.CreateApim"),
+    CreateAad: getLocalizedString("plugins.apim.ProgressMessages.Provision.CreateAad"),
   },
   [ProgressStep.PostProvision]: {
-    ConfigClientAad: "Configure client AAD app registration",
-    ConfigAppAad: `Update AAD app for Teams app`,
+    ConfigClientAad: getLocalizedString(
+      "plugins.apim.ProgressMessages.PostProvision.ConfigClientAad"
+    ),
+    ConfigAppAad: getLocalizedString("plugins.apim.ProgressMessages.PostProvision.ConfigAppAad"),
   },
   [ProgressStep.Deploy]: {
-    ImportApi: "Import API into API management",
+    ImportApi: getLocalizedString("plugins.apim.ProgressMessages.Deploy.ImportApi"),
   },
 };
 

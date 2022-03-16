@@ -49,6 +49,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -427,27 +428,38 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
-
   const LocalEnvName = environmentManager.getLocalEnvName();
+  const PreviewLocalSteps = 2;
+  const PreviewRemoteSteps = 1;
+
+  const progressBar = VS_CODE_UI.createProgressBar(
+    localize("teamstoolkit.preview.progressTitle"),
+    env === LocalEnvName ? PreviewLocalSteps : PreviewRemoteSteps
+  );
+  await progressBar.start();
+
   let result: Result<null, FxError>;
   if (env === LocalEnvName) {
-    result = await previewLocal();
+    result = await previewLocal(progressBar);
   } else {
-    result = await previewRemote(env);
+    result = await previewRemote(env, progressBar);
   }
 
   if (result.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, result.error);
+    await progressBar.end(false);
     return result;
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+  await progressBar.end(true);
   return ok(null);
 }
 
-async function previewLocal(): Promise<Result<null, FxError>> {
+async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
+  await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
   let debugConfig = await commonUtils.getDebugConfig(true);
   if (!debugConfig?.appId) {
     const result = await runCommand(Stage.debug);
@@ -458,12 +470,15 @@ async function previewLocal(): Promise<Result<null, FxError>> {
     debugConfig = await commonUtils.getDebugConfig(true);
   }
 
-  return launch(debugConfig);
+  return launch(debugConfig, progressBar);
 }
 
-async function previewRemote(env: string): Promise<Result<null, FxError>> {
+async function previewRemote(
+  env: string,
+  progressBar: IProgressHandler
+): Promise<Result<null, FxError>> {
   const debugConfig = await commonUtils.getDebugConfig(false, env);
-  return launch(debugConfig);
+  return launch(debugConfig, progressBar);
 }
 
 async function launch(
@@ -472,7 +487,8 @@ async function launch(
         appId: string;
         env?: string;
       }
-    | undefined
+    | undefined,
+  progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = returnUserError(
@@ -483,6 +499,7 @@ async function launch(
     return err(error);
   }
 
+  progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
   const accountHint = await generateAccountHint();
   // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
@@ -559,6 +576,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const selectedEnv = await askTargetEnvironment();
   if (selectedEnv.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+    showError(selectedEnv.error);
     return err(selectedEnv.error);
   }
   const env = selectedEnv.value;
@@ -628,6 +646,8 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   } else {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
+      showError(selectedEnv.error);
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;
@@ -669,12 +689,29 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDInsiderGuide, getTriggerFromProperty(args));
+export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AddCICDWorkflowsStart,
+    getTriggerFromProperty(args)
+  );
 
-  const cicdGuideLink = "https://aka.ms/teamsfx-cicd-insider-guide";
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-cicd",
+    method: "addCICDWorkflows",
+    params: {},
+  };
 
-  return await env.openExternal(Uri.parse(cicdGuideLink));
+  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, true);
+  if (!res.isOk()) {
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCICDWorkflows, res.error);
+    return err(res.error);
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
 }
 
 export async function runCommand(
@@ -1000,7 +1037,9 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     return "1";
   }
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
+    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+  });
 
   const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
@@ -1029,7 +1068,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
     return "1";
   }
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
+    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+  });
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);

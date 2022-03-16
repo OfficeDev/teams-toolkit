@@ -1,137 +1,132 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getLocalizedString } from "../../../../common/localizeUtils";
+
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
-    `'${something}' is invalid with value: '${value}'.`;
+    getLocalizedString("plugins.bot.InvalidValue", something, value);
   public static readonly InputValidValueForSomething = (something: string): string =>
-    `Please select valid values for '${something}'.`;
+    getLocalizedString("plugins.bot.SelectValidValues", something);
   public static readonly SomethingIsMissing = (something: string): string =>
-    `'${something}' is missing.`;
+    getLocalizedString("plugins.bot.SomethingIsMissing", something);
   public static readonly SomethingIsNotFound = (something: string): string =>
-    `'${something}' is not found.`;
+    getLocalizedString("plugins.bot.SomethingNotFound", something);
   public static readonly SomethingIsNotExisting = (something: string): string =>
-    `'${something}' is not existing.`;
-  public static readonly SomethingIsInWrongFormat = (something: string): string =>
-    `'${something}' is in wrong format.`;
+    getLocalizedString("plugins.bot.SomethingNotExisting", something);
   public static readonly FailToCreateSomeClient = (clientName: string): string =>
-    `Failed to create '${clientName}'.`;
+    getLocalizedString("plugins.bot.FailedToCreate", clientName);
   public static readonly FailToProvisionSomeResource = (resource: string): string =>
-    `Failed to provision '${resource}'.`;
+    getLocalizedString("plugins.bot.FailedToProvision", resource);
   public static readonly FailToUpdateConfigs = (something: string): string =>
-    `Failed to update configs for '${something}'.`;
-  public static readonly FailToListPublishingCredentials = "Failed to list publishing credentials.";
-  public static readonly FailToDoZipDeploy = "Failed to deploy zip file.";
+    getLocalizedString("plugins.bot.FailedToUpdateConfigs", something);
+  public static readonly FailToListPublishingCredentials = getLocalizedString(
+    "plugins.bot.FailedListPublishingCredentials"
+  );
+  public static readonly FailToDoZipDeploy = getLocalizedString("plugins.bot.FailedDeployZipFile");
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): string =>
-    `Failed to update message endpoint with '${endpoint}'.`;
+    getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);
   public static readonly FailToDownloadFrom = (url: string): string =>
-    `Failed to download from '${url}'.`;
-  public static readonly FailToFindSomethingFor = (something: string, forsth: string): string =>
-    `Failed to retrieve '${something}' for '${forsth}'.`;
-  public static readonly ClickHelpButtonForDetails =
-    "Please click 'Get Help' button for more details.";
-  public static readonly ClickIssueButtonToReportIssue =
-    "Please click 'Report Issue' button to report the issue.";
+    getLocalizedString("plugins.bot.DownloadFail", url);
+  public static readonly ClickHelpButtonForDetails = getLocalizedString("plugins.bot.ClickGetHelp");
   public static readonly CommandExecutionFailed = (command: string): string =>
-    `Failed to run '${command}'.`;
+    getLocalizedString("plugins.bot.FailToRun", command);
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
-    `Perform command '${sth}' before '${beforeSth}'.`;
-  public static readonly FailToCallAppStudioForCheckingAADApp =
-    "Failed to call App Studio's api to check AAD application's existence.";
+    getLocalizedString("plugins.bot.PerformCommand", sth, beforeSth);
+  public static readonly FailToCallAppStudioForCheckingAADApp = getLocalizedString(
+    "plugins.bot.FailToCallAppStudioApi"
+  );
   public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string =>
-    `Successfully retrieved zip package from ${zipUrl}.`;
-  public static readonly FallingBackToUseLocalTemplateZip =
-    "Falling back to use local template zip.";
+    getLocalizedString("plugins.bot.SuccessfullyRetrievedZip", zipUrl);
+  public static readonly FallingBackToUseLocalTemplateZip = getLocalizedString(
+    "plugins.bot.FallingUseLocalTemplate"
+  );
   public static readonly ResourceProviderExist = (rp: string): string =>
-    `Resource Provider ${rp} already exists, do not need to register.`;
+    getLocalizedString("plugins.bot.ResourceProvider", rp);
   public static readonly BotResourceExist = (where: string): string =>
-    `Bot resource already existed on ${where}, skip creating Bot resource.`;
+    getLocalizedString("plugins.bot.BotResourceExists", where);
 
-  public static readonly WorkingDirIsMissing = "Working directory is missing.";
-  public static readonly FailToGetAzureCreds = "Failed to retrieve Azure credentials.";
-  public static readonly TryLoginAzure = "Login to Azure.";
-  public static readonly SkipDeployNoUpdates = "Skipping deployment: no updates found.";
+  public static readonly WorkingDirIsMissing = getLocalizedString("plugins.bot.WorkingDirMissing");
+  public static readonly FailToGetAzureCreds = getLocalizedString(
+    "plugins.bot.FailRetrieveAzureCredentials"
+  );
+  public static readonly TryLoginAzure = getLocalizedString("plugins.bot.LoginToAzure");
+  public static readonly SkipDeployNoUpdates = getLocalizedString("plugins.bot.SkipDeployment");
 
-  public static readonly PreScaffoldingBot = "Pre-scaffolding bot.";
-  public static readonly ScaffoldingBot = "Scaffolding bot.";
-  public static readonly SuccessfullyScaffoldedBot = "Successfully scaffolded bot.";
+  public static readonly ScaffoldingBot = getLocalizedString("plugins.bot.ScaffoldingBot");
+  public static readonly SuccessfullyScaffoldedBot = getLocalizedString(
+    "plugins.bot.ScaffoldingBotSuccess"
+  );
 
-  public static readonly PreProvisioningBot = "Pre-provisioning bot.";
-  public static readonly ProvisioningBot = "Provisioning bot.";
-  public static readonly SuccessfullyProvisionedBot = "Successfully provisioned bot.";
+  public static readonly PreProvisioningBot = getLocalizedString("plugins.bot.PreProvisionBot");
+  public static readonly ProvisioningBot = getLocalizedString("plugins.bot.ProvisionBot");
 
-  public static readonly PreDeployingBot = "Pre-deploying bot.";
-  public static readonly DeployingBot = "Deploying bot.";
-  public static readonly SuccessfullyDeployedBot = "Successfully deployed bot.";
+  public static readonly PreDeployingBot = getLocalizedString("plugins.bot.PreDeployingBot");
+  public static readonly DeployingBot = getLocalizedString("plugins.bot.DeployingBot");
+  public static readonly SuccessfullyDeployedBot = getLocalizedString(
+    "plugins.bot.DeployingBotSuccess"
+  );
 
-  public static readonly GeneratingArmTemplatesBot = "Generating ARM templates of bot.";
-  public static readonly SuccessfullyGenerateArmTemplatesBot =
-    "Successfully generating ARM templates of bot.";
+  public static readonly GeneratingArmTemplatesBot = getLocalizedString(
+    "plugins.bot.GeneratingBotARMTemplates"
+  );
+  public static readonly SuccessfullyGenerateArmTemplatesBot = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "plugins.bot.GeneratingARMTemplatesSuccess"
+  );
 
-  public static readonly UpdatingArmTemplatesBot = "Updating ARM templates of bot.";
-  public static readonly SuccessfullyUpdateArmTemplatesBot =
-    "Successfully updating ARM templates of bot.";
+  public static readonly UpdatingArmTemplatesBot = getLocalizedString(
+    "plugins.bot.UpdateBotARMTemplates"
+  );
+  public static readonly SuccessfullyUpdateArmTemplatesBot = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "plugins.bot.UpdateBotARMTemplatesSuccess"
+  );
 
-  public static readonly SuccessfullyGetExistingBotAadAppCredential =
-    "Successfully get existing bot AAD app credential.";
-  public static readonly SuccessfullyCreatedBotAadApp = "Successfully created bot AAD app.";
-  public static readonly ProvisioningAzureBotChannelRegistration =
-    "Provisioning azure bot channel registration.";
-  public static readonly SuccessfullyProvisionedAzureBotChannelRegistration =
-    "Successfully provisioned azure bot channel registration.";
+  public static readonly SuccessfullyGetExistingBotAadAppCredential = getLocalizedString(
+    "plugins.bot.GetBotAADSuccess"
+  );
+  public static readonly SuccessfullyCreatedBotAadApp = getLocalizedString(
+    "plugins.bot.CreateBotAADSuccess"
+  );
 
-  public static readonly ProvisioningMsTeamsChannel = "Provisioning microsoft teams channel.";
-  public static readonly SuccessfullyProvisionedMsTeamsChannel =
-    "Successfully provisioned microsoft teams channel.";
+  public static readonly UpdatingAzureWebAppSettings = getLocalizedString(
+    "plugins.bot.UpdateAzureWebAppSetting"
+  );
 
-  public static readonly ProvisioningAzureAppServicePlan = "Provisioning azure app service plan.";
-  public static readonly SuccessfullyProvisionedAzureAppServicePlan =
-    "Successfully provisioned azure app service plan.";
+  public static readonly ProvisioningBotRegistration = getLocalizedString(
+    "plugins.bot.ProvisionBotRegistration"
+  );
+  public static readonly SuccessfullyProvisionedBotRegistration = getLocalizedString(
+    "plugins.bot.ProvisionBotRegistrationSuccess"
+  );
 
-  public static readonly ProvisioningAzureWebApp = "Provisioning azure web app.";
-  public static readonly SuccessfullyProvisionedAzureWebApp =
-    "Successfully provisioned azure web app.";
-
-  public static readonly UpdatingAzureWebAppSettings = "Updating azure web app's app settings.";
-  public static readonly SuccessfullyUpdatedAzureWebAppSettings =
-    "Successfully updated azure web app's app settings.";
-
-  public static readonly UpdatingBotMessageEndpoint = "Updating bot's message endpoint.";
-  public static readonly SuccessfullyUpdatedBotMessageEndpoint =
-    "Successfully updated bot's message endpoint";
-
-  public static readonly ProvisioningAADApp = "Provisioning aad app.";
-  public static readonly SuccessfullyProvisionedAADApp = "Successfully provisioned aad app.";
-
-  public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
-  public static readonly SuccessfullyProvisionedBotRegistration =
-    "Successfully provisioned bot registration.";
-
-  public static readonly TheSubsNotRegisterToUseBotService =
-    "The subscription didn't register to use namespace 'Microsoft.BotService'.";
-  public static readonly MaxFreeAppServicePlanIsTen =
-    "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
+  public static readonly TheSubsNotRegisterToUseBotService = getLocalizedString(
+    "plugins.bot.SubscriptionNoRegister"
+  );
 
   // Suggestions
-  public static readonly RetryTheCurrentStep = "Please retry the current step.";
-  public static readonly RegisterYouSubsToUseBot =
-    "Please register your subscription to use namespace 'Microsoft.BotService'.";
-  public static readonly DeleteFreeAppServicePlanOrChangeSku =
-    "Delete a free app service plan or change app service plan's sku in config file and retry.";
-  public static readonly RecoverConfig = "Please recover the config value.";
-  public static readonly RecreateTheProject = "Please recreate the project.";
-  public static readonly CheckCommandOutputAndTryToFixIt =
-    "Please check the command output and try to fix it.";
-  public static readonly DeleteExistingBotChannelRegistration =
-    "Please delete existing azure bot channel registrations.";
-  public static readonly DeleteBotAfterAzureAccountSwitching =
-    "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.";
-  public static readonly CheckOutputLogAndTryToFix =
-    "Please check log in output channel and try to fix this issue.";
+  public static readonly RetryTheCurrentStep = getLocalizedString("plugins.bot.RetryCurrent");
+  public static readonly RegisterYouSubsToUseBot = getLocalizedString(
+    "plugins.bot.RegisterSubscription"
+  );
+  public static readonly RecoverConfig = getLocalizedString("plugins.bot.RecoverConfig");
+  public static readonly RecreateTheProject = getLocalizedString("plugins.bot.RecreateProject");
+  public static readonly CheckCommandOutputAndTryToFixIt = getLocalizedString(
+    "plugins.bot.CheckCommandOutput"
+  );
+  public static readonly DeleteExistingBotChannelRegistration = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "plugins.bot.DeleteExistsAzureBotChannelRegistrations"
+  );
+  public static readonly DeleteBotAfterAzureAccountSwitching = getLocalizedString(
+    "plugins.bot.DelAzureBotChannel"
+  );
+  public static readonly CheckOutputLogAndTryToFix = getLocalizedString(
+    "plugins.bot.CheckLogAndFix"
+  );
   public static readonly RegisterRequiredRP = (resourceProviders: string[]): string =>
-    `Register ${resourceProviders.join(",")} resource provider for your subscription manually.`;
+    getLocalizedString("plugins.bot.RegisterResourceProviderManually", resourceProviders.join(","));
   public static readonly ReopenWorkingDir = (path = ""): string =>
-    `Please check whether the path ${path} exists and you have write access to it, if no, please move the project to a valid path.`;
-  public static readonly PostProvisioningStart = "Start to Post Provision.";
-  public static readonly SuccessfullyPostProvisionedBot = "Successfully post-provisioned bot.";
+    getLocalizedString("plugins.bot.CheckPathWriteAccess", path);
 }

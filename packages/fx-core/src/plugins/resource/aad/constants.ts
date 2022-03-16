@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import path from "path";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { RequiredResourceAccess } from "./interfaces/IAADDefinition";
 
 export class Constants {
@@ -226,22 +227,23 @@ export class Messages {
   static readonly UpdateAppIdUriSuccess =
     "Successfully updated application id uri for Azure AD app.";
   static readonly ParsePermissionSuccess = "Successfully parsed permissions.";
-  static readonly NoSelection =
-    "No Azure AD app found. Will not update permissions. You need to run provision or local debug first.";
-  static readonly UserCancelled = "Selection is cancelled by user.";
-  static readonly UpdatePermissionSuccessMessage =
-    "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.";
-  static readonly SkipProvision =
-    "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
+  static readonly NoSelection = getLocalizedString("plugins.aad.NoSelection");
+  static readonly UserCancelled = getLocalizedString("plugins.aad.UserCancelled");
+  static readonly UpdatePermissionSuccessMessage = getLocalizedString(
+    "plugins.aad.UpdatePermissionSuccessMessage"
+  );
+  static readonly SkipProvision = getLocalizedString("plugins.aad.SkipProvision");
   static readonly OwnerAlreadyAdded = (userObjectId: string, objectId: string) =>
-    `User ${userObjectId} is already added as owner of Azure AD app ${objectId}.`;
+    getLocalizedString("plugins.aad.OwnerAlreadyAdded", userObjectId, objectId);
   static readonly StepFailedAndSkipped = (stage: string, helpMessage: string) =>
-    `Failed in step: ${stage}. You need to go to Azure Protal and mannually ${helpMessage} for the provided Azure AD app.`;
-  static readonly UpdatePermissionHelpMessage = `update the permission under "API permissions"`;
+    getLocalizedString("plugins.aad.StepFailedAndSkipped", stage, helpMessage);
+  static readonly UpdatePermissionHelpMessage = getLocalizedString(
+    "plugins.aad.UpdatePermissionHelpMessage"
+  );
   static readonly UpdateAppIdUriHelpMessage = (appIdUri: string) =>
-    `set "${appIdUri}" as "Application ID URI" under "Expose an API"`;
+    getLocalizedString("plugins.aad.UpdateAppIdUriHelpMessage", appIdUri);
   static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
-    `set "${redirectUri}" as "Redirect URIs" under "Authentication"`;
+    getLocalizedString("plugins.aad.UpdateRedirectUriHelpMessage", redirectUri);
 }
 
 export class ProgressTitle {

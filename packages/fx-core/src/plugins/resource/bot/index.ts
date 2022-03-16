@@ -39,6 +39,8 @@ import { PluginImpl } from "./interface";
 import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
+import { createHostTypeTriggerQuestion } from "./question";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -205,7 +207,7 @@ export class TeamsBot implements Plugin {
             const res = new QTreeNode({
               type: "group",
             });
-            // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+            res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
             return ok(res);
           } else {
             return ok(undefined);
@@ -232,7 +234,7 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          // res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
           return ok(res);
         } else {
           return ok(undefined);
@@ -252,13 +254,22 @@ export class TeamsBot implements Plugin {
     let errorMsg = isErrorWithMessage(e) ? e.message : "";
     const innerError = isPluginError(e) ? e.innerError : undefined;
     if (innerError) {
-      errorMsg += ` Detailed error: ${isErrorWithMessage(innerError) ? innerError.message : ""}.`;
+      errorMsg += getLocalizedString(
+        "plugins.bot.DetailedError",
+        isErrorWithMessage(innerError) ? innerError.message : ""
+      );
       if (isHttpError(innerError)) {
         if (innerError.response?.data?.errorMessage) {
-          errorMsg += ` Reason: ${innerError.response?.data?.errorMessage}`;
+          errorMsg += getLocalizedString(
+            "plugins.bot.DetailedErrorReason",
+            innerError.response?.data?.errorMessage
+          );
         } else if (innerError.response?.data?.error?.message) {
           // For errors return from Graph API
-          errorMsg += ` Reason: ${innerError.response?.data?.error?.message}`;
+          errorMsg += getLocalizedString(
+            "plugins.bot.DetailedErrorReason",
+            innerError.response?.data?.error?.message
+          );
         }
       }
     }
@@ -285,7 +296,7 @@ export class TeamsBot implements Plugin {
           name,
           ResultFactory.SystemError(
             UnhandledErrorCode,
-            `Got an unhandled error: ${errorMsg}`,
+            getLocalizedString("plugins.bot.UnhandledError", errorMsg),
             isPluginError(e) ? e.innerError : undefined
           )
         );

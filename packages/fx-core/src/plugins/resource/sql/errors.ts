@@ -1,86 +1,115 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "./constants";
 
 export class ErrorMessage {
-  public static readonly GetDetail = "Get the detailed error message in output.";
-
-  public static readonly LinkHelpMessage = (link: string) => `You can follow ${link} to handle it.`;
+  public static readonly LinkHelpMessage = (link: string) =>
+    getLocalizedString("plugins.sql.errorMessage.LinkHelpMessage", link);
 
   public static readonly SqlInputError = {
     name: "SqlInputError",
-    message: () => "SQL admin name or password is empty",
+    message: () =>
+      getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlInputError.name}`),
   };
 
   public static readonly SqlAskInputError = {
     name: "SqlAskInputError",
-    message: () => "Failed to get answer for SQL questions",
+    message: () =>
+      getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlAskInputError.name}`),
   };
 
   public static readonly SqlEndpointError = {
     name: "SqlEndpointError",
-    message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`,
+    message: (sqlName: string) =>
+      getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlEndpointError.name}`, sqlName),
   };
 
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
     message: (database: string, user: string) =>
-      `Failed to create user '${user}' in database ${database}`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.DatabaseUserCreateError.name}`,
+        user,
+        database
+      ),
   };
 
   public static readonly SqlAddAdminError = {
     name: "SqlAddAdminError",
-    message: (account: string, detail = "") => `Failed to add AAD admin '${account}'. ${detail}`,
+    message: (account: string, detail = "") =>
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlAddAdminError.name}`,
+        account,
+        detail
+      ),
   };
 
   public static readonly SqlLocalFirwallError = {
     name: "SqlLocalFirwallError",
     message: (sqlName: string, detail = "") =>
-      `Failed to add local firewall for '${sqlName}'. ${detail}`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlLocalFirwallError.name}`,
+        sqlName,
+        detail
+      ),
   };
 
   public static readonly SqlDeleteLocalFirwallError = {
     name: "SqlDeleteLocalFirwallError",
     message: (sqlName: string, detail = "") =>
-      `Failed to delete local firewall for '${sqlName}'. Delete '${Constants.firewall.localRule}' manually. ${detail}`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlDeleteLocalFirwallError.name}`,
+        sqlName,
+        Constants.firewall.localRule,
+        detail
+      ),
   };
 
   public static readonly SqlUserInfoError = {
     name: "SqlUserInfoError",
-    message: () => "Failed to get login user info.",
+    message: () =>
+      getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlUserInfoError.name}`),
   };
 
   public static readonly SqlGetConfigError = {
     name: "SqlGetConfigError",
     message: (pluginId: string, configKey: string) =>
-      `Failed to get config value of '${configKey}' from '${pluginId}'.`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlGetConfigError.name}`,
+        configKey,
+        pluginId
+      ),
   };
 
   public static readonly SqlInvalidConfigError = {
     name: "SqlInvalidConfigError",
     message: (configKey: string, reason: string) =>
-      `The config value of '${configKey}' is invalid for ${reason}.`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlInvalidConfigError.name}`,
+        configKey,
+        reason
+      ),
   };
 
   public static readonly SqlCheckError = {
     name: "SqlCheckError",
-    message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`,
+    message: (sqlName: string, detail = "") =>
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlCheckError.name}`,
+        sqlName,
+        detail
+      ),
   };
 
   public static readonly SqlCheckAdminError = {
     name: "SqlCheckAdminError",
     message: (identity: string, detail = "") =>
-      `Failed to check AAD admin '${identity}'. ${detail}`,
-  };
-
-  public static readonly SqlCheckDBUserError = {
-    name: "SqlCheckDBUserError",
-    message: (user: string, detail = "") => `Failed to check database user '${user}'. ${detail}`,
-  };
-
-  public static readonly SqlAccessError = {
-    name: "SqlAccessError",
-    message: (sqlName: string, detail = "") => `Failed to access server '${sqlName}'. ${detail}`,
+      getLocalizedString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlCheckAdminError.name}`,
+        identity,
+        detail
+      ),
   };
 
   public static readonly UnhandledError = {
@@ -89,14 +118,17 @@ export class ErrorMessage {
   };
 
   public static readonly IdentityCredentialUndefine = (user: string, databaseName: string) =>
-    `Cannot access database to add managed identity user ${user}. Please add the user for database ${databaseName} manually`;
+    getLocalizedString(`plugins.sql.errorMessage.IdentityCredentialUndefine`, user, databaseName);
 
   public static readonly ServicePrincipalWarning = (user: string, databaseName: string) =>
-    `service principal admin in azure sql can't add database user <${user}>. You can add the user for ${databaseName} manually`;
+    getLocalizedString(`plugins.sql.errorMessage.ServicePrincipalWarning`, user, databaseName);
 
   public static readonly DomainCode = "AADSTS53000";
 
-  public static readonly DomainError = `Conditional Access policy requires a compliant device, and the device is not compliant. ${ErrorMessage.GetDetail}`;
+  public static readonly DomainError = getLocalizedString(
+    `plugins.sql.errorMessage.DomainError`,
+    getLocalizedString("plugins.sql.errorMessage.GetDetail")
+  );
 
   public static readonly GuestAdminMessage =
     "Server identity does not have Azure Active Directory Readers permission";
@@ -104,7 +136,8 @@ export class ErrorMessage {
   public static readonly FirewallErrorReg =
     /Client with IP address .*? is not allowed to access the server./g;
 
-  public static readonly GuestAdminError = `SQL admin does not have enough permission to add database user. ${ErrorMessage.GetDetail}`;
-
-  public static readonly AccessMessage = "is not allowed to access the server";
+  public static readonly GuestAdminError = getLocalizedString(
+    `plugins.sql.errorMessage.GuestAdminError`,
+    getLocalizedString("plugins.sql.errorMessage.GetDetail")
+  );
 }

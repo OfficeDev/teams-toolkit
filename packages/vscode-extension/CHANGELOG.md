@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.6.0 - Mar 21, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- User can use Teams Toolkit to create CI/CD pipelines for GitHub, Azure DevOps and Jenkins.
+
+Enhancement:
+- Enhance TeamsFx SDK.
+- Enhance Teams Toolkit localization and Accessibility.
+
 ## 3.5.0 - Mar 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

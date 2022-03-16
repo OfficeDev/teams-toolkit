@@ -1313,12 +1313,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const isValid = await isValidProject(projectPath);
-    if (isValid) {
-      return err(
-        new OperationNotPermittedError("initialize a project in existing teamsfx project")
-      );
-    }
+
     await fs.ensureDir(projectPath);
     inputs.projectPath = projectPath;
 

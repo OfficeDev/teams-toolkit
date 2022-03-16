@@ -269,6 +269,7 @@
   "error.function.UnknownFallbackError": "Trigger fallback caused by unknown reason.",
   "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
+  "core.QuestionRootFolder.validation.projectExist": "It is already a teamsfx project: %s. Select a different project to be initialized.",
   "core.ProgrammingLanguageQuestion.title": "Programming Language",
   "core.ProgrammingLanguageQuestion.placeholder": "Select a programming language.",
   "core.ProgrammingLanguageQuestion.placeholder.spfx": "SPFx is currently supporting TypeScript only.",

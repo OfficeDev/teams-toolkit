@@ -305,7 +305,7 @@ export async function getQuestionsForInit(
   const node = new QTreeNode({ type: "group" });
   // no need to ask workspace folder for CLI.
   if (inputs.platform !== Platform.CLI) {
-    node.addChild(new QTreeNode(QuestionRootFolder));
+    node.addChild(new QTreeNode(QuestionRootFolder(true)));
   }
   node.addChild(new QTreeNode(createAppNameQuestion(false)));
   const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
@@ -359,7 +359,7 @@ export async function getQuestionsForCreateProjectV3(
 
   // only CLI need folder input
   if (inputs.platform === Platform.CLI) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    createNew.addChild(new QTreeNode(QuestionRootFolder()));
   }
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
@@ -368,7 +368,7 @@ export async function getQuestionsForCreateProjectV3(
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
   if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
   }
   return ok(node.trim());
 }
@@ -414,7 +414,7 @@ export async function getQuestionsForCreateProjectV2(
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    createNew.addChild(new QTreeNode(QuestionRootFolder()));
   }
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
@@ -423,7 +423,7 @@ export async function getQuestionsForCreateProjectV2(
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
   if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
   }
   return ok(node.trim());
 }

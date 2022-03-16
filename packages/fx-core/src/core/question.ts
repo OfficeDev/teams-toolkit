@@ -27,6 +27,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
+import { isValidProject } from "../common";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -106,11 +107,25 @@ export const DefaultAppNameFunc: FuncQuestion = {
   },
 };
 
-export const QuestionRootFolder: FolderQuestion = {
-  type: "folder",
-  name: CoreQuestionNames.Folder,
-  title: "Workspace folder",
-};
+export function QuestionRootFolder(validateExistingProject = false): FolderQuestion {
+  const question: FolderQuestion = {
+    type: "folder",
+    name: CoreQuestionNames.Folder,
+    title: "Workspace folder",
+    validation: {
+      validFunc: async (folder: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        if (validateExistingProject && folder) {
+          const isValid = isValidProject(folder);
+          if (isValid) {
+            return getLocalizedString("core.QuestionRootFolder.validation.projectExist", folder);
+          }
+        }
+      },
+    },
+  };
+
+  return question;
+}
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: CoreQuestionNames.ProgrammingLanguage,

@@ -1,3 +1,4 @@
+- [3.6.0 - Mar 21 2022](#360---Mar-21-2022)
 - [3.5.0 - Mar 07 2022](#350---Mar-07-2022)
 - [3.4.0 - Feb 21 2022](#340---feb-21-2022)
 - [3.3.0 - Feb 07 2022](#330---feb-07-2022)
@@ -9,6 +10,20 @@
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+# Changelog
+
+## 3.6.0 - Mar 21, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- User can use Teams Toolkit to create CI/CD pipelines for GitHub, Azure DevOps and Jenkins.
+
+	![cicd workflow](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/cicd_workflow.png)
+
+Enhancement:
+- Enhance TeamsFx SDK.
+- Enhance Teams Toolkit localization and Accessibility.
 
 ## 3.5.0 - Mar 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

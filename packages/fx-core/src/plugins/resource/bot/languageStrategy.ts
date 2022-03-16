@@ -26,7 +26,6 @@ import {
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import * as path from "path";
-import * as fs from "fs-extra";
 
 export class LanguageStrategy {
   public static async scaffoldProject(
@@ -69,7 +68,6 @@ export class LanguageStrategy {
         group: group_name,
         lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
         scenario: scenario,
-        templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
         dst: dst,
         onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
           if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {

@@ -89,7 +89,6 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
       group: TemplateInfo.TemplateGroupName,
       lang: language,
       scenario: Scenario.Default,
-      templatesFolderName: FrontendPathInfo.TemplateFolderName,
       dst: componentPath,
       fileNameReplaceFn: removeTemplateExtReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),

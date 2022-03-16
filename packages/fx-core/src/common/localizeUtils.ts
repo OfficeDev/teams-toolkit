@@ -9,7 +9,11 @@ import * as util from "util";
 
 export function getLocalizedString(key: string, ...params: any[]): string {
   const nlsFileName = Locale ? `package.nls.${Locale}.json` : "package.nls.json";
-  const nlsFilePath = path.join(getResourceFolder(), nlsFileName);
+  let nlsFilePath = path.join(getResourceFolder(), nlsFileName);
+  if (!fs.pathExistsSync(nlsFilePath)) {
+    // if nls file does not exist, just read the default one
+    nlsFilePath = path.join(getResourceFolder(), "package.nls.json");
+  }
   const json = fs.readJSONSync(nlsFilePath);
   let value = json[key];
   if (value && params && params.length > 0) {

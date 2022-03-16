@@ -1,6 +1,6 @@
 {
   "name": "@shared/eslint-config",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.0",
   "description": "Shared ESLint configuration",
   "private": true,
   "devDependencies": {

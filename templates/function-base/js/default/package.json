@@ -7,7 +7,7 @@
         "start": "npx func start"
     },
     "dependencies": {
-        "@microsoft/teamsfx": "^0.5.2-alpha.594b33666.0",
+        "@microsoft/teamsfx": "0.6.1-rc.0",
         "isomorphic-fetch": "^3.0.0"
     },
     "devDependencies": {

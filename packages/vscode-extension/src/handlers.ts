@@ -559,6 +559,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const selectedEnv = await askTargetEnvironment();
   if (selectedEnv.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+    showError(selectedEnv.error);
     return err(selectedEnv.error);
   }
   const env = selectedEnv.value;
@@ -628,6 +629,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   } else {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
+      showError(selectedEnv.error);
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;

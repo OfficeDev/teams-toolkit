@@ -3,7 +3,10 @@
 
 import "mocha";
 import * as chai from "chai";
-import { generateTasks } from "../../../../../src/plugins/solution/fx-solution/debug/util/tasksNext";
+import {
+  generateM365Tasks,
+  generateTasks,
+} from "../../../../../src/plugins/solution/fx-solution/debug/util/tasksNext";
 
 describe("tasksNext", () => {
   describe("generateTasks", () => {
@@ -16,6 +19,19 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[2].label, "prepare local environment");
       chai.assert.equal(tasks[3].label, "Start All");
       chai.assert.equal(tasks[4].label, "Start Frontend");
+    });
+
+    it("m365 frontend", () => {
+      const tasks = generateM365Tasks(true, false, false, "javascript");
+      chai.assert.isDefined(tasks);
+      chai.assert.equal(tasks.length, 7);
+      chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");
+      chai.assert.equal(tasks[1].label, "Pre Debug Check & Start All & Install App");
+      chai.assert.equal(tasks[2].label, "validate local prerequisites");
+      chai.assert.equal(tasks[3].label, "prepare local environment");
+      chai.assert.equal(tasks[4].label, "Start All");
+      chai.assert.equal(tasks[5].label, "install app in Teams");
+      chai.assert.equal(tasks[6].label, "Start Frontend");
     });
 
     it("frontend + backend (js)", () => {
@@ -53,6 +69,20 @@ describe("tasksNext", () => {
       chai.assert.equal(tasks[3].label, "prepare local environment");
       chai.assert.equal(tasks[4].label, "Start All");
       chai.assert.equal(tasks[5].label, "Start Bot");
+    });
+
+    it("m365 bot", () => {
+      const tasks = generateM365Tasks(false, false, true, "javascript");
+      chai.assert.isDefined(tasks);
+      chai.assert.equal(tasks.length, 8);
+      chai.assert.equal(tasks[0].label, "Pre Debug Check & Start All");
+      chai.assert.equal(tasks[1].label, "Pre Debug Check & Start All & Install App");
+      chai.assert.equal(tasks[2].label, "validate local prerequisites");
+      chai.assert.equal(tasks[3].label, "start ngrok");
+      chai.assert.equal(tasks[4].label, "prepare local environment");
+      chai.assert.equal(tasks[5].label, "Start All");
+      chai.assert.equal(tasks[6].label, "install app in Teams");
+      chai.assert.equal(tasks[7].label, "Start Bot");
     });
 
     it("frontend + bot", () => {

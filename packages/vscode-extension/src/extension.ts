@@ -26,6 +26,7 @@ import {
   isValidProject,
   isConfigUnifyEnabled,
   isInitAppEnabled,
+  isM365AppEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -86,6 +87,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
+
+  const createM365Cmd = vscode.commands.registerCommand("fx-extension.create-M365", (...args) =>
+    Correlator.run(handlers.createNewM365ProjectHandler, args)
+  );
+  context.subscriptions.push(createM365Cmd);
 
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
     Correlator.run(handlers.initProjectHandler, args)
@@ -444,6 +450,8 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
+
+  vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
 
   vscode.commands.executeCommand(
     "setContext",

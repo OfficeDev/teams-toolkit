@@ -19,6 +19,9 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  CreateM365ProjectStart = "create-m365-project-start",
+  CreateM365Project = "create-m365-project",
+
   InitProjectStart = "init-project-start",
   InitProject = "init-project",
 

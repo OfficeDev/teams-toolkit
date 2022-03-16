@@ -45,6 +45,7 @@
     "teamstoolkit.commands.addCloudResource.title": "Teams: Add cloud resources",
     "teamstoolkit.commands.addCICDWorkflows.title": "Teams: Add CI/CD Workflows",
     "teamstoolkit.commands.createEnvironment.title": "Teams: Create new environment",
+    "teamstoolkit.commands.createM365Project.title": "Teams: Create a new M365 app",
     "teamstoolkit.commands.createProject.title": "Teams: Create a new Teams app",
     "teamstoolkit.commands.debug.title": "Select and Start Debuging Teams App",
     "teamstoolkit.commands.deploy.title": "Teams: Deploy to the cloud",

@@ -232,22 +232,8 @@ export interface Inputs extends Json {
   env?: string;
   projectId?: string;
   existingResources?: string[];
-  existingAppConfig?: ExistingAppConfig;
   locale?: string;
   isM365?: boolean;
-}
-
-// configs for existing app building
-export interface ExistingAppConfig {
-  isCreatedFromExistingApp: boolean;
-  newAppTypes: ExistingTeamsAppType[];
-}
-
-export enum ExistingTeamsAppType {
-  StaticTab, // scopes: personal tab
-  ConfigurableTab, // scopes: team/group chat
-  Bot,
-  MessageExtension,
 }
 
 export interface ProjectConfig {

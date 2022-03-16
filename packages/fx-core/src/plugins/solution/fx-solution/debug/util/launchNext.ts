@@ -81,8 +81,6 @@ export function generateM365Configurations(
     launchConfigurations.push(launchBotM365(HubName.teams, LaunchBrowser.chrome, "Chrome"));
     launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.edge, "Edge"));
     launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.chrome, "Chrome"));
-    launchConfigurations.push(launchBotM365(HubName.office, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBotM365(HubName.office, LaunchBrowser.chrome, "Chrome"));
   }
 
   if (includeBot) {
@@ -110,23 +108,41 @@ export function generateM365Compounds(
   }
 
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Chrome", chromeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Chrome", chromeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, 2, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Chrome", chromeOrder)
+    debugM365(
+      includeFrontend,
+      includeBackend,
+      includeBot,
+      HubName.outlook,
+      2,
+      "Chrome",
+      chromeOrder
+    )
   );
-  launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Edge", edgeOrder)
-  );
-  launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Chrome", chromeOrder)
-  );
+  if (includeFrontend) {
+    launchCompounds.push(
+      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, 3, "Edge", edgeOrder)
+    );
+    launchCompounds.push(
+      debugM365(
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        HubName.office,
+        3,
+        "Chrome",
+        chromeOrder
+      )
+    );
+  }
 
   return launchCompounds;
 }
@@ -273,6 +289,7 @@ function debugM365(
   includeBackend: boolean,
   includeBot: boolean,
   hubName: string,
+  hubOrder: number,
   browserName: string,
   order: number
 ): Record<string, unknown> {
@@ -296,7 +313,7 @@ function debugM365(
         ? "Pre Debug Check & Start All"
         : "Pre Debug Check & Start All & Install App",
     presentation: {
-      group: "all",
+      group: `group ${hubOrder}: ${hubName}`,
       order: order,
     },
     stopAll: true,

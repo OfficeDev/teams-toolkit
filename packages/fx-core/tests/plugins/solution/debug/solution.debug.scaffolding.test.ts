@@ -547,15 +547,15 @@ describe("solution.debug.scaffolding", () => {
     const parameters7: TestParameter[] = [
       {
         programmingLanguage: "javascript",
-        numConfigurations: 7,
-        numCompounds: 6,
+        numConfigurations: 5,
+        numCompounds: 4,
         numTasks: 8,
         numLocalEnvs: 12,
       },
       {
         programmingLanguage: "typescript",
-        numConfigurations: 7,
-        numCompounds: 6,
+        numConfigurations: 5,
+        numCompounds: 4,
         numTasks: 8,
         numLocalEnvs: 12,
       },

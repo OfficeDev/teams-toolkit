@@ -21,3 +21,14 @@ export function getLocalizedString(key: string, ...params: any[]): string {
   }
   return value || "";
 }
+
+export function getDefaultString(key: string, ...params: any[]): string {
+  const nlsFileName = "package.nls.json";
+  const nlsFilePath = path.join(getResourceFolder(), nlsFileName);
+  const json = fs.readJSONSync(nlsFilePath);
+  let value = json[key];
+  if (value && params && params.length > 0) {
+    value = util.format(value, ...params);
+  }
+  return value || "";
+}

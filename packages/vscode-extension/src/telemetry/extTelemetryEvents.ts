@@ -180,6 +180,7 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
+  DebugProjectComponents = "debug-project-components",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",

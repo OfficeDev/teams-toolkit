@@ -1017,7 +1017,9 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     return "1";
   }
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
+    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+  });
 
   const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
@@ -1046,7 +1048,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
     return "1";
   }
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
+    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+  });
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
   const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);

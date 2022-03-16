@@ -19,8 +19,6 @@ import {
   EnvInfo,
   Json,
   v3,
-  ExistingAppConfig,
-  ExistingTeamsAppType,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -107,7 +105,7 @@ class EnvironmentManager {
       });
   }
 
-  public newEnvConfigData(appName: string, existingAppConfig?: ExistingAppConfig): EnvConfig {
+  public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       description: this.envConfigDescription,
@@ -118,34 +116,6 @@ class EnvironmentManager {
         },
       },
     };
-
-    if (!existingAppConfig || !existingAppConfig.isCreatedFromExistingApp) {
-      return envConfig;
-    }
-
-    // Common settings for existing app.
-    envConfig.manifest[ManifestVariables.DeveloperWebsiteUrl] = "";
-    envConfig.manifest[ManifestVariables.DeveloperPrivacyUrl] = "";
-    envConfig.manifest[ManifestVariables.DeveloperTermsOfUseUrl] = "";
-
-    // Settings to build a static Tab app from existing app.
-    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.StaticTab) !== -1) {
-      envConfig.manifest[ManifestVariables.TabContentUrl] = "";
-      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = "";
-    }
-
-    // Settings to build a configurable Tab app from existing app.
-    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.ConfigurableTab) !== -1) {
-      envConfig.manifest[ManifestVariables.TabConfigurationUrl] = "";
-    }
-
-    // Settings to build a Bot/ME app from existing app.
-    if (
-      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.Bot) !== -1 ||
-      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.MessageExtension) !== -1
-    ) {
-      envConfig.manifest[ManifestVariables.BotId] = "";
-    }
 
     return envConfig;
   }

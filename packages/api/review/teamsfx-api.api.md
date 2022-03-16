@@ -546,26 +546,6 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
-export interface ExistingAppConfig {
-    // (undocumented)
-    isCreatedFromExistingApp: boolean;
-    // (undocumented)
-    newAppTypes: ExistingTeamsAppType[];
-}
-
-// @public (undocumented)
-export enum ExistingTeamsAppType {
-    // (undocumented)
-    Bot = 2,
-    // (undocumented)
-    ConfigurableTab = 1,
-    // (undocumented)
-    MessageExtension = 3,
-    // (undocumented)
-    StaticTab = 0
-}
-
-// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
@@ -727,8 +707,6 @@ export interface InputResult<T> {
 export interface Inputs extends Json {
     // (undocumented)
     env?: string;
-    // (undocumented)
-    existingAppConfig?: ExistingAppConfig;
     // (undocumented)
     existingResources?: string[];
     // (undocumented)

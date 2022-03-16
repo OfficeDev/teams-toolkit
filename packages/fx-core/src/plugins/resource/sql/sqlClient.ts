@@ -6,6 +6,7 @@ import { SqlConfig } from "./config";
 import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
+import { getLocalizedString } from "../../../common/localizeUtils";
 export class SqlClient {
   config: SqlConfig;
   token: string;
@@ -63,7 +64,7 @@ export class SqlClient {
           error,
           undefined,
           link,
-          errorMessage + `. ${ErrorMessage.GetDetail}`
+          errorMessage + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -122,7 +123,7 @@ export class SqlClient {
           error,
           undefined,
           link,
-          errorMessage + `. ${ErrorMessage.GetDetail}`
+          errorMessage + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;

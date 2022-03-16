@@ -317,10 +317,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.migrateV1Project",
-          "when": "fx-extension.v1Project"
-        },
-        {
           "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },

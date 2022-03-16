@@ -2,19 +2,22 @@
 
 ## Prerequisites
 - Teams app projects are version controlled by GitHub.
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- An Azure service princial with necessary permissions.
+- (Optional) An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects. Any extra interactive verification steps should be disabled for the M365 account, and please check details in sections below.
+- (Optional) An Azure service principal with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps
 After the pre-cooked workflows are scaffolded successfully, the following steps are expected to be performed:
-1. Configure necessary GitHub secrets for your workflows.
-1. Add the scaffolded yml files into GitHub by `git add`,`git commit` and `git push`.
+1. Commit and push your project source code to GitHub remote repository, including the CI/CD yml files.
+1. Configure necessary GitHub secrets if your workflows require credentials by checking into the yml files.
+1. Trigger your workflows automatically, manually or do customization (Check the `on:` section in yml files to find the triggers). More about triggers in GitHub, refer to [trigger a workflow](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow).
 
 ## GitHub Secrets 
-Steps to create secrets by environment in GitHub:
+Steps to create secrets by environment in GitHub (Environment feature is not available in Private repositories.):
 1. In the project `Settings` page, navigate to `Environments` section and click `New environment`.
 1. Enter a name for your environment. The default environment name provided in the template is `test_environment`. Click `Configure environment` to proceed.
 1. In the next page, click `Add Secret` to add secrets for each of the items listed in the table below.
+
+Or create repository secrets by follow the path of `Settings` > `Security` > `Secrets` > `Actions` > `New repository secret`.
 
 |Name|Description|
 |---|---|

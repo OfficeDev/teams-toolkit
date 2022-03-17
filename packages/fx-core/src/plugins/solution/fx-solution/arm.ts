@@ -271,7 +271,11 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       tryCount++;
       if (tryCount < maxRetryTimes) {
         deployCtx.ctx.logProvider?.warning(
-          `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
+          getLocalizedString(
+            "core.deployArmTemplates.RetryGetDeploymentStatus",
+            deployCtx.deploymentName,
+            tryCount
+          )
         );
       } else if (tryCount === maxRetryTimes) {
         const pollError = returnSystemError(
@@ -301,7 +305,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   if (!resourceGroupName) {
     return err(
       returnSystemError(
-        new Error("Failed to get resource group from project solution settings."),
+        new Error(getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")),
         SolutionSource,
         "NoResourceGroupFound"
       )
@@ -398,7 +402,12 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         resourceGroupName,
         deploymentName
       );
-      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      errorMessage += getLocalizedString(
+        "core.deployArmTemplates.DeploymentErrorWithHelplink",
+        error.message,
+        deploymentErrorMessage,
+        HelpLinks.ArmHelpLink
+      );
       const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
       const returnError = new UserError(
         new Error(errorMessage),
@@ -438,7 +447,7 @@ export async function doDeployArmTemplatesV3(
   if (!resourceGroupName) {
     return err(
       returnSystemError(
-        new Error("Failed to get resource group from project solution settings."),
+        new Error(getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")),
         SolutionSource,
         "NoResourceGroupFound"
       )
@@ -534,7 +543,12 @@ export async function doDeployArmTemplatesV3(
         resourceGroupName,
         deploymentName
       );
-      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      errorMessage += getLocalizedString(
+        "core.deployArmTemplates.DeploymentErrorWithHelplink",
+        error.message,
+        deploymentErrorMessage,
+        HelpLinks.ArmHelpLink
+      );
       const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
       const returnError = new UserError(
         new Error(errorMessage),
@@ -735,7 +749,7 @@ export async function copyParameterJson(
 
 export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo.envName) {
-    throw new Error("Failed to get target environment name from solution context.");
+    throw new Error(getLocalizedString("core.deployArmTemplates.FailedToGetEnvironmentName"));
   }
 
   const parameterFileName = parameterFileNameTemplate.replace(
@@ -747,9 +761,11 @@ export async function getParameterJson(ctx: SolutionContext) {
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
-    ctx.logProvider?.error(`[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`);
+    ctx.logProvider?.error(
+      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
+    );
     const returnError = new Error(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
+      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
     );
     throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
@@ -765,7 +781,7 @@ export async function getParameterJsonV3(
   envInfo: v3.EnvInfoV3
 ) {
   if (!envInfo?.envName) {
-    throw new Error("Failed to get target environment name from solution context.");
+    throw new Error(getLocalizedString("core.deployArmTemplates.FailedToGetEnvironmentName"));
   }
 
   const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName);
@@ -774,9 +790,11 @@ export async function getParameterJsonV3(
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
-    ctx.logProvider?.error(`[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`);
+    ctx.logProvider?.error(
+      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
+    );
     const returnError = new Error(
-      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
+      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
     );
     throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
   }
@@ -855,7 +873,9 @@ async function doGenerateArmTemplate(
       continue;
     }
     if (result.isOk()) {
-      ctx.logProvider?.info(`[arm] ${plugin.name}.${method} success!`);
+      ctx.logProvider?.info(
+        getLocalizedString("core.deployArmTemplates.PluginOperationSuccess", plugin.name, method)
+      );
       generateArmFromResult(
         result.value,
         bicepOrchestrationTemplate,
@@ -902,7 +922,13 @@ async function doGenerateBicep(
     if (!selectedPlugin.generateBicep) continue;
     const res = await selectedPlugin.generateBicep(ctx, addFeatureInputs);
     if (res.isErr()) {
-      ctx.logProvider.error(`${pluginName}: generateBicep() failed!`);
+      ctx.logProvider.error(
+        getLocalizedString(
+          "core.deployArmTemplates.PluginOperationFail",
+          pluginName,
+          "generateBicep()"
+        )
+      );
       return err(res.error);
     }
     if (res.value) {
@@ -917,7 +943,13 @@ async function doGenerateBicep(
         );
       }
     }
-    ctx.logProvider.info(`${pluginName}: generateBicep() success!`);
+    ctx.logProvider.info(
+      getLocalizedString(
+        "core.deployArmTemplates.PluginOperationSuccess",
+        pluginName,
+        "generateBicep()"
+      )
+    );
   }
   //updateBicep
   const updateInputs: v3.UpdateInputs = {
@@ -929,7 +961,13 @@ async function doGenerateBicep(
     if (!existingPlugin.updateBicep) continue;
     const res = await existingPlugin.updateBicep(ctx, updateInputs);
     if (res.isErr()) {
-      ctx.logProvider.error(`${pluginName}: updateBicep() failed!`);
+      ctx.logProvider.error(
+        getLocalizedString(
+          "core.deployArmTemplates.PluginOperationFail",
+          pluginName,
+          "updateBicep()"
+        )
+      );
       return err(res.error);
     }
     if (res.value) {
@@ -944,7 +982,13 @@ async function doGenerateBicep(
         );
       }
     }
-    ctx.logProvider.info(`${pluginName}: updateBicep() success!`);
+    ctx.logProvider.info(
+      getLocalizedString(
+        "core.deployArmTemplates.PluginOperationSuccess",
+        pluginName,
+        "updateBicep()"
+      )
+    );
   }
 
   const persistRes = await persistBicepTemplates(
@@ -988,7 +1032,11 @@ async function persistBicepTemplates(
           );
           if (duplicateParam && duplicateParam.length != 0) {
             const duplicateParamError = new Error(
-              `There are some duplicate parameters in ${parameterEnvFilePath}, to avoid the conflict, please modify these parameter names: ${duplicateParam}`
+              getLocalizedString(
+                "core.generateArmTemplates.DuplicateParameter",
+                parameterEnvFilePath,
+                duplicateParam
+              )
             );
             return err(
               returnUserError(
@@ -1006,9 +1054,11 @@ async function persistBicepTemplates(
           parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
           const parameterFileError = new Error(
-            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${
+            getLocalizedString(
+              "core.generateArmTemplates.InvalidParameterFile",
+              parameterEnvFilePath,
               (error as Error).message
-            }`
+            )
           );
           return err(
             returnUserError(
@@ -1104,7 +1154,7 @@ async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
-      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${filePath}.`
+      getLocalizedString("core.deployArmTemplates.FailedToExpandParameter", filePath)
     );
     throw err;
   }
@@ -1116,7 +1166,7 @@ async function getExpandedParameterV3(ctx: v2.Context, envInfo: v3.EnvInfoV3, fi
     return JSON.parse(parameterJsonString);
   } catch (err) {
     ctx.logProvider?.error(
-      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${filePath}.`
+      getLocalizedString("core.deployArmTemplates.FailedToExpandParameter", filePath)
     );
     throw err;
   }
@@ -1128,14 +1178,14 @@ async function getResourceManagementClientForArmDeployment(
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
   if (!azureToken) {
     throw returnSystemError(
-      new Error("Azure Credential is invalid."),
+      new Error(getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")),
       PluginDisplayName.Solution,
       SolutionError.FailedToGetAzureCredential
     );
   }
   if (!subscriptionId) {
     throw returnSystemError(
-      new Error(`Failed to get subscription id.`),
+      new Error(getLocalizedString("core.deployArmTemplates.FailedToGetSubsId")),
       PluginDisplayName.Solution,
       SolutionError.NoSubscriptionSelected
     );
@@ -1157,7 +1207,7 @@ async function compileBicepToJson(
     );
     return JSON.parse(result);
   } catch (err) {
-    throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
+    throw new Error(getLocalizedString("core.deployArmTemplates.CompileBicepFailed", err.message));
   }
 }
 
@@ -1427,10 +1477,14 @@ export async function wrapGetDeploymentError(
     return ok(deploymentError);
   } catch (error: any) {
     deployCtx.ctx.logProvider?.error(
-      `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
+      getLocalizedString("core.deployArmTemplates.FailedToGetDeploymentError", error.message)
     );
     const returnError = new Error(
-      `resource deployments (${deployCtx.deploymentName} module) for your project failed and get the error message failed. Please refer to the resource group ${deployCtx.resourceGroupName} in portal for deployment error.`
+      getLocalizedString(
+        "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
+        deployCtx.deploymentName,
+        deployCtx.resourceGroupName
+      )
     );
     return err(returnUserError(returnError, SolutionSource, "GetDeploymentErrorFailed"));
   }
@@ -1514,9 +1568,10 @@ function getNotificationMessage(deploymentError: any, deploymentName: string): s
     failedDeployments.push(deploymentName);
   }
   const format = failedDeployments.map((deployment) => deployment + " module");
-  return `resource deployments (${format.join(
-    ", "
-  )}) for your project failed. Please refer to output channel for more error details.`;
+  return getLocalizedString(
+    "core.deployArmTemplates.DeploymentFailedNotification",
+    format.join(", ")
+  );
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

@@ -46,6 +46,7 @@
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
+    "onCommand:fx-extension.create-M365",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
@@ -104,7 +105,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isMultiEnvEnabled"
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-development",
@@ -283,7 +284,7 @@
         },
         {
           "command": "fx-extension.updatePreviewFile",
-          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && fx-extension.isMultiEnvEnabled",
+          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
           "group": "navigation"
         }
       ],
@@ -314,10 +315,6 @@
         },
         {
           "command": "fx-extension.selectAndDebug",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.cicdGuide",
           "when": "false"
         },
         {
@@ -442,6 +439,11 @@
         "title": "%teamstoolkit.commands.createProject.title%"
       },
       {
+        "command": "fx-extension.create-M365",
+        "title": "%teamstoolkit.commands.createM365Project.title%",
+        "enablement": "fx-extension.isM365AppEnabled"
+      },
+      {
         "command": "fx-extension.init",
         "title": "Teams: Initialize your application with Teams Toolkit",
         "enablement": "fx-extension.isInitAppEnabled"
@@ -538,8 +540,8 @@
         "icon": "$(run)"
       },
       {
-        "command": "fx-extension.cicdGuide",
-        "title": "%teamstoolkit.commands.cicd.title%",
+        "command": "fx-extension.addCICDWorkflows",
+        "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
         "icon": "$(sync)"
       },
       {
@@ -555,66 +557,55 @@
       {
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
-        "icon": "$(sync)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(sync)"
       },
       {
         "command": "fx-extension.addEnvironment",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
-        "icon": "$(add)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(add)"
       },
       {
         "command": "fx-extension.refreshEnvironment",
         "title": "%teamstoolkit.commands.refresh.title%",
-        "icon": "$(refresh)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(refresh)"
       },
       {
         "command": "fx-extension.preview",
-        "title": "%teamstoolkit.commands.previewApp.title%",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "title": "%teamstoolkit.commands.previewApp.title%"
       },
       {
         "command": "fx-extension.previewWithIcon",
         "title": "%teamstoolkit.commands.previewApp.title%",
-        "icon": "$(run)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(run)"
       },
       {
         "command": "fx-extension.localdebug",
-        "title": "%teamstoolkit.commands.localDebug.title%",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "title": "%teamstoolkit.commands.localDebug.title%"
       },
       {
         "command": "fx-extension.localdebugWithIcon",
         "title": "%teamstoolkit.commands.localDebug.title%",
-        "icon": "$(debug-alt)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(debug-alt)"
       },
       {
         "command": "fx-extension.listCollaborator",
         "title": "%teamstoolkit.commands.listAppOwner.title%",
-        "icon": "$(organization)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(organization)"
       },
       {
         "command": "fx-extension.openSubscriptionInPortal",
         "title": "%teamstoolkit.commands.openInPortal.title%",
-        "icon": "$(ports-open-browser-icon)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(ports-open-browser-icon)"
       },
       {
         "command": "fx-extension.openResourceGroupInPortal",
         "title": "%teamstoolkit.commands.openInPortal.title%",
-        "icon": "$(ports-open-browser-icon)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(ports-open-browser-icon)"
       },
       {
         "command": "fx-extension.grantPermission",
         "title": "%teamstoolkit.commands.addAppOwner.title%",
-        "icon": "$(person-add)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(person-add)"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
@@ -632,8 +623,7 @@
       {
         "command": "fx-extension.openEnvLink",
         "title": "%teamstoolkit.commands.environmentsLink.title%",
-        "icon": "$(info)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
+        "icon": "$(info)"
       },
       {
         "command": "fx-extension.openDevelopmentLink",

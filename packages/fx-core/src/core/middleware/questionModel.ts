@@ -37,6 +37,9 @@ import {
   createAppNameQuestion,
   createCapabilityQuestion,
   getCreateNewOrFromSampleQuestion,
+  M365AppTypeSelectQuestion,
+  M365CapabilityFuncQuestion,
+  M365CreateFromScratchFuncQuestion,
   ProgrammingLanguageQuestion,
   QuestionRootFolder,
   SampleSelect,
@@ -373,10 +376,60 @@ export async function getQuestionsForCreateProjectV3(
   return ok(node.trim());
 }
 
+async function getQuestionsForCreateM365ProjectV2(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const createNode = new QTreeNode(M365CreateFromScratchFuncQuestion);
+
+  // app type
+  createNode.addChild(new QTreeNode(M365AppTypeSelectQuestion));
+
+  // capability
+  createNode.addChild(new QTreeNode(M365CapabilityFuncQuestion));
+
+  const globalSolutions: v2.SolutionPlugin[] = getAllSolutionPluginsV2();
+  const context = createV2Context(newProjectSettings());
+  for (const solutionPlugin of globalSolutions) {
+    let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
+    const v2plugin = solutionPlugin as v2.SolutionPlugin;
+    res = v2plugin.getQuestionsForScaffolding
+      ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
+      : ok(undefined);
+    if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
+    if (res.value) {
+      const solutionNode = Array.isArray(res.value)
+        ? (res.value as QTreeNode[])
+        : [res.value as QTreeNode];
+      for (const node of solutionNode) {
+        if (node.data) createNode.addChild(node);
+      }
+    }
+  }
+
+  // programming language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  programmingLanguage.condition = { minItems: 1 };
+  createNode.addChild(programmingLanguage);
+
+  // only CLI need folder input
+  if (CLIPlatforms.includes(inputs.platform)) {
+    createNode.addChild(new QTreeNode(QuestionRootFolder));
+  }
+
+  // application name
+  createNode.addChild(new QTreeNode(createAppNameQuestion()));
+
+  return ok(createNode.trim());
+}
+
 //////V2 questions
 export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.isM365) {
+    return getQuestionsForCreateM365ProjectV2(inputs);
+  }
+
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
   // create new
   const createNew = new QTreeNode({ type: "group" });

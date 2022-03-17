@@ -28,7 +28,11 @@ describe("Package Command Tests", function () {
   let telemetryEvents: string[] = [];
   let telemetryEventStatus: string | undefined = undefined;
 
-  before(() => {
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
     sandbox
       .stub<any, any>(yargs, "command")
@@ -61,24 +65,7 @@ describe("Package Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "buildPackage",
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
     sandbox.stub(LogProvider, "necessaryLog").returns();
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
-  beforeEach(() => {
     registeredCommands = [];
     options = [];
     telemetryEvents = [];
@@ -92,9 +79,23 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check", async () => {
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure",
+          method: "buildPackage",
+          params: {
+            type: "remote",
+          },
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
+      env: "dev",
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.BuildStart, TelemetryEvent.Build]);
@@ -102,9 +103,23 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check with Error", async () => {
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure",
+          method: "buildPackage",
+          params: {
+            type: "localDebug",
+          },
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
+      env: "local",
     };
     try {
       await cmd.handler(args);
@@ -115,5 +130,29 @@ describe("Package Command Tests", function () {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }
+  });
+
+  it("Package Command with interactive question", async () => {
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure",
+          method: "buildPackage",
+          params: {
+            type: "remote",
+          },
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
+    sandbox.stub(Utils, "askTargetEnvironment").resolves(ok("dev"));
+    const cmd = new Package();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.BuildStart, TelemetryEvent.Build]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 });

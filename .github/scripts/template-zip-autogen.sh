@@ -17,7 +17,11 @@ TEMPLATE_LIST=(
     tab.default
     bot.default
     bot.notification
+    bot.notification-function-base
+    bot.notification-trigger-http
+    bot.notification-trigger-timer
     blazor-base.default
+    tab.non-sso
 )
 
 for LANGUAGE in ${LANGUAGE_LIST[@]}; do

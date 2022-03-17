@@ -489,6 +489,115 @@ describe("solution.debug.scaffolding", () => {
       });
     });
 
+    const parameters6: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 6,
+        numCompounds: 6,
+        numTasks: 7,
+        numLocalEnvs: 7,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 6,
+        numCompounds: 6,
+        numTasks: 7,
+        numLocalEnvs: 7,
+      },
+    ];
+    parameters6.forEach((parameter) => {
+      it(`happy path: m365 tab without function (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          isM365: true,
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+    });
+
+    const parameters7: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 5,
+        numCompounds: 4,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 5,
+        numCompounds: 4,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+    ];
+    parameters7.forEach((parameter) => {
+      it(`happy path: m365 bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          isM365: true,
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+    });
+
     it("spfx", async () => {
       const projectSetting = {
         appName: "",

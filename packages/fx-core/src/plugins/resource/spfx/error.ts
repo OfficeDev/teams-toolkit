@@ -5,6 +5,7 @@
 import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./utils/constants";
 import * as util from "util";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export function ScaffoldError(error: Error): UserError | SystemError {
   if (error instanceof UserError || error instanceof SystemError) {
@@ -16,7 +17,7 @@ export function ScaffoldError(error: Error): UserError | SystemError {
 
 export function NoSPPackageError(distFolder: string): UserError {
   return returnUserError(
-    new Error(util.format("Cannot find SharePoint package %s", distFolder)),
+    new Error(getLocalizedString("plugins.spfx.cannotFindPackage", distFolder)),
     Constants.PLUGIN_NAME,
     "NoSharePointPackage"
   );
@@ -32,7 +33,7 @@ export function BuildSPPackageError(error: Error): UserError | SystemError {
 
 export function NoManifestFileError(distFolder: string): UserError {
   return returnUserError(
-    new Error(util.format("Cannot find manifest file %s", distFolder)),
+    new Error(getLocalizedString("plugins.spfx.cannotFindManifest", distFolder)),
     Constants.PLUGIN_NAME,
     "NoManifestFile"
   );
@@ -40,7 +41,7 @@ export function NoManifestFileError(distFolder: string): UserError {
 
 export function GetSPOTokenFailedError(): SystemError {
   return returnSystemError(
-    new Error("Cannot get SPO access token"),
+    new Error(getLocalizedString("plugins.spfx.cannotGetSPOToken")),
     Constants.PLUGIN_NAME,
     "GetSPOTokenFailed"
   );
@@ -48,7 +49,7 @@ export function GetSPOTokenFailedError(): SystemError {
 
 export function GetGraphTokenFailedError(): SystemError {
   return returnSystemError(
-    new Error("Cannot get Graph access token"),
+    new Error(getLocalizedString("plugins.spfx.cannotGetGraphToken")),
     Constants.PLUGIN_NAME,
     "GetGraphTokenFailed"
   );
@@ -56,9 +57,7 @@ export function GetGraphTokenFailedError(): SystemError {
 
 export function InsufficientPermissionError(appCatalog: string): UserError {
   return returnUserError(
-    new Error(
-      `You don't have permission to upload and deploy package to App Catalog ${appCatalog}, please use site admin account.`
-    ),
+    new Error(getLocalizedString("plugins.spfx.insufficientPermission", appCatalog)),
     Constants.PLUGIN_NAME,
     "InsufficientPermission"
   );
@@ -66,9 +65,7 @@ export function InsufficientPermissionError(appCatalog: string): UserError {
 
 export function CreateAppCatalogFailedError(error: Error): SystemError {
   return returnSystemError(
-    new Error(
-      `Failed to create tenant app catalog, due to ${error.message}, stack: ${error.stack}`
-    ),
+    new Error(getLocalizedString("plugins.spfx.createAppcatalogFail", error.message, error.stack)),
     Constants.PLUGIN_NAME,
     "CreateAppCatalogFailed"
   );
@@ -88,7 +85,7 @@ export function GetTenantFailedError(username?: string, error?: Error): SystemEr
 
 export function UploadAppPackageFailedError(error: Error): SystemError {
   return returnSystemError(
-    new Error(`Failed to upload app package, due to ${error.message}`),
+    new Error(getLocalizedString("plugins.spfx.uploadAppcatalogFail", error.message)),
     Constants.PLUGIN_NAME,
     "UploadAppCatalogFailed"
   );

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  TemplateManifestError,
   TemplateZipFallbackError,
   UnknownScaffoldError,
   UnzipTemplateError,
@@ -30,7 +29,6 @@ export class FrontendScaffold {
       group: templateInfo.group,
       lang: templateInfo.language,
       scenario: templateInfo.scenario,
-      templatesFolderName: PathInfo.TemplateFolderName,
       dst: componentPath,
       fileNameReplaceFn: removeTemplateExtReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),
@@ -44,7 +42,7 @@ export class FrontendScaffold {
         switch (action.name) {
           case ScaffoldActionName.FetchTemplatesUrlWithTag:
           case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));
+            TelemetryHelper.sendScaffoldFallbackEvent(error.message);
             Logger.info(Messages.FailedFetchTemplate);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:

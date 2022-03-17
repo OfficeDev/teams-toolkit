@@ -1,10 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, HostType, HostTypes, PluginBot } from "../resources/strings";
-import { PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import {
+  CommonStrings,
+  HostType,
+  HostTypes,
+  NotificationTrigger,
+  NotificationTriggers,
+  PluginBot,
+} from "../resources/strings";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
+import { QuestionNames } from "../constants";
+import { HostTypeTriggerOptions } from "../question";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -13,6 +22,7 @@ export class ScaffoldConfig {
   public programmingLanguage?: ProgrammingLanguage;
   public workingDir?: string;
   public hostType?: HostType;
+  public triggers: NotificationTrigger[] = [];
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -34,10 +44,21 @@ export class ScaffoldConfig {
       rawProgrammingLanguage &&
       utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
     ) {
-      this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
+      this.programmingLanguage = rawProgrammingLanguage;
     }
 
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
+
+    const rawHostTypeTriggers = context.answers?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
+    if (Array.isArray(rawHostTypeTriggers)) {
+      // convert HostTypeTrigger question to trigger name
+      this.triggers = rawHostTypeTriggers
+        .map((hostTypeTrigger) => {
+          const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
+          return option?.trigger;
+        })
+        .filter((item): item is NotificationTrigger => item !== undefined);
+    }
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
@@ -56,19 +77,24 @@ export class ScaffoldConfig {
     // TODO: support other stages (maybe addCapability)
     const fromInputs = context.answers?.stage === Stage.create;
     if (fromInputs) {
-      // TODO: retrieve host type from context.answers
-      // Since the UI design is not finalized yet,
-      // for testing purpose we currently use an environment variable to select hostType.
-      // Change the logic after question model is implemented.
-      if (process.env.TEAMSFX_BOT_HOST_TYPE) {
-        return process.env.TEAMSFX_BOT_HOST_TYPE === "function"
-          ? HostTypes.AZURE_FUNCTIONS
-          : HostTypes.APP_SERVICE;
-      } else {
-        return undefined;
-      }
+      return context.answers
+        ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)
+        : undefined;
     } else {
       return this.getHostTypeFromProjectSettings(context);
+    }
+  }
+
+  private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType | undefined {
+    // intersection of hostTypeTriggers and HostTypeTriggerOptions
+    const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] as unknown;
+    if (Array.isArray(hostTypeTriggers)) {
+      const hostTypes = hostTypeTriggers.map(
+        (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
+      );
+      return hostTypes ? hostTypes[0] : undefined;
+    } else {
+      return undefined;
     }
   }
 

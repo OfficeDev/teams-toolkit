@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { ProjectConstants, ConfigRetryOperations, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {
@@ -19,14 +20,15 @@ export interface IApimPluginError {
 export const NoValidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "NoValidOpenApiDocument",
-  message: () => "No valid OpenApi document in the current workspace.",
+  message: () => getLocalizedString("plugins.apim.error.NoValidOpenApiDocument"),
   helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidOpenApiDocument",
-  message: (filePath: string) => `The file '${filePath}' is not a valid OpenApi document.`,
+  message: (filePath: string) =>
+    getLocalizedString("plugins.apim.error.InvalidOpenApiDocument", filePath),
   helpLink: ProjectConstants.helpLink,
 };
 
@@ -34,7 +36,7 @@ export const EmptyTitleInOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyTitleInOpenApiDocument",
   message: (filePath: string) =>
-    `The property 'title' cannot be empty in the OpenApi document '${filePath}'.`,
+    getLocalizedString("plugins.apim.error.EmptyTitleInOpenApiDocument", filePath),
   helpLink: ProjectConstants.helpLink,
 };
 
@@ -42,7 +44,7 @@ export const EmptyVersionInOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyVersionInOpenApiDocument",
   message: (filePath: string) =>
-    `The property 'version' cannot be empty in the OpenApi document '${filePath}'.`,
+    getLocalizedString("plugins.apim.error.EmptyVersionInOpenApiDocument", filePath),
   helpLink: ProjectConstants.helpLink,
 };
 
@@ -50,7 +52,7 @@ export const InvalidAadObjectId: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidAadObjectId",
   message: (objectId: string) =>
-    `The Azure Active Directory application with object id '${objectId}' could not be found.`,
+    getLocalizedString("plugins.apim.error.InvalidAadObjectId", objectId),
   helpLink: ProjectConstants.helpLink,
 };
 
@@ -58,91 +60,95 @@ export const EmptyConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyConfigValue",
   message: (component: string, name: string, filePath: string, retryOperation: string) =>
-    `Project configuration '${name}' of '${component}' is missing in '${filePath}'. Retry ${retryOperation} or set the value manually.`,
+    getLocalizedString(
+      "plugins.apim.error.EmptyConfigValue",
+      name,
+      component,
+      filePath,
+      retryOperation
+    ),
 };
 
 export const NoPluginConfig: IApimPluginError = {
   type: ErrorType.User,
   code: "NoPluginConfig",
   message: (component: string, retryOperation: string) =>
-    `Cannot found ${component} configuration. Retry ${retryOperation}.`,
+    getLocalizedString("plugins.apim.error.NoPluginConfig", component, retryOperation),
 };
 
 export const InvalidConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidConfigValue",
   message: (component: string, name: string, message: string) =>
-    `Project configuration '${name}' of '${component}' is invalid. ${message}`,
+    getLocalizedString("plugins.apim.error.InvalidConfigValue", name, component, message),
 };
 
 export const ApimOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "ApimOperationError",
-  message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+  message: (operation: string, resourceType: string) =>
+    getLocalizedString("plugins.apim.error.ApimOperationError", operation, resourceType),
   helpLink: ProjectConstants.helpLink,
 };
 
 export const AadOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "AadOperationError",
-  message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+  message: (operation: string, resourceType: string) =>
+    getLocalizedString("plugins.apim.error.AadOperationError", operation, resourceType),
   helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidCliOptionError: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidCliOptionError",
-  message: (reason) => `Option is invalid. ${reason}`,
+  message: (reason) =>
+    `${getLocalizedString("plugins.apim.error.InvalidCliOptionError")} ${reason}`,
 };
 
 // System error
 export const NotImplemented: IApimPluginError = {
   type: ErrorType.System,
   code: "NotImplemented",
-  message: () => `Not implemented.`,
+  message: () => getLocalizedString("plugins.apim.error.NotImplemented"),
 };
 
 export const InvalidFunctionEndpoint: IApimPluginError = {
   type: ErrorType.System,
   code: "InvalidFunctionEndpoint",
-  message: () => `The function endpoint scheme should be 'http' or 'https'.`,
-};
-
-export const InvalidAzureResourceId: IApimPluginError = {
-  type: ErrorType.System,
-  code: "InvalidAzureResourceId",
-  message: (resourceId: string) => `Invalid Azure resource id ${resourceId}.`,
+  message: () => getLocalizedString("plugins.apim.error.InvalidFunctionEndpoint"),
 };
 
 export const EmptyProperty: IApimPluginError = {
   type: ErrorType.System,
   code: "EmptyProperty",
-  message: (name: string) => `Property '${name}' is empty.`,
+  message: (name: string) => getLocalizedString("plugins.apim.error.EmptyProperty", name),
 };
 
 export const InvalidPropertyType: IApimPluginError = {
   type: ErrorType.System,
   code: "InvalidPropertyType",
-  message: (name: string, type: string) => `Property '${name}' is not type '${type}'`,
+  message: (name: string, type: string) =>
+    getLocalizedString("plugins.apim.error.InvalidPropertyType", name, type),
 };
 
 export const ShortenToEmpty: IApimPluginError = {
   type: ErrorType.System,
   code: "ShortenToEmpty",
-  message: (value: string) => `The value '${value}' cannot be shorten to empty.`,
+  message: (value: string) => getLocalizedString("plugins.apim.error.ShortenToEmpty", value),
 };
 
 export const UnhandledError: IApimPluginError = {
   type: ErrorType.System,
   code: "UnhandledError",
-  message: () => `Unhandled error.`,
+  message: () => getLocalizedString("plugins.apim.error.UnhandledError"),
 };
 
 export const FailedToParseResourceIdError: IApimPluginError = {
   type: ErrorType.User,
   code: "FailedToParseResourceId",
   message: (name: string, resourceId: string) =>
-    `Failed to get '${name}' from resource id: '${resourceId}'`,
+    getLocalizedString("plugins.apim.error.FailedToParseResourceIdError", name, resourceId),
 };
 
 export function BuildError(

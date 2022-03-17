@@ -10,12 +10,15 @@ import {
   assembleError,
   AzureSolutionSettings,
   Colors,
+  ConfigFolderName,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   LogLevel,
   ok,
   Platform,
+  ProjectSettingsFileName,
   Result,
   SystemError,
   UnknownError,
@@ -36,6 +39,7 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
+  isPureExistingApp,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -193,10 +197,22 @@ export default class Preview extends YargsCommand {
         throw errors.ExclusiveLocalRemoteOptions();
       }
 
-      const result =
-        previewType === "local"
-          ? await this.localPreview(workspaceFolder, browser, browserArguments)
-          : await this.remotePreview(workspaceFolder, browser, args.env as any, browserArguments);
+      let result: Result<null, FxError>;
+      if (previewType === "local") {
+        if (this.isExistingApp(workspaceFolder)) {
+          result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
+        } else {
+          result = await this.localPreview(workspaceFolder, browser, browserArguments);
+        }
+      } else {
+        result = await this.remotePreview(
+          workspaceFolder,
+          browser,
+          args.env as any,
+          browserArguments
+        );
+      }
+
       if (result.isErr()) {
         throw result.error;
       }
@@ -557,6 +573,53 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
+  private async localPreviewMinimalApp(
+    workspaceFolder: string,
+    browser: constants.Browser,
+    browserArguments: string[] = []
+  ): Promise<Result<null, FxError>> {
+    const coreResult = await activate();
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+    const core = coreResult.value;
+
+    const inputs: Inputs = {
+      projectPath: workspaceFolder,
+      platform: Platform.CLI,
+      env: environmentManager.getLocalEnvName(),
+    };
+
+    /* === register teams app === */
+    const result = await core.localDebug(inputs);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    return await this.remotePreview(
+      workspaceFolder,
+      browser,
+      environmentManager.getLocalEnvName(),
+      browserArguments
+    );
+  }
+
+  private async isExistingApp(workspacePath: string): Promise<boolean> {
+    const projectSettingsPath = path.resolve(
+      workspacePath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (await fs.pathExists(projectSettingsPath)) {
+      const projectSettings = await fs.readJson(projectSettingsPath);
+      return isPureExistingApp(projectSettings);
+    } else {
+      return false;
+    }
+  }
+
   private async remotePreview(
     workspaceFolder: string,
     browser: constants.Browser,
@@ -582,8 +645,8 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
-    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
+    const activeResourcePlugins =
+      (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );

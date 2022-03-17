@@ -5,7 +5,7 @@
 
 set -x
 
-if [ "$1" = "" ]; then
+if [ -z "$1" ]; then
     echo "Must input a path for templates folder"
     exit -1
 fi
@@ -23,6 +23,11 @@ for TEMPLATE in ${TEMPLATE_LIST[@]}; do
 
     if [ -z "$SCOPE" ]; then
         echo "SCOPE is empty."
+        exit -1
+    fi
+
+    if [ -z "$LANGUAGE" ]; then
+        echo "LANGUAGE is empty."
         exit -1
     fi
 

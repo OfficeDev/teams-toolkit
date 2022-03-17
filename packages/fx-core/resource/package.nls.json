@@ -52,7 +52,7 @@
   "core.deployArmTemplates.FailedToReadResourceGroup":"Failed to get resource group from project solution settings.",
   "core.deployArmTemplates.DeploymentErrorWithHelplink":"\nError message: %s\nDetailed message: \n%s\nGet toolkit help from %s.",
   "core.deployArmTemplates.FailedToGetEnvironmentName":"Failed to get target environment name from solution context.",
-  "core.deployArmTemplates.ParameterNotExist":"[Teams Toolkit] %s  does not exist.",
+  "core.deployArmTemplates.ParameterNotExist":"[Teams Toolkit] %s does not exist.",
   "core.deployArmTemplates.PluginOperationSuccess":"%s: %s success!",
   "core.deployArmTemplates.PluginOperationFail":"%s: %s failed!",
   "core.deployArmTemplates.FailedToExpandParameter":"[Teams Toolkit] Failed to get expanded parameter from %s",

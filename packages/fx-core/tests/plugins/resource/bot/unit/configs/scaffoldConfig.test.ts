@@ -6,8 +6,18 @@ import * as sinon from "sinon";
 import { ScaffoldConfig } from "../../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import * as testUtils from "../utils";
 import { Stage } from "@microsoft/teamsfx-api";
-import { HostTypes, PluginBot } from "../../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  HostTypes,
+  NotificationTriggers,
+  PluginBot,
+} from "../../../../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../../../../src/common/local/constants";
+import { QuestionNames } from "../../../../../../src/plugins/resource/bot/constants";
+import {
+  AppServiceOptionItem,
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
+} from "../../../../../../src/plugins/resource/bot/question";
 
 describe("getBotHostType Tests", () => {
   afterEach(() => {
@@ -17,8 +27,9 @@ describe("getBotHostType Tests", () => {
   it("resolves to function host type when scaffolding", async () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
-    pluginContext.answers!.stage = Stage.create;
-    sinon.stub(process, "env").value({ TEAMSFX_BOT_HOST_TYPE: "function" });
+    const answers = pluginContext.answers!;
+    answers.stage = Stage.create;
+    answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
 
     // Act
     const hostType = ScaffoldConfig.getBotHostType(pluginContext);
@@ -30,13 +41,15 @@ describe("getBotHostType Tests", () => {
   it("resolves to function host type when provisioning", async () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
-    pluginContext.answers!.stage = Stage.provision;
-    pluginContext.projectSettings!.pluginSettings = {
+    const answers = pluginContext.answers!;
+    const projectSettings = pluginContext.projectSettings!;
+    answers.stage = Stage.provision;
+    projectSettings.pluginSettings = {
       [PluginBot.PLUGIN_NAME]: {
         [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
       },
     };
-    sinon.stub(process, "env").value({ TEAMSFX_BOT_HOST_TYPE: "appService" });
+    answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
 
     // Act
     const hostType = ScaffoldConfig.getBotHostType(pluginContext);
@@ -48,8 +61,9 @@ describe("getBotHostType Tests", () => {
   it("resolves to app service host type when scaffolding", async () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
-    pluginContext.answers!.stage = Stage.create;
-    sinon.stub(process, "env").value({ TEAMSFX_BOT_HOST_TYPE: "appService" });
+    const answers = pluginContext.answers!;
+    answers.stage = Stage.create;
+    answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
 
     // Act
     const hostType = ScaffoldConfig.getBotHostType(pluginContext);
@@ -61,18 +75,61 @@ describe("getBotHostType Tests", () => {
   it("resolves to app service host type when provisioning", async () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
-    pluginContext.answers!.stage = Stage.provision;
-    pluginContext.projectSettings!.pluginSettings = {
+    const answers = pluginContext.answers!;
+    const projectSettings = pluginContext.projectSettings!;
+    answers.stage = Stage.provision;
+    projectSettings.pluginSettings = {
       [PluginBot.PLUGIN_NAME]: {
         [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
       },
     };
-    sinon.stub(process, "env").value({ TEAMSFX_BOT_HOST_TYPE: "functioin" });
+    answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
 
     // Act
     const hostType = ScaffoldConfig.getBotHostType(pluginContext);
 
     // Assert
     chai.assert.equal(hostType, HostTypes.APP_SERVICE);
+  });
+});
+
+describe("triggers Tests", () => {
+  afterEach(() => sinon.restore());
+
+  it("resolves triggers from HostTypeTrigger question", async () => {
+    const cases: [string[], string[], string][] = [
+      [[AppServiceOptionItem.id], [], "App Service no trigger"],
+      [[FunctionsHttpTriggerOptionItem.id], [NotificationTriggers.HTTP], "Functions http trigger"],
+      [
+        [FunctionsTimerTriggerOptionItem.id],
+        [NotificationTriggers.TIMER],
+        "Functions timer trigger",
+      ],
+      [
+        [FunctionsTimerTriggerOptionItem.id, FunctionsHttpTriggerOptionItem.id],
+        [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
+        "Functions timer & http trigger",
+      ],
+    ];
+
+    for (const c of cases) {
+      const [answer, triggers, message] = c;
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      const answers = pluginContext.answers!;
+
+      answers.stage = Stage.create;
+      answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = answer;
+      const scaffoldConfig = new ScaffoldConfig();
+
+      // Act
+      scaffoldConfig.restoreConfigFromContext(pluginContext);
+
+      // Assert
+      const result = [...scaffoldConfig.triggers].sort();
+      const expected = [...new Set(triggers)].sort();
+
+      chai.assert.deepEqual(result, expected, message);
+    }
   });
 });

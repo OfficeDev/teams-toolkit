@@ -108,6 +108,7 @@ export class QuestionNames {
   public static readonly GET_BOT_ID = "bot-id";
   public static readonly GET_BOT_PASSWORD = "bot-password";
   public static readonly CAPABILITIES = "capabilities";
+  public static readonly BOT_HOST_TYPE_TRIGGER = "bot-host-type-trigger";
 }
 
 export class LifecycleFuncNames {

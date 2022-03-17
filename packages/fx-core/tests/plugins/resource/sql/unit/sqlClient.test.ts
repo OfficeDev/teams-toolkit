@@ -11,6 +11,7 @@ import * as sinon from "sinon";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { ErrorMessage } from "../../../../../src/plugins/resource/sql/errors";
 import { TokenResponse } from "adal-node/lib/adal";
+import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 
 chai.use(chaiAsPromised);
 
@@ -56,7 +57,10 @@ describe("sqlClient", () => {
       await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
-      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
+      chai.assert.include(
+        error.notificationMessage,
+        getLocalizedString("plugins.sql.errorMessage.GetDetail")
+      );
     }
   });
 
@@ -141,7 +145,10 @@ describe("sqlClient", () => {
       await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
+      chai.assert.include(
+        error.notificationMessage,
+        getLocalizedString("plugins.sql.errorMessage.GetDetail")
+      );
     }
   });
 

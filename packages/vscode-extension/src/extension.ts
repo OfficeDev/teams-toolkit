@@ -23,7 +23,6 @@ import {
 } from "./codeLensProvider";
 import {
   Correlator,
-  isMultiEnvEnabled,
   isValidProject,
   isConfigUnifyEnabled,
   isInitAppEnabled,
@@ -159,10 +158,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(publishCmd);
 
-  const cicdGuideCmd = vscode.commands.registerCommand("fx-extension.cicdGuide", (...args) =>
-    Correlator.run(handlers.cicdGuideHandler, args)
+  const addCICDWorkflowsCmd = vscode.commands.registerCommand(
+    "fx-extension.addCICDWorkflows",
+    (...args) => Correlator.run(handlers.addCICDWorkflowsHandler, args)
   );
-  context.subscriptions.push(cicdGuideCmd);
+  context.subscriptions.push(addCICDWorkflowsCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
@@ -437,12 +437,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(listCollaborator);
 
   const workspacePath = getWorkspacePath();
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && isValidProject(workspacePath)
-  );
-
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isSPFx",

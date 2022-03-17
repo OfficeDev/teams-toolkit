@@ -69,11 +69,7 @@ export class FrontendPluginError extends Error {
   }
 
   getMessage(): string {
-    return getLocalizedString(
-      "error.frontend.BaseErrorMessage",
-      this.message,
-      this.suggestions.join(" ")
-    );
+    return getLocalizedString("plugins.baseErrorMessage", this.message, this.suggestions.join(" "));
   }
 
   setInnerError(error: Error): void {

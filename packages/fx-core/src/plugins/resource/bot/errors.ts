@@ -6,6 +6,7 @@ import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { FxBotPluginResultFactory } from "./result";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const ErrorType = {
   USER: "User",
@@ -103,7 +104,7 @@ export class PluginError extends Error {
   genMessage(): string {
     let msg = `${this.message} `;
     if (this.suggestions.length > 0) {
-      msg += `Suggestions: ${this.suggestions.join(" ")}`;
+      msg += getLocalizedString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
     }
     return msg;
   }

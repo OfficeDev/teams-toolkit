@@ -1,4 +1,7 @@
 // Copyright (c) Microsoft Corporation.
+
+import { getLocalizedString } from "../../../../common/localizeUtils";
+
 // Licensed under the MIT license.
 export class Constants {
   public static readonly FRAMEWORK_NONE = "none";
@@ -55,9 +58,11 @@ export class TelemetryEvent {
 }
 
 export class ProgressTitleMessage {
-  static readonly PreDeployProgressTitle = "Building SharePoint package";
-  static readonly DeployProgressTitle = `Upload and deploy SharePoint Package`;
-  static readonly ScaffoldProgressTitle = "Scaffolding project";
+  static readonly PreDeployProgressTitle = getLocalizedString(
+    "plugins.spfx.buildSharepointPackage"
+  );
+  static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
+  static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
 }
 
 export class PreDeployProgressMessage {
@@ -67,8 +72,8 @@ export class PreDeployProgressMessage {
 }
 
 export class DeployProgressMessage {
-  static readonly CreateSPAppCatalog = "Create Sharepoint app catalog";
-  static readonly UploadAndDeploy = "Upload and deploy SPFx package to your tenant app catalog";
+  static readonly CreateSPAppCatalog = getLocalizedString("plugins.spfx.deploy.createAppcatalog");
+  static readonly UploadAndDeploy = getLocalizedString("plugins.spfx.deploy.uploadAddDeploy");
 }
 
 export class ScaffoldProgressMessage {

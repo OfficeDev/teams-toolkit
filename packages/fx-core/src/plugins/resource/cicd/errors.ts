@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorNames, Suggestions } from "./constants";
 
 export enum ErrorType {
@@ -35,7 +36,11 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
+    return getLocalizedString(
+      "plugins.baseErrorMessage",
+      this.message,
+      this.suggestions.join("\n")
+    );
   }
 }
 
@@ -53,9 +58,12 @@ export class InternalError extends PluginError {
 
 export class NoProjectOpenedError extends PluginError {
   constructor() {
-    super(ErrorType.User, ErrorNames.NO_PROJECT_OPENED_ERROR, "No project opened.", [
-      Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING,
-    ]);
+    super(
+      ErrorType.User,
+      ErrorNames.NO_PROJECT_OPENED_ERROR,
+      getLocalizedString("error.cicd.NoProjectOpened.details"),
+      [Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING]
+    );
   }
 }
 

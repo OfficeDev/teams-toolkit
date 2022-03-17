@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getLocalizedString } from "../../../common/localizeUtils";
+
 export class LifecycleFuncNames {
   public static readonly ADD_CICD_WORKFLOWS = "add-cicd-workflows";
 }
@@ -42,8 +44,13 @@ export class PluginCICD {
 }
 
 export class Suggestions {
-  public static readonly RETRY_THE_CURRENT_STEP = "Please retry the current step.";
-  public static readonly CREATE_PROJECT_OR_OPEN_EXISTING =
-    "Create a new project or open an existing one.";
-  public static readonly CHECK_PERMISSION = "Please check if you got sufficient permission.";
+  public static readonly RETRY_THE_CURRENT_STEP = getLocalizedString(
+    "suggestions.retryTheCurrentStep"
+  );
+  public static readonly CREATE_PROJECT_OR_OPEN_EXISTING = getLocalizedString(
+    "plugins.cicd.suggestions.createProjectOrOpenExisting"
+  );
+  public static readonly CHECK_PERMISSION = getLocalizedString(
+    "plugins.cicd.suggestions.checkPermission"
+  );
 }

@@ -7,8 +7,8 @@ import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
 import { questionNames } from "./questions";
 import { InternalError, NoProjectOpenedError } from "./errors";
-import { telemetryHelper } from "./utils/telemetry-helper";
 import { Logger } from "./logger";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -32,7 +32,7 @@ export class CICDImpl {
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length === 0) {
-      throw new InternalError("Some preconditions of inputs are not met.");
+      throw new InternalError(getLocalizedString("error.cicd.PreconditionNotMet"));
     }
 
     this.commonProperties = {
@@ -47,14 +47,16 @@ export class CICDImpl {
     // 3. Call instance.scaffold(template, replacements: any).
     //  3.1 Call the initial scaffold.
     const progressBar = context.userInteraction.createProgressBar(
-      "Scaffolding workflow automation files",
+      getLocalizedString("plugins.cicd.ProgressBar.scaffold.title"),
       templateNames.length
     );
 
     const created: string[] = [];
     const skipped: string[] = [];
 
-    await progressBar.start(`Scaffolding workflow file for ${templateNames[0]}.`);
+    await progressBar.start(
+      getLocalizedString("plugins.cicd.ProgressBar.scaffold.detail", templateNames[0])
+    );
     let scaffolded = await providerInstance.scaffold(
       projectPath,
       templateNames[0],
@@ -69,7 +71,9 @@ export class CICDImpl {
 
     //  3.2 Call the next scaffold.
     for (const templateName of templateNames.slice(1)) {
-      await progressBar.next(`Scaffolding workflow file for ${templateName}.`);
+      await progressBar.next(
+        getLocalizedString("plugins.cicd.ProgressBar.scaffold.detail", templateName)
+      );
       scaffolded = await providerInstance.scaffold(projectPath, templateName, envName, context);
       if (scaffolded.isOk() && !scaffolded.value) {
         created.push(templateName);
@@ -83,14 +87,20 @@ export class CICDImpl {
     // 4. Send notification messages.
     let message = "";
     if (created.length > 0) {
-      message += `Workflow automation file(s) of ${created.join(
-        ","
-      )} for (${providerName}, ${envName}) have been successfully added for your project. Follow the instructions in Readme file to setup the workflow(s).`;
+      message += getLocalizedString(
+        "plugins.cicd.result.scaffold.created",
+        created.join(","),
+        providerName,
+        envName
+      );
     }
     if (skipped.length > 0) {
-      message += `You have already created template(s) of ${skipped.join(
-        ","
-      )} for (${providerName}, ${envName}), please customize it or remove it to create a new one.`;
+      message += getLocalizedString(
+        "plugins.cicd.result.scaffold.skipped",
+        skipped.join(","),
+        providerName,
+        envName
+      );
     }
 
     context.userInteraction.showMessage("info", message, false);

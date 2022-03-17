@@ -1,27 +1,47 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../constants";
 
 export class Message {
-  public static readonly startPreProvision = `[${Constants.pluginName}] start preProvision`;
-  public static readonly startPostProvision = `[${Constants.pluginName}] start postProvision`;
+  public static readonly startPreProvision = getLocalizedString(
+    "plugins.sql.message.startPreProvision",
+    Constants.pluginNameShort
+  );
 
-  public static readonly endPreProvision = `[${Constants.pluginName}] end preProvision`;
-  public static readonly endPostProvision = `[${Constants.pluginName}] end postProvision`;
+  public static readonly startPostProvision = getLocalizedString(
+    "plugins.sql.message.startPostProvision",
+    Constants.pluginNameShort
+  );
 
-  public static readonly checkAadAdmin = `[${Constants.pluginName}] check aad admin`;
-  public static readonly connectDatabase = `[${Constants.pluginName}] connect database`;
+  public static readonly endPreProvision = getLocalizedString(
+    "plugins.sql.message.endPreProvision",
+    Constants.pluginNameShort
+  );
 
-  public static readonly skipAddAadAdmin = `[${Constants.pluginName}] skip adding existing aad admin`;
-  public static readonly skipAddUser = `[${Constants.pluginName}] skip adding user`;
+  public static readonly endPostProvision = getLocalizedString(
+    "plugins.sql.message.endPostProvision",
+    Constants.pluginNameShort
+  );
 
-  public static readonly addFirewall = `[${Constants.pluginName}] add firewall`;
-  public static readonly addSqlAadAdmin = `[${Constants.pluginName}] add SQL aad admin`;
-  public static readonly addTable = `[${Constants.pluginName}] add table`;
+  public static readonly skipAddAadAdmin = getLocalizedString(
+    "plugins.sql.message.skipAddAadAdmin",
+    Constants.pluginNameShort
+  );
+
+  public static readonly addSqlAadAdmin = getLocalizedString(
+    "plugins.sql.message.addSqlAadAdmin",
+    Constants.pluginNameShort
+  );
+
+  public static readonly addFirewall = getLocalizedString(
+    "plugins.sql.message.addFirewall",
+    Constants.pluginNameShort
+  );
 
   public static readonly addDatabaseUser = (name: string) =>
-    `[${Constants.pluginName}] add database user ${name}`;
+    getLocalizedString("plugins.sql.message.addDatabaseUser", Constants.pluginNameShort, name);
 
   public static readonly adminName = (name: string) =>
-    `[${Constants.pluginName}] AAD admin name is ${name}`;
+    getLocalizedString("plugins.sql.message.adminName", Constants.pluginNameShort, name);
 }

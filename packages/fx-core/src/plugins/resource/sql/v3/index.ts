@@ -298,7 +298,6 @@ export class SqlPluginV3 implements v3.PluginV3 {
       await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddUser);
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
-        ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(tokenProvider.azureAccountProvider, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
         await this.addDatabaseUser(ctx, sqlClient, SqlMgrClient);
@@ -358,7 +357,6 @@ export class SqlPluginV3 implements v3.PluginV3 {
     }
   }
   private async CheckAndSetAadAdmin(ctx: v2.Context, client: ManagementClient) {
-    ctx.logProvider?.info(Message.checkAadAdmin);
     const existAdmin = await client.existAadAdmin();
     if (!existAdmin) {
       ctx.logProvider?.info(Message.addSqlAadAdmin);

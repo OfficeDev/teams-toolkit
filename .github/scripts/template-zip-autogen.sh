@@ -38,7 +38,7 @@ for TEMPLATE in ${TEMPLATE_LIST[@]}; do
 
     if [ ! -d ./templates/${TEMPLATE} ]; then
         echo "The folder ./templates/${TEMPLATE} does not exist."
-        continue
+        exit -1
     fi
 
     cd ./templates/${TEMPLATE}

@@ -1,15 +1,26 @@
-# Node.js
-- task: OneLocBuild@2
-  inputs:
-    locProj: 'Localize/LocProject.json'
-    outDir: '$(Build.ArtifactStagingDirectory)'
-    isCreatePrSelected: true
-    repoType: 'gitHub'
-    prSourceBranchPrefix: 'locfiles'
-    gitHubPatVariable: '$(GitHubPat)'
-    gitHubPrMergeMethod: 'squash'
-    packageSourceAuth: 'patAuth'
-    patVariable: '$(OneLocBuildPat)'
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# Variable 'GitHubPat' was defined in the Variables tab
+# Variable 'OneLocBuildPat' was defined in the Variables tab
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: dev
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: windows-latest
+  steps:
+  - checkout: self
+  - task: OneLocBuild@2
+    displayName: 'Localization Build: Localize/LocProject.json'
+    inputs:
+      isCreatePrSelected: true
+      repoType: gitHub
+      gitHubPatVariable: $(GitHubPat)
+      gitHubPrMergeMethod: squash
+      packageSourceAuth: patAuth
+      patVariable: $(OneLocBuildPat)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+...

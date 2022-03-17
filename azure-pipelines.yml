@@ -13,14 +13,16 @@ jobs:
   steps:
   - checkout: self
   - task: OneLocBuild@2
-    displayName: 'Localization Build: Localize/LocProject.json'
     inputs:
+      locProj: 'Localize/LocProject.json'
+      outDir: '$(Build.ArtifactStagingDirectory)'
       isCreatePrSelected: true
-      repoType: gitHub
-      gitHubPatVariable: $(GitHubPat)
-      gitHubPrMergeMethod: squash
-      packageSourceAuth: patAuth
-      patVariable: $(OneLocBuildPat)
+      repoType: 'gitHub'
+      prSourceBranchPrefix: 'locfiles'
+      gitHubPatVariable: '$(GitHubPat)'
+      gitHubPrMergeMethod: 'squash'
+      packageSourceAuth: 'patAuth'
+      patVariable: '$(OneLocBuildPat)'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: drop'
 ...

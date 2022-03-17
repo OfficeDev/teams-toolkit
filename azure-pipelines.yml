@@ -1,0 +1,15 @@
+# Node.js
+- task: OneLocBuild@2
+  inputs:
+    locProj: 'Localize/LocProject.json'
+    outDir: '$(Build.ArtifactStagingDirectory)'
+    isCreatePrSelected: true
+    repoType: 'gitHub'
+    prSourceBranchPrefix: 'locfiles'
+    gitHubPatVariable: '$(GitHubPat)'
+    gitHubPrMergeMethod: 'squash'
+    packageSourceAuth: 'patAuth'
+    patVariable: '$(OneLocBuildPat)'
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript

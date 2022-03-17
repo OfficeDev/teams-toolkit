@@ -15,20 +15,21 @@ export interface HostTypeTriggerOptionItem extends OptionItem {
   trigger?: NotificationTrigger;
 }
 
+// NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
 export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "functionsTimer",
+  id: "timer",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.TIMER,
 });
 
 export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "functionsHttp",
+  id: "http",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.HTTP,
 });
 
 export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "appService",
+  id: "http-restify",
   hostType: HostTypes.APP_SERVICE,
 });
 

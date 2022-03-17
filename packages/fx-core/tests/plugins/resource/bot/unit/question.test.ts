@@ -106,4 +106,21 @@ describe("Test question", () => {
       }
     });
   });
+
+  describe("Workaround CLI default value issue, remove me after CLI is fixed", () => {
+    it("cliName and ID must be the same", () => {
+      // Arrange
+      const question = createHostTypeTriggerQuestion();
+      for (const option of question.staticOptions) {
+        if (typeof option !== "string") {
+          // Assert
+          chai.assert.equal(
+            option.id,
+            option.cliName,
+            "option.id and option.cliName must be the same to workaround CLI default value issue"
+          );
+        }
+      }
+    });
+  });
 });

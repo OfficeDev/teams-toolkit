@@ -106,7 +106,9 @@ export class Messages {
   );
 
   // Suggestions
-  public static readonly RetryTheCurrentStep = getLocalizedString("plugins.bot.RetryCurrent");
+  public static readonly RetryTheCurrentStep = getLocalizedString(
+    "suggestions.retryTheCurrentStep"
+  );
   public static readonly RegisterYouSubsToUseBot = getLocalizedString(
     "plugins.bot.RegisterSubscription"
   );

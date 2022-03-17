@@ -103,7 +103,8 @@
         },
         {
           "id": "teamsfx-environment",
-          "name": "Environment"
+          "name": "Environment",
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-development",

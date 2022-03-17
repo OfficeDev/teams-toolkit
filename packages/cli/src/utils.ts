@@ -111,20 +111,6 @@ export function toYargsOptions(data: Question): Options {
   };
 }
 
-function renameManifestToAppStudio(arg: string): string {
-  return arg === "manifest" ? "appstudio" : arg;
-}
-
-export function toLocaleLowerCaseAndRenameManifest(arg: any): any {
-  if (typeof arg === "string") {
-    return renameManifestToAppStudio(arg.toLocaleLowerCase());
-  } else if (arg instanceof Array) {
-    return arg.map((s: string) => renameManifestToAppStudio(s.toLocaleLowerCase()));
-  } else {
-    return arg;
-  }
-}
-
 export function toLocaleLowerCase(arg: any): any {
   if (typeof arg === "string") {
     return arg.toLocaleLowerCase();

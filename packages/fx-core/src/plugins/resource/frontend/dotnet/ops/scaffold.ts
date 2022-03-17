@@ -27,7 +27,6 @@ export async function scaffoldFromZipPackage(
     group: templateInfo.group,
     lang: templateInfo.language,
     scenario: templateInfo.scenario,
-    templatesFolderName: PathInfo.TemplateFolderName,
     dst: componentPath,
     fileNameReplaceFn: genTemplateNameRenderReplaceFn(templateInfo.variables.BlazorAppServer),
     fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),

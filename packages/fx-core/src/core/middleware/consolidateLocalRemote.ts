@@ -9,7 +9,6 @@ import {
   InputConfigsFolderName,
   Inputs,
   LogProvider,
-  ok,
   Platform,
   StatesFolderName,
   TeamsAppManifest,
@@ -44,12 +43,10 @@ import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manife
 import { getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
-import { globalStateUpdate } from "../../common";
 
 const upgradeButton = "Upgrade";
 let fromReloadFlag = false;
 const backupFolder = ".backup";
-const showConsolidateLogsFlag = "showConsolidateChangelogs";
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -80,8 +77,7 @@ export const ProjectConsolidateMW: Middleware = async (
 
     try {
       await consolidateLocalRemote(ctx);
-      // return ok for the lifecycle functions to prevent breaking error handling logic.
-      ctx.result = ok({});
+      await next();
     } catch (error) {
       sendTelemetryErrorEvent(
         Component.core,
@@ -236,7 +232,11 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     "localSettings.json"
   );
   if (await fs.pathExists(localSettingsFile)) {
-    await fs.move(localSettingsFile, path.join(backupPath, ".fx", "configs", "localSettings.json"));
+    await fs.move(
+      localSettingsFile,
+      path.join(backupPath, ".fx", "configs", "localSettings.json"),
+      { overwrite: true }
+    );
   }
   const localManifestFile = path.join(
     inputs.projectPath as string,
@@ -247,7 +247,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   if (await fs.pathExists(localManifestFile)) {
     await fs.move(
       localManifestFile,
-      path.join(backupPath, "templates", "appPackage", "manifest.local.template.json")
+      path.join(backupPath, "templates", "appPackage", "manifest.local.template.json"),
+      { overwrite: true }
     );
   }
   const remoteManifestFile = path.join(
@@ -259,7 +260,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   if (await fs.pathExists(remoteManifestFile)) {
     await fs.move(
       remoteManifestFile,
-      path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json")
+      path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json"),
+      { overwrite: true }
     );
   }
 
@@ -291,11 +293,15 @@ async function postConsolidate(
   );
 
   if (inputs.platform === Platform.VSCode) {
-    await globalStateUpdate(showConsolidateLogsFlag, true);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuide, {
       [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
     });
-    await TOOLS?.ui.reload?.();
+    await TOOLS?.ui.showMessage(
+      "info",
+      getLocalizedString("core.consolidateLocalRemote.outputMsg"),
+      false,
+      "OK"
+    );
   } else {
     TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));
   }

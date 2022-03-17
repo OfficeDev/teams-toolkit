@@ -1419,9 +1419,6 @@ export async function openReadMeHandler(args: any[]) {
 async function postUpgrade(): Promise<void> {
   await openUpgradeChangeLogsHandler();
   await popupAfterUpgrade();
-
-  // notify after consolidate local and remote configs
-  await showConsolidateLogsHandler();
 }
 
 async function popupAfterUpgrade(): Promise<void> {
@@ -1481,25 +1478,6 @@ async function openUpgradeChangeLogsHandler() {
         const PreviewMarkdownCommand = "markdown.showPreview";
         commands.executeCommand(PreviewMarkdownCommand, uri);
       });
-    } catch (err) {
-      // do nothing
-    }
-  }
-}
-
-async function showConsolidateLogsHandler() {
-  const showConsolidateLogsFlag = "showConsolidateChangelogs";
-  if (
-    globalStateGet(showConsolidateLogsFlag, false) &&
-    workspace.workspaceFolders &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    try {
-      await globalStateUpdate(showConsolidateLogsFlag, false);
-
-      const information = localize("teamstoolkit.consolidateLocalRemote.outputMsg");
-
-      await window.showInformationMessage(information, "OK");
     } catch (err) {
       // do nothing
     }

@@ -14,7 +14,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { isSPFxProject, isAADEnabled } from "../../common/tools";
+import { isSPFxProject, isAADEnabled, isConfigUnifyEnabled } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -97,6 +97,9 @@ export const ProjectConsolidateMW: Middleware = async (
 
 // check if config.local.json and manifest.template.json exist
 async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
+  if (!isConfigUnifyEnabled()) {
+    return false;
+  }
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;

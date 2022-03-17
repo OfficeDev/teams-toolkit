@@ -481,7 +481,7 @@ class ADOTestPlanClient {
  * @param {string}  argv[4] - "vscode" or "cli".
  * @param {string}  argv[5] - version of the package.
  */
-async function SyncToTestPlan() {
+async function syncToTestPlan() {
   if (process.argv.length != 6) {
     throw new Error("invalid param length");
   }
@@ -529,6 +529,21 @@ async function SyncToTestPlan() {
   }
 }
 
+async function createTestPlan() {
+  if (process.argv.length !== 5) {
+    throw new Error("invalid param length");
+  }
+
+  try {
+    await ADOTestPlanClient.GetCurrentTestPlan(
+      process.argv[3].trim() as TestPlanType,
+      process.argv[4].trim()
+    );
+  } catch (error) {
+    throw error;
+  }
+}
+
 interface TestPlanStat {
   suites: number;
   points: number;
@@ -567,7 +582,13 @@ async function getTestPlanStat(): Promise<TestPlanStat> {
 async function main() {
   switch (process.argv[2]) {
     case "sync": {
-      SyncToTestPlan().catch((err: any) => {
+      syncToTestPlan().catch((err: any) => {
+        throw err;
+      });
+      break;
+    }
+    case "new": {
+      createTestPlan().catch((err: any) => {
         throw err;
       });
       break;

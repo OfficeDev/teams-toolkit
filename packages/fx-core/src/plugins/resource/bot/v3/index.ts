@@ -127,7 +127,6 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       group: group_name,
       lang: lang,
       scenario: TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME,
-      templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
       dst: workingDir,
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
         if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {

@@ -38,7 +38,7 @@ describe("Language Strategy", () => {
       actRoles: [PluginActRoles.Bot],
     } as TeamsBotConfig;
     before(() => {
-      const commonPath = path.join(getTemplatesFolder(), "plugins", "resource", "bot");
+      const commonPath = path.join(getTemplatesFolder(), "fallback");
       const botJsPath = path.join(
         commonPath,
         `${TemplateProjectsConstants.GROUP_NAME_BOT}.${utils.convertToLangKey(

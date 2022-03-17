@@ -29,7 +29,7 @@ describe("Collaboration", function () {
 
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",
-    { testPlanCaseId: 12782934 },
+    { testPlanCaseId: 12782618 },
     async function () {
       // new a project
       await execAsync(

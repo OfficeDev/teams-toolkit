@@ -370,6 +370,20 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
+export async function createNewM365ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.IsM365]: "true",
+  });
+  const inputs = getSystemInputs();
+  inputs.isM365 = true;
+  const result = await runCommand(Stage.create, inputs);
+  if (result.isOk()) {
+    await openFolder(result.value, true, args);
+  }
+  return result;
+}
+
 export async function initProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.init);
@@ -460,16 +474,13 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 
 async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
   await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
-  let debugConfig = await commonUtils.getDebugConfig(true);
-  if (!debugConfig?.appId) {
-    const result = await runCommand(Stage.debug);
-    if (result.isErr()) {
-      return result;
-    }
 
-    debugConfig = await commonUtils.getDebugConfig(true);
+  const result = await runCommand(Stage.debug);
+  if (result.isErr()) {
+    return result;
   }
 
+  const debugConfig = await commonUtils.getDebugConfig(true);
   return launch(debugConfig, progressBar);
 }
 

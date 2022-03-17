@@ -293,6 +293,8 @@ export class PathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly FuncHostedProvisionModuleTemplateFileName =
+    "funcHostedBotProvision.template.bicep";
   public static readonly ConfigurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
 

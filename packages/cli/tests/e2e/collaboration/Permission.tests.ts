@@ -30,7 +30,7 @@ describe("Collaboration", function () {
 
   it(
     "Collaboration: CLI with permission status and permission grant",
-    { testPlanCaseId: 10908072 },
+    { testPlanCaseId: 10753319 },
     async function () {
       // new a project
       await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {

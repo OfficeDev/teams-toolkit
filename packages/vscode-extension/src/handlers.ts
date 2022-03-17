@@ -371,7 +371,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
 }
 
 export async function createNewM365ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.IsM365]: "true",
+  });
   const inputs = getSystemInputs();
   inputs.isM365 = true;
   const result = await runCommand(Stage.create, inputs);

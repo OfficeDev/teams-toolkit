@@ -19,9 +19,6 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
-  CreateM365ProjectStart = "create-m365-project-start",
-  CreateM365Project = "create-m365-project",
-
   InitProjectStart = "init-project-start",
   InitProject = "init-project",
 
@@ -206,6 +203,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",

@@ -460,16 +460,13 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 
 async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
   await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
-  let debugConfig = await commonUtils.getDebugConfig(true);
-  if (!debugConfig?.appId) {
-    const result = await runCommand(Stage.debug);
-    if (result.isErr()) {
-      return result;
-    }
 
-    debugConfig = await commonUtils.getDebugConfig(true);
+  const result = await runCommand(Stage.debug);
+  if (result.isErr()) {
+    return result;
   }
 
+  const debugConfig = await commonUtils.getDebugConfig(true);
   return launch(debugConfig, progressBar);
 }
 

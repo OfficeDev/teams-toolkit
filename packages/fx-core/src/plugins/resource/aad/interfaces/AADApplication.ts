@@ -1,6 +1,6 @@
 export interface AADApplication {
-  id: string;
-  appId: string;
+  id?: string | null;
+  appId?: string | null;
   disabledByMicrosoftStatus?: string | null;
   displayName: string;
   description?: string | null;
@@ -18,13 +18,13 @@ export interface AADApplication {
   keyCredentials: KeyCredential[];
   optionalClaims?: OptionalClaims | null;
   parentalControlSettings?: ParentalControlSettings | null;
-  passwordCredentials: PasswordCredential[];
   publicClient: PublicClient;
   requiredResourceAccess: RequiredResourceAccess[];
   web: Web;
   spa: Spa;
 
   // ***Not supported properties***
+  // passwordCredentials: PasswordCredential[]; // This will be handled by separate logic
   // verifiedPublisher: any; // not exist in manifest
   // isDeviceOnlyAuthSupported: boolean; // not exist in manifest
   // applicationTemplateId: string; // not exist in manifest

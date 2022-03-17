@@ -63,6 +63,8 @@ import {
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
   WEB_APPLICATION_INFO_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
+  DEVELOPER_PREVIEW_SCHEMA,
+  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -548,13 +550,15 @@ export class AppStudioPluginImpl {
       const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
       const hasAad = isAADEnabled(solutionSettings);
+      const isM365 = ctx.projectSettings?.isM365;
       manifest = await createManifest(
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
         hasMessageExtension,
         false,
-        hasAad
+        hasAad,
+        isM365
       );
       if (!isConfigUnifyEnabled()) {
         const localDebugManifest = await createLocalManifest(
@@ -563,7 +567,8 @@ export class AppStudioPluginImpl {
           hasBot,
           hasMessageExtension,
           false,
-          hasAad
+          hasAad,
+          isM365
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -1687,7 +1692,8 @@ export async function createLocalManifest(
   hasBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
-  hasAad = true
+  hasAad = true,
+  isM365 = false
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1711,13 +1717,19 @@ export async function createLocalManifest(
     }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
-      manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
+      if (!isM365) {
+        manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
+      }
     }
     if (hasBot) {
       manifest.bots = BOTS_TPL_LOCAL_DEBUG;
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
+    }
+    if (isM365) {
+      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
+      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
     }
     return manifest;
   }
@@ -1729,7 +1741,8 @@ export async function createManifest(
   hasBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
-  hasAad = true
+  hasAad = true,
+  isM365 = false
 ): Promise<TeamsAppManifest | undefined> {
   if (!hasBot && !hasMessageExtension && !hasFrontend && !hasAad) {
     throw new Error(`Invalid capability`);
@@ -1742,13 +1755,19 @@ export async function createManifest(
     }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_FOR_MULTI_ENV;
-      manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
+      if (!isM365) {
+        manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
+      }
     }
     if (hasBot) {
       manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
+    }
+    if (isM365) {
+      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
+      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
     }
 
     return manifest;

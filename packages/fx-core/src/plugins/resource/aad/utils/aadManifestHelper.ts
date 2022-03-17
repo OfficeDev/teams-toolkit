@@ -47,7 +47,6 @@ export class AadManifestHelper {
       }),
       optionalClaims: manifest.optionalClaims,
       parentalControlSettings: manifest.parentalControlSettings,
-      passwordCredentials: manifest.passwordCredentials,
       publicClient: {
         redirectUris: manifest.replyUrlsWithType
           .filter((item) => item.type === "InstalledClient")
@@ -115,7 +114,6 @@ export class AadManifestHelper {
       oauth2Permissions: app.api.oauth2PermissionScopes,
       optionalClaims: app.optionalClaims,
       parentalControlSettings: app.parentalControlSettings,
-      passwordCredentials: app.passwordCredentials,
       preAuthorizedApplications: app.api.preAuthorizedApplications.map((item) => {
         return {
           appId: item.appId,

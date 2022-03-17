@@ -2,14 +2,15 @@
 
 ## Prerequisites
 - Teams app projects are version controlled by Azure DevOps.
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- An Azure service princial with necessary permissions.
+- (Optional) An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects. Any extra interactive verification steps should be disabled for the M365 account, and please check details in sections below.
+- (Optional) An Azure service principal with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps
 After the pre-cooked pipelines are scaffolded successfully, the following steps are expected to be performed:
-1. Add the scaffolded yml files into Azure DevOps by `git add`,`git commit` and `git push`.
+1. Commit and push your project source code to Azure DevOps remote repository, including the CI/CD yml files.
 1. Create corresponding Azure DevOps pipelines by following [Create your first Azure DevOps Pipeline](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser).
-1. Configure necessary Azure DevOps Pipeline variables for your pipelines.
+1. Configure necessary Azure DevOps Pipeline variables if your pipelines require credentials by checking into the yml files.
+1. Trigger your pipelines automatically, manually or do customization (Check the `trigger:` or `pr:` section in yml files to find the triggers). More about triggers in Azure DevOps, refer to [Triggers in Azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops).
 
 ## Azure DevOps Pipeline Variables 
 Steps to create Pipeline variables in Azure DevOps:

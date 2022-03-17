@@ -26,6 +26,8 @@ import {
   NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
+  M365LaunchPageOptionItem,
+  M365MessagingExtensionOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -46,6 +48,9 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
+  M365CreateFromScratch = "m365-scratch",
+  M365AppType = "m365-app-type",
+  M365Capability = "m365-capability",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -403,4 +408,32 @@ export const SampleSelect: SingleSelectQuestion = {
     } as OptionItem;
   }),
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+};
+
+export const M365CreateFromScratchFuncQuestion: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.M365CreateFromScratch,
+  func: (inputs: Inputs) => {
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYes.id;
+  },
+};
+
+export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.M365AppType,
+  title: getLocalizedString("core.M365AppTypeSelectQuestion.title"),
+  staticOptions: [M365LaunchPageOptionItem, M365MessagingExtensionOptionItem],
+  placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
+};
+
+export const M365CapabilityFuncQuestion: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.M365Capability,
+  func: (inputs: Inputs) => {
+    if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
+    }
+  },
 };

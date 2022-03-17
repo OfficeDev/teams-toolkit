@@ -92,11 +92,6 @@ const fakeAadApp = {
     countriesBlockedForMinors: [],
     legalAgeGroupRule: "Allow",
   },
-  passwordCredentials: [
-    {
-      displayName: "password-display-name",
-    },
-  ],
   requiredResourceAccess: [
     {
       resourceAppId: "00000003-0000-0000-c000-000000000000",
@@ -192,11 +187,6 @@ const fakeAadManifest = {
     countriesBlockedForMinors: [],
     legalAgeGroupRule: "Allow",
   },
-  passwordCredentials: [
-    {
-      displayName: "password-display-name",
-    },
-  ],
   preAuthorizedApplications: [
     {
       appId: "1fec8e78-bce4-4aaf-ab1b-5451cc387264",

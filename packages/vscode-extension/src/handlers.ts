@@ -49,6 +49,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -427,43 +428,54 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
-
   const LocalEnvName = environmentManager.getLocalEnvName();
+  const PreviewLocalSteps = 2;
+  const PreviewRemoteSteps = 1;
+
+  const progressBar = VS_CODE_UI.createProgressBar(
+    localize("teamstoolkit.preview.progressTitle"),
+    env === LocalEnvName ? PreviewLocalSteps : PreviewRemoteSteps
+  );
+  await progressBar.start();
+
   let result: Result<null, FxError>;
   if (env === LocalEnvName) {
-    result = await previewLocal();
+    result = await previewLocal(progressBar);
   } else {
-    result = await previewRemote(env);
+    result = await previewRemote(env, progressBar);
   }
 
   if (result.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, result.error);
+    await progressBar.end(false);
     return result;
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+  await progressBar.end(true);
   return ok(null);
 }
 
-async function previewLocal(): Promise<Result<null, FxError>> {
-  let debugConfig = await commonUtils.getDebugConfig(true);
-  if (!debugConfig?.appId) {
-    const result = await runCommand(Stage.debug);
-    if (result.isErr()) {
-      return result;
-    }
+async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
+  await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
 
-    debugConfig = await commonUtils.getDebugConfig(true);
+  const result = await runCommand(Stage.debug);
+  if (result.isErr()) {
+    return result;
   }
 
-  return launch(debugConfig);
+  const debugConfig = await commonUtils.getDebugConfig(true);
+  return launch(debugConfig, progressBar);
 }
 
-async function previewRemote(env: string): Promise<Result<null, FxError>> {
+async function previewRemote(
+  env: string,
+  progressBar: IProgressHandler
+): Promise<Result<null, FxError>> {
   const debugConfig = await commonUtils.getDebugConfig(false, env);
-  return launch(debugConfig);
+  return launch(debugConfig, progressBar);
 }
 
 async function launch(
@@ -472,7 +484,8 @@ async function launch(
         appId: string;
         env?: string;
       }
-    | undefined
+    | undefined,
+  progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = returnUserError(
@@ -483,6 +496,7 @@ async function launch(
     return err(error);
   }
 
+  progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
   const accountHint = await generateAccountHint();
   // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
@@ -559,6 +573,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   const selectedEnv = await askTargetEnvironment();
   if (selectedEnv.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+    showError(selectedEnv.error);
     return err(selectedEnv.error);
   }
   const env = selectedEnv.value;
@@ -628,6 +643,8 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   } else {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
+      showError(selectedEnv.error);
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;

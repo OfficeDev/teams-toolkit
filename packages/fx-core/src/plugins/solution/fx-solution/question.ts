@@ -59,6 +59,21 @@ export const SsoItem: OptionItem = {
   detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
+export const M365LaunchPageOptionItem: OptionItem = {
+  id: "M365LaunchPage",
+  label: "Launch Page",
+  cliName: "launch-page",
+  description: getLocalizedString("core.M365LaunchPageOptionItem.description"),
+};
+
+export const M365MessagingExtensionOptionItem: OptionItem = {
+  id: "M365MessagingExtension",
+  label: "Messaging Extension",
+  cliName: "messaging-extension",
+  description: getLocalizedString("core.M365MessagingExtensionOptionItem.description"),
+  detail: getLocalizedString("core.M365MessagingExtensionOptionItem.detail"),
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   TabScopes = "tab-scopes",
@@ -71,7 +86,6 @@ export enum AzureSolutionQuestionNames {
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
   Scenario = "scenario",
-  BotNotificationTriggers = "bot-notification-triggers",
 }
 
 export const HostTypeOptionAzure: OptionItem = {

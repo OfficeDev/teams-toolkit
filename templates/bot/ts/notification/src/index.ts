@@ -10,16 +10,18 @@ const teamsfxBot = new TeamsFxBot(adapter);
 
 const message: Partial<Activity> = {
   attachments: [
-    CardFactory.adaptiveCard(AdaptiveCards.declare(messageTemplate).render({
-      title: "Notification Test",
-      message: "This is a notification from TeamsFx bot."
-    }))
-  ]
+    CardFactory.adaptiveCard(
+      AdaptiveCards.declare(messageTemplate).render({
+        title: "Notification Test",
+        message: "This is a notification from TeamsFx bot.",
+      })
+    ),
+  ],
 };
 
 // HTTP trigger to send notification.
 server.post("/api/notify/default", async (req, res) => {
-  await teamsfxBot.forEachSubscribers(async subscriber => {
+  await teamsfxBot.forEachSubscribers(async (subscriber) => {
     await teamsfxBot.notifySubscriber(subscriber, message);
   });
 
@@ -27,9 +29,9 @@ server.post("/api/notify/default", async (req, res) => {
 });
 
 // Time trigger to send notification.
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule("*/1 * * * *", async () => {
   // send notification every one minutes.
-  await teamsfxBot.forEachSubscribers(async subscriber => {
+  await teamsfxBot.forEachSubscribers(async (subscriber) => {
     await teamsfxBot.notifySubscriber(subscriber, message);
   });
 });

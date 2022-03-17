@@ -20,6 +20,7 @@ import {
   UserError,
   ProjectSettings,
   v3,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 import {
@@ -79,6 +80,9 @@ export async function executeUserTask(
   }
   if (method === "addResource") {
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (method === "addSso") {
+    return addSso(ctx, inputs, localSettings);
   }
   if (namespace.includes("solution")) {
     if (method === "registerTeamsAppAndAad") {
@@ -704,3 +708,133 @@ export type ParamForRegisterTeamsAppAndAad = {
   endpoint: string;
   "root-path": string;
 };
+
+// TODO: handle VS scenario
+export function canAddSso(
+  solutionSettings: AzureSolutionSettings,
+  telemetryReporter: TelemetryReporter
+): Result<Void, FxError> {
+  // Can not add sso if feature flag is not enabled
+  if (!isAadManifestEnabled()) {
+    const e = new SystemError(
+      SolutionError.NeedEnableFeatureFlag,
+      getLocalizedString("core.addSso.needEnableFeatureFlag"),
+      SolutionSource
+    );
+    return err(e);
+  }
+
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+    const e = new UserError(
+      SolutionError.AddSsoNotSupported,
+      getLocalizedString("core.addSso.onlySupportAzure"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+    );
+  }
+
+  // Check whether SSO is enabled
+  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
+  const containSsoItem = solutionSettings.capabilities.includes(SsoItem.id);
+  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
+  if (containSsoItem && containAadPlugin) {
+    // Throw error if sso is already enabled
+    const e = new UserError(
+      SolutionError.SsoEnabled,
+      getLocalizedString("core.addSso.ssoEnabled"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  } else if (containSsoItem || containAadPlugin) {
+    // Throw error if the project is invalid
+    const e = new UserError(
+      SolutionError.InvalidSsoProject,
+      getLocalizedString("core.addSso.invalidSsoProject"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
+  return ok(Void);
+}
+
+export async function addSso(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json
+): Promise<Result<unknown, FxError>> {
+  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+
+  let solutionSettings = getAzureSolutionSettings(ctx);
+  if (!solutionSettings) {
+    // pure existing app
+    solutionSettings = {
+      name: TeamsAppSolutionNameV2,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    ctx.projectSetting.solutionSettings = solutionSettings;
+    //aad need this file
+    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+      spaces: 4,
+    });
+  }
+
+  // Check whether can add sso
+  const canProceed = canAddSso(solutionSettings, ctx.telemetryReporter);
+  if (canProceed.isErr()) {
+    return err(canProceed.error);
+  }
+
+  // Update project settings
+  solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  solutionSettings.capabilities.push(SsoItem.id);
+
+  const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+    existingCapabilities: originalSettings.capabilities,
+  };
+
+  // TODO: Create folder with readme, auth page, etc.
+
+  // Scaffold aad plugin and arm template
+  const scaffoldRes = await scaffoldCodeAndResourceTemplate(
+    ctx,
+    inputsNew,
+    localSettings,
+    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)],
+    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)]
+  );
+  if (scaffoldRes.isErr()) {
+    ctx.projectSetting.solutionSettings = originalSettings;
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.AddSso,
+        scaffoldRes.error,
+        ctx.telemetryReporter
+      )
+    );
+  }
+
+  // Update manifest
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+    { name: "WebApplicationInfo" },
+  ]);
+
+  return ok(undefined);
+}

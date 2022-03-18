@@ -1,24 +1,34 @@
-import { Storage, StoreItems } from "botbuilder";
-import { NotificationTarget, NotificationTargetType } from "../../../../src/notification/interface";
+import {
+  NotificationTarget,
+  NotificationTargetStorage,
+  NotificationTargetType,
+} from "../../../../src/notification/interface";
 
-export class TestStorage implements Storage {
+export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
-  async read(keys: string[]): Promise<StoreItems> {
-    const storeItems: StoreItems = {};
-    keys.map((k) => {
-      if (this.items[k]) {
-        storeItems[k] = this.items[k];
-      }
+
+  read(key: string): Promise<{ [key: string]: any } | undefined> {
+    return new Promise((resolve) => resolve(this.items[key]));
+  }
+
+  list(): Promise<{ [key: string]: any }[]> {
+    return new Promise((resolve) =>
+      resolve(Object.entries(this.items).map((entry) => entry[1] as { [key: string]: any }))
+    );
+  }
+
+  write(key: string, object: { [key: string]: any }): Promise<void> {
+    return new Promise((resolve) => {
+      this.items[key] = object;
+      resolve();
     });
-    return storeItems;
   }
 
-  async write(changes: StoreItems): Promise<void> {
-    Object.assign(this.items, changes);
-  }
-
-  delete(keys: string[]): Promise<void> {
-    throw new Error("Method not implemented.");
+  delete(key: string): Promise<void> {
+    return new Promise((resolve) => {
+      delete this.items[key];
+      resolve();
+    });
   }
 }
 

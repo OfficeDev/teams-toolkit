@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConversationReference, Storage, StoreItems } from "botbuilder";
+import { ConversationReference } from "botbuilder";
 import * as fs from "fs";
 import * as path from "path";
+import { NotificationTargetStorage } from "./interface";
 
 /**
  * @internal
  */
-export class LocalFileStorage implements Storage {
+export class LocalFileStorage implements NotificationTargetStorage {
   private readonly localFileName = ".notification.localstore.json";
   private readonly filePath: string;
 
@@ -16,35 +17,44 @@ export class LocalFileStorage implements Storage {
     this.filePath = path.resolve(fileDir, this.localFileName);
   }
 
-  async read(keys: string[]): Promise<StoreItems> {
+  async read(key: string): Promise<{ [key: string]: any } | undefined> {
     if (!(await this.storeFileExists())) {
-      return {};
+      return undefined;
     }
 
     const data = await this.readFromFile();
 
-    const storeItems: StoreItems = {};
-    keys.map((k) => {
-      if (data[k]) {
-        storeItems[k] = data[k];
-      }
-    });
-
-    return storeItems;
+    return data[key];
   }
 
-  async write(changes: StoreItems): Promise<void> {
+  async list(): Promise<{ [key: string]: any }[]> {
     if (!(await this.storeFileExists())) {
-      await this.writeToFile(changes);
+      return [];
+    }
+
+    const data = await this.readFromFile();
+
+    return Object.entries(data).map((entry) => entry[1] as { [key: string]: any });
+  }
+
+  async write(key: string, object: { [key: string]: any }): Promise<void> {
+    if (!(await this.storeFileExists())) {
+      await this.writeToFile({ [key]: object });
       return;
     }
 
     const data = await this.readFromFile();
-    await this.writeToFile(Object.assign(data, changes));
+    await this.writeToFile(Object.assign(data, { [key]: object }));
   }
 
-  delete(keys: string[]): Promise<void> {
-    throw new Error("Method not implemented.");
+  async delete(key: string): Promise<void> {
+    if (await this.storeFileExists()) {
+      const data = await this.readFromFile();
+      if (data[key] !== undefined) {
+        delete data[key];
+        await this.writeToFile(data);
+      }
+    }
   }
 
   private storeFileExists(): Promise<boolean> {
@@ -101,34 +111,22 @@ export class LocalFileStorage implements Storage {
  * @internal
  */
 export class ConversationReferenceStore {
-  private readonly storage: Storage;
-  private readonly storageKey: string;
+  private readonly storage: NotificationTargetStorage;
 
-  constructor(storage: Storage, storageKey: string) {
+  constructor(storage: NotificationTargetStorage) {
     this.storage = storage;
-    this.storageKey = storageKey;
   }
 
-  async getAll(): Promise<Map<string, Partial<ConversationReference>>> {
-    const items = await this.storage.read([this.storageKey]);
-    const itemsMap = items[this.storageKey];
-    if (itemsMap === undefined) {
-      return new Map<string, Partial<ConversationReference>>();
-    }
-
-    return new Map(Object.entries(itemsMap));
+  getAll(): Promise<Partial<ConversationReference>[]> {
+    return this.storage.list();
   }
 
-  async set(reference: Partial<ConversationReference>): Promise<void> {
-    const references = await this.getAll();
-    references.set(this.getKey(reference), reference);
-    await this.storage.write({ [this.storageKey]: Object.fromEntries(references) });
+  set(reference: Partial<ConversationReference>): Promise<void> {
+    return this.storage.write(this.getKey(reference), reference);
   }
 
-  async delete(reference: Partial<ConversationReference>): Promise<void> {
-    const references = await this.getAll();
-    references.delete(this.getKey(reference));
-    await this.storage.write({ [this.storageKey]: Object.fromEntries(references) });
+  delete(reference: Partial<ConversationReference>): Promise<void> {
+    return this.storage.delete(this.getKey(reference));
   }
 
   private getKey(reference: Partial<ConversationReference>): string {

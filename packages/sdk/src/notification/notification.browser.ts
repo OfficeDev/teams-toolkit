@@ -5,12 +5,11 @@ import {
   BotFrameworkAdapter,
   ChannelInfo,
   ConversationReference,
-  Storage,
   TeamsChannelAccount,
 } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
-import { NotificationTarget, NotificationTargetType } from "./interface";
+import { NotificationTarget, NotificationTargetStorage, NotificationTargetType } from "./interface";
 import { ConversationReferenceStore } from "./storage";
 
 /**
@@ -490,13 +489,16 @@ export interface BotNotificationOptions {
    * @remarks
    * Only work on server side.
    *
-   * If `storage` is not provided, a default local file storage will be used.
-   * You could also use the `BlobsStorage` provided by botbuilder-azure-blobs
-   * or `CosmosDbPartitionedStorage` provided by botbuilder-azure
+   * If `storage` is not provided, a default local file storage will be used,
+   * which stores notification connections into:
+   *   - ".notification.localstore.json" if running locally
+   *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
+   *
+   * It's recommended to use your own shared storage for production environment.
    *
    * @beta
    */
-  storage?: Storage;
+  storage?: NotificationTargetStorage;
 }
 
 /**

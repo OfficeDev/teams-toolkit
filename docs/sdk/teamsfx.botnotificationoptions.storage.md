@@ -12,10 +12,12 @@ An optional storage to persist bot notification connections.
 <b>Signature:</b>
 
 ```typescript
-storage?: Storage;
+storage?: NotificationTargetStorage;
 ```
 
 ## Remarks
 
-If `storage` is not provided, a default local file storage will be used. You could also use the `BlobsStorage` provided by botbuilder-azure-blobs or `CosmosDbPartitionedStorage` provided by botbuilder-azure
+If `storage` is not provided, a default local file storage will be used, which stores notification connections into: - ".notification.localstore.json" if running locally - "$<!-- -->{<!-- -->process.env.TEMP<!-- -->}<!-- -->/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
+
+It's recommended to use your own shared storage for production environment.
 

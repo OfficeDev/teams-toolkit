@@ -54,102 +54,126 @@ describe("Notification.Storage Tests - Node", () => {
       fileExists = false;
     });
 
-    it("read should return empty data if file not exist", async () => {
+    it("read should return undefined if file not exist", async () => {
       fileExists = false;
-      const data = await localFileStorage.read(["key"]);
-      assert.deepStrictEqual(data, {});
+      const data = await localFileStorage.read("key");
+      assert.isUndefined(data);
     });
 
     it("read should return correct data", async () => {
       fileContent = `{
-        "key1": "A",
-        "key2": "B",
-        "key3": "C"
+        "key1": { "foo": "bar" },
+        "key2": "B"
       }`;
       fileExists = true;
-      const data = await localFileStorage.read(["key1", "key2"]);
-      assert.deepStrictEqual(data, { key1: "A", key2: "B" });
+      const data = await localFileStorage.read("key1");
+      assert.deepStrictEqual(data, { foo: "bar" });
     });
 
-    it("read should ignore undefined data if key not exist", async () => {
+    it("read should return undefined if key not exist", async () => {
       fileContent = `{
-        "key1": "A",
-        "key2": "B",
-        "key3": "C"
+        "key1": { "foo": "bar" },
+        "key2": "B"
       }`;
       fileExists = true;
-      const data = await localFileStorage.read(["key1", "key4"]);
-      assert.deepStrictEqual(data, { key1: "A" });
+      const data = await localFileStorage.read("key3");
+      assert.isUndefined(data);
+    });
+
+    it("list should return empty array if file not exist", async () => {
+      fileExists = false;
+      const data = await localFileStorage.list();
+      assert.strictEqual(data.length, 0);
+    });
+
+    it("list should return correct data", async () => {
+      fileContent = `{
+        "key1": { "foo1": "bar1" },
+        "key2": { "foo2": "bar2" }
+      }`;
+      fileExists = true;
+      const data = await localFileStorage.list();
+      assert.deepStrictEqual(data, [{ foo1: "bar1" }, { foo2: "bar2" }]);
     });
 
     it("write should persist correct data", async () => {
       fileContent = "";
       fileExists = false;
-      await localFileStorage.write({ key1: "A", key2: "B" });
+      await localFileStorage.write("key1", { foo1: "bar1" });
       assert.strictEqual(fileExists, true);
-      assert.deepStrictEqual(JSON.parse(fileContent), { key1: "A", key2: "B" });
+      assert.deepStrictEqual(JSON.parse(fileContent), { key1: { foo1: "bar1" } });
     });
 
     it("write should override data", async () => {
       fileContent = `{
-        "key1": "1",
-        "key2": "2",
-        "key3": "3"
+        "key1": { "foo1": "bar1" },
+        "key2": { "foo2": "bar2" }
       }`;
       fileExists = true;
-      await localFileStorage.write({ key1: "A", key2: "B" });
+      await localFileStorage.write("key1", { fooX: "barX" });
       assert.strictEqual(fileExists, true);
-      assert.deepStrictEqual(JSON.parse(fileContent), { key1: "A", key2: "B", key3: "3" });
+      assert.deepStrictEqual(JSON.parse(fileContent), {
+        key1: { fooX: "barX" },
+        key2: { foo2: "bar2" },
+      });
     });
 
-    it("delete not implemented", async () => {
-      let error: Error | undefined = undefined;
-      try {
-        await localFileStorage.delete(["key"]);
-      } catch (err: unknown) {
-        error = err as Error;
-      }
-      assert.isDefined(error);
-      assert.strictEqual(error?.message, "Method not implemented.");
+    it("delete should ignore if file not exist", async () => {
+      fileContent = "";
+      fileExists = false;
+      await localFileStorage.delete("key");
+      assert.isFalse(fileExists);
+    });
+
+    it("delete should remove correct data", async () => {
+      fileContent = `{
+        "key1": { "foo1": "bar1" },
+        "key2": { "foo2": "bar2" }
+      }`;
+      fileExists = true;
+      await localFileStorage.delete("key1");
+      assert.strictEqual(fileExists, true);
+      assert.deepStrictEqual(JSON.parse(fileContent), { key2: { foo2: "bar2" } });
+    });
+
+    it("delete should ignore if key not found", async () => {
+      fileContent = `{
+        "key1": { "foo1": "bar1" }
+      }`;
+      fileExists = true;
+      await localFileStorage.delete("key2");
+      assert.strictEqual(fileExists, true);
+      assert.deepStrictEqual(JSON.parse(fileContent), { key1: { foo1: "bar1" } });
     });
   });
 
   describe("ConversationReferenceStore Tests - Node", () => {
-    const storageKey = "test-storage-key";
     const storage = new TestStorage();
-    const testStore = new ConversationReferenceStore(storage, storageKey);
+    const testStore = new ConversationReferenceStore(storage);
 
     it("getAll should return correct data", async () => {
       storage.items = {};
-      storage.items[storageKey] = {
-        _a_1: {
+      storage.items["_a_1"] = {
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      };
+      const data = await testStore.getAll();
+      assert.deepStrictEqual(data, [
+        {
           conversation: {
             id: "1",
             tenantId: "a",
           },
-        },
-      };
-      const data = await testStore.getAll();
-      assert.deepStrictEqual(
-        data,
-        new Map([
-          [
-            "_a_1",
-            {
-              conversation: {
-                id: "1",
-                tenantId: "a",
-              },
-            } as ConversationReference,
-          ],
-        ])
-      );
+        } as ConversationReference,
+      ]);
     });
 
     it("getAll should return empty data if storage is empty", async () => {
       storage.items = {};
       const data = await testStore.getAll();
-      assert.deepStrictEqual(data, new Map());
+      assert.strictEqual(data.length, 0);
     });
 
     it("set should persist correct data", async () => {
@@ -160,7 +184,7 @@ describe("Notification.Storage Tests - Node", () => {
           tenantId: "a",
         },
       } as ConversationReference);
-      assert.deepStrictEqual(storage.items[storageKey], {
+      assert.deepStrictEqual(storage.items, {
         _a_1: {
           conversation: {
             id: "1",
@@ -172,12 +196,10 @@ describe("Notification.Storage Tests - Node", () => {
 
     it("delete should remove correct data", async () => {
       storage.items = {};
-      storage.items[storageKey] = {
-        _a_1: {
-          conversation: {
-            id: "1",
-            tenantId: "a",
-          },
+      storage.items["_a_1"] = {
+        conversation: {
+          id: "1",
+          tenantId: "a",
         },
       };
       await testStore.delete({
@@ -186,7 +208,7 @@ describe("Notification.Storage Tests - Node", () => {
           tenantId: "a",
         },
       } as ConversationReference);
-      assert.deepStrictEqual(storage.items[storageKey], {});
+      assert.deepStrictEqual(storage.items, {});
     });
   });
 });

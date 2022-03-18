@@ -15,7 +15,6 @@ import { Dialog } from 'botbuilder-dialogs';
 import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
-import { Storage as Storage_2 } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
@@ -45,7 +44,8 @@ export class BotNotification {
 
 // @beta
 export interface BotNotificationOptions {
-    storage?: Storage_2;
+    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
+    storage?: NotificationTargetStorage;
 }
 
 // @beta

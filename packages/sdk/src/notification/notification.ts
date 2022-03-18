@@ -8,14 +8,13 @@ import {
   ChannelInfo,
   ConversationParameters,
   ConversationReference,
-  Storage,
   TeamsChannelAccount,
   TeamsInfo,
   TurnContext,
 } from "botbuilder";
 import { ConnectorClient } from "botframework-connector";
 import * as path from "path";
-import { NotificationTarget, NotificationTargetType } from "./interface";
+import { NotificationTarget, NotificationTargetStorage, NotificationTargetType } from "./interface";
 import { NotificationMiddleware } from "./middleware";
 import { ConversationReferenceStore, LocalFileStorage } from "./storage";
 import * as utils from "./utils";
@@ -489,12 +488,10 @@ export interface BotNotificationOptions {
    *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
    *
    * It's recommended to use your own shared storage for production environment.
-   * You could also use the `BlobsStorage` provided by botbuilder-azure-blobs
-   * or `CosmosDbPartitionedStorage` provided by botbuilder-azure.
    *
    * @beta
    */
-  storage?: Storage;
+  storage?: NotificationTargetStorage;
 }
 
 /**
@@ -522,7 +519,6 @@ export interface BotNotificationOptions {
  * @beta
  */
 export class BotNotification {
-  private static readonly conversationReferenceStoreKey = "teamfxNotificationTargets";
   private static conversationReferenceStore: ConversationReferenceStore;
   private static adapter: BotFrameworkAdapter;
 
@@ -543,10 +539,7 @@ export class BotNotification {
       new LocalFileStorage(
         path.resolve(process.env.RUNNING_ON_AZURE === "1" ? process.env.TEMP ?? "./" : "./")
       );
-    BotNotification.conversationReferenceStore = new ConversationReferenceStore(
-      storage,
-      BotNotification.conversationReferenceStoreKey
-    );
+    BotNotification.conversationReferenceStore = new ConversationReferenceStore(storage);
     BotNotification.adapter = adapter.use(
       new NotificationMiddleware({
         conversationReferenceStore: BotNotification.conversationReferenceStore,

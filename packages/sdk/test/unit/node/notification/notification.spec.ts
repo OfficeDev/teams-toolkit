@@ -369,20 +369,18 @@ describe("Notification Tests - Node", () => {
         storage: storage,
       });
       storage.items = {
-        teamfxNotificationTargets: {
-          _a_1: {
-            channelId: "1",
-            conversation: {
-              id: "1",
-              tenantId: "a",
-            },
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
           },
-          _a_2: {
-            channelId: "2",
-            conversation: {
-              id: "2",
-              tenantId: "a",
-            },
+        },
+        _a_2: {
+          channelId: "2",
+          conversation: {
+            id: "2",
+            tenantId: "a",
           },
         },
       };

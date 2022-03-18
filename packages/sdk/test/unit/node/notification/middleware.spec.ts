@@ -12,7 +12,7 @@ describe("Notification.Middleware Tests - Node", () => {
   const sandbox = sinon.createSandbox();
   const testStorage = new TestStorage();
   const middleware = new NotificationMiddleware({
-    conversationReferenceStore: new ConversationReferenceStore(testStorage, "test-storage-key"),
+    conversationReferenceStore: new ConversationReferenceStore(testStorage),
   });
 
   beforeEach(() => {
@@ -52,13 +52,11 @@ describe("Notification.Middleware Tests - Node", () => {
     };
     await middleware.onTurn(testContext as any, async () => {});
     assert.deepStrictEqual(testStorage.items, {
-      "test-storage-key": {
-        _a_1: {
-          channelId: "1",
-          conversation: {
-            id: "1",
-            tenantId: "a",
-          },
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
         },
       },
     });

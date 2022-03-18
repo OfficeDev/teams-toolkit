@@ -6,8 +6,11 @@ import { Button } from "@fluentui/react-northstar";
 import { Design } from './Design';
 import { PersonCardFluentUI } from './PersonCardFluentUI';
 import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
+import { useContext } from "react";
+import { TeamsFxContext } from "../Context";
 
 export function Graph() {
+  const { teamsfx } = useContext(TeamsFxContext);
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
@@ -27,7 +30,7 @@ export function Graph() {
       }
       return { profile, photoUrl };
     },
-    { scope: ["User.Read"] }
+    { scope: ["User.Read"], teamsfx: teamsfx }
   );
 
   return (

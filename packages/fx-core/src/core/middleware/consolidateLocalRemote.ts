@@ -176,41 +176,24 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       );
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
+      await fs.ensureDir(appDir);
+      const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
+      await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifest);
     } else {
       const remoteManifestFile = path.join(
         inputs.projectPath as string,
         "templates",
         "appPackage",
-        "template.remote.manifest.json"
+        "manifest.remote.template.json"
       );
       const remoteManifestExist = await fs.pathExists(remoteManifestFile);
       if (remoteManifestExist) {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifestStart);
-        const manifestString = (await fs.readFile(remoteManifestFile)).toString();
-        manifest = JSON.parse(manifestString);
+        const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
+        await fs.copyFile(remoteManifestFile, manifestTemplatePath);
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifest);
-      } else {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddAzureManifestStart);
-        const solutionSettings: AzureSolutionSettings =
-          projectSettings?.solutionSettings as AzureSolutionSettings;
-        const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
-        const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-        const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
-        const hasAad = isAADEnabled(solutionSettings);
-        manifest = await createManifest(
-          projectSettings.appName,
-          hasFrontend,
-          hasBot,
-          hasMessageExtension,
-          false,
-          hasAad
-        );
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddAzureManifest);
       }
-      await fs.ensureDir(appDir);
-      const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
-      await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
     }
     fileList.push(
       path.join(inputs.projectPath as string, "templates", "appPackage", "template.manifest.json")

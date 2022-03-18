@@ -276,7 +276,7 @@ function launchBotM365(
     name: `Launch Bot in ${hubName} (${browserName})`,
     type: browserType,
     request: "launch",
-    url: getBotLaunchUrl(false, hubName),
+    url: getBotLaunchUrl(true, hubName),
     presentation: {
       group: "all",
       hidden: true,

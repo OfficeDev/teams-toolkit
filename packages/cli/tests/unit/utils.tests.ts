@@ -40,7 +40,6 @@ import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { environmentManager, PluginNames } from "@microsoft/teamsfx-core";
-import { iteratee } from "lodash";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [

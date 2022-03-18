@@ -13,8 +13,7 @@
           "CopyOption": "LangIDOnName",
           "OutputPath": "packages\\fx-core\\resource"
         }
-      ],
-      "CloneLanguageSet": "VS_Main_Languages"
+      ]
     }
   ]
 }

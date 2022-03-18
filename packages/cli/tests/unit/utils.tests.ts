@@ -40,6 +40,7 @@ import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { environmentManager, PluginNames } from "@microsoft/teamsfx-core";
+import { iteratee } from "lodash";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -677,5 +678,12 @@ describe("Utils Tests", function () {
 
   it("getVersion", async () => {
     getVersion();
+  });
+
+  describe("toLocaleLowerCase", () => {
+    it("should work for input of type string and array of string", () => {
+      expect(toLocaleLowerCase("AB")).equals("ab");
+      expect(toLocaleLowerCase(["Ab", "BB"])).deep.equals(["ab", "bb"]);
+    });
   });
 });

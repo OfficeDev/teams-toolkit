@@ -240,12 +240,17 @@ export function NonExistEnvNameError(env: string): UserError {
     CoreSource,
     "NonExistEnvNameError",
     getDefaultString("error.NonExistEnvNameError", env),
-    getLocalizedString("error.ProjectEnvAlreadyExistError", env)
+    getLocalizedString("error.NonExistEnvNameError", env)
   );
 }
 
 export function ModifiedSecretError(): UserError {
-  return new UserError("ModifiedSecretError", "The secret file has been changed.", CoreSource);
+  return new UserError(
+    CoreSource,
+    "ModifiedSecretError",
+    getDefaultString("error.ModifiedSecretError"),
+    getLocalizedString("error.ModifiedSecretError")
+  );
 }
 
 export class LoadSolutionError extends SystemError {

@@ -239,6 +239,7 @@
   "error.TaskNotSupportError": "Operation is not supported: %s.",
   "error.InvalidEnvConfigError": "The configuration %s is invalid, details: %s.",
   "error.NonExistEnvNameError": "Can not find environment %s.",
+  "error.ModifiedSecretError": "The secret file has been changed.",
   "error.frontend.UnauthenticatedError": "Failed to get user login information.",
   "error.frontend.InvalidConfigError": "Get invalid %s.",
   "error.frontend.CheckResourceGroupError": "Failed to check resource group existence.",

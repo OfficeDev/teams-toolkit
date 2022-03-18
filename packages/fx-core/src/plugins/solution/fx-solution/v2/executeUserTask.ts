@@ -735,6 +735,22 @@ export function canAddSso(
     );
   }
 
+  // Can only add sso when capability includes Tab, Bot, Messaging Extension, etc.
+  if (
+    !solutionSettings.capabilities.includes(TabOptionItem.id) &&
+    !solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !solutionSettings.capabilities.includes(MessageExtensionItem.id)
+  ) {
+    const e = new UserError(
+      SolutionError.AddSsoNotSupported,
+      getLocalizedString("core.addSso.needCapability"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+    );
+  }
+
   // Check whether SSO is enabled
   const activeResourcePlugins = solutionSettings.activeResourcePlugins;
   const containSsoItem = solutionSettings.capabilities.includes(SsoItem.id);
@@ -785,10 +801,6 @@ export async function addSso(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
-    //aad need this file
-    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-      spaces: 4,
-    });
   }
 
   // Check whether can add sso

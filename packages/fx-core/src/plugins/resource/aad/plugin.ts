@@ -43,8 +43,6 @@ import {
   ResourceAccess,
 } from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
-import { IPermissionList } from "./interfaces/IPermissionList";
-import * as jsonPermissionList from "./permissions/permissions.json";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -53,6 +51,7 @@ import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 import { isConfigUnifyEnabled } from "../../../common/tools";
+import { getPermissionMap } from "./permissions";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -475,7 +474,7 @@ export class AadAppForTeamsImpl {
       return undefined;
     }
 
-    const map = AadAppForTeamsImpl.getPermissionMap();
+    const map = getPermissionMap();
 
     const requiredResourceAccessList: RequiredResourceAccess[] = [];
 
@@ -587,29 +586,5 @@ export class AadAppForTeamsImpl {
     });
 
     return requiredResourceAccessList;
-  }
-
-  private static getPermissionMap(): any {
-    const permissionList = jsonPermissionList as IPermissionList;
-    const map: any = {};
-    permissionList.value.forEach((permission) => {
-      const resourceId = permission.appId;
-      map[resourceId] = {};
-      map[resourceId].scopes = {};
-      map[resourceId].roles = {};
-
-      map[permission.displayName] = {};
-      map[permission.displayName].id = resourceId;
-
-      permission.oauth2PermissionScopes.forEach((scope) => {
-        map[resourceId].scopes[scope.value] = scope.id;
-      });
-
-      permission.appRoles.forEach((appRole) => {
-        map[resourceId].roles[appRole.value] = appRole.id;
-      });
-    });
-
-    return map;
   }
 }

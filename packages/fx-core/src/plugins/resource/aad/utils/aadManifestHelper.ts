@@ -1,6 +1,10 @@
+import { TeamsClientId } from "../../../../common/constants";
 import { AADApplication } from "../interfaces/AADApplication";
 import { AADManifest } from "../interfaces/AADManifest";
-
+import isUUID from "validator/lib/isUUID";
+import { getPermissionMap } from "../permissions";
+import { AadManifestErrorMessage } from "../errors";
+import * as util from "util";
 export class AadManifestHelper {
   public static manifestToApplication(manifest: AADManifest): AADApplication {
     const result: AADApplication = {
@@ -151,5 +155,105 @@ export class AadManifestHelper {
     };
 
     return result;
+  }
+
+  public static validateManifest(manifest: AADManifest): string {
+    let warningMsg = "";
+
+    // if manifest doesn't contain name property or name is empty
+    if (!manifest.name || manifest.name === "") {
+      warningMsg += AadManifestErrorMessage.NameIsMissing;
+    }
+
+    // if manifest doesn't contain signInAudience property
+    if (!manifest.signInAudience) {
+      warningMsg += AadManifestErrorMessage.SignInAudienceIsMissing;
+    }
+
+    // if manifest doesn't contain requiredResourceAccess property
+    if (!manifest.requiredResourceAccess) {
+      warningMsg += AadManifestErrorMessage.RequiredResourceAccessIsMissing;
+    }
+
+    // if manifest doesn't contain oauth2Permissions or oauth2Permissions length is 0
+    if (!manifest.oauth2Permissions || manifest.oauth2Permissions.length === 0) {
+      warningMsg += AadManifestErrorMessage.Oauth2PermissionsIsMissing;
+    }
+
+    // if manifest doesn't contain preAuthorizedApplications
+    if (!manifest.preAuthorizedApplications) {
+      warningMsg += AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing;
+    } else {
+      // if preAuthorizedApplications doesn't contain teams mobile/desktop client id
+      if (
+        !manifest.preAuthorizedApplications.find(
+          (item) => item.appId === TeamsClientId.MobileDesktop
+        )
+      ) {
+        warningMsg += AadManifestErrorMessage.TeamsMobileDesktopClientIdIsMissing;
+      }
+
+      // if preAuthorizedApplications doesn't contain teams web client id
+      if (!manifest.preAuthorizedApplications.find((item) => item.appId === TeamsClientId.Web)) {
+        warningMsg += AadManifestErrorMessage.TeamsWebClientIdIsMissing;
+      }
+    }
+
+    // if accessTokenAcceptedVersion in manifest is not 2
+    if (manifest.accessTokenAcceptedVersion !== 2) {
+      warningMsg += AadManifestErrorMessage.AccessTokenAcceptedVersionIs1;
+    }
+
+    // if manifest doesn't contain optionalClaims or access token doesn't contain idtyp clams
+    if (!manifest.optionalClaims) {
+      warningMsg += AadManifestErrorMessage.OptionalClaimsIsMissing;
+    } else if (!manifest.optionalClaims.accessToken.find((item) => item.name === "idtyp")) {
+      warningMsg += AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim;
+    }
+
+    return warningMsg;
+  }
+
+  public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {
+    const map = getPermissionMap();
+    manifest.requiredResourceAccess.forEach((requiredResourceAccessItem) => {
+      const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
+      let resourceId = resourceIdOrName;
+      if (!isUUID(resourceIdOrName)) {
+        resourceId = map[resourceIdOrName].id;
+        if (!resourceId) {
+          throw new Error(
+            util.format(AadManifestErrorMessage.UnknownResourceAppId, resourceIdOrName)
+          );
+        }
+        requiredResourceAccessItem.resourceAppId = resourceId;
+      }
+
+      requiredResourceAccessItem.resourceAccess.forEach((resourceAccessItem) => {
+        const resourceAccessIdOrName = resourceAccessItem.id;
+        if (!isUUID(resourceAccessIdOrName)) {
+          let resourceAccessId;
+          if (resourceAccessItem.type === "Scope") {
+            resourceAccessId = map[resourceId].scopes[resourceAccessItem.id];
+          } else if (resourceAccessItem.type === "Role") {
+            resourceAccessId = map[resourceId].roles[resourceAccessItem.id];
+          } else {
+            throw new Error(
+              util.format(
+                AadManifestErrorMessage.UnknownResourceAccessType,
+                resourceAccessItem.type
+              )
+            );
+          }
+
+          if (!resourceAccessId) {
+            throw new Error(
+              util.format(AadManifestErrorMessage.UnknownResourceAccessId, resourceAccessItem.id)
+            );
+          }
+          resourceAccessItem.id = resourceAccessId;
+        }
+      });
+    });
   }
 }

@@ -4,6 +4,8 @@
 import "mocha";
 import * as chai from "chai";
 import { AadManifestHelper } from "../../../../../src/plugins/resource/aad/utils/aadManifestHelper";
+import { AADManifest } from "../../../../../src/plugins/resource/aad/interfaces/AADManifest";
+import { AadManifestErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
 
 describe("AAD manifest helper Test", () => {
   it("manifestToApplication", async () => {
@@ -15,7 +17,126 @@ describe("AAD manifest helper Test", () => {
     const aadManifest = AadManifestHelper.applicationToManifest(fakeAadApp);
     chai.expect(aadManifest).to.deep.equal(fakeAadManifest);
   });
+
+  it("validateManifest with no warning", async () => {
+    const warning = AadManifestHelper.validateManifest(fakeAadManifest);
+    chai.expect(warning).to.be.empty;
+  });
+
+  it("validateManifest with invalid manifest", async () => {
+    const warning = AadManifestHelper.validateManifest(invalidAadManifest);
+    chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.Oauth2PermissionsIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.TeamsMobileDesktopClientIdIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.TeamsWebClientIdIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.AccessTokenAcceptedVersionIs1);
+    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim);
+  });
+
+  it("processRequiredResourceAccessInManifest with id", async () => {
+    const manifestWithId: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "00000003-0000-0000-c000-000000000000",
+          resourceAccess: [
+            {
+              id: "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+              type: "Scope",
+            },
+          ],
+        },
+        {
+          resourceAppId: "00000003-0000-0ff1-ce00-000000000000",
+          resourceAccess: [
+            {
+              id: "d13f72ca-a275-4b96-b789-48ebcc4da984",
+              type: "Role",
+            },
+          ],
+        },
+      ],
+    };
+
+    AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithId);
+    chai
+      .expect(manifestWithId.requiredResourceAccess[0].resourceAppId)
+      .equal("00000003-0000-0000-c000-000000000000");
+    chai
+      .expect(manifestWithId.requiredResourceAccess[0].resourceAccess[0].id)
+      .equal("e1fe6dd8-ba31-4d61-89e7-88639da4683d");
+    chai
+      .expect(manifestWithId.requiredResourceAccess[1].resourceAppId)
+      .equal("00000003-0000-0ff1-ce00-000000000000");
+    chai
+      .expect(manifestWithId.requiredResourceAccess[1].resourceAccess[0].id)
+      .equal("d13f72ca-a275-4b96-b789-48ebcc4da984");
+  });
+
+  it("processRequiredResourceAccessInManifest with string", async () => {
+    const manifestWithString: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "Microsoft Graph",
+          resourceAccess: [
+            {
+              id: "User.Read",
+              type: "Scope",
+            },
+          ],
+        },
+        {
+          resourceAppId: "Office 365 SharePoint Online",
+          resourceAccess: [
+            {
+              id: "Sites.Read.All",
+              type: "Role",
+            },
+          ],
+        },
+      ],
+    };
+    AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithString);
+    chai
+      .expect(manifestWithString.requiredResourceAccess[0].resourceAppId)
+      .equal("00000003-0000-0000-c000-000000000000");
+    chai
+      .expect(manifestWithString.requiredResourceAccess[0].resourceAccess[0].id)
+      .equal("e1fe6dd8-ba31-4d61-89e7-88639da4683d");
+    chai
+      .expect(manifestWithString.requiredResourceAccess[1].resourceAppId)
+      .equal("00000003-0000-0ff1-ce00-000000000000");
+    chai
+      .expect(manifestWithString.requiredResourceAccess[1].resourceAccess[0].id)
+      .equal("d13f72ca-a275-4b96-b789-48ebcc4da984");
+  });
 });
+
+const invalidAadManifest: AADManifest = {
+  id: "",
+  appId: "",
+  name: "",
+  accessTokenAcceptedVersion: 1,
+  signInAudience: "",
+  optionalClaims: {
+    idToken: [],
+    accessToken: [],
+    saml2Token: [],
+  },
+  requiredResourceAccess: [],
+  oauth2Permissions: [],
+  preAuthorizedApplications: [],
+  identifierUris: [],
+  replyUrlsWithType: [],
+  addIns: [],
+  appRoles: [],
+  informationalUrls: {},
+  keyCredentials: [],
+  knownClientApplications: [],
+  oauth2AllowIdTokenImplicitFlow: false,
+  oauth2AllowImplicitFlow: false,
+  tags: [],
+};
 
 const fakeAadApp = {
   id: "fake-id",

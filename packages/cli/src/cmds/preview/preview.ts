@@ -16,6 +16,7 @@ import {
   LogLevel,
   ok,
   Platform,
+  ProjectSettings,
   Result,
   SystemError,
   UnknownError,
@@ -311,9 +312,8 @@ export default class Preview extends YargsCommand {
 
       // check deps
       const envCheckerResult = await this.handleDependences(
-        includeBackend,
-        includeBot,
-        includeFuncHostedBot,
+        projectSettings,
+        localEnvManager,
         depsManager
       );
       if (envCheckerResult.isErr()) {
@@ -936,17 +936,14 @@ export default class Preview extends YargsCommand {
   }
 
   private async handleDependences(
-    hasBackend: boolean,
-    hasBot: boolean,
-    hasFuncHostedBot: boolean,
+    projectSettings: ProjectSettings,
+    localEnvManager: LocalEnvManager,
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     let shouldContinue = true;
+    const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await CliDepsChecker.getEnabledDeps(
-      [DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
-      hasBackend,
-      hasBot,
-      hasFuncHostedBot
+      availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
     );
 
     for (const dep of enabledDeps) {

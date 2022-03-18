@@ -6,7 +6,7 @@ import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { FxBotPluginResultFactory } from "./result";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export const ErrorType = {
   USER: "User",
@@ -77,7 +77,7 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
 
 export class PluginError extends Error {
   public name: string;
-  public details: string;
+  public details: [string, string];
   public suggestions: string[];
   public errorType: ErrorType;
   public innerError?: InnerError;
@@ -86,12 +86,12 @@ export class PluginError extends Error {
   constructor(
     type: ErrorType,
     name: string,
-    details: string,
+    details: [string, string],
     suggestions: string[],
     innerError?: InnerError,
     helpLink?: string
   ) {
-    super(details);
+    super(details[0]);
     this.name = name;
     this.details = details;
     this.suggestions = suggestions;
@@ -102,16 +102,23 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    let msg = `${this.message} `;
+    let msg = `${this.message[0]} `;
     if (this.suggestions.length > 0) {
       msg += getLocalizedString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
+    }
+    return msg;
+  }
+  genDisplayMessage(): string {
+    let msg = `${this.message[1]} `;
+    if (this.suggestions.length > 0) {
+      msg += getDefaultString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
     }
     return msg;
   }
 }
 
 export class PreconditionError extends PluginError {
-  constructor(message: string, suggestions: string[]) {
+  constructor(message: [string, string], suggestions: string[]) {
     super(ErrorType.USER, ErrorNames.PRECONDITION_ERROR, message, suggestions);
   }
 }
@@ -145,7 +152,7 @@ export class AADAppCheckingError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.CALL_APPSTUDIO_API_ERROR,
-      Messages.FailToCallAppStudioForCheckingAADApp,
+      Messages.FailToCallAppStudioForCheckingAADApp as [string, string],
       [Messages.RetryTheCurrentStep],
       innerError
     );
@@ -171,7 +178,10 @@ export class TemplateZipFallbackError extends PluginError {
     super(
       ErrorType.USER,
       "TemplateZipFallbackError",
-      "Failed to download zip package and open local zip package.",
+      [
+        getDefaultString("plugins.bot.TemplateZipFallbackError"),
+        getLocalizedString("plugins.bot.TemplateZipFallbackError"),
+      ],
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
     );
   }
@@ -206,7 +216,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
-      Messages.TheSubsNotRegisterToUseBotService,
+      Messages.TheSubsNotRegisterToUseBotService as [string, string],
       [Messages.RegisterYouSubsToUseBot, Messages.ClickHelpButtonForDetails],
       undefined,
       FxBotPluginResultFactory.defaultHelpLink
@@ -216,11 +226,16 @@ export class MissingSubscriptionRegistrationError extends PluginError {
 
 export class UnzipError extends PluginError {
   constructor(path?: string) {
-    super(ErrorType.USER, "UnzipError", "Failed to unzip templates and write to disk.", [
-      Messages.CheckOutputLogAndTryToFix,
-      Messages.ReopenWorkingDir(path),
-      Messages.RetryTheCurrentStep,
-    ]);
+    super(
+      ErrorType.USER,
+      "UnzipError",
+      [getDefaultString("plugins.bot.UnzipError"), getLocalizedString("plugins.bot.UnzipError")],
+      [
+        Messages.CheckOutputLogAndTryToFix,
+        Messages.ReopenWorkingDir(path),
+        Messages.RetryTheCurrentStep,
+      ]
+    );
   }
 }
 
@@ -334,7 +349,7 @@ export class InvalidBotDataError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.INVALID_BOT_DATA_ERROR,
-      isErrorWithMessage(innerError) ? innerError.message : "",
+      isErrorWithMessage(innerError) ? [innerError.message, innerError.message] : ["", ""],
       [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
       innerError
     );
@@ -346,7 +361,10 @@ export class RegisterResourceProviderError extends PluginError {
     super(
       ErrorType.USER,
       "RegisterResourceProviderError",
-      "Failed to register required resource provider for your app.",
+      [
+        getDefaultString("plugins.bot.RegisterResourceProviderError"),
+        getLocalizedString("plugins.bot.RegisterResourceProviderError"),
+      ],
       [
         Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
         Messages.CheckOutputLogAndTryToFix,

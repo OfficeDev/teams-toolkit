@@ -5,7 +5,7 @@ import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 import { ConfigFolderName, FxError } from "@microsoft/teamsfx-api";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export enum ErrorType {
   User,
@@ -39,15 +39,19 @@ export const tips = {
 };
 
 export class ErrorMessages {
-  static readonly FailedSaveEnv = (envPath: string) =>
-    getLocalizedString("error.frontend.FailedSaveEnv", envPath);
-  static readonly FailedLoadEnv = (envPath: string) =>
-    getLocalizedString("error.frontend.FailedLoadEnv", envPath);
+  static readonly FailedSaveEnv = (envPath: string) => [
+    getDefaultString("error.frontend.FailedSaveEnv", envPath),
+    getLocalizedString("error.frontend.FailedSaveEnv", envPath),
+  ];
+  static readonly FailedLoadEnv = (envPath: string) => [
+    getDefaultString("error.frontend.FailedLoadEnv", envPath),
+    getLocalizedString("error.frontend.FailedLoadEnv", envPath),
+  ];
 }
 
 export class FrontendPluginError extends Error {
   public code: string;
-  public message: string;
+  public messages: [string, string];
   public suggestions: string[];
   public errorType: ErrorType;
   public helpLink?: string;
@@ -56,22 +60,32 @@ export class FrontendPluginError extends Error {
   constructor(
     errorType: ErrorType,
     code: string,
-    message: string,
+    messages: [string, string],
     suggestions: string[],
     helpLink?: string
   ) {
-    super(message);
+    super(messages[0]);
     this.code = code;
-    this.message = message;
+    this.messages = messages;
     this.suggestions = suggestions;
     this.errorType = errorType;
     this.helpLink = helpLink;
   }
 
   getMessage(): string {
-    return getLocalizedString("plugins.baseErrorMessage", this.message, this.suggestions.join(" "));
+    return getLocalizedString(
+      "plugins.baseErrorMessage",
+      this.message[0],
+      this.suggestions.join(" ")
+    );
   }
-
+  getDefaultMessage(): string {
+    return getDefaultString(
+      "plugins.baseErrorMessage",
+      this.message[1],
+      this.suggestions.join(" ")
+    );
+  }
   setInnerError(error: Error): void {
     this.innerError = error;
   }
@@ -86,7 +100,10 @@ export class UnauthenticatedError extends FrontendPluginError {
     super(
       ErrorType.User,
       "UnauthenticatedError",
-      getLocalizedString("error.frontend.UnauthenticatedError"),
+      [
+        getDefaultString("error.frontend.UnauthenticatedError"),
+        getLocalizedString("error.frontend.UnauthenticatedError"),
+      ],
       [tips.doLogin]
     );
   }
@@ -98,7 +115,10 @@ export class InvalidConfigError extends FrontendPluginError {
     super(
       ErrorType.User,
       "InvalidConfigError",
-      `${getLocalizedString("error.frontend.InvalidConfigError", key)}${detailedMsg}`,
+      [
+        `${getDefaultString("error.frontend.InvalidConfigError", key)}${detailedMsg}`,
+        `${getLocalizedString("error.frontend.InvalidConfigError", key)}${detailedMsg}`,
+      ],
       [tips.restoreEnvironment]
     );
   }
@@ -109,7 +129,10 @@ export class CheckResourceGroupError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CheckResourceGroupError",
-      getLocalizedString("error.frontend.CheckResourceGroupError"),
+      [
+        getDefaultString("error.frontend.CheckResourceGroupError"),
+        getLocalizedString("error.frontend.CheckResourceGroupError"),
+      ],
       [tips.checkLog]
     );
   }
@@ -120,7 +143,10 @@ export class NoResourceGroupError extends FrontendPluginError {
     super(
       ErrorType.User,
       "NoResourceGroupError",
-      getLocalizedString("error.frontend.NoResourceGroupError"),
+      [
+        getDefaultString("error.frontend.NoResourceGroupError"),
+        getLocalizedString("error.frontend.NoResourceGroupError"),
+      ],
       [tips.ensureResourceGroup]
     );
   }
@@ -131,7 +157,10 @@ export class CheckStorageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CheckStorageError",
-      getLocalizedString("error.frontend.CheckStorageError"),
+      [
+        getDefaultString("error.frontend.CheckStorageError"),
+        getLocalizedString("error.frontend.CheckStorageError"),
+      ],
       [tips.checkSystemTime, tips.checkLog]
     );
   }
@@ -139,9 +168,15 @@ export class CheckStorageError extends FrontendPluginError {
 
 export class NoStorageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NoStorageError", getLocalizedString("error.frontend.NoStorageError"), [
-      tips.reProvision,
-    ]);
+    super(
+      ErrorType.User,
+      "NoStorageError",
+      [
+        getDefaultString("error.frontend.NoStorageError"),
+        getLocalizedString("error.frontend.NoStorageError"),
+      ],
+      [tips.reProvision]
+    );
   }
 }
 
@@ -150,7 +185,10 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
     super(
       ErrorType.User,
       "StaticWebsiteDisableError",
-      getLocalizedString("error.frontend.StaticWebsiteDisabledError"),
+      [
+        getDefaultString("error.frontend.StaticWebsiteDisabledError"),
+        getLocalizedString("error.frontend.StaticWebsiteDisabledError"),
+      ],
       [tips.reProvision],
       FrontendPluginInfo.HelpLink
     );
@@ -162,7 +200,10 @@ export class InvalidStorageNameError extends FrontendPluginError {
     super(
       ErrorType.User,
       "InvalidStorageNameError",
-      getLocalizedString("error.frontend.InvalidStorageNameError"),
+      [
+        getDefaultString("error.frontend.InvalidStorageNameError"),
+        getLocalizedString("error.frontend.InvalidStorageNameError"),
+      ],
       [tips.ensureAppNameValid]
     );
   }
@@ -173,7 +214,10 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
     super(
       ErrorType.User,
       "EnableStaticWebsiteError",
-      getLocalizedString("error.frontend.EnableStaticWebsiteError"),
+      [
+        getDefaultString("error.frontend.EnableStaticWebsiteError"),
+        getLocalizedString("error.frontend.EnableStaticWebsiteError"),
+      ],
       [tips.checkSystemTime, tips.checkStoragePermissions],
       FrontendPluginInfo.HelpLink
     );
@@ -185,7 +229,10 @@ export class ClearStorageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "ClearStorageError",
-      getLocalizedString("error.frontend.ClearStorageError"),
+      [
+        getDefaultString("error.frontend.ClearStorageError"),
+        getLocalizedString("error.frontend.ClearStorageError"),
+      ],
       [tips.checkSystemTime, tips.checkNetwork]
     );
   }
@@ -196,10 +243,16 @@ export class UploadToStorageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "UploadToStorageError",
-      getLocalizedString(
-        "error.frontend.UploadToStorageError",
-        path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath)
-      ),
+      [
+        getDefaultString(
+          "error.frontend.UploadToStorageError",
+          path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath)
+        ),
+        getLocalizedString(
+          "error.frontend.UploadToStorageError",
+          path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath)
+        ),
+      ],
       [tips.checkSystemTime, tips.checkNetwork]
     );
   }
@@ -210,7 +263,10 @@ export class GetContainerError extends FrontendPluginError {
     super(
       ErrorType.User,
       "GetContainerError",
-      getLocalizedString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+      [
+        getDefaultString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+        getLocalizedString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+      ],
       [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork]
     );
   }
@@ -221,7 +277,10 @@ export class UnknownScaffoldError extends FrontendPluginError {
     super(
       ErrorType.System,
       "UnknownScaffoldError",
-      getLocalizedString("error.frontend.UnknownScaffoldError"),
+      [
+        getDefaultString("error.frontend.UnknownScaffoldError"),
+        getLocalizedString("error.frontend.UnknownScaffoldError"),
+      ],
       [tips.checkLog]
     );
   }
@@ -232,7 +291,10 @@ export class TemplateZipFallbackError extends FrontendPluginError {
     super(
       ErrorType.System,
       "TemplateZipFallbackError",
-      getLocalizedString("error.frontend.TemplateZipFallbackError"),
+      [
+        getDefaultString("error.frontend.TemplateZipFallbackError"),
+        getLocalizedString("error.frontend.TemplateZipFallbackError"),
+      ],
       [tips.checkLog, tips.checkNetwork]
     );
   }
@@ -243,7 +305,10 @@ export class UnzipTemplateError extends FrontendPluginError {
     super(
       ErrorType.User,
       "UnzipTemplateError",
-      getLocalizedString("error.frontend.UnzipTemplateError"),
+      [
+        getDefaultString("error.frontend.UnzipTemplateError"),
+        getLocalizedString("error.frontend.UnzipTemplateError"),
+      ],
       [tips.checkFsPermissions]
     );
   }
@@ -251,7 +316,7 @@ export class UnzipTemplateError extends FrontendPluginError {
 
 export class FileSystemError extends FrontendPluginError {
   constructor(message: string) {
-    super(ErrorType.System, "FileSystemError", message, [tips.checkLog]);
+    super(ErrorType.System, "FileSystemError", [message, message], [tips.checkLog]);
   }
 }
 
@@ -260,7 +325,10 @@ export class NoBuildPathError extends FrontendPluginError {
     super(
       ErrorType.User,
       "NoBuildPathError",
-      getLocalizedString("error.frontend.NoBuildPathError", FrontendPathInfo.BuildFolderName),
+      [
+        getDefaultString("error.frontend.NoBuildPathError", FrontendPathInfo.BuildFolderName),
+        getLocalizedString("error.frontend.NoBuildPathError", FrontendPathInfo.BuildFolderName),
+      ],
       [tips.doBuild, tips.ensureBuildPath]
     );
   }
@@ -268,19 +336,29 @@ export class NoBuildPathError extends FrontendPluginError {
 
 export class BuildError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "BuildError", getLocalizedString("error.frontend.BuildError"), [
-      tips.doBuild,
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "BuildError",
+      [
+        getDefaultString("error.frontend.BuildError"),
+        getLocalizedString("error.frontend.BuildError"),
+      ],
+      [tips.doBuild, tips.checkLog]
+    );
   }
 }
 
 export class NpmInstallError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NpmInstallError", getLocalizedString("error.frontend.NpmInstallError"), [
-      tips.doNpmInstall,
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "NpmInstallError",
+      [
+        getDefaultString("error.frontend.NpmInstallError"),
+        getLocalizedString("error.frontend.NpmInstallError"),
+      ],
+      [tips.doNpmInstall, tips.checkLog]
+    );
   }
 }
 
@@ -289,7 +367,10 @@ export class InvalidTabLanguageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "InvalidTabLanguageError",
-      getLocalizedString("error.frontend.InvalidTabLanguageError"),
+      [
+        getDefaultString("error.frontend.InvalidTabLanguageError"),
+        getLocalizedString("error.frontend.InvalidTabLanguageError"),
+      ],
       [tips.restoreEnvironment, tips.reScaffold]
     );
   }
@@ -300,7 +381,10 @@ export class NotImplemented extends FrontendPluginError {
     super(
       ErrorType.System,
       "NotImplemented",
-      getLocalizedString("error.frontend.NotImplemented"),
+      [
+        getDefaultString("error.frontend.NotImplemented"),
+        getLocalizedString("error.frontend.NotImplemented"),
+      ],
       []
     );
   }

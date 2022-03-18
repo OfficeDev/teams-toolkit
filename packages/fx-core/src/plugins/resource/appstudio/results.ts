@@ -7,21 +7,35 @@ export class AppStudioResultFactory {
 
   public static UserError(
     name: string,
-    message: string,
+    messages: [string, string],
     helpLink?: string,
     stack?: string,
     innerError?: any
   ): UserError {
-    return new UserError(name, message, Constants.PLUGIN_NAME, stack, helpLink, innerError);
+    return new UserError({
+      name,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: Constants.PLUGIN_NAME,
+      helpLink,
+      error: innerError,
+    });
   }
 
   public static SystemError(
     name: string,
-    message: string,
+    messages: [string, string],
     innerError?: any,
     stack?: string,
     issueLink?: string
   ): SystemError {
-    return new SystemError(name, message, Constants.PLUGIN_NAME, stack, issueLink, innerError);
+    return new SystemError({
+      name,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: Constants.PLUGIN_NAME,
+      issueLink,
+      error: innerError,
+    });
   }
 }

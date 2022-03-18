@@ -456,7 +456,7 @@ async function test() {
   const rootAction = actionMap.get("teams-bot.provision") as Action;
   console.log(JSON.stringify(rootAction));
   const inputs: Inputs = { platform: Platform.VSCode };
-  await planAction(context, inputs, rootAction, actionMap);
+  // await planAction(context, inputs, rootAction, actionMap);
   await executeAction(context, inputs, rootAction, actionMap);
 }
 

@@ -1,5 +1,5 @@
-- [3.6.0 - Mar 21 2022](#360---Mar-21-2022)
-- [3.5.0 - Mar 07 2022](#350---Mar-07-2022)
+- [3.6.0 - Mar 21 2022](#360---mar-21-2022)
+- [3.5.0 - Mar 07 2022](#350---mar-07-2022)
 - [3.4.0 - Feb 21 2022](#340---feb-21-2022)
 - [3.3.0 - Feb 07 2022](#330---feb-07-2022)
 - [3.2.0 - Jan 10 2022](#320---jan-10-2022)
@@ -17,6 +17,10 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
+- Optimized Get Started page for Teams Toolkit. User can check environment prerequsites from Get started now.
+
+	![new get started page](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/get_start.png)
+	
 - User can use Teams Toolkit to create workflow automation templates for Github, Azure DevOps and Jenkins.
 
 	![cicd workflow](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/cicd_workflow.png)

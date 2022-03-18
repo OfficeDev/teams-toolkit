@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
-import { useData } from "./lib/useData";
+import { useData } from "@microsoft/teamsfx-react";
 import * as axios from "axios";
 import { TeamsFx } from "@microsoft/teamsfx";
 
@@ -51,7 +51,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
     ...props,
   };
   const { loading, data, error, reload } = useData(callFunction, {
-    auto: false,
+    autoLoad: false,
   });
   return (
     <div>

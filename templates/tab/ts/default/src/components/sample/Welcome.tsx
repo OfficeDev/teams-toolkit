@@ -5,9 +5,9 @@ import { EditCode } from "./EditCode";
 import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
-import { useTeamsFx } from "./lib/useTeamsFx";
+import { useTeamsFx } from "@microsoft/teamsfx-react";
 import { TeamsFx } from "@microsoft/teamsfx";
-import { useData } from "./lib/useData";
+import { useData } from "@microsoft/teamsfx-react";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
 

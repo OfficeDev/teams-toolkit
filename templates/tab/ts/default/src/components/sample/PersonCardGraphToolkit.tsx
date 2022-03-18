@@ -1,5 +1,5 @@
 import { PersonCard } from "@microsoft/mgt-react";
-import { useTeamsFx } from "./lib/useTeamsFx";
+import { useTeamsFx } from "@microsoft/teamsfx-react";
 
 export function PersonCardGraphToolkit(props: {
   loading?: boolean; error?: any; data?: {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Welcome } from "./sample/Welcome";
-import { useTeamsFx } from "./sample/lib/useTeamsFx";
+import { useTeamsFx } from "@microsoft/teamsfx-react";
 
 var showFunction = Boolean(process.env.REACT_APP_FUNC_NAME);
 

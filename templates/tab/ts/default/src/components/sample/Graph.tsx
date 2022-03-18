@@ -1,5 +1,5 @@
 import "./Graph.css";
-import { useGraph } from "./lib/useGraph";
+import { useGraph } from "@microsoft/teamsfx-react";
 import { Providers, ProviderState } from '@microsoft/mgt-element';
 import { TeamsFxProvider } from '@microsoft/mgt-teamsfx-provider';
 import { Button } from "@fluentui/react-northstar";

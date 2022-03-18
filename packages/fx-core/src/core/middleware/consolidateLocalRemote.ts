@@ -45,7 +45,7 @@ import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 
 const upgradeButton = "Upgrade";
-let fromReloadFlag = false;
+let userCancelFlag = false;
 const backupFolder = ".backup";
 
 export const ProjectConsolidateMW: Middleware = async (
@@ -257,8 +257,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
 function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
-  if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
-  fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
+  if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
+  userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
 }
 

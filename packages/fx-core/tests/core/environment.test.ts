@@ -450,9 +450,8 @@ describe("APIs of Environment Manager", () => {
         projectPath
       );
 
-      const expectedEnvStateContent = JSON.stringify(envStateDataWithoutCredential, null, 4);
       assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithoutCredential);
-      assert.equal(fileMap.get(envFiles.userDataFile), "");
+      assert.isUndefined(fileMap.get(envFiles.userDataFile));
     });
 
     it("no userdata: write environment state with target env", async () => {
@@ -464,12 +463,8 @@ describe("APIs of Environment Manager", () => {
       );
       const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
 
-      const expectedEnvStateContent = JSON.stringify(envStateDataWithoutCredential, null, 4);
-      assert.equal(
-        formatContent(fileMap.get(envFiles.envState)),
-        formatContent(expectedEnvStateContent)
-      );
-      assert.equal(fileMap.get(envFiles.userDataFile), "");
+      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithoutCredential);
+      assert.isUndefined(fileMap.get(envFiles.userDataFile));
     });
 
     it("with userdata: write environment state without target env", async () => {

@@ -350,6 +350,8 @@ describe("SolutionV3 - addFeature", () => {
       features: [BuiltInFeaturePluginNames.dotnet],
       capabilities: [TabOptionItem.id, BotOptionItem.id],
     };
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    await appStudioV3.init(ctx, inputs);
     const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
   });

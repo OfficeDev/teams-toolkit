@@ -458,7 +458,7 @@
   "plugins.apim.error.InvalidConfigValue": "Project configuration '%s' of '%s' is invalid. %s",
   "plugins.apim.error.ApimOperationError": "Failed to %s %s.",
   "plugins.apim.error.AadOperationError": "Failed to %s %s.",
-  "plugins.apim.error.InvalidCliOptionError": "Option is invalid.",
+  "plugins.apim.error.InvalidCliOptionError": "Option is invalid. %s",
   "plugins.apim.error.NotImplemented": "Not implemented.",
   "plugins.apim.error.InvalidFunctionEndpoint": "The function endpoint scheme should be 'http' or 'https'.",
   "plugins.apim.error.EmptyProperty": "Property '%s' is empty.",

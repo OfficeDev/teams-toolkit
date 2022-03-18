@@ -1330,7 +1330,7 @@ export class FxCore implements v3.ICore {
     // create folder structure
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
-    const basicFolderRes = await ensureBasicFolderStructure(inputs);
+    const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
     }
@@ -1424,40 +1424,43 @@ export class FxCore implements v3.ICore {
   _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
-export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
+export async function ensureBasicFolderStructure(
+  inputs: Inputs,
+  createPackageJson = true
+): Promise<Result<null, FxError>> {
   if (!inputs.projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
   try {
-    // {
-    //   const appName = inputs[CoreQuestionNames.AppName] as string;
-    //   if (inputs.platform !== Platform.VS) {
-    //     const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-    //     const exists = await fs.pathExists(packageJsonFilePath);
-    //     if (!exists) {
-    //       await fs.writeFile(
-    //         packageJsonFilePath,
-    //         JSON.stringify(
-    //           {
-    //             name: appName,
-    //             version: "0.0.1",
-    //             description: "",
-    //             author: "",
-    //             scripts: {
-    //               test: 'echo "Error: no test specified" && exit 1',
-    //             },
-    //             devDependencies: {
-    //               "@microsoft/teamsfx-cli": "0.*",
-    //             },
-    //             license: "MIT",
-    //           },
-    //           null,
-    //           4
-    //         )
-    //       );
-    //     }
-    //   }
-    // }
+    if (createPackageJson) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      if (inputs.platform !== Platform.VS) {
+        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
+        const exists = await fs.pathExists(packageJsonFilePath);
+        if (!exists) {
+          await fs.writeFile(
+            packageJsonFilePath,
+            JSON.stringify(
+              {
+                name: appName,
+                version: "0.0.1",
+                description: "",
+                author: "",
+                scripts: {
+                  test: 'echo "Error: no test specified" && exit 1',
+                },
+                devDependencies: {
+                  "@microsoft/teamsfx-cli": "0.*",
+                },
+                license: "MIT",
+              },
+              null,
+              4
+            )
+          );
+        }
+      }
+    }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
       const gitIgnoreContent = [

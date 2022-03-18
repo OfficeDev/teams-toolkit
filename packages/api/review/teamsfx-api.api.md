@@ -532,13 +532,13 @@ export const EnvStateFileNameTemplate: string;
 // @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
+    displayMessage?: string;
+    // (undocumented)
     error?: Error;
     // (undocumented)
     message?: string;
     // (undocumented)
     name?: string;
-    // (undocumented)
-    showMessage?: string;
     // (undocumented)
     source?: string;
     // (undocumented)
@@ -1513,10 +1513,10 @@ export type SubscriptionInfo = {
 // @public
 export class SystemError extends Error implements FxError {
     constructor(opt: SystemErrorOptions);
-    constructor(source: string, name: string, message: string, showMessage?: string);
+    constructor(source: string, name: string, message: string, displayMessage?: string);
+    displayMessage?: string;
     innerError?: any;
     issueLink?: string;
-    showMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1724,10 +1724,10 @@ export const UserCancelError: UserError;
 // @public
 export class UserError extends Error implements FxError {
     constructor(opt: UserErrorOptions);
-    constructor(source: string, name: string, message: string, showMessage?: string);
+    constructor(source: string, name: string, message: string, displayMessage?: string);
+    displayMessage?: string;
     helpLink?: string;
     innerError?: any;
-    showMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;

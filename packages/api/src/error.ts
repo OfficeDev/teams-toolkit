@@ -23,7 +23,7 @@ export interface ErrorOptionBase {
   message?: string;
   error?: Error;
   userData?: any;
-  showMessage?: string;
+  displayMessage?: string;
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -60,10 +60,10 @@ export class UserError extends Error implements FxError {
   /**
    * message show in the UI
    */
-  showMessage?: string;
+  displayMessage?: string;
 
   constructor(opt: UserErrorOptions);
-  constructor(source: string, name: string, message: string, showMessage?: string);
+  constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
     param1: string | UserErrorOptions,
     param2?: string,
@@ -77,7 +77,7 @@ export class UserError extends Error implements FxError {
         source: param1,
         name: param2,
         message: param3,
-        showMessage: param4,
+        displayMessage: param4,
       };
     } else {
       option = param1;
@@ -109,7 +109,7 @@ export class UserError extends Error implements FxError {
     //other fields
     this.helpLink = option.helpLink;
     this.userData = option.userData;
-    this.showMessage = option.showMessage;
+    this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
   }
 }
@@ -142,10 +142,10 @@ export class SystemError extends Error implements FxError {
   /**
    * message show in the UI
    */
-  showMessage?: string;
+  displayMessage?: string;
 
   constructor(opt: SystemErrorOptions);
-  constructor(source: string, name: string, message: string, showMessage?: string);
+  constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
     param1: string | SystemErrorOptions,
     param2?: string,
@@ -159,7 +159,7 @@ export class SystemError extends Error implements FxError {
         source: param1,
         name: param2,
         message: param3,
-        showMessage: param4,
+        displayMessage: param4,
       };
     } else {
       option = param1;
@@ -191,7 +191,7 @@ export class SystemError extends Error implements FxError {
     //other fields
     this.issueLink = option.issueLink;
     this.userData = option.userData;
-    this.showMessage = option.showMessage;
+    this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
   }
 }

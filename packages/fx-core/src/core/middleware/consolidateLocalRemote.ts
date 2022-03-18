@@ -276,9 +276,6 @@ async function postConsolidate(
   );
 
   if (inputs.platform === Platform.VSCode) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuide, {
-      [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
-    });
     await TOOLS?.ui.showMessage(
       "info",
       getLocalizedString("core.consolidateLocalRemote.outputMsg"),

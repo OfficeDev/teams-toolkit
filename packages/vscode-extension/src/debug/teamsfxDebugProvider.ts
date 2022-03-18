@@ -95,9 +95,11 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
         url = url.replace(localTeamsAppIdPlaceholder, debugConfig.appId);
         url = url.replace(teamsAppIdPlaceholder, debugConfig.appId);
-        const internalId = await getTeamsAppInternalId(debugConfig.appId);
-        if (internalId !== undefined) {
-          url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
+        if (isLocalM365SideloadingConfiguration) {
+          const internalId = await getTeamsAppInternalId(debugConfig.appId);
+          if (internalId !== undefined) {
+            url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
+          }
         }
 
         const accountHintPlaceholder = "${account-hint}";

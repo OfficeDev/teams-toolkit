@@ -23,7 +23,7 @@ export class ProjectFolderExistError extends UserError {
   constructor(path: string) {
     super({
       message: getDefaultString("error.ProjectFolderExistError", path),
-      showMessage: getLocalizedString("error.ProjectFolderExistError", path),
+      displayMessage: getLocalizedString("error.ProjectFolderExistError", path),
       source: CoreSource,
     });
   }
@@ -31,105 +31,133 @@ export class ProjectFolderExistError extends UserError {
 
 export class ProjectFolderInvalidError extends UserError {
   constructor(path: string) {
-    super(
-      new.target.name,
-      getDefaultString("error.ProjectFolderExistError", path),
-      CoreSource,
-      undefined,
-      undefined,
-      undefined,
-      getLocalizedString("error.ProjectFolderInvalidError", path)
-    );
+    super({
+      message: getDefaultString("error.ProjectFolderInvalidError", path),
+      displayMessage: getLocalizedString("error.ProjectFolderInvalidError", path),
+      source: CoreSource,
+    });
   }
 }
 
 export function WriteFileError(e: Error): SystemError {
-  return new SystemError(e, CoreSource, "WriteFileError");
+  return new SystemError({
+    message: "WriteFileError",
+    source: CoreSource,
+    error: e,
+  });
 }
 
 export function ReadFileError(e: Error): SystemError {
-  return new SystemError(e, CoreSource, "ReadFileError");
+  return new SystemError({
+    message: "ReadFileError",
+    source: CoreSource,
+    error: e,
+  });
 }
 
 export function CopyFileError(e: Error): SystemError {
-  return new SystemError(e, CoreSource, "CopyFileError");
+  return new SystemError({
+    message: "CopyFileError",
+    source: CoreSource,
+    error: e,
+  });
 }
 
 export class NoProjectOpenedError extends UserError {
   constructor() {
-    super(new.target.name, getLocalizedString("error.NoProjectOpenedError"), CoreSource);
+    super({
+      message: getDefaultString("error.NoProjectOpenedError"),
+      displayMessage: getLocalizedString("error.NoProjectOpenedError"),
+      source: CoreSource,
+    });
   }
 }
 
 export class PathNotExistError extends UserError {
   constructor(path: string) {
-    super(new.target.name, getLocalizedString("error.PathNotExistError", path), CoreSource);
+    super({
+      message: getDefaultString("error.PathNotExistError", path),
+      displayMessage: getLocalizedString("error.PathNotExistError", path),
+      source: CoreSource,
+    });
   }
 }
 
 export class InvalidProjectError extends UserError {
   constructor(msg?: string) {
-    super(new.target.name, getLocalizedString("error.InvalidProjectError", msg || ""), CoreSource);
+    super({
+      message: getDefaultString("error.InvalidProjectError", msg || ""),
+      displayMessage: getLocalizedString("error.InvalidProjectError", msg || ""),
+      source: CoreSource,
+    });
   }
 }
 
 export class InvalidProjectSettingsFileError extends UserError {
   constructor(msg?: string) {
-    super(
-      new.target.name,
-      getLocalizedString("error.InvalidProjectSettingsFileError", msg || ""),
-      CoreSource
-    );
+    super({
+      message: getDefaultString("error.InvalidProjectSettingsFileError", msg || ""),
+      displayMessage: getLocalizedString("error.InvalidProjectSettingsFileError", msg || ""),
+      source: CoreSource,
+    });
   }
 }
 
 export class TaskNotSupportError extends SystemError {
   constructor(task: string) {
-    super(new.target.name, getLocalizedString("error.TaskNotSupportError", task), CoreSource);
+    super({
+      message: getDefaultString("error.TaskNotSupportError", task),
+      displayMessage: getLocalizedString("error.TaskNotSupportError", task),
+      source: CoreSource,
+    });
   }
 }
 
 export class FetchSampleError extends UserError {
   constructor(sampleId: string) {
-    super(new.target.name, getLocalizedString("error.FetchSampleError", sampleId), CoreSource);
+    super({
+      message: getDefaultString("error.FetchSampleError", sampleId),
+      displayMessage: getLocalizedString("error.FetchSampleError", sampleId),
+      source: CoreSource,
+    });
   }
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
+  const txt = inputs ? `${reason}, inputs: ${JSON.stringify(inputs)}` : reason;
   return new UserError(
+    CoreSource,
     "InvalidInput",
-    inputs
-      ? `Invalid inputs: ${reason}, inputs: ${JSON.stringify(inputs)}`
-      : `Invalid inputs: ${reason}`,
-    CoreSource
+    getDefaultString("error.InvalidInputError", txt),
+    getLocalizedString("error.InvalidInputError", txt)
   );
 }
 
 export function FunctionRouterError(func: Func): UserError {
+  const param = JSON.stringify(func);
   return new UserError(
+    CoreSource,
     "FunctionRouterError",
-    `Failed to route function call:${JSON.stringify(func)}`,
-    CoreSource
+    getDefaultString("error.FunctionRouterError", param),
+    getLocalizedString("error.FunctionRouterError", param)
   );
 }
 
 export function ContextUpgradeError(error: any, isUserError = false): FxError {
   if (isUserError) {
-    return new UserError(
-      "ContextUpgradeError",
-      `Failed to update context: ${error.message}`,
-      CoreSource,
-      undefined,
-      error
-    );
+    return new UserError({
+      name: "ContextUpgradeError",
+      message: getDefaultString("error.ContextUpgradeError", error.message),
+      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
+      source: CoreSource,
+    });
   } else {
-    return new SystemError(
-      "ContextUpgradeError",
-      `Failed to update context: ${error.message}`,
-      CoreSource,
-      undefined,
-      error
-    );
+    return new SystemError({
+      name: "ContextUpgradeError",
+      message: getDefaultString("error.ContextUpgradeError", error.message),
+      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
+      source: CoreSource,
+    });
   }
 }
 
@@ -137,71 +165,83 @@ export function InvalidStateError(pluginName: string, state: Json): SystemError 
   return new SystemError(
     CoreSource,
     "InvalidProfileError",
-    `Plugin ${pluginName}'s state(${JSON.stringify(state)}) is invalid`
+    getDefaultString("error.InvalidProfileError", pluginName, JSON.stringify(state)),
+    getLocalizedString("error.InvalidProfileError", pluginName, JSON.stringify(state))
   );
 }
 
 export function PluginHasNoTaskImpl(pluginName: string, task: string): SystemError {
   return new SystemError(
+    CoreSource,
     "PluginHasNoTaskImplError",
-    `Plugin ${pluginName} has not implemented method: ${task}`,
-    CoreSource
+    getDefaultString("error.PluginHasNoTaskImplError", pluginName, task),
+    getLocalizedString("error.PluginHasNoTaskImplError", pluginName, task)
   );
 }
 
 export function ProjectSettingsUndefinedError(): SystemError {
   return new SystemError(
+    CoreSource,
     "ProjectSettingsUndefinedError",
-    "Project settings is undefined",
-    CoreSource
+    getDefaultString("error.ProjectSettingsUndefinedError"),
+    getLocalizedString("error.ProjectSettingsUndefinedError")
   );
 }
 
 export function MultipleEnvNotEnabledError(): SystemError {
   return new SystemError(
+    CoreSource,
     "MultipleEnvNotEnabledError",
-    "MultipleEnv feature is not enabled",
-    CoreSource
+    getDefaultString("error.MultipleEnvNotEnabledError"),
+    getLocalizedString("error.MultipleEnvNotEnabledError")
   );
 }
 
 export function ProjectEnvNotExistError(env: string): UserError {
   return new UserError(
+    CoreSource,
     "ProjectEnvNotExistError",
-    getLocalizedString("error.ProjectEnvNotExistError", env, env),
-    CoreSource
+    getDefaultString("error.ProjectEnvNotExistError", env, env),
+    getLocalizedString("error.ProjectEnvNotExistError", env, env)
   );
 }
 
 export function InvalidEnvNameError(): UserError {
   return new UserError(
+    CoreSource,
     "InvalidEnvNameError",
-    getLocalizedString("error.InvalidEnvNameError"),
-    CoreSource
+    getDefaultString("error.InvalidEnvNameError"),
+    getLocalizedString("error.InvalidEnvNameError")
   );
 }
 
 export function ProjectEnvAlreadyExistError(env: string): FxError {
   return new UserError(
+    CoreSource,
     "ProjectEnvAlreadyExistError",
-    `Project environment ${env} already exists.`,
-    CoreSource
+    getDefaultString("error.ProjectEnvAlreadyExistError", env),
+    getLocalizedString("error.ProjectEnvAlreadyExistError", env)
   );
 }
 
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
+  const param1 = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env);
+  const param2 = errorMsg;
   return new UserError(
+    CoreSource,
     "InvalidEnvConfigError",
-    `The configuration ${EnvConfigFileNameTemplate.replace(
-      EnvNamePlaceholder,
-      env
-    )} is invalid, details: ${errorMsg}.`,
-    CoreSource
+    getDefaultString("error.InvalidEnvConfigError", param1, param2),
+    getLocalizedString("error.InvalidEnvConfigError", param1, param2)
   );
 }
 
 export function NonExistEnvNameError(env: string): UserError {
-  return new UserError("NonExistEnvNameError", `Can not find environment ${env}.`, CoreSource);
+  return new UserError(
+    CoreSource,
+    "NonExistEnvNameError",
+    getDefaultString("error.NonExistEnvNameError", env),
+    getLocalizedString("error.ProjectEnvAlreadyExistError", env)
+  );
 }
 
 export function ModifiedSecretError(): UserError {

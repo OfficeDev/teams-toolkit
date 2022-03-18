@@ -3,23 +3,31 @@
 
 import { ConversationReference, Storage, StoreItems } from "botbuilder";
 import * as fs from "fs";
+import * as path from "path";
 
 /**
  * @internal
  */
 export class LocalFileStorage implements Storage {
-  private readonly filePath = ".notification.localstore.json";
+  private readonly localFileName = ".notification.localstore.json";
+  private readonly filePath: string;
+
+  constructor(fileDir: string) {
+    this.filePath = path.resolve(fileDir, this.localFileName);
+  }
 
   async read(keys: string[]): Promise<StoreItems> {
     if (!(await this.storeFileExists())) {
       return {};
     }
 
-    const data: StoreItems = await this.readFromFile();
+    const data = await this.readFromFile();
 
     const storeItems: StoreItems = {};
     keys.map((k) => {
-      storeItems[k] = data[k];
+      if (data[k]) {
+        storeItems[k] = data[k];
+      }
     });
 
     return storeItems;
@@ -95,33 +103,35 @@ export class LocalFileStorage implements Storage {
 export class ConversationReferenceStore {
   private readonly storage: Storage;
   private readonly storageKey: string;
-  private readonly objectKey = "conversations";
 
   constructor(storage: Storage, storageKey: string) {
     this.storage = storage;
     this.storageKey = storageKey;
   }
 
-  async list(): Promise<Partial<ConversationReference>[]> {
+  async getAll(): Promise<Map<string, Partial<ConversationReference>>> {
     const items = await this.storage.read([this.storageKey]);
-    if (
-      items[this.storageKey] === undefined ||
-      items[this.storageKey][this.objectKey] === undefined
-    ) {
-      return new Array<Partial<ConversationReference>>();
+    const itemsMap = items[this.storageKey];
+    if (itemsMap === undefined) {
+      return new Map<string, Partial<ConversationReference>>();
     }
 
-    return items[this.storageKey][this.objectKey];
+    return new Map(Object.entries(itemsMap));
   }
 
-  async add(reference: Partial<ConversationReference>): Promise<Partial<ConversationReference>[]> {
-    const references = await this.list();
-    if (references.find((r) => r.conversation?.id === reference.conversation?.id)) {
-      return references;
-    }
+  async set(reference: Partial<ConversationReference>): Promise<void> {
+    const references = await this.getAll();
+    references.set(this.getKey(reference), reference);
+    await this.storage.write({ [this.storageKey]: Object.fromEntries(references) });
+  }
 
-    references.push(reference);
-    await this.storage.write({ [this.storageKey]: { [this.objectKey]: references } });
-    return references;
+  async delete(reference: Partial<ConversationReference>): Promise<void> {
+    const references = await this.getAll();
+    references.delete(this.getKey(reference));
+    await this.storage.write({ [this.storageKey]: Object.fromEntries(references) });
+  }
+
+  private getKey(reference: Partial<ConversationReference>): string {
+    return `_${reference.conversation?.tenantId}_${reference.conversation?.id}`;
   }
 }

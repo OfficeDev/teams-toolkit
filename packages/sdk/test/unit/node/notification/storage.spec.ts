@@ -1,3 +1,4 @@
+import { ConversationReference } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as fs from "fs";
@@ -44,7 +45,7 @@ describe("Notification.Storage Tests - Node", () => {
         fileContent = data.toString();
         cb(null);
       });
-      localFileStorage = new LocalFileStorage();
+      localFileStorage = new LocalFileStorage("test");
     });
 
     afterEach(() => {
@@ -70,7 +71,7 @@ describe("Notification.Storage Tests - Node", () => {
       assert.deepStrictEqual(data, { key1: "A", key2: "B" });
     });
 
-    it("read should return undefined data if key not exist", async () => {
+    it("read should ignore undefined data if key not exist", async () => {
       fileContent = `{
         "key1": "A",
         "key2": "B",
@@ -78,7 +79,7 @@ describe("Notification.Storage Tests - Node", () => {
       }`;
       fileExists = true;
       const data = await localFileStorage.read(["key1", "key4"]);
-      assert.deepStrictEqual(data, { key1: "A", key4: undefined });
+      assert.deepStrictEqual(data, { key1: "A" });
     });
 
     it("write should persist correct data", async () => {
@@ -118,35 +119,74 @@ describe("Notification.Storage Tests - Node", () => {
     const storage = new TestStorage();
     const testStore = new ConversationReferenceStore(storage, storageKey);
 
-    it("list should return correct data", async () => {
+    it("getAll should return correct data", async () => {
       storage.items = {};
       storage.items[storageKey] = {
-        conversations: [
-          {
-            channelId: "1",
+        _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
           },
-        ],
+        },
       };
-      const data = await testStore.list();
-      assert.deepStrictEqual(data, [{ channelId: "1" }]);
+      const data = await testStore.getAll();
+      assert.deepStrictEqual(
+        data,
+        new Map([
+          [
+            "_a_1",
+            {
+              conversation: {
+                id: "1",
+                tenantId: "a",
+              },
+            } as ConversationReference,
+          ],
+        ])
+      );
     });
 
-    it("list should return empty data if storage is empty", async () => {
+    it("getAll should return empty data if storage is empty", async () => {
       storage.items = {};
-      const data = await testStore.list();
-      assert.deepStrictEqual(data, []);
+      const data = await testStore.getAll();
+      assert.deepStrictEqual(data, new Map());
     });
 
-    it("add should persist correct data", async () => {
+    it("set should persist correct data", async () => {
       storage.items = {};
-      await testStore.add({ channelId: "2" });
+      await testStore.set({
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      } as ConversationReference);
       assert.deepStrictEqual(storage.items[storageKey], {
-        conversations: [
-          {
-            channelId: "2",
+        _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
           },
-        ],
+        },
       });
+    });
+
+    it("delete should remove correct data", async () => {
+      storage.items = {};
+      storage.items[storageKey] = {
+        _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      };
+      await testStore.delete({
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      } as ConversationReference);
+      assert.deepStrictEqual(storage.items[storageKey], {});
     });
   });
 });

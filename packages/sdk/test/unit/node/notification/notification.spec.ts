@@ -364,24 +364,26 @@ describe("Notification Tests - Node", () => {
       assert.isTrue(middlewares[0] instanceof NotificationMiddleware);
     });
 
-    it("", async () => {
+    it("installations should return correct targets", async () => {
       BotNotification.initialize(adapter, {
         storage: storage,
       });
       storage.items = {
-        "teamfx-notification-targets": {
-          conversations: [
-            {
-              conversation: {
-                id: "1",
-              },
+        teamfxNotificationTargets: {
+          _a_1: {
+            channelId: "1",
+            conversation: {
+              id: "1",
+              tenantId: "a",
             },
-            {
-              conversation: {
-                id: "2",
-              },
+          },
+          _a_2: {
+            channelId: "2",
+            conversation: {
+              id: "2",
+              tenantId: "a",
             },
-          ],
+          },
         },
       };
       const installations = await BotNotification.installations();

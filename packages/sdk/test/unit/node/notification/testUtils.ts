@@ -6,7 +6,9 @@ export class TestStorage implements Storage {
   async read(keys: string[]): Promise<StoreItems> {
     const storeItems: StoreItems = {};
     keys.map((k) => {
-      storeItems[k] = this.items[k];
+      if (this.items[k]) {
+        storeItems[k] = this.items[k];
+      }
     });
     return storeItems;
   }

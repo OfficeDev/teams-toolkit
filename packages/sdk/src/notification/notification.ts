@@ -14,6 +14,7 @@ import {
   TurnContext,
 } from "botbuilder";
 import { ConnectorClient } from "botframework-connector";
+import * as path from "path";
 import { NotificationTarget, NotificationTargetType } from "./interface";
 import { NotificationMiddleware } from "./middleware";
 import { ConversationReferenceStore, LocalFileStorage } from "./storage";
@@ -516,7 +517,7 @@ export interface BotNotificationOptions {
  * @beta
  */
 export class BotNotification {
-  private static readonly conversationReferenceStoreKey = "teamfx-notification-targets";
+  private static readonly conversationReferenceStoreKey = "teamfxNotificationTargets";
   private static conversationReferenceStore: ConversationReferenceStore;
   private static adapter: BotFrameworkAdapter;
 
@@ -532,7 +533,11 @@ export class BotNotification {
    * @beta
    */
   public static initialize(adapter: BotFrameworkAdapter, options?: BotNotificationOptions) {
-    const storage = options?.storage ?? new LocalFileStorage();
+    const storage =
+      options?.storage ??
+      new LocalFileStorage(
+        path.resolve(process.env.RUNNING_ON_AZURE === "1" ? process.env.TEMP ?? "./" : "./")
+      );
     BotNotification.conversationReferenceStore = new ConversationReferenceStore(
       storage,
       BotNotification.conversationReferenceStoreKey
@@ -562,7 +567,7 @@ export class BotNotification {
       throw new Error("BotNotification has not been initialized.");
     }
 
-    const references = await BotNotification.conversationReferenceStore.list();
+    const references = (await BotNotification.conversationReferenceStore.getAll()).values();
     const targets: TeamsBotInstallation[] = [];
     for (const reference of references) {
       targets.push(new TeamsBotInstallation(BotNotification.adapter, reference));

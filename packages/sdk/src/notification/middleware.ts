@@ -34,7 +34,7 @@ export class NotificationMiddleware implements Middleware {
     switch (type) {
       case ActivityType.CurrentBotAdded:
         const reference = TurnContext.getConversationReference(context.activity);
-        await this.conversationReferenceStore.add(reference);
+        await this.conversationReferenceStore.set(reference);
         break;
       default:
         break;

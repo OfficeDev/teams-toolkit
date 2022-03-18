@@ -1,4 +1,4 @@
-import { TurnContext } from "botbuilder";
+import { ConversationReference, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
@@ -20,7 +20,11 @@ describe("Notification.Middleware Tests - Node", () => {
     sandbox.stub(TurnContext, "getConversationReference").callsFake((activity) => {
       return {
         channelId: activity.channelId,
-      };
+        conversation: {
+          id: activity.conversation?.id,
+          tenantId: activity.conversation?.tenantId,
+        },
+      } as ConversationReference;
     });
   });
 
@@ -32,6 +36,10 @@ describe("Notification.Middleware Tests - Node", () => {
     const testContext = {
       activity: {
         channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
         membersAdded: [
           {
             id: "A",
@@ -45,11 +53,13 @@ describe("Notification.Middleware Tests - Node", () => {
     await middleware.onTurn(testContext as any, async () => {});
     assert.deepStrictEqual(testStorage.items, {
       "test-storage-key": {
-        conversations: [
-          {
-            channelId: "1",
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
           },
-        ],
+        },
       },
     });
   });

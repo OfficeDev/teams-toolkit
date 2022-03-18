@@ -26,7 +26,7 @@ for(let file of depPkgs) {
     let fileChange = false;
     for(let [key,value] of Object.entries(templatesDeps)){
         if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if(semver.prerelease(value).includes("test")){
+            if(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc")){
                 continue;
             }
             fileChange = true;

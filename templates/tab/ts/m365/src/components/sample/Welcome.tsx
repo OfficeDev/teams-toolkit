@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Image, Menu } from "@fluentui/react-northstar";
 import * as microsoftTeams from "@microsoft/teams-js";
 import "./Welcome.css";
@@ -6,11 +6,10 @@ import { EditCode } from "./EditCode";
 import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
-import { useTeamsFx } from "./lib/useTeamsFx";
-import { TeamsFx } from "@microsoft/teamsfx";
-import { useData } from "./lib/useData";
+import { useData } from "@microsoft/teamsfx-react";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
+import { TeamsFxContext } from "../Context";
 
 export function Welcome(props: { showFunction?: boolean; environment?: string }) {
   const { showFunction, environment } = {
@@ -39,12 +38,14 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     };
   });
 
-  const { isInTeams } = useTeamsFx();
-  const userProfile = useData(async () => {
-    const teamsfx = new TeamsFx();
-    return isInTeams ? await teamsfx.getUserInfo() : undefined;
-  })?.data;
-  const userName = userProfile ? userProfile.displayName : "";
+  const { teamsfx } = useContext(TeamsFxContext);
+  const { loading, data } = useData(async () => {
+    if (teamsfx) {
+      const userInfo = await teamsfx.getUserInfo();
+      return userInfo;
+    }
+  });
+  const userName = loading ? "": data!.displayName;
   const hubName = useData(async () => {
     await microsoftTeams.app.initialize();
     const context = await microsoftTeams.app.getContext();
@@ -64,7 +65,7 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
           {selectedMenuItem === "local" && (
             <div>
               <EditCode showFunction={showFunction} />
-              {isInTeams && <CurrentUser userName={userName} />}
+              <CurrentUser userName={userName} />
               <Graph />
               {showFunction && <AzureFunctions />}
             </div>

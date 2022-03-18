@@ -40,7 +40,6 @@ export class ScaffoldPlaceholders {
 
 export class TemplateProjectsConstants {
   public static readonly GROUP_NAME_BOT: string = "bot";
-  public static readonly TEMPLATE_FOLDER_NAME: string = "bot";
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
   public static readonly VERSION_RANGE: string = "0.0.*";
@@ -293,6 +292,8 @@ export class PathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly FuncHostedProvisionModuleTemplateFileName =
+    "funcHostedBotProvision.template.bicep";
   public static readonly ConfigurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
 

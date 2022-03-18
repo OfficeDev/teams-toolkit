@@ -216,6 +216,9 @@ export class FxCore implements v3.ICore {
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
+      if (inputs.isM365) {
+        projectSettings.isM365 = true;
+      }
 
       projectSettings.solutionSettings = {
         name: "",

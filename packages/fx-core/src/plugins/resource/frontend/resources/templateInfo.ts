@@ -21,6 +21,7 @@ export class Scenario {
   static readonly Default = "default";
   static readonly WithFunction = "with-function";
   static readonly NonSso = "non-sso";
+  static readonly M365 = "m365";
 }
 
 export class TemplateInfo {
@@ -49,7 +50,11 @@ export class TemplateInfo {
       showFunction: isFunctionPlugin.toString(),
     };
 
-    this.scenario = isAadManifestEnabled() ? Scenario.NonSso : Scenario.Default;
+    this.scenario = ctx.projectSettings?.isM365
+      ? Scenario.M365
+      : isAadManifestEnabled()
+      ? Scenario.NonSso
+      : Scenario.Default;
 
     this.localTemplateBaseName = [this.group, this.language, this.scenario].join(".");
     this.localTemplatePath = path.join(

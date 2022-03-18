@@ -34,7 +34,8 @@ export async function getResponseWithErrorHandling<T>(
               new Error(v.error.message),
               v.error.source,
               v.error.name,
-              (v.error as any).helpLink
+              (v.error as any).helpLink,
+              (v.error as any).notificationMessage
             );
             userError.stack = v.error.stack;
             userError.timestamp = v.error.timestamp;
@@ -46,7 +47,8 @@ export async function getResponseWithErrorHandling<T>(
               new Error(v.error.message),
               v.error.source,
               v.error.name,
-              (v.error as any).issueLink
+              (v.error as any).issueLink,
+              (v.error as any).notificationMessage
             );
             systemError.stack = v.error.stack;
             systemError.timestamp = v.error.timestamp;
@@ -102,6 +104,7 @@ export function standardizeResult<R>(result: Result<R, FxError>): Result<R, FxEr
       stack: result.error.stack,
       innerError: result.error.innerError,
       userData: result.error.userData,
+      notificationMessage: (result.error as any).notificationMessage,
       timestamp: result.error.timestamp,
       helpLink: (result.error as any).helpLink,
       issueLink: (result.error as any).issueLink,

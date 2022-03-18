@@ -226,6 +226,7 @@ export interface IServerFxError {
   stack?: string;
   innerError?: any;
   userData?: any;
+  notificationMessage?: string;
   timestamp: Date;
   helpLink?: string;
   issueLink?: string;

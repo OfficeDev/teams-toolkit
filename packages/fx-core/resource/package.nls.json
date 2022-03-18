@@ -387,8 +387,6 @@
   "error.aad.manifest.RequiredResourceAccessIsMissing": "requiredResourceAccess is missing\n",
   "error.aad.manifest.Oauth2PermissionsIsMissing": "oauth2Permissions is missing\n",
   "error.aad.manifest.PreAuthorizedApplicationsIsMissing": "preAuthorizedApplications is missing\n",
-  "error.aad.manifest.TeamsMobileDesktopClientIdIsMissing" :"preAuthorizedApplications doesn't contain teams mobile/desktop client id\n",
-  "error.aad.manifest.TeamsWebClientIdIsMissing": "preAuthorizedApplications doesn't contain teams web client id\n",
   "error.aad.manifest.AccessTokenAcceptedVersionIs1": "accessTokenAcceptedVersion is 1 which may introduce problem\n",
   "error.aad.manifest.OptionalClaimsIsMissing": "optionalClaims is missing\n",
   "error.aad.manifest.OptionalClaimsMissingIdtypClaim":"optionalClaims access token doesn't contain idtyp claim, which may introduce problem\n",

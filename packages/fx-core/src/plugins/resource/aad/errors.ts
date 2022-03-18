@@ -203,12 +203,6 @@ export class AadManifestErrorMessage {
   static readonly PreAuthorizedApplicationsIsMissing = getLocalizedString(
     "error.aad.manifest.PreAuthorizedApplicationsIsMissing"
   );
-  static readonly TeamsMobileDesktopClientIdIsMissing = getLocalizedString(
-    "error.aad.manifest.TeamsMobileDesktopClientIdIsMissing"
-  );
-  static readonly TeamsWebClientIdIsMissing = getLocalizedString(
-    "error.aad.manifest.TeamsWebClientIdIsMissing"
-  );
   static readonly AccessTokenAcceptedVersionIs1 = getLocalizedString(
     "error.aad.manifest.AccessTokenAcceptedVersionIs1"
   );

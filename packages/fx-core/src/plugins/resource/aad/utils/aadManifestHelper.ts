@@ -181,22 +181,8 @@ export class AadManifestHelper {
     }
 
     // if manifest doesn't contain preAuthorizedApplications
-    if (!manifest.preAuthorizedApplications) {
+    if (!manifest.preAuthorizedApplications || manifest.preAuthorizedApplications.length === 0) {
       warningMsg += AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing;
-    } else {
-      // if preAuthorizedApplications doesn't contain teams mobile/desktop client id
-      if (
-        !manifest.preAuthorizedApplications.find(
-          (item) => item.appId === TeamsClientId.MobileDesktop
-        )
-      ) {
-        warningMsg += AadManifestErrorMessage.TeamsMobileDesktopClientIdIsMissing;
-      }
-
-      // if preAuthorizedApplications doesn't contain teams web client id
-      if (!manifest.preAuthorizedApplications.find((item) => item.appId === TeamsClientId.Web)) {
-        warningMsg += AadManifestErrorMessage.TeamsWebClientIdIsMissing;
-      }
     }
 
     // if accessTokenAcceptedVersion in manifest is not 2
@@ -220,7 +206,7 @@ export class AadManifestHelper {
       const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
       let resourceId = resourceIdOrName;
       if (!isUUID(resourceIdOrName)) {
-        resourceId = map[resourceIdOrName].id;
+        resourceId = map[resourceIdOrName]?.id;
         if (!resourceId) {
           throw new Error(
             util.format(AadManifestErrorMessage.UnknownResourceAppId, resourceIdOrName)

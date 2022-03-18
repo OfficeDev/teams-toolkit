@@ -6,6 +6,7 @@ import * as chai from "chai";
 import { AadManifestHelper } from "../../../../../src/plugins/resource/aad/utils/aadManifestHelper";
 import { AADManifest } from "../../../../../src/plugins/resource/aad/interfaces/AADManifest";
 import { AadManifestErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
+import * as util from "util";
 
 describe("AAD manifest helper Test", () => {
   it("manifestToApplication", async () => {
@@ -27,9 +28,8 @@ describe("AAD manifest helper Test", () => {
     const warning = AadManifestHelper.validateManifest(invalidAadManifest);
     chai.expect(warning).contain(AadManifestErrorMessage.NameIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.SignInAudienceIsMissing);
+    chai.expect(warning).contain(AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.Oauth2PermissionsIsMissing);
-    chai.expect(warning).contain(AadManifestErrorMessage.TeamsMobileDesktopClientIdIsMissing);
-    chai.expect(warning).contain(AadManifestErrorMessage.TeamsWebClientIdIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.AccessTokenAcceptedVersionIs1);
     chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim);
   });
@@ -109,6 +109,28 @@ describe("AAD manifest helper Test", () => {
     chai
       .expect(manifestWithString.requiredResourceAccess[1].resourceAccess[0].id)
       .equal("d13f72ca-a275-4b96-b789-48ebcc4da984");
+  });
+
+  it("processRequiredResourceAccessInManifest with invalid string", async () => {
+    const manifestWithInvalidSting: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "Invalid Id",
+          resourceAccess: [
+            {
+              id: "User.Read",
+              type: "Scope",
+            },
+          ],
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
+      })
+      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAppId, "Invalid Id"));
   });
 });
 

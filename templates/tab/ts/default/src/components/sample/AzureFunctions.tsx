@@ -66,7 +66,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
       )}
       {!loading && !!data && !error && <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>}
       {!loading && !data && !error && <pre className="fixed"></pre>}
-      {!loading && !!error && <div className="error fixed">{error.toString()}</div>}
+      {!loading && !!error && <div className="error fixed">{(error as any).toString()}</div>}
       <h4>How to edit the Azure Function</h4>
       <p>
         See the code in <code>{codePath}</code> to add your business logic.

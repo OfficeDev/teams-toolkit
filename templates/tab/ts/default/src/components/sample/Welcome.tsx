@@ -5,9 +5,8 @@ import { EditCode } from "./EditCode";
 import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
-import { useTeamsFx } from "@microsoft/teamsfx-react";
+import { useTeamsFx, useData } from "@microsoft/teamsfx-react";
 import { TeamsFx } from "@microsoft/teamsfx";
-import { useData } from "@microsoft/teamsfx-react";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
 
@@ -38,10 +37,10 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     };
   });
 
-  const { isInTeams } = useTeamsFx();
+  const { inTeams } = useTeamsFx();
   const userProfile = useData(async () => {
     const teamsfx = new TeamsFx();
-    return isInTeams ? await teamsfx.getUserInfo() : undefined;
+    return inTeams ? await teamsfx.getUserInfo() : undefined;
   })?.data;
   const userName = userProfile ? userProfile.displayName : "";
   return (
@@ -55,7 +54,7 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
           {selectedMenuItem === "local" && (
             <div>
               <EditCode showFunction={showFunction} />
-              {isInTeams && <CurrentUser userName={userName} />}
+              {inTeams && <CurrentUser userName={userName} />}
               <Graph />
               {showFunction && <AzureFunctions />}
             </div>

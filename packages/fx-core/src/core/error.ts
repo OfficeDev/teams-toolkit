@@ -15,19 +15,31 @@ import {
   Stage,
 } from "@microsoft/teamsfx-api";
 import { HelpLinks } from "../common/constants";
-import { getLocalizedString } from "../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
 
 export class ProjectFolderExistError extends UserError {
   constructor(path: string) {
-    super(new.target.name, getLocalizedString("error.ProjectFolderExistError", path), CoreSource);
+    super({
+      message: getDefaultString("error.ProjectFolderExistError", path),
+      showMessage: getLocalizedString("error.ProjectFolderExistError", path),
+      source: CoreSource,
+    });
   }
 }
 
 export class ProjectFolderInvalidError extends UserError {
   constructor(path: string) {
-    super(new.target.name, getLocalizedString("error.ProjectFolderInvalidError", path), CoreSource);
+    super(
+      new.target.name,
+      getDefaultString("error.ProjectFolderExistError", path),
+      CoreSource,
+      undefined,
+      undefined,
+      undefined,
+      getLocalizedString("error.ProjectFolderInvalidError", path)
+    );
   }
 }
 

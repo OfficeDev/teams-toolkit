@@ -173,9 +173,9 @@ export function InvalidStateError(pluginName: string, state: Json): SystemError 
 export function PluginHasNoTaskImpl(pluginName: string, task: string): SystemError {
   return new SystemError(
     CoreSource,
-    "PluginHasNoTaskImplError",
-    getDefaultString("error.PluginHasNoTaskImplError", pluginName, task),
-    getLocalizedString("error.PluginHasNoTaskImplError", pluginName, task)
+    "PluginHasNoTaskImpl",
+    getDefaultString("error.PluginHasNoTaskImpl", pluginName, task),
+    getLocalizedString("error.PluginHasNoTaskImpl", pluginName, task)
   );
 }
 
@@ -255,81 +255,117 @@ export function ModifiedSecretError(): UserError {
 
 export class LoadSolutionError extends SystemError {
   constructor() {
-    super(new.target.name, "Failed to load solution", CoreSource);
+    super(
+      CoreSource,
+      new.target.name,
+      getDefaultString("error.LoadSolutionError"),
+      getLocalizedString("error.LoadSolutionError")
+    );
   }
 }
 
 export class NotImplementedError extends SystemError {
   constructor(method: string) {
-    super(new.target.name, `Method not implemented:${method}`, CoreSource);
+    super(
+      CoreSource,
+      new.target.name,
+      getDefaultString("error.NotImplementedError", method),
+      getLocalizedString("error.NotImplementedError", method)
+    );
   }
 }
 
 export class ObjectIsUndefinedError extends SystemError {
   constructor(name: string) {
-    super(new.target.name, `Object ${name} is undefined, which is not expected`, CoreSource);
+    super(
+      CoreSource,
+      new.target.name,
+      getDefaultString("error.NotImplementedError", name),
+      getLocalizedString("error.NotImplementedError", name)
+    );
   }
 }
 
 export function SolutionConfigError(): UserError {
-  return new UserError("SolutionConfigError", "Load solution context failed.", CoreSource);
+  return new UserError(
+    CoreSource,
+    "SolutionConfigError",
+    getDefaultString("error.SolutionConfigError"),
+    getLocalizedString("error.SolutionConfigError")
+  );
 }
 
 export function ProjectSettingError(): UserError {
-  return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
+  return new UserError(
+    CoreSource,
+    "ProjectSettingError",
+    getDefaultString("error.ProjectSettingError"),
+    getLocalizedString("error.ProjectSettingError")
+  );
 }
 
 export function UpgradeCanceledError(): UserError {
   return new UserError(
-    // @see tools.isUserCancelError()
-    "UserCancel",
-    getLocalizedString("error.UpgradeCanceledError"),
-    CoreSource
+    CoreSource,
+    "UserCancel", // @see tools.isUserCancelError()
+    getDefaultString("error.UpgradeCanceledError"),
+    getLocalizedString("error.UpgradeCanceledError")
   );
 }
 
 export function NotJsonError(err: Error): UserError {
-  return new UserError(err, CoreSource, "NotJsonError");
+  return new UserError({ error: err, source: CoreSource });
 }
 
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
   return new UserError(
+    CoreSource,
     "FailedToParseResourceIdError",
-    `Failed to get '${name}' from resource id: '${resourceId}'`,
-    CoreSource
+    getDefaultString("error.FailedToParseResourceIdError", name, resourceId),
+    getLocalizedString("error.FailedToParseResourceIdError", name, resourceId)
   );
 }
 
 export function SPFxConfigError(file: string): UserError {
-  return new UserError("SPFxConfigError", `Load SPFx config ${file} failed.`, CoreSource);
+  return new UserError(
+    CoreSource,
+    "SPFxConfigError",
+    getDefaultString("error.SPFxConfigError", file),
+    getLocalizedString("error.SPFxConfigError", file)
+  );
 }
 
 export function NpmInstallError(path: string, e: Error): SystemError {
-  return new SystemError(e, CoreSource, "NpmInstallError");
+  return new SystemError({ error: e, source: CoreSource });
 }
 
 export function LoadPluginError(): SystemError {
-  return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
+  return new SystemError(
+    CoreSource,
+    "LoadPluginError",
+    getDefaultString("error.LoadPluginError"),
+    getLocalizedString("error.LoadPluginError")
+  );
 }
 
 export class OperationNotPermittedError extends UserError {
   constructor(operation: string) {
     super(
+      CoreSource,
       new.target.name,
-      getLocalizedString("error.OperationNotPermittedError", operation),
-      CoreSource
+      getDefaultString("error.OperationNotPermittedError", operation),
+      getLocalizedString("error.OperationNotPermittedError", operation)
     );
   }
 }
 
 export class NoCapabilityFoundError extends UserError {
   constructor(operation: Stage) {
-    super(
-      new.target.name,
-      getLocalizedString("core.deploy.noCapabilityFound", operation),
-      CoreSource,
-      undefined,
-      HelpLinks.HowToAddCapability
-    );
+    super({
+      source: CoreSource,
+      message: getDefaultString("core.deploy.noCapabilityFound", operation),
+      displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
+      helpLink: HelpLinks.HowToAddCapability,
+    });
   }
 }

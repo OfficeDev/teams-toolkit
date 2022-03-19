@@ -227,7 +227,7 @@ describe("OpenApiProcessor", () => {
       message: string;
       schemaVersion: OpenApiSchemaVersion;
       endpoint: string;
-      error: string;
+      error: [string, string];
     }[] = [
       {
         message: "v2 test-host",
@@ -271,7 +271,7 @@ describe("OpenApiProcessor", () => {
               input.endpoint
             )
           )
-          .Throw(input.error);
+          .Throw(input.error[0]);
       });
     });
   });

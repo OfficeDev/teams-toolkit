@@ -39,11 +39,11 @@ export const tips = {
 };
 
 export class ErrorMessages {
-  static readonly FailedSaveEnv = (envPath: string) => [
+  static readonly FailedSaveEnv = (envPath: string): [string, string] => [
     getDefaultString("error.frontend.FailedSaveEnv", envPath),
     getLocalizedString("error.frontend.FailedSaveEnv", envPath),
   ];
-  static readonly FailedLoadEnv = (envPath: string) => [
+  static readonly FailedLoadEnv = (envPath: string): [string, string] => [
     getDefaultString("error.frontend.FailedLoadEnv", envPath),
     getLocalizedString("error.frontend.FailedLoadEnv", envPath),
   ];
@@ -315,8 +315,8 @@ export class UnzipTemplateError extends FrontendPluginError {
 }
 
 export class FileSystemError extends FrontendPluginError {
-  constructor(message: string) {
-    super(ErrorType.System, "FileSystemError", [message, message], [tips.checkLog]);
+  constructor(messages: [string, string]) {
+    super(ErrorType.System, "FileSystemError", messages, [tips.checkLog]);
   }
 }
 

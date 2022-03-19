@@ -74,10 +74,14 @@ export class Messages {
   public static readonly BotResourceExist = (where: string): string =>
     getLocalizedString("plugins.bot.BotResourceExists", where);
 
-  public static readonly WorkingDirIsMissing = getLocalizedString("plugins.bot.WorkingDirMissing");
-  public static readonly FailToGetAzureCreds = getLocalizedString(
-    "plugins.bot.FailRetrieveAzureCredentials"
-  );
+  public static readonly WorkingDirIsMissing: [string, string] = [
+    getDefaultString("plugins.bot.WorkingDirMissing"),
+    getLocalizedString("plugins.bot.WorkingDirMissing"),
+  ];
+  public static readonly FailToGetAzureCreds: [string, string] = [
+    getDefaultString("plugins.bot.FailRetrieveAzureCredentials"),
+    getLocalizedString("plugins.bot.FailRetrieveAzureCredentials"),
+  ];
   public static readonly TryLoginAzure = getLocalizedString("plugins.bot.LoginToAzure");
   public static readonly SkipDeployNoUpdates = getLocalizedString("plugins.bot.SkipDeployment");
 
@@ -140,7 +144,10 @@ export class Messages {
     "plugins.bot.RegisterSubscription"
   );
   public static readonly RecoverConfig = getLocalizedString("plugins.bot.RecoverConfig");
-  public static readonly RecreateTheProject = getLocalizedString("plugins.bot.RecreateProject");
+  public static readonly RecreateTheProject: [string, string] = [
+    getDefaultString("plugins.bot.RecreateProject"),
+    getLocalizedString("plugins.bot.RecreateProject"),
+  ];
   public static readonly CheckCommandOutputAndTryToFixIt = getLocalizedString(
     "plugins.bot.CheckCommandOutput"
   );

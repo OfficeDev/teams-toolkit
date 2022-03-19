@@ -13,32 +13,36 @@ export class FxCICDPluginResultFactory {
 
   public static UserError(
     errorName: string,
-    errorMessage: string,
+    errorMessage: [string, string],
     showHelpLink: boolean,
     innerError?: any
   ): FxResult {
     return err(
-      new UserError(
-        errorName,
-        errorMessage,
-        FxCICDPluginResultFactory.source,
-        innerError?.stack,
-        showHelpLink ? FxCICDPluginResultFactory.defaultHelpLink : undefined,
-        innerError
-      )
+      new UserError({
+        name: errorName,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: FxCICDPluginResultFactory.source,
+        helpLink: showHelpLink ? FxCICDPluginResultFactory.defaultHelpLink : undefined,
+        error: innerError,
+      })
     );
   }
 
-  public static SystemError(errorName: string, errorMessage: string, innerError?: any): FxResult {
+  public static SystemError(
+    errorName: string,
+    errorMessage: [string, string],
+    innerError?: any
+  ): FxResult {
     return err(
-      new SystemError(
-        errorName,
-        errorMessage,
-        FxCICDPluginResultFactory.source,
-        innerError?.stack,
-        FxCICDPluginResultFactory.defaultIssueLink,
-        innerError
-      )
+      new SystemError({
+        name: errorName,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: FxCICDPluginResultFactory.source,
+        issueLink: FxCICDPluginResultFactory.defaultIssueLink,
+        error: innerError,
+      })
     );
   }
 

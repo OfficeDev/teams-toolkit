@@ -270,16 +270,16 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
         message: error.message,
       });
 
-      super(new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+      super(SolutionSource, new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
       // Reuse the original error object to prevent losing the stack info
       error.message = `${baseErrorMessage}, error: '${error.message}'`;
-      super(error, SolutionSource, new.target.name);
+      super({ error, source: SolutionSource });
     } else {
       super(
+        SolutionSource,
         new.target.name,
-        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`,
-        SolutionSource
+        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`
       );
     }
   }

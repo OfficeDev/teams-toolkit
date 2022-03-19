@@ -62,14 +62,7 @@ async function tryConvertToUserError(err: SystemError): Promise<UserError | Syst
   if (!msg) return err;
   for (const reg of Regs) {
     if (reg.test(msg) === true) {
-      const userError = new UserError(
-        err.name,
-        err.message,
-        err.source,
-        undefined,
-        undefined,
-        err.innerError
-      );
+      const userError = new UserError(err.source, err.name, err.message);
       userError.stack = err.stack;
       return userError;
     }

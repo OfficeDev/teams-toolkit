@@ -4,59 +4,41 @@
 import { getDefaultString, getLocalizedString } from "../../localizeUtils";
 
 export const Messages = {
-  learnMoreButtonText: "Learn more",
+  learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
   defaultErrorMessage: [
     getDefaultString("error.depChecker.DefaultErrorMessage"),
     getLocalizedString("error.depChecker.DefaultErrorMessage"),
   ],
 
-  startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
-  finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
-  needReplaceWithFuncCoreToolV3: `You must update to @NameVersion to debug your local functions.`,
-  needInstallFuncCoreTool: `You must have @NameVersion installed to debug your local functions.`,
-  failToInstallFuncCoreTool: `Failed to install @NameVersion. Install @NameVersion manually.`,
-  failToValidateFuncCoreTool: `Failed to validate @NameVersion after installation.`,
+  startInstallFunctionCoreTool: getLocalizedString("depChecker.startInstallFunctionCoreTool"),
+  finishInstallFunctionCoreTool: getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
+  needReplaceWithFuncCoreToolV3: getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
+  needInstallFuncCoreTool: getLocalizedString("depChecker.needInstallFuncCoreTool"),
+  failToInstallFuncCoreTool: getLocalizedString("depChecker.failToInstallFuncCoreTool"),
+  failToValidateFuncCoreTool: getLocalizedString("depChecker.failToValidateFuncCoreTool"),
 
-  startInstallNgrok: `Downloading and installing @NameVersion.`,
-  finishInstallNgrok: `Successfully installed @NameVersion.`,
-  needInstallNgrok: `You must have @NameVersion installed to debug your local bot.`,
-  failToInstallNgrok: `Failed to install @NameVersion. Install @NameVersion manually.`,
-  failToValidateNgrok: `Failed to validate @NameVersion after installation.`,
+  startInstallNgrok: getLocalizedString("depChecker.startInstallNgrok"),
+  finishInstallNgrok: getLocalizedString("depChecker.finishInstallNgrok"),
+  needInstallNgrok: getLocalizedString("depChecker.needInstallNgrok"),
+  failToInstallNgrok: getLocalizedString("depChecker.failToInstallNgrok"),
+  failToValidateNgrok: getLocalizedString("depChecker.failToValidateNgrok"),
 
-  downloadDotnet: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
-  finishInstallDotnet: `Successfully installed @NameVersion.`,
-  useGlobalDotnet: `Using dotnet from PATH:`,
-  dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
-  dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install @NameVersion. Install @NameVersion manually and restart Visual Studio Code.`,
+  downloadDotnet: getLocalizedString("depChecker.downloadDotnet"),
+  finishInstallDotnet: getLocalizedString("depChecker.finishInstallDotnet"),
+  useGlobalDotnet: getLocalizedString("depChecker.useGlobalDotnet"),
+  dotnetInstallStderr: getLocalizedString("depChecker.dotnetInstallStderr"),
+  dotnetInstallErrorCode: getLocalizedString("depChecker.dotnetInstallErrorCode"),
+  failToInstallDotnet: getLocalizedString("depChecker.failToInstallDotnet"),
 
-  NodeNotFound: `Cannot find Node.js.
+  NodeNotFound: getLocalizedString("depChecker.NodeNotFound"),
+  NodeNotSupported: getLocalizedString("depChecker.NodeNotSupported"),
 
-Teams Toolkit requires Node.js; the recommended version is v14.
+  dotnetNotFound: getLocalizedString("depChecker.dotnetNotFound"),
+  depsNotFound: getLocalizedString("depChecker.depsNotFound"),
 
-Click "Learn more" to learn how to install the Node.js.
+  linuxDepsNotFound: getLocalizedString("depChecker.linuxDepsNotFound"),
 
-(If you just installed Node.js, restart Visual Studio Code for the change to take effect.)`,
-  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
-
-Click "Learn more" to learn more about the supported Node.js versions.
-
-(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)`,
-
-  dotnetNotFound: `Cannot find @NameVersion. For the details why .NET SDK is needed, refer to @HelpLink`,
-  depsNotFound: `Cannot find @SupportedPackages.
-
-Teams Toolkit requires these dependencies.
-
-Click "Install" to install @InstallPackages.`,
-
-  linuxDepsNotFound: `Cannot find @SupportedPackages.
-
-Teams Toolkit requires these dependencies. 
-
-(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
-
-  linuxDepsNotFoundHelpLinkMessage: `Cannot find @SupportedPackages.
-
-Teams Toolkit requires these dependencies.`,
+  linuxDepsNotFoundHelpLinkMessage: getLocalizedString(
+    "depChecker.linuxDepsNotFoundHelpLinkMessage"
+  ),
 };

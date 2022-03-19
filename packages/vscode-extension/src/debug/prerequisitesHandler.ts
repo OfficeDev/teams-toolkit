@@ -146,7 +146,7 @@ async function checkPort(
     return {
       checker: Checker.Ports,
       result: ResultStatus.failed,
-      error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
+      error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
     };
   }
   return {
@@ -403,9 +403,9 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
         // sideloading disabled
         result = ResultStatus.failed;
         error = new UserError(
+          ExtensionSource,
           ExtensionErrors.PrerequisitesValidationError,
-          localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-          ExtensionSource
+          localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
         );
       }
     }
@@ -668,9 +668,9 @@ async function checkNpmInstall(
       if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
         result = ResultStatus.failed;
         error = new UserError(
+          ExtensionSource,
           "NpmInstallFailure",
-          `Failed to npm install for ${component}`,
-          ExtensionSource
+          `Failed to npm install for ${component}`
         );
       }
     }

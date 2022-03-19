@@ -1215,7 +1215,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     } else {
       message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
     }
-    const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
+    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
     const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
       [TelemetryProperty.DebugAppId]: localAppId,
@@ -1683,13 +1683,13 @@ export async function openSubscriptionInPortal(env: string): Promise<Result<Void
     return ok(Void);
   } else {
     const resourceInfoNotFoundError = new UserError(
+      ExtensionSource,
       ExtensionErrors.EnvResourceInfoNotFoundError,
       util.format(
         localize("teamstoolkit.handlers.resourceInfoNotFound"),
         ResourceInfo.Subscription,
         env
-      ),
-      ExtensionSource
+      )
     );
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.OpenSubscriptionInPortal,
@@ -1738,9 +1738,9 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
     }
 
     const resourceInfoNotFoundError = new UserError(
+      ExtensionSource,
       ExtensionErrors.EnvResourceInfoNotFoundError,
-      errorMessage,
-      ExtensionSource
+      errorMessage
     );
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.OpenSubscriptionInPortal,
@@ -2219,9 +2219,9 @@ export async function openConfigStateFile(args: any[]) {
   const workspacePath = getWorkspacePath();
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
+      ExtensionSource,
       ExtensionErrors.NoWorkspaceError,
-      localize("teamstoolkit.handlers.noOpenWorkspace"),
-      ExtensionSource
+      localize("teamstoolkit.handlers.noOpenWorkspace")
     );
     showError(noOpenWorkspaceError);
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2233,9 +2233,9 @@ export async function openConfigStateFile(args: any[]) {
 
   if (!isValidProject(workspacePath)) {
     const invalidProjectError = new UserError(
+      ExtensionSource,
       ExtensionErrors.InvalidProject,
-      localize("teamstoolkit.handlers.invalidProject"),
-      ExtensionSource
+      localize("teamstoolkit.handlers.invalidProject")
     );
     showError(invalidProjectError);
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2276,18 +2276,18 @@ export async function openConfigStateFile(args: any[]) {
   if (!(await fs.pathExists(sourcePath))) {
     if (isConfig) {
       const noEnvError = new UserError(
+        ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
       return err(noEnvError);
     } else {
       const noEnvError = new UserError(
+        ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value)
       );
       const provision = {
         title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),

@@ -38,7 +38,7 @@ export class CLITelemetry implements DepsTelemetry {
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
+    const error = new UserError(this._telemetryComponentType, eventName, errorMessage);
     cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 

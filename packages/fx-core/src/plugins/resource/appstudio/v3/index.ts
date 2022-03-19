@@ -324,9 +324,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }
@@ -374,9 +374,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }

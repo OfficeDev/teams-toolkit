@@ -185,7 +185,7 @@ export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",
   "Solution"
 );
-export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
+export const CancelError = new UserError("Solution", "UserCancel", "UserCancel");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 

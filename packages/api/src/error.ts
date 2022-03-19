@@ -218,12 +218,7 @@ export class UnknownError extends SystemError {
   }
 }
 
-export const UserCancelError: UserError = new UserError(
-  "UI",
-  "UserCancel",
-  "User canceled.",
-  "User canceled."
-);
+export const UserCancelError: UserError = new UserError("UI", "UserCancel", "User canceled.");
 
 export class EmptyOptionError extends SystemError {
   constructor(source?: string) {

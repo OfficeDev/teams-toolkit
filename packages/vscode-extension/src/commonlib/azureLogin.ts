@@ -151,9 +151,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       if (!userConfirmation) {
         // throw user cancel error
         throw new UserError(
+          "Login",
           ExtensionErrors.UserCancel,
-          localize("teamstoolkit.common.userCancel"),
-          "Login"
+          localize("teamstoolkit.common.userCancel")
         );
       }
     }
@@ -165,9 +165,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount = this.getAzureAccount();
     if (azureAccount.status != loggedIn) {
       throw new UserError(
+        localize("teamstoolkit.codeFlowLogin.loginComponent"),
         localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
-        localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
-        localize("teamstoolkit.codeFlowLogin.loginComponent")
+        localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
       );
     }
   }
@@ -277,9 +277,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (!userConfirmation) {
       // throw user cancel error
       throw new UserError(
+        "SignOut",
         ExtensionErrors.UserCancel,
-        localize("teamstoolkit.common.userCancel"),
-        "SignOut"
+        localize("teamstoolkit.common.userCancel")
       );
     }
     try {
@@ -366,9 +366,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     throw new UserError(
+      "Login",
       ExtensionErrors.UnknownSubscription,
-      localize("teamstoolkit.azureLogin.unknownSubscription"),
-      "Login"
+      localize("teamstoolkit.azureLogin.unknownSubscription")
     );
   }
 
@@ -506,9 +506,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const subscriptionList = await this.listSubscriptions();
     if (!subscriptionList || subscriptionList.length == 0) {
       throw new UserError(
+        localize("teamstoolkit.codeFlowLogin.loginComponent"),
         localize("teamstoolkit.azureLogin.noSubscriptionFound"),
-        localize("teamstoolkit.azureLogin.failToFindSubscription"),
-        localize("teamstoolkit.codeFlowLogin.loginComponent")
+        localize("teamstoolkit.azureLogin.failToFindSubscription")
       );
     }
     if (subscriptionList && subscriptionList.length == 1) {

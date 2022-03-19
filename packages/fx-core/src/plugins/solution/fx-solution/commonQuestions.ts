@@ -123,14 +123,14 @@ export async function checkSubscription(
   if (!targetSubInfo) {
     return err(
       new UserError(
+        SolutionSource,
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
           envInfo.data.envName
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.data.envName
-        )}' file.`,
-        SolutionSource
+        )}' file.`
       )
     );
   }
@@ -155,9 +155,9 @@ export async function checkM365Tenant(
   if ((appStudioJson as any).tid && (appStudioJson as any).tid != m365TenantId) {
     return err(
       new UserError(
+        "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.data.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.data.envName}' environment. Please sign out and sign in with the correct M365 account.`
       )
     );
   }

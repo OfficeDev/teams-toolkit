@@ -99,9 +99,9 @@ export class ResourceGroupHelper {
     if (!azureToken)
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential",
-          SolutionSource
+          "Failed to get azure credential"
         )
       );
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
@@ -112,9 +112,9 @@ export class ResourceGroupHelper {
     if (maybeExist.value) {
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToCreateResourceGroup,
-          `Failed to create resource group "${resourceGroupName}": the resource group exists`,
-          SolutionSource
+          `Failed to create resource group "${resourceGroupName}": the resource group exists`
         )
       );
     }
@@ -171,9 +171,9 @@ export class ResourceGroupHelper {
     if (!azureToken)
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential",
-          SolutionSource
+          "Failed to get azure credential"
         )
       );
     const subscriptionClient = new SubscriptionClient(azureToken);
@@ -281,7 +281,7 @@ export class ResourceGroupHelper {
     const targetResourceGroupName = inputs.targetResourceGroupName;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
       return err(
-        new UserError("InvalidInputError", "Invalid targetResourceGroupName", SolutionSource)
+        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
       );
     }
     const resourceGroupName = inputs.targetResourceGroupName;

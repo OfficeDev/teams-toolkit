@@ -26,9 +26,9 @@ export async function checkPermissionRequest(
   if (!(await fs.pathExists(filePath))) {
     return err(
       new UserError(
+        Plugins.pluginNameShort,
         SolutionError.MissingPermissionsJson,
-        `${filePath} is missing`,
-        Plugins.pluginNameShort
+        `${filePath} is missing`
       )
     );
   }

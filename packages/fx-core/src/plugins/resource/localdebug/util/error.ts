@@ -7,8 +7,8 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 
 export function MissingStep(operation: string, requiredStep: string): UserError {
   return new UserError(
-    "MissingStep",
     "localdebug-plugin",
+    "MissingStep",
     getDefaultString("error.MissingStep", requiredStep, operation),
     getLocalizedString("error.MissingStep", requiredStep, operation)
   );

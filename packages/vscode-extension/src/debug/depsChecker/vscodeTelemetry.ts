@@ -38,7 +38,7 @@ export class VSCodeTelemetry implements DepsTelemetry {
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
+    const error = new UserError(this._telemetryComponentType, eventName, errorMessage);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 

@@ -161,9 +161,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
             [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.common.userCancel"),
-            "Login"
+            localize("teamstoolkit.common.userCancel")
           );
         }
         this.graphCodeFlowInstance.status = loggingIn;

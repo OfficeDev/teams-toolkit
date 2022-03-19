@@ -80,9 +80,9 @@ export async function provisionResource(
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
+        "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`
       )
     );
   }

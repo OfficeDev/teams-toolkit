@@ -53,7 +53,11 @@ export function ConfigNotFoundError(configpath: string): UserError {
 
 export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemError {
   e.message = `Cannot download this sample app from ${sampleAppUrl}. Error: ${e.message}`;
-  return new SystemError(e, constants.cliSource, "SampleAppDownloadFailed");
+  return new SystemError({
+    error: e,
+    source: constants.cliSource,
+    name: "SampleAppDownloadFailed",
+  });
 }
 
 export function ReadFileError(e: Error): SystemError | UserError {
@@ -64,15 +68,15 @@ export function ReadFileError(e: Error): SystemError | UserError {
       `${e.message}. Please check the format of it.`
     );
   }
-  return new SystemError(e, constants.cliSource, "ReadFileError");
+  return new SystemError({ error: e, source: constants.cliSource, name: "ReadFileError" });
 }
 
 export function WriteFileError(e: Error): SystemError {
-  return new SystemError(e, constants.cliSource, "WriteFileError");
+  return new SystemError({ error: e, source: constants.cliSource, name: "WriteFileError" });
 }
 
 export function UnknownError(e: Error): SystemError {
-  return new SystemError(e, constants.cliSource, "UnknownError");
+  return new SystemError({ error: e, source: constants.cliSource, name: "UnknownError" });
 }
 
 export function ProjectFolderExist(path: string): UserError {

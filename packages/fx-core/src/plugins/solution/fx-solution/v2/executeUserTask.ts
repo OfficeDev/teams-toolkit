@@ -157,7 +157,7 @@ export async function executeUserTask(
   return err(
     new UserError(
       SolutionSource,
-      `executeUserTaskRouteFailed`,
+      "executeUserTaskRouteFailed",
       getDefaultString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
       getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func))
     )
@@ -170,9 +170,10 @@ export function canAddCapability(
 ): Result<Void, FxError> {
   if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddCapabilityNotSupport,
-      getLocalizedString("core.addCapability.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addCapability.onlySupportAzure"),
+      getLocalizedString("core.addCapability.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, telemetryReporter)
@@ -188,9 +189,10 @@ export function canAddResource(
   const isVS = isVSProject(projectSetting);
   if (isVS) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.notSupportForVSProject"),
-      SolutionSource
+      getDefaultString("core.addResource.notSupportForVSProject"),
+      getLocalizedString("core.addResource.notSupportForVSProject")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -199,9 +201,10 @@ export function canAddResource(
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addResource.onlySupportAzure"),
+      getLocalizedString("core.addResource.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -306,9 +309,10 @@ export async function addCapability(
   const isMEAddable = !meExceedRes.value;
   if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
+      SolutionSource,
       SolutionError.FailedToAddCapability,
-      getLocalizedString("core.addCapability.exceedMaxLimit"),
-      SolutionSource
+      getDefaultString("core.addCapability.exceedMaxLimit"),
+      getLocalizedString("core.addCapability.exceedMaxLimit")
     );
     return err(
       sendErrorTelemetryThenReturnError(

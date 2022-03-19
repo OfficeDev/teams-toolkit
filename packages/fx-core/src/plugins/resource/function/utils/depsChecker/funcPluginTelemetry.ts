@@ -57,7 +57,7 @@ export class FuncPluginTelemetry implements DepsTelemetry {
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, this._source);
+    const error = new UserError(this._source, eventName, errorMessage);
     TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 

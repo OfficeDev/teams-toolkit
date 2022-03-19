@@ -30,24 +30,24 @@ export async function getResponseWithErrorHandling<T>(
           if (v.error instanceof UserError || v.error instanceof SystemError) {
             resolve(err(v.error));
           } else if ((v.error as any).errorType === "UserError") {
-            const userError = new UserError(
-              new Error(v.error.message),
-              v.error.source,
-              v.error.name,
-              (v.error as any).helpLink
-            );
+            const userError = new UserError({
+              message: v.error.message,
+              source: v.error.source,
+              name: v.error.name,
+              helpLink: (v.error as any).helpLink,
+            });
             userError.stack = v.error.stack;
             userError.timestamp = v.error.timestamp;
             userError.userData = v.error.userData;
             userError.innerError = v.error.innerError;
             resolve(err(userError));
           } else {
-            const systemError = new SystemError(
-              new Error(v.error.message),
-              v.error.source,
-              v.error.name,
-              (v.error as any).issueLink
-            );
+            const systemError = new SystemError({
+              message: v.error.message,
+              source: v.error.source,
+              name: v.error.name,
+              issueLink: (v.error as any).issueLink,
+            });
             systemError.stack = v.error.stack;
             systemError.timestamp = v.error.timestamp;
             systemError.userData = v.error.userData;

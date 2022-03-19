@@ -29,11 +29,11 @@ export async function executeThunks<R>(
         }
         return err<R, FxError>(
           new SystemError(
+            SolutionSource,
             "UnknownError",
             `[SolutionV2.executeConcurrently] unknown error, plugin: ${
               namedThunk.pluginName
-            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
-            SolutionSource
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
           )
         );
       }
@@ -57,11 +57,11 @@ export async function executeConcurrently<R>(
         }
         return err(
           new SystemError(
+            SolutionSource,
             "UnknownError",
             `[SolutionV2.executeConcurrently] unknown error, plugin: ${
               namedThunk.pluginName
-            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
-            SolutionSource
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
           )
         );
       }

@@ -27,7 +27,7 @@ import { Container } from "typedi";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -546,9 +546,10 @@ export async function getM365TenantId(
   if (appstudioTokenJson === undefined) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoAppStudioToken,
-        "Graph token json is undefined",
-        SolutionSource
+        getDefaultString("error.NoAppStudioToken"),
+        getLocalizedString("error.NoAppStudioToken")
       )
     );
   }
@@ -556,9 +557,10 @@ export async function getM365TenantId(
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId,
-        "Cannot find Teams app tenant id",
-        SolutionSource
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
       )
     );
   }

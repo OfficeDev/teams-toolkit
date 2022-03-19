@@ -672,9 +672,9 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
           Component.core,
           TelemetryEvent.CheckSideloading,
           new SystemError(
+            "M365Account",
             "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`,
-            "M365Account"
+            `AppStudio response code: ${response.status}, body: ${response.data}`
           )
         );
       }

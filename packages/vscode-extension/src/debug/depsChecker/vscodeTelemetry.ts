@@ -48,11 +48,11 @@ export class VSCodeTelemetry implements DepsTelemetry {
     errorStack: string
   ): void {
     const error = new SystemError(
-      eventName,
-      `errorMsg=${errorMessage},errorStack=${errorStack}`,
       this._telemetryComponentType,
-      errorStack
+      eventName,
+      `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
+    error.stack = errorStack;
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
   }
 

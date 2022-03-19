@@ -36,7 +36,7 @@ describe(FunctionPluginInfo.pluginName, async () => {
 
     it("Test catch SystemError", async () => {
       // Arrange
-      const errorOld = new SystemError("ut-name", "ut-msg", "ut-source");
+      const errorOld = new SystemError("ut-source", "ut-name", "ut-msg");
       const errorNew = new FunctionPluginError(
         ErrorType.System,
         "ut-code",

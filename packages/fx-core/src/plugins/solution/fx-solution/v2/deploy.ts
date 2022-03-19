@@ -63,9 +63,9 @@ export async function deploy(
     } else {
       return err(
         new SystemError(
+          SolutionSource,
           SolutionError.NoAppStudioToken,
-          "App Studio json is undefined",
-          SolutionSource
+          "App Studio json is undefined"
         )
       );
     }

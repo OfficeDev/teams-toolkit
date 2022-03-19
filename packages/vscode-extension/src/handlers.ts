@@ -784,9 +784,9 @@ export async function runCommand(
       }
       default:
         throw new SystemError(
+          ExtensionSource,
           ExtensionErrors.UnsupportedOperation,
-          util.format(localize("teamstoolkit.handlers.operationNotSupport"), stage),
-          ExtensionSource
+          util.format(localize("teamstoolkit.handlers.operationNotSupport"), stage)
         );
     }
   } catch (e) {
@@ -1626,9 +1626,9 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       return ok(null);
     } else {
       const FxError = new SystemError(
+        ExtensionSource,
         "FileNotFound",
-        util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
       );
       showError(FxError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
@@ -2205,9 +2205,9 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     return ok(manifestFile);
   } else {
     const error = new SystemError(
+      ExtensionSource,
       "FileNotFound",
-      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile),
-      ExtensionSource
+      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
     );
     showError(error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);

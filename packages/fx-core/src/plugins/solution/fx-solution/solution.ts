@@ -206,7 +206,7 @@ export class TeamsAppSolution implements Solution {
     });
     if (!ctx.projectSettings)
       return err(
-        new SystemError(SolutionError.InternelError, "projectSettings undefined", SolutionSource)
+        new SystemError(SolutionSource, SolutionError.InternelError, "projectSettings undefined")
       );
     // ensure that global namespace is present
     if (!ctx.envInfo.state.has(GLOBAL_CONFIG)) {
@@ -1038,7 +1038,7 @@ export class TeamsAppSolution implements Solution {
         return err(e);
       }
       return err(
-        new SystemError("UnknownError", "check point 1 - " + JSON.stringify(e), SolutionSource)
+        new SystemError(SolutionSource, "UnknownError", "check point 1 - " + JSON.stringify(e))
       );
     }
     return await this.doLocalDebug(ctx);
@@ -1165,9 +1165,9 @@ export class TeamsAppSolution implements Solution {
       }
       return err(
         new SystemError(
+          SolutionSource,
           "UnknownError",
-          `check point ${checkPoint} - ${JSON.stringify(e)}`,
-          SolutionSource
+          `check point ${checkPoint} - ${JSON.stringify(e)}`
         )
       );
     }

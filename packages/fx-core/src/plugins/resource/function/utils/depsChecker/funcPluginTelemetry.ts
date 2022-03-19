@@ -67,11 +67,11 @@ export class FuncPluginTelemetry implements DepsTelemetry {
     errorStack: string
   ): void {
     const error = new SystemError(
-      eventName,
-      `errorMsg=${errorMessage},errorStack=${errorStack}`,
       this._source,
-      errorStack
+      eventName,
+      `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
+    error.stack = errorStack;
     TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 }

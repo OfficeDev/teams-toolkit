@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { validate as uuidValidate } from "uuid";
-import { UserError } from "../../../../../../api/build";
+import { UserError } from "@microsoft/teamsfx-api";
 import { Plugins } from "../constants";
 import { ConfigErrorMessages } from "../errors";
 

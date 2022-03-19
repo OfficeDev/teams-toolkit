@@ -26,19 +26,21 @@ export class DotnetPluginError extends FrontendPluginError {
   constructor(
     errorType: ErrorType,
     code: string,
-    message: string,
+    messages: [string, string],
     suggestions: string[],
     helpLink?: string,
     innerError?: Error
   ) {
-    super(errorType, code, message, suggestions, helpLink);
+    super(errorType, code, messages, suggestions, helpLink);
     this.innerError = innerError;
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
+    return `${this.messages[0]} Suggestions: ${this.suggestions.join(" ")}`;
   }
-
+  getDefaultMessage(): string {
+    return `${this.messages[1]} Suggestions: ${this.suggestions.join(" ")}`;
+  }
   setInnerError(error: Error): void {
     this.innerError = error;
   }
@@ -50,24 +52,37 @@ export class DotnetPluginError extends FrontendPluginError {
 
 export class NoProjectSettingError extends DotnetPluginError {
   constructor() {
-    super(ErrorType.System, "NoProjectSettingError", "Failed to load project setting", []);
+    super(
+      ErrorType.System,
+      "NoProjectSettingError",
+      ["Failed to load project setting", "Failed to load project setting"],
+      []
+    );
   }
 }
 
 export class FetchConfigError extends DotnetPluginError {
   constructor(key: string) {
-    super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration`, [
-      tips.restoreEnvironment,
-    ]);
+    super(
+      ErrorType.User,
+      "FetchConfigError",
+      [`Failed to find ${key} from configuration`, `Failed to find ${key} from configuration`],
+      [tips.restoreEnvironment]
+    );
   }
 }
 
 export class ProjectPathError extends DotnetPluginError {
   constructor(projectFilePath: string) {
-    super(ErrorType.User, "ProjectPathError", `Failed to find target project ${projectFilePath}.`, [
-      tips.checkLog,
-      tips.restoreEnvironment,
-    ]);
+    super(
+      ErrorType.User,
+      "ProjectPathError",
+      [
+        `Failed to find target project ${projectFilePath}.`,
+        `Failed to find target project ${projectFilePath}.`,
+      ],
+      [tips.checkLog, tips.restoreEnvironment]
+    );
   }
 }
 
@@ -76,7 +91,7 @@ export class BuildError extends DotnetPluginError {
     super(
       ErrorType.User,
       "BuildError",
-      "Failed to build Dotnet project.",
+      ["Failed to build Dotnet project.", "Failed to build Dotnet project."],
       [tips.checkLog, tips.reDeploy],
       undefined,
       innerError
@@ -86,37 +101,45 @@ export class BuildError extends DotnetPluginError {
 
 export class ZipError extends DotnetPluginError {
   constructor() {
-    super(ErrorType.User, "ZipError", "Failed to generate zip package.", [
-      tips.checkFsPermissions,
-      tips.reDeploy,
-    ]);
+    super(
+      ErrorType.User,
+      "ZipError",
+      ["Failed to generate zip package.", "Failed to generate zip package."],
+      [tips.checkFsPermissions, tips.reDeploy]
+    );
   }
 }
 
 export class PublishCredentialError extends DotnetPluginError {
   constructor() {
-    super(ErrorType.User, "PublishCredentialError", "Failed to retrieve publish credential.", [
-      tips.doProvision,
-      tips.reDeploy,
-    ]);
+    super(
+      ErrorType.User,
+      "PublishCredentialError",
+      ["Failed to retrieve publish credential.", "Failed to retrieve publish credential."],
+      [tips.doProvision, tips.reDeploy]
+    );
   }
 }
 
 export class UploadZipError extends DotnetPluginError {
   constructor() {
-    super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [
-      tips.checkNetwork,
-      tips.reDeploy,
-    ]);
+    super(
+      ErrorType.User,
+      "UploadZipError",
+      ["Failed to upload zip package.", "Failed to upload zip package."],
+      [tips.checkNetwork, tips.reDeploy]
+    );
   }
 }
 
 export class FileIOError extends DotnetPluginError {
   constructor(path: string) {
-    super(ErrorType.User, "FileIOError", `Failed to read/write ${path}.`, [
-      tips.checkFsPermissions,
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "FileIOError",
+      [`Failed to read/write ${path}.`, `Failed to read/write ${path}.`],
+      [tips.checkFsPermissions, tips.checkLog]
+    );
   }
 }
 

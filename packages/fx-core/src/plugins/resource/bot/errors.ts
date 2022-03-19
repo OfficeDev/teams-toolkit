@@ -257,7 +257,7 @@ export class ConfigValidationError extends PluginError {
       ErrorType.USER,
       ErrorNames.CONFIG_VALIDATION_ERROR,
       Messages.SomethingIsInvalidWithValue(name, value),
-      [Messages.RecoverConfig, Messages.RecreateTheProject]
+      [Messages.RecoverConfig, Messages.RecreateTheProject[1]]
     );
   }
 }
@@ -268,7 +268,7 @@ export class PackDirExistenceError extends PluginError {
       ErrorType.USER,
       ErrorNames.PACK_DIR_EXISTENCE_ERROR,
       Messages.SomethingIsNotExisting("pack directory"),
-      [Messages.RecreateTheProject]
+      [Messages.RecreateTheProject[1]]
     );
   }
 }

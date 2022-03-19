@@ -9,7 +9,7 @@ import { localize } from "../utils/localizeUtils";
 import { generateAccountHint } from "./teamsfxDebugProvider";
 
 import axios from "axios";
-import { returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
+import { UserError, SystemError } from "@microsoft/teamsfx-api";
 import { environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 
 export async function showInstallAppInTeamsMessage(detected: boolean): Promise<boolean> {
@@ -34,10 +34,10 @@ export async function showInstallAppInTeamsMessage(detected: boolean): Promise<b
       ? await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName())
       : await commonUtils.getDebugConfig(true);
     if (debugConfig?.appId === undefined) {
-      throw returnUserError(
-        new Error("Debug config not found"),
+      throw new UserError(
         ExtensionSource,
-        ExtensionErrors.GetTeamsAppInstallationFailed
+        ExtensionErrors.GetTeamsAppInstallationFailed,
+        "Debug config not found"
       );
     }
 
@@ -58,10 +58,10 @@ export async function showInstallAppInTeamsMessage(detected: boolean): Promise<b
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
   const loginStatus = await graphLoginInstance.getStatus();
   if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
-    throw returnUserError(
-      new Error("M365 account info not found"),
+    throw new UserError(
       ExtensionSource,
-      ExtensionErrors.GetTeamsAppInstallationFailed
+      ExtensionErrors.GetTeamsAppInstallationFailed,
+      "M365 account info not found"
     );
   }
   const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${appId}'`;
@@ -76,6 +76,10 @@ export async function getTeamsAppInternalId(appId: string): Promise<string | und
     }
     return undefined;
   } catch (error: any) {
-    throw returnSystemError(error, ExtensionSource, ExtensionErrors.GetTeamsAppInstallationFailed);
+    throw new SystemError({
+      error,
+      source: ExtensionSource,
+      name: ExtensionErrors.GetTeamsAppInstallationFailed,
+    });
   }
 }

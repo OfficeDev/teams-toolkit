@@ -81,7 +81,7 @@ export class KeyVaultPlugin implements Plugin {
       } else {
         const UnhandledErrorCode = "UnhandledError";
         TelemetryUtils.sendErrorEvent(stage, UnhandledErrorCode, Telemetry.systemError, e?.message);
-        return err(ResultFactory.SystemError(UnhandledErrorCode, e?.message, e));
+        return err(ResultFactory.SystemError(UnhandledErrorCode, [e?.message, e?.message], e));
       }
     }
   }

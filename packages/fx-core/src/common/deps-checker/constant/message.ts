@@ -1,9 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getDefaultString, getLocalizedString } from "../../localizeUtils";
+
 export const Messages = {
   learnMoreButtonText: "Learn more",
-  defaultErrorMessage: "Install the required dependencies manually.",
+  defaultErrorMessage: [
+    getDefaultString("error.depChecker.DefaultErrorMessage"),
+    getLocalizedString("error.depChecker.DefaultErrorMessage"),
+  ],
 
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,

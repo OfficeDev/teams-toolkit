@@ -9,8 +9,7 @@ import {
   ProductName,
   ProjectSettings,
   Result,
-  returnSystemError,
-  returnUserError,
+  SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import {
@@ -393,10 +392,10 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
     if (token === undefined) {
       // corner case but need to handle
       result = ResultStatus.failed;
-      error = returnSystemError(
-        new Error("No M365 account login"),
+      error = new SystemError(
         ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
+        ExtensionErrors.PrerequisitesValidationError,
+        "No M365 account login"
       );
     } else {
       const isSideloadingEnabled = await getSideloadingStatus(token);
@@ -553,12 +552,12 @@ async function resolveLocalCertificate(
 
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
-      error = returnUserError(
-        new Error("Skip trusting development certificate for localhost."),
-        ExtensionSource,
-        "SkipTrustDevCertError",
-        trustDevCertHelpLink
-      );
+      error = new UserError({
+        source: ExtensionSource,
+        name: "SkipTrustDevCertError",
+        helpLink: trustDevCertHelpLink,
+        message: "Skip trusting development certificate for localhost.",
+      });
     } else if (localCertResult.isTrusted === false) {
       result = ResultStatus.failed;
       error = localCertResult.error;
@@ -586,12 +585,12 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
     }
   }
   return error instanceof DepsCheckerError
-    ? returnUserError(
+    ? new UserError({
         error,
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError,
-        error.helpLink
-      )
+        source: ExtensionSource,
+        name: ExtensionErrors.PrerequisitesValidationError,
+        helpLink: error.helpLink,
+      })
     : assembleError(error);
 }
 
@@ -740,12 +739,10 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      throw returnUserError(
-        new Error(
-          `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
-        ),
+      throw new UserError(
         ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
+        ExtensionErrors.PrerequisitesValidationError,
+        localize("teamstoolkit.PrerequisitesValidationError")
       );
     }
   }

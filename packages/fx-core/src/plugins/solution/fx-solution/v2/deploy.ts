@@ -6,10 +6,10 @@ import {
   Json,
   ok,
   Result,
-  returnUserError,
   v2,
   Void,
   SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
@@ -43,10 +43,11 @@ export async function deploy(
 
   if (inAzureProject && !provisioned) {
     return err(
-      returnUserError(
-        new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)),
+      new UserError(
         SolutionSource,
-        SolutionError.CannotDeployBeforeProvision
+        SolutionError.CannotDeployBeforeProvision,
+        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName),
+        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
       )
     );
   }
@@ -85,11 +86,7 @@ export async function deploy(
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
     if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
       return err(
-        returnUserError(
-          new Error(`No plugin selected`),
-          SolutionSource,
-          SolutionError.NoResourcePluginSelected
-        )
+        new UserError(SolutionSource, SolutionError.NoResourcePluginSelected, "No plugin selected")
       );
     }
   }
@@ -121,10 +118,10 @@ export async function deploy(
 
   if (thunks.length === 0) {
     return err(
-      returnUserError(
-        new Error(`invalid options: [${optionsToDeploy.join(", ")}]`),
+      new UserError(
         SolutionSource,
-        SolutionError.NoResourcePluginSelected
+        SolutionError.NoResourcePluginSelected,
+        `invalid options: [${optionsToDeploy.join(", ")}]`
       )
     );
   }

@@ -3,13 +3,13 @@ import {
   FxError,
   UserError,
   TokenProvider,
-  returnSystemError,
   v2,
   v3,
   Result,
   Void,
   err,
   ok,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -32,7 +32,7 @@ import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { deployArmTemplates } from "../arm";
-import Container from "typedi";
+import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
@@ -54,11 +54,7 @@ export async function provisionResource(
   // check projectPath
   if (inputs.projectPath === undefined) {
     return err(
-      returnSystemError(
-        new Error("projectPath is undefined"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
+      new SystemError(SolutionSource, SolutionError.InternelError, "projectPath is undefined")
     );
   }
   // Just to trigger M365 login before the concurrent execution of localDebug.

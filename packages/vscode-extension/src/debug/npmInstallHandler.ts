@@ -8,14 +8,11 @@ import {
   ProjectSettingsHelper,
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
-import * as path from "path";
 import * as vscode from "vscode";
-
 import { ConfigurationKey } from "../constants";
 import { VS_CODE_UI } from "../extension";
 import { ext } from "../extensionVariables";
 import { getConfiguration } from "../utils/commonUtils";
-import { loadPackageJson } from "./commonUtils";
 import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
 import VsCodeLogInstance from "../commonlib/log";
@@ -25,9 +22,9 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { returnUserError } from "@microsoft/teamsfx-api";
 import { ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
+import { UserError } from "@microsoft/teamsfx-api";
 
 export async function automaticNpmInstallHandler(
   excludeFrontend: boolean,
@@ -115,11 +112,7 @@ export async function automaticNpmInstallHandler(
           }
           const failed = exitCodes.some((exitCode) => exitCode !== 0);
           if (failed) {
-            const error = returnUserError(
-              new Error("Npm install failed"),
-              ExtensionSource,
-              "NpmInstallFailed"
-            );
+            const error = new UserError(ExtensionSource, "NpmInstallFailed", "Npm install failed");
             ExtTelemetry.sendTelemetryErrorEvent(
               TelemetryEvent.AutomaticNpmInstall,
               error,

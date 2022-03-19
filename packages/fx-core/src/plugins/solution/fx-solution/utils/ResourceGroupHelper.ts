@@ -13,12 +13,12 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  returnUserError,
   traverse,
   UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { desensitize } from "../../../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
@@ -190,10 +190,11 @@ export class ResourceGroupHelper {
     const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
     if (!rgLocations || rgLocations.length == 0) {
       return err(
-        returnUserError(
-          new Error(`Failed to list resource group locations`),
+        new UserError(
           SolutionSource,
-          SolutionError.FailedToListResourceGroupLocation
+          SolutionError.FailedToListResourceGroupLocation,
+          getDefaultString("error.FailedToListResourceGroupLocation"),
+          getLocalizedString("error.FailedToListResourceGroupLocation")
         )
       );
     }

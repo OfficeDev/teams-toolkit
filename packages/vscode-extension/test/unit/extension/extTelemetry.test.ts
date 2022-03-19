@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as spies from "chai-spies";
-import { Stage, returnUserError } from "@microsoft/teamsfx-api";
+import { Stage, UserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
@@ -106,7 +106,7 @@ suite("ExtTelemetry", () => {
     });
 
     test("sendTelemetryErrorEvent", () => {
-      const error = returnUserError(new Error("test error message"), "test", "UserTestError");
+      const error = new UserError("test", "UserTestError", "test error message");
       ExtTelemetry.sendTelemetryErrorEvent(
         "sampleEvent",
         error,
@@ -132,7 +132,7 @@ suite("ExtTelemetry", () => {
     });
 
     test("sendTelemetryException", () => {
-      const error = returnUserError(new Error("test error message"), "test", "UserTestError");
+      const error = new UserError("test", "UserTestError", "test error message");
       ExtTelemetry.sendTelemetryException(
         error,
         { stringProp: "some string" },

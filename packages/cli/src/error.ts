@@ -3,168 +3,156 @@
 
 "use strict";
 
-import {
-  ConfigFolderName,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
-  returnSystemError,
-  returnUserError,
-  StatesFolderName,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
-
+import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
 
 export function NotSupportedProjectType(): UserError {
-  return returnUserError(
-    new Error(`Project type not supported`),
+  return new UserError(
     constants.cliSource,
-    "NotSupportedProjectType"
+    "NotSupportedProjectType",
+    "Project type not supported"
   );
 }
 
 export function CannotDeployPlugin(pluginName: string): UserError {
-  return returnUserError(
-    new Error(`Cannot deploy ${pluginName} since it is not contained in the project`),
+  return new UserError(
     constants.cliSource,
-    "CannotDeployPlugin"
+    "CannotDeployPlugin",
+    `Cannot deploy ${pluginName} since it is not contained in the project`
   );
 }
 
 export function NotValidInputValue(inputName: string, msg: string): UserError {
-  return returnUserError(Error(`${inputName} - ${msg}`), constants.cliSource, "NotValidInputValue");
+  return new UserError(constants.cliSource, "NotValidInputValue", `${inputName} - ${msg}`);
 }
 
 export function NotFoundInputedFolder(folder: string): UserError {
-  return returnUserError(
-    new Error(`Cannot find folder (${folder}).`),
+  return new UserError(
     constants.cliSource,
-    "NotFoundInputFolder"
+    "NotFoundInputFolder",
+    `Cannot find folder (${folder}).`
   );
 }
 
 export function NotFoundSubscriptionId(): UserError {
-  return returnUserError(
-    new Error(
-      "Cannot find selected subscription. Ensure your signed-in account has access to this subscription. " +
-        "You can also select another subscription using 'teamsfx account set`."
-    ),
+  return new UserError(
     constants.cliSource,
-    "NotFoundSubscriptionId"
+    "NotFoundSubscriptionId",
+    "Cannot find selected subscription. Ensure your signed-in account has access to this subscription. " +
+      "You can also select another subscription using 'teamsfx account set`."
   );
 }
 
 export function ConfigNotFoundError(configpath: string): UserError {
-  return returnUserError(
-    new Error(`Please execute this command in a TeamsFx project.`),
+  return new UserError(
     constants.cliSource,
-    "ConfigNotFound"
+    "ConfigNotFound",
+    "Please execute this command in a TeamsFx project."
   );
 }
 
 export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemError {
   e.message = `Cannot download this sample app from ${sampleAppUrl}. Error: ${e.message}`;
-  return returnSystemError(e, constants.cliSource, "SampleAppDownloadFailed");
+  return new SystemError(e, constants.cliSource, "SampleAppDownloadFailed");
 }
 
 export function ReadFileError(e: Error): SystemError | UserError {
   if (e.message.includes("Unexpected end of JSON input")) {
-    return returnUserError(
-      new Error(`${e.message}. Please check the format of it.`),
+    return new UserError(
       constants.cliSource,
-      "ReadFileError"
+      "ReadFileError",
+      `${e.message}. Please check the format of it.`
     );
   }
-  return returnSystemError(e, constants.cliSource, "ReadFileError");
+  return new SystemError(e, constants.cliSource, "ReadFileError");
 }
 
 export function WriteFileError(e: Error): SystemError {
-  return returnSystemError(e, constants.cliSource, "WriteFileError");
+  return new SystemError(e, constants.cliSource, "WriteFileError");
 }
 
 export function UnknownError(e: Error): SystemError {
-  return returnSystemError(e, constants.cliSource, "UnknownError");
+  return new SystemError(e, constants.cliSource, "UnknownError");
 }
 
 export function ProjectFolderExist(path: string): UserError {
-  return returnUserError(
-    new Error(`Path ${path} alreay exists. Select a different folder.`),
+  return new UserError(
     constants.cliSource,
-    "ProjectFolderExist"
+    "ProjectFolderExist",
+    `Path ${path} alreay exists. Select a different folder.`
   );
 }
 
 export function EmptySubConfigOptions(): SystemError {
-  return returnUserError(
-    new Error(`Your Azure account has no active subscriptions. Please switch an Azure account.`),
+  return new UserError(
     constants.cliSource,
-    "EmptySubConfigOptions"
+    "EmptySubConfigOptions",
+    "Your Azure account has no active subscriptions. Please switch an Azure account."
   );
 }
 
 export function NoInitializedHelpGenerator(): SystemError {
-  return returnSystemError(
-    new Error(`Please call the async function -- initializeQuestionsForHelp firstly!`),
+  return new SystemError(
     constants.cliSource,
-    "NoInitializedHelpGenerator"
+    "NoInitializedHelpGenerator",
+    "Please call the async function -- initializeQuestionsForHelp firstly!"
   );
 }
 
 export function NonTeamsFxProjectFolder(): UserError {
-  return returnUserError(
-    new Error(`Current folder is not a TeamsFx project folder.`),
+  return new UserError(
     constants.cliSource,
-    "NonTeamsFxProjectFolder"
+    "NonTeamsFxProjectFolder",
+    "Current folder is not a TeamsFx project folder."
   );
 }
 
 export function ConfigNameNotFound(name: string): UserError {
-  return returnUserError(
-    new Error(`Config ${name} is not found in project.`),
+  return new UserError(
     constants.cliSource,
-    "ConfigNameNotFound"
+    "ConfigNameNotFound",
+    `Config ${name} is not found in project.`
   );
 }
 
 export function InvalidEnvFile(msg: string, path: string): UserError {
-  return returnUserError(
-    new Error(msg + ` Please check the file ${path}.`),
+  return new UserError(
     constants.cliSource,
-    "InvalidEnvFile"
+    "InvalidEnvFile",
+    msg + ` Please check the file ${path}.`
   );
 }
 
 export class EnvUndefined extends SystemError {
   constructor() {
-    super(new.target.name, `env is undefined`, constants.cliSource);
+    super(constants.cliSource, new.target.name, `env is undefined`);
   }
 }
 
 export class EnvNotSpecified extends UserError {
   constructor() {
-    super(new.target.name, `The --env argument is not specified`, constants.cliSource);
+    super(constants.cliSource, new.target.name, `The --env argument is not specified`);
   }
 }
 
 export class EnvNotFound extends UserError {
   constructor(env: string) {
-    super(new.target.name, `The environment "${env}" is not found`, constants.cliSource);
+    super(constants.cliSource, new.target.name, `The environment "${env}" is not found`);
   }
 }
 
 export class EnvNotProvisioned extends UserError {
   constructor(env: string) {
-    super(new.target.name, `The environment "${env}" is not provisioned`, constants.cliSource);
+    super(constants.cliSource, new.target.name, `The environment "${env}" is not provisioned`);
   }
 }
 
 export class UserdataNotFound extends UserError {
   constructor(env: string) {
     super(
+      constants.cliSource,
       new.target.name,
-      `The userdata file ".${ConfigFolderName}/${StatesFolderName}/${env}.userdata" is not found. Please try to provision in the "${env}" envrionment`,
-      constants.cliSource
+      `The userdata file ".${ConfigFolderName}/${StatesFolderName}/${env}.userdata" is not found. Please try to provision in the "${env}" envrionment`
     );
   }
 }

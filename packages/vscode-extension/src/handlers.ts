@@ -34,8 +34,6 @@ import {
   ok,
   Platform,
   Result,
-  returnSystemError,
-  returnUserError,
   SelectFileConfig,
   SelectFolderConfig,
   SharepointTokenProvider,
@@ -491,10 +489,10 @@ async function launch(
   progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
-    const error = returnUserError(
-      new Error(localize("teamstoolkit.handlers.teamsAppIdNotFound")),
+    const error = new UserError(
       ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError
+      ExtensionErrors.TeamsAppIdNotFoundError,
+      localize("teamstoolkit.handlers.teamsAppIdNotFound")
     );
     return err(error);
   }
@@ -1015,16 +1013,18 @@ function wrapError(e: Error): Result<null, FxError> {
   ) {
     return err(e as FxError);
   }
-  return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError));
+  return err(
+    new SystemError({ error: e, source: ExtensionSource, name: ExtensionErrors.UnknwonError })
+  );
 }
 
 function checkCoreNotEmpty(): Result<null, SystemError> {
   if (!core) {
     return err(
-      returnSystemError(
-        new Error(localize("teamstoolkit.handlers.coreNotReady")),
+      new SystemError(
         ExtensionSource,
-        ExtensionErrors.UnsupportedOperation
+        ExtensionErrors.UnsupportedOperation,
+        localize("teamstoolkit.handlers.coreNotReady")
       )
     );
   }
@@ -1960,7 +1960,7 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  const notificationMessage = e.notificationMessage ?? e.message;
+  const notificationMessage = e.displayMessage ?? e.message;
 
   if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
@@ -2297,7 +2297,7 @@ export async function openConfigStateFile(args: any[]) {
       };
 
       const errorCode = `${noEnvError.source}.${noEnvError.name}`;
-      const notificationMessage = noEnvError.notificationMessage ?? noEnvError.message;
+      const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
       window
         .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
         .then((selection) => {
@@ -2483,10 +2483,10 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     true,
     localize("teamstoolkit.migrateTeamsTabApp.upgrade")
   );
-  const userCancelError = returnUserError(
-    new Error(ExtensionErrors.UserCancel),
-    localize("teamstoolkit.common.userCancel"),
-    ExtensionSource
+  const userCancelError = new UserError(
+    ExtensionSource,
+    ExtensionErrors.UserCancel,
+    localize("teamstoolkit.common.userCancel")
   );
   if (
     selection.isErr() ||
@@ -2594,10 +2594,10 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     true,
     localize("teamstoolkit.migrateTeamsManifest.upgrade")
   );
-  const userCancelError = returnUserError(
-    new Error(ExtensionErrors.UserCancel),
-    localize("teamstoolkit.common.userCancel"),
-    ExtensionSource
+  const userCancelError = new UserError(
+    ExtensionSource,
+    ExtensionErrors.UserCancel,
+    localize("teamstoolkit.common.userCancel")
   );
   if (
     selection.isErr() ||

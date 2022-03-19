@@ -3,12 +3,9 @@ import {
   LogProvider,
   Result,
   err,
-  returnSystemError,
   v2,
   SystemError,
-  returnUserError,
   UserError,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
@@ -120,14 +117,6 @@ function mergeFxErrors(errors: FxError[]): FxError {
     errMsgs.push(`${err.name}:${err.message}`);
   }
   return hasSystemError
-    ? returnSystemError(
-        new Error(errMsgs.join(";")),
-        SolutionSource,
-        SolutionError.FailedToExecuteTasks
-      )
-    : returnUserError(
-        new Error(errMsgs.join(";")),
-        SolutionSource,
-        SolutionError.FailedToExecuteTasks
-      );
+    ? new SystemError(SolutionSource, SolutionError.FailedToExecuteTasks, errMsgs.join(";"))
+    : new UserError(SolutionSource, SolutionError.FailedToExecuteTasks, errMsgs.join(";"));
 }

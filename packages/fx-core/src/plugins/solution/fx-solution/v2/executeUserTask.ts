@@ -5,9 +5,7 @@ import {
   Result,
   ok,
   err,
-  returnUserError,
   Func,
-  returnSystemError,
   TelemetryReporter,
   AzureSolutionSettings,
   Void,
@@ -20,6 +18,7 @@ import {
   UserError,
   ProjectSettings,
   v3,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 import {
@@ -61,7 +60,7 @@ import fs from "fs-extra";
 import { CoreQuestionNames } from "../../../../core/question";
 import { Certificate } from "crypto";
 import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 export async function executeUserTask(
   ctx: v2.Context,
@@ -84,11 +83,7 @@ export async function executeUserTask(
     if (method === "registerTeamsAppAndAad") {
       // not implemented for now
       return err(
-        returnSystemError(
-          new Error("Not implemented"),
-          SolutionSource,
-          SolutionError.FeatureNotSupported
-        )
+        new SystemError(SolutionSource, SolutionError.FeatureNotSupported, "Not implemented")
       );
     } else if (method === "VSpublish") {
       // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
@@ -96,10 +91,11 @@ export async function executeUserTask(
       // Using executeUserTask here could bypass the fx project check.
       if (inputs.platform !== "vs") {
         return err(
-          returnSystemError(
-            new Error(`VS publish is not supposed to run on platform ${inputs.platform}`),
+          new SystemError(
             SolutionSource,
-            SolutionError.UnsupportedPlatform
+            SolutionError.UnsupportedPlatform,
+            getDefaultString("error.UnsupportedPlatformVS"),
+            getLocalizedString("error.UnsupportedPlatformVS")
           )
         );
       }
@@ -159,10 +155,11 @@ export async function executeUserTask(
   }
 
   return err(
-    returnUserError(
-      new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
+    new UserError(
       SolutionSource,
-      `executeUserTaskRouteFailed`
+      `executeUserTaskRouteFailed`,
+      getDefaultString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
+      getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func))
     )
   );
 }
@@ -529,9 +526,9 @@ export async function addResource(
   // 3. check APIM and KeyVault addable
   if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
     const e = new UserError(
-      new Error("APIM/KeyVault is already added."),
       SolutionSource,
-      SolutionError.AddResourceNotSupport
+      SolutionError.AddResourceNotSupport,
+      "APIM/KeyVault is already added."
     );
     return err(
       sendErrorTelemetryThenReturnError(
@@ -667,10 +664,10 @@ export function extractParamForRegisterTeamsAppAndAad(
 ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
   if (answers == undefined) {
     return err(
-      returnSystemError(
-        new Error("Input is undefined"),
+      new SystemError(
         SolutionSource,
-        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+        "Input is undefined"
       )
     );
   }
@@ -685,10 +682,10 @@ export function extractParamForRegisterTeamsAppAndAad(
     const value = answers[key];
     if (value == undefined) {
       return err(
-        returnSystemError(
-          new Error(`${key} not found`),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+          `${key} not found`
         )
       );
     }

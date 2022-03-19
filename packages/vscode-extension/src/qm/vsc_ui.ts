@@ -27,7 +27,6 @@ import {
   SelectFolderResult,
   OptionItem,
   Result,
-  returnSystemError,
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
@@ -43,6 +42,7 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -118,10 +118,10 @@ export class VsCodeUI implements UserInteraction {
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(localize("teamstoolkit.qm.emptySelection")),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }
@@ -199,10 +199,10 @@ export class VsCodeUI implements UserInteraction {
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(localize("teamstoolkit.qm.emptySelection")),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }

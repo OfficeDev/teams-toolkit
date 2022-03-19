@@ -47,7 +47,6 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof UserError);
       }
       {
-        const innerError = new RangeError(myMessage2);
         const error = new UserError(mySource, myName, myMessage);
         chai.assert.equal(error.name, myName);
         chai.assert.isTrue(error.message.includes(myMessage));
@@ -55,7 +54,6 @@ describe("error", function () {
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isDefined(error.timestamp);
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.innerError, innerError);
       }
     }),
       it("constructor with UserErrorOptions object", () => {
@@ -101,12 +99,12 @@ describe("error", function () {
   });
 
   describe("SystemError", function () {
-    it("constructor source,name,message", () => {
+    it("constructor with source,name,message", () => {
       {
         const error = new SystemError(mySource, myName, myMessage, myMessage2);
         chai.assert.equal(error.name, myName);
         chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.displayMessage, myMessage);
+        chai.assert.equal(error.displayMessage, myMessage2);
         chai.assert.equal(error.source, mySource);
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isDefined(error.timestamp);

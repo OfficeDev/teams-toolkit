@@ -41,7 +41,7 @@ export class ProjectFolderInvalidError extends UserError {
 
 export function WriteFileError(e: Error): SystemError {
   return new SystemError({
-    message: "WriteFileError",
+    name: "WriteFileError",
     source: CoreSource,
     error: e,
   });
@@ -49,7 +49,7 @@ export function WriteFileError(e: Error): SystemError {
 
 export function ReadFileError(e: Error): SystemError {
   return new SystemError({
-    message: "ReadFileError",
+    name: "ReadFileError",
     source: CoreSource,
     error: e,
   });
@@ -57,7 +57,7 @@ export function ReadFileError(e: Error): SystemError {
 
 export function CopyFileError(e: Error): SystemError {
   return new SystemError({
-    message: "CopyFileError",
+    name: "CopyFileError",
     source: CoreSource,
     error: e,
   });

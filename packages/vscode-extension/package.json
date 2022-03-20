@@ -46,6 +46,7 @@
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
+    "onCommand:fx-extension.create-M365",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
@@ -436,6 +437,11 @@
       {
         "command": "fx-extension.create",
         "title": "%teamstoolkit.commands.createProject.title%"
+      },
+      {
+        "command": "fx-extension.create-M365",
+        "title": "%teamstoolkit.commands.createM365Project.title%",
+        "enablement": "fx-extension.isM365AppEnabled"
       },
       {
         "command": "fx-extension.init",

@@ -59,13 +59,16 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         const isLocalM365SideloadingConfiguration: boolean = url.includes(
           localTeamsAppInternalIdPlaceholder
         );
+        const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
+        const isM365SideloadingConfiguration: boolean = url.includes(teamsAppInternalIdPlaceholder);
         const isLocalSideloading: boolean =
           isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
 
         if (
           !isLocalSideloadingConfiguration &&
           !isSideloadingConfiguration &&
-          !isLocalM365SideloadingConfiguration
+          !isLocalM365SideloadingConfiguration &&
+          !isM365SideloadingConfiguration
         ) {
           return debugConfiguration;
         }
@@ -95,15 +98,25 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
         url = url.replace(localTeamsAppIdPlaceholder, debugConfig.appId);
         url = url.replace(teamsAppIdPlaceholder, debugConfig.appId);
-        const internalId = await getTeamsAppInternalId(debugConfig.appId);
-        if (internalId !== undefined) {
-          url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
+        if (isLocalM365SideloadingConfiguration) {
+          const internalId = await getTeamsAppInternalId(debugConfig.appId);
+          if (internalId !== undefined) {
+            url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
+          }
+        }
+        if (isM365SideloadingConfiguration) {
+          const internalId = await getTeamsAppInternalId(debugConfig.appId);
+          if (internalId !== undefined) {
+            url = url.replace(teamsAppInternalIdPlaceholder, internalId);
+          }
         }
 
         const accountHintPlaceholder = "${account-hint}";
         const isaccountHintConfiguration: boolean = url.includes(accountHintPlaceholder);
         if (isaccountHintConfiguration) {
-          const accountHint = await generateAccountHint();
+          const accountHint = await generateAccountHint(
+            isLocalSideloadingConfiguration || isSideloadingConfiguration
+          );
           url = url.replace(accountHintPlaceholder, accountHint);
         }
 
@@ -119,7 +132,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   }
 }
 
-export async function generateAccountHint(): Promise<string> {
+export async function generateAccountHint(includeTenantId = true): Promise<string> {
   let tenantId = undefined,
     loginHint = undefined;
   try {
@@ -136,9 +149,9 @@ export async function generateAccountHint(): Promise<string> {
   } catch {
     // ignore error
   }
-  if (tenantId && loginHint) {
-    return `appTenantId=${tenantId}&login_hint=${loginHint}`;
+  if (includeTenantId) {
+    return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
   } else {
-    return "";
+    return loginHint ? `login_hint=${loginHint}` : "";
   }
 }

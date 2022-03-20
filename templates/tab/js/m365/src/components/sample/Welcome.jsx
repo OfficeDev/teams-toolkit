@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Image, Menu } from "@fluentui/react-northstar";
+import * as microsoftTeams from "@microsoft/teams-js";
 import "./Welcome.css";
 import { EditCode } from "./EditCode";
 import { AzureFunctions } from "./AzureFunctions";
@@ -44,11 +45,19 @@ export function Welcome(props) {
     return isInTeams ? await teamsfx.getUserInfo() : undefined;
   })?.data;
   const userName = userProfile ? userProfile.displayName : "";
+  const hubName = useData(async () => {
+    await microsoftTeams.app.initialize();
+    const context = await microsoftTeams.app.getContext();
+    return context.app.host.name;
+  })?.data;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
         <Image src="hello.png" />
         <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
+        {hubName && (
+          <p className="center">Your app is running in {hubName}</p>
+        )}
         <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
         <Menu defaultActiveIndex={0} items={items} underlined secondary />
         <div className="sections">

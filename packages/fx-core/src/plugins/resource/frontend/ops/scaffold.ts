@@ -29,7 +29,6 @@ export class FrontendScaffold {
       group: templateInfo.group,
       lang: templateInfo.language,
       scenario: templateInfo.scenario,
-      templatesFolderName: PathInfo.TemplateFolderName,
       dst: componentPath,
       fileNameReplaceFn: removeTemplateExtReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),

@@ -6,7 +6,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import crypto from "crypto";
 import { ConfigFolderName, ProductName } from "@microsoft/teamsfx-api";
-import { lock, unlock } from "proper-lockfile";
+import * as properLock from "proper-lockfile";
 import { waitSeconds } from "./tools";
 
 const GlobalStateFileName = "state.json";
@@ -28,18 +28,18 @@ export async function globalStateGet(key: string, defaultValue?: any): Promise<a
   const retryNum = 10;
   for (let i = 0; i < retryNum; ++i) {
     try {
-      await lock(filePath, { lockfilePath: lockfilePath });
+      await properLock.lock(filePath, { lockfilePath: lockfilePath });
+      let value: any = undefined;
       try {
         const config = await fs.readJSON(filePath);
-        let value = config[key];
+        value = config[key];
         if (value === undefined) {
           value = defaultValue;
         }
-        return value;
       } finally {
-        await unlock(filePath, { lockfilePath: lockfilePath });
+        await properLock.unlock(filePath, { lockfilePath: lockfilePath });
       }
-      break;
+      return value;
     } catch (e) {
       if (e["code"] === "ELOCKED") {
         await waitSeconds(1);
@@ -67,13 +67,13 @@ export async function globalStateUpdate(key: string, value: any): Promise<void> 
   const retryNum = 10;
   for (let i = 0; i < retryNum; ++i) {
     try {
-      await lock(filePath, { lockfilePath: lockfilePath });
+      await properLock.lock(filePath, { lockfilePath: lockfilePath });
       try {
         const config = await fs.readJSON(filePath);
         config[key] = value;
         await fs.writeJson(filePath, config);
       } finally {
-        await unlock(filePath, { lockfilePath: lockfilePath });
+        await properLock.unlock(filePath, { lockfilePath: lockfilePath });
       }
       break;
     } catch (e) {

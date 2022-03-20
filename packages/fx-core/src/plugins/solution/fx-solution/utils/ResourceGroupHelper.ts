@@ -67,7 +67,7 @@ export class ResourceGroupApiError extends UserError {
       resourceGroupName ? "resource group:" + resourceGroupName : ""
     }`;
     const errorName = new.target.name;
-    if (!error) super(new.target.name, baseErrorMessage, SolutionSource);
+    if (!error) super(SolutionSource, new.target.name, baseErrorMessage);
     else if (error instanceof RestError) {
       const restError = error as RestError;
       // Avoid sensitive information like request headers in the error message.
@@ -78,11 +78,11 @@ export class ResourceGroupApiError extends UserError {
         name: restError.name,
         message: restError.message,
       });
-      super(errorName, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
       super({ name: errorName, error: error });
     } else {
-      super(errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`, SolutionSource);
+      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`);
     }
   }
 }

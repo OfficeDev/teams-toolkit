@@ -210,10 +210,10 @@ export function BuildError(pluginError: IApimPluginError, ...params: any[]): FxE
   if (params.length > 0 && params[0] instanceof Error) {
     innerError = params.shift();
   }
-
-  const message = !innerError
-    ? pluginError.message(...params)
-    : `${pluginError.message(...params)} ${innerError?.message}`;
+  const msgs = pluginError.message(...params);
+  const message = innerError
+    ? [`${msgs[0]} ${innerError?.message}`, `${msgs[1]} ${innerError?.message}`]
+    : msgs;
   switch (pluginError.type) {
     case ErrorType.User:
       return new UserError({

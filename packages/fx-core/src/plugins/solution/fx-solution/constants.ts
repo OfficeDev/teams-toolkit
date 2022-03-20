@@ -242,9 +242,9 @@ export class UnauthorizedToCheckResourceGroupError extends UserError {
     const subscriptionInfoString =
       subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
     super(
+      SolutionSource,
       new.target.name,
-      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`,
-      SolutionSource
+      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
     );
   }
 }

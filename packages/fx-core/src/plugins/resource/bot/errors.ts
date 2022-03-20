@@ -102,16 +102,16 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    let msg = `${this.message[0]} `;
+    let msg = `${this.details[0]} `;
     if (this.suggestions.length > 0) {
-      msg += getLocalizedString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
+      msg += getDefaultString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
     }
     return msg;
   }
   genDisplayMessage(): string {
-    let msg = `${this.message[1]} `;
+    let msg = `${this.details[1]} `;
     if (this.suggestions.length > 0) {
-      msg += getDefaultString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
+      msg += getLocalizedString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
     }
     return msg;
   }

@@ -65,7 +65,7 @@ export class ExtensionSurvey {
       }
     } else {
       if (this.needToShow && !this.checkSurveyInterval) {
-        this.checkSurveyInterval = setInterval(() => {
+        this.checkSurveyInterval = setInterval(async () => {
           if (!(await this.shouldShowBanner())) {
             return;
           }

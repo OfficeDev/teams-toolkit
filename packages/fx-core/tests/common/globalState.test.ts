@@ -5,7 +5,7 @@ import { assert } from "chai";
 import "mocha";
 import fs from "fs-extra";
 import sinon from "sinon";
-import * as properLock from "proper-lockfile";
+import properLock from "proper-lockfile";
 import { globalStateGet, globalStateUpdate } from "../../src/common/globalState";
 
 describe("Global State Get/Update", () => {
@@ -23,8 +23,8 @@ describe("Global State Get/Update", () => {
     sandbox.stub<any, any>(fs, "existsSync").callsFake((file: string) => {
       return true;
     });
-    sandbox.stub(properLock, "lock");
-    sandbox.stub(properLock, "unlock");
+    sandbox.stub(properLock, "lock").resolves();
+    sandbox.stub(properLock, "unlock").resolves();
     const data = await globalStateGet("test", true);
     assert.strictEqual(data, false);
   });

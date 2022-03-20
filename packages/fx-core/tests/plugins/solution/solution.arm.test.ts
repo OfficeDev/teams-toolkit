@@ -893,7 +893,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const returnedError = result._unsafeUnwrapErr() as UserError;
-    chai.assert.isNotNull(returnedError.notificationMessage);
+    chai.assert.isNotNull(returnedError.displayMessage);
 
     envRestore();
   });

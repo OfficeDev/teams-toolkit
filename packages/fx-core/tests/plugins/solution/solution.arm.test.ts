@@ -671,7 +671,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.expect(error.name).to.equal(ErrorName.FailedToDeployArmTemplatesToAzureError);
+    chai.expect(error.name).to.equal("FailedToGetEnvironmentName");
     chai
       .expect(error.message)
       .to.have.string("Failed to compile bicep files to Json arm templates file:");

@@ -4,7 +4,7 @@
 import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
-export class BasicAuthProvider implements IAuthProvider {
+export class CertificateProvider implements IAuthProvider {
   private userName: string;
   private password: string;
 

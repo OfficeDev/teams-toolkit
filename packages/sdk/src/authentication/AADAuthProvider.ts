@@ -1,19 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { TokenCredential } from "@azure/identity";
 import { AxiosRequestConfig } from "axios";
-import { AppCredential, AuthenticationConfiguration } from "..";
 import { IAuthProvider } from "./IAuthProvider";
 
 export class AADAuthProvider implements IAuthProvider {
-  private appCredential: AppCredential;
+  private credential: TokenCredential;
+  private scope: string | string[];
 
-  constructor(config: AuthenticationConfiguration) {
-    this.appCredential = new AppCredential(config);
+  constructor(credential: TokenCredential, scope: string | string[]) {
+    this.credential = credential;
+    this.scope = scope;
   }
 
-  public async configureAxiosRequest(config: AxiosRequestConfig) {
-    const token = await this.appCredential.getToken([]);
+  public async ConfigureAxiosRequestWithAuthenticationInfo(config: AxiosRequestConfig) {
+    const token = await this.credential.getToken(this.scope);
     config.headers = {
       Authorization: `Bearer ${token}`,
     };

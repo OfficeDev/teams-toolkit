@@ -4,5 +4,5 @@
 import { AxiosRequestConfig } from "axios";
 
 export interface IAuthProvider {
-  configureAxiosRequest: (config: AxiosRequestConfig) => Promise<void>;
+  ConfigureAxiosRequestWithAuthenticationInfo: (config: AxiosRequestConfig) => Promise<void>;
 }

@@ -5,18 +5,32 @@ import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
 export class ApiKeyProvider implements IAuthProvider {
-  private apiKey: string;
+  private key: string;
+  private value: string;
+  private addType: ApiKeyAddTypes;
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error("apiKey does not exist!");
+  constructor(key: string, value: string, addType: ApiKeyAddTypes) {
+    this.key = key;
+    this.value = value;
+    this.addType = addType;
+  }
+
+  public async ConfigureAxiosRequestWithAuthenticationInfo(config: AxiosRequestConfig) {
+    switch (this.addType) {
+      case ApiKeyAddTypes.Header:
+        config.headers = {};
+        config.headers[this.key] = this.value;
+        break;
+      case ApiKeyAddTypes.QueryParams:
+        const url = new URL(config.url!);
+        url.searchParams.set(this.key, this.value);
+        config.url = url.href;
+        break;
     }
-    this.apiKey = apiKey;
   }
+}
 
-  public async configureAxiosRequest(config: AxiosRequestConfig) {
-    config.headers = {
-      "X-API-Key": this.apiKey,
-    };
-  }
+export enum ApiKeyAddTypes {
+  Header,
+  QueryParams,
 }

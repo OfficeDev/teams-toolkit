@@ -14,7 +14,7 @@ describe("Global State Get/Update", () => {
     sandbox.restore();
   });
 
-  it("returns stored value if key has been updated before", () => {
+  it("returns stored value if key has been updated before", async () => {
     sandbox.stub<any, any>(fs, "readJSONSync").callsFake((file: string) => {
       return { test: false };
     });
@@ -24,11 +24,11 @@ describe("Global State Get/Update", () => {
     sandbox.stub<any, any>(fs, "existsSync").callsFake((file: string) => {
       return true;
     });
-    const data = globalStateGet("test", true);
+    const data = await globalStateGet("test", true);
     assert.strictEqual(data, false);
   });
 
-  it("returns default value if key hasn't been updated before", () => {
+  it("returns default value if key hasn't been updated before", async () => {
     sandbox.stub<any, any>(fs, "readJSONSync").callsFake((file: string) => {
       return {};
     });
@@ -38,7 +38,7 @@ describe("Global State Get/Update", () => {
     sandbox.stub<any, any>(fs, "existsSync").callsFake((file: string) => {
       return true;
     });
-    const data = globalStateGet("test", true);
+    const data = await globalStateGet("test", true);
     assert.strictEqual(data, true);
   });
 

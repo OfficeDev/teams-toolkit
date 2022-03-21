@@ -117,6 +117,11 @@ export class ConversationReferenceStore {
     this.storage = storage;
   }
 
+  async check(reference: Partial<ConversationReference>): Promise<boolean> {
+    const ref = await this.storage.read(this.getKey(reference));
+    return ref !== undefined;
+  }
+
   getAll(): Promise<Partial<ConversationReference>[]> {
     return this.storage.list();
   }

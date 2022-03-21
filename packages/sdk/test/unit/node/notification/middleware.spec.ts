@@ -35,16 +35,13 @@ describe("Notification.Middleware Tests - Node", () => {
   it("onTurn should correctly handle bot added", async () => {
     const testContext = {
       activity: {
+        action: "add",
+        type: "installationUpdate",
         channelId: "1",
         conversation: {
           id: "1",
           tenantId: "a",
         },
-        membersAdded: [
-          {
-            id: "A",
-          },
-        ],
         recipient: {
           id: "A",
         },
@@ -62,22 +59,93 @@ describe("Notification.Middleware Tests - Node", () => {
     });
   });
 
-  it("onTurn should ignore non-bot member", async () => {
+  it("onTurn should correctly handle bot removed", async () => {
+    testStorage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
     const testContext = {
       activity: {
+        action: "remove",
+        type: "installationUpdate",
         channelId: "1",
-        membersAdded: [
-          {
-            id: "A",
-          },
-        ],
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
         recipient: {
-          id: "B",
+          id: "A",
         },
       },
     };
     await middleware.onTurn(testContext as any, async () => {});
     assert.deepStrictEqual(testStorage.items, {});
+  });
+
+  it("onTurn should correctly handle bot messaged (new)", async () => {
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    });
+  });
+
+  it("onTurn should correctly handle bot messaged (exist)", async () => {
+    testStorage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "xxxxxxxxx",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    });
   });
 
   it("onTurn should ignore non-bot event", async () => {

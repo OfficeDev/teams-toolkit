@@ -151,6 +151,58 @@ describe("Notification.Storage Tests - Node", () => {
     const storage = new TestStorage();
     const testStore = new ConversationReferenceStore(storage);
 
+    it("check should return true if exist", async () => {
+      storage.items = {};
+      storage.items["_a_1"] = {
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      };
+      const result = await testStore.check({
+        channelId: "foo:bar",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      } as ConversationReference);
+      assert.isTrue(result);
+      assert.deepStrictEqual(storage.items, {
+        _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      });
+    });
+
+    it("check should return false if not exist", async () => {
+      storage.items = {};
+      storage.items["_a_1"] = {
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      };
+      const result = await testStore.check({
+        channelId: "foo:bar",
+        conversation: {
+          id: "2",
+          tenantId: "b",
+        },
+      } as ConversationReference);
+      assert.isFalse(result);
+      assert.deepStrictEqual(storage.items, {
+        _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      });
+    });
+
     it("getAll should return correct data", async () => {
       storage.items = {};
       storage.items["_a_1"] = {

@@ -9,6 +9,8 @@ import { ConversationReferenceStore } from "./storage";
  */
 enum ActivityType {
   CurrentBotAdded,
+  CurrentBotMessaged,
+  CurrentBotRemoved,
   Unknown,
 }
 
@@ -32,10 +34,23 @@ export class NotificationMiddleware implements Middleware {
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
     const type = this.classifyActivity(context.activity);
     switch (type) {
-      case ActivityType.CurrentBotAdded:
+      case ActivityType.CurrentBotAdded: {
         const reference = TurnContext.getConversationReference(context.activity);
         await this.conversationReferenceStore.set(reference);
         break;
+      }
+      case ActivityType.CurrentBotMessaged: {
+        const reference = TurnContext.getConversationReference(context.activity);
+        if (!(await this.conversationReferenceStore.check(reference))) {
+          await this.conversationReferenceStore.set(reference);
+        }
+        break;
+      }
+      case ActivityType.CurrentBotRemoved: {
+        const reference = TurnContext.getConversationReference(context.activity);
+        await this.conversationReferenceStore.delete(reference);
+        break;
+      }
       default:
         break;
     }
@@ -44,22 +59,18 @@ export class NotificationMiddleware implements Middleware {
   }
 
   private classifyActivity(activity: Activity): ActivityType {
-    if (this.isBotAdded(activity)) {
-      return ActivityType.CurrentBotAdded;
+    const activityType = activity.type;
+    if (activityType === "installationUpdate") {
+      const action = activity.action?.toLowerCase();
+      if (action === "add") {
+        return ActivityType.CurrentBotAdded;
+      } else {
+        return ActivityType.CurrentBotRemoved;
+      }
+    } else if (activityType === "message") {
+      return ActivityType.CurrentBotMessaged;
     }
 
     return ActivityType.Unknown;
-  }
-
-  private isBotAdded(activity: Partial<Activity>): boolean {
-    if (activity.membersAdded !== undefined && activity.membersAdded?.length > 0) {
-      for (const member of activity.membersAdded) {
-        if (member.id === activity.recipient?.id) {
-          return true;
-        }
-      }
-    }
-
-    return false;
   }
 }

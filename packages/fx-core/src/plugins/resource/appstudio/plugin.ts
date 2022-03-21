@@ -215,10 +215,13 @@ export class AppStudioPluginImpl {
 
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const provisionProgress = ctx.ui?.createProgressBar(
-      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSettings!.appName),
+      getLocalizedString("plugins.appstudio.provisionTitle"),
       1
     );
     await provisionProgress?.start();
+    await provisionProgress?.next(
+      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSettings!.appName)
+    );
     let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
     let create = false;
@@ -251,10 +254,13 @@ export class AppStudioPluginImpl {
 
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const postProvisionProgress = ctx.ui?.createProgressBar(
-      getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName),
+      getLocalizedString("plugins.appstudio.provisionTitle"),
       1
     );
-    await postProvisionProgress?.start();
+    await postProvisionProgress?.start(
+      getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName)
+    );
+    await postProvisionProgress?.next();
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const manifestResult = await loadManifest(ctx.root, false);

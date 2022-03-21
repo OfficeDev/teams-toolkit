@@ -2,15 +2,16 @@
 
 ## Project folder structure
 
-After initializing the project, you can view the project folders and files in the explorer area of Visual Studio Code. These files are used by Teams Toolkit to maintain the config and template of the app:
+After initializing the project, you can view the project folders and files in the Explorer area of Visual Studio Code after the Teams Toolkit registers and configures your app. The following table lists all the scaffolded folder and files by Teams Toolkit:
 
-* `.fx/configs`: configure files that user can customize for the Teams app.
-  * `config.local.json`: configuration file for local debug/preview.
-  * `config.dev.json`: configuration file for development environment.
-  * `projectSettings.json`: global project settings , which apply to all environments.
-* `templates/appPackage`
-  * `manifest.template.json`: app manifest template file.
-  * `resources`: app's icon referenced by manifest template file.
+| File name | Contents |
+|- | -|
+|`.fx/configs/config.local.json`| Configuration file for local environment |
+|`.fx/configs/config.dev.json`| Configuration file for dev environment |
+|`.fx/configs/projectSettings.json`| Global project settings , which apply to all environments |
+|`templates/appPackage/manifest.template.json`|Teams app manifest template|
+|`templates/appPackage/resources`|Teams app's icon referenced by manifest template|
+
 
 ## Next Steps
 

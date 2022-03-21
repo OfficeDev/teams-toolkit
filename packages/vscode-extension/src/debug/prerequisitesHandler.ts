@@ -160,8 +160,8 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
   try {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
 
-    // node, account
-    const totalSteps = 2;
+    // node
+    const totalSteps = 1;
     let currentStep = 1;
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info("Prerequisites Check");
@@ -182,10 +182,6 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
     if (nodeResult) {
       checkResults.push(nodeResult);
     }
-
-    // login checker
-    const accountResult = await checkM365Account(`(${currentStep++}/${totalSteps})`, false);
-    checkResults.push(accountResult);
 
     await handleCheckResults(checkResults, undefined, false);
   } catch (error: any) {

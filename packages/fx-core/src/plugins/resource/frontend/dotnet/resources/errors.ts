@@ -4,6 +4,7 @@
 import { Logger } from "../../utils/logger";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { FrontendPluginError } from "../../resources/errors";
+import { getDefaultString, getLocalizedString } from "../../../../../common/localizeUtils";
 
 export enum ErrorType {
   User,
@@ -11,13 +12,16 @@ export enum ErrorType {
 }
 
 const tips = {
-  checkLog: "Check log for more information.",
-  doProvision: `Run 'Provision Resource' before this command.`,
-  reProvision: `Run 'Provision' command again.`,
-  reDeploy: "Run 'Deploy' command again.",
-  checkNetwork: "Check your network connection.",
-  checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
-  restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
+  checkLog: getLocalizedString("plugins.dotnet.checkLog"),
+  doProvision: getLocalizedString("plugins.dotnet.doProvision"),
+  reProvision: getLocalizedString("plugins.dotnet.reProvision"),
+  reDeploy: getLocalizedString("plugins.dotnet.reDeploy"),
+  checkNetwork: getLocalizedString("plugins.dotnet.checkNetwork"),
+  checkFsPermissions: getLocalizedString("plugins.dotnet.checkFsPermissions"),
+  restoreEnvironment: getLocalizedString(
+    "plugins.dotnet.restoreEnvironment",
+    `.${ConfigFolderName}`
+  ),
 };
 
 export class DotnetPluginError extends FrontendPluginError {
@@ -55,7 +59,10 @@ export class NoProjectSettingError extends DotnetPluginError {
     super(
       ErrorType.System,
       "NoProjectSettingError",
-      ["Failed to load project setting", "Failed to load project setting"],
+      [
+        getDefaultString("error.dotnet.NoProjectSettingError"),
+        getLocalizedString("error.dotnet.NoProjectSettingError"),
+      ],
       []
     );
   }
@@ -66,7 +73,10 @@ export class FetchConfigError extends DotnetPluginError {
     super(
       ErrorType.User,
       "FetchConfigError",
-      [`Failed to find ${key} from configuration`, `Failed to find ${key} from configuration`],
+      [
+        getDefaultString("error.dotnet.FetchConfigError", key),
+        getLocalizedString("error.dotnet.FetchConfigError", key),
+      ],
       [tips.restoreEnvironment]
     );
   }
@@ -78,8 +88,8 @@ export class ProjectPathError extends DotnetPluginError {
       ErrorType.User,
       "ProjectPathError",
       [
-        `Failed to find target project ${projectFilePath}.`,
-        `Failed to find target project ${projectFilePath}.`,
+        getDefaultString("error.dotnet.ProjectPathError", projectFilePath),
+        getLocalizedString("error.dotnet.ProjectPathError", projectFilePath),
       ],
       [tips.checkLog, tips.restoreEnvironment]
     );
@@ -91,7 +101,7 @@ export class BuildError extends DotnetPluginError {
     super(
       ErrorType.User,
       "BuildError",
-      ["Failed to build Dotnet project.", "Failed to build Dotnet project."],
+      [getDefaultString("error.dotnet.BuildError"), getLocalizedString("error.dotnet.BuildError")],
       [tips.checkLog, tips.reDeploy],
       undefined,
       innerError
@@ -104,7 +114,7 @@ export class ZipError extends DotnetPluginError {
     super(
       ErrorType.User,
       "ZipError",
-      ["Failed to generate zip package.", "Failed to generate zip package."],
+      [getDefaultString("error.dotnet.ZipError"), getLocalizedString("error.dotnet.ZipError")],
       [tips.checkFsPermissions, tips.reDeploy]
     );
   }
@@ -115,7 +125,10 @@ export class PublishCredentialError extends DotnetPluginError {
     super(
       ErrorType.User,
       "PublishCredentialError",
-      ["Failed to retrieve publish credential.", "Failed to retrieve publish credential."],
+      [
+        getDefaultString("error.dotnet.PublishCredentialError"),
+        getLocalizedString("error.dotnet.PublishCredentialError"),
+      ],
       [tips.doProvision, tips.reDeploy]
     );
   }
@@ -126,7 +139,10 @@ export class UploadZipError extends DotnetPluginError {
     super(
       ErrorType.User,
       "UploadZipError",
-      ["Failed to upload zip package.", "Failed to upload zip package."],
+      [
+        getDefaultString("error.dotnet.UploadZipError"),
+        getLocalizedString("error.dotnet.UploadZipError"),
+      ],
       [tips.checkNetwork, tips.reDeploy]
     );
   }
@@ -137,14 +153,17 @@ export class FileIOError extends DotnetPluginError {
     super(
       ErrorType.User,
       "FileIOError",
-      [`Failed to read/write ${path}.`, `Failed to read/write ${path}.`],
+      [
+        getDefaultString("error.dotnet.FileIOError", path),
+        getLocalizedString("error.dotnet.FileIOError", path),
+      ],
       [tips.checkFsPermissions, tips.checkLog]
     );
   }
 }
 
 export const UnhandledErrorCode = "UnhandledError";
-export const UnhandledErrorMessage = "Unhandled error.";
+export const UnhandledErrorMessage = getLocalizedString("error.dotnet.UnhandledError");
 
 export async function runWithErrorCatchAndThrow<T>(
   error: DotnetPluginError,

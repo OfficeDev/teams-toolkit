@@ -26,6 +26,7 @@ steps:
     TEAMSFX_ENV_NAME: <%env_name%>
   inputs:
     targetType: 'inline'
+    failOnStderr: true
     script: |
       set -vuxo pipefail
       

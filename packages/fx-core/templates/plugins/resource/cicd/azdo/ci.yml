@@ -18,8 +18,9 @@ steps:
 - task: Bash@3
   inputs:
     targetType: 'inline'
+    failOnStderr: true
     script: |
-      set -euxo pipefail
+      set -vuxo pipefail
 
       # This is just an example workflow for continuous integration.
       # You should customize it to meet your own requirements.

@@ -21,6 +21,7 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isM365AppEnabled,
   sampleProvider,
   saveFilesRecursively,
 } from "@microsoft/teamsfx-core";
@@ -52,7 +53,9 @@ export default class New extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams application.";
 
-  public readonly subCommands: YargsCommand[] = [new NewTemplate()];
+  public readonly subCommands: YargsCommand[] = isM365AppEnabled()
+    ? [new NewTemplate(), new NewM365()]
+    : [new NewTemplate()];
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
@@ -83,7 +86,9 @@ export default class New extends YargsCommand {
     {
       const result = await core.createProject(inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
+          [TelemetryProperty.IsM365]: inputs.isM365 + "",
+        });
         return err(result.error);
       }
 
@@ -93,6 +98,7 @@ export default class New extends YargsCommand {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.NewProjectId]: inputs.projectId,
+      [TelemetryProperty.IsM365]: inputs.isM365 + "",
     });
     return ok(null);
   }
@@ -207,6 +213,60 @@ class NewTemplateList extends YargsCommand {
         "teamsfx new template <sampleAppName>"
       )} to create an application from the sample app.`
     );
+    return ok(null);
+  }
+}
+
+class NewM365 extends YargsCommand {
+  public readonly commandHead = `m365`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Create a new Microsoft 365 application.";
+
+  public builder(yargs: Argv): Argv<any> {
+    const inputs = getSystemInputs();
+    inputs.isM365 = true;
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create, inputs);
+    if (this.params) {
+      yargs.options(this.params);
+    }
+    return yargs.version(false);
+  }
+
+  public async runCommand(args: {
+    [argName: string]: string | string[];
+  }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
+
+    const result = await activate();
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
+        [TelemetryProperty.IsM365]: "true",
+      });
+      return err(result.error);
+    }
+
+    const core = result.value;
+
+    const inputs = getSystemInputs();
+    inputs.projectId = inputs.projectId ?? uuid.v4();
+    inputs.isM365 = true;
+    {
+      const result = await core.createProject(inputs);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
+          [TelemetryProperty.IsM365]: "true",
+        });
+        return err(result.error);
+      }
+
+      await automaticNpmInstallHandler(result.value, false, false, false);
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.NewProjectId]: inputs.projectId,
+      [TelemetryProperty.IsM365]: "true",
+    });
     return ok(null);
   }
 }

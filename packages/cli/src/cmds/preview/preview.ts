@@ -199,7 +199,7 @@ export default class Preview extends YargsCommand {
 
       let result: Result<null, FxError>;
       if (previewType === "local") {
-        if (this.isExistingApp(workspaceFolder)) {
+        if (await this.isExistingApp(workspaceFolder)) {
           result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
         } else {
           result = await this.localPreview(workspaceFolder, browser, browserArguments);

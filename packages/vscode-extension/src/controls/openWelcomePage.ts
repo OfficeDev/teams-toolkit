@@ -8,7 +8,7 @@ import { TelemetryTiggerFrom } from "../telemetry/extTelemetryEvents";
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
 
 export async function openWelcomePageAfterExtensionInstallation(): Promise<void> {
-  if (globalStateGet(welcomePageKey, false)) {
+  if (await globalStateGet(welcomePageKey, false)) {
     // Don't show: already showed
     return;
   }

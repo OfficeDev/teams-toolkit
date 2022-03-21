@@ -39,13 +39,13 @@ export function Welcome(props) {
   });
 
   const { teamsfx } = useContext(TeamsFxContext);
-  const { loading, data } = useData(async () => {
+  const { loading, data, error } = useData(async () => {
     if (teamsfx) {
       const userInfo = await teamsfx.getUserInfo();
       return userInfo;
     }
   });
-  const userName = loading ? "": data.displayName;
+  const userName = (loading || error) ? "": data.displayName;
   const hubName = useData(async () => {
     await microsoftTeams.app.initialize();
     const context = await microsoftTeams.app.getContext();

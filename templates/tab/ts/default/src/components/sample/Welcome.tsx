@@ -38,13 +38,13 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
   });
 
   const { teamsfx } = useContext(TeamsFxContext);
-  const { loading, data } = useData(async () => {
+  const { loading, data, error } = useData(async () => {
     if (teamsfx) {
       const userInfo = await teamsfx.getUserInfo();
       return userInfo;
     }
   });
-  const userName = loading ? "": data!.displayName;
+  const userName = (loading || error) ? "": data!.displayName;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">

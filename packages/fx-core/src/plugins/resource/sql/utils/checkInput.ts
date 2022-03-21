@@ -1,21 +1,28 @@
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { Message } from "./message";
 export function sqlUserNameValidator(name: string): string | undefined {
   name = name?.trim();
 
   if (!name) {
-    return Message.inputCheck.sqlUserNameEmpty;
+    return getLocalizedString("plugins.sql.getQuestionAdminName.validation.sqlUserNameEmpty");
   }
 
   if (invalidSqlUserName.names.includes(name.toLowerCase())) {
-    return Message.inputCheck.sqlUserNameContainsSqlIdentifier;
+    return getLocalizedString(
+      "plugins.sql.getQuestionAdminName.validation.sqlUserNameContainsSqlIdentifier"
+    );
   }
 
   if (name.search(/[^a-zA-Z0-9]+/) >= 0) {
-    return Message.inputCheck.sqlUserNameContainsNonAlphanumeric;
+    return getLocalizedString(
+      "plugins.sql.getQuestionAdminName.validation.sqlUserNameContainsNonAlphanumeric"
+    );
   }
 
   if (name.match(/^[0-9]/)) {
-    return Message.inputCheck.sqlUserNameStartWithNumber;
+    return getLocalizedString(
+      "plugins.sql.getQuestionAdminName.validation.sqlUserNameStartWithNumber"
+    );
   }
   return undefined;
 }
@@ -57,15 +64,19 @@ export function sqlPasswordValidatorGenerator(
   return (password: string): string | undefined => {
     password = password?.trim();
     if (!password) {
-      return Message.inputCheck.sqlPasswordEmpty;
+      return getLocalizedString("plugins.sql.getQuestionAdminPassword.validation.sqlPasswordEmpty");
     }
 
     if (password.length < 8) {
-      return Message.inputCheck.sqlPasswordLengthLessThan8;
+      return getLocalizedString(
+        "plugins.sql.getQuestionAdminPassword.validation.sqlPasswordLengthLessThan8"
+      );
     }
 
     if (password.length > 128) {
-      return Message.inputCheck.sqlPasswordLengthGreatThan128;
+      return getLocalizedString(
+        "plugins.sql.getQuestionAdminPassword.validation.sqlPasswordLengthGreatThan128"
+      );
     }
 
     const containLowerLetters = password.match(/[a-z]+/) ? 1 : 0;
@@ -74,11 +85,15 @@ export function sqlPasswordValidatorGenerator(
     const containSpecialCharacters = password.match(/[\[\]{}/~`_"$&+,:;=?@#|'<>.^*()%!-]+/) ? 1 : 0;
 
     if (containLowerLetters + containUpperLetters + containNumbers + containSpecialCharacters < 3) {
-      return Message.inputCheck.sqlPasswordMustContain3Categories;
+      return getLocalizedString(
+        "plugins.sql.getQuestionAdminPassword.validation.sqlPasswordMustContain3Categories"
+      );
     }
 
     if (password.toLowerCase().search(name.toLowerCase()) >= 0) {
-      return Message.inputCheck.sqlPasswordCannotContainUserName;
+      return getLocalizedString(
+        "plugins.sql.getQuestionAdminPassword.validation.sqlPasswordCannotContainUserName"
+      );
     }
 
     return undefined;
@@ -90,7 +105,9 @@ export function sqlConfirmPasswordValidatorGenerator(
 ): (confirm: string) => string | undefined {
   return (confirm: string): string | undefined => {
     if (password !== confirm) {
-      return Message.inputCheck.sqlPasswordMustMatch;
+      return getLocalizedString(
+        "plugins.sql.getQuestionConfirmPassword.validation.sqlPasswordMustMatch"
+      );
     }
     return undefined;
   };

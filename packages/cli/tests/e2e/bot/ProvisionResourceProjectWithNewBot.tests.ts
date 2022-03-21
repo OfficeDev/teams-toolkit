@@ -34,7 +34,7 @@ describe("Provision", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
-  it("Provision Resource: project with new bot", { testPlanCaseId: 9729265 }, async function () {
+  it("Provision Resource: project with new bot", { testPlanCaseId: 10306848 }, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
       cwd: testFolder,
       env: process.env,

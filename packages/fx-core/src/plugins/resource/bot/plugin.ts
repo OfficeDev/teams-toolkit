@@ -49,6 +49,7 @@ import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import {
+  BotHostTypes,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -62,6 +63,7 @@ import {
 } from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
+import { ScaffoldConfig } from "./configs/scaffoldConfig";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -111,7 +113,7 @@ export class TeamsBotImpl implements PluginImpl {
     // }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    await LanguageStrategy.getTemplateProject(group_name, this.config);
+    await LanguageStrategy.scaffoldProject(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);
@@ -307,9 +309,14 @@ export class TeamsBotImpl implements PluginImpl {
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-    const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
-      `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
-    ]);
+
+    // TODO: remove it and implement the deploy in functionsHostedBot/plugin
+    const zipBuffer =
+      ScaffoldConfig.getBotHostType(context) === BotHostTypes.AzureFunctions
+        ? utils.zipAFolder(workingDir) // TODO: remove it and implement the deploy in functionsHostedBot/plugin
+        : utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
+            `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
+          ]);
 
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(

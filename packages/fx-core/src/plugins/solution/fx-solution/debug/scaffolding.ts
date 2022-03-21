@@ -28,6 +28,7 @@ import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { BotHostTypes } from "../../../../common";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -61,7 +62,9 @@ export async function _scaffoldLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
+  const isM365 = projectSetting.isM365;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -70,6 +73,7 @@ export async function _scaffoldLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
+    botHostType: includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);
@@ -121,18 +125,30 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = (await useNewTasks(inputs.projectPath))
+        const launchConfigurations = isM365
+          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
           : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
-        const launchCompounds = (await useNewTasks(inputs.projectPath))
+        const launchCompounds = isM365
+          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
           : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-        const tasks = (await useNewTasks(inputs.projectPath))
+        const tasks = isM365
+          ? TasksNext.generateM365Tasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              programmingLanguage
+            )
+          : (await useNewTasks(inputs.projectPath))
           ? TasksNext.generateTasks(
               includeFrontend,
               includeBackend,
               includeBot,
+              includeFuncHostedBot,
               programmingLanguage
             )
           : Tasks.generateTasks(

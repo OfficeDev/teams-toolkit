@@ -12,7 +12,6 @@ import {
   Result,
   Stage,
 } from "@microsoft/teamsfx-api";
-import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 
@@ -22,19 +21,13 @@ import {
   FetchConfigError,
   FindAppError,
   FunctionNameConflictError,
-  GetConnectionStringError,
   InitAzureSDKError,
   InstallNpmPackageError,
-  InstallTeamsfxBindingError,
-  ProvisionError,
-  RegisterResourceProviderError,
+  InstallTeamsFxBindingError,
   runWithErrorCatchAndThrow,
-  runWithErrorCatchAndWrap,
   ValidationError,
 } from "./resources/errors";
 import {
-  AzureInfo,
-  DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
   FunctionBicep,
@@ -52,30 +45,19 @@ import {
   FunctionLanguage,
   NodeVersion,
   QuestionKey,
-  ResourceType,
 } from "./enums";
 import { FunctionDeploy } from "./ops/deploy";
 import { FunctionProvision } from "./ops/provision";
 import { FunctionScaffold } from "./ops/scaffold";
 import { FunctionPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./utils/logger";
-import {
-  PostProvisionSteps,
-  PreDeploySteps,
-  ProvisionSteps,
-  step,
-  StepGroup,
-} from "./resources/steps";
+import { PostProvisionSteps, PreDeploySteps, step, StepGroup } from "./resources/steps";
 import { funcDepsHelper } from "./utils/depsChecker/funcHelper";
-import { Messages } from "../../../common/deps-checker/constant/message";
-import { isLinux } from "../../../common/deps-checker/util/system";
-import { dotnetManualInstallHelpLink } from "../../../common/deps-checker/constant/helpLink";
-import { DepsCheckerError, LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
+import { LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
 import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
 import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
 import { funcDepsTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { funcDepsLogger } from "./utils/depsChecker/funcPluginLogger";
-import { getNodeVersion } from "./utils/node-version";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -89,9 +71,9 @@ import { functionNameQuestion } from "./question";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
+import { getNodeVersion } from "./utils/node-version";
 
 type Site = WebSiteManagementModels.Site;
-type AppServicePlan = WebSiteManagementModels.AppServicePlan;
 type SiteAuthSettings = WebSiteManagementModels.SiteAuthSettings;
 
 export interface FunctionConfig {
@@ -330,13 +312,6 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public async preProvision(ctx: PluginContext): Promise<FxResult> {
-    await this.syncConfigFromContext(ctx);
-
-    this.syncConfigToContext(ctx);
-    return ResultFactory.Success();
-  }
-
   private async getValidNodeVersion(ctx: PluginContext): Promise<NodeVersion> {
     const currentNodeVersion = await getNodeVersion(this.getFunctionProjectRootPath(ctx));
     const candidateNodeVersions = Object.values(NodeVersion);
@@ -344,158 +319,6 @@ export class FunctionPluginImpl {
       candidateNodeVersions.find((v: NodeVersion) => v === currentNodeVersion) ??
       DefaultValues.nodeVersion
     );
-  }
-
-  public async provision(ctx: PluginContext): Promise<FxResult> {
-    const resourceGroupName = this.getFunctionAppResourceGroupName();
-    const subscriptionId = this.getFunctionAppSubscriptionId();
-    const location = this.checkAndGet(this.config.location, FunctionConfigKey.location);
-    const appServicePlanName = this.checkAndGet(
-      this.config.appServicePlanName,
-      FunctionConfigKey.appServicePlanName
-    );
-    const storageAccountName = this.checkAndGet(
-      this.config.storageAccountName,
-      FunctionConfigKey.storageAccountName
-    );
-    const functionAppName = this.checkAndGet(
-      this.config.functionAppName,
-      FunctionConfigKey.functionAppName
-    );
-    const functionLanguage = this.checkAndGet(
-      this.config.functionLanguage,
-      FunctionConfigKey.functionLanguage
-    );
-    const credential = this.checkAndGet(
-      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-      FunctionConfigKey.credential
-    );
-    const nodeVersion = await this.getValidNodeVersion(ctx);
-
-    const providerClient = await runWithErrorCatchAndThrow(new InitAzureSDKError(), () =>
-      AzureClientFactory.getResourceProviderClient(credential, subscriptionId)
-    );
-
-    Logger.info(
-      InfoMessages.ensureResourceProviders(AzureInfo.requiredResourceProviders, subscriptionId)
-    );
-
-    await runWithErrorCatchAndThrow(new RegisterResourceProviderError(), async () =>
-      step(
-        StepGroup.ProvisionStepGroup,
-        ProvisionSteps.registerResourceProviders,
-        async () =>
-          await AzureLib.ensureResourceProviders(
-            providerClient,
-            AzureInfo.requiredResourceProviders
-          )
-      )
-    );
-
-    const storageManagementClient: StorageManagementClient = await runWithErrorCatchAndThrow(
-      new InitAzureSDKError(),
-      () => AzureClientFactory.getStorageManagementClient(credential, subscriptionId)
-    );
-
-    Logger.info(
-      InfoMessages.checkResource(ResourceType.storageAccount, storageAccountName, resourceGroupName)
-    );
-
-    await runWithErrorCatchAndWrap(
-      (error: any) => new ProvisionError(ResourceType.storageAccount, error.code),
-      async () =>
-        step(
-          StepGroup.ProvisionStepGroup,
-          ProvisionSteps.ensureStorageAccount,
-          async () =>
-            await AzureLib.ensureStorageAccount(
-              storageManagementClient,
-              resourceGroupName,
-              storageAccountName,
-              DefaultProvisionConfigs.storageConfig(location)
-            )
-        )
-    );
-
-    const storageConnectionString: string | undefined = await runWithErrorCatchAndThrow(
-      new GetConnectionStringError(),
-      async () =>
-        await step(StepGroup.ProvisionStepGroup, ProvisionSteps.getConnectionString, async () =>
-          AzureLib.getConnectionString(
-            storageManagementClient,
-            resourceGroupName,
-            storageAccountName
-          )
-        )
-    );
-
-    if (!storageConnectionString) {
-      Logger.error(ErrorMessages.failToGetConnectionString);
-      throw new GetConnectionStringError();
-    }
-
-    const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
-      new InitAzureSDKError(),
-      () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
-    );
-
-    Logger.info(
-      InfoMessages.checkResource(ResourceType.appServicePlan, appServicePlanName, resourceGroupName)
-    );
-
-    const appServicePlan: AppServicePlan = await runWithErrorCatchAndWrap(
-      (error: any) => new ProvisionError(ResourceType.appServicePlan, error.code),
-      async () =>
-        await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureAppServicePlans, async () =>
-          AzureLib.ensureAppServicePlans(
-            webSiteManagementClient,
-            resourceGroupName,
-            appServicePlanName,
-            DefaultProvisionConfigs.appServicePlansConfig(location)
-          )
-        )
-    );
-
-    const appServicePlanId: string | undefined = appServicePlan.id;
-    if (!appServicePlanId) {
-      Logger.error(ErrorMessages.failToGetAppServicePlanId);
-      throw new ProvisionError(ResourceType.appServicePlan);
-    }
-
-    Logger.info(
-      InfoMessages.checkResource(ResourceType.functionApp, appServicePlanName, resourceGroupName)
-    );
-
-    const site: Site = await runWithErrorCatchAndWrap(
-      (error: any) => new ProvisionError(ResourceType.functionApp, error.code),
-      async () =>
-        await step(StepGroup.ProvisionStepGroup, ProvisionSteps.ensureFunctionApp, async () =>
-          FunctionProvision.ensureFunctionApp(
-            webSiteManagementClient,
-            resourceGroupName,
-            location,
-            functionAppName,
-            functionLanguage,
-            appServicePlanId,
-            storageConnectionString,
-            nodeVersion
-          )
-        )
-    );
-
-    if (!site.defaultHostName) {
-      Logger.error(ErrorMessages.failToGetFunctionAppEndpoint);
-      throw new ProvisionError(ResourceType.functionApp);
-    }
-
-    this.config.site = site;
-
-    if (!this.config.functionEndpoint) {
-      this.config.functionEndpoint = `https://${site.defaultHostName}`;
-    }
-
-    this.syncConfigToContext(ctx);
-    return ResultFactory.Success();
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
@@ -891,7 +714,7 @@ export class FunctionPluginImpl {
     functionLanguage: FunctionLanguage
   ): Promise<void> {
     await runWithErrorCatchAndThrow(
-      new InstallTeamsfxBindingError(),
+      new InstallTeamsFxBindingError(),
       async () =>
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
           try {

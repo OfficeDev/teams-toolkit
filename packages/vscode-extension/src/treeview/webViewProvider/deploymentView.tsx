@@ -81,20 +81,20 @@ export class DeploymentView extends React.Component<any, any> {
           command="fx-extension.publish"
         ></TreeItem>
         <TreeItem
+          label="Add CI/CD Workflows"
+          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription")}
+          icon="codicon codicon-sync"
+          customized={false}
+          disable={false}
+          command="fx-extension.addCICDWorkflows"
+        ></TreeItem>
+        <TreeItem
           label="Developer Portal for Teams"
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription")}
           icon={this.state.colorTheme === Theme.Dark ? developerPortal_dark : developerPortal_light}
           customized={true}
           disable={false}
           command="fx-extension.openAppManagement"
-        ></TreeItem>
-        <TreeItem
-          label="CI/CD guide"
-          tooltip={localize("teamstoolkit.commandsTreeViewProvider.cicdGuideDescription")}
-          icon="codicon codicon-sync"
-          customized={false}
-          disable={false}
-          command="fx-extension.cicdGuide"
         ></TreeItem>
       </div>
     );

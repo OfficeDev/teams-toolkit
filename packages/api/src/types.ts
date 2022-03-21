@@ -173,6 +173,7 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings?: SolutionSettings;
   isFromSample?: boolean;
+  isM365?: boolean;
   /**
    * pluginSettings is used for plugin settings irrelevant to environments
    */
@@ -231,21 +232,8 @@ export interface Inputs extends Json {
   env?: string;
   projectId?: string;
   existingResources?: string[];
-  existingAppConfig?: ExistingAppConfig;
   locale?: string;
-}
-
-// configs for existing app building
-export interface ExistingAppConfig {
-  isCreatedFromExistingApp: boolean;
-  newAppTypes: ExistingTeamsAppType[];
-}
-
-export enum ExistingTeamsAppType {
-  StaticTab, // scopes: personal tab
-  ConfigurableTab, // scopes: team/group chat
-  Bot,
-  MessageExtension,
+  isM365?: boolean;
 }
 
 export interface ProjectConfig {

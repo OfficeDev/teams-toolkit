@@ -10,12 +10,15 @@ import {
   assembleError,
   AzureSolutionSettings,
   Colors,
+  ConfigFolderName,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   LogLevel,
   ok,
   Platform,
+  ProjectSettingsFileName,
   Result,
   SystemError,
   UnknownError,
@@ -36,6 +39,7 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
+  isPureExistingApp,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -63,6 +67,7 @@ import { CliDepsChecker } from "./depsChecker/cliChecker";
 import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
 import { signedOut } from "../../commonlib/common/constant";
 import { cliSource } from "../../constants";
+import { performance } from "perf_hooks";
 
 enum Checker {
   M365Account = "M365 Account",
@@ -98,6 +103,7 @@ export default class Preview extends YargsCommand {
 
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
+  private readonly telemetryMeasurements: { [key: string]: number } = {};
   private serviceLogWriter: ServiceLogWriter | undefined;
   private sharepointSiteUrl: string | undefined;
   public builder(yargs: Argv): Argv<any> {
@@ -191,17 +197,33 @@ export default class Preview extends YargsCommand {
         throw errors.ExclusiveLocalRemoteOptions();
       }
 
-      const result =
-        previewType === "local"
-          ? await this.localPreview(workspaceFolder, browser, browserArguments)
-          : await this.remotePreview(workspaceFolder, browser, args.env as any, browserArguments);
+      let result: Result<null, FxError>;
+      if (previewType === "local") {
+        if (await this.isExistingApp(workspaceFolder)) {
+          result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
+        } else {
+          result = await this.localPreview(workspaceFolder, browser, browserArguments);
+        }
+      } else {
+        result = await this.remotePreview(
+          workspaceFolder,
+          browser,
+          args.env as any,
+          browserArguments
+        );
+      }
+
       if (result.isErr()) {
         throw result.error;
       }
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.Preview, {
-        ...this.telemetryProperties,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+      cliTelemetry.sendTelemetryEvent(
+        TelemetryEvent.Preview,
+        {
+          ...this.telemetryProperties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        },
+        this.telemetryMeasurements
+      );
       return ok(null);
     } catch (error: any) {
       cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
@@ -282,34 +304,48 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    // check node
+    const start = performance.now();
     const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
-    const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
-    if (nodeRes.isErr()) {
-      return err(nodeRes.error);
-    }
+    try {
+      // check node
+      const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+      if (nodeRes.isErr()) {
+        return err(nodeRes.error);
+      }
 
-    // check account
-    const accountRes = await this.checkM365Account();
-    if (accountRes.isErr()) {
-      return err(accountRes.error);
-    }
+      // check account
+      const accountRes = await this.checkM365Account();
+      if (accountRes.isErr()) {
+        return err(accountRes.error);
+      }
 
-    // check cert
-    const certRes = await this.resolveLocalCertificate(localEnvManager);
-    if (certRes.isErr()) {
-      return err(certRes.error);
-    }
+      // check cert
+      const certRes = await this.resolveLocalCertificate(localEnvManager);
+      if (certRes.isErr()) {
+        return err(certRes.error);
+      }
 
-    // check deps
-    const envCheckerResult = await this.handleDependences(
-      includeBackend,
-      includeBot,
-      includeFuncHostedBot,
-      depsManager
-    );
-    if (envCheckerResult.isErr()) {
-      return err(envCheckerResult.error);
+      // check deps
+      const envCheckerResult = await this.handleDependences(
+        includeBackend,
+        includeBot,
+        includeFuncHostedBot,
+        depsManager
+      );
+      if (envCheckerResult.isErr()) {
+        return err(envCheckerResult.error);
+      }
+
+      /* === check ports === */
+      const portsRes = await this.checkPorts(workspaceFolder);
+      if (portsRes.isErr()) {
+        return portsRes;
+      }
+    } finally {
+      // use seconds
+      this.telemetryMeasurements[TelemetryProperty.PreviewPrerequisitesCheckTime] = Number(
+        ((performance.now() - start) / 1000).toFixed(2)
+      );
     }
 
     // clear background tasks
@@ -343,12 +379,6 @@ export default class Preview extends YargsCommand {
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
       workspaceFolder
     ) as string;
-
-    /* === check ports === */
-    const portsRes = await this.checkPorts(workspaceFolder);
-    if (portsRes.isErr()) {
-      return portsRes;
-    }
 
     /* === start services === */
     const programmingLanguage = projectSettings.programmingLanguage as string;
@@ -543,6 +573,53 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
+  private async localPreviewMinimalApp(
+    workspaceFolder: string,
+    browser: constants.Browser,
+    browserArguments: string[] = []
+  ): Promise<Result<null, FxError>> {
+    const coreResult = await activate();
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+    const core = coreResult.value;
+
+    const inputs: Inputs = {
+      projectPath: workspaceFolder,
+      platform: Platform.CLI,
+      env: environmentManager.getLocalEnvName(),
+    };
+
+    /* === register teams app === */
+    const result = await core.localDebug(inputs);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    return await this.remotePreview(
+      workspaceFolder,
+      browser,
+      environmentManager.getLocalEnvName(),
+      browserArguments
+    );
+  }
+
+  private async isExistingApp(workspacePath: string): Promise<boolean> {
+    const projectSettingsPath = path.resolve(
+      workspacePath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (await fs.pathExists(projectSettingsPath)) {
+      const projectSettings = await fs.readJson(projectSettingsPath);
+      return isPureExistingApp(projectSettings);
+    } else {
+      return false;
+    }
+  }
+
   private async remotePreview(
     workspaceFolder: string,
     browser: constants.Browser,
@@ -568,8 +645,8 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
-    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
+    const activeResourcePlugins =
+      (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );

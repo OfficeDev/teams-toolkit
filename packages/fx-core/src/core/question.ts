@@ -26,6 +26,8 @@ import {
   NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
+  M365LaunchPageOptionItem,
+  M365MessagingExtensionOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -46,6 +48,9 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
+  M365CreateFromScratch = "m365-scratch",
+  M365AppType = "m365-app-type",
+  M365Capability = "m365-capability",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -151,6 +156,37 @@ function hasCapability(items: string[], optionItem: OptionItem): boolean {
   return items.includes(optionItem.id) || items.includes(optionItem.label);
 }
 
+// Items in set1 and set2 are mutally exclusive. Handle conflict by removing conflicting items with the newly added items.
+// Assuming intersection of set1 and set2 are empty sets and no conflicts in newly added items.
+export function handleSelectionConflict<T>(
+  set1: Set<T>,
+  set2: Set<T>,
+  previous: Set<T>,
+  current: Set<T>
+): Set<T> {
+  const addedItems = [...current].filter((item) => !previous.has(item));
+
+  let conflicts: Set<T> | undefined = undefined;
+  for (const addedItem of addedItems) {
+    if (set1.has(addedItem)) {
+      conflicts = set2;
+      break;
+    }
+    if (set2.has(addedItem)) {
+      conflicts = set1;
+      break;
+    }
+  }
+
+  const result = new Set<T>();
+  for (const item of current) {
+    if (!conflicts || !conflicts.has(item)) {
+      result.add(item);
+    }
+  }
+  return result;
+}
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   const staticOptions = [
     ...[TabOptionItem, BotOptionItem],
@@ -200,6 +236,15 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
           currentSelectedIds.clear();
           currentSelectedIds.add(TabSPFxItem.id);
         }
+      }
+
+      if (isBotNotificationEnabled()) {
+        currentSelectedIds = handleSelectionConflict(
+          new Set([BotOptionItem.id, MessageExtensionItem.id]),
+          new Set([NotificationOptionItem.id]),
+          previousSelectedIds,
+          currentSelectedIds
+        );
       }
 
       return currentSelectedIds;
@@ -363,4 +408,32 @@ export const SampleSelect: SingleSelectQuestion = {
     } as OptionItem;
   }),
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+};
+
+export const M365CreateFromScratchFuncQuestion: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.M365CreateFromScratch,
+  func: (inputs: Inputs) => {
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYes.id;
+  },
+};
+
+export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.M365AppType,
+  title: getLocalizedString("core.M365AppTypeSelectQuestion.title"),
+  staticOptions: [M365LaunchPageOptionItem, M365MessagingExtensionOptionItem],
+  placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
+};
+
+export const M365CapabilityFuncQuestion: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.M365Capability,
+  func: (inputs: Inputs) => {
+    if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
+    }
+  },
 };

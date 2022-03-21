@@ -8,7 +8,6 @@ New Features:
 
 Enhancement:
 - Enhance TeamsFx SDK.
-- Enhance Teams Toolkit localization and Accessibility.
 
 ## 3.5.0 - Mar 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

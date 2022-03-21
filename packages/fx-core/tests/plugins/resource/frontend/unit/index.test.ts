@@ -55,15 +55,8 @@ describe("FrontendPlugin", () => {
 
     before(() => {
       const config: any = {};
-      config[
-        path.join(
-          getTemplatesFolder(),
-          "plugins",
-          "resource",
-          FrontendPathInfo.TemplateFolderName,
-          "tab.js.default.zip"
-        )
-      ] = new AdmZip().toBuffer();
+      config[path.join(getTemplatesFolder(), "fallback", "tab.js.default.zip")] =
+        new AdmZip().toBuffer();
       mock(config);
     });
 

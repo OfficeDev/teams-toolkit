@@ -37,6 +37,7 @@ import {
   GetTenantFailedError,
   UploadAppPackageFailedError,
   InsufficientPermissionError,
+  DependencyInstallError,
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -54,6 +55,7 @@ import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeatur
 import { convert2Context } from "../utils4v2";
 import { yeomanScaffoldEnabled } from "../../../core/globalVars";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { YoChecker } from "./depsChecker/yoChecker";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -66,6 +68,13 @@ export class SPFxPluginImpl {
       if (yeomanScaffoldEnabled()) {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
         await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
+
+        const yoChecker = new YoChecker(ctx.logProvider!);
+        const yoRes = await yoChecker.ensureDependency(ctx);
+        if (yoRes.isErr()) {
+          throw DependencyInstallError("yo");
+        }
+
         const webpartDescription = ctx.answers![SPFXQuestionNames.webpart_desp] as string;
         const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
         const solutionName = ctx.projectSettings?.appName as string;

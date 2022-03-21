@@ -90,3 +90,35 @@ export function UploadAppPackageFailedError(error: Error): SystemError {
     "UploadAppCatalogFailed"
   );
 }
+
+export function NpmNotFoundError(): SystemError {
+  return returnSystemError(
+    new Error(getLocalizedString("plugins.spfx.error.npmNotFound")),
+    Constants.PLUGIN_NAME,
+    "NpmNotFound"
+  );
+}
+
+export function NpmInstallError(error: Error): SystemError {
+  return returnSystemError(
+    new Error(getLocalizedString("plugins.spfx.error.npmInstallFailed", error.message)),
+    Constants.PLUGIN_NAME,
+    "NpmInstallFailed"
+  );
+}
+
+export function DependencyValidateError(dependency: string): SystemError {
+  return returnSystemError(
+    new Error(getLocalizedString("plugins.spfx.error.invalidDependency", dependency)),
+    Constants.PLUGIN_NAME,
+    "InvalidDependency"
+  );
+}
+
+export function DependencyInstallError(dependency: string): SystemError {
+  return returnSystemError(
+    new Error(getLocalizedString("plugins.spfx.error.installDependency", dependency)),
+    Constants.PLUGIN_NAME,
+    "DependencyInstallFailed"
+  );
+}

@@ -142,6 +142,7 @@
   "plugins.appstudio.manuallySubmitDescription": "Build the Teams app package. You will need to send it to your Teams administrator manually",
   "plugins.appstudio.autoPublishTip": "Install for your organization",
   "plugins.appstudio.autoPublishDescription": "Send your app to your Teams administrator for approval via the Teams App Portal.",
+  "plugins.appstudio.localDebugProgress": "Registering Teams app %s for local debug",
   "plugins.bot.questionHostTypeTrigger.title": "Choose triggers",
   "plugins.bot.questionHostTypeTrigger.placeholder": "Choose triggers",
   "plugins.bot.questionHostTypeTrigger.error.emptySelection": "You have to select at least one trigger.",

@@ -443,12 +443,10 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
   const LocalEnvName = environmentManager.getLocalEnvName();
-  const PreviewLocalSteps = 2;
-  const PreviewRemoteSteps = 1;
 
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.preview.progressTitle"),
-    env === LocalEnvName ? PreviewLocalSteps : PreviewRemoteSteps
+    1
   );
   await progressBar.start();
 
@@ -473,8 +471,6 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 }
 
 async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
-  await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
-
   const result = await runCommand(Stage.debug);
   if (result.isErr()) {
     return result;

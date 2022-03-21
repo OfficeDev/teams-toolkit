@@ -825,12 +825,18 @@ export class AppStudioPluginImpl {
     if (manifest.isErr()) {
       return err(manifest.error);
     }
+    const localDebugProgress = ctx.ui?.createProgressBar(
+      getLocalizedString("plugins.appstudio.localDebugProgress", ctx.projectSettings!.appName),
+      1
+    );
+    await localDebugProgress?.start();
     if (isSPFxProject(ctx.projectSettings)) {
       teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
     } else {
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, true, manifest.value);
     }
     if (teamsAppId.isErr()) {
+      await localDebugProgress?.end(false);
       return teamsAppId;
     }
     if (isConfigUnifyEnabled()) {
@@ -840,6 +846,7 @@ export class AppStudioPluginImpl {
     } else {
       ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
     }
+    await localDebugProgress?.end(true);
     return ok(teamsAppId.value);
   }
 

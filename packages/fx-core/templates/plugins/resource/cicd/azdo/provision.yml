@@ -1,9 +1,8 @@
 {{=<% %>=}}
 # This is just an example workflow for provision.
 # You should customize it to meet your own requirements.
-trigger:
+trigger: none
 # Manually trigger this workflow, and you should pick the right branch.
-- main
 
 pool:
   vmImage: ubuntu-latest
@@ -28,6 +27,7 @@ steps:
     TEAMSFX_ENV_NAME: <%env_name%>
   inputs:
     targetType: 'inline'
+    failOnStderr: true
     script: |
       set -vuxo pipefail
       

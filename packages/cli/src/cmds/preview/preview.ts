@@ -790,7 +790,7 @@ export default class Preview extends YargsCommand {
    *  If t1 succeeds and t2 fails, the result is the error of t2, and t3 is never executed.
    *  If they all succeed, the result is [t1Result, t2Result, t3Result].
    */
-  public async sequentialTasks<T>(
+  public static async sequentialTasks<T>(
     ...tasks: (Promise<Result<T, FxError>> | undefined)[]
   ): Promise<Result<(T | undefined)[], FxError>> {
     const results: (T | undefined)[] = [];
@@ -806,6 +806,96 @@ export default class Preview extends YargsCommand {
       }
     }
     return ok(results);
+  }
+
+  public async createBotTasksForStartServices(
+    workspaceFolder: string,
+    programmingLanguage: string,
+    includeBot: boolean,
+    includeFuncHostedBot: boolean,
+    localEnv: { [key: string]: string } | undefined,
+    funcEnv: { [key: string]: string } | undefined
+  ): Promise<(Promise<Result<unknown, FxError>> | undefined)[]> {
+    // The following task logic aligns with the vscode extension.
+    // Bot task order:
+    //  - for legacy bot: botStart
+    //  - for func hosted bot: [botWatch (ts only) -> botStart] | botAzurite
+    // "|" for concurrent
+    // "->" for sequential
+    let botTaskPromises: (Promise<Result<unknown, FxError>> | undefined)[] = [];
+    if (includeBot) {
+      const hasTeamsFxDevScript =
+        (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
+      const botWatchTask =
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+          ? hasTeamsFxDevScript
+            ? this.prepareTaskNext(
+                TaskDefinition.funcHostedBotWatch(workspaceFolder),
+                constants.botWatchStartMessage,
+                true
+              )
+            : this.prepareTask(
+                TaskDefinition.funcHostedBotWatch(workspaceFolder),
+                constants.botWatchStartMessage,
+                commonUtils.getBotLocalEnv(localEnv)
+              )
+          : undefined;
+      const botStartTask = includeFuncHostedBot
+        ? // For func hosted bot, always use the new task (prepareTaskNext).
+          this.prepareTaskNext(
+            TaskDefinition.funcHostedBotStart(workspaceFolder),
+            constants.botStartStartMessage,
+            false,
+            funcEnv
+          )
+        : hasTeamsFxDevScript
+        ? this.prepareTaskNext(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessageNext,
+            false
+          )
+        : this.prepareTask(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessage,
+            commonUtils.getBotLocalEnv(localEnv)
+          );
+
+      const botAzuriteTask = this.prepareTask(
+        TaskDefinition.funcHostedBotAzurite(workspaceFolder),
+        constants.botWatchStartMessage,
+        commonUtils.getBotLocalEnv(localEnv)
+      );
+
+      botTaskPromises = [
+        Preview.sequentialTasks(
+          botWatchTask?.task.waitFor(
+            constants.funcHostedBotWatchPattern,
+            botWatchTask.startCb,
+            botWatchTask.stopCb,
+            undefined,
+            this.serviceLogWriter
+          ),
+          botStartTask?.task.waitFor(
+            includeFuncHostedBot ? constants.funcHostedBotStartPattern : constants.botStartPattern,
+            botStartTask.startCb,
+            botStartTask.stopCb,
+            30000,
+            this.serviceLogWriter
+          )
+        ),
+        includeFuncHostedBot
+          ? botAzuriteTask?.task.waitFor(
+              constants.funcHostedBotAzuritePattern,
+              botAzuriteTask?.startCb,
+              botAzuriteTask?.stopCb,
+              30000,
+              this.serviceLogWriter
+            )
+          : undefined,
+      ];
+    }
+
+    return botTaskPromises;
   }
 
   private async startServices(
@@ -886,7 +976,7 @@ export default class Preview extends YargsCommand {
     // backendStart runs `func start ...` which uses `bot/{funcName}/function.json`,
     //  which refers to the JavaScript files built from TypeScript files.
     // As a result, running backendStart before backendWatch succeeds will result in JavaScript file not found error.
-    const backendTaskPromise = this.sequentialTasks(
+    const backendTaskPromise = Preview.sequentialTasks(
       backendStartTask?.task.waitFor(
         constants.backendStartPattern,
         backendStartTask.startCb,
@@ -903,84 +993,14 @@ export default class Preview extends YargsCommand {
       )
     );
 
-    // The following task logic aligns with the vscode extension.
-    // Bot task order:
-    //  - for legacy bot: botStart
-    //  - for func hosted bot: [botWatch (ts only) -> botStart] | botAzurite
-    // "|" for concurrent
-    // "->" for sequential
-    let botTaskPromises: (Promise<Result<unknown, FxError>> | undefined)[] = [];
-    if (includeBot) {
-      const hasTeamsFxDevScript =
-        (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
-      const botWatchTask =
-        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
-          ? hasTeamsFxDevScript
-            ? this.prepareTaskNext(
-                TaskDefinition.funcHostedBotWatch(workspaceFolder),
-                constants.botWatchStartMessage,
-                true
-              )
-            : this.prepareTask(
-                TaskDefinition.funcHostedBotWatch(workspaceFolder),
-                constants.botWatchStartMessage,
-                commonUtils.getBotLocalEnv(localEnv)
-              )
-          : undefined;
-      const botStartTask = includeFuncHostedBot
-        ? // For func hosted bot, always use the new task (prepareTaskNext).
-          this.prepareTaskNext(
-            TaskDefinition.funcHostedBotStart(workspaceFolder),
-            constants.botStartStartMessage,
-            false,
-            funcEnv
-          )
-        : hasTeamsFxDevScript
-        ? this.prepareTaskNext(
-            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
-            constants.botStartStartMessageNext,
-            false
-          )
-        : this.prepareTask(
-            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
-            constants.botStartStartMessage,
-            commonUtils.getBotLocalEnv(localEnv)
-          );
-
-      const botAzuriteTask = this.prepareTask(
-        TaskDefinition.funcHostedBotAzurite(workspaceFolder),
-        constants.botWatchStartMessage,
-        commonUtils.getBotLocalEnv(localEnv)
-      );
-
-      botTaskPromises = [
-        this.sequentialTasks(
-          botStartTask?.task.waitFor(
-            includeFuncHostedBot ? constants.funcHostedBotStartPattern : constants.botStartPattern,
-            botStartTask.startCb,
-            botStartTask.stopCb,
-            30000,
-            this.serviceLogWriter
-          ),
-          botWatchTask?.task.waitFor(
-            constants.funcHostedBotWatchPattern,
-            botWatchTask.startCb,
-            botWatchTask.stopCb,
-            undefined,
-            this.serviceLogWriter
-          )
-        ),
-        includeFuncHostedBot
-          ? botAzuriteTask?.task.waitFor(
-              constants.funcHostedBotAzuritePattern,
-              botAzuriteTask?.startCb,
-              botAzuriteTask?.stopCb,
-              30000,
-              this.serviceLogWriter
-            )
-          : undefined,
-      ];
-    }
+    const botTaskPromises = await this.createBotTasksForStartServices(
+      workspaceFolder,
+      programmingLanguage,
+      includeBot,
+      includeFuncHostedBot,
+      localEnv,
+      funcEnv
+    );
 
     const results = await Promise.all([
       frontendStartTask?.task.waitFor(

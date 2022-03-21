@@ -214,6 +214,11 @@ export class AppStudioPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const provisionProgress = ctx.ui?.createProgressBar(
+      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSettings!.appName),
+      1
+    );
+    await provisionProgress?.start();
     let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
     let create = false;
@@ -231,6 +236,7 @@ export class AppStudioPluginImpl {
     if (create) {
       const result = await this.createApp(ctx, false);
       if (result.isErr()) {
+        await provisionProgress?.end(false);
         return err(result.error);
       }
       remoteTeamsAppId = result.value.teamsAppId!;
@@ -239,14 +245,21 @@ export class AppStudioPluginImpl {
       );
     }
     ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
+    await provisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const postProvisionProgress = ctx.ui?.createProgressBar(
+      getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName),
+      1
+    );
+    await postProvisionProgress?.start();
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const manifestResult = await loadManifest(ctx.root, false);
     if (manifestResult.isErr()) {
+      await postProvisionProgress?.end(false);
       return err(manifestResult.error);
     } else {
       manifestString = JSON.stringify(manifestResult.value);
@@ -261,12 +274,14 @@ export class AppStudioPluginImpl {
         false
       );
       if (appDefinitionRes.isErr()) {
+        await postProvisionProgress?.end(false);
         return err(appDefinitionRes.error);
       }
       appDefinition = appDefinitionRes.value;
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
+        await postProvisionProgress?.end(false);
         return err(remoteManifest.error);
       }
       [appDefinition] = remoteManifest.value;
@@ -285,12 +300,14 @@ export class AppStudioPluginImpl {
       ctx.logProvider
     );
     if (result.isErr()) {
+      await postProvisionProgress?.end(false);
       return err(result.error);
     }
 
     ctx.logProvider?.info(
       getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
     );
+    await postProvisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
 

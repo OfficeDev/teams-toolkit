@@ -91,11 +91,6 @@
             ]
         }
     ],
-    "passwordCredentials": [
-        {
-            "displayName": "default"
-        }
-    ],
     "identifierUris": [
         "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
     ],

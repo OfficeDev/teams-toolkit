@@ -103,6 +103,45 @@ export class TaskDefinition {
     };
   }
 
+  static funcHostedBotWatch(workspaceFolder: string): ITaskDefinition {
+    return {
+      name: "bot watch",
+      // command is never used for the new local preview in CLI.
+      command: "npm run watch:teamsfx",
+      cwd: path.join(workspaceFolder, FolderName.Bot),
+      execOptions: {
+        needShell: true,
+        needCmd: isWindows(),
+      },
+      isBackground: true,
+    };
+  }
+
+  static funcHostedBotStart(workspaceFolder: string): ITaskDefinition {
+    return {
+      name: "bot start",
+      // command is never used for the new local preview in CLI.
+      command: `npm run dev:teamsfx`,
+      cwd: path.join(workspaceFolder, FolderName.Bot),
+      execOptions: {
+        needShell: true,
+      },
+      isBackground: true,
+    };
+  }
+
+  static funcHostedBotAzurite(workspaceFolder: string): ITaskDefinition {
+    return {
+      name: "start Azurite emulator",
+      command: "npm run prepare-storage:teamsfx",
+      cwd: path.join(workspaceFolder, FolderName.Bot),
+      execOptions: {
+        needShell: true,
+      },
+      isBackground: true,
+    };
+  }
+
   static ngrokStart(
     workspaceFolder: string,
     skipNgrok: boolean,

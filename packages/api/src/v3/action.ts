@@ -28,7 +28,10 @@ export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
 export interface GroupAction {
   name?: string;
   type: "group";
-  mode: "sequential" | "parallel";
+  /**
+   * execution mode, in sequence or in parallel, if undefined, default is sequential
+   */
+  mode?: "sequential" | "parallel";
   actions: Action[];
 }
 

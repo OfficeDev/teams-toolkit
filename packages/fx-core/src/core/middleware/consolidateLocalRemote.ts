@@ -6,12 +6,15 @@ import {
   AzureSolutionSettings,
   ConfigFolderName,
   err,
+  IConfigurableTab,
   InputConfigsFolderName,
   Inputs,
+  IStaticTab,
   LogProvider,
   Platform,
   StatesFolderName,
   TeamsAppManifest,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { isSPFxProject, isAADEnabled, isConfigUnifyEnabled } from "../../common/tools";
 import { environmentManager } from "../environment";
@@ -43,6 +46,9 @@ import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manife
 import { getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
+import { DefaultManifestProvider } from "../../plugins/solution/fx-solution/v3/addFeature";
+import * as util from "util";
+import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
 const upgradeButton = "Upgrade";
 let userCancelFlag = false;
@@ -167,28 +173,45 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     let manifest: TeamsAppManifest | undefined;
     const templatesFolder = getTemplatesFolder();
     const appDir = `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`;
-    if (isSPFxProject(projectSettings)) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifestStart);
-      const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
-      const manifestFile = path.resolve(
-        templateManifestFolder,
-        "./solution/manifest_multi_env.json"
-      );
-      const manifestString = (await fs.readFile(manifestFile)).toString();
-      manifest = JSON.parse(manifestString);
-      await fs.ensureDir(appDir);
-      const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
-      await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifest);
-    } else {
-      const remoteManifestFile = path.join(
-        inputs.projectPath as string,
-        "templates",
-        "appPackage",
-        "manifest.remote.template.json"
-      );
-      const remoteManifestExist = await fs.pathExists(remoteManifestFile);
-      if (remoteManifestExist) {
+    const remoteManifestFile = path.join(
+      inputs.projectPath as string,
+      "templates",
+      "appPackage",
+      "manifest.remote.template.json"
+    );
+    const remoteManifestExist = await fs.pathExists(remoteManifestFile);
+    if (remoteManifestExist) {
+      if (isSPFxProject(projectSettings)) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifestStart);
+        const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
+        await fs.copyFile(remoteManifestFile, manifestTemplatePath);
+        const manifestString = (await fs.readFile(manifestTemplatePath)).toString();
+        manifest = JSON.parse(manifestString);
+        let componentId = "";
+        if (manifest?.staticTabs && manifest.staticTabs.length > 0) {
+          manifest.staticTabs.forEach((item) => {
+            componentId = item.entityId;
+            const contentUrl = util.format(
+              ManifestTemplate.REMOTE_CONTENT_URL,
+              componentId,
+              componentId
+            );
+            item.contentUrl = contentUrl;
+          });
+        }
+        if (manifest?.configurableTabs && manifest.configurableTabs.length > 0) {
+          manifest.configurableTabs.forEach((item) => {
+            const configurationUrl = util.format(
+              ManifestTemplate.REMOTE_CONFIGURATION_URL,
+              componentId,
+              componentId
+            );
+            item.configurationUrl = configurationUrl;
+          });
+        }
+        await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifest);
+      } else {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifestStart);
         const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
         await fs.copyFile(remoteManifestFile, manifestTemplatePath);

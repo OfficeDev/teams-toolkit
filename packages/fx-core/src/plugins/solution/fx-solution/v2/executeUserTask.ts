@@ -721,7 +721,9 @@ export function canAddSso(
       getLocalizedString("core.addSso.needEnableFeatureFlag"),
       SolutionSource
     );
-    return err(e);
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
   }
 
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
@@ -731,7 +733,7 @@ export function canAddSso(
       SolutionSource
     );
     return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
   }
 
@@ -747,7 +749,7 @@ export function canAddSso(
       SolutionSource
     );
     return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
   }
 

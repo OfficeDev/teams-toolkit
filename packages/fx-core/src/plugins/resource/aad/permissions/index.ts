@@ -6,6 +6,8 @@ import fs from "fs-extra";
 import * as path from "path";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution/fx-solution/constants";
 import { Plugins } from "../constants";
+import { IPermissionList } from "../interfaces/IPermissionList";
+import * as jsonPermissionList from "./permissions.json";
 
 const permissionFile = "permissions.json";
 
@@ -42,4 +44,28 @@ export async function getPermissionRequest(projectPath: string): Promise<Result<
   }
   const permissionRequest = await fs.readJSON(checkRes.value);
   return ok(JSON.stringify(permissionRequest));
+}
+
+export function getPermissionMap(): any {
+  const permissionList = jsonPermissionList as IPermissionList;
+  const map: any = {};
+  permissionList.value.forEach((permission) => {
+    const resourceId = permission.appId;
+    map[resourceId] = {};
+    map[resourceId].scopes = {};
+    map[resourceId].roles = {};
+
+    map[permission.displayName] = {};
+    map[permission.displayName].id = resourceId;
+
+    permission.oauth2PermissionScopes.forEach((scope) => {
+      map[resourceId].scopes[scope.value] = scope.id;
+    });
+
+    permission.appRoles.forEach((appRole) => {
+      map[resourceId].roles[appRole.value] = appRole.id;
+    });
+  });
+
+  return map;
 }

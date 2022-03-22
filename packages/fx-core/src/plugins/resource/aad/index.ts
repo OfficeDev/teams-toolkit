@@ -203,3 +203,4 @@ export class AadAppForTeamsPlugin implements Plugin {
 }
 
 export default new AadAppForTeamsPlugin();
+export { getPermissionMap } from "./permissions";

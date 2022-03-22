@@ -7,6 +7,7 @@ import ignore, { Ignore } from "ignore";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { DeployConfigs, FolderNames } from "../constants";
 import { CommonConstants, FuncHostedBotDeployConfigs } from "./constants";
+import { Logger } from "../logger";
 
 export class DeployMgr {
   private workingDir: string;
@@ -34,6 +35,7 @@ export class DeployMgr {
       const lastDeployJson = await fs.readJSON(this.deploymentInfoFile);
       return new Date(lastDeployJson[this.envName].time);
     } catch (err) {
+      Logger.debug(`readJson ${this.deploymentInfoFile} failed with error: ${err}.`);
       throw err;
     }
   }
@@ -168,7 +170,6 @@ export class DeployMgr {
     return zip.toBuffer();
   }
 
-  // If we can find an ignore file, parse it and use it for zip generation.
   private async prepareIgnore(rules: string[]): Promise<Ignore> {
     const ig = ignore().add(DeployConfigs.DEPLOYMENT_FOLDER);
     for (const rule of rules) {

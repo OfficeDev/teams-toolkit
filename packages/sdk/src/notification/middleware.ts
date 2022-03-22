@@ -8,9 +8,11 @@ import { ConversationReferenceStore } from "./storage";
  * @internal
  */
 enum ActivityType {
-  CurrentBotAdded,
+  CurrentBotInstalled,
   CurrentBotMessaged,
-  CurrentBotRemoved,
+  CurrentBotUninstalled,
+  TeamDeleted,
+  TeamRestored,
   Unknown,
 }
 
@@ -34,7 +36,8 @@ export class NotificationMiddleware implements Middleware {
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
     const type = this.classifyActivity(context.activity);
     switch (type) {
-      case ActivityType.CurrentBotAdded: {
+      case ActivityType.CurrentBotInstalled:
+      case ActivityType.TeamRestored: {
         const reference = TurnContext.getConversationReference(context.activity);
         await this.conversationReferenceStore.set(reference);
         break;
@@ -46,7 +49,8 @@ export class NotificationMiddleware implements Middleware {
         }
         break;
       }
-      case ActivityType.CurrentBotRemoved: {
+      case ActivityType.CurrentBotUninstalled:
+      case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
         await this.conversationReferenceStore.delete(reference);
         break;
@@ -63,12 +67,19 @@ export class NotificationMiddleware implements Middleware {
     if (activityType === "installationUpdate") {
       const action = activity.action?.toLowerCase();
       if (action === "add") {
-        return ActivityType.CurrentBotAdded;
+        return ActivityType.CurrentBotInstalled;
       } else {
-        return ActivityType.CurrentBotRemoved;
+        return ActivityType.CurrentBotUninstalled;
       }
     } else if (activityType === "message") {
       return ActivityType.CurrentBotMessaged;
+    } else if (activityType === "conversationUpdate") {
+      const eventType = activity.channelData?.eventType as string;
+      if (eventType === "teamDeleted") {
+        return ActivityType.TeamDeleted;
+      } else if (eventType === "teamRestored") {
+        return ActivityType.TeamRestored;
+      }
     }
 
     return ActivityType.Unknown;

@@ -343,10 +343,19 @@ describe("Notification Tests - Node", () => {
 
     beforeEach(() => {
       middlewares = [];
+      const stubContext = sandbox.createStubInstance(TurnContext);
       const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
       stubAdapter.use.callsFake((args) => {
         middlewares.push(args);
         return stubAdapter;
+      });
+      (
+        stubAdapter.continueConversation as unknown as sinon.SinonStub<
+          [Partial<ConversationReference>, (context: TurnContext) => Promise<void>],
+          Promise<void>
+        >
+      ).callsFake(async (ref, logic) => {
+        await logic(stubContext);
       });
       adapter = stubAdapter;
       storage = new TestStorage();
@@ -365,6 +374,9 @@ describe("Notification Tests - Node", () => {
     });
 
     it("installations should return correct targets", async () => {
+      sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+        return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
+      });
       BotNotification.initialize(adapter, {
         storage: storage,
       });
@@ -388,6 +400,65 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(installations.length, 2);
       assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
       assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
+    });
+
+    it("installations should remove invalid target", async () => {
+      sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+        throw {
+          name: "test",
+          message: "test",
+          code: "BotNotInConversationRoster",
+        };
+      });
+      BotNotification.initialize(adapter, {
+        storage: storage,
+      });
+      storage.items = {
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      };
+      const installations = await BotNotification.installations();
+      assert.strictEqual(installations.length, 0);
+      assert.deepStrictEqual(storage.items, {});
+    });
+
+    it("installations should keep valid target", async () => {
+      sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+        throw {
+          name: "test",
+          message: "test",
+          code: "Throttled",
+        };
+      });
+      BotNotification.initialize(adapter, {
+        storage: storage,
+      });
+      storage.items = {
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      };
+      const installations = await BotNotification.installations();
+      assert.strictEqual(installations.length, 1);
+      assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+      assert.deepStrictEqual(storage.items, {
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      });
     });
   });
 });

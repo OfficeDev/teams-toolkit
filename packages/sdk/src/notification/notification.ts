@@ -568,7 +568,24 @@ export class BotNotification {
     const references = (await BotNotification.conversationReferenceStore.getAll()).values();
     const targets: TeamsBotInstallation[] = [];
     for (const reference of references) {
-      targets.push(new TeamsBotInstallation(BotNotification.adapter, reference));
+      // validate connection
+      let valid = true;
+      BotNotification.adapter.continueConversation(reference, async (context) => {
+        try {
+          // try get member to see if the installation is still valid
+          await TeamsInfo.getPagedMembers(context, 1);
+        } catch (error: any) {
+          if ((error.code as string) === "BotNotInConversationRoster") {
+            valid = false;
+          }
+        }
+      });
+
+      if (valid) {
+        targets.push(new TeamsBotInstallation(BotNotification.adapter, reference));
+      } else {
+        BotNotification.conversationReferenceStore.delete(reference);
+      }
     }
 
     return targets;

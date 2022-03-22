@@ -32,7 +32,7 @@ describe("Notification.Middleware Tests - Node", () => {
     sandbox.restore();
   });
 
-  it("onTurn should correctly handle bot added", async () => {
+  it("onTurn should correctly handle bot installed", async () => {
     const testContext = {
       activity: {
         action: "add",
@@ -59,7 +59,7 @@ describe("Notification.Middleware Tests - Node", () => {
     });
   });
 
-  it("onTurn should correctly handle bot removed", async () => {
+  it("onTurn should correctly handle bot uninstalled", async () => {
     testStorage.items = {
       _a_1: {
         channelId: "1",
@@ -133,6 +133,65 @@ describe("Notification.Middleware Tests - Node", () => {
         },
         recipient: {
           id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    });
+  });
+
+  it("onTurn should correctly handle team deleted", async () => {
+    testStorage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const testContext = {
+      activity: {
+        type: "conversationUpdate",
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+        channelData: {
+          eventType: "teamDeleted",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {});
+  });
+
+  it("onTurn should correctly handle team restored", async () => {
+    const testContext = {
+      activity: {
+        type: "conversationUpdate",
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+        channelData: {
+          eventType: "teamRestored",
         },
       },
     };

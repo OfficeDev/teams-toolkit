@@ -25,7 +25,7 @@ export class Messages {
   );
   public static readonly FailToDoZipDeploy = getLocalizedString("plugins.bot.FailedDeployZipFile");
   public static readonly FailToRestartWebApp = getLocalizedString(
-    "plugins.bot.FailToRestartWebApp"
+    "plugins.bot.FailedRestartWebApp"
   );
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): string =>
     getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);

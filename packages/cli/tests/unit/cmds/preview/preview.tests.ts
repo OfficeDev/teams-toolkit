@@ -27,29 +27,37 @@ describe("sequentialTasks", () => {
   ][] = [
     [[], ok([]), "No task"],
     [
-      [Promise.resolve(ok("a")), undefined, Promise.resolve(ok("b"))],
+      [() => Promise.resolve(ok("a")), () => undefined, () => Promise.resolve(ok("b"))],
       ok(["a", undefined, "b"]),
       "Success tasks with undefined",
     ],
-    [[Promise.resolve(ok("a"))], ok(["a"]), "Single success task"],
+    [[() => Promise.resolve(ok("a"))], ok(["a"]), "Single success task"],
     [
-      [Promise.resolve(ok("a")), Promise.resolve(ok("b"))],
+      [() => Promise.resolve(ok("a")), () => Promise.resolve(ok("b"))],
       ok(["a", "b"]),
       "Multiple success tasks",
     ],
-    [[Promise.resolve(err(testError))], err(testError), "Single error task"],
-    [[undefined, Promise.resolve(err(testError))], err(testError), "Error tasks with undefined"],
+    [[() => Promise.resolve(err(testError))], err(testError), "Single error task"],
     [
-      [Promise.resolve(ok("a")), Promise.resolve(err(testError)), Promise.resolve(ok("b"))],
+      [() => undefined, () => Promise.resolve(err(testError))],
+      err(testError),
+      "Error tasks with undefined",
+    ],
+    [
+      [
+        () => Promise.resolve(ok("a")),
+        () => Promise.resolve(err(testError)),
+        () => Promise.resolve(ok("b")),
+      ],
       err(testError),
       "Multiple mixed tasks",
     ],
     [
       [
-        Promise.resolve(ok("a")),
-        Promise.resolve(err(testError)),
-        Promise.resolve(err(testError2)),
-        Promise.resolve(ok("b")),
+        () => Promise.resolve(ok("a")),
+        () => Promise.resolve(err(testError)),
+        () => Promise.resolve(err(testError2)),
+        () => Promise.resolve(ok("b")),
       ],
       err(testError),
       "Multiple mixed tasks 2",

@@ -791,16 +791,17 @@ export default class Preview extends YargsCommand {
    *  If they all succeed, the result is [t1Result, t2Result, t3Result].
    */
   public static async sequentialTasks<T>(
-    ...tasks: (Promise<Result<T, FxError>> | undefined)[]
+    ...tasks: (() => Promise<Result<T, FxError>> | undefined)[]
   ): Promise<Result<(T | undefined)[], FxError>> {
     const results: (T | undefined)[] = [];
-    for (const promise of tasks) {
-      if (promise) {
-        const result = await promise;
+    for (const createTask of tasks) {
+      const result = await createTask();
+      if (result) {
         if (result.isErr()) {
           return err(result.error);
+        } else {
+          results.push(result.value);
         }
-        results.push(result.value);
       } else {
         results.push(undefined);
       }
@@ -867,20 +868,24 @@ export default class Preview extends YargsCommand {
 
       botTaskPromises = [
         Preview.sequentialTasks(
-          botWatchTask?.task.waitFor(
-            constants.funcHostedBotWatchPattern,
-            botWatchTask.startCb,
-            botWatchTask.stopCb,
-            undefined,
-            this.serviceLogWriter
-          ),
-          botStartTask?.task.waitFor(
-            includeFuncHostedBot ? constants.funcHostedBotStartPattern : constants.botStartPattern,
-            botStartTask.startCb,
-            botStartTask.stopCb,
-            30000,
-            this.serviceLogWriter
-          )
+          () =>
+            botWatchTask?.task.waitFor(
+              constants.funcHostedBotWatchPattern,
+              botWatchTask.startCb,
+              botWatchTask.stopCb,
+              undefined,
+              this.serviceLogWriter
+            ),
+          () =>
+            botStartTask?.task.waitFor(
+              includeFuncHostedBot
+                ? constants.funcHostedBotStartPattern
+                : constants.botStartPattern,
+              botStartTask.startCb,
+              botStartTask.stopCb,
+              30000,
+              this.serviceLogWriter
+            )
         ),
         includeFuncHostedBot
           ? botAzuriteTask?.task.waitFor(
@@ -976,20 +981,22 @@ export default class Preview extends YargsCommand {
     //  which refers to the JavaScript files built from TypeScript files.
     // As a result, running backendStart before backendWatch succeeds will result in JavaScript file not found error.
     const backendTaskPromise = Preview.sequentialTasks(
-      backendStartTask?.task.waitFor(
-        constants.backendStartPattern,
-        backendStartTask.startCb,
-        backendStartTask.stopCb,
-        undefined,
-        this.serviceLogWriter
-      ),
-      backendWatchTask?.task.waitFor(
-        constants.backendWatchPattern,
-        backendWatchTask.startCb,
-        backendWatchTask.stopCb,
-        undefined,
-        this.serviceLogWriter
-      )
+      () =>
+        backendStartTask?.task.waitFor(
+          constants.backendStartPattern,
+          backendStartTask.startCb,
+          backendStartTask.stopCb,
+          undefined,
+          this.serviceLogWriter
+        ),
+      () =>
+        backendWatchTask?.task.waitFor(
+          constants.backendWatchPattern,
+          backendWatchTask.startCb,
+          backendWatchTask.stopCb,
+          undefined,
+          this.serviceLogWriter
+        )
     );
 
     const botTaskPromises = await this.createBotTasksForStartServices(

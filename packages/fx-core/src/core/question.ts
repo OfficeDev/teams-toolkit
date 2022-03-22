@@ -28,6 +28,7 @@ import {
   TabSPFxItem,
   M365LaunchPageOptionItem,
   M365MessagingExtensionOptionItem,
+  CommandAndResponseOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -156,48 +157,52 @@ function hasCapability(items: string[], optionItem: OptionItem): boolean {
   return items.includes(optionItem.id) || items.includes(optionItem.label);
 }
 
-// Items in set1 and set2 are mutally exclusive. Handle conflict by removing conflicting items with the newly added items.
-// Assuming intersection of set1 and set2 are empty sets and no conflicts in newly added items.
+function setIntersect<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  return new Set([...set1].filter((item) => set2.has(item)));
+}
+
+function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  return new Set([...set1].filter((item) => !set2.has(item)));
+}
+
+function setUnion<T>(...sets: Set<T>[]): Set<T> {
+  return new Set(([] as T[]).concat(...sets.map((set) => [...set])));
+}
+
+// Each set is mutally exclusive. Handle conflict by removing items conflicting with the newly added items.
+// Assuming intersection of all sets are empty sets and no conflicts in newly added items.
+//
+// For example: sets = [[1, 2], [3, 4]], previous = [1, 2, 5], current = [1, 2, 4, 5].
+// So the newly added one is [4]. Remove all items from `current` that conflict with [4].
+// Result = [4, 5].
 export function handleSelectionConflict<T>(
-  set1: Set<T>,
-  set2: Set<T>,
+  sets: Set<T>[],
   previous: Set<T>,
   current: Set<T>
 ): Set<T> {
-  const addedItems = [...current].filter((item) => !previous.has(item));
+  const allSets = setUnion(...sets);
+  const addedItems = setDiff(current, previous);
 
-  let conflicts: Set<T> | undefined = undefined;
-  for (const addedItem of addedItems) {
-    if (set1.has(addedItem)) {
-      conflicts = set2;
-      break;
-    }
-    if (set2.has(addedItem)) {
-      conflicts = set1;
-      break;
+  for (const set of sets) {
+    if (setIntersect(set, addedItems).size > 0) {
+      return setUnion(setIntersect(set, current), setDiff(current, allSets));
     }
   }
 
-  const result = new Set<T>();
-  for (const item of current) {
-    if (!conflicts || !conflicts.has(item)) {
-      result.add(item);
-    }
-  }
-  return result;
+  // If newly added items are not in any sets, do nothing.
+  return current;
 }
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
-  const staticOptions = [
-    ...[TabOptionItem, BotOptionItem],
-    ...(isBotNotificationEnabled() ? [NotificationOptionItem] : []),
-    ...[MessageExtensionItem, TabSPFxItem],
-  ];
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
-    staticOptions: staticOptions,
+    staticOptions: [
+      ...[TabOptionItem, BotOptionItem],
+      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
+      ...[MessageExtensionItem, TabSPFxItem],
+    ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
@@ -211,15 +216,39 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
           return getLocalizedString("core.createCapabilityQuestion.validation1");
         }
 
+        // Bot, Messaging Extension, Notification, Command and Response are mutally exclusive (except that Bot and ME do not conflict).
+        // So nCr(4, 2) - 1 = 5 cases
         if (hasCapability(name, BotOptionItem) && hasCapability(name, NotificationOptionItem)) {
-          return getLocalizedString("core.createCapabilityQuestion.validation2");
+          return getLocalizedString("core.createCapabilityQuestion.botNotificationConflict");
+        }
+        if (
+          hasCapability(name, BotOptionItem) &&
+          hasCapability(name, CommandAndResponseOptionItem)
+        ) {
+          return getLocalizedString("core.createCapabilityQuestion.botCommandAndResponseConflict");
+        }
+
+        if (
+          hasCapability(name, NotificationOptionItem) &&
+          hasCapability(name, CommandAndResponseOptionItem)
+        ) {
+          return getLocalizedString(
+            "core.createCapabilityQuestion.notificationCommandAndResponseConflict"
+          );
         }
 
         if (
           hasCapability(name, MessageExtensionItem) &&
           hasCapability(name, NotificationOptionItem)
         ) {
-          return getLocalizedString("core.createCapabilityQuestion.validation3");
+          return getLocalizedString("core.createCapabilityQuestion.meNotificationConflict");
+        }
+
+        if (
+          hasCapability(name, MessageExtensionItem) &&
+          hasCapability(name, CommandAndResponseOptionItem)
+        ) {
+          return getLocalizedString("core.createCapabilityQuestion.meCommandAndResponseConflict");
         }
 
         return undefined;
@@ -240,8 +269,11 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
       if (isBotNotificationEnabled()) {
         currentSelectedIds = handleSelectionConflict(
-          new Set([BotOptionItem.id, MessageExtensionItem.id]),
-          new Set([NotificationOptionItem.id]),
+          [
+            new Set([BotOptionItem.id, MessageExtensionItem.id]),
+            new Set([NotificationOptionItem.id]),
+            new Set([CommandAndResponseOptionItem.id]),
+          ],
           previousSelectedIds,
           currentSelectedIds
         );

@@ -9,7 +9,7 @@ import { DeployConfigs, FolderNames } from "../constants";
 import { CommonConstants, FuncHostedBotDeployConfigs } from "./constants";
 import { Logger } from "../logger";
 
-export class DeployMgr {
+export class FuncHostedDeployMgr {
   private workingDir: string;
   private deploymentDir: string;
   private deploymentInfoFile: string;
@@ -30,7 +30,7 @@ export class DeployMgr {
     this.envName = envName;
   }
 
-  private async getLastDeployTime(): Promise<Date> {
+  public async getLastDeployTime(): Promise<Date> {
     try {
       const lastDeployJson = await fs.readJSON(this.deploymentInfoFile);
       return new Date(lastDeployJson[this.envName].time);

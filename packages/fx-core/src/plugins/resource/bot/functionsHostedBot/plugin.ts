@@ -30,7 +30,7 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
 import { ArmTemplateResult } from "../../../../common/armInterface";
-import { DeployMgr } from "./deployMgr";
+import { FuncHostedDeployMgr } from "./deployMgr";
 import * as appService from "@azure/arm-appservice";
 import { getZipDeployEndpoint } from "../utils/zipDeploy";
 import { AzureOperations } from "../azureOps";
@@ -154,7 +154,7 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
     }
 
     const deployTime: Date = new Date();
-    const deployMgr = new DeployMgr(workingDir, this.ctx.envInfo.envName);
+    const deployMgr = new FuncHostedDeployMgr(workingDir, this.ctx.envInfo.envName);
     const needsToRedeploy: boolean = await deployMgr.needsToRedeploy([
       FolderNames.NODE_MODULES,
       ...(await deployMgr.getIgnoreRules(FuncHostedBotDeployConfigs.FUNC_IGNORE_FILE)),

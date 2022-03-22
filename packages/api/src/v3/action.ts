@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { ConsoleHttpPipelineLogger } from "@azure/core-http/types/latest/src/httpPipelineLogger";
-import { pbkdf2 } from "crypto";
 import { ok, Result } from "neverthrow";
 import { v2, v3 } from "..";
 import { Platform } from "../constants";
@@ -43,6 +40,9 @@ export interface GroupAction {
    */
   mode?: "sequential" | "parallel";
   actions: Action[];
+  inputs?: {
+    [k: string]: string;
+  };
   /**
    * execution priority in a sequential group, default is 3
    */
@@ -190,16 +190,16 @@ export class AADResource implements Resource {
       name: "aad.provision",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        inputs["aad.clientId"] = "mockClientId";
-        inputs["aad.clientSecret"] = "mockSecret";
         return "provision aad app registration";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
-        inputs["aad.clientId"] = "mockClientId";
-        inputs["aad.clientSecret"] = "mockSecret";
+        inputs["aad.clientId"] = "mockM365ClientId";
+        inputs["aad.clientSecret"] = "mockM365ClientSecret";
+        inputs["aad.authAuthorityHost"] = "mockM365OauthAuthorityHost";
+        inputs["aad.tenantId"] = "mockM365TenantId";
         return ok(undefined);
       },
     };
@@ -240,12 +240,13 @@ export class AzureStorageResource implements Resource {
       name: "azure-storage.configure",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return "configure azure storage";
+        return "configure azure storage (enable static web site)";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
+        console.log("configure azure storage (enable static web site)");
         return ok(undefined);
       },
     };
@@ -266,6 +267,11 @@ export class AzureWebAppResource implements Resource {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
+        console.log(
+          `configure azure web app using appSettings: ${JSON.stringify(
+            inputs["azure-web-app.appSettings"]
+          )}`
+        );
         return ok(undefined);
       },
     };
@@ -287,6 +293,7 @@ export class AzureBotResource implements Resource {
       ): Promise<Result<undefined, FxError>> => {
         inputs["azure-bot.botAadAppClientId"] = "MockBotAadAppClientId";
         inputs["azure-bot.botId"] = "MockBotId";
+        inputs["azure-bot.botPassword"] = "MockBotPassword";
         return ok(undefined);
       },
     };
@@ -339,6 +346,20 @@ export class TeamsManifestResource implements Resource {
 
 export class TeamsfxSolutionResource implements Resource {
   name = "teamsfx-solution";
+  // async copyKey(context: any): Promise<Action> {
+  //   return {
+  //     type: "function",
+  //     name: "teamsfx-solution.copyKey",
+  //     plan: (context: v2.Context, inputs: Inputs) => {
+  //       return "copy key";
+  //     },
+  //     execute: async (context: any, inputs: Inputs) => {
+  //       inputs["copyKey"] as {from: string; to: string}[];
+  //       inputs["azure-web-app.endpoint"] = "MockAzureWebAppEndpoint";
+  //       return ok(undefined);
+  //     },
+  //   };
+  // }
   async deployBicep(context: v2.Context): Promise<Action> {
     return {
       type: "function",
@@ -348,7 +369,8 @@ export class TeamsfxSolutionResource implements Resource {
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("deploy bicep");
-        inputs["tab.endpoint"] = "MockTabEndpoint";
+        inputs["azure-storage.endpoint"] = "MockStorageEndpoint";
+        inputs["azure-web-app.endpoint"] = "MockAzureWebAppEndpoint";
         return ok(undefined);
       },
     };
@@ -356,12 +378,15 @@ export class TeamsfxSolutionResource implements Resource {
   async preProvision(context: v2.Context): Promise<Action> {
     return {
       type: "function",
-      name: "teamsfx-solution.preProvision",
+      name: "teamsfx-solution.pre-provision",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return "preProvision: check common configs (account, resource group)";
+        return "check common configs (account, resource group)";
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
-        console.log("preProvision: check common configs (account, resource group)");
+        console.log("check common configs (account, resource group)");
+        inputs["teamsfx-solution.tenantId"] = "MockTenantId";
+        inputs["teamsfx-solution.subscriptionId"] = "MockSubscriptionId";
+        inputs["teamsfx-solution.resourceGroup"] = "MockResourceGroup";
         return ok(undefined);
       },
     };
@@ -388,7 +413,7 @@ export class TeamsfxSolutionResource implements Resource {
       {
         type: "call",
         required: false,
-        targetAction: "teamsfx-solution.preProvision",
+        targetAction: "teamsfx-solution.pre-provision",
       },
       {
         type: "group",
@@ -409,11 +434,26 @@ export class TeamsfxSolutionResource implements Resource {
       });
     }
     provisionSequences.push({
+      name: "teamsfx-solution.configure",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return "set configuration after bicep deployment";
+        return "configure after bicep deployment";
       },
       execute: async (context: any, inputs: Inputs) => {
+        // inputs["tab.endpoint"] = inputs["azure-storage.endpoint"];
+        // inputs["bot.endpoint"] = inputs["azure-web-app.endpoint"];
+        inputs[
+          "aad.m365ApplicationIdUri"
+        ] = `api://${inputs["tab.endpoint"]}/botid-${inputs["azure-bot.botId"]}`;
+        inputs["azure-web-app.appSettings"] = {
+          M365_AUTHORITY_HOST: inputs["aad.authAuthorityHost"], // AAD authority host
+          M365_CLIENT_ID: inputs["aad.clientId"], // Client id of AAD application
+          M365_CLIENT_SECRET: inputs["aad.clientSecret"], // Client secret of AAD application
+          M365_TENANT_ID: inputs["aad.tenantId"], // Tenant id of AAD application
+          M365_APPLICATION_ID_URI: inputs["aad.m365ApplicationIdUri"], // Application ID URI of AAD application
+          BOT_ID: inputs["azure-bot.botId"],
+          BOT_PASSWORD: inputs["azure-bot.botPassword"],
+        };
         return ok(undefined);
       },
     });
@@ -421,6 +461,10 @@ export class TeamsfxSolutionResource implements Resource {
       type: "group",
       mode: "parallel",
       actions: configureActions,
+      inputs: {
+        "tab.endpoint": "${azure-storage.endpoint}",
+        "bot.endpoint": "${azure-web-app.endpoint}",
+      },
     });
     provisionSequences.push({
       type: "call",
@@ -458,7 +502,7 @@ async function planAction(
   actions: Map<string, Action>
 ) {
   if (action.type === "function") {
-    console.log("plan:" + (await action.plan(context, inputs)));
+    console.log(`plan: ${action.name} - ${await action.plan(context, inputs)}`);
   } else if (action.type === "shell") {
     console.log("plan: shell " + action.command);
   } else if (action.type === "call") {
@@ -468,9 +512,15 @@ async function planAction(
     }
     if (targetAction) {
       if (action.inputs) {
-        for (const target of Object.keys(action.inputs)) {
-          const source = action.inputs[target];
-          inputs[target] = inputs[source];
+        if (action.inputs) {
+          for (const key of Object.keys(action.inputs)) {
+            let value = action.inputs[key];
+            if (value.startsWith("${") && value.endsWith("}")) {
+              const vname = value.substring(2, value.length - 1).trim();
+              value = inputs[vname];
+            }
+            inputs[key] = value;
+          }
         }
       }
       planAction(context, inputs, targetAction, actions);
@@ -496,7 +546,7 @@ async function executeAction(
   actions: Map<string, Action>
 ) {
   if (action.type === "function") {
-    console.log("execute:" + action.name);
+    console.log(`execute: ${action.name}`);
     await action.execute(context, inputs);
   } else if (action.type === "shell") {
     console.log("shell:" + action.command);
@@ -507,14 +557,28 @@ async function executeAction(
     }
     if (targetAction) {
       if (action.inputs) {
-        for (const target of Object.keys(action.inputs)) {
-          const source = action.inputs[target];
-          inputs[target] = inputs[source];
+        for (const key of Object.keys(action.inputs)) {
+          let value = action.inputs[key];
+          if (value.startsWith("${") && value.endsWith("}")) {
+            const vname = value.substring(2, value.length - 1).trim();
+            value = inputs[vname];
+          }
+          inputs[key] = value;
         }
       }
       await executeAction(context, inputs, targetAction, actions);
     }
   } else {
+    if (action.inputs) {
+      for (const key of Object.keys(action.inputs)) {
+        let value = action.inputs[key];
+        if (value.startsWith("${") && value.endsWith("}")) {
+          const vname = value.substring(2, value.length - 1).trim();
+          value = inputs[vname];
+        }
+        inputs[key] = value;
+      }
+    }
     for (const act of action.actions) {
       await executeAction(context, inputs, act, actions);
     }
@@ -551,7 +615,8 @@ async function test() {
   console.log(JSON.stringify(rootAction));
   const inputs: Inputs = { platform: Platform.VSCode };
   await planAction(context, inputs, rootAction, actionMap);
-  // await executeAction(context, inputs, rootAction, actionMap);
+  await executeAction(context, inputs, rootAction, actionMap);
+  console.log(inputs);
 }
 
 test();

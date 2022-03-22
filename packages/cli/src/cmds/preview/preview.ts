@@ -844,7 +844,7 @@ export default class Preview extends YargsCommand {
         ? // For func hosted bot, always use the new task (prepareTaskNext).
           this.prepareTaskNext(
             TaskDefinition.funcHostedBotStart(workspaceFolder),
-            constants.botStartStartMessage,
+            constants.botStartStartMessageNext,
             false,
             funcEnv
           )
@@ -862,8 +862,7 @@ export default class Preview extends YargsCommand {
 
       const botAzuriteTask = this.prepareTask(
         TaskDefinition.funcHostedBotAzurite(workspaceFolder),
-        constants.botWatchStartMessage,
-        commonUtils.getBotLocalEnv(localEnv)
+        constants.botWatchStartMessage
       );
 
       botTaskPromises = [

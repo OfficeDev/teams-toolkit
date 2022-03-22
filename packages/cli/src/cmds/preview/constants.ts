@@ -44,7 +44,8 @@ export const funcHostedBotWatchPattern = new RegExp(tscWatchPattern);
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
-export const funcHostedBotStartPattern = /Compiled|Failed/g;
+export const funcHostedBotStartPattern =
+  /Worker process started and initialized|Host lock lease acquired by instance ID/g;
 export const funcHostedBotAzuritePattern = /successfully listening/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 

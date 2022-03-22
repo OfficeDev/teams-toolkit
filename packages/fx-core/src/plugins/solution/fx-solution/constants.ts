@@ -152,6 +152,10 @@ export enum SolutionError {
   FailedToExecuteTasks = "FailedToExecuteTasks",
   FailedToGetEnvName = "FailedToGetEnvName",
   TeamsAppTenantIdNotRight = "TeamsAppTenantIdNotRight",
+  AddSsoNotSupported = "AddSsoNotSupported",
+  NeedEnableFeatureFlag = "NeedEnableFeatureFlag",
+  SsoEnabled = "SsoEnabled",
+  InvalidSsoProject = "InvalidSsoProject",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -214,6 +218,9 @@ export enum SolutionTelemetryEvent {
 
   ArmDeploymentStart = "deploy-armtemplate-start",
   ArmDeployment = "deploy-armtemplate",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
 }
 
 export enum SolutionTelemetryProperty {

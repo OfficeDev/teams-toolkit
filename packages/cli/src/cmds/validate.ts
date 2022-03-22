@@ -8,7 +8,7 @@ import * as path from "path";
 import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, askTargetEnvironment } from "../utils";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -16,6 +16,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
+import { environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -46,9 +47,34 @@ export class ManifestValidate extends YargsCommand {
       const func: Func = {
         namespace: "fx-solution-azure",
         method: "validateManifest",
+        params: {},
       };
 
-      inputs = getSystemInputs(rootFolder, args.env as any);
+      if (!args.env) {
+        // include local env in interactive question
+        const selectedEnv = await askTargetEnvironment(rootFolder);
+        if (selectedEnv.isErr()) {
+          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+          return err(selectedEnv.error);
+        }
+        args.env = selectedEnv.value;
+      }
+
+      if (args.env === environmentManager.getLocalEnvName()) {
+        func.params.type = "localDebug";
+        inputs = getSystemInputs(rootFolder);
+        if (isConfigUnifyEnabled()) {
+          inputs.ignoreEnvInfo = false;
+          inputs.env = args.env;
+        } else {
+          inputs.ignoreEnvInfo = true;
+        }
+      } else {
+        func.params.type = "remote";
+        inputs = getSystemInputs(rootFolder, args.env as any);
+        inputs.ignoreEnvInfo = false;
+      }
+
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(

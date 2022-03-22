@@ -11,11 +11,13 @@ import * as path from "path";
 import {
   BotOptionItem,
   MessageExtensionItem,
+  SsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
+import { isAadManifestEnabled } from "./tools";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -30,6 +32,7 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     BotOptionItem.id,
     MessageExtensionItem.id,
     TabSPFxItem.id,
+    ...(isAadManifestEnabled() ? [SsoItem.id] : []),
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;
@@ -126,6 +129,6 @@ export function newProjectSettings(): ProjectSettings {
   };
   return projectSettings;
 }
-export function isVSProject(projectSettings: ProjectSettings): boolean {
-  return projectSettings.programmingLanguage === "csharp";
+export function isVSProject(projectSettings?: ProjectSettings): boolean {
+  return projectSettings?.programmingLanguage === "csharp";
 }

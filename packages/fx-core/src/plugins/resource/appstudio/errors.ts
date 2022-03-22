@@ -2,96 +2,49 @@
 // Licensed under the MIT license.
 
 import { Constants } from "./constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class AppStudioError {
   public static readonly FileNotFoundError = {
     name: "FileNotFoundError",
-    message: (filePath: string) => `File ${filePath} not found.`,
+    message: (filePath: string) =>
+      getLocalizedString("error.appstudio.fileNotFoundError", filePath),
   };
 
   public static readonly NotADirectoryError = {
     name: "NotADirectory",
-    message: (directoryPath: string) => `${directoryPath} is not a directory.`,
+    message: (directoryPath: string) =>
+      getLocalizedString("error.appstudio.notADirectoryError", directoryPath),
   };
 
   public static readonly RemoteAppIdCreateFailedError = {
     name: "RemoteAppIdCreateFailed",
     message: (error?: any) =>
-      `Failed to create teams app id in app studio, due to ${error?.name}, ${error?.message}`,
+      getLocalizedString("error.appstudio.remoteTeamsAppCreateFailed", error?.name, error?.message),
   };
 
   public static readonly RemoteAppIdUpdateFailedError = {
     name: "RemoteAppIdUpdateFailed",
     message: (error?: any) =>
-      `Failed to update app id in app studio due to ${error?.name}: ${error?.message}.`,
+      getLocalizedString("error.appstudio.remoteTeamsAppUpdateFailed", error?.name, error?.message),
   };
 
   public static readonly LocalAppIdCreateFailedError = {
     name: "LocalAppIdCreateFailed",
     message: (error?: any) =>
-      `Failed to create localDebug teams app id in app studio, due to ${error?.name}, ${error?.message}`,
-  };
-
-  public static readonly TeamsAppCreateFailedError = {
-    name: "TeamsAppCreateFailed",
-    message: (error?: any) =>
-      `Failed to create teams app in app studio, due to ${error?.name}, ${error?.message}.`,
+      getLocalizedString("error.appstudio.localTeamsAppCreateFailed", error?.name, error?.message),
   };
 
   public static readonly LocalAppIdUpdateFailedError = {
     name: "LocalAppIdUpdateFailed",
     message: (error?: any) =>
-      `Failed to update local app id in app studio due to ${error?.name}: ${error?.message}.`,
+      getLocalizedString("error.appstudio.localTeamsAppUpdateFailed", error?.name, error?.message),
   };
 
-  public static readonly AppStudioTokenGetFailedError = {
-    name: "AppStudioTokenGetFailed",
-    message: "Failed to get app studio token.",
-  };
-
-  public static readonly InvalidManifestError = {
-    name: "InvalidManifest",
-    message: (error: any, key?: string) =>
-      `Failed to parse manifest string, dut to error: ${error}. This might be caused by invalid configurations. ` +
-        key ?? "",
-  };
-
-  public static readonly ManifestLoadFailedError = {
-    name: "ManifestLoadFailed",
-    message: (error: string) => `Failed to read manifest file. Error: ${error}.`,
-  };
-
-  public static readonly ValidationFailedError = {
-    name: "ManifestValidationFailed",
-    message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
-  };
-
-  public static readonly GetLocalDebugConfigFailedError = {
-    name: "GetLocalDebugConfigFailed",
-    message: (error: any) =>
-      `Missing configuration data for manifest. You may need to run 'Local debug' first. ${error.message}`,
-  };
-
-  public static readonly GetRemoteConfigFailedError = {
-    name: "GetRemoteConfigFailed",
-    message: (error: any, isProvisionSucceeded: boolean) =>
-      `Missing configuration data for manifest. ${error.message}. ${
-        isProvisionSucceeded
-          ? ""
-          : "Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision."
-      }`,
-  };
-
-  public static readonly InvalidLocalDebugConfigurationDataError = {
-    name: "InvalidLocalDebugConfigurationData",
-    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
-      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
-  };
-
-  public static readonly InvalidRemoteConfigurationDataError = {
-    name: "InvalidRemoteConfigurationData",
-    message: (endpoint: string, tabEndpoint: string, domain: string, tabDomain: string) =>
-      `Invalid configuration data for manifest: ${endpoint}=${tabEndpoint}, ${domain}=${tabDomain}.`,
+  public static readonly TeamsAppCreateFailedError = {
+    name: "TeamsAppCreateFailed",
+    message: (error?: any) =>
+      getLocalizedString("error.appstudio.teamsAppCreateFailed", error?.name, error?.message),
   };
 
   public static readonly TeamsAppUpdateFailedError = {
@@ -99,95 +52,115 @@ export class AppStudioError {
     message: (teamsAppId: string) => `Failed to update Teams app with ID ${teamsAppId}.`,
   };
 
-  public static readonly TeamsAppUpdateIDNotMatchError = {
-    name: "TeamsAppUpdateIDNotMatch",
-    message: (oldTeamsAppId: string, newTeamsAppId?: string) =>
-      `Teams App ID mismatch. Input: ${oldTeamsAppId}. Got: ${newTeamsAppId}.`,
+  public static readonly TeamsAppNotFoundError = {
+    name: "TeamsAppNotFound",
+    message: (appId: string) => getLocalizedString("error.appstudio.teamsAppNotFound", appId),
+  };
+
+  public static readonly InvalidManifestError = {
+    name: "InvalidManifest",
+    message: (error: any, key?: string) =>
+      getLocalizedString("error.appstudio.invalidManifest", error, key),
+  };
+
+  public static readonly ManifestLoadFailedError = {
+    name: "ManifestLoadFailed",
+    message: (error: string) => getLocalizedString("error.appstudio.loadManifest", error),
+  };
+
+  public static readonly ValidationFailedError = {
+    name: "ManifestValidationFailed",
+    message: (errors: string[]) =>
+      getLocalizedString("plugins.appstudio.validationFailedNotice") + errors.join("\n"),
+  };
+
+  public static readonly GetLocalDebugConfigFailedError = {
+    name: "GetLocalDebugConfigFailed",
+    message: (error: any) =>
+      getLocalizedString("error.appstudio.getLocalConfigFailed", error.message),
+  };
+
+  public static readonly GetRemoteConfigFailedError = {
+    name: "GetRemoteConfigFailed",
+    message: (errorMessage: string, isProvisionSucceeded: boolean) =>
+      getLocalizedString("error.appstudio.getRemoteConfigFailed", errorMessage) +
+      `${isProvisionSucceeded ? "" : getLocalizedString("plugins.appstudio.provisionTip")}`,
   };
 
   public static readonly TeamsAppPublishFailedError = {
     name: "TeamsAppPublishFailed",
     message: (teamsAppId: string, correlationId?: string) =>
-      `Failed to publish Teams app with ID ${teamsAppId}.` +
+      getLocalizedString("error.appstudio.publishFailed", teamsAppId) +
       (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
   };
 
   public static readonly TeamsAppPublishCancelError = {
     name: "TeamsAppPublishCancelled",
-    message: (name: string) => `Publish Teams app with ID ${name} has been cancelled.`,
+    message: (name: string) => getLocalizedString("error.appstudio.publishCancelled", name),
   };
 
   public static readonly TeamsPackageBuildError = {
     name: "TeamsPackageBuildError",
-    message: (error: any) => (error.message ? error.message : "Teams Package built failed!"),
-  };
-
-  public static readonly GetRemoteConfigError = {
-    name: "GetRemoteConfigError",
-    message: (error: string) =>
-      `${error}. You must run 'Provision in the cloud' first to fill out certain fields in manifest. Click Get Help to learn more about why you need to provision.`,
-  };
-
-  public static readonly UnhandledError = {
-    name: "UnhandledError",
-    message: "UnhandledError",
+    message: (error: any) =>
+      error.message ? error.message : getLocalizedString("error.appstudio.buildError"),
   };
 
   public static readonly ScaffoldFailedError = {
     name: "ScaffoldFailed",
-    message: (error: any) => (error.message ? error.message : "Teams app scaffold failed!"),
+    message: (error: any) =>
+      error.message ? error.message : getLocalizedString("error.appstudio.scaffoldFailed"),
   };
 
   public static readonly CheckPermissionFailedError = {
     name: "CheckPermissionFailed",
-    message: (error: any) => `Check permission failed. Reason: ${error.message}`,
+    message: (error: any) =>
+      getLocalizedString("error.appstudio.checkPermissionFailed", error.message),
   };
 
   public static readonly GrantPermissionFailedError = {
     name: "GrantPermissionFailed",
     message: (errorMessage: string, id?: string) =>
-      `${Constants.PERMISSIONS.name}: ${id}. Grant permission failed. Reason: ${errorMessage}`,
+      `${Constants.PERMISSIONS.name}: ${id}. ` +
+      getLocalizedString("error.appstudio.grantPermissionFailed", errorMessage),
   };
 
   public static readonly ListCollaboratorFailedError = {
     name: "ListCollaboratorFailedError",
-    message: (error: any) => `List collaborator failed. Reason: ${error.message}`,
-  };
-
-  public static readonly TeamsAppNotFoundError = {
-    name: "TeamsAppNotFound",
-    message: (appId: string) => `Cannot found teams app with id ${appId}`,
+    message: (error: any) =>
+      getLocalizedString("error.appstudio.listCollaboratorFailed", error.message),
   };
 
   public static readonly UpdateManifestCancelError = {
     name: "UpdateManifestCancelled",
-    message: (name: string) => `Update manifest with ID ${name} has been cancelled.`,
+    message: (name: string) => getLocalizedString("error.appstudio.updateManifestCancelled", name),
   };
 
   public static readonly UpdateManifestWithInvalidAppError = {
     name: "UpdateManifestWithInvalidAppError",
     message: (appId: string) =>
-      `Cannot find teams app with id ${appId}. You must run local debug or provision first before updating manifest to Teams platform`,
+      getLocalizedString("error.appstudio.updateManifestInvalidApp", appId),
   };
 
   public static readonly InvalidCapabilityError = {
     name: "InvalidCapabilityError",
-    message: (capability: string) => `Invalid capability: ${capability}`,
+    message: (capability: string) =>
+      getLocalizedString("error.appstudio.invalidCapability", capability),
   };
 
   public static readonly CapabilityExceedLimitError = {
     name: "CapabilityExceedLimitError",
-    message: (capability: string) => `Cannot add capability ${capability}, it reaches the limit.`,
+    message: (capability: string) =>
+      getLocalizedString("error.appstudio.capabilityExceedLimit", capability),
   };
 
   public static readonly StaticTabNotExistError = {
     name: "StaticTabNotExist",
-    message: (index: string) => `Cannot find statib tab with entity id ${index}, failed to update.`,
+    message: (index: string) => getLocalizedString("error.appstudio.staticTabNotExist", index),
   };
 
   public static readonly CapabilityNotExistError = {
     name: "CapabilityNotExist",
     message: (capability: string) =>
-      `Capability ${capability} does not exist in manifest, failed to update.`,
+      getLocalizedString("error.appstudio.capabilityNotExist", capability),
   };
 }

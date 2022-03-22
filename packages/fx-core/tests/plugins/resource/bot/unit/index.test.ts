@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { TeamsBot } from "../../../../../src";
+import { PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -16,7 +16,10 @@ import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/pl
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
-import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  CommonStrings,
+  HostTypes,
+} from "../../../../../src/plugins/resource/bot/resources/strings";
 import { AzureOperations } from "../../../../../src/plugins/resource/bot/azureOps";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
@@ -24,7 +27,15 @@ import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/app
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
 import { LocalSettingsBotKeys } from "../../../../../src/common/localSettingsConstants";
 import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
-import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  Func,
+  Platform,
+  ProjectSettings,
+  Stage,
+  TokenProvider,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -41,8 +52,58 @@ import * as os from "os";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
 import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
+import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
+import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
+import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 
 describe("Teams Bot Resource Plugin", () => {
+  describe("Test plugin implementation dispatching", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+    });
+
+    it("dispatches to vs", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.projectSettings!.programmingLanguage = "csharp";
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof DotnetBotImpl);
+    });
+
+    it("dispatches to function hosted bot", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostTypes.AZURE_FUNCTIONS);
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof FunctionsHostedBotImpl);
+    });
+
+    it("dispatches to app service hosted bot", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const impl = botPlugin.getImpl(pluginContext);
+
+      // Assert
+      chai.assert.isTrue(impl instanceof TeamsBotImpl);
+    });
+  });
+
   describe("Test preScaffold", () => {
     afterEach(() => {
       sinon.restore();
@@ -270,7 +331,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateOrUpdateAppServicePlan").resolves();
       sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 
@@ -726,6 +786,92 @@ describe("Teams Bot Resource Plugin", () => {
 
       // Assert
       chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("Test getQuestionsForScaffolding", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+    let botPluginImpl: TeamsBotImpl;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+      botPluginImpl = new TeamsBotImpl();
+      botPlugin.teamsBotImpl = botPluginImpl;
+    });
+
+    it("Happy Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const result = await botPlugin.getQuestions(Stage.create, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+
+    it("Lifecycles other than create", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const result = await botPlugin.getQuestions(Stage.provision, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+  });
+
+  describe("Test getQuestionsForUserTask", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    let botPlugin: TeamsBot;
+    let botPluginImpl: TeamsBotImpl;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+      botPluginImpl = new TeamsBotImpl();
+      botPlugin.teamsBotImpl = botPluginImpl;
+    });
+
+    it("Happy Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const func: Func = {
+        namespace: `${BuiltInSolutionNames.azure}/${PluginNames.BOT}`,
+        method: "addCapability",
+      };
+      const result = await botPlugin.getQuestionsForUserTask(func, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+
+    it("Lifecycles other than addCapability", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const func: Func = {
+        namespace: `${BuiltInSolutionNames.azure}/${PluginNames.BOT}`,
+        method: "test func",
+      };
+      const result = await botPlugin.getQuestionsForUserTask(func, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
     });
   });
 });

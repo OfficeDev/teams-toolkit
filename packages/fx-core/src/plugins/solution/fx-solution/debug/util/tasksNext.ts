@@ -10,6 +10,7 @@ export function generateTasks(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
+  includeFuncHostedBot: boolean,
   programmingLanguage: string
 ): Record<string, unknown>[] {
   /**
@@ -51,6 +52,70 @@ export function generateTasks(
   }
 
   if (includeBot) {
+    if (includeFuncHostedBot) {
+      tasks.push(startFuncHostedBot(includeFrontend, programmingLanguage));
+      tasks.push(startAzuriteEmulator());
+      if (programmingLanguage === ProgrammingLanguage.typescript) {
+        tasks.push(watchFuncHostedBot());
+      }
+    } else {
+      tasks.push(startBot(includeFrontend));
+    }
+  }
+
+  return tasks;
+}
+
+export function generateM365Tasks(
+  includeFrontend: boolean,
+  includeBackend: boolean,
+  includeBot: boolean,
+  programmingLanguage: string
+): Record<string, unknown>[] {
+  /**
+   * Referenced by launch.json
+   *   - Pre Debug Check & Start All
+   *   - Pre Debug Check & Start All & Install App
+   *
+   * Referenced inside tasks.json
+   *   - validate local prerequisites
+   *   - start ngrok
+   *   - prepare local environment
+   *   - Start All
+   *   - install app in Teams
+   *   - Start Frontend
+   *   - Start Backend
+   *   - Watch Backend
+   *   - Start Bot
+   */
+  const tasks: Record<string, unknown>[] = [
+    preDebugCheckAndStartAll(includeBot),
+    preDebugCheckAndStartAllAndInstallApp(includeBot),
+    validateLocalPrerequisites(),
+  ];
+
+  if (includeBot) {
+    tasks.push(startNgrok());
+  }
+
+  tasks.push(prepareLocalEnvironment());
+
+  tasks.push(startAll(includeFrontend, includeBackend, includeBot));
+
+  tasks.push(installAppInTeams());
+
+  if (includeFrontend) {
+    tasks.push(startFrontend());
+  }
+
+  if (includeBackend) {
+    tasks.push(startBackend(programmingLanguage));
+    if (programmingLanguage === ProgrammingLanguage.typescript) {
+      tasks.push(watchBackend());
+    }
+  }
+
+  if (includeBot) {
     tasks.push(startBot(includeFrontend));
   }
 
@@ -63,6 +128,27 @@ function preDebugCheckAndStartAll(includeBot: boolean): Record<string, unknown> 
     dependsOn: includeBot
       ? ["validate local prerequisites", "start ngrok", "prepare local environment", "Start All"]
       : ["validate local prerequisites", "prepare local environment", "Start All"],
+    dependsOrder: "sequence",
+  };
+}
+
+function preDebugCheckAndStartAllAndInstallApp(includeBot: boolean): Record<string, unknown> {
+  return {
+    label: "Pre Debug Check & Start All & Install App",
+    dependsOn: includeBot
+      ? [
+          "validate local prerequisites",
+          "start ngrok",
+          "prepare local environment",
+          "Start All",
+          "install app in Teams",
+        ]
+      : [
+          "validate local prerequisites",
+          "prepare local environment",
+          "Start All",
+          "install app in Teams",
+        ],
     dependsOrder: "sequence",
   };
 }
@@ -143,6 +229,22 @@ function watchBackend(): Record<string, unknown> {
   };
 }
 
+function watchFuncHostedBot(): Record<string, unknown> {
+  return {
+    label: "Watch Bot",
+    type: "shell",
+    command: "npm run watch:teamsfx",
+    isBackground: true,
+    problemMatcher: "$tsc-watch",
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+    presentation: {
+      reveal: "silent",
+    },
+  };
+}
+
 function startBot(includeFrontend: boolean): Record<string, unknown> {
   const result = {
     label: "Start Bot",
@@ -176,6 +278,37 @@ function startBot(includeFrontend: boolean): Record<string, unknown> {
   return result;
 }
 
+function startFuncHostedBot(
+  includeFrontend: boolean,
+  programmingLanguage: string
+): Record<string, unknown> {
+  const result = {
+    label: "Start Bot",
+    type: "shell",
+    command: "npm run dev:teamsfx",
+    isBackground: true,
+    problemMatcher: "$teamsfx-backend-watch",
+    options: {
+      cwd: "${workspaceFolder}/bot",
+      env: {
+        PATH: "${env:PATH}${command:fx-extension.get-func-path}",
+      },
+    },
+  } as Record<string, unknown>;
+
+  if (includeFrontend) {
+    result.presentation = { reveal: "silent" };
+  }
+
+  const dependsOn: string[] = ["Start Azurite Emulator"];
+  if (programmingLanguage === ProgrammingLanguage.typescript) {
+    dependsOn.push("Watch Bot");
+  }
+  result.dependsOn = dependsOn;
+
+  return result;
+}
+
 function startNgrok(): Record<string, unknown> {
   return {
     label: "start ngrok",
@@ -201,5 +334,44 @@ function startAll(
   return {
     label: "Start All",
     dependsOn,
+  };
+}
+
+function startAzuriteEmulator(): Record<string, unknown> {
+  return {
+    label: "Start Azurite Emulator",
+    type: "shell",
+    command: "npm run prepare-storage:teamsfx",
+    isBackground: true,
+    problemMatcher: {
+      pattern: [
+        {
+          regexp: "^.*$",
+          file: 0,
+          location: 1,
+          message: 2,
+        },
+      ],
+      background: {
+        activeOnStart: true,
+        beginsPattern: "Azurite",
+        endsPattern: "successfully listening",
+      },
+    },
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+    presentation: { reveal: "silent" },
+  };
+}
+
+function installAppInTeams(): Record<string, unknown> {
+  return {
+    label: "install app in Teams",
+    type: "shell",
+    command: "exit ${command:fx-extension.install-app-in-teams}",
+    presentation: {
+      reveal: "never",
+    },
   };
 }

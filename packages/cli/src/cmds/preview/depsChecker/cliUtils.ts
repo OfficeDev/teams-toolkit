@@ -9,10 +9,6 @@ export function isWindows(): boolean {
   return os.type() === "Windows_NT";
 }
 
-export function isLinux(): boolean {
-  return os.type() === "Linux";
-}
-
 export async function showWarningMessage(message: string, button: string): Promise<boolean> {
   const res = await CLIUIInstance.showMessage("info", message, true, button);
   const input: string | undefined = res?.isOk() ? res.value : undefined;

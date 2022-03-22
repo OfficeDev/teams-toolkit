@@ -35,7 +35,7 @@ describe("Create single tab", function () {
     // clean up
     await cleanUp(appName, projectPath, true, false, false);
   });
-  describe("feature flags for API v3", { testPlanCaseId: 10298738 }, async function () {
+  describe("feature flags for API v3", async function () {
     const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
     let mockedEnvRestore: RestoreFn;
     for (const envParam of envs) {
@@ -60,7 +60,7 @@ describe("Create single tab", function () {
 
       it(
         `Provision Resource: React app without function, API V3: ${envParam.TEAMSFX_APIV3}`,
-        { testPlanCaseId: 9454212 },
+        { testPlanCaseId: 10298738 },
         async () => {
           await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 

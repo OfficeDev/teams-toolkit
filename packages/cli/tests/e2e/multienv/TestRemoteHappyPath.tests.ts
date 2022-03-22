@@ -169,7 +169,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // update manifest
-        result = await execAsyncWithRetry(`teamsfx manifest update --env ${env}`, {
+        result = await execAsyncWithRetry(`teamsfx deploy manifest --env ${env}`, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,

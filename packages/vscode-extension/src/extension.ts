@@ -23,10 +23,10 @@ import {
 } from "./codeLensProvider";
 import {
   Correlator,
-  isMultiEnvEnabled,
   isValidProject,
   isConfigUnifyEnabled,
   isInitAppEnabled,
+  isM365AppEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -55,7 +55,7 @@ import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  VsCodeLogInstance.info(localize("teamstoolkit.common.activate"));
+  VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // load the feature flags.
   syncFeatureFlags();
@@ -88,6 +88,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createCmd);
 
+  const createM365Cmd = vscode.commands.registerCommand("fx-extension.create-M365", (...args) =>
+    Correlator.run(handlers.createNewM365ProjectHandler, args)
+  );
+  context.subscriptions.push(createM365Cmd);
+
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
     Correlator.run(handlers.initProjectHandler, args)
   );
@@ -100,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
         if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(args);
+          await handlers.updateAutoOpenGlobalKey(true, args);
           await ExtTelemetry.dispose();
           await delay(2000);
           return { openFolder: targetUri.value };
@@ -159,10 +164,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(publishCmd);
 
-  const cicdGuideCmd = vscode.commands.registerCommand("fx-extension.cicdGuide", (...args) =>
-    Correlator.run(handlers.cicdGuideHandler, args)
+  const addCICDWorkflowsCmd = vscode.commands.registerCommand(
+    "fx-extension.addCICDWorkflows",
+    (...args) => Correlator.run(handlers.addCICDWorkflowsHandler, args)
   );
-  context.subscriptions.push(cicdGuideCmd);
+  context.subscriptions.push(addCICDWorkflowsCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
@@ -185,6 +191,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  const installAppInTeamsCmd = vscode.commands.registerCommand(
+    "fx-extension.install-app-in-teams",
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
+  );
+  context.subscriptions.push(installAppInTeamsCmd);
 
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-getStarted-prerequisites",
@@ -433,17 +445,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isMultiEnvEnabled",
-    isMultiEnvEnabled() && isValidProject(workspacePath)
-  );
-
-  vscode.commands.executeCommand(
-    "setContext",
     "fx-extension.isSPFx",
     workspacePath && (await isSPFxProject(workspacePath))
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
+
+  vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
 
   vscode.commands.executeCommand(
     "setContext",

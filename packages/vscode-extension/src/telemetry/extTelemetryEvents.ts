@@ -59,8 +59,8 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
-  CICDGuide = "cicd-guide",
-  CICDInsiderGuide = "cicd-insider-guide",
+  AddCICDWorkflowsStart = "add-cicd-workflows-start",
+  AddCICDWorkflows = "add-cicd-workflows",
 
   ManageTeamsApp = "manage-teams-app",
 
@@ -180,6 +180,7 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
+  DebugProjectComponents = "debug-project-components",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
@@ -202,6 +203,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",

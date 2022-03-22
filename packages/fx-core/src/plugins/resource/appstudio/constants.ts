@@ -7,6 +7,7 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
+  public static readonly SKIP_MANIFEST = "skip-manifest";
   public static readonly READ_MORE = "Read more";
   public static readonly LEARN_MORE = "Learn more";
   public static readonly ADMIN_PORTAL = "Admin portal";
@@ -512,3 +513,7 @@ export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
+
+export const DEVELOPER_PREVIEW_SCHEMA =
+  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
+export const M365_DEVELOPER_PREVIEW_MANIFEST_VERSION = "m365DevPreview";

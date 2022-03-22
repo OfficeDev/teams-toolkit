@@ -3,6 +3,10 @@
 import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import path from "path";
+import {
+  BotNotificationTriggers,
+  BotNotificationTrigger,
+} from "../../solution/fx-solution/question";
 
 export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z0-9]/g;
@@ -36,7 +40,6 @@ export class ScaffoldPlaceholders {
 
 export class TemplateProjectsConstants {
   public static readonly GROUP_NAME_BOT: string = "bot";
-  public static readonly TEMPLATE_FOLDER_NAME: string = "bot";
   public static readonly GROUP_NAME_MSGEXT: string = "msgext";
   public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
   public static readonly VERSION_RANGE: string = "0.0.*";
@@ -46,7 +49,18 @@ export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
   NOTIFICATION_SCENARIO_NAME = "notification",
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
+  NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
+  NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
 }
+
+export const TriggerTemplateScenarioMappings = {
+  [BotNotificationTriggers.Http]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+  [BotNotificationTriggers.Timer]:
+    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+} as const;
+
+export const SourceCodeDir = "src";
 
 export class ProgressBarConstants {
   public static readonly SCAFFOLD_TITLE: string = "Scaffolding bot";
@@ -55,6 +69,16 @@ export class ProgressBarConstants {
   public static readonly SCAFFOLD_STEP_UNZIP = "Extracting templates target folder.";
 
   public static readonly SCAFFOLD_STEPS_NUM: number = 2;
+
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE = "Scaffolding notification bot";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_START =
+    "Scaffolding notification bot.";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_PROJECT_TEMPLATE =
+    "Retrieving project templates.";
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_TRIGGER_TEMPLATE =
+    "Retrieving trigger templates.";
+
+  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEPS_NUM: number = 3;
 
   public static readonly PROVISION_TITLE: string = "Provisioning bot";
   public static readonly PROVISION_STEP_START = "Provisioning bot.";
@@ -83,12 +107,15 @@ export class QuestionNames {
   public static readonly GET_BOT_ID = "bot-id";
   public static readonly GET_BOT_PASSWORD = "bot-password";
   public static readonly CAPABILITIES = "capabilities";
+  public static readonly BOT_HOST_TYPE_TRIGGER = "bot-host-type-trigger";
 }
 
 export class LifecycleFuncNames {
   public static readonly PRE_SCAFFOLD = "pre-scaffold";
   public static readonly SCAFFOLD = "scaffold";
   public static readonly POST_SCAFFOLD = "post-scaffold";
+  public static readonly GET_QUETSIONS_FOR_SCAFFOLDING = "get-questions-for-scaffolding";
+  public static readonly GET_QUETSIONS_FOR_USER_TASK = "get-questions-for-user-task";
 
   public static readonly PRE_PROVISION = "pre-provision";
   public static readonly PROVISION = "provision";
@@ -140,7 +167,6 @@ export class ErrorNames {
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
   public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR =
     "MissingSubscriptionRegistrationError";
-  public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
   public static readonly INVALID_BOT_DATA_ERROR = "InvalidBotDataError";
 }
 
@@ -266,6 +292,8 @@ export class PathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly FuncHostedProvisionModuleTemplateFileName =
+    "funcHostedBotProvision.template.bicep";
   public static readonly ConfigurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
 
@@ -274,3 +302,9 @@ export class BotBicep {
   static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
   static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }
+
+export const CustomizedTasks = {
+  addCapability: "addCapability",
+} as const;
+
+export type CustomizedTask = typeof CustomizedTasks[keyof typeof CustomizedTasks];

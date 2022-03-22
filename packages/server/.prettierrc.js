@@ -1,4 +1,4 @@
 module.exports = {
-  ...require("@shared/prettier-config"),
+  ...require("../prettier-config"),
   endOfLine: "lf",
 };

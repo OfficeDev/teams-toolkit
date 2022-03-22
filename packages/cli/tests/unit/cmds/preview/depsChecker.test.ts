@@ -3,20 +3,10 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import {
-  defaultHelpLink,
-  DepsCheckerError,
-  DepsCheckerEvent,
-  DepsLogger,
-  DepsTelemetry,
-  DepsType,
-} from "@microsoft/teamsfx-core";
-import { ok } from "@microsoft/teamsfx-api";
+import { DepsLogger, DepsTelemetry, DepsType } from "@microsoft/teamsfx-core";
 
-import { UserSettings } from "../../../../src/userSetttings";
 import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
 import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";
-import UI from "../../../../src/userInteraction";
 
 const expect = chai.expect;
 
@@ -37,190 +27,66 @@ describe("[Checker UT - Cli]", () => {
       sandbox.restore();
     });
 
-    it("azure + f5: installed [windows + linux]", async () => {
-      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
+    it("All Enabled", async () => {
+      sandbox.stub(cliUtils, "isFuncCoreToolsEnabled").resolves(true);
+      sandbox.stub(cliUtils, "isDotnetCheckerEnabled").resolves(true);
+      sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(true);
+      sandbox.stub(cliUtils, "isNgrokCheckerEnabled").resolves(true);
+
+      const hasBackend = true;
+      const hasBot = true;
+      const hasFuncHostedBot = true;
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
-      chai.util.addMethod(checker, "ensure", async function () {
-        return getAzureF5DepsStatus();
-      });
-      sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
-        return ok(true);
-      });
-      sandbox.stub(UI, "showMessage").resolves(ok("selected button"));
-      sandbox.stub(cliUtils, "isLinux").onFirstCall().returns(false).onSecondCall().returns(true);
-
-      const shouldContinue = await checker.resolve(deps);
-      expect(shouldContinue).to.be.true;
-
-      const resolveLinux = await checker.resolve(deps);
-      expect(resolveLinux).to.be.true;
-
-      chai.util.addMethod(checker, "ensure", async function () {
-        return [
-          {
-            name: DepsType.Dotnet,
-            isInstalled: true,
-            command: "dotnet",
-            details: { isLinuxSupported: false, supportedVersions: [] },
-          },
-        ];
-      });
-      const dotnetStatus = await checker.getDepsStatus(DepsType.Dotnet);
-      expect(dotnetStatus.isInstalled).to.be.true;
-      expect(dotnetStatus.command).to.be.eq("dotnet");
+      expect(
+        await CliDepsChecker.getEnabledDeps(deps, hasBackend, hasBot, hasFuncHostedBot)
+      ).to.be.eql(deps, "All deps is enabled");
     });
 
-    it("azure + f5: failed [windows]", async () => {
-      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
-      const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
-      const dotnetMessage = "Failed install dotnet";
-      const dotnetHelpLink = "help link";
-      const error = new DepsCheckerError(dotnetMessage, dotnetHelpLink);
+    it("Node", async () => {
+      sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(false);
+      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode, true, true, true)).to.be.false;
+      expect(await CliDepsChecker.isEnabled(DepsType.AzureNode, true, true, true)).to.be.false;
+      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode, true, true, true)).to.be.false;
 
-      chai.util.addMethod(checker, "ensure", async function () {
-        return getFailedDepsStatus(error);
-      });
-      sandbox.stub(cliUtils, "isLinux").returns(false);
-
-      const openUrlSpy = sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
-        return ok(true);
-      });
-      const showSpy = sandbox.stub(UI, "showMessage");
-      showSpy.onCall(0).resolves(ok("Learn more"));
-      showSpy.onCall(1).resolves(ok(undefined));
-
-      const shouldContinue = await checker.resolve(deps);
-
-      sandbox.assert.calledTwice(showSpy);
-      sandbox.assert.calledWith(showSpy, "info", dotnetMessage, sinon.match.any, sinon.match.any);
-      sandbox.assert.calledWith(openUrlSpy, dotnetHelpLink);
-      expect(shouldContinue).to.be.false;
-
-      sandbox.assert.calledTwice(sendEventSpy);
-      sendEventSpy.firstCall.calledWith(DepsCheckerEvent.clickLearnMore);
-      sendEventSpy.secondCall.calledWith(DepsCheckerEvent.clickCancel);
+      sandbox.restore();
+      sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(true);
+      expect(await CliDepsChecker.isEnabled(DepsType.AzureNode, false, false, false)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode, false, false, false)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode, true, false, false)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode, false, false, true)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode, false, true, false)).to.be.false;
     });
 
-    it("azure + f5: failed [linux]", async () => {
-      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
-      const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
+    it("Dotnet", async () => {
+      sandbox.stub(cliUtils, "isDotnetCheckerEnabled").resolves(false);
+      expect(await CliDepsChecker.isEnabled(DepsType.Dotnet, false, true, false)).to.be.false;
 
-      chai.util.addMethod(checker, "ensure", async function () {
-        return getFailedDepsStatus(undefined);
-      });
-      sandbox.stub(cliUtils, "isLinux").returns(true);
-
-      const showSpy = sandbox.stub(UI, "showMessage");
-      const openUrlSpy = sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
-        return ok(true);
-      });
-      showSpy.onCall(0).resolves(ok("Learn more"));
-      showSpy.onCall(1).resolves(ok(undefined));
-
-      const shouldContinue = await checker.resolve(deps);
-
-      const depsNotFoundMatcher = sinon.match(function (msg: string) {
-        return msg.includes("Teams Toolkit requires these dependencies");
-      });
-      sandbox.assert.calledTwice(showSpy);
-      sandbox.assert.calledWith(
-        showSpy,
-        "info",
-        depsNotFoundMatcher,
-        sinon.match.any,
-        sinon.match.any
-      );
-      sandbox.assert.calledWith(openUrlSpy, defaultHelpLink);
-      expect(shouldContinue).to.be.false;
+      sandbox.restore();
+      sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(true);
+      expect(await CliDepsChecker.isEnabled(DepsType.Dotnet, false, true, false)).to.be.true;
     });
 
-    it("azure + f5: all disabled", async () => {
-      const checker = new CliDepsChecker(logger, telemetry, false, false, false);
-      const deps = [
-        DepsType.SpfxNode,
-        DepsType.FunctionNode,
-        DepsType.AzureNode,
-        DepsType.Dotnet,
-        DepsType.FuncCoreTools,
-        DepsType.Ngrok,
-      ];
+    it("Func", async () => {
+      sandbox.stub(cliUtils, "isFuncCoreToolsEnabled").resolves(false);
+      expect(await CliDepsChecker.isEnabled(DepsType.FuncCoreTools, true, true, true)).to.be.false;
 
-      chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
-        chai.assert.equal(deps.length, 0);
-        return [];
-      });
+      sandbox.restore();
+      sandbox.stub(cliUtils, "isFuncCoreToolsEnabled").resolves(true);
+      expect(await CliDepsChecker.isEnabled(DepsType.FuncCoreTools, true, false, false)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.FuncCoreTools, false, false, true)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.FuncCoreTools, false, true, false)).to.be
+        .false;
+    });
 
-      const config = {
-        "validate-func-core-tools": "on",
-        "validate-node": "off",
-        "validate-dotnet-sdk": "off",
-      };
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
+    it("Ngrok", async () => {
+      sandbox.stub(cliUtils, "isNgrokCheckerEnabled").resolves(false);
+      expect(await CliDepsChecker.isEnabled(DepsType.Ngrok, true, true, true)).to.be.false;
 
-      sandbox.stub(cliUtils, "isLinux").returns(false);
-      const shouldContinue = await checker.resolve(deps);
-      expect(shouldContinue).to.be.true;
+      sandbox.restore();
+      sandbox.stub(cliUtils, "isNgrokCheckerEnabled").resolves(true);
+      expect(await CliDepsChecker.isEnabled(DepsType.Ngrok, true, true, true)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.Ngrok, true, false, true)).to.be.false;
     });
   });
 });
-
-function getAzureF5DepsStatus() {
-  return [
-    {
-      name: DepsType.AzureNode,
-      isInstalled: true,
-      command: "node",
-      details: { isLinuxSupported: true, supportedVersions: [] },
-    },
-    {
-      name: DepsType.Dotnet,
-      isInstalled: true,
-      command: "dotnet",
-      details: { isLinuxSupported: false, supportedVersions: [] },
-    },
-    {
-      name: DepsType.FuncCoreTools,
-      isInstalled: true,
-      command: "func",
-      details: { isLinuxSupported: false, supportedVersions: [] },
-    },
-    {
-      name: DepsType.Ngrok,
-      isInstalled: true,
-      command: "ngrok",
-      details: { isLinuxSupported: true, supportedVersions: [] },
-    },
-  ];
-}
-
-function getFailedDepsStatus(error: DepsCheckerError | undefined) {
-  return [
-    {
-      name: DepsType.AzureNode,
-      isInstalled: true,
-      command: "node",
-      details: { isLinuxSupported: true, supportedVersions: [] },
-    },
-    {
-      name: DepsType.Dotnet,
-      isInstalled: false,
-      command: "dotnet",
-      error: error,
-      details: { isLinuxSupported: false, supportedVersions: [] },
-    },
-    {
-      name: DepsType.FuncCoreTools,
-      isInstalled: false,
-      command: "func",
-      error: new DepsCheckerError("should not use this error", "should not use this error"),
-      details: { isLinuxSupported: false, supportedVersions: [] },
-    },
-    {
-      name: DepsType.Ngrok,
-      isInstalled: false,
-      command: "ngrok",
-      details: { isLinuxSupported: true, supportedVersions: [] },
-    },
-  ];
-}

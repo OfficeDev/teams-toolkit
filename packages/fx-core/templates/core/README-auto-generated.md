@@ -18,17 +18,14 @@ After initializing the project, you can view the project folders and files in th
 Now you're able to add components with Teams Toolkit to build Teams app for below scenarios.
 
 ### Scenario 1: Send Notification to Teams
-// TODO
+
+Sending a message in response to stimulus tasks through conversations. Please refer to [our wiki](https://github.com/OfficeDev/TeamsFx/wiki/Incremental-Build#scenario-1-send-notification-to-teams) for instructions.
 
 ### Scenario 2: Build Command And Response
-// TODO
 
-## See also
+Running simple and repetitive automated tasks through conversations. Please refer to [our wiki](https://github.com/OfficeDev/TeamsFx/wiki/Incremental-Build#scenario-2-build-command-and-response) for instructions.
 
-// TODO: add aka link.
-* [Customize Teamps app manifest template]()
-* [Provision cloud resources]()
-* [Deploy Teams app to the cloud]()
-* [Publish your Teams app]()
-* [Manage multiple environments]()
-* [Embed your existing web pages in Teams]()
+
+### Scenario 3: Embed your existing web pages in Teams
+
+Integrate with your existing web page application to build a Teams app. Please refer to [our wiki](https://github.com/OfficeDev/TeamsFx/wiki/Incremental-Build#scenario-3-embed-your-existing-web-pages-in-teams) for instructions.

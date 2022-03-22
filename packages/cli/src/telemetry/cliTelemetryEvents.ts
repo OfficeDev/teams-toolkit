@@ -109,6 +109,7 @@ export enum TelemetryProperty {
   Env = "env",
   SettingsVersion = "settings-version",
   NewProjectId = "new-project-id",
+  IsM365 = "is-m365",
 }
 
 export enum TelemetrySuccess {

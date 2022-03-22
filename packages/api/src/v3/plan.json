@@ -1,11 +1,15 @@
 {
-  "name": "teams-bot.provision",
+  "name": "teamsfx-solution.provision",
   "type": "group",
-  "mode": "sequential",
   "actions": [
     {
+      "type": "call",
+      "required": false,
+      "targetAction": "teamsfx-solution.preProvision"
+    },
+    {
       "type": "group",
-      "mode": "sequential",
+      "mode": "parallel",
       "actions": [
         {
           "type": "call",
@@ -14,56 +18,59 @@
         },
         {
           "type": "call",
-          "required": true,
-          "targetAction": "azure-web-app.provision",
-          "inputs": {
-            "webApp.appSettings.M365_CLIENT_ID": "aad.clientId",
-            "webApp.appSettings.M365_CLIENT_SECRET": "aad.clientSecret"
-          }
+          "required": false,
+          "targetAction": "azure-storage.provision"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-web-app.provision"
         }
       ]
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "teamsfx-solution.deployBicep"
+    },
+    {
+      "type": "call",
+      "required": false,
+      "targetAction": "azure-bot.provision"
+    },
+    {
+      "type": "function"
     },
     {
       "type": "group",
       "mode": "parallel",
       "actions": [
         {
-          "type": "group",
-          "mode": "sequential",
-          "actions": [
-            {
-              "type": "call",
-              "required": true,
-              "targetAction": "azure-bot-service.provision",
-              "inputs": {
-                "bot.endpoint": "webApp.endpoint"
-              }
-            },
-            {
-              "type": "call",
-              "required": true,
-              "targetAction": "teams-manifest.provision",
-              "inputs": {
-                "manifest.botId": "bot.botId"
-              }
-            }
-          ]
+          "type": "call",
+          "required": false,
+          "targetAction": "aad.configure"
         },
         {
-          "type": "group",
-          "mode": "sequential",
-          "actions": [
-            {
-              "type": "function"
-            },
-            {
-              "type": "call",
-              "required": false,
-              "targetAction": "aad.configure"
-            }
-          ]
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-storage.configure"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-web-app.configure"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-bot.configure"
         }
       ]
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "teams-manifest.provision"
     }
   ]
 }

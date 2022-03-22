@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConsoleHttpPipelineLogger } from "@azure/core-http/types/latest/src/httpPipelineLogger";
+import { pbkdf2 } from "crypto";
 import { ok, Result } from "neverthrow";
 import { v2, v3 } from "..";
 import { Platform } from "../constants";
 import { FxError } from "../error";
 import { QTreeNode } from "../qm";
-import { Inputs } from "../types";
+import { AzureSolutionSettings, Inputs } from "../types";
 import { TokenProvider } from "../utils";
 
 export type MaybePromise<T> = T | Promise<T>;
@@ -21,7 +23,15 @@ export type MaybePromise<T> = T | Promise<T>;
  * 4. group - a group of actions that can be executed in parallel or in sequence
  */
 export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
-
+export enum ActionPriority {
+  P0 = 0,
+  P1 = 1,
+  P2 = 2,
+  P3 = 3,
+  P4 = 4,
+  P5 = 5,
+  P6 = 6,
+}
 /**
  * group action: group action make it possible to leverage multiple sub-actions to accomplishment more complex task
  */
@@ -33,6 +43,10 @@ export interface GroupAction {
    */
   mode?: "sequential" | "parallel";
   actions: Action[];
+  /**
+   * execution priority in a sequential group, default is 3
+   */
+  priority?: ActionPriority;
 }
 
 /**
@@ -47,6 +61,10 @@ export interface ShellAction {
   async?: boolean;
   captureStdout?: boolean;
   captureStderr?: boolean;
+  /**
+   * execution priority in a sequential group, default is 3
+   */
+  priority?: ActionPriority;
 }
 
 /**
@@ -60,6 +78,10 @@ export interface CallAction {
   inputs?: {
     [k: string]: string;
   };
+  /**
+   * execution priority in a sequential group, default is 3
+   */
+  priority?: ActionPriority;
 }
 
 /**
@@ -77,6 +99,10 @@ export interface FunctionAction {
    * function body is a function that takes some context and inputs as parameter
    */
   execute: (context: any, inputs: Inputs) => MaybePromise<Result<any, FxError>>;
+  /**
+   * execution priority in a sequential group, default is 3
+   */
+  priority?: ActionPriority;
 }
 
 /**
@@ -92,6 +118,7 @@ export interface Resource {
  * common function actions used in the built-in plugins
  */
 export interface GenerateCodeAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -100,6 +127,7 @@ export interface GenerateCodeAction extends FunctionAction {
 }
 
 export interface GenerateBicepAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -111,6 +139,7 @@ export interface GenerateBicepAction extends FunctionAction {
 }
 
 export interface ProvisionAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -122,6 +151,7 @@ export interface ProvisionAction extends FunctionAction {
 }
 
 export interface ConfigureAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -133,6 +163,7 @@ export interface ConfigureAction extends FunctionAction {
 }
 
 export interface BuildAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -141,6 +172,7 @@ export interface BuildAction extends FunctionAction {
 }
 
 export interface DeployAction extends FunctionAction {
+  plan(context: v2.Context, inputs: Inputs): MaybePromise<string>;
   question?: (
     context: v2.Context,
     inputs: Inputs
@@ -157,10 +189,10 @@ export class AADResource implements Resource {
     const provision: ProvisionAction = {
       name: "aad.provision",
       type: "function",
-      plan: (context, inputs) => {
+      plan: (context: v2.Context, inputs: Inputs) => {
         inputs["aad.clientId"] = "mockClientId";
         inputs["aad.clientSecret"] = "mockSecret";
-        return "create aad app registration";
+        return "provision aad app registration";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
@@ -174,8 +206,8 @@ export class AADResource implements Resource {
     const configure: ProvisionAction = {
       name: "aad.configure",
       type: "function",
-      plan: (context, inputs) => {
-        return "update aad app registration with redirectUrls";
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "configure aad app registration";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
@@ -187,39 +219,74 @@ export class AADResource implements Resource {
     return [provision, configure];
   }
 }
-export class AzureWebAppResource implements Resource {
-  name = "azure-web-app";
+
+export class AzureStorageResource implements Resource {
+  name = "azure-storage";
   actions(context: any): Action[] {
-    const provision: ProvisionAction = {
-      name: "azure-web-app.provision",
+    const generateBicep: GenerateBicepAction = {
+      name: "azure-storage.configure",
       type: "function",
-      plan: (context, inputs) => {
-        return "deploy bicep for azure web app with appSettings";
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "create azure storage bicep";
+      },
+      execute: async (
+        context: v2.Context,
+        inputs: Inputs
+      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+        return ok([]);
+      },
+    };
+    const configure: ProvisionAction = {
+      name: "azure-storage.configure",
+      type: "function",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "configure azure storage";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
-        inputs["webApp.endpoint"] = "mockEndpoint";
         return ok(undefined);
       },
     };
-    return [provision];
+    return [generateBicep, configure];
   }
 }
-export class AzureBotServiceResource implements Resource {
-  name = "azure-bot-service";
+
+export class AzureWebAppResource implements Resource {
+  name = "azure-web-app";
   actions(context: any): Action[] {
-    const provision: ProvisionAction = {
-      name: "azure-bot-service.provision",
+    const configure: ConfigureAction = {
+      name: "azure-web-app.configure",
       type: "function",
-      plan: (context, inputs) => {
-        return "create azure bot service";
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "configure azure web app";
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
+        return ok(undefined);
+      },
+    };
+    return [configure];
+  }
+}
+export class AzureBotResource implements Resource {
+  name = "azure-bot";
+  actions(context: any): Action[] {
+    const provision: ProvisionAction = {
+      name: "azure-bot.provision",
+      type: "function",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "provision azure-bot (1.create AAD app for bot service; 2. create azure bot service)";
+      },
+      execute: async (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: Inputs
+      ): Promise<Result<undefined, FxError>> => {
+        inputs["azure-bot.botAadAppClientId"] = "MockBotAadAppClientId";
+        inputs["azure-bot.botId"] = "MockBotId";
         return ok(undefined);
       },
     };
@@ -230,24 +297,11 @@ export class AzureBotServiceResource implements Resource {
 export class TeamsManifestResource implements Resource {
   name = "teams-manifest";
   async actions(context: any): Promise<Action[]> {
-    const createOrReuse: GenerateCodeAction = {
-      name: "teams-manifest.createOrReuse",
+    const init: GenerateCodeAction = {
+      name: "teams-manifest.init",
       type: "function",
-      plan: (context, inputs) => {
-        if (inputs["select-manifest"] === "create") {
-          return "create a new manifest";
-        } else {
-          return `reuse existing manifest: ${inputs["select-manifest"]}`;
-        }
-      },
-      question: async (context: v2.Context, inputs: Inputs) => {
-        const node = new QTreeNode({
-          type: "singleSelect",
-          title: "Create a new manifest or use existing one",
-          name: "select-manifest",
-          staticOptions: ["using manifest:123", "create a new manifest"],
-        });
-        return ok(node);
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "create a new manifest";
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         return ok(undefined);
@@ -256,121 +310,145 @@ export class TeamsManifestResource implements Resource {
     const addCapability: GenerateCodeAction = {
       name: "teams-manifest.addCapability",
       type: "function",
-      plan: (context, inputs) => {
+      plan: (context: v2.Context, inputs: Inputs) => {
         return `add capability in teams manifest: ${inputs["add-capability"]}`;
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         return ok(undefined);
       },
     };
-    const provision: GenerateCodeAction = {
+    const provision: ProvisionAction = {
       name: "teams-manifest.provision",
       type: "function",
-      plan: (context, inputs) => {
+      plan: (context: v2.Context, inputs: Inputs) => {
         return "provision teams manifest";
       },
-      execute: async (context: v2.Context, inputs: Inputs) => {
+      execute: async (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: Inputs
+      ) => {
+        console.log(
+          `provision teams manifest with tab:${inputs["tab.endpoint"]} and bot:${inputs["azure-bot.botId"]}`
+        );
         return ok(undefined);
       },
     };
-    return [createOrReuse, addCapability, provision];
+    return [init, addCapability, provision];
   }
 }
 
-/**
- * Teams bot provision steps:
- * 1. trigger aad.provision to create AAD app for SSO [optional]
- * 2. Feed AAD outputs as inputs of azure-web-app.provision [optional]
- * 3. trigger action of azure-web-app.provision to create Azure web app for the bot app [required]
- * 4. Feed the endpoint of the azure web app to aad.configure's inputs [optional]
- * 5. Feed bot endpoint output to the inputs of bot-service.provision [required]
- * 6. trigger aad.configure to update redirectUrls for the app registration [optional]
- * 7. trigger azure-bot-service.provision to create bot service [required]
- * 8. Feed bot id from azure-bot-service output to the inputs of the teams-manifest.provision  [required]
- * 9. trigger teams-manifest.provision to create the teams app [required]
- */
-
-export class TeamsBotResource implements Resource {
-  name = "teams-bot";
-  async actions(context: any): Promise<Action[]> {
-    const provision: Action = {
-      name: "teams-bot.provision",
-      type: "group",
-      mode: "sequential",
-      actions: [
-        {
-          type: "group",
-          mode: "sequential",
-          actions: [
-            {
-              type: "call",
-              required: false,
-              targetAction: "aad.provision",
-            },
-            {
-              type: "call",
-              required: true,
-              targetAction: "azure-web-app.provision",
-              inputs: {
-                "webApp.appSettings.M365_CLIENT_ID": "aad.clientId",
-                "webApp.appSettings.M365_CLIENT_SECRET": "aad.clientSecret",
-              },
-            },
-          ],
-        },
-        {
-          type: "group",
-          mode: "parallel",
-          actions: [
-            {
-              type: "group",
-              mode: "sequential",
-              actions: [
-                {
-                  type: "call",
-                  required: true,
-                  targetAction: "azure-bot-service.provision",
-                  inputs: {
-                    "bot.endpoint": "webApp.endpoint",
-                  },
-                },
-                {
-                  type: "call",
-                  required: true,
-                  targetAction: "teams-manifest.provision",
-                  inputs: {
-                    "manifest.botId": "bot.botId",
-                  },
-                },
-              ],
-            },
-            {
-              type: "group",
-              mode: "sequential",
-              actions: [
-                {
-                  type: "function",
-                  plan: (context, inputs) => {
-                    return `set aad redirect urls in inputs`;
-                  },
-                  execute: async (context: any, inputs: Inputs) => {
-                    inputs["aad.redirectUrls"] = inputs["webApp.endpoint"];
-                    return ok(undefined);
-                  },
-                },
-                {
-                  type: "call",
-                  required: false,
-                  targetAction: "aad.configure",
-                },
-              ],
-            },
-          ],
-        },
-      ],
+export class TeamsfxSolutionResource implements Resource {
+  name = "teamsfx-solution";
+  async deployBicep(context: v2.Context): Promise<Action> {
+    return {
+      type: "function",
+      name: "teamsfx-solution.deployBicep",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "deploy bicep";
+      },
+      execute: async (context: v2.Context, inputs: Inputs) => {
+        console.log("deploy bicep");
+        inputs["tab.endpoint"] = "MockTabEndpoint";
+        return ok(undefined);
+      },
     };
-    return [provision];
   }
+  async preProvision(context: v2.Context): Promise<Action> {
+    return {
+      type: "function",
+      name: "teamsfx-solution.preProvision",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "preProvision: check common configs (account, resource group)";
+      },
+      execute: async (context: v2.Context, inputs: Inputs) => {
+        console.log("preProvision: check common configs (account, resource group)");
+        return ok(undefined);
+      },
+    };
+  }
+  async provision(context: v2.Context): Promise<Action> {
+    const solutionSetting = context.projectSetting.solutionSettings as AzureSolutionSettings;
+    const provisionActions: Action[] = solutionSetting.activeResourcePlugins
+      .filter((p) => p !== "azure-bot")
+      .map((p) => {
+        return {
+          type: "call",
+          required: false,
+          targetAction: `${p}.provision`,
+        };
+      });
+    const configureActions: Action[] = solutionSetting.activeResourcePlugins.map((p) => {
+      return {
+        type: "call",
+        required: false,
+        targetAction: `${p}.configure`,
+      };
+    });
+    const provisionSequences: Action[] = [
+      {
+        type: "call",
+        required: false,
+        targetAction: "teamsfx-solution.preProvision",
+      },
+      {
+        type: "group",
+        mode: "parallel",
+        actions: provisionActions,
+      },
+      {
+        type: "call",
+        required: true,
+        targetAction: "teamsfx-solution.deployBicep",
+      },
+    ];
+    if (solutionSetting.activeResourcePlugins.includes("azure-bot")) {
+      provisionSequences.push({
+        type: "call",
+        required: false,
+        targetAction: "azure-bot.provision",
+      });
+    }
+    provisionSequences.push({
+      type: "function",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return "set configuration after bicep deployment";
+      },
+      execute: async (context: any, inputs: Inputs) => {
+        return ok(undefined);
+      },
+    });
+    provisionSequences.push({
+      type: "group",
+      mode: "parallel",
+      actions: configureActions,
+    });
+    provisionSequences.push({
+      type: "call",
+      required: true,
+      targetAction: "teams-manifest.provision",
+    });
+    return {
+      name: "teamsfx-solution.provision",
+      type: "group",
+      actions: provisionSequences,
+    };
+  }
+  async actions(context: any): Promise<Action[]> {
+    return [
+      await this.deployBicep(context),
+      await this.provision(context),
+      await this.preProvision(context),
+    ];
+  }
+}
+
+function getActionPriority(action: Action, actions: Map<string, Action>): ActionPriority {
+  if (action.priority) return action.priority;
+  if (action.type === "call") {
+    const targetAction = actions.get(action.targetAction);
+    if (targetAction && targetAction.priority) return targetAction.priority;
+  }
+  return ActionPriority.P3;
 }
 
 async function planAction(
@@ -398,8 +476,15 @@ async function planAction(
       planAction(context, inputs, targetAction, actions);
     }
   } else {
+    if (!action.mode || action.mode === "sequential") {
+      action.actions = action.actions.sort((a1, a2) => {
+        const p1 = getActionPriority(a1, actions);
+        const p2 = getActionPriority(a2, actions);
+        return p1 - p2;
+      });
+    }
     for (const act of action.actions) {
-      planAction(context, inputs, act, actions);
+      await planAction(context, inputs, act, actions);
     }
   }
 }
@@ -439,14 +524,20 @@ async function executeAction(
 async function test() {
   const actionMap = new Map<string, Action>();
   const context = {
-    appName: "huajie0316",
+    projectSetting: {
+      appName: "huajie0316",
+      solutionSettings: {
+        activeResourcePlugins: ["aad", "azure-storage", "azure-web-app", "azure-bot"],
+      },
+    },
   };
   const resources = [
-    new TeamsBotResource(),
+    new TeamsfxSolutionResource(),
     new AADResource(),
     new TeamsManifestResource(),
-    new AzureBotServiceResource(),
+    new AzureBotResource(),
     new AzureWebAppResource(),
+    new AzureStorageResource(),
   ];
   for (const resource of resources) {
     const actions = await resource.actions(context);
@@ -456,11 +547,11 @@ async function test() {
       }
     });
   }
-  const rootAction = actionMap.get("teams-bot.provision") as Action;
+  const rootAction = actionMap.get("teamsfx-solution.provision") as Action;
   console.log(JSON.stringify(rootAction));
   const inputs: Inputs = { platform: Platform.VSCode };
-  // await planAction(context, inputs, rootAction, actionMap);
-  await executeAction(context, inputs, rootAction, actionMap);
+  await planAction(context, inputs, rootAction, actionMap);
+  // await executeAction(context, inputs, rootAction, actionMap);
 }
 
 test();

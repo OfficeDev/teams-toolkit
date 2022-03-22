@@ -28,11 +28,11 @@ export class TreeViewCommand extends vscode.TreeItem {
 
     if (image !== undefined) {
       if (!image.custom) {
-        this.iconPath = new vscode.ThemeIcon(this.image!.name);
+        this.iconPath = new vscode.ThemeIcon(image.name);
       } else {
         this.iconPath = {
-          light: path.join(ext.context.extensionPath, "media", "light", `${this.image?.name}.svg`),
-          dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image?.name}.svg`),
+          light: path.join(ext.context.extensionPath, "media", "light", `${image.name}.svg`),
+          dark: path.join(ext.context.extensionPath, "media", "dark", `${image.name}.svg`),
         };
       }
     }

@@ -16,9 +16,11 @@ import { TreeViewCommand } from "./treeViewCommand";
 class TreeViewManager {
   private static instance: TreeViewManager;
   private treeviewMap: Map<string, any>;
+  private commandMap: Map<string, TreeViewCommand>;
 
   private constructor() {
     this.treeviewMap = new Map();
+    this.commandMap = new Map<string, TreeViewCommand>();
   }
 
   public static getInstance() {
@@ -182,6 +184,7 @@ class TreeViewManager {
   }
 
   private registerDevelopment(commands: TreeViewCommand[], disposables: vscode.Disposable[]) {
+    this.storeCommandsIntoMap(commands);
     const developmentProvider = new CommandsTreeViewProvider(commands);
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-development", developmentProvider)
@@ -271,6 +274,7 @@ class TreeViewManager {
       ),
     ];
 
+    this.storeCommandsIntoMap(deployCommand);
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
     this.treeviewMap.set("teamsfx-deployment", deployProvider);
@@ -332,6 +336,14 @@ class TreeViewManager {
       vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
     );
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
+  }
+
+  private storeCommandsIntoMap(commands: TreeViewCommand[]) {
+    for (const command of commands) {
+      if (command.commandId) {
+        this.commandMap.set(command.commandId, command);
+      }
+    }
   }
 }
 

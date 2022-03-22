@@ -53,13 +53,14 @@ export default class New extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams application.";
 
-  public readonly subCommands: YargsCommand[] = isM365AppEnabled()
-    ? [new NewTemplate(), new NewM365()]
-    : [new NewTemplate()];
+  public readonly subCommands: YargsCommand[] = [new NewTemplate(), new NewM365()];
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
     this.subCommands.forEach((cmd) => {
+      if (cmd.commandHead === "m365" && !isM365AppEnabled()) {
+        return;
+      }
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
     if (this.params) {

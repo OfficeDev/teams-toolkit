@@ -76,7 +76,7 @@ import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { CommandsTreeViewProvider, TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -642,7 +642,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     },
   };
 
-  if (args && args.length > 0 && args[0] != CommandsTreeViewProvider.TreeViewFlag) {
+  if (args && args.length > 0 && args[0] != TreeViewCommand.TreeViewFlag) {
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
@@ -1921,13 +1921,8 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
   }
-  if (!isValidProject(getWorkspacePath())) {
-    const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
-    context.subscriptions.push(...disposables);
-  } else {
-    const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
-    context.subscriptions.push(...disposables);
-  }
+  const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
+  context.subscriptions.push(...disposables);
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {

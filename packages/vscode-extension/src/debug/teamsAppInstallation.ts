@@ -44,7 +44,7 @@ export async function showInstallAppInTeamsMessage(detected: boolean): Promise<b
     if (result.value === localize("teamstoolkit.localDebug.installApp.installInTeams")) {
       const url = `https://teams.microsoft.com/l/app/${
         debugConfig.appId
-      }?installAppPackage=true&webjoin=true&${generateAccountHint()}`;
+      }?installAppPackage=true&webjoin=true&${await generateAccountHint()}`;
       await VS_CODE_UI.openUrl(url);
       return await showInstallAppInTeamsMessage(false);
     } else if (result.value === localize("teamstoolkit.localDebug.installApp.continue")) {

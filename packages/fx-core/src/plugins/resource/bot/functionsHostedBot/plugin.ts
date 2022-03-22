@@ -12,13 +12,8 @@ import {
   TemplateProjectsConstants,
 } from "../constants";
 
-import { ConfigNames, HostTypes, PluginBot } from "../resources/strings";
-import {
-  checkAndThrowIfMissing,
-  PackDirExistenceError,
-  PreconditionError,
-  SomethingMissingError,
-} from "../errors";
+import { HostTypes, PluginBot } from "../resources/strings";
+import { PreconditionError, SomethingMissingError } from "../errors";
 import { ProgressBarFactory } from "../progressBars";
 import { Logger } from "../logger";
 import { TeamsBotImpl } from "../plugin";
@@ -130,34 +125,6 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
     return ResultFactory.Success(result);
-  }
-
-  public async preDeploy(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
-    Logger.info(Messages.PreDeployingBot);
-
-    // Preconditions checking.
-    const packDirExisted = await fs.pathExists(this.config.scaffold.workingDir!);
-    if (!packDirExisted) {
-      throw new PackDirExistenceError();
-    }
-
-    checkAndThrowIfMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
-    checkAndThrowIfMissing(
-      ConfigNames.PROGRAMMING_LANGUAGE,
-      this.config.scaffold.programmingLanguage
-    );
-    checkAndThrowIfMissing(
-      ConfigNames.BOT_SERVICE_RESOURCE_ID,
-      this.config.provision.botWebAppResourceId
-    );
-    checkAndThrowIfMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-    checkAndThrowIfMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
-
-    this.config.saveConfigIntoContext(context);
-
-    return ResultFactory.Success();
   }
 
   public async deploy(context: PluginContext): Promise<FxResult> {

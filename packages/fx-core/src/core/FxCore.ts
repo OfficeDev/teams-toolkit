@@ -120,6 +120,7 @@ import {
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
+  ScratchOptionYesM365,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
@@ -216,8 +217,12 @@ export class FxCore implements v3.ICore {
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
-      if (inputs.isM365) {
+      if (
+        inputs.isM365 ||
+        inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionYesM365.id
+      ) {
         projectSettings.isM365 = true;
+        inputs.isM365 = true;
       }
 
       projectSettings.solutionSettings = {

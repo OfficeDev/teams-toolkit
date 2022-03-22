@@ -999,6 +999,9 @@ async function processResult(
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
   }
+  if (eventName === TelemetryEvent.CreateProject && inputs?.isM365) {
+    createProperty[TelemetryProperty.IsM365] = "true";
+  }
 
   if (result.isErr()) {
     if (eventName) {

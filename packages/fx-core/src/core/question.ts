@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory, isBotNotificationEnabled } from "../common/tools";
+import { getRootDirectory, isBotNotificationEnabled, isM365AppEnabled } from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -49,8 +49,8 @@ export enum CoreQuestionNames {
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
   M365CreateFromScratch = "m365-scratch",
-  M365AppType = "m365-app-type",
-  M365Capability = "m365-capability",
+  M365AppType = "app-type",
+  M365Capabilities = "m365-capabilities",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -362,6 +362,12 @@ export const ScratchOptionYesVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
 };
 
+export const ScratchOptionYesM365VSC: OptionItem = {
+  id: "yes-m365",
+  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesM365VSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionYesM365VSC.detail"),
+};
+
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
@@ -374,6 +380,12 @@ export const ScratchOptionYes: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYes.detail"),
 };
 
+export const ScratchOptionYesM365: OptionItem = {
+  id: "yes-m365",
+  label: getLocalizedString("core.ScratchOptionYesM365.label"),
+  detail: getLocalizedString("core.ScratchOptionYesM365.detail"),
+};
+
 export const ScratchOptionNo: OptionItem = {
   id: "no",
   label: getLocalizedString("core.ScratchOptionNo.label"),
@@ -381,14 +393,25 @@ export const ScratchOptionNo: OptionItem = {
 };
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
+  const staticOptions: OptionItem[] = [];
+  if (platform === Platform.VSCode) {
+    staticOptions.push(ScratchOptionYesVSC);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365VSC);
+    }
+    staticOptions.push(ScratchOptionNoVSC);
+  } else {
+    staticOptions.push(ScratchOptionYes);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365);
+    }
+    staticOptions.push(ScratchOptionNo);
+  }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
-    staticOptions:
-      platform === Platform.VSCode
-        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
-        : [ScratchOptionYes, ScratchOptionNo],
+    staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
@@ -410,12 +433,12 @@ export const SampleSelect: SingleSelectQuestion = {
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
 };
 
-export const M365CreateFromScratchFuncQuestion: FuncQuestion = {
-  type: "func",
-  name: CoreQuestionNames.M365CreateFromScratch,
-  func: (inputs: Inputs) => {
-    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYes.id;
-  },
+export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.CreateFromScratch,
+  title: "",
+  staticOptions: [ScratchOptionYesM365],
+  skipSingleOption: true,
 };
 
 export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
@@ -426,9 +449,9 @@ export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
   placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
 };
 
-export const M365CapabilityFuncQuestion: FuncQuestion = {
+export const M365CapabilitiesFuncQuestion: FuncQuestion = {
   type: "func",
-  name: CoreQuestionNames.M365Capability,
+  name: CoreQuestionNames.M365Capabilities,
   func: (inputs: Inputs) => {
     if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
       inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];

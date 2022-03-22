@@ -247,10 +247,12 @@ export async function addCapability(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
-    //aad need this file
-    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-      spaces: 4,
-    });
+    if (isAADEnabled(solutionSettings)) {
+      //aad need this file
+      await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+        spaces: 4,
+      });
+    }
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew = {
@@ -335,7 +337,10 @@ export async function addCapability(
   if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
     pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
   }
-  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+  if (
+    !isAadManifestEnabled() &&
+    !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+  ) {
     pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
   }
 
@@ -392,7 +397,10 @@ export async function addCapability(
   solutionSettings.capabilities = Array.from(newCapabilitySet);
   setActivatedResourcePluginsV2(ctx.projectSetting);
 
-  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+  if (
+    !isAadManifestEnabled() &&
+    !solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+  ) {
     solutionSettings.activeResourcePlugins.push(BuiltInFeaturePluginNames.aad);
   }
 

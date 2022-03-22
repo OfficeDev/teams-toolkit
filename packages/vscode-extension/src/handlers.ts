@@ -50,6 +50,7 @@ import {
   Void,
   VsCodeEnv,
   IProgressHandler,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -244,6 +245,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
         await refreshEnvTreeOnFileChanged(workspacePath, files);
       });
+
+      workspace.onDidSaveTextDocument(async (event) => {
+        await refreshEnvTreeOnFileContentChanged(workspacePath, event.uri.fsPath);
+      });
     }
   } catch (e) {
     const FxError: FxError = {
@@ -301,6 +306,20 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
+    await envTree.registerEnvTreeHandler();
+  }
+}
+
+async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  // check if file is project config
+  if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
     await envTree.registerEnvTreeHandler();
   }
 }

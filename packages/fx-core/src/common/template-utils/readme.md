@@ -6,6 +6,20 @@ To scaffold your project from rc templates, set the environment varaible `TEAMSF
 
 To scaffold from alpha release templates, set `TEAMSFX_TEMPLATE_PRERELEASE=alpha`. Then Teams Toolkit download templates from [rc release](https://github.com/OfficeDev/TeamsFx/releases/tag/templates%400.0.0-alpha)
 
+## How to release a new template?
+
+1. Add the relative path to your new template in [package.json](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/package.json)
+  ```
+  "templates": [
+        "blazor-base/csharp/default",
+        "bot/csharp/default",
+        "bot/js/default",
+        "bot/ts/default",
+        "your/new/template"
+  ]
+  ```
+2. In cd pipeline, all templates in the list will be zipped and be released to GitHub.
+
 ## How to debug templates?
 
 1. Set `TEAMSFX_DEBUG_TEMPLATE=true` to your environment variables.

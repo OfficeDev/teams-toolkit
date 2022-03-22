@@ -36,12 +36,12 @@ for TEMPLATE in ${TEMPLATE_LIST[@]}; do
         exit -1
     fi
 
-    if [ ! -d ./templates/${TEMPLATE} ]; then
-        echo "The folder ./templates/${TEMPLATE} does not exist."
+    if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
+        echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
         exit -1
     fi
 
-    cd ./templates/${TEMPLATE}
+    cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
     zip -rq ${TEMPLATE_OUTPUT_DIR}/${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
     cd -
 done

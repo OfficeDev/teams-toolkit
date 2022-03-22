@@ -8,8 +8,10 @@ var botServiceName = contains(provisionParameters, 'botServiceName') ? provision
 var botServiceSku = contains(provisionParameters, 'botServiceSku') ? provisionParameters['botServiceSku'] : 'F0' // Try to read SKU for Azure Bot Service from parameters
 var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}' // Try to read display name for Azure Bot Service from parameters
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
+var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
 var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
+var storageName = contains(provisionParameters, 'botStorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
+var storageSku = contains(provisionParameters, 'botStorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 
 // Register your web service as a bot with the Bot Framework
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
@@ -18,7 +20,7 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: uri('https://${webApp.properties.defaultHostName}', '/api/messages')
+    endpoint: uri('https://${functionApp.properties.defaultHostName}', '/api/messages')
     msaAppId: botAadAppClientId
   }
   sku: {
@@ -38,7 +40,7 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
-  kind: 'app'
+  kind: 'functionapp'
   location: resourceGroup().location
   name: serverfarmsName
   sku: {
@@ -47,22 +49,43 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
 }
 
 // Web App that hosts your bot
-resource webApp 'Microsoft.Web/sites@2021-02-01' = {
-  kind: 'app'
+resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
+  kind: 'functionapp'
   location: resourceGroup().location
   name: webAppName
   properties: {
     serverFarmId: serverfarm.id
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
     siteConfig: {
+      alwaysOn: true
       appSettings: [
         {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
+          name: 'AzureWebJobsDashboard'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
+        }
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~3' // Use Azure Functions runtime v3
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'node' // Set runtime to NodeJS
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1' // Run Azure Functions from a package file
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~14' // Set NodeJS version to 14.x for your site
+          value: '~14' // Set NodeJS version to 14.x
         }
         {
           name: 'RUNNING_ON_AZURE'
@@ -79,10 +102,20 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
+// Azure Storage is required when creating Azure Functions instance
+resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: storageName
+  kind: 'StorageV2'
+  location: resourceGroup().location
+  sku: {
+    name: storageSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSku property to provisionParameters to override the default value "Standard_LRS".
+  }
+}
+
 output botWebAppSKU string = webAppSKU
 output botWebAppName string = webAppName
-output botDomain string = webApp.properties.defaultHostName
+output botDomain string = functionApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
 output botServiceName string = botServiceName
-output botWebAppResourceId string = webApp.id
-output botWebAppEndpoint string = 'https://${webApp.properties.defaultHostName}'
+output botWebAppResourceId string = functionApp.id
+output botWebAppEndpoint string = 'https://${functionApp.properties.defaultHostName}'

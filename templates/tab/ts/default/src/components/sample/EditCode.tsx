@@ -1,6 +1,6 @@
 import React from "react";
 
-var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
 export function EditCode(props: {
   showFunction?: boolean;

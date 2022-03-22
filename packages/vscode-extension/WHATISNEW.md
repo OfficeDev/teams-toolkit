@@ -17,7 +17,7 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
-- Optimized Get Started page for Teams Toolkit. User can check environment prerequsites from Get started now.
+- Optimized Get Started page for Teams Toolkit. User can check environment prerequisites from Get started now.
 
 	![new get started page](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/get_start.png)
 	

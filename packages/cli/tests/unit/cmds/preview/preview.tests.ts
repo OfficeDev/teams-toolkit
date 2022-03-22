@@ -76,17 +76,18 @@ describe("sequentialTasks", () => {
 
 describe("createBotTasksForStartServices", () => {
   let preview: Preview;
+  const sandbox = sinon.createSandbox();
   beforeEach(() => {
     preview = new Preview();
 
-    sinon
+    sandbox
       .stub(Task.prototype, "waitFor")
       .callsFake(async function (this: { taskTitle: string; command: string }) {
         return ok(makeResult(this.taskTitle, this.command));
       });
   });
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
     mock.restore();
   });
 

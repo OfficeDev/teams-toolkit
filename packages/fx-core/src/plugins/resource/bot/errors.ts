@@ -282,6 +282,19 @@ export class ZipDeployError extends PluginError {
   }
 }
 
+// TODO: merge and update message
+export class RestartWebAppError extends PluginError {
+  constructor(innerError?: InnerError) {
+    super(
+      ErrorType.USER,
+      ErrorNames.RESTART_WEBAPP_ERROR,
+      Messages.FailToRestartWebApp,
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
+      innerError
+    );
+  }
+}
+
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: InnerError) {
     super(

@@ -505,6 +505,7 @@
   "plugins.bot.FailedToUpdateConfigs": "Failed to update configs for %s",
   "plugins.bot.FailedListPublishingCredentials": "Failed to list publishing credentials.",
   "plugins.bot.FailedDeployZipFile": "Failed to deploy zip file.",
+  "plugins.bot.FailToRestartWebApp": "Failed to restart web app.",
   "plugins.bot.FailedUpdateMessageEndpoint": "Failed to update message endpoint with %s",
   "plugins.bot.DownloadFail": "Failed to download from %s",
   "plugins.bot.ClickGetHelp": "Please click 'Get Help' button for more details.",

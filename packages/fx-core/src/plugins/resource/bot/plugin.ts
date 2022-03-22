@@ -70,7 +70,7 @@ export class TeamsBotImpl implements PluginImpl {
   public config: TeamsBotConfig = new TeamsBotConfig();
   protected ctx?: PluginContext;
 
-  private async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
+  protected async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
       await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
@@ -311,12 +311,9 @@ export class TeamsBotImpl implements PluginImpl {
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
 
     // TODO: remove it and implement the deploy in functionsHostedBot/plugin
-    const zipBuffer =
-      ScaffoldConfig.getBotHostType(context) === BotHostTypes.AzureFunctions
-        ? utils.zipAFolder(workingDir) // TODO: remove it and implement the deploy in functionsHostedBot/plugin
-        : utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
-            `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
-          ]);
+    const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
+      `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
+    ]);
 
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(

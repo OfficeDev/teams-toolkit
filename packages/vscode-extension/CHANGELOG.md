@@ -4,6 +4,7 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
+- Optimized Get Started page for Teams Toolkit. User can check environment prerequisites from Get started now.
 - User can use Teams Toolkit to create workflow automation templates for Github, Azure DevOps and Jenkins.
 
 Enhancement:

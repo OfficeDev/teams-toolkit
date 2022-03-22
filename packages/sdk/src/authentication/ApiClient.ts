@@ -13,7 +13,7 @@ export function createApiClient(apiEndpoint: string, authProvider: IAuthProvider
   axios.interceptors.request.use(
     async function (config) {
       config.url = apiEndpoint;
-      await authProvider.ConfigureAxiosRequestWithAuthenticationInfo(config);
+      await authProvider.AddAuthenticationInfo(config);
       return config;
     },
     function (error) {

@@ -15,7 +15,7 @@ export class ApiKeyProvider implements IAuthProvider {
     this.addType = addType;
   }
 
-  public async ConfigureAxiosRequestWithAuthenticationInfo(config: AxiosRequestConfig) {
+  public async AddAuthenticationInfo(config: AxiosRequestConfig) {
     switch (this.addType) {
       case ApiKeyAddTypes.Header:
         config.headers = {};

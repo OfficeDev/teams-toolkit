@@ -5,7 +5,7 @@ import { TokenCredential } from "@azure/identity";
 import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
-export class AADAuthProvider implements IAuthProvider {
+export class BearerAuthProvider implements IAuthProvider {
   private credential: TokenCredential;
   private scope: string | string[];
 
@@ -14,7 +14,7 @@ export class AADAuthProvider implements IAuthProvider {
     this.scope = scope;
   }
 
-  public async ConfigureAxiosRequestWithAuthenticationInfo(config: AxiosRequestConfig) {
+  public async AddAuthenticationInfo(config: AxiosRequestConfig) {
     const token = await this.credential.getToken(this.scope);
     config.headers = {
       Authorization: `Bearer ${token}`,

@@ -13,7 +13,7 @@ export class BasicAuthProvider implements IAuthProvider {
     this.password = password;
   }
 
-  public async ConfigureAxiosRequestWithAuthenticationInfo(config: AxiosRequestConfig) {
+  public async AddAuthenticationInfo(config: AxiosRequestConfig) {
     config.headers = {
       Authorization: "Basic " + Buffer.from(this.userName + ":" + this.password, "base64"),
     };

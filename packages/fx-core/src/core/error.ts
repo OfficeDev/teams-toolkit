@@ -235,7 +235,7 @@ export function ConsolidateCanceledError(): UserError {
   return new UserError(
     // @see tools.isUserCancelError()
     "UserCancel",
-    getLocalizedString("error.UpgradeCanceledError"),
+    getLocalizedString("error.ConsolidateCanceledError"),
     CoreSource
   );
 }

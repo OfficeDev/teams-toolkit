@@ -184,8 +184,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       if (isSPFxProject(projectSettings)) {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifestStart);
         const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
-        await fs.copyFile(remoteManifestFile, manifestTemplatePath);
-        const manifestString = (await fs.readFile(manifestTemplatePath)).toString();
+        const manifestString = (await fs.readFile(remoteManifestFile)).toString();
         manifest = JSON.parse(manifestString);
         let componentId = "";
         if (manifest?.staticTabs && manifest.staticTabs.length > 0) {

@@ -36,6 +36,7 @@ import {
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
+  WEB_APPLICATION_INFO_LOCAL_DEBUG,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
@@ -388,6 +389,12 @@ export async function addCapabilities(
               COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
             );
           }
+          break;
+        case "WebApplicationInfo":
+          if (!localManifest.webApplicationInfo) {
+            Object.assign(localManifest, { webApplicationInfo: [] });
+          }
+          localManifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
           break;
       }
     });

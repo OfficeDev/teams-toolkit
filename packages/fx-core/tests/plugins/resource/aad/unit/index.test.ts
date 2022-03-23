@@ -301,10 +301,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const context = await TestHelper.pluginContext(config, true, false, false);
     const result = await plugin.scaffold(context);
     chai.assert.equal(result.isOk(), true);
-    chai.assert.include(
-      (context.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities,
-      "SSO"
-    );
   });
 });
 

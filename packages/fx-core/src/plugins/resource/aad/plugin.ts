@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  LogProvider,
-  PluginContext,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckGrantPermissionConfig,
@@ -56,12 +50,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
-import {
-  isAADEnabled,
-  isAadManifestEnabled,
-  isConfigUnifyEnabled,
-  isSPFxProject,
-} from "../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 
 export class AadAppForTeamsImpl {
@@ -600,17 +589,12 @@ export class AadAppForTeamsImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<AadResult> {
-    if (isAadManifestEnabled() && !isSPFxProject(ctx.projectSettings)) {
+    if (isAadManifestEnabled()) {
       const templatesFolder = getTemplatesFolder();
       const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
-      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-        ?.solutionSettings as AzureSolutionSettings;
-      if (isAADEnabled(solutionSettings)) {
-        const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
-        await fs.ensureDir(appDir);
-        await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
-        solutionSettings.capabilities.push(Constants.aadCapabilityName);
-      }
+      const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
+      await fs.ensureDir(appDir);
+      await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
     }
     return ResultFactory.Success();
   }

@@ -17,6 +17,7 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
+  AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -494,6 +495,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
+  const aadAppTemplateSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -516,6 +524,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
       manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadAppTemplateSelector,
+      aadAppTemplateCodeLensProvider
     )
   );
 

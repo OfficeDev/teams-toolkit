@@ -19,7 +19,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      set -euxo pipefail
+      set -evuxo pipefail
 
       # This is just an example workflow for continuous integration.
       # You should customize it to meet your own requirements.

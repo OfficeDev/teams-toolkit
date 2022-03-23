@@ -1,3 +1,7 @@
+# 0.6.0
+- Breaking: Remove loadConfiguration() function and add TeamsFx class
+- Support automatic choosing of credential class based on IdentityType
+
 # 0.5.0
 - Breaking: TeamsUserCredential now will use Auth Code Flow with PKCE for SPA authentication. You can find more detail here: https://aka.ms/teamsfx-auth-code-flow.
 - Support multiple SQL database connection

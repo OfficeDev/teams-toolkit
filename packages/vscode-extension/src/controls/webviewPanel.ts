@@ -136,7 +136,7 @@ export class WebviewPanel {
             await this.updateGlobalStepsDone(msg.data);
             break;
           case Commands.GetGlobalStepsDone:
-            this.getGlobalStepsDone();
+            await this.getGlobalStepsDone();
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
@@ -188,8 +188,8 @@ export class WebviewPanel {
     await globalStateUpdate("globalStepsDone", data);
   }
 
-  private getGlobalStepsDone() {
-    const globalStepsDone = globalStateGet("globalStepsDone", []);
+  private async getGlobalStepsDone() {
+    const globalStepsDone = await globalStateGet("globalStepsDone", []);
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: "updateStepsDone",

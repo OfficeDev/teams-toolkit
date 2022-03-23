@@ -37,6 +37,8 @@ import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { isPureExistingApp } from "../../../common";
+import { NoCapabilityFoundError } from "../../../core/error";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -65,6 +67,11 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
+    // add CI CD workflows for minimal app is not supported.
+    if (ctx.projectSetting && isPureExistingApp(ctx.projectSetting)) {
+      throw new NoCapabilityFoundError("add CI CD workflows");
+    }
+
     const cicdWorkflowQuestions = new QTreeNode({
       type: "group",
     });

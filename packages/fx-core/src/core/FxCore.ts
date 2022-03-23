@@ -780,6 +780,36 @@ export class FxCore implements v3.ICore {
         ) {
           await ensureBasicFolderStructure(inputs);
         }
+        // reset provisionSucceeded state for all env
+        if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
+          if (ctx.envInfoV2?.state?.solution?.provisionSucceeded) {
+            ctx.envInfoV2.state.solution.provisionSucceeded = false;
+          }
+          const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+          if (allEnvRes.isOk()) {
+            for (const env of allEnvRes.value) {
+              const loadEnvRes = await loadEnvInfoV3(
+                inputs as v2.InputsWithProjectPath,
+                ctx.projectSettings!,
+                env,
+                false
+              );
+              if (loadEnvRes.isOk()) {
+                const envInfo = loadEnvRes.value;
+                if (envInfo.state?.solution?.provisionSucceeded) {
+                  envInfo.state.solution.provisionSucceeded = false;
+                }
+                await environmentManager.writeEnvState(
+                  envInfo.state,
+                  inputs.projectPath!,
+                  ctx.contextV2.cryptoProvider,
+                  env,
+                  true
+                );
+              }
+            }
+          }
+        }
         return res;
       } else return err(FunctionRouterError(func));
     }
@@ -1489,6 +1519,11 @@ export async function ensureBasicFolderStructure(
     }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
+      const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
+      const lines = content.split("\n");
+      for (let i = 0; i < lines.length; ++i) {
+        lines[i] = lines[i].trim();
+      }
       const gitIgnoreContent = [
         "\n# TeamsFx files",
         "node_modules",
@@ -1504,12 +1539,15 @@ export async function ensureBasicFolderStructure(
         gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
         gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
       }
-
       if (inputs.platform === Platform.VS) {
         gitIgnoreContent.push("appsettings.Development.json");
       }
-
-      await fs.appendFile(gitIgnoreFilePath, gitIgnoreContent.join("\n"), { encoding: "utf8" });
+      gitIgnoreContent.forEach((line) => {
+        if (!lines.includes(line.trim())) {
+          lines.push(line.trim());
+        }
+      });
+      await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
     return err(WriteFileError(e));

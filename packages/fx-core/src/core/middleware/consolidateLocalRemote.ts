@@ -279,6 +279,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
 function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+  if (ctx.arguments.length > 0 && ctx.arguments[0].needAskConsolidate === true) {
+    return true;
+  }
   if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
   userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;

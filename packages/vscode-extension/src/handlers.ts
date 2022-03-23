@@ -1129,6 +1129,15 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     return "1";
   }
 
+  // check for consolidate upgrade
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  input.needAskConsolidate = true;
+  const projectConfig = await core.getProjectConfig(input);
+  if (projectConfig.isErr()) {
+    return "1";
+  }
+
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
     commonUtils.endLocalDebugSession();

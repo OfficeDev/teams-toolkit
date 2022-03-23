@@ -21,8 +21,8 @@ import {
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
-} from "../../../../src/notification/notification";
-import * as utils from "../../../../src/notification/utils";
+} from "../../../../src/conversation/notification";
+import * as utils from "../../../../src/conversation/utils";
 import { TestTarget } from "./testUtils";
 
 chaiUse(chaiPromises);

@@ -5,8 +5,8 @@ import * as sinon from "sinon";
 import {
   CommandResponseMiddleware,
   NotificationMiddleware,
-} from "../../../../src/notification/middleware";
-import { ConversationReferenceStore } from "../../../../src/notification/storage";
+} from "../../../../src/conversation/middleware";
+import { ConversationReferenceStore } from "../../../../src/conversation/storage";
 import {
   MockContext,
   TestCommandHandler,

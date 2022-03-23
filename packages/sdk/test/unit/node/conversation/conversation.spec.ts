@@ -2,11 +2,11 @@ import { TestCommandHandler, TestStorage } from "./testUtils";
 import { assert } from "chai";
 import { BotFrameworkAdapter, ConversationReference, TeamsInfo, TurnContext } from "botbuilder";
 import * as sinon from "sinon";
-import { ConversationBot } from "../../../../src/notification/conversation";
+import { ConversationBot } from "../../../../src/conversation/conversation";
 import {
   CommandResponseMiddleware,
   NotificationMiddleware,
-} from "../../../../src/notification/middleware";
+} from "../../../../src/conversation/middleware";
 
 describe("ConversationBot Tests - Node", () => {
   const sandbox = sinon.createSandbox();

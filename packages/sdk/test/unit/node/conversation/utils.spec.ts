@@ -4,7 +4,7 @@ import {
   cloneConversation,
   getTargetType,
   getTeamsBotInstallationId,
-} from "../../../../src/notification/utils";
+} from "../../../../src/conversation/utils";
 
 chaiUse(chaiPromises);
 

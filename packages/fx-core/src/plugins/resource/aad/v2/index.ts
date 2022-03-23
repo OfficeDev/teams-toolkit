@@ -13,7 +13,7 @@ import {
   v2,
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2, Context } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { AadAppForTeamsPlugin } from "..";
 import {
@@ -28,6 +28,7 @@ import {
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
+  scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AadPlugin)
@@ -171,5 +172,9 @@ export class AadPluginV2 implements v2.ResourcePlugin {
       this.plugin,
       "listCollaborator"
     );
+  }
+
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+    return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 }

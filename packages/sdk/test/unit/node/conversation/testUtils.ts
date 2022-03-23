@@ -5,7 +5,7 @@ import {
   NotificationTargetStorage,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
-} from "../../../../src/notification/interface";
+} from "../../../../src/conversation/interface";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};

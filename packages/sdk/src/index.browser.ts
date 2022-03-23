@@ -30,7 +30,7 @@ export {
 export { TeamsFx } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
 
-export { NotificationTarget, NotificationTargetType } from "./notification/interface.browser";
+export { NotificationTarget, NotificationTargetType } from "./conversation/interface.browser";
 export {
   Channel,
   IncomingWebhookTarget,
@@ -38,5 +38,5 @@ export {
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
-} from "./notification/notification.browser";
-export { ConversationBot, ConversationOptions } from "./notification/conversation.browser";
+} from "./conversation/notification.browser";
+export { ConversationBot, ConversationOptions } from "./conversation/conversation.browser";

@@ -3,7 +3,7 @@ import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { ConversationReferenceStore, LocalFileStorage } from "../../../../src/notification/storage";
+import { ConversationReferenceStore, LocalFileStorage } from "../../../../src/conversation/storage";
 import { TestStorage } from "./testUtils";
 
 chaiUse(chaiPromises);

@@ -37,8 +37,8 @@ export const NotificationOptionItem: OptionItem = {
 
 export const CommandAndResponseOptionItem: OptionItem = {
   id: "CommandAndResponse",
-  label: "Command and Response",
-  cliName: "command-and-response",
+  label: "Command and Response Bot",
+  cliName: "command-and-response-bot",
   description: getLocalizedString("core.CommandAndResponseOption.description"),
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };

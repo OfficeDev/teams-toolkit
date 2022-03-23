@@ -29,7 +29,6 @@ export class Constants {
   static appPackageFolder = "templates/appPackage";
   static aadManifestTemplateFolder = "plugins/resource/aad/manifest";
   static aadManifestTemplateName = "aad.template.json";
-  static aadCapabilityName = "SSO";
 
   static createOwnerDuplicatedMessage =
     "One or more added object references already exist for the following modified properties: 'owners'.";

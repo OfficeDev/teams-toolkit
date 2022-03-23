@@ -857,6 +857,22 @@
             }
           }
         }
+      },
+      {
+        "title": "Experimental Features",
+        "order": 3,
+        "properties": {
+          "fx-extension.unifyConfigs": {
+            "type": "boolean",
+            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.enableInitApp": {
+            "type": "boolean",
+            "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
+            "default": false
+          }
+        }
       }
     ],
     "languages": [

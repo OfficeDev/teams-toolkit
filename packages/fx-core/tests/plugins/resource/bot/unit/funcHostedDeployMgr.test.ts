@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
 import * as path from "path";
 import * as fs from "fs-extra";
 
@@ -78,14 +77,12 @@ describe("Deploy Manager", () => {
 
   describe("Test zipAFolder", () => {
     let testDir = "";
-    const sandbox = sinon.createSandbox();
     beforeEach(async () => {
       testDir = path.join(__dirname, utils.genUUID());
       await fs.ensureDir(testDir);
     });
 
     afterEach(async () => {
-      sandbox.restore();
       await fs.remove(testDir);
     });
 

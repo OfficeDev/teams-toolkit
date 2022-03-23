@@ -192,12 +192,8 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
       this.config.provision.siteName!
     );
 
-    const publishingUserName = listResponse.publishingUserName
-      ? listResponse.publishingUserName
-      : "";
-    const publishingPassword = listResponse.publishingPassword
-      ? listResponse.publishingPassword
-      : "";
+    const publishingUserName = listResponse.publishingUserName ?? "";
+    const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {

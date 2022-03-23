@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -857,6 +857,22 @@
             }
           }
         }
+      },
+      {
+        "title": "Experimental Features",
+        "order": 3,
+        "properties": {
+          "fx-extension.unifyConfigs": {
+            "type": "boolean",
+            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.enableInitApp": {
+            "type": "boolean",
+            "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
+            "default": false
+          }
+        }
       }
     ],
     "languages": [
@@ -883,7 +899,7 @@
           {
             "id": "teamsToolkitEnvironment",
             "title": "Get your environment ready",
-            "description": "Teams Toolkit requires several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
+            "description": "Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
             "media": {
               "svg": "media/Prerequisites.svg",
               "altText": "Get your environment ready"
@@ -979,6 +995,7 @@
     "@types/tmp": "^0.2.0",
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
+    "@types/validator": "^13.1.1",
     "@types/vscode": "^1.58.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -1042,8 +1059,8 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.16.0",
-    "@microsoft/teamsfx-core": "^1.5.0",
+    "@microsoft/teamsfx-api": "^0.17.0",
+    "@microsoft/teamsfx-core": "^1.6.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "ajv": "^8.5.0",
@@ -1051,11 +1068,13 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",
+    "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
+    "validator": "^13.7.0",
     "vscode-extension-telemetry": "^0.2.9",
     "vscode-tas-client": "^0.1.22",
     "vscode-test": "^1.5.2"

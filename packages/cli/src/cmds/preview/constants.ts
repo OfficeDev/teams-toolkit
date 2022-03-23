@@ -35,10 +35,18 @@ export const remoteTeamsAppIdConfigKey = "teamsAppId";
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
-export const backendWatchPattern = /.*/g;
+// From vscode $tsc-watch problem matcher: https://github.com/microsoft/vscode/blob/5a0ab56492d0c99f08028ca62ac3d59edb37f30f/extensions/typescript-language-features/package.json#L1085
+export const tscWatchPattern =
+  /^\s*(?:message TS6042:|\[?\D*\d{1,2}[:.]\d{1,2}[:.]\d{1,2}\D*(├\D*\d{1,2}\D+┤)?(?:\]| -)) (?:Compilation complete\.|Found \d+ errors?\.) Watching for file changes\./g;
+// make a copy to prevent accidental change
+export const backendWatchPattern = new RegExp(tscWatchPattern);
+export const funcHostedBotWatchPattern = new RegExp(tscWatchPattern);
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
+export const funcHostedBotStartPattern =
+  /Worker process started and initialized|Host lock lease acquired by instance ID/g;
+export const funcHostedBotAzuritePattern = /successfully listening/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
 export const spfxInstallStartMessage = `executing 'npm install' under ${FolderName.SPFx} folder.`;
@@ -60,6 +68,8 @@ export const backendWatchStartMessageNext = `executing 'npm run watch:teamsfx' u
 export const botInstallStartMessage = `executing 'npm install' under ${FolderName.Bot} folder.`;
 export const botStartStartMessage = "starting bot.";
 export const botStartStartMessageNext = `executing 'npm run dev:teamsfx' under ${FolderName.Bot} folder.`;
+export const botWatchStartMessage = `executing 'npm run watch:teamsfx' under ${FolderName.Bot} folder.`;
+export const botAzuriteStartMessage = `executing 'npm run prepare-storage:teamsfx' under ${FolderName.Bot} folder.`;
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
 
 export const previewTitle = "preview";

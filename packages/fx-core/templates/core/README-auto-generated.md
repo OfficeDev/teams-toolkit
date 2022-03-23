@@ -8,7 +8,7 @@ After initializing the project, you can view the project folders and files in th
 |- | -|
 |`.fx/configs/config.local.json`| Configuration file for local environment |
 |`.fx/configs/config.dev.json`| Configuration file for dev environment |
-|`.fx/configs/projectSettings.json`| Global project settings , which apply to all environments |
+|`.fx/configs/projectSettings.json`| Global project settings, which apply to all environments |
 |`templates/appPackage/manifest.template.json`|Teams app manifest template|
 |`templates/appPackage/resources`|Teams app's icon referenced by manifest template|
 

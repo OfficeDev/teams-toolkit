@@ -364,6 +364,26 @@ export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
   },
 ];
 
+export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE: IBot[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [
+          {
+            title: "helloWorld",
+            description: "A helloworld command to send a welcome message",
+          },
+        ],
+      },
+    ],
+  },
+];
+
 export const BOTS_TPL_EXISTING_APP: IBot[] = [
   {
     botId: "{{config.manifest.botId}}",

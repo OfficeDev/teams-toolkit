@@ -15,10 +15,13 @@ import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
 import sinon from "sinon";
 import {
+  AzureSolutionQuestionNames,
+  BotScenario,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import {
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
@@ -33,9 +36,15 @@ import * as commonTools from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
+import { getManifestTemplatePath } from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
+import { createManifest } from "../../../../../src/plugins/resource/appstudio/plugin";
 
 function getRemoteManifestPath(projectRoot: string): string {
   return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
+}
+
+function getManifestConsolidatePath(projectRoot: string): string {
+  return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
 }
 
 describe("Scaffold", () => {
@@ -264,6 +273,56 @@ describe("Scaffold", () => {
       .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
       .to.deep.equal([]);
     chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+      )
+    ).to.be.true;
+  });
+
+  it("should generate manifest for command and response bot", async () => {
+    sandbox.stub(process, "env").value({
+      TEAMSFX_CONFIG_UNIFY: "true",
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    fileContent.clear();
+
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+    if (ctx.answers) {
+      ctx.answers[AzureSolutionQuestionNames.Scenario] = BotScenario.CommandAndResponseBot;
+    }
+
+    const result = await plugin.scaffold(ctx);
+    chai.expect(result.isOk()).equals(true);
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+    );
+    chai
+      .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
+      .to.deep.equal([]);
+    chai
+      .expect(
+        manifest.configurableTabs,
+        "configurableTabs should be empty, because only bot is chosen"
+      )
+      .to.deep.equal([]);
+    chai
+      .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
+      .to.deep.equal(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
 
     chai.expect(
       fileContent.has(

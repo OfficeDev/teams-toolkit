@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@azure/identity';
+import { Activity } from 'botbuilder-core';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import { BotFrameworkAdapter } from 'botbuilder';
 import { ChannelInfo } from 'botbuilder';
@@ -18,6 +19,7 @@ import { GetTokenOptions } from '@azure/identity';
 import { TeamsChannelAccount } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
+import { TurnContext } from 'botbuilder-core';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -37,18 +39,6 @@ export interface AuthenticationConfiguration {
 }
 
 // @beta
-export class BotNotification {
-    static initialize(adapter: BotFrameworkAdapter, options?: BotNotificationOptions): void;
-    static installations(): Promise<TeamsBotInstallation[]>;
-}
-
-// @beta
-export interface BotNotificationOptions {
-    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
-    storage?: NotificationTargetStorage;
-}
-
-// @beta
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
@@ -56,6 +46,21 @@ export class Channel implements NotificationTarget {
     sendAdaptiveCard(card: unknown): Promise<void>;
     sendMessage(text: string): Promise<void>;
     readonly type: NotificationTargetType;
+}
+
+// @beta
+export class ConversationBot {
+    static initialize(adapter: BotFrameworkAdapter, options?: ConversationOptions): void;
+    static installations(): Promise<TeamsBotInstallation[]>;
+}
+
+// @beta
+export interface ConversationOptions {
+    // Warning: (ae-forgotten-export) The symbol "TeamsFxBotCommandHandler" needs to be exported by the entry point index.d.ts
+    commandHandlers?: TeamsFxBotCommandHandler[];
+    enableNotification?: boolean;
+    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
+    storage?: NotificationTargetStorage;
 }
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts

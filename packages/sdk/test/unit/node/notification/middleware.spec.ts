@@ -2,13 +2,56 @@ import { ConversationReference, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import { NotificationMiddleware } from "../../../../src/notification/middleware";
+import {
+  CommandResponseMiddleware,
+  NotificationMiddleware,
+} from "../../../../src/notification/middleware";
 import { ConversationReferenceStore } from "../../../../src/notification/storage";
-import { TestStorage } from "./testUtils";
+import {
+  MockContext,
+  TestCommandHandler,
+  TestRegExpCommandHandler,
+  TestStorage,
+} from "./testUtils";
 
 chaiUse(chaiPromises);
 
-describe("Notification.Middleware Tests - Node", () => {
+describe("CommandResponse Middleware Tests - Node", () => {
+  it("onTurn should correctly handle command if name equals", async () => {
+    const testContext = new MockContext("test");
+
+    const testCommandHandler = new TestCommandHandler();
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+  });
+
+  it("onTurn should correctly handle command if pattern matches", async () => {
+    const testContext = new MockContext("test op1,op2");
+
+    const testCommandHandler = new TestRegExpCommandHandler();
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+  });
+
+  it("onTurn should skip handling command if the text is not acceptable ", async () => {
+    const testContext = new MockContext("invalid input");
+
+    const testCommandHandler = new TestRegExpCommandHandler();
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isFalse(testCommandHandler.isInvoked);
+  });
+});
+
+describe("Notification Middleware Tests - Node", () => {
   const sandbox = sinon.createSandbox();
   const testStorage = new TestStorage();
   const middleware = new NotificationMiddleware({

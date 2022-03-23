@@ -32,8 +32,6 @@ export { IdentityType } from "./models/identityType";
 
 export { NotificationTarget, NotificationTargetType } from "./notification/interface";
 export {
-  BotNotification,
-  BotNotificationOptions,
   Channel,
   IncomingWebhookTarget,
   Member,
@@ -41,3 +39,4 @@ export {
   sendMessage,
   TeamsBotInstallation,
 } from "./notification/notification";
+export { ConversationBot, ConversationOptions } from "./notification/conversation";

@@ -9,8 +9,7 @@ import {
 } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
-import { NotificationTarget, NotificationTargetStorage, NotificationTargetType } from "./interface";
-import { ConversationReferenceStore } from "./storage";
+import { NotificationTarget, NotificationTargetType } from "./interface";
 
 /**
  * Send a plain text message to a notification target.
@@ -255,7 +254,7 @@ export class Member implements NotificationTarget {
  * @remarks
  * Only work on server side.
  *
- * It's recommended to get bot installations from {@link BotNotification.installations()}.
+ * It's recommended to get bot installations from {@link ConversationBot.installations()}.
  *
  * @beta
  */
@@ -299,7 +298,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * It's recommended to get bot installations from {@link BotNotification.installations()}, instead of using this constructor.
+   * It's recommended to get bot installations from {@link ConversationBot.installations()}, instead of using this constructor.
    *
    * @param adapter - the bound `BotFrameworkAdapter`.
    * @param conversationReference - the bound `ConversationReference`.
@@ -469,105 +468,6 @@ export class IncomingWebhookTarget implements NotificationTarget {
   public sendAdaptiveCard(card: unknown): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "IncomingWebhookTarget"),
-      ErrorCode.RuntimeNotSupported
-    );
-  }
-}
-
-/**
- * Options to initialize {@link BotNotification}.
- *
- * @remarks
- * Only work on server side.
- *
- * @beta
- */
-export interface BotNotificationOptions {
-  /**
-   * An optional storage to persist bot notification connections.
-   *
-   * @remarks
-   * Only work on server side.
-   *
-   * If `storage` is not provided, a default local file storage will be used,
-   * which stores notification connections into:
-   *   - ".notification.localstore.json" if running locally
-   *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
-   *
-   * It's recommended to use your own shared storage for production environment.
-   *
-   * @beta
-   */
-  storage?: NotificationTargetStorage;
-}
-
-/**
- * Provide static utilities for bot notification.
- *
- * @remarks
- * Only work on server side.
- *
- * @example
- * Here's an example on how to send notification via Teams Bot.
- * ```typescript
- * // initialize (it's recommended to be called before handling any bot message)
- * BotNotification.initialize(adapter);
- *
- * // get all bot installations and send message
- * for (const target of await BotNotification.installations()) {
- *   await target.sendMessage("Hello Notification");
- * }
- *
- * // alternative - send message to all members
- * for (const target of await BotNotification.installations()) {
- *   for (const member of await target.members()) {
- *     await member.sendMessage("Hello Notification");
- *   }
- * }
- * ```
- *
- * @beta
- */
-export class BotNotification {
-  private static readonly conversationReferenceStoreKey = "teamfx-notification-targets";
-  private static conversationReferenceStore: ConversationReferenceStore;
-  private static adapter: BotFrameworkAdapter;
-
-  /**
-   * Initialize bot notification.
-   *
-   * @remarks
-   * Only work on server side.
-   *
-   * To ensure accuracy, it's recommended to initialize before handling any message.
-   *
-   * @param adapter - the bound `BotFrameworkAdapter`
-   * @param options - initialize options
-   *
-   * @beta
-   */
-  public static initialize(adapter: BotFrameworkAdapter, options?: BotNotificationOptions) {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotNotification"),
-      ErrorCode.RuntimeNotSupported
-    );
-  }
-
-  /**
-   * Get all targets where the bot is installed.
-   *
-   * @remarks
-   * Only work on server side.
-   *
-   * The result is retrieving from the persisted storage.
-   *
-   * @returns - an array of {@link TeamsBotInstallation}.
-   *
-   * @beta
-   */
-  public static async installations(): Promise<TeamsBotInstallation[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotNotification"),
       ErrorCode.RuntimeNotSupported
     );
   }

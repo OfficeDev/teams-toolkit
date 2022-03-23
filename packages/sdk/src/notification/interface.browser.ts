@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Activity, TurnContext } from "botbuilder";
+
 /**
  * The target type where the notification will be sent to.
  *
@@ -117,4 +119,31 @@ export interface NotificationTargetStorage {
    * @beta
    */
   delete(key: string): Promise<void>;
+}
+
+/**
+ * Interface for a command handler thar can process command to a TeamsFx bot and return a response.
+ *
+ * @remarks
+ * Only work on server side.
+ *
+ * @beta
+ */
+export interface TeamsFxBotCommandHandler {
+  /**
+   * The command name or RegExp pattern that can trigger this handler.
+   */
+  commandNameOrPattern: string | RegExp;
+
+  /**
+   * Handles a bot command received activity.
+   *
+   * @param context The bot context.
+   * @param receivedText The command text the user types from Teams.
+   * @returns A `Promise` representing an activity or text to send as the command response.
+   */
+  handleCommandReceived(
+    context: TurnContext,
+    receivedText: string
+  ): Promise<string | Partial<Activity>>;
 }

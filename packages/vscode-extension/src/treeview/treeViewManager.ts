@@ -17,10 +17,23 @@ class TreeViewManager {
   private static instance: TreeViewManager;
   private treeviewMap: Map<string, any>;
   private commandMap: Map<string, TreeViewCommand>;
+  private exclusiveCommands: string[];
 
   private constructor() {
     this.treeviewMap = new Map();
     this.commandMap = new Map<string, TreeViewCommand>();
+    this.exclusiveCommands = [
+      "fx-extension.create",
+      "fx-extension.addCapability",
+      "fx-extension.update",
+      "fx-extension.openManifest",
+      "fx-extension.OpenAdaptiveCardExt",
+      "fx-extension.provision",
+      "fx-extension.build",
+      "fx-extension.deploy",
+      "fx-extension.publish",
+      "fx-extension.addCICDWorkflows",
+    ];
   }
 
   public static getInstance() {
@@ -59,19 +72,6 @@ class TreeViewManager {
     const isNonSPFx = (workspacePath && !(await isSPFxProject(workspacePath))) as boolean;
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
-    this.registerDevelopment(developmentCommands, disposables);
-    this.registerDeployment(disposables);
-    this.registerHelper(disposables);
-
-    return disposables;
-  }
-
-  private async registerTreeViewsForNonTeamsFxProject() {
-    const disposables: vscode.Disposable[] = [];
-
-    this.registerAccount(disposables);
-    this.registerEnvironment(disposables);
-    const developmentCommands = this.getDevelopmentCommands(false, false);
     this.registerDevelopment(developmentCommands, disposables);
     this.registerDeployment(disposables);
     this.registerHelper(disposables);
@@ -344,6 +344,19 @@ class TreeViewManager {
         this.commandMap.set(command.commandId, command);
       }
     }
+  }
+
+  private async registerTreeViewsForNonTeamsFxProject() {
+    const disposables: vscode.Disposable[] = [];
+
+    this.registerAccount(disposables);
+    this.registerEnvironment(disposables);
+    const developmentCommands = this.getDevelopmentCommands(false, false);
+    this.registerDevelopment(developmentCommands, disposables);
+    this.registerDeployment(disposables);
+    this.registerHelper(disposables);
+
+    return disposables;
   }
 }
 

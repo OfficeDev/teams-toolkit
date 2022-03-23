@@ -32,7 +32,7 @@ export async function automaticNpmInstallHandler(
   excludeBot: boolean
 ): Promise<void> {
   try {
-    const state = globalStateGet("automaticNpmInstall", false);
+    const state = await globalStateGet("automaticNpmInstall", false);
     if (state) {
       globalStateUpdate("automaticNpmInstall", false);
       const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);

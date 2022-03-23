@@ -55,7 +55,7 @@ export class ExtensionSurvey {
   public async activate(): Promise<void> {
     if (TreatmentVariableValue.isEmbeddedSurvey) {
       if (this.needToShow) {
-        if (!this.shouldShowBanner()) {
+        if (!(await this.shouldShowBanner())) {
           return;
         }
 
@@ -65,8 +65,8 @@ export class ExtensionSurvey {
       }
     } else {
       if (this.needToShow && !this.checkSurveyInterval) {
-        this.checkSurveyInterval = setInterval(() => {
-          if (!this.shouldShowBanner()) {
+        this.checkSurveyInterval = setInterval(async () => {
+          if (!(await this.shouldShowBanner())) {
             return;
           }
 
@@ -78,19 +78,22 @@ export class ExtensionSurvey {
     }
   }
 
-  private shouldShowBanner(): boolean {
-    const doNotShowAgain = globalStateGet(ExtensionSurveyStateKeys.DoNotShowAgain, false);
+  private async shouldShowBanner(): Promise<boolean> {
+    const doNotShowAgain = await globalStateGet(ExtensionSurveyStateKeys.DoNotShowAgain, false);
     if (doNotShowAgain) {
       return false;
     }
 
     const currentTime = Date.now();
-    const remindMeLaterTime = globalStateGet(ExtensionSurveyStateKeys.RemindMeLater, 0);
+    const remindMeLaterTime = await globalStateGet(ExtensionSurveyStateKeys.RemindMeLater, 0);
     if (remindMeLaterTime > currentTime) {
       return false;
     }
 
-    const disableSurveyForTime = globalStateGet(ExtensionSurveyStateKeys.DisableSurveyForTime, 0);
+    const disableSurveyForTime = await globalStateGet(
+      ExtensionSurveyStateKeys.DisableSurveyForTime,
+      0
+    );
     if (disableSurveyForTime > currentTime) {
       return false;
     }

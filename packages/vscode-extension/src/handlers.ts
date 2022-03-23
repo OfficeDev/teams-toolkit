@@ -1321,9 +1321,9 @@ function getTriggerFromProperty(args?: any[]) {
 }
 
 async function autoOpenProjectHandler(): Promise<void> {
-  const isOpenWalkThrough = globalStateGet(GlobalKey.OpenWalkThrough, false);
-  const isOpenReadMe = globalStateGet(GlobalKey.OpenReadMe, false);
-  const isOpenSampleReadMe = globalStateGet(GlobalKey.OpenSampleReadMe, false);
+  const isOpenWalkThrough = await globalStateGet(GlobalKey.OpenWalkThrough, false);
+  const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, false);
+  const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
     showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
@@ -1426,7 +1426,7 @@ async function postUpgrade(): Promise<void> {
 
 async function popupAfterUpgrade(): Promise<void> {
   const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
-  const aadClientSecret = globalStateGet(aadClientSecretFlag, "");
+  const aadClientSecret = await globalStateGet(aadClientSecretFlag, "");
   if (
     aadClientSecret !== "" &&
     workspace.workspaceFolders &&
@@ -1460,7 +1460,7 @@ async function popupAfterUpgrade(): Promise<void> {
 async function openUpgradeChangeLogsHandler() {
   const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
   if (
-    globalStateGet(openUpgradeChangelogsFlag, false) &&
+    (await globalStateGet(openUpgradeChangelogsFlag, false)) &&
     workspace.workspaceFolders &&
     workspace.workspaceFolders.length > 0
   ) {
@@ -1505,7 +1505,7 @@ async function openSampleReadmeHandler(args?: any) {
 }
 
 async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
+  const isShowLocalDebugMessage = await globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
 
   if (!isShowLocalDebugMessage) {
     return;

@@ -5,7 +5,7 @@ import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
-import { getTeamsAppInternalId } from "./teamsAppInstallation";
+import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 import { showError } from "../handlers";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
@@ -90,6 +90,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           // The user cancels env selection.
           // Returning the value 'undefined' prevents the debug session from starting.
           return undefined;
+        }
+
+        if (isM365SideloadingConfiguration) {
+          const shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
+          if (!shouldContinue) {
+            return undefined;
+          }
         }
 
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry

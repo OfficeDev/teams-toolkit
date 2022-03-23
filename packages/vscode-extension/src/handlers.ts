@@ -1143,7 +1143,17 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    shouldContinue = await showInstallAppInTeamsMessage(false);
+    const debugConfig = isConfigUnifyEnabled()
+      ? await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName())
+      : await commonUtils.getDebugConfig(true);
+    if (debugConfig?.appId === undefined) {
+      throw returnUserError(
+        new Error("Debug config not found"),
+        ExtensionSource,
+        ExtensionErrors.GetTeamsAppInstallationFailed
+      );
+    }
+    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
   } catch (error: any) {
     showError(error);
   }

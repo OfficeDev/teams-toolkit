@@ -826,7 +826,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    chai.assert.strictEqual(error.name, "FailedToGetEnvironmentName");
     chai.assert.strictEqual(
       error.message,
       "Failed to get target environment name from solution context."
@@ -893,7 +893,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const returnedError = result._unsafeUnwrapErr() as UserError;
-    chai.assert.isNotNull(returnedError.notificationMessage);
+    chai.assert.isNotNull(returnedError.displayMessage);
 
     envRestore();
   });

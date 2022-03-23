@@ -229,4 +229,5 @@ export interface IServerFxError {
   timestamp: Date;
   helpLink?: string;
   issueLink?: string;
+  displayMessage?: string;
 }

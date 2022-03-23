@@ -32,7 +32,10 @@ export class CICDImpl {
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length === 0) {
-      throw new InternalError("Some preconditions of inputs are not met.");
+      throw new InternalError([
+        "Some preconditions of inputs are not met.",
+        "Some preconditions of inputs are not met.",
+      ]);
     }
 
     this.commonProperties = {

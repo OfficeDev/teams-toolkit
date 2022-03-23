@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { LogProvider, ProjectSettings, returnUserError } from "@microsoft/teamsfx-api";
+import { LogProvider, ProjectSettings, UserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 
@@ -41,7 +41,7 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
     sendTelemetryErrorEvent(
       Component.core,
       TelemetryEvent.DetectPort,
-      returnUserError(error, CoreSource, "DetectPortError")
+      new UserError({ error, source: CoreSource, name: "DetectPortError" })
     );
     logger?.warning(`Failed to detect port. ${error?.message} `);
     return false;

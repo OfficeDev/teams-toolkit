@@ -34,8 +34,6 @@ import {
   ok,
   Platform,
   Result,
-  returnSystemError,
-  returnUserError,
   SelectFileConfig,
   SelectFolderConfig,
   SharepointTokenProvider,
@@ -491,10 +489,10 @@ async function launch(
   progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
-    const error = returnUserError(
-      new Error(localize("teamstoolkit.handlers.teamsAppIdNotFound")),
+    const error = new UserError(
       ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError
+      ExtensionErrors.TeamsAppIdNotFoundError,
+      localize("teamstoolkit.handlers.teamsAppIdNotFound")
     );
     return err(error);
   }
@@ -786,9 +784,9 @@ export async function runCommand(
       }
       default:
         throw new SystemError(
+          ExtensionSource,
           ExtensionErrors.UnsupportedOperation,
-          util.format(localize("teamstoolkit.handlers.operationNotSupport"), stage),
-          ExtensionSource
+          util.format(localize("teamstoolkit.handlers.operationNotSupport"), stage)
         );
     }
   } catch (e) {
@@ -1015,16 +1013,18 @@ function wrapError(e: Error): Result<null, FxError> {
   ) {
     return err(e as FxError);
   }
-  return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError));
+  return err(
+    new SystemError({ error: e, source: ExtensionSource, name: ExtensionErrors.UnknwonError })
+  );
 }
 
 function checkCoreNotEmpty(): Result<null, SystemError> {
   if (!core) {
     return err(
-      returnSystemError(
-        new Error(localize("teamstoolkit.handlers.coreNotReady")),
+      new SystemError(
         ExtensionSource,
-        ExtensionErrors.UnsupportedOperation
+        ExtensionErrors.UnsupportedOperation,
+        localize("teamstoolkit.handlers.coreNotReady")
       )
     );
   }
@@ -1215,7 +1215,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     } else {
       message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
     }
-    const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
+    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
     const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
       [TelemetryProperty.DebugAppId]: localAppId,
@@ -1626,9 +1626,9 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       return ok(null);
     } else {
       const FxError = new SystemError(
+        ExtensionSource,
         "FileNotFound",
-        util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
       );
       showError(FxError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
@@ -1683,13 +1683,13 @@ export async function openSubscriptionInPortal(env: string): Promise<Result<Void
     return ok(Void);
   } else {
     const resourceInfoNotFoundError = new UserError(
+      ExtensionSource,
       ExtensionErrors.EnvResourceInfoNotFoundError,
       util.format(
         localize("teamstoolkit.handlers.resourceInfoNotFound"),
         ResourceInfo.Subscription,
         env
-      ),
-      ExtensionSource
+      )
     );
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.OpenSubscriptionInPortal,
@@ -1738,9 +1738,9 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
     }
 
     const resourceInfoNotFoundError = new UserError(
+      ExtensionSource,
       ExtensionErrors.EnvResourceInfoNotFoundError,
-      errorMessage,
-      ExtensionSource
+      errorMessage
     );
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.OpenSubscriptionInPortal,
@@ -1960,7 +1960,7 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  const notificationMessage = e.notificationMessage ?? e.message;
+  const notificationMessage = e.displayMessage ?? e.message;
 
   if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
@@ -2205,9 +2205,9 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     return ok(manifestFile);
   } else {
     const error = new SystemError(
+      ExtensionSource,
       "FileNotFound",
-      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile),
-      ExtensionSource
+      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
     );
     showError(error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
@@ -2219,9 +2219,9 @@ export async function openConfigStateFile(args: any[]) {
   const workspacePath = getWorkspacePath();
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
+      ExtensionSource,
       ExtensionErrors.NoWorkspaceError,
-      localize("teamstoolkit.handlers.noOpenWorkspace"),
-      ExtensionSource
+      localize("teamstoolkit.handlers.noOpenWorkspace")
     );
     showError(noOpenWorkspaceError);
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2233,9 +2233,9 @@ export async function openConfigStateFile(args: any[]) {
 
   if (!isValidProject(workspacePath)) {
     const invalidProjectError = new UserError(
+      ExtensionSource,
       ExtensionErrors.InvalidProject,
-      localize("teamstoolkit.handlers.invalidProject"),
-      ExtensionSource
+      localize("teamstoolkit.handlers.invalidProject")
     );
     showError(invalidProjectError);
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2276,18 +2276,18 @@ export async function openConfigStateFile(args: any[]) {
   if (!(await fs.pathExists(sourcePath))) {
     if (isConfig) {
       const noEnvError = new UserError(
+        ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
       return err(noEnvError);
     } else {
       const noEnvError = new UserError(
+        ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value),
-        ExtensionSource
+        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value)
       );
       const provision = {
         title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
@@ -2297,7 +2297,7 @@ export async function openConfigStateFile(args: any[]) {
       };
 
       const errorCode = `${noEnvError.source}.${noEnvError.name}`;
-      const notificationMessage = noEnvError.notificationMessage ?? noEnvError.message;
+      const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
       window
         .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
         .then((selection) => {
@@ -2483,10 +2483,10 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     true,
     localize("teamstoolkit.migrateTeamsTabApp.upgrade")
   );
-  const userCancelError = returnUserError(
-    new Error(ExtensionErrors.UserCancel),
-    localize("teamstoolkit.common.userCancel"),
-    ExtensionSource
+  const userCancelError = new UserError(
+    ExtensionSource,
+    ExtensionErrors.UserCancel,
+    localize("teamstoolkit.common.userCancel")
   );
   if (
     selection.isErr() ||
@@ -2594,10 +2594,10 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     true,
     localize("teamstoolkit.migrateTeamsManifest.upgrade")
   );
-  const userCancelError = returnUserError(
-    new Error(ExtensionErrors.UserCancel),
-    localize("teamstoolkit.common.userCancel"),
-    ExtensionSource
+  const userCancelError = new UserError(
+    ExtensionSource,
+    ExtensionErrors.UserCancel,
+    localize("teamstoolkit.common.userCancel")
   );
   if (
     selection.isErr() ||

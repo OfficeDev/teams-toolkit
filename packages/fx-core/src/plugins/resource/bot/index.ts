@@ -40,7 +40,7 @@ import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../co
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import { createHostTypeTriggerQuestion } from "./question";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -283,8 +283,13 @@ export class TeamsBot implements Plugin {
     if (e instanceof PluginError) {
       const result =
         e.errorType === ErrorType.SYSTEM
-          ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-          : ResultFactory.UserError(e.name, e.genMessage(), e.innerError, e.helpLink);
+          ? ResultFactory.SystemError(e.name, [e.genMessage(), e.genDisplayMessage()], e.innerError)
+          : ResultFactory.UserError(
+              e.name,
+              [e.genMessage(), e.genDisplayMessage()],
+              e.innerError,
+              e.helpLink
+            );
       sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
       return result;
     } else {
@@ -296,11 +301,14 @@ export class TeamsBot implements Plugin {
           name,
           ResultFactory.SystemError(
             UnhandledErrorCode,
-            getLocalizedString("plugins.bot.UnhandledError", errorMsg),
+            [
+              getDefaultString("plugins.bot.UnhandledError", errorMsg),
+              getLocalizedString("plugins.bot.UnhandledError", errorMsg),
+            ],
             isPluginError(e) ? e.innerError : undefined
           )
         );
-      return ResultFactory.SystemError(UnhandledErrorCode, errorMsg, innerError);
+      return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
     }
   }
 

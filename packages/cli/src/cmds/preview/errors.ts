@@ -3,39 +3,32 @@
 
 "use strict";
 
-import {
-  FxError,
-  returnSystemError,
-  returnUserError,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as util from "util";
-
 import * as constants from "../../constants";
 import { Browser } from "./constants";
 
 export function WorkspaceNotSupported(workspaceFolder: string): UserError {
-  return returnUserError(
-    new Error(`Workspace '${workspaceFolder}' is not supported.`),
+  return new UserError(
     constants.cliSource,
-    "WorkspaceNotSupported"
+    "WorkspaceNotSupported",
+    `Workspace '${workspaceFolder}' is not supported.`
   );
 }
 
 export function ExclusiveLocalRemoteOptions(): UserError {
-  return returnUserError(
-    new Error("Options --local and --remote are exclusive."),
+  return new UserError(
     constants.cliSource,
-    "ExclusiveLocalRemoteOptions"
+    "ExclusiveLocalRemoteOptions",
+    "Options --local and --remote are exclusive."
   );
 }
 
 export function RequiredPathNotExists(path: string): UserError {
-  return returnUserError(
-    new Error(`Required path '${path}' does not exist.`),
+  return new UserError(
     constants.cliSource,
-    "RequiredPathNotExists"
+    "RequiredPathNotExists",
+    `Required path '${path}' does not exist.`
   );
 }
 
@@ -44,10 +37,10 @@ export function TaskFailed(taskTitle: string): UserError {
   words = words.map((word) => {
     return word.charAt(0).toUpperCase() + word.slice(1);
   });
-  return returnUserError(
-    new Error(`Task '${taskTitle}' failed.`),
+  return new UserError(
     constants.cliSource,
-    `${words.join("")}Failed`
+    `${words.join("")}Failed`,
+    `Task '${taskTitle}' failed.`
   );
 }
 
@@ -55,19 +48,15 @@ export function PreviewCommandFailed(fxErrors: FxError[]): UserError {
   const errors = fxErrors.map((error) => {
     return `${error.source}.${error.name}`;
   });
-  return returnUserError(
-    new Error(`The preview command failed: ${errors.join(", ")}.`),
+  return new UserError(
     constants.cliSource,
-    "PreviewCommandFailed"
+    "PreviewCommandFailed",
+    `The preview command failed: ${errors.join(", ")}.`
   );
 }
 
 export function TeamsAppIdNotExists(): UserError {
-  return returnUserError(
-    new Error("Teams app id does not exists."),
-    constants.cliSource,
-    "TeamsAppIdNotExists"
-  );
+  return new UserError(constants.cliSource, "TeamsAppIdNotExists", "Teams app id does not exists.");
 }
 
 export function PortsAlreadyInUse(portsInUse: number[]): UserError {
@@ -78,64 +67,62 @@ export function PortsAlreadyInUse(portsInUse: number[]): UserError {
           portsInUse.join(", ")
         )
       : util.format("Port: %s is already in use. Close this port and try again.", portsInUse[0]);
-  return returnUserError(new Error(message), constants.cliSource, "PortsAlreadyInUse");
+  return new UserError(constants.cliSource, "PortsAlreadyInUse", message);
 }
 
 export function PreviewWithoutProvision(): UserError {
-  return returnUserError(
-    new Error("Provision and deploy commands are required before preview from remote."),
+  return new UserError(
     constants.cliSource,
-    "PreviewWithoutProvision"
+    "PreviewWithoutProvision",
+    "Provision and deploy commands are required before preview from remote."
   );
 }
 
 export function MissingProgrammingLanguageSetting(): UserError {
-  return returnUserError(
-    new Error("The programmingLanguage config is missing in project settings."),
+  return new UserError(
     constants.cliSource,
-    "MissingProgrammingLanguage"
+    "MissingProgrammingLanguage",
+    "The programmingLanguage config is missing in project settings."
   );
 }
 
 export function OpeningBrowserFailed(browser: Browser): UserError {
-  return returnUserError(
-    new Error(`Failed to open ${browser} browser. Check if ${browser} exists on your system.`),
+  return new UserError(
     constants.cliSource,
-    "OpeningBrowserFailed"
+    "OpeningBrowserFailed",
+    `Failed to open ${browser} browser. Check if ${browser} exists on your system.`
   );
 }
 
 export function NoUrlForSPFxRemotePreview(): UserError {
-  return returnUserError(
-    new Error(
-      "SPFx remote preview need your SharePoint site url, pls input sharepoint-site parameter."
-    ),
+  return new UserError(
     constants.cliSource,
-    "NoUrlForSPFxRemotePreview"
+    "NoUrlForSPFxRemotePreview",
+    "SPFx remote preview need your SharePoint site url, pls input sharepoint-site parameter."
   );
 }
 
 export function InvalidSharePointSiteURL(error: Error): UserError {
-  return returnUserError(new Error(error.message), constants.cliSource, "InvalidSharePointSiteURL");
+  return new UserError(constants.cliSource, "InvalidSharePointSiteURL", error.message);
 }
 
 export function DependencyCheckerFailed(): SystemError {
-  return returnSystemError(
-    new Error("dependency checker failed."),
+  return new SystemError(
     constants.cliSource,
-    "DependencyCheckerFailed"
+    "DependencyCheckerFailed",
+    "dependency checker failed."
   );
 }
 
 export function PrerequisitesValidationError(error: string | Error, helpLink?: string): UserError {
-  return returnUserError(
-    error instanceof Error ? error : new Error(error),
-    constants.cliSource,
-    "PrerequisitesValidationError",
-    helpLink
-  );
+  return new UserError({
+    source: constants.cliSource,
+    name: "PrerequisitesValidationError",
+    helpLink,
+    message: error instanceof Error ? error.message : (error as string),
+  });
 }
 
 export function NpmInstallFailed(): UserError {
-  return returnUserError(new Error("Npm install failed."), constants.cliSource, "NpmInstallFailed");
+  return new UserError(constants.cliSource, "NpmInstallFailed", "Npm install failed.");
 }

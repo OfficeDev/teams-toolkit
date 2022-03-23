@@ -1,41 +1,69 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export class Messages {
-  public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
-    getLocalizedString("plugins.bot.InvalidValue", something, value);
+  public static readonly SomethingIsInvalidWithValue = (
+    something: string,
+    value: string
+  ): [string, string] => [
+    getDefaultString("plugins.bot.InvalidValue", something, value),
+    getLocalizedString("plugins.bot.InvalidValue", something, value),
+  ];
   public static readonly InputValidValueForSomething = (something: string): string =>
     getLocalizedString("plugins.bot.SelectValidValues", something);
-  public static readonly SomethingIsMissing = (something: string): string =>
-    getLocalizedString("plugins.bot.SomethingIsMissing", something);
-  public static readonly SomethingIsNotFound = (something: string): string =>
-    getLocalizedString("plugins.bot.SomethingNotFound", something);
-  public static readonly SomethingIsNotExisting = (something: string): string =>
-    getLocalizedString("plugins.bot.SomethingNotExisting", something);
-  public static readonly FailToCreateSomeClient = (clientName: string): string =>
-    getLocalizedString("plugins.bot.FailedToCreate", clientName);
-  public static readonly FailToProvisionSomeResource = (resource: string): string =>
-    getLocalizedString("plugins.bot.FailedToProvision", resource);
-  public static readonly FailToUpdateConfigs = (something: string): string =>
-    getLocalizedString("plugins.bot.FailedToUpdateConfigs", something);
-  public static readonly FailToListPublishingCredentials = getLocalizedString(
-    "plugins.bot.FailedListPublishingCredentials"
-  );
-  public static readonly FailToDoZipDeploy = getLocalizedString("plugins.bot.FailedDeployZipFile");
-  public static readonly FailToUpdateMessageEndpoint = (endpoint: string): string =>
-    getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);
-  public static readonly FailToDownloadFrom = (url: string): string =>
-    getLocalizedString("plugins.bot.DownloadFail", url);
+  public static readonly SomethingIsMissing = (something: string): [string, string] => [
+    getDefaultString("plugins.bot.SomethingIsMissing", something),
+    getLocalizedString("plugins.bot.SomethingIsMissing", something),
+  ];
+  public static readonly SomethingIsNotFound = (something: string): [string, string] => [
+    getLocalizedString("plugins.bot.SomethingNotFound", something),
+    getLocalizedString("plugins.bot.SomethingNotFound", something),
+  ];
+  public static readonly SomethingIsNotExisting = (something: string): [string, string] => [
+    getDefaultString("plugins.bot.SomethingNotExisting", something),
+    getLocalizedString("plugins.bot.SomethingNotExisting", something),
+  ];
+  public static readonly FailToCreateSomeClient = (clientName: string): [string, string] => [
+    getDefaultString("plugins.bot.FailedToCreate", clientName),
+    getLocalizedString("plugins.bot.FailedToCreate", clientName),
+  ];
+  public static readonly FailToProvisionSomeResource = (resource: string): [string, string] => [
+    getDefaultString("plugins.bot.FailedToProvision", resource),
+    getLocalizedString("plugins.bot.FailedToProvision", resource),
+  ];
+  public static readonly FailToUpdateConfigs = (something: string): [string, string] => [
+    getDefaultString("plugins.bot.FailedToUpdateConfigs", something),
+    getLocalizedString("plugins.bot.FailedToUpdateConfigs", something),
+  ];
+  public static readonly FailToListPublishingCredentials: [string, string] = [
+    getDefaultString("plugins.bot.FailedListPublishingCredentials"),
+    getLocalizedString("plugins.bot.FailedListPublishingCredentials"),
+  ];
+  public static readonly FailToDoZipDeploy: [string, string] = [
+    getDefaultString("plugins.bot.FailedDeployZipFile"),
+    getLocalizedString("plugins.bot.FailedDeployZipFile"),
+  ];
+  public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] => [
+    getDefaultString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
+    getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
+  ];
+  public static readonly FailToDownloadFrom = (url: string): [string, string] => [
+    getDefaultString("plugins.bot.DownloadFail", url),
+    getLocalizedString("plugins.bot.DownloadFail", url),
+  ];
   public static readonly ClickHelpButtonForDetails = getLocalizedString("plugins.bot.ClickGetHelp");
-  public static readonly CommandExecutionFailed = (command: string): string =>
-    getLocalizedString("plugins.bot.FailToRun", command);
+  public static readonly CommandExecutionFailed = (command: string): [string, string] => [
+    getDefaultString("plugins.bot.FailToRun", command),
+    getLocalizedString("plugins.bot.FailToRun", command),
+  ];
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
     getLocalizedString("plugins.bot.PerformCommand", sth, beforeSth);
-  public static readonly FailToCallAppStudioForCheckingAADApp = getLocalizedString(
-    "plugins.bot.FailToCallAppStudioApi"
-  );
+  public static readonly FailToCallAppStudioForCheckingAADApp = [
+    getDefaultString("plugins.bot.FailToCallAppStudioApi"),
+    getLocalizedString("plugins.bot.FailToCallAppStudioApi"),
+  ];
   public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string =>
     getLocalizedString("plugins.bot.SuccessfullyRetrievedZip", zipUrl);
   public static readonly FallingBackToUseLocalTemplateZip = getLocalizedString(
@@ -46,10 +74,14 @@ export class Messages {
   public static readonly BotResourceExist = (where: string): string =>
     getLocalizedString("plugins.bot.BotResourceExists", where);
 
-  public static readonly WorkingDirIsMissing = getLocalizedString("plugins.bot.WorkingDirMissing");
-  public static readonly FailToGetAzureCreds = getLocalizedString(
-    "plugins.bot.FailRetrieveAzureCredentials"
-  );
+  public static readonly WorkingDirIsMissing: [string, string] = [
+    getDefaultString("plugins.bot.WorkingDirMissing"),
+    getLocalizedString("plugins.bot.WorkingDirMissing"),
+  ];
+  public static readonly FailToGetAzureCreds: [string, string] = [
+    getDefaultString("plugins.bot.FailRetrieveAzureCredentials"),
+    getLocalizedString("plugins.bot.FailRetrieveAzureCredentials"),
+  ];
   public static readonly TryLoginAzure = getLocalizedString("plugins.bot.LoginToAzure");
   public static readonly SkipDeployNoUpdates = getLocalizedString("plugins.bot.SkipDeployment");
 
@@ -101,9 +133,10 @@ export class Messages {
     "plugins.bot.ProvisionBotRegistrationSuccess"
   );
 
-  public static readonly TheSubsNotRegisterToUseBotService = getLocalizedString(
-    "plugins.bot.SubscriptionNoRegister"
-  );
+  public static readonly TheSubsNotRegisterToUseBotService = [
+    getDefaultString("plugins.bot.SubscriptionNoRegister"),
+    getLocalizedString("plugins.bot.SubscriptionNoRegister"),
+  ];
 
   // Suggestions
   public static readonly RetryTheCurrentStep = getLocalizedString("plugins.bot.RetryCurrent");
@@ -111,7 +144,10 @@ export class Messages {
     "plugins.bot.RegisterSubscription"
   );
   public static readonly RecoverConfig = getLocalizedString("plugins.bot.RecoverConfig");
-  public static readonly RecreateTheProject = getLocalizedString("plugins.bot.RecreateProject");
+  public static readonly RecreateTheProject: [string, string] = [
+    getDefaultString("plugins.bot.RecreateProject"),
+    getLocalizedString("plugins.bot.RecreateProject"),
+  ];
   public static readonly CheckCommandOutputAndTryToFixIt = getLocalizedString(
     "plugins.bot.CheckCommandOutput"
   );

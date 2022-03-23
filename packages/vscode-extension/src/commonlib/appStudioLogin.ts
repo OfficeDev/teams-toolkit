@@ -103,9 +103,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
             [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.appStudioLogin.loginCancel"),
-            "Login"
+            localize("teamstoolkit.appStudioLogin.loginCancel")
           );
         }
         AppStudioLogin.codeFlowInstance.status = loggingIn;
@@ -159,9 +159,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
       });
       throw new UserError(
+        "SignOut",
         ExtensionErrors.UserCancel,
-        localize("teamstoolkit.common.userCancel"),
-        "SignOut"
+        localize("teamstoolkit.common.userCancel")
       );
     }
     await AppStudioLogin.codeFlowInstance.logout();

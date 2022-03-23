@@ -101,7 +101,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, CreateAppError.message());
+        chai.assert.equal(error.message, CreateAppError.message()[0]);
       }
     });
 
@@ -119,7 +119,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, CreateAppError.message());
+        chai.assert.equal(error.message, CreateAppError.message()[0]);
       }
     });
   });
@@ -167,7 +167,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, CreateSecretError.message());
+        chai.assert.equal(error.message, CreateSecretError.message()[0]);
       }
     });
 
@@ -185,7 +185,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, CreateSecretError.message());
+        chai.assert.equal(error.message, CreateSecretError.message()[0]);
       }
     });
   });
@@ -241,7 +241,7 @@ describe("AAD App Client Test", () => {
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, UpdateRedirectUriError.message());
+        chai.assert.equal(error.message, UpdateRedirectUriError.message()[0]);
       }
     });
 
@@ -269,7 +269,7 @@ describe("AAD App Client Test", () => {
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, UpdateRedirectUriError.message());
+        chai.assert.equal(error.message, UpdateRedirectUriError.message()[0]);
       }
     });
   });
@@ -309,7 +309,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, UpdateAppIdUriError.message());
+        chai.assert.equal(error.message, UpdateAppIdUriError.message()[0]);
       }
     });
 
@@ -329,7 +329,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, UpdateAppIdUriError.message());
+        chai.assert.equal(error.message, UpdateAppIdUriError.message()[0]);
       }
     });
   });
@@ -369,7 +369,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, UpdatePermissionError.message());
+        chai.assert.equal(error.message, UpdatePermissionError.message()[0]);
       }
     });
 
@@ -389,7 +389,7 @@ describe("AAD App Client Test", () => {
         await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, UpdatePermissionError.message());
+        chai.assert.equal(error.message, UpdatePermissionError.message()[0]);
       }
     });
   });
@@ -509,7 +509,7 @@ describe("AAD App Client Test", () => {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(
           error.message,
-          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
+          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)[0]
         );
       }
     });
@@ -539,7 +539,7 @@ describe("AAD App Client Test", () => {
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName)[0]);
       }
     });
 
@@ -568,7 +568,7 @@ describe("AAD App Client Test", () => {
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName)[0]);
       }
     });
   });

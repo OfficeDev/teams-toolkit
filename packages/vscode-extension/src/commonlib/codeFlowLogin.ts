@@ -7,11 +7,10 @@ import * as vscode from "vscode";
 import { PublicClientApplication, AccountInfo, Configuration, TokenCache } from "@azure/msal-node";
 import * as express from "express";
 import * as http from "http";
-import * as https from "https";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { UserError, returnUserError } from "@microsoft/teamsfx-api";
+import { UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -137,7 +136,7 @@ export class CodeFlowLogin {
           this.status = loggedOut;
           VsCodeLogInstance.error("[Login] " + error.message);
           deferredRedirect.reject(
-            new UserError(error, localize("teamstoolkit.codeFlowLogin.loginComponent"))
+            new UserError({ error, source: localize("teamstoolkit.codeFlowLogin.loginComponent") })
           );
           res.status(500).send(error);
         });
@@ -150,10 +149,10 @@ export class CodeFlowLogin {
         this.status = loggedOut;
       }
       deferredRedirect.reject(
-        returnUserError(
-          new Error(localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")),
+        new UserError(
           localize("teamstoolkit.codeFlowLogin.loginComponent"),
-          localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle")
+          localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+          localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
         )
       );
     }, 5 * 60 * 1000); // keep the same as azure login
@@ -292,10 +291,10 @@ export class CodeFlowLogin {
     );
     const portTimer = setTimeout(() => {
       defferedPort.reject(
-        returnUserError(
-          new Error(localize("teamstoolkit.codeFlowLogin.loginPortConflictDescription")),
+        new UserError(
           localize("teamstoolkit.codeFlowLogin.loginComponent"),
-          localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
+          localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle"),
+          localize("teamstoolkit.codeFlowLogin.loginPortConflictDescription")
         )
       );
     }, 5000);
@@ -335,25 +334,21 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
 }
 
 export function LoginFailureError(innerError?: any): UserError {
-  return new UserError(
-    localize("teamstoolkit.codeFlowLogin.loginFailureTitle"),
-    localize("teamstoolkit.codeFlowLogin.loginFailureDescription"),
-    "Login",
-    new Error().stack,
-    undefined,
-    innerError
-  );
+  return new UserError({
+    name: localize("teamstoolkit.codeFlowLogin.loginFailureTitle"),
+    message: localize("teamstoolkit.codeFlowLogin.loginFailureDescription"),
+    source: "Login",
+    error: innerError,
+  });
 }
 
 export function LoginCodeFlowError(innerError?: any): UserError {
-  return new UserError(
-    localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle"),
-    localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
-    localize("teamstoolkit.codeFlowLogin.loginComponent"),
-    new Error().stack,
-    undefined,
-    innerError
-  );
+  return new UserError({
+    name: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle"),
+    message: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
+    source: localize("teamstoolkit.codeFlowLogin.loginComponent"),
+    error: innerError,
+  });
 }
 
 export function ConvertTokenToJson(token: string): object {

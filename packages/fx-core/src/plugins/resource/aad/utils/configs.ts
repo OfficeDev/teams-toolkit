@@ -263,7 +263,7 @@ export class ProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError)
+        GetConfigError.message(Errors.GetDisplayNameError[0])
       );
     }
     const permissionRes = await getPermissionRequest(inputs.projectPath);
@@ -292,7 +292,7 @@ export class ProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError)
+        GetConfigError.message(Errors.GetDisplayNameError[0])
       );
     }
     const permissionRes = await getPermissionRequest(inputs.projectPath);
@@ -318,7 +318,7 @@ export class ProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError)
+        GetConfigError.message(Errors.GetDisplayNameError[0])
       );
     }
 
@@ -455,7 +455,7 @@ export class SetApplicationInContextConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -475,7 +475,7 @@ export class SetApplicationInContextConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -500,7 +500,7 @@ export class SetApplicationInContextConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -543,7 +543,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[0])
       );
     }
     const applicationIdUri = localSettings.auth?.applicationIdUris;
@@ -553,7 +553,7 @@ export class PostProvisionConfig {
       throw ResultFactory.SystemError(
         GetConfigError.name,
         GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)[0]
         )
       );
     }
@@ -563,7 +563,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -590,7 +590,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[0])
       );
     }
     const applicationIdUri = aadResource?.applicationIdUris;
@@ -600,7 +600,7 @@ export class PostProvisionConfig {
       throw ResultFactory.SystemError(
         GetConfigError.name,
         GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)[0]
         )
       );
     }
@@ -610,7 +610,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -655,7 +655,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[0])
       );
     }
 
@@ -670,7 +670,7 @@ export class PostProvisionConfig {
       throw ResultFactory.SystemError(
         GetConfigError.name,
         GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)[0]
         )
       );
     }
@@ -685,7 +685,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)[0])
       );
     }
   }
@@ -711,7 +711,7 @@ export class UpdatePermissionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[0])
       );
     }
 
@@ -732,13 +732,15 @@ export class CheckGrantPermissionConfig {
     if (objectId) {
       this.objectId = objectId as string;
     } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        getPermissionErrorMessage(
-          GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)),
-          this.isGrantPermission
-        )
+      const msg = getPermissionErrorMessage(
+        Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[0],
+        this.isGrantPermission
       );
+      const msg1 = getPermissionErrorMessage(
+        Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)[1],
+        this.isGrantPermission
+      );
+      throw ResultFactory.SystemError(GetConfigError.name, [msg, msg1]);
     }
   }
 }

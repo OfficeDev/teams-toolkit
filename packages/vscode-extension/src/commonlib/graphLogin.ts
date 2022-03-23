@@ -4,8 +4,7 @@
 
 "use strict";
 
-import { UserError } from "@microsoft/teamsfx-api";
-import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+import { UserError, GraphTokenProvider } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
@@ -103,9 +102,9 @@ export class GraphLogin extends login implements GraphTokenProvider {
             [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.common.userCancel"),
-            "Login"
+            localize("teamstoolkit.common.userCancel")
           );
         }
       }

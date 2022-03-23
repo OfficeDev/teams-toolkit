@@ -45,11 +45,10 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [errorMessage[0], errorMessage[1] + `. ${ErrorMessage.GuestAdminError}`],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.GuestAdminError}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -60,11 +59,13 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [
+            errorMessage[0],
+            errorMessage[1] + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`,
+          ],
           error,
           undefined,
-          link,
-          errorMessage + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -81,15 +82,15 @@ export class SqlClient {
     if (!credential) {
       const link = HelpLinks.default;
       const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, databaseNames);
-      let message = ErrorMessage.DatabaseUserCreateError.message(databaseNames, config.identity);
-      message += `. ${reason}`;
+      const message = ErrorMessage.DatabaseUserCreateError.message(databaseNames, config.identity);
+      message[0] += `. ${reason}`;
+      message[1] += `. ${reason}`;
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseUserCreateError.name,
-        message + ` ${ErrorMessage.LinkHelpMessage(link)}`,
+        [message[0] + ` ${ErrorMessage.LinkHelpMessage(link)}`, message[1]],
         undefined,
         undefined,
-        link,
-        message
+        link
       );
     }
     try {
@@ -104,11 +105,10 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [errorMessage[0], errorMessage[1] + `. ${ErrorMessage.DomainError}`],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.DomainError}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -119,11 +119,13 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [
+            errorMessage[0],
+            errorMessage[1] + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`,
+          ],
           error,
           undefined,
-          link,
-          errorMessage + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;

@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { isAADEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -100,9 +100,11 @@ export async function ensurePermissionRequest(
     );
   }
 
-  const result = await permissionRequestProvider.checkPermissionRequest();
-  if (result && result.isErr()) {
-    return result.map(err);
+  if (isAADEnabled(solutionSettings)) {
+    const result = await permissionRequestProvider.checkPermissionRequest();
+    if (result && result.isErr()) {
+      return result.map(err);
+    }
   }
 
   return ok(Void);

@@ -731,6 +731,7 @@ export async function runCommand(
 
     switch (stage) {
       case Stage.create: {
+        inputs.projectId = inputs.projectId ?? uuid.v4();
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

@@ -14,11 +14,16 @@ export function localize(key: string, defValue?: string) {
   return getString(key, defValue);
 }
 
+export function getDefaultString(key: string, defValue?: string) {
+  loadDefaultStrings();
+  return getLocalizedString(key, true, defValue);
+}
+
 function getString(key: string, defValue?: string) {
   if (shouldReloadLocale()) {
     loadLocalizedStrings();
   }
-  return getLocalizedString(key, defValue);
+  return getLocalizedString(key, false, defValue);
 }
 
 export function _resetCollections(): void {
@@ -37,7 +42,7 @@ function shouldReloadLocale(): boolean {
 
 declare let navigator: { language: string } | undefined;
 
-function parseLocale(): string {
+export function parseLocale(): string {
   try {
     if (navigator?.language) {
       return navigator.language.toLowerCase();
@@ -47,10 +52,10 @@ function parseLocale(): string {
   return vscodeConfigString ? JSON.parse(vscodeConfigString).locale : "en-us";
 }
 
-function getLocalizedString(key: string, defValue?: string): string {
+function getLocalizedString(key: string, isDefault: boolean, defValue?: string): string {
   let collection = defaultCollection;
 
-  if (loadedCollection && loadedCollection.hasOwnProperty(key)) {
+  if (!isDefault && loadedCollection && loadedCollection.hasOwnProperty(key)) {
     collection = loadedCollection;
   }
   if (collection === undefined) {
@@ -81,6 +86,10 @@ export function loadLocalizedStrings(): void {
     loadedCollection = {};
   }
 
+  loadDefaultStrings();
+}
+
+function loadDefaultStrings(): void {
   if (!defaultCollection) {
     const defaultNlsFile = path.join(
       ext.context ? ext.context.extensionPath : "",

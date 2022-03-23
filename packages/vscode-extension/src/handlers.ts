@@ -132,7 +132,7 @@ import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
-import { localize } from "./utils/localizeUtils";
+import { localize, parseLocale } from "./utils/localizeUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -355,6 +355,7 @@ export function getSystemInputs(): Inputs {
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     "function-dotnet-checker-enabled": vscodeHelper.isDotnetCheckerEnabled(),
+    locale: parseLocale(),
   };
   return answers;
 }

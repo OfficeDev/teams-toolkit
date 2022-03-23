@@ -30,6 +30,7 @@
     "teamstoolkit.cacheAccess.writeTokenFail": "write token fail: ",
     "teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription": "Cannot get login code for token exchange. Login with another account.",
     "teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle": "LoginCodeFail",
+    "teamstoolkit.codeFlowLogin.loginComponent": "login",
     "teamstoolkit.codeFlowLogin.loginFailureDescription": "Cannot retrieve user login information. Login with another account.",
     "teamstoolkit.codeFlowLogin.loginFailureTitle": "LoginFail",
     "teamstoolkit.codeFlowLogin.loginPortConflictDescription": "Timeout waiting for login port. Try again.",

@@ -66,7 +66,7 @@ export function InsufficientPermissionError(appCatalog: string): UserError {
   return new UserError(
     Constants.PLUGIN_NAME,
     "InsufficientPermission",
-    getLocalizedString("plugins.spfx.insufficientPermission", appCatalog),
+    getDefaultString("plugins.spfx.insufficientPermission", appCatalog),
     getLocalizedString("plugins.spfx.insufficientPermission", appCatalog)
   );
 }

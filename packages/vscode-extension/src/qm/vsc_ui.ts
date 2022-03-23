@@ -51,7 +51,7 @@ import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import * as packageJson from "../../package.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -121,6 +121,7 @@ export class VsCodeUI implements UserInteraction {
         new SystemError(
           ExtensionSource,
           ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
           localize("teamstoolkit.qm.emptySelection")
         )
       );
@@ -202,6 +203,7 @@ export class VsCodeUI implements UserInteraction {
         new SystemError(
           ExtensionSource,
           ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
           localize("teamstoolkit.qm.emptySelection")
         )
       );

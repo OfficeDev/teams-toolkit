@@ -16,6 +16,7 @@ import {
   IGroupChatCommand,
   IPersonalCommand,
 } from "../interfaces/IAppDefinition";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export function replaceConfigValue(config: string, id: string, value: string): string {
   if (config && id && value) {
@@ -37,7 +38,7 @@ export function checkAndConfig(config: string, id: string, value: string | undef
     return replaceConfigValue(config, id, value);
   } else {
     if (config.includes(idTag)) {
-      throw new Error(`Data required: ${idTag}`);
+      throw new Error(getLocalizedString("plugins.appstudio.dataRequired", idTag));
     } else {
       return config;
     }

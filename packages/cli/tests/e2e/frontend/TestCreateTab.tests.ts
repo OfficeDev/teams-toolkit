@@ -6,6 +6,7 @@
  */
 
 import { it } from "../../commonlib/it";
+import { describe } from "mocha";
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator } from "../../commonlib";
@@ -59,7 +60,7 @@ describe("Create single tab", function () {
 
       it(
         `Provision Resource: React app without function, API V3: ${envParam.TEAMSFX_APIV3}`,
-        { testPlanCaseId: 9454212 },
+        { testPlanCaseId: 10298738 },
         async () => {
           await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 

@@ -29,7 +29,7 @@ export async function fetchCodeZip(
 ): Promise<Result<AxiosResponse<any> | undefined, FxError>> {
   let retries = 3;
   let result = undefined;
-  const error = FetchSampleError(sampleId);
+  const error = new FetchSampleError(sampleId);
   while (retries > 0) {
     retries--;
     try {
@@ -96,7 +96,7 @@ export async function downloadSampleHook(sampleId: string, sampleAppPath: string
 
 export async function downloadSample(
   inputs: Inputs,
-  ctx: CoreHookContext
+  ctx?: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
   const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
@@ -136,7 +136,7 @@ export async function downloadSample(
     if (fetchRes.isErr()) {
       throw fetchRes.error;
     } else if (!fetchRes.value) {
-      throw FetchSampleError(sample.id);
+      throw new FetchSampleError(sample.id);
     }
     progress.next("Unzipping the sample package");
     await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
@@ -153,7 +153,7 @@ export async function downloadSample(
       projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
-      ctx.projectSettings = projectSettings;
+      if (ctx) ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
     } else {
       telemetryProperties[TelemetryProperty.ProjectId] =

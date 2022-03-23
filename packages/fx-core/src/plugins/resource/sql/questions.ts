@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, TextInputQuestion } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "./constants";
 import {
   sqlConfirmPasswordValidatorGenerator,
@@ -10,7 +11,7 @@ import {
 
 export const adminNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminName,
-  title: Constants.userQuestion.adminName,
+  title: getLocalizedString("plugins.sql.getQuestionAdminName.title"),
   type: "text",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
@@ -22,7 +23,7 @@ export const adminNameQuestion: TextInputQuestion = {
 
 export const adminPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminPassword,
-  title: Constants.userQuestion.adminPassword,
+  title: getLocalizedString("plugins.sql.getQuestionAdminPassword.title"),
   type: "text",
   password: true,
   validation: {
@@ -37,7 +38,7 @@ export const adminPasswordQuestion: TextInputQuestion = {
 
 export const confirmPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.confirmPassword,
-  title: Constants.userQuestion.confirmPassword,
+  title: getLocalizedString("plugins.sql.getQuestionConfirmPassword.title"),
   type: "text",
   password: true,
   validation: {

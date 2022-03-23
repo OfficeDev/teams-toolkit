@@ -12,28 +12,23 @@ import {
   Json,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  Stage,
 } from "@microsoft/teamsfx-api";
+import { HelpLinks } from "../common/constants";
+import { getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
 
-export function ProjectFolderExistError(path: string): UserError {
-  return new UserError(
-    "ProjectFolderExistError",
-    `Path ${path} already exists. Select a different folder.`,
-    CoreSource
-  );
+export class ProjectFolderExistError extends UserError {
+  constructor(path: string) {
+    super(new.target.name, getLocalizedString("error.ProjectFolderExistError", path), CoreSource);
+  }
 }
 
-export function ProjectFolderInvalidError(path: string): UserError {
-  return new UserError(
-    "ProjectFolderInvalidError",
-    `Path ${path} is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \${homeDir} ).`,
-    CoreSource
-  );
-}
-
-export function EmptyProjectFolderError(): SystemError {
-  return new SystemError("EmptyProjectFolderError", "Project path is empty", CoreSource);
+export class ProjectFolderInvalidError extends UserError {
+  constructor(path: string) {
+    super(new.target.name, getLocalizedString("error.ProjectFolderInvalidError", path), CoreSource);
+  }
 }
 
 export function WriteFileError(e: Error): SystemError {
@@ -48,52 +43,44 @@ export function CopyFileError(e: Error): SystemError {
   return new SystemError(e, CoreSource, "CopyFileError");
 }
 
-export function NoneFxError(e: any): FxError {
-  const err = assembleError(e);
-  err.name = "NoneFxError";
-  return err;
+export class NoProjectOpenedError extends UserError {
+  constructor() {
+    super(new.target.name, getLocalizedString("error.NoProjectOpenedError"), CoreSource);
+  }
 }
 
-export function NoProjectOpenedError(): UserError {
-  return new UserError(
-    "NoProjectOpened",
-    "No project opened, you can create a new project or open an existing one.",
-    CoreSource
-  );
+export class PathNotExistError extends UserError {
+  constructor(path: string) {
+    super(new.target.name, getLocalizedString("error.PathNotExistError", path), CoreSource);
+  }
 }
 
-export function PathNotExistError(path: string): UserError {
-  return new UserError("PathNotExist", `The path not exist: ${path}`, CoreSource);
+export class InvalidProjectError extends UserError {
+  constructor(msg?: string) {
+    super(new.target.name, getLocalizedString("error.InvalidProjectError", msg || ""), CoreSource);
+  }
 }
 
-export function InvalidProjectError(msg?: string): UserError {
-  return new UserError(
-    "InvalidProject",
-    `The command only works for project created by Teams Toolkit. ${msg ? ": " + msg : ""}`,
-    CoreSource
-  );
-}
-
-export function InvalidProjectSettingsFileError(msg?: string): UserError {
-  return new UserError(
-    "InvalidProjectSettingsFile",
-    `The projectSettings.json file is invalid ${msg}`,
-    CoreSource
-  );
+export class InvalidProjectSettingsFileError extends UserError {
+  constructor(msg?: string) {
+    super(
+      new.target.name,
+      getLocalizedString("error.InvalidProjectSettingsFileError", msg || ""),
+      CoreSource
+    );
+  }
 }
 
 export class TaskNotSupportError extends SystemError {
   constructor(task: string) {
-    super(new.target.name, `Task is not supported yet: ${task}`, CoreSource);
+    super(new.target.name, getLocalizedString("error.TaskNotSupportError", task), CoreSource);
   }
 }
 
-export function FetchSampleError(sampleId: string): UserError {
-  return new UserError(
-    "FetchSampleError",
-    `Failed to get data from remote repository for ${sampleId}`,
-    CoreSource
-  );
+export class FetchSampleError extends UserError {
+  constructor(sampleId: string) {
+    super(new.target.name, getLocalizedString("error.FetchSampleError", sampleId), CoreSource);
+  }
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
@@ -169,7 +156,7 @@ export function MultipleEnvNotEnabledError(): SystemError {
 export function ProjectEnvNotExistError(env: string): UserError {
   return new UserError(
     "ProjectEnvNotExistError",
-    `Environment ${env} not found. Make sure the config.${env}.json file exist.`,
+    getLocalizedString("error.ProjectEnvNotExistError", env, env),
     CoreSource
   );
 }
@@ -177,7 +164,7 @@ export function ProjectEnvNotExistError(env: string): UserError {
 export function InvalidEnvNameError(): UserError {
   return new UserError(
     "InvalidEnvNameError",
-    `Environment name can only contain letters, digits, _ and -.`,
+    getLocalizedString("error.InvalidEnvNameError"),
     CoreSource
   );
 }
@@ -239,7 +226,16 @@ export function UpgradeCanceledError(): UserError {
   return new UserError(
     // @see tools.isUserCancelError()
     "UserCancel",
-    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
+    getLocalizedString("error.UpgradeCanceledError"),
+    CoreSource
+  );
+}
+
+export function ConsolidateCanceledError(): UserError {
+  return new UserError(
+    // @see tools.isUserCancelError()
+    "UserCancel",
+    getLocalizedString("error.ConsolidateCanceledError"),
     CoreSource
   );
 }
@@ -268,8 +264,24 @@ export function LoadPluginError(): SystemError {
   return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
 }
 
-export class OperationNotSupportedForExistingAppError extends UserError {
-  constructor(task: string) {
-    super(new.target.name, `Task is not supported for existing app: ${task}`, CoreSource);
+export class OperationNotPermittedError extends UserError {
+  constructor(operation: string) {
+    super(
+      new.target.name,
+      getLocalizedString("error.OperationNotPermittedError", operation),
+      CoreSource
+    );
+  }
+}
+
+export class NoCapabilityFoundError extends UserError {
+  constructor(operation: Stage) {
+    super(
+      new.target.name,
+      getLocalizedString("core.deploy.noCapabilityFound", operation),
+      CoreSource,
+      undefined,
+      HelpLinks.HowToAddCapability
+    );
   }
 }

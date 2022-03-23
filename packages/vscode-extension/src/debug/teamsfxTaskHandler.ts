@@ -16,12 +16,12 @@ import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEven
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
-import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
+import { localize } from "../utils/localizeUtils";
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
@@ -89,7 +89,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
     }
     if (commandLine !== undefined) {
-      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
+      return /(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine);
     }
   }
 
@@ -163,7 +163,7 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
         vscode.window
           .showWarningMessage(
             util.format(
-              StringResources.vsc.localDebug.portWarning,
+              localize("teamstoolkit.localDebug.portWarning"),
               component,
               path.join(componentRoot, "package.json")
             ),
@@ -322,7 +322,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             url = issueChooseLink;
           }
           const issue = {
-            title: StringResources.vsc.handlers.reportIssue,
+            title: localize("teamstoolkit.handlers.reportIssue"),
             run: async (): Promise<void> => {
               vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
             },
@@ -330,7 +330,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           vscode.window
             .showErrorMessage(
               util.format(
-                StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+                localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
                 task.name,
                 task.name
               ),
@@ -341,7 +341,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             });
           await VsCodeLogInstance.error(
             util.format(
-              StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+              localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
               task.name,
               task.name
             )

@@ -7,12 +7,7 @@
 import "isomorphic-fetch";
 import { Context, HttpRequest } from "@azure/functions";
 import { Client } from "@microsoft/microsoft-graph-client";
-import {
-  createMicrosoftGraphClient,
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  UserInfo,
-} from "@microsoft/teamsfx";
+import { createMicrosoftGraphClient, TeamsFx, UserInfo } from "@microsoft/teamsfx";
 
 interface Response {
   status: number;
@@ -27,7 +22,7 @@ type TeamsfxContext = { [key: string]: any };
  * Before trigger this function, teamsfx binding would process the SSO token and generate teamsfx configuration.
  *
  * This function initializes the teamsfx SDK with the configuration and calls these APIs:
- * - OnBehalfOfUserCredential() - Construct credential with the received SSO token and initialized configuration.
+ * - TeamsFx().setSsoToken() - Construct teamsfx instance with the received SSO token and initialized configuration.
  * - getUserInfo() - Get the user's information from the received SSO token.
  * - createMicrosoftGraphClient() - Get a graph client to access user's Microsoft 365 data.
  *
@@ -56,19 +51,6 @@ export default async function run(
   // Put an echo into response body.
   res.body.receivedHTTPRequestBody = req.body || "";
 
-  // Set default configuration for teamsfx SDK.
-  try {
-    loadConfiguration();
-  } catch (e) {
-    context.log.error(e);
-    return {
-      status: 500,
-      body: {
-        error: "Failed to load app configuration.",
-      },
-    };
-  }
-
   // Prepare access token.
   const accessToken: string = teamsfxContext["AccessToken"];
   if (!accessToken) {
@@ -80,17 +62,17 @@ export default async function run(
     };
   }
 
-  // Construct credential.
-  let credential: OnBehalfOfUserCredential;
+  // Construct teamsfx.
+  let teamsfx: TeamsFx;
   try {
-    credential = new OnBehalfOfUserCredential(accessToken);
+    teamsfx = new TeamsFx().setSsoToken(accessToken);
   } catch (e) {
     context.log.error(e);
     return {
       status: 500,
       body: {
         error:
-          "Failed to obtain on-behalf-of credential using your accessToken. " +
+          "Failed to construct TeamsFx using your accessToken. " +
           "Ensure your function app is configured with the right Azure AD App registration.",
       },
     };
@@ -98,7 +80,7 @@ export default async function run(
 
   // Query user's information from the access token.
   try {
-    const currentUser: UserInfo = credential.getUserInfo();
+    const currentUser: UserInfo = await teamsfx.getUserInfo();
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {
@@ -116,7 +98,7 @@ export default async function run(
 
   // Create a graph client to access user's Microsoft 365 data after user has consented.
   try {
-    const graphClient: Client = createMicrosoftGraphClient(credential, [".default"]);
+    const graphClient: Client = createMicrosoftGraphClient(teamsfx, [".default"]);
     const profile: any = await graphClient.api("/me").get();
     res.body.graphClientMessage = profile;
   } catch (e) {

@@ -21,6 +21,7 @@ import {
   UserError,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import os from "os";
@@ -40,7 +41,7 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import { compileHandlebarsTemplateString, getStrings } from "../../../common";
+import { compileHandlebarsTemplateString } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
@@ -53,9 +54,10 @@ import {
 import { getTemplatesFolder } from "../../../folder";
 import { getActivatedV2ResourcePlugins } from "./ResourcePluginContainer";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
-import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
+import { ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -206,8 +208,8 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
   deployCtx.ctx.logProvider?.info(
-    format(
-      getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
+    getLocalizedString(
+      "core.deployArmTemplates.PollDeploymentStatusNotice",
       PluginDisplayName.Solution
     )
   );
@@ -289,7 +291,9 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 
 export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
   const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(ctx.ui);
-  await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
+  await progressHandler?.next(
+    getLocalizedString("core.deployArmTemplates.Progress.ExecuteDeployment")
+  );
 
   // update parameters
   const parameterJson = await getParameterJson(ctx);
@@ -315,8 +319,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     ctx.logProvider
   );
   ctx.logProvider?.info(
-    format(
-      getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
+    getLocalizedString(
+      "core.deployArmTemplates.CompileBicepSuccessNotice",
       PluginDisplayName.Solution
     )
   );
@@ -350,8 +354,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
-          format(
-            getStrings().solution.DeployArmTemplates.SuccessNotice,
+          getLocalizedString(
+            "core.deployArmTemplates.SuccessNotice",
             PluginDisplayName.Solution,
             resourceGroupName,
             deploymentName
@@ -388,8 +392,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      let errorMessage = format(
-        getStrings().solution.DeployArmTemplates.FailNotice,
+      let errorMessage = getLocalizedString(
+        "core.deployArmTemplates.FailNotice",
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
@@ -423,7 +427,9 @@ export async function doDeployArmTemplatesV3(
   const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
     ctx.userInteraction
   );
-  await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
+  await progressHandler?.next(
+    getLocalizedString("core.deployArmTemplates.Progress.ExecuteDeployment")
+  );
 
   // update parameters
   const parameterJson = await getParameterJsonV3(ctx, inputs.projectPath, envInfo);
@@ -450,8 +456,8 @@ export async function doDeployArmTemplatesV3(
     ctx.logProvider
   );
   ctx.logProvider?.info(
-    format(
-      getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
+    getLocalizedString(
+      "core.deployArmTemplates.CompileBicepSuccessNotice",
       PluginDisplayName.Solution
     )
   );
@@ -484,8 +490,8 @@ export async function doDeployArmTemplatesV3(
       .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
-          format(
-            getStrings().solution.DeployArmTemplates.SuccessNotice,
+          getLocalizedString(
+            "core.deployArmTemplates.SuccessNotice",
             PluginDisplayName.Solution,
             resourceGroupName,
             deploymentName
@@ -522,8 +528,8 @@ export async function doDeployArmTemplatesV3(
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      let errorMessage = format(
-        getStrings().solution.DeployArmTemplates.FailNotice,
+      let errorMessage = getLocalizedString(
+        "core.deployArmTemplates.FailNotice",
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
@@ -582,7 +588,7 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
 
 export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
   ctx.logProvider?.info(
-    format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
+    getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
   );
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
@@ -642,7 +648,7 @@ export async function deployArmTemplatesV3(
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<void, FxError>> {
   ctx.logProvider?.info(
-    format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
+    getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
   );
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
@@ -834,7 +840,7 @@ async function doGenerateArmTemplate(
         ArmTemplateResult,
         FxError
       >;
-      errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
+      errMessage = getLocalizedString("core.updateArmTemplate.failNotice");
     } else if (
       pluginWithArm.generateArmTemplates &&
       selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
@@ -844,7 +850,7 @@ async function doGenerateArmTemplate(
         ArmTemplateResult,
         FxError
       >;
-      errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+      errMessage = getLocalizedString("core.generateArmTemplate.failNotice");
     } else {
       continue;
     }
@@ -941,13 +947,15 @@ async function doGenerateBicep(
     ctx.logProvider.info(`${pluginName}: updateBicep() success!`);
   }
 
-  await persistBicepTemplates(
+  const persistRes = await persistBicepTemplates(
     bicepOrchestrationTemplate,
     moduleProvisionFiles,
     moduleConfigFiles,
     inputs.projectPath
   );
-
+  if (persistRes.isErr()) {
+    return err(persistRes.error);
+  }
   return ok(undefined); // Nothing to return when success
 }
 
@@ -956,7 +964,7 @@ async function persistBicepTemplates(
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
   projectPath: string
-) {
+): Promise<Result<undefined, FxError>> {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
@@ -1086,6 +1094,7 @@ async function persistBicepTemplates(
       }
     }
   }
+  return ok(undefined);
 }
 
 async function getExpandedParameter(ctx: SolutionContext, filePath: string) {

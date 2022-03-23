@@ -18,12 +18,23 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory } from "../common/tools";
+import { getRootDirectory, isBotNotificationEnabled, isM365AppEnabled } from "../common/tools";
+import { getLocalizedString } from "../common/localizeUtils";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+  M365LaunchPageOptionItem,
+  M365MessagingExtensionOptionItem,
+} from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
   Folder = "folder",
+  ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   Capabilities = "capabilities",
   Solution = "solution",
@@ -37,37 +48,50 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
+  M365CreateFromScratch = "m365-scratch",
+  M365AppType = "app-type",
+  M365Capabilities = "m365-capabilities",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
 
-export const QuestionAppName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.AppName,
-  title: "Application name",
-  validation: {
-    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const schema = {
-        pattern: ProjectNamePattern,
-        maxLength: 30,
-      };
-      const appName = input as string;
-      const validateResult = jsonschema.validate(appName, schema);
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        if (validateResult.errors[0].name === "pattern") {
-          return "Application name must start with a letter and can only contain letters and digits.";
-        } else {
-          return "Application name length must be shorter than 30.";
+export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
+  const question: TextInputQuestion = {
+    type: "text",
+    name: CoreQuestionNames.AppName,
+    title: "Application name",
+    validation: {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const schema = {
+          pattern: ProjectNamePattern,
+          maxLength: 30,
+        };
+        const appName = input as string;
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          if (validateResult.errors[0].name === "pattern") {
+            return getLocalizedString("core.QuestionAppName.validation.pattern");
+          }
         }
-      }
-      const projectPath = path.resolve(getRootDirectory(), appName);
-      const exists = await fs.pathExists(projectPath);
-      if (exists) return `Path exists: ${projectPath}. Select a different application name.`;
-      return undefined;
+        if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
+          let folder = previousInputs.folder as string;
+          if (previousInputs.platform === Platform.VSCode) {
+            folder = getRootDirectory();
+          }
+          if (folder) {
+            const projectPath = path.resolve(folder, appName);
+            const exists = await fs.pathExists(projectPath);
+            if (exists)
+              return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
+          }
+        }
+        return undefined;
+      },
     },
-  },
-  placeholder: "Application name",
-};
+    placeholder: "Application name",
+  };
+  return question;
+}
 
 export const DefaultAppNameFunc: FuncQuestion = {
   type: "func",
@@ -105,8 +129,9 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     if (inputs.platform === Platform.VS) {
       return [{ id: "csharp", label: "C#" }];
     }
-    const caps = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (caps.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },
@@ -114,68 +139,87 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "typescript";
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return "typescript";
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
-    return "Select a programming language.";
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
   },
 };
 
-export const TabOptionItem: OptionItem = {
-  id: "Tab",
-  label: "Tab",
-  cliName: "tab",
-  description: "UI-based app",
-  detail: "Teams-aware webpages embedded in Microsoft Teams",
-};
+function hasCapability(items: string[], optionItem: OptionItem): boolean {
+  return items.includes(optionItem.id) || items.includes(optionItem.label);
+}
 
-export const BotOptionItem: OptionItem = {
-  id: "Bot",
-  label: "Bot",
-  cliName: "bot",
-  description: "Conversational Agent",
-  detail: "Running simple and repetitive automated tasks through conversations",
-};
+// Items in set1 and set2 are mutally exclusive. Handle conflict by removing conflicting items with the newly added items.
+// Assuming intersection of set1 and set2 are empty sets and no conflicts in newly added items.
+export function handleSelectionConflict<T>(
+  set1: Set<T>,
+  set2: Set<T>,
+  previous: Set<T>,
+  current: Set<T>
+): Set<T> {
+  const addedItems = [...current].filter((item) => !previous.has(item));
 
-export const MessageExtensionItem: OptionItem = {
-  id: "MessagingExtension",
-  label: "Messaging Extension",
-  cliName: "messaging-extension",
-  description: "Custom UI when users compose messages in Teams",
-  detail: "Inserting app content or acting on a message without leaving the conversation",
-};
+  let conflicts: Set<T> | undefined = undefined;
+  for (const addedItem of addedItems) {
+    if (set1.has(addedItem)) {
+      conflicts = set2;
+      break;
+    }
+    if (set2.has(addedItem)) {
+      conflicts = set1;
+      break;
+    }
+  }
 
-export const TabSPFxItem: OptionItem = {
-  id: "TabSPFx",
-  label: "Tab(SPFx)",
-  cliName: "tab-spfx",
-  description: "UI-base app with SPFx framework",
-  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
-};
+  const result = new Set<T>();
+  for (const item of current) {
+    if (!conflicts || !conflicts.has(item)) {
+      result.add(item);
+    }
+  }
+  return result;
+}
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
+  const staticOptions = [
+    ...[TabOptionItem, BotOptionItem],
+    ...(isBotNotificationEnabled() ? [NotificationOptionItem] : []),
+    ...[MessageExtensionItem, TabSPFxItem],
+  ];
   return {
     name: CoreQuestionNames.Capabilities,
-    title: "Select capabilities",
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+    staticOptions: staticOptions,
     default: [TabOptionItem.id],
-    placeholder: "Select at least 1 capability",
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
         if (name.length === 0) {
-          return "Select at least 1 capability";
+          return getLocalizedString("core.createCapabilityQuestion.placeholder");
         }
+
+        if (name.length > 1 && hasCapability(name, TabSPFxItem)) {
+          return getLocalizedString("core.createCapabilityQuestion.validation1");
+        }
+
+        if (hasCapability(name, BotOptionItem) && hasCapability(name, NotificationOptionItem)) {
+          return getLocalizedString("core.createCapabilityQuestion.validation2");
+        }
+
         if (
-          name.length > 1 &&
-          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
+          hasCapability(name, MessageExtensionItem) &&
+          hasCapability(name, NotificationOptionItem)
         ) {
-          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
+          return getLocalizedString("core.createCapabilityQuestion.validation3");
         }
 
         return undefined;
@@ -194,6 +238,15 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         }
       }
 
+      if (isBotNotificationEnabled()) {
+        currentSelectedIds = handleSelectionConflict(
+          new Set([BotOptionItem.id, MessageExtensionItem.id]),
+          new Set([NotificationOptionItem.id]),
+          previousSelectedIds,
+          currentSelectedIds
+        );
+      }
+
       return currentSelectedIds;
     },
   };
@@ -202,7 +255,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetEnvName,
-  title: "Select an environment",
+  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -213,27 +266,30 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
   return {
     type: "text",
     name: CoreQuestionNames.NewTargetEnvName,
-    title: "New environment name",
+    title: getLocalizedString("core.getQuestionNewTargetEnvironmentName.title"),
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
         const targetEnvName = input;
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
-          return "Environment name can only contain letters, digits, _ and -.";
+          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
         }
 
         const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
         if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
-          return "The length of environment config path will exceed the limitation of Windows.";
+          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation2");
         }
 
         if (targetEnvName === LocalEnvironmentName) {
-          return `Cannot create an environment '${LocalEnvironmentName}'`;
+          return getLocalizedString(
+            "core.getQuestionNewTargetEnvironmentName.validation3",
+            LocalEnvironmentName
+          );
         }
 
         const envConfigs = await environmentManager.listRemoteEnvConfigs(projectPath);
         if (envConfigs.isErr()) {
-          return `Failed to list env configs`;
+          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");
         }
 
         const found =
@@ -241,20 +297,23 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
             (env) => env.localeCompare(targetEnvName, undefined, { sensitivity: "base" }) === 0
           ) !== undefined;
         if (found) {
-          return `Project environment ${targetEnvName} already exists.`;
+          return getLocalizedString(
+            "core.getQuestionNewTargetEnvironmentName.validation5",
+            targetEnvName
+          );
         } else {
           return undefined;
         }
       },
     },
-    placeholder: "New environment name",
+    placeholder: getLocalizedString("core.getQuestionNewTargetEnvironmentName.placeholder"),
   };
 }
 
 export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.SourceEnvName,
-  title: "Select an environment to create copy",
+  title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -263,7 +322,7 @@ export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
 export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetResourceGroupName,
-  title: "Select a resource group",
+  title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
@@ -272,20 +331,20 @@ export const QuestionSelectResourceGroup: SingleSelectQuestion = {
 export const QuestionNewResourceGroupName: TextInputQuestion = {
   type: "text",
   name: CoreQuestionNames.NewResourceGroupName,
-  title: "New resource group name",
+  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
       const name = input as string;
       // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
       const match = name.match(/^[-\w._()]+$/);
       if (!match) {
-        return "The name can only contain alphanumeric characters or the symbols ._-()";
+        return getLocalizedString("core.QuestionNewResourceGroupName.validation");
       }
 
       return undefined;
     },
   },
-  placeholder: "New resource group name",
+  placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
   // default resource group name will change with env name
   forgetLastValue: true,
 };
@@ -293,53 +352,68 @@ export const QuestionNewResourceGroupName: TextInputQuestion = {
 export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.NewResourceGroupLocation,
-  title: "Location for the new resource group",
+  title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
   staticOptions: [],
-};
-
-export const QuestionSelectSolution: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.Solution,
-  title: "Select a solution",
-  staticOptions: [],
-  skipSingleOption: true,
 };
 
 export const ScratchOptionYesVSC: OptionItem = {
   id: "yes",
-  label: "$(new-folder) Create a new Teams app",
-  detail: "Use the Teams Toolkit to create a new application.",
+  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
+};
+
+export const ScratchOptionYesM365VSC: OptionItem = {
+  id: "yes-m365",
+  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesM365VSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionYesM365VSC.detail"),
 };
 
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
-  label: "$(heart) Start from a sample",
-  detail: "Use an existing sample as a starting point for your new application.",
+  label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
-  label: "Create a new Teams app",
-  detail: "Use the Teams Toolkit to create a new application.",
+  label: getLocalizedString("core.ScratchOptionYes.label"),
+  detail: getLocalizedString("core.ScratchOptionYes.detail"),
+};
+
+export const ScratchOptionYesM365: OptionItem = {
+  id: "yes-m365",
+  label: getLocalizedString("core.ScratchOptionYesM365.label"),
+  detail: getLocalizedString("core.ScratchOptionYesM365.detail"),
 };
 
 export const ScratchOptionNo: OptionItem = {
   id: "no",
-  label: "Start from a sample",
-  detail: "Use an existing sample as a starting point for your new application.",
+  label: getLocalizedString("core.ScratchOptionNo.label"),
+  detail: getLocalizedString("core.ScratchOptionNo.detail"),
 };
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
+  const staticOptions: OptionItem[] = [];
+  if (platform === Platform.VSCode) {
+    staticOptions.push(ScratchOptionYesVSC);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365VSC);
+    }
+    staticOptions.push(ScratchOptionNoVSC);
+  } else {
+    staticOptions.push(ScratchOptionYes);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365);
+    }
+    staticOptions.push(ScratchOptionNo);
+  }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
-    title: "Teams Toolkit: Create a new Teams app",
-    staticOptions:
-      platform === Platform.VSCode
-        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
-        : [ScratchOptionYes, ScratchOptionNo],
+    title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
+    staticOptions,
     default: ScratchOptionYes.id,
-    placeholder: "Select an option",
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
   };
 }
@@ -347,7 +421,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
 export const SampleSelect: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.Samples,
-  title: "Start from a sample",
+  title: getLocalizedString("core.SampleSelect.title"),
   staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
     return {
       id: sample.id,
@@ -356,5 +430,33 @@ export const SampleSelect: SingleSelectQuestion = {
       data: sample.link,
     } as OptionItem;
   }),
-  placeholder: "Select a sample",
+  placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+};
+
+export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.CreateFromScratch,
+  title: "",
+  staticOptions: [ScratchOptionYesM365],
+  skipSingleOption: true,
+};
+
+export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.M365AppType,
+  title: getLocalizedString("core.M365AppTypeSelectQuestion.title"),
+  staticOptions: [M365LaunchPageOptionItem, M365MessagingExtensionOptionItem],
+  placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
+};
+
+export const M365CapabilitiesFuncQuestion: FuncQuestion = {
+  type: "func",
+  name: CoreQuestionNames.M365Capabilities,
+  func: (inputs: Inputs) => {
+    if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
+      inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
+    }
+  },
 };

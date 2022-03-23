@@ -12,10 +12,9 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { getStrings } from "../../../../common/tools";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
   GLOBAL_CONFIG,
@@ -45,33 +44,31 @@ export async function deploy(
   if (inAzureProject && !provisioned) {
     return err(
       returnUserError(
-        new Error(
-          util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
-        ),
+        new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)),
         SolutionSource,
         SolutionError.CannotDeployBeforeProvision
       )
     );
   }
 
-  const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+  if (!inAzureProject) {
+    const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
 
-  if (appStudioTokenJson) {
-    const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
-    if (checkM365.isErr()) {
-      return checkM365;
+    if (appStudioTokenJson) {
+      const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
+      if (checkM365.isErr()) {
+        return checkM365;
+      }
+    } else {
+      return err(
+        new SystemError(
+          SolutionError.NoAppStudioToken,
+          "App Studio json is undefined",
+          SolutionSource
+        )
+      );
     }
   } else {
-    return err(
-      new SystemError(
-        SolutionError.NoAppStudioToken,
-        "App Studio json is undefined",
-        SolutionSource
-      )
-    );
-  }
-
-  if (isAzureProject(getAzureSolutionSettings(ctx))) {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider
@@ -131,31 +128,25 @@ export async function deploy(
       )
     );
   }
-
   ctx.logProvider.info(
-    util.format(
-      getStrings().solution.SelectedPluginsToDeployNotice,
+    getLocalizedString(
+      "core.deploy.selectedPluginsToDeployNotice",
       PluginDisplayName.Solution,
       JSON.stringify(thunks.map((p) => p.pluginName))
     )
   );
-  ctx.logProvider.info(
-    util.format(getStrings().solution.DeployStartNotice, PluginDisplayName.Solution)
-  );
+  ctx.logProvider.info(getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution));
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = util.format(
-        `Success: ${getStrings().solution.DeploySuccessNotice}`,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
       ctx.logProvider.info(msg);
       ctx.userInteraction.showMessage("info", msg, false);
     }
     return ok(Void);
   } else {
-    const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
     ctx.logProvider.info(msg);
     return err(result.error);
   }

@@ -1,0 +1,75 @@
+{
+  "name": "@microsoft/teamsfx-react",
+  "version": "0.0.1",
+  "description": "React helper functions for Microsoft TeamsFx",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "teamsfx",
+    "react"
+  ],
+  "repository": "https://github.com/OfficeDev/TeamsFx",
+  "author": "Microsoft Corporation",
+  "files": [
+    "build/**/*"
+  ],
+  "scripts": {
+    "build": "rimraf build && npx tsc -p ./",
+    "lint:staged": "lint-staged",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "npm run test:unit",
+    "test:unit": "nyc mocha --no-timeouts --require init.js --require ts-node/register test/**/*.test.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "format-check": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
+  },
+  "devDependencies": {
+    "@fluentui/react-northstar": "^0.60.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@microsoft/microsoft-graph-client": "^3.0.1",
+    "@microsoft/teams-js": "^1.9.0",
+    "@microsoft/teamsfx": "^0.6.0",
+    "@testing-library/react-hooks": "^7.0.2",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@types/sinon": "^10.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
+    "@typescript-eslint/parser": "^5.13.0",
+    "chai": "^4.3.6",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-prettier": "^4.0.0",
+    "isomorphic-fetch": "^3.0.0",
+    "lint-staged": "^12.3.4",
+    "mocha": "^9.2.1",
+    "msteams-react-base-component": "^3.1.1",
+    "nyc": "^15.1.0",
+    "prettier": "^2.5.1",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-test-renderer": "^16.9.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^13.0.1"
+  },
+  "peerDependencies": {
+    "@fluentui/react-northstar": "^0.60.1",
+    "@microsoft/microsoft-graph-client": "^3.0.1",
+    "@microsoft/teamsfx": "^0.6.0",
+    "msteams-react-base-component": "^3.1.1",
+    "react": "^16.8.6"
+  },
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
+  }
+}

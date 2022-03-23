@@ -21,6 +21,7 @@ import {
   IComposeExtension,
   Result,
   FxError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
@@ -46,6 +47,7 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  SsoItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
@@ -70,6 +72,7 @@ import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
 import * as os from "os";
 import * as path from "path";
+const tool = require("../../../src/common/tools");
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -81,6 +84,7 @@ const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Lo
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
+const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
 const mockedProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
@@ -676,6 +680,142 @@ describe("V2 implementation", () => {
 
       const result = await new ScaffoldingContextAdapter([mockedCtx, mockedInputs]);
       expect(result.answers!.platform).to.be.equal(Platform.VSCode);
+    });
+  });
+
+  describe("add sso", async () => {
+    beforeEach(async () => {
+      mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    });
+
+    it("happy path", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name],
+          capabilities: [TabOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          SsoItem.id
+        )
+      ).to.be.true;
+    });
+
+    it("should return error when sso is enabled", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name, aadPluginV2.name],
+          capabilities: [TabOptionItem.id, SsoItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.SsoEnabled);
+    });
+
+    it("should return error when no capability", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [],
+          capabilities: [],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddSsoNotSupported);
+    });
+
+    it("should return error when project setting is invalid", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name, aadPluginV2.name],
+          capabilities: [TabOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.InvalidSsoProject);
     });
   });
 });

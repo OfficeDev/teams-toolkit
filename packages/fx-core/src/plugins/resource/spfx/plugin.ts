@@ -18,7 +18,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from "./utils/questions";
-import { Utils, sleep, yeomanScaffoldEnabled } from "./utils/utils";
+import { Utils, sleep } from "./utils/utils";
 import {
   Constants,
   DeployProgressMessage,
@@ -37,22 +37,25 @@ import {
   GetTenantFailedError,
   UploadAppPackageFailedError,
   InsufficientPermissionError,
+  DependencyInstallError,
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
+import { getAppDirectory } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
-  REMOTE_MANIFEST,
 } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
 import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
+import { yeomanScaffoldEnabled } from "../../../core/globalVars";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { YoChecker } from "./depsChecker/yoChecker";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -60,9 +63,18 @@ export class SPFxPluginImpl {
       const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = lodash.camelCase(componentName);
+      let componentId: string;
+      const replaceMap: Map<string, string> = new Map();
       if (yeomanScaffoldEnabled()) {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
         await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
+
+        const yoChecker = new YoChecker(ctx.logProvider!);
+        const yoRes = await yoChecker.ensureDependency(ctx);
+        if (yoRes.isErr()) {
+          throw DependencyInstallError("yo");
+        }
+
         const webpartDescription = ctx.answers![SPFXQuestionNames.webpart_desp] as string;
         const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
         const solutionName = ctx.projectSettings?.appName as string;
@@ -84,7 +96,7 @@ export class SPFxPluginImpl {
           `"supportedHosts": ["SharePointWebPart"]`,
           `"supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"]`
         );
-        fs.writeFile(manifestPath, manifestString);
+        await fs.writeFile(manifestPath, manifestString);
 
         // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
         const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
@@ -98,9 +110,20 @@ export class SPFxPluginImpl {
           `import { Version } from '@microsoft/sp-core-library';\r\n`,
           ``
         );
-        fs.writeFile(webpartFile, codeString);
+        await fs.writeFile(webpartFile, codeString);
+
+        // remove .vscode
+        const debugPath = `${newPath}/.vscode`;
+        await fs.remove(debugPath);
+
+        const solutionPath = `${newPath}/config/package-solution.json`;
+        const solution = await fs.readJson(solutionPath);
+        componentId = solution.solution.id;
+
+        replaceMap.set(PlaceHolders.componentId, componentId);
+        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
       } else {
-        const componentId = uuid.v4();
+        componentId = uuid.v4();
         const componentClassName = `${componentName}WebPart`;
         const componentStrings = componentClassName + "Strings";
         const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
@@ -234,7 +257,6 @@ export class SPFxPluginImpl {
         );
 
         // Configure placeholders
-        const replaceMap: Map<string, string> = new Map();
         replaceMap.set(PlaceHolders.componentName, componentName);
         replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
         replaceMap.set(PlaceHolders.componentClassName, componentClassName);
@@ -249,50 +271,54 @@ export class SPFxPluginImpl {
         replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
         replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
-        const appDirectory = await getAppDirectory(ctx.root);
         await Utils.configure(outputFolderPath, replaceMap);
+      }
 
-        if (isConfigUnifyEnabled()) {
-          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+      const appDirectory = await getAppDirectory(ctx.root);
+      if (isConfigUnifyEnabled()) {
+        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
 
-          const appManifestProvider = new DefaultManifestProvider();
-          const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-          const remoteStaticSnippet: IStaticTab = {
-            entityId: componentId,
-            name: webpartName,
-            contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId),
-            websiteUrl: ManifestTemplate.WEBSITE_URL,
-            scopes: ["personal"],
-          };
-          const remoteConfigurableSnippet: IConfigurableTab = {
-            configurationUrl: util.format(ManifestTemplate.REMOTE_CONFIGURATION_URL, componentId),
-            canUpdateConfiguration: true,
-            scopes: ["team"],
-          };
-          capabilitiesToAddManifest.push(
-            {
-              name: "staticTab",
-              snippet: remoteStaticSnippet,
-            },
-            {
-              name: "configurableTab",
-              snippet: remoteConfigurableSnippet,
-            }
-          );
-
-          const contextWithInputs = convert2Context(ctx, true);
-          for (const capability of capabilitiesToAddManifest) {
-            const addCapRes = await appManifestProvider.updateCapability(
-              contextWithInputs.context,
-              contextWithInputs.inputs,
-              capability
-            );
-            if (addCapRes.isErr()) return err(addCapRes.error);
+        const appManifestProvider = new DefaultManifestProvider();
+        const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+        const remoteStaticSnippet: IStaticTab = {
+          entityId: componentId,
+          name: webpartName,
+          contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
+          websiteUrl: ManifestTemplate.WEBSITE_URL,
+          scopes: ["personal"],
+        };
+        const remoteConfigurableSnippet: IConfigurableTab = {
+          configurationUrl: util.format(
+            ManifestTemplate.REMOTE_CONFIGURATION_URL,
+            componentId,
+            componentId
+          ),
+          canUpdateConfiguration: true,
+          scopes: ["team"],
+        };
+        capabilitiesToAddManifest.push(
+          {
+            name: "staticTab",
+            snippet: remoteStaticSnippet,
+          },
+          {
+            name: "configurableTab",
+            snippet: remoteConfigurableSnippet,
           }
-        } else {
-          await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-          await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
+        );
+
+        const contextWithInputs = convert2Context(ctx, true);
+        for (const capability of capabilitiesToAddManifest) {
+          const addCapRes = await appManifestProvider.updateCapability(
+            contextWithInputs.context,
+            contextWithInputs.inputs,
+            capability
+          );
+          if (addCapRes.isErr()) return err(addCapRes.error);
         }
+      } else {
+        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
+        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
       }
       return ok(undefined);
     } catch (error) {
@@ -345,7 +371,7 @@ export class SPFxPluginImpl {
         ];
         ctx.ui?.showMessage("info", guidance, false);
       } else {
-        const guidance = util.format(getStrings().plugins.SPFx.buildNotice, dir);
+        const guidance = getLocalizedString("plugins.spfx.buildNotice", dir);
         ctx.ui?.showMessage("info", guidance, false, "OK");
       }
       return ok(undefined);
@@ -380,7 +406,7 @@ export class SPFxPluginImpl {
       } else {
         const res = await ctx.ui?.showMessage(
           "warn",
-          util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
+          getLocalizedString("plugins.spfx.createAppCatalogNotice", tenant.value),
           true,
           "OK",
           Constants.READ_MORE
@@ -411,9 +437,7 @@ export class SPFxPluginImpl {
             } else {
               return err(
                 CreateAppCatalogFailedError(
-                  new Error(
-                    "Cannot get app catalog site url after creation. You may need wait a few minutes and retry."
-                  )
+                  new Error(getLocalizedString("plugins.spfx,cannotGetAppcatalog"))
                 )
               );
             }
@@ -440,7 +464,7 @@ export class SPFxPluginImpl {
         if (e.response?.status === 403) {
           ctx.ui?.showMessage(
             "error",
-            util.format(getStrings().plugins.SPFx.deployFailedNotice, appCatalogSite!),
+            getLocalizedString("plugins.spfx.deployFailedNotice", appCatalogSite!),
             false,
             "OK"
           );
@@ -453,8 +477,8 @@ export class SPFxPluginImpl {
       const appID = await this.getAppID(ctx.root);
       await SPOClient.deployAppPackage(spoToken, appID);
 
-      const guidance = util.format(
-        getStrings().plugins.SPFx.deployNotice,
+      const guidance = getLocalizedString(
+        "plugins.spfx.deployNotice",
         appPackage,
         appCatalogSite,
         appCatalogSite

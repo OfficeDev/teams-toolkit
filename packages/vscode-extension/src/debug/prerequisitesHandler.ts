@@ -41,7 +41,6 @@ import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import { ext } from "../extensionVariables";
 import { showError, tools } from "../handlers";
-import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -66,6 +65,8 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
 import { ProgressHelper } from "./progressHelper";
+import { localize } from "../utils/localizeUtils";
+import * as commonUtils from "./commonUtils";
 
 enum Checker {
   SPFx = "SPFx",
@@ -137,11 +138,11 @@ async function checkPort(
     let message: string;
     if (portsInUse.length > 1) {
       message = util.format(
-        StringResources.vsc.localDebug.portsAlreadyInUse,
+        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
         portsInUse.join(", ")
       );
     } else {
-      message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
+      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
     }
     return {
       checker: Checker.Ports,
@@ -199,7 +200,9 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
   let progressHelper: ProgressHelper | undefined;
   try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart, {
+      [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
+    });
 
     // terminate all running teamsfx tasks
     if (allRunningTeamsfxTasks.size > 0) {
@@ -402,7 +405,7 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
         result = ResultStatus.failed;
         error = new UserError(
           ExtensionErrors.PrerequisitesValidationError,
-          StringResources.vsc.accountTree.sideloadingWarningTooltip,
+          localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),
           ExtensionSource
         );
       }

@@ -546,26 +546,6 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
-export interface ExistingAppConfig {
-    // (undocumented)
-    isCreatedFromExistingApp: boolean;
-    // (undocumented)
-    newAppTypes: ExistingTeamsAppType[];
-}
-
-// @public (undocumented)
-export enum ExistingTeamsAppType {
-    // (undocumented)
-    Bot = 2,
-    // (undocumented)
-    ConfigurableTab = 1,
-    // (undocumented)
-    MessageExtension = 3,
-    // (undocumented)
-    StaticTab = 0
-}
-
-// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
@@ -728,13 +708,15 @@ export interface Inputs extends Json {
     // (undocumented)
     env?: string;
     // (undocumented)
-    existingAppConfig?: ExistingAppConfig;
-    // (undocumented)
     existingResources?: string[];
     // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
+    // (undocumented)
+    isM365?: boolean;
+    // (undocumented)
+    locale?: string;
     // (undocumented)
     platform: Platform;
     // (undocumented)
@@ -749,6 +731,8 @@ export interface Inputs extends Json {
     targetEnvName?: string;
     // (undocumented)
     targetResourceGroupName?: string;
+    // (undocumented)
+    targetResourceLocationName?: string;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
@@ -1125,6 +1109,8 @@ export interface ProjectSettings {
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
+    // (undocumented)
+    isM365?: boolean;
     pluginSettings?: Json;
     // (undocumented)
     programmingLanguage?: string;

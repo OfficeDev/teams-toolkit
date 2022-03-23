@@ -36,6 +36,7 @@ import {
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
+  WEB_APPLICATION_INFO_LOCAL_DEBUG,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
@@ -322,6 +323,85 @@ export async function addCapabilities(
   const res = await saveManifest(projectRoot, remoteManifest, false);
   if (res.isErr()) {
     return err(res.error);
+  }
+
+  if (!isConfigUnifyEnabled()) {
+    const localManifestRes = await loadManifest(projectRoot, true);
+    if (localManifestRes.isErr()) {
+      return err(localManifestRes.error);
+    }
+    const localManifest = localManifestRes.value;
+
+    let staticTabIndex = localManifest.staticTabs?.length ?? 0;
+    capabilities.map((capability) => {
+      switch (capability.name) {
+        case "staticTab":
+          if (!localManifest.staticTabs) {
+            Object.assign(localManifest, { staticTabs: [] });
+          }
+          if (capability.existingApp) {
+            STATIC_TABS_TPL_EXISTING_APP[0].entityId = "index" + staticTabIndex;
+            localManifest.staticTabs = localManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
+            localManifest.staticTabs = localManifest.staticTabs!.concat(
+              STATIC_TABS_TPL_LOCAL_DEBUG
+            );
+          }
+          staticTabIndex++;
+          break;
+        case "configurableTab":
+          if (!localManifest.configurableTabs) {
+            Object.assign(localManifest, { configurableTabs: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
+            );
+          }
+          break;
+        case "Bot":
+          if (!localManifest.bots) {
+            Object.assign(localManifest, { bots: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
+          } else {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
+          }
+          break;
+        case "MessageExtension":
+          if (!localManifest.composeExtensions) {
+            Object.assign(localManifest, { composeExtensions: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
+            );
+          }
+          break;
+        case "WebApplicationInfo":
+          if (!localManifest.webApplicationInfo) {
+            Object.assign(localManifest, { webApplicationInfo: [] });
+          }
+          localManifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
+          break;
+      }
+    });
+    const res = await saveManifest(projectRoot, localManifest, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
   }
   return ok(undefined);
 }

@@ -42,16 +42,18 @@ import {
 import { ConstantString } from "../../src/common/constants";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
-  BotOptionItem,
   CoreQuestionNames,
-  MessageExtensionItem,
   ProgrammingLanguageQuestion,
   ScratchOptionYesVSC,
-  TabOptionItem,
-  TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";

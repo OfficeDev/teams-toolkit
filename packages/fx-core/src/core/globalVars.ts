@@ -21,12 +21,20 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+export function yeomanScaffoldEnabled(): boolean {
+  return featureFlagEnabled(FeatureFlagName.YeomanScaffold);
+}
+
 export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;
+export let Locale: string | undefined;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
   Logger = tools.logProvider;
+}
+export function setLocale(locale?: string): void {
+  Locale = locale;
 }
 export function setCurrentStage(stage: Stage): void {
   currentStage = stage;

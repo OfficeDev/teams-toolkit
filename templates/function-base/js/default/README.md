@@ -21,10 +21,10 @@ You can add your logic to the single Azure Function created by this template, as
 To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. The token can be retrieved using the TeamsFx SDK from your app's client (custom tab). Here is an example:
 
 ```js
-const { TeamsUserCredential } = require("@microsoft/teamsfx");
+const { TeamsFx } = require("@microsoft/teamsfx");
 
-var credential = new TeamsUserCredential();
-var accessToken = await credential.getToken("");
+var teamsfx = new TeamsFx();
+var accessToken = await teamsfx.getCredential().getToken("");
 // note: empty string argument on the previous line is required for now, this will be fixed in a later release
 var response = await fetch(`${functionEndpoint}/api/${functionName}`, {
   headers: {

@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isConfigUnifyEnabled } from "../../../../common/tools";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -29,18 +29,21 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
+  BotNotificationTriggers,
   BotOptionItem,
+  BotScenario,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
+  NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
-import * as util from "util";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -175,13 +178,12 @@ export async function checkWhetherLocalDebugM365TenantMatches(
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
-      const errorMessage: string = util.format(
-        getStrings().solution.LocalDebugTenantConfirmNotice,
+      const errorMessage = getLocalizedString(
+        "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
         "localSettings.json"
       );
-
       return err(
         returnUserError(
           new Error(errorMessage),
@@ -229,7 +231,18 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (
+  if (capabilities.includes(NotificationOptionItem.id)) {
+    // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+    const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
+    if (notificationIndex !== -1) {
+      capabilities[notificationIndex] = BotOptionItem.id;
+      // dedup
+      capabilities = [...new Set(capabilities)];
+      answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
+    }
+
+    hostType = HostTypeOptionAzure.id;
+  } else if (
     capabilities.includes(BotOptionItem.id) ||
     capabilities.includes(MessageExtensionItem.id) ||
     capabilities.includes(TabOptionItem.id)

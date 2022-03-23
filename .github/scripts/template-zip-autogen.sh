@@ -1,56 +1,47 @@
 #!/usr/bin/env bash
+
+# This script requires jq and zip command, which are installed in GitHub Action virtual environments by default.
+# See https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md#installed-apt-packages
+
 set -x
 
-TEMPLATE_TEAMSBOT_FILE_PREFIX=./templates/mustache-templates/teamsBot
-LANGUAGE_LIST=(js ts csharp)
+if [ -z "$1" ]; then
+    echo "Must input a path for templates folder"
+    exit -1
+fi
 
-TEMPLATE_LIST=(
-    function-base.default
-    function-triggers.HTTPTrigger
-    tab.default
-    bot.default
-    msgext.default
-    bot-msgext.default
-    blazor-base.default
-)
+TEMPLATE_OUTPUT_DIR=$1
+mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-# Copy bot code to msgext-bot, except readme and images
-rsync -az --recursive --exclude "*.md" --exclude "*images/*" ./templates/bot/ ./templates/bot-msgext/
+TEMPLATE_LIST=$(jq -r '.templates[]' ./templates/package.json)
 
-for LANGUAGE in ${LANGUAGE_LIST[@]}; do
-    for TEMPLATE in ${TEMPLATE_LIST[@]}; do
-        TEMPLATE=($(echo $TEMPLATE | tr "." "\n"))
-        SCOPE=${TEMPLATE[0]}
-        SCENARIO=${TEMPLATE[1]}
+for TEMPLATE in ${TEMPLATE_LIST[@]}; do
+    TEMPLATE=($(echo $TEMPLATE | tr "/" "\n"))
+    SCOPE=${TEMPLATE[0]}
+    LANGUAGE=${TEMPLATE[1]}
+    SCENARIO=${TEMPLATE[2]}
 
-        if [ -z "$SCOPE" ]; then
-            echo "SCOPE is empty."
-            exit -1
-        fi
+    if [ -z "$SCOPE" ]; then
+        echo "SCOPE is empty."
+        exit -1
+    fi
 
-        if [ -z "$SCENARIO" ]; then
-            echo "SCENARIO is empty."
-            exit -1
-        fi
+    if [ -z "$LANGUAGE" ]; then
+        echo "LANGUAGE is empty."
+        exit -1
+    fi
 
-        if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
-            echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
-            continue
-        fi        
-        
-        # Generate code from Mustache templates for js and ts
-        if [ ${SCOPE} == "bot" ] && [ ${LANGUAGE} != "csharp" ]; then           
-            IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
-        fi
-        if [ ${SCOPE} == "msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
-            IS_ME=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/messageExtensionBot.${LANGUAGE}
-        fi
-        if [ ${SCOPE} == "bot-msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
-            IS_ME=true IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
-        fi
+    if [ -z "$SCENARIO" ]; then
+        echo "SCENARIO is empty."
+        exit -1
+    fi
 
-        cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
-        zip -rq ../../../../${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
-        cd -
-    done
+    if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
+        echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
+        exit -1
+    fi
+
+    cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}
+    zip -rq ${TEMPLATE_OUTPUT_DIR}/${SCOPE}.${LANGUAGE}.${SCENARIO}.zip .
+    cd -
 done

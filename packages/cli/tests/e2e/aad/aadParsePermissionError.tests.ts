@@ -11,7 +11,7 @@ import path from "path";
 
 import { expect } from "chai";
 
-import { describe, it } from "mocha";
+import { describe } from "mocha";
 
 import {
   execAsync,
@@ -23,6 +23,8 @@ import {
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
+
+import { it } from "../../commonlib/it";
 
 describe("aadPermissionErrors", function () {
   let testFolder: string;
@@ -57,7 +59,7 @@ describe("aadPermissionErrors", function () {
     console.log(`[Successfully] scaffold to ${projectPath}`);
   });
 
-  it(`AAD: ParsePermissionError`, async function () {
+  it(`AAD: ParsePermissionError`, { testPlanCaseId: 13777079 }, async function () {
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     {

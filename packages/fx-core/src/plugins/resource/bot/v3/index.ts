@@ -8,7 +8,10 @@ import {
   EnvConfig,
   err,
   FxError,
+  Inputs,
+  MultiSelectQuestion,
   ok,
+  QTreeNode,
   Result,
   TokenProvider,
   v2,
@@ -41,6 +44,7 @@ import {
   PathInfo,
   ProgressBarConstants,
   TemplateProjectsConstants,
+  TemplateProjectsScenarios,
 } from "../constants";
 import { LanguageStrategy } from "../languageStrategy";
 import { ProgressBarFactory } from "../progressBars";
@@ -122,8 +126,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     await scaffoldFromTemplates({
       group: group_name,
       lang: lang,
-      scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
-      templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
+      scenario: TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME,
       dst: workingDir,
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
         if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
@@ -198,6 +201,25 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     };
     return ok([result]);
   }
+
+  async getQuestionsForAddInstance(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const capabilitiesQuestion: MultiSelectQuestion = {
+      name: AzureSolutionQuestionNames.Capabilities,
+      title: "Select capabilities",
+      type: "multiSelect",
+      staticOptions: [BotOptionItem, MessageExtensionItem],
+      default: [BotOptionItem.id],
+      placeholder: "Select at least 1 capability",
+      validation: {
+        minItems: 1,
+      },
+    };
+    return ok(new QTreeNode(capabilitiesQuestion));
+  }
+
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async addInstance(
     ctx: v3.ContextWithManifestProvider,

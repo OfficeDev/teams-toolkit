@@ -23,7 +23,6 @@ import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { GlobalKey } from "../constants";
 import { ext } from "../extensionVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
-import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   AccountType,
@@ -33,6 +32,7 @@ import {
   TelemetryTiggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { isMacOS } from "../utils/commonUtils";
+import { localize } from "../utils/localizeUtils";
 import { Commands } from "./Commands";
 import { EventMessages } from "./messages";
 import { PanelType } from "./PanelType";
@@ -210,11 +210,11 @@ export class WebviewPanel {
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
       case PanelType.QuickStart:
-        return StringResources.vsc.webview.quickStartPageTitle;
+        return localize("teamstoolkit.webview.quickStartPageTitle");
       case PanelType.SampleGallery:
-        return StringResources.vsc.webview.samplePageTitle;
+        return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:
-        return StringResources.vsc.webview.surveyPageTitle;
+        return localize("teamstoolkit.webview.surveyPageTitle");
     }
   }
 

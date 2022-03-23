@@ -12,9 +12,9 @@ import {
   v2,
   v3,
   Void,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { selectMultipleFeaturesQuestion } from "../../utils/questions";
 import arm from "../arm";
@@ -29,6 +29,7 @@ import { hasAzureResource, hasSPFx } from "../../../../common/projectSettingsHel
 function getAllFeaturePlugins(): v3.PluginV3[] {
   return [
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.frontend),
+    Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.bot),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.aad),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.function),
     Container.get<v3.PluginV3>(BuiltInFeaturePluginNames.apim),
@@ -46,7 +47,7 @@ export async function getQuestionsForAddFeature(
   const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectMultipleFeaturesQuestion);
-  if (!ctx.projectSetting.solutionSettings?.programmingLanguage) {
+  if (!ctx.projectSetting.programmingLanguage) {
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     node.addChild(programmingLanguage);
   }
@@ -54,7 +55,7 @@ export async function getQuestionsForAddFeature(
   for (const plugin of plugins) {
     staticOptions.push({
       id: plugin.name,
-      label: plugin.description || "",
+      label: plugin.description || plugin.displayName || plugin.name,
     });
     if (plugin.getQuestionsForAddInstance) {
       const childNode = await plugin.getQuestionsForAddInstance(ctx, inputs);
@@ -113,6 +114,8 @@ export async function addFeature(
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
+  if (!ctx.projectSetting.programmingLanguage && inputs[ProgrammingLanguageQuestion.name])
+    ctx.projectSetting.programmingLanguage = inputs[ProgrammingLanguageQuestion.name];
   let solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingSet = new Set<string>();
   let newSet = new Set<string>();

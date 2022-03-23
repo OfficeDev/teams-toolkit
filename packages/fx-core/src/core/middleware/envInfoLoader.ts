@@ -14,6 +14,7 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
+  Stage,
   Tools,
   traverse,
   UserCancelError,
@@ -55,6 +56,12 @@ export type CreateEnvCopyInput = {
 
 export function EnvInfoLoaderMW(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
+    // if the feature flag TEAMSFX_CONFIG_UNIFY is enabled,
+    // don't skip the middleware for local debug.
+    if (ctx.method === "localDebug" || ctx.method === "localDebugV2") {
+      skip = !isConfigUnifyEnabled();
+    }
+
     if (shouldIgnored(ctx)) {
       await next();
       return;
@@ -67,7 +74,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 
@@ -181,7 +188,7 @@ export async function loadSolutionContext(
   ignoreEnvInfo = false
 ): Promise<Result<SolutionContext, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
 
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
@@ -350,7 +357,7 @@ async function getQuestionsForTargetEnv(
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
 
   const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
@@ -377,7 +384,7 @@ async function getQuestionsForNewEnv(
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
   const group = new QTreeNode({ type: "group" });
 

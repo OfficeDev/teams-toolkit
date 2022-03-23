@@ -5,11 +5,10 @@ import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
 import {
-  Platform,
+  AzureSolutionSettings,
   PluginContext,
   ProjectSettings,
   TokenProvider,
-  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
@@ -39,13 +38,11 @@ import * as uuid from "uuid";
 import {
   MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
   MockedSharepointProvider,
   MockedV2Context,
 } from "../../../solution/util";
-import * as path from "path";
-import { randomAppName } from "../../../../core/utils";
-import os from "os";
+import * as tool from "../../../../../src/common/tools";
+import fs from "fs-extra";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -294,6 +291,20 @@ describe("AadAppForTeamsPlugin: CI", () => {
     if (res.isOk()) {
       chai.assert.equal(res.value[0].userObjectId, "id");
     }
+  });
+
+  it("scaffold", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub(fs, "ensureDir").resolves();
+    sinon.stub(fs, "copy").resolves();
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    const result = await plugin.scaffold(context);
+    chai.assert.equal(result.isOk(), true);
+    chai.assert.include(
+      (context.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities,
+      "SSO"
+    );
   });
 });
 

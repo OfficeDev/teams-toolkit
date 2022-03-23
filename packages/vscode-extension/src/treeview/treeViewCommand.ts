@@ -26,16 +26,7 @@ export class TreeViewCommand extends vscode.TreeItem {
     this.description = description === undefined ? "" : description;
     this.contextValue = contextValue;
 
-    if (image !== undefined) {
-      if (!image.custom) {
-        this.iconPath = new vscode.ThemeIcon(image.name);
-      } else {
-        this.iconPath = {
-          light: path.join(ext.context.extensionPath, "media", "light", `${image.name}.svg`),
-          dark: path.join(ext.context.extensionPath, "media", "dark", `${image.name}.svg`),
-        };
-      }
-    }
+    this.setImagetoIcon();
 
     if (commandId) {
       this.command = {
@@ -43,6 +34,27 @@ export class TreeViewCommand extends vscode.TreeItem {
         command: commandId,
         arguments: [TreeViewCommand.TreeViewFlag, this],
       };
+    }
+  }
+
+  public setStatus(running: boolean) {
+    if (running) {
+      this.iconPath = new vscode.ThemeIcon("loading~spin");
+    } else {
+      this.setImagetoIcon();
+    }
+  }
+
+  private setImagetoIcon() {
+    if (this.image !== undefined) {
+      if (!this.image.custom) {
+        this.iconPath = new vscode.ThemeIcon(this.image.name);
+      } else {
+        this.iconPath = {
+          light: path.join(ext.context.extensionPath, "media", "light", `${this.image.name}.svg`),
+          dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image.name}.svg`),
+        };
+      }
     }
   }
 }

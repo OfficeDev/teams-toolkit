@@ -57,6 +57,13 @@ class TreeViewManager {
     return this.treeviewMap.get(viewName);
   }
 
+  public async runCommand(commandName: string, ...args: unknown[]) {
+    const command = this.commandMap.get(commandName);
+    command?.setStatus(true);
+    await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
+    command?.setStatus(false);
+  }
+
   public dispose() {
     this.treeviewMap.forEach((value) => {
       (value as vscode.Disposable).dispose();

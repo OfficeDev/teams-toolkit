@@ -4,13 +4,23 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { FxError, ok, Result, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  ok,
+  Result,
+  TreeCategory,
+  TreeItem,
+  Void,
+  TreeProvider,
+} from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 
 import { ext } from "../extensionVariables";
 import { TreeViewCommand } from "./treeViewCommand";
 
-export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
+export class CommandsTreeViewProvider
+  implements vscode.TreeDataProvider<TreeViewCommand>, TreeProvider
+{
   private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
     new vscode.EventEmitter<TreeViewCommand | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =

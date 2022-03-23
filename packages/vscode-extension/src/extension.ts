@@ -50,6 +50,7 @@ import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
+import treeViewManager from "./treeview/treeViewManager";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -561,7 +562,8 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 
   // Zip Teams metadata package
   const buildPackageCmd = vscode.commands.registerCommand("fx-extension.build", (...args) =>
-    Correlator.run(handlers.buildPackageHandler, args)
+    // Correlator.run(handlers.buildPackageHandler, args)
+    Correlator.run(treeViewManager.runCommand, "fx-extension.build", args)
   );
   context.subscriptions.push(buildPackageCmd);
 

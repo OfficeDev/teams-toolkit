@@ -48,7 +48,7 @@ import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -153,6 +153,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         throw new UserError(
           "Login",
           ExtensionErrors.UserCancel,
+          getDefaultString("teamstoolkit.common.userCancel"),
           localize("teamstoolkit.common.userCancel")
         );
       }
@@ -165,8 +166,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount = this.getAzureAccount();
     if (azureAccount.status != loggedIn) {
       throw new UserError(
-        localize("teamstoolkit.codeFlowLogin.loginComponent"),
-        localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
         localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
       );
     }
@@ -279,6 +281,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       throw new UserError(
         "SignOut",
         ExtensionErrors.UserCancel,
+        getDefaultString("teamstoolkit.common.userCancel"),
         localize("teamstoolkit.common.userCancel")
       );
     }
@@ -368,6 +371,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new UserError(
       "Login",
       ExtensionErrors.UnknownSubscription,
+      getDefaultString("teamstoolkit.azureLogin.unknownSubscription"),
       localize("teamstoolkit.azureLogin.unknownSubscription")
     );
   }
@@ -506,8 +510,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const subscriptionList = await this.listSubscriptions();
     if (!subscriptionList || subscriptionList.length == 0) {
       throw new UserError(
-        localize("teamstoolkit.codeFlowLogin.loginComponent"),
-        localize("teamstoolkit.azureLogin.noSubscriptionFound"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+        getDefaultString("teamstoolkit.azureLogin.noSubscriptionFound"),
+        getDefaultString("teamstoolkit.azureLogin.failToFindSubscription"),
         localize("teamstoolkit.azureLogin.failToFindSubscription")
       );
     }

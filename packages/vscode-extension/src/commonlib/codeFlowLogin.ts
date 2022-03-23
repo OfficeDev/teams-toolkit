@@ -24,7 +24,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -136,7 +136,10 @@ export class CodeFlowLogin {
           this.status = loggedOut;
           VsCodeLogInstance.error("[Login] " + error.message);
           deferredRedirect.reject(
-            new UserError({ error, source: localize("teamstoolkit.codeFlowLogin.loginComponent") })
+            new UserError({
+              error,
+              source: getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+            })
           );
           res.status(500).send(error);
         });
@@ -150,8 +153,9 @@ export class CodeFlowLogin {
       }
       deferredRedirect.reject(
         new UserError(
-          localize("teamstoolkit.codeFlowLogin.loginComponent"),
-          localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
           localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
         )
       );
@@ -273,8 +277,8 @@ export class CodeFlowLogin {
     } catch (error) {
       VsCodeLogInstance.error("[Login] " + error.message);
       if (
-        error.name !== localize("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
-        error.name !== localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
+        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
+        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
       ) {
         throw LoginCodeFlowError(error);
       } else {
@@ -292,8 +296,9 @@ export class CodeFlowLogin {
     const portTimer = setTimeout(() => {
       defferedPort.reject(
         new UserError(
-          localize("teamstoolkit.codeFlowLogin.loginComponent"),
-          localize("teamstoolkit.codeFlowLogin.loginPortConflictTitle"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle"),
+          getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictDescription"),
           localize("teamstoolkit.codeFlowLogin.loginPortConflictDescription")
         )
       );
@@ -335,8 +340,9 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
 
 export function LoginFailureError(innerError?: any): UserError {
   return new UserError({
-    name: localize("teamstoolkit.codeFlowLogin.loginFailureTitle"),
-    message: localize("teamstoolkit.codeFlowLogin.loginFailureDescription"),
+    name: getDefaultString("teamstoolkit.codeFlowLogin.loginFailureTitle"),
+    message: getDefaultString("teamstoolkit.codeFlowLogin.loginFailureDescription"),
+    displayMessage: localize("teamstoolkit.codeFlowLogin.loginFailureDescription"),
     source: "Login",
     error: innerError,
   });
@@ -344,9 +350,10 @@ export function LoginFailureError(innerError?: any): UserError {
 
 export function LoginCodeFlowError(innerError?: any): UserError {
   return new UserError({
-    name: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle"),
-    message: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
-    source: localize("teamstoolkit.codeFlowLogin.loginComponent"),
+    name: getDefaultString("teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle"),
+    message: getDefaultString("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
+    displayMessage: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
+    source: getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
     error: innerError,
   });
 }

@@ -49,7 +49,7 @@ import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
-import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
+import { loadLocalizedStrings } from "./utils/localizeUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 

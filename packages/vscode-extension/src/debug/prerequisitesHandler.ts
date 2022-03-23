@@ -64,7 +64,7 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
 import { ProgressHelper } from "./progressHelper";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 
 enum Checker {
@@ -401,6 +401,7 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
         error = new UserError(
           ExtensionSource,
           ExtensionErrors.PrerequisitesValidationError,
+          getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
           localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
         );
       }
@@ -738,6 +739,7 @@ async function handleCheckResults(
       throw new UserError(
         ExtensionSource,
         ExtensionErrors.PrerequisitesValidationError,
+        getDefaultString("teamstoolkit.PrerequisitesValidationError"),
         localize("teamstoolkit.PrerequisitesValidationError")
       );
     }

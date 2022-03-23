@@ -27,6 +27,7 @@ import {
   isConfigUnifyEnabled,
   isInitAppEnabled,
   isM365AppEnabled,
+  isAadManifestEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -442,6 +443,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(listCollaborator);
 
+  const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
+    Correlator.run(handlers.addSsoHanlder)
+  );
+  context.subscriptions.push(addSso);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
@@ -457,6 +463,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAadManifestEnabled()
   );
 
   // Setup CodeLens provider for userdata file

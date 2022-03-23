@@ -2700,3 +2700,14 @@ export async function openDeploymentTreeview(args?: any[]) {
     vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
 }
+
+export async function addSsoHanlder(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddSsoStart);
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addSso",
+  };
+
+  const result = await runUserTask(func, TelemetryEvent.AddSso, true);
+  return result;
+}

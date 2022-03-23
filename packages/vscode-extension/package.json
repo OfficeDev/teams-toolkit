@@ -658,7 +658,7 @@
       },
       {
         "command": "fx-extension.addSso",
-        "title": "Teams: Add SSO",
+        "title": "%teamstoolkit.commands.addSso.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
       }
     ],

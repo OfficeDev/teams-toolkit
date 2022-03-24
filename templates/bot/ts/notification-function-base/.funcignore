@@ -6,3 +6,7 @@ local.settings.json
 test
 tsconfig.json
 .teamsfx.bot.json
+.development
+.DS_Store
+node_modules/.bin
+_storage_emulator

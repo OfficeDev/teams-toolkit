@@ -93,7 +93,8 @@ export enum AzureSolutionQuestionNames {
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
-  Scenario = "scenario",
+  Scenarios = "scenario",
+  ApiConnector = "api-connector",
 }
 
 export const HostTypeOptionAzure: OptionItem = {

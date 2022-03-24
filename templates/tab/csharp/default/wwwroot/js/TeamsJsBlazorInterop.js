@@ -108,10 +108,15 @@ export function registerOnSaveHandler(settings) {
     microsoftTeams.settings.setValidityState(true);
 }
 
-
-// Temporary solution: https://github.com/OfficeDev/microsoft-teams-library-js/issues/310
-// https://github.com/OfficeDev/msteams-ui-components/blob/master/gh-pages/src/index.tsx#L68-L74
+// Come from here: https://github.com/wictorwilen/msteams-react-base-component/blob/master/src/useTeams.ts
 export function inTeams() {
-    var microsoftTeamsLib = microsoftTeams || window["microsoftTeams"];
-    return window.self !== window.top && microsoftTeamsLib !== undefined;
+    if (
+        (window.parent === window.self && window.nativeInterface) ||
+        window.navigator.userAgent.includes("Teams/") ||
+        window.name === "embedded-page-container" ||
+        window.name === "extension-tab-frame"
+    ) {
+        return true;
+    }
+    return false;
 }

@@ -4,13 +4,19 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 
-import { FuncValidation } from "@microsoft/teamsfx-api";
+import { FuncValidation, Inputs, Platform } from "@microsoft/teamsfx-api";
 import {
   AppServiceOptionItem,
   createHostTypeTriggerQuestion,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
+  showNotificationCondition,
 } from "../../../../../src/plugins/resource/bot/question";
+import {
+  AzureSolutionQuestionNames,
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Test question", () => {
   describe("HostTypeTrigger question", () => {
@@ -121,6 +127,33 @@ describe("Test question", () => {
           );
         }
       }
+    });
+  });
+
+  describe("Test showNotificationCondition", () => {
+    it("Should not ask trigger questions for legacy bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = undefined;
+      // Assert
+      chai.assert.isTrue(showNotificationCondition.validFunc(undefined, inputs) !== undefined);
+    });
+    it("Should ask trigger questions for notification bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
+      // Assert
+      chai.assert.isUndefined(showNotificationCondition.validFunc(undefined, inputs));
+    });
+    it("Should not ask trigger questions for command and response bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
+      // Assert
+      chai.assert.isTrue(showNotificationCondition.validFunc(undefined, inputs) !== undefined);
     });
   });
 });

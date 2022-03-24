@@ -110,9 +110,7 @@ export class FrontendPluginImpl implements PluginImpl {
     const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
     const envName = ctx.envInfo.envName;
 
-    const envs = await loadEnvFile(envFilePath(envName, componentPath));
-
-    await FrontendDeployment.doFrontendBuild(componentPath, envs, envName);
+    await FrontendDeployment.doFrontendBuild(componentPath, envName);
     await FrontendDeployment.doFrontendDeployment(client, componentPath, envName);
 
     await ProgressHelper.endProgress(true);

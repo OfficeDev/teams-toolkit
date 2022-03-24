@@ -21,6 +21,7 @@
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
         "start": "react-scripts start",
+        "install:teamsfx": "npm run install",
         "build": "react-scripts build",
         "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
         "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",

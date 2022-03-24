@@ -16,19 +16,6 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "api-action",
-      "skipFiles": [
-          "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\build\\v3\\action.js",
-      "outFiles": [
-          "${workspaceFolder}/**/*.js"
-      ],
-      "preLaunchTask": "npm: build"
-  }
+    }
   ]
 }

@@ -12,7 +12,10 @@ import {
   FxError,
   QTreeNode,
   TokenProvider,
+  Json,
 } from "@microsoft/teamsfx-api";
+import * as Handlebars from "handlebars";
+import { assign, merge } from "lodash";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -46,9 +49,7 @@ export interface GroupAction {
    */
   mode?: "sequential" | "parallel";
   actions: Action[];
-  inputs?: {
-    [k: string]: string;
-  };
+  inputs?: Json;
   /**
    * execution priority in a sequential group, default is 3
    */
@@ -202,10 +203,12 @@ export class AADResource implements Resource {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
-        inputs["aad.clientId"] = "mockM365ClientId";
-        inputs["aad.clientSecret"] = "mockM365ClientSecret";
-        inputs["aad.authAuthorityHost"] = "mockM365OauthAuthorityHost";
-        inputs["aad.tenantId"] = "mockM365TenantId";
+        inputs.aad = {
+          clientId: "mockM365ClientId",
+          clientSecret: "mockM365ClientId",
+          authAuthorityHost: "mockM365OauthAuthorityHost",
+          tenantId: "mockM365TenantId",
+        };
         return ok(undefined);
       },
     };
@@ -297,9 +300,11 @@ export class AzureBotResource implements Resource {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
-        inputs["azure-bot.botAadAppClientId"] = "MockBotAadAppClientId";
-        inputs["azure-bot.botId"] = "MockBotId";
-        inputs["azure-bot.botPassword"] = "MockBotPassword";
+        inputs["azure-bot"] = {
+          botAadAppClientId: "MockBotAadAppClientId",
+          botId: "MockBotId",
+          botPassword: "MockBotPassword",
+        };
         return ok(undefined);
       },
     };
@@ -341,7 +346,7 @@ export class TeamsManifestResource implements Resource {
         inputs: Inputs
       ) => {
         console.log(
-          `provision teams manifest with tab:${inputs["tab.endpoint"]} and bot:${inputs["azure-bot.botId"]}`
+          `provision teams manifest with tab:${inputs.tab.endpoint} and bot:${inputs["azure-bot"].botId}`
         );
         return ok(undefined);
       },
@@ -361,8 +366,12 @@ export class TeamsfxSolutionResource implements Resource {
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("deploy bicep");
-        inputs["azure-storage.endpoint"] = "MockStorageEndpoint";
-        inputs["azure-web-app.endpoint"] = "MockAzureWebAppEndpoint";
+        inputs["azure-storage"] = {
+          endpoint: "MockStorageEndpoint",
+        };
+        inputs["azure-web-app"] = {
+          endpoint: "MockAzureWebAppEndpoint",
+        };
         return ok(undefined);
       },
     };
@@ -376,9 +385,11 @@ export class TeamsfxSolutionResource implements Resource {
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("check common configs (account, resource group)");
-        inputs["teamsfx-solution.tenantId"] = "MockTenantId";
-        inputs["teamsfx-solution.subscriptionId"] = "MockSubscriptionId";
-        inputs["teamsfx-solution.resourceGroup"] = "MockResourceGroup";
+        inputs.solution = {
+          tenantId: "MockTenantId",
+          subscriptionId: "MockSubscriptionId",
+          resourceGroup: "MockResourceGroup",
+        };
         return ok(undefined);
       },
     };
@@ -425,37 +436,37 @@ export class TeamsfxSolutionResource implements Resource {
         targetAction: "azure-bot.provision",
       });
     }
-    provisionSequences.push({
-      name: "teamsfx-solution.configure",
-      type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return "configure after bicep deployment";
-      },
-      execute: async (context: any, inputs: Inputs) => {
-        // inputs["tab.endpoint"] = inputs["azure-storage.endpoint"];
-        // inputs["bot.endpoint"] = inputs["azure-web-app.endpoint"];
-        inputs[
-          "aad.m365ApplicationIdUri"
-        ] = `api://${inputs["tab.endpoint"]}/botid-${inputs["azure-bot.botId"]}`;
-        inputs["azure-web-app.appSettings"] = {
-          M365_AUTHORITY_HOST: inputs["aad.authAuthorityHost"], // AAD authority host
-          M365_CLIENT_ID: inputs["aad.clientId"], // Client id of AAD application
-          M365_CLIENT_SECRET: inputs["aad.clientSecret"], // Client secret of AAD application
-          M365_TENANT_ID: inputs["aad.tenantId"], // Tenant id of AAD application
-          M365_APPLICATION_ID_URI: inputs["aad.m365ApplicationIdUri"], // Application ID URI of AAD application
-          BOT_ID: inputs["azure-bot.botId"],
-          BOT_PASSWORD: inputs["azure-bot.botPassword"],
-        };
-        return ok(undefined);
-      },
-    });
+    // provisionSequences.push({
+    //   name: "teamsfx-solution.configure",
+    //   type: "function",
+    //   plan: (context: v2.Context, inputs: Inputs) => {
+    //     return "configure after bicep deployment";
+    //   },
+    //   execute: async (context: any, inputs: Inputs) => {
+    //     return ok(undefined);
+    //   },
+    // });
     provisionSequences.push({
       type: "group",
       mode: "parallel",
       actions: configureActions,
       inputs: {
-        "tab.endpoint": "${azure-storage.endpoint}",
-        "bot.endpoint": "${azure-web-app.endpoint}",
+        tab: { endpoint: "{{azure-storage.endpoint}}" },
+        bot: { endpoint: "{{azure-web-app.endpoint}}" },
+        aad: {
+          m365ApplicationIdUri: "api://{{tab.endpoint}}/botid-{{azure-bot.botId}}",
+        },
+        "azure-web-app": {
+          appSettings: {
+            M365_AUTHORITY_HOST: "{{aad.authAuthorityHost}}", // AAD authority host
+            M365_CLIENT_ID: "{{aad.clientId}}", // Client id of AAD application
+            M365_CLIENT_SECRET: "{{aad.clientSecret}}", // Client secret of AAD application
+            M365_TENANT_ID: "{{aad.tenantId}}", // Tenant id of AAD application
+            M365_APPLICATION_ID_URI: "{{aad.m365ApplicationIdUri}}", // Application ID URI of AAD application
+            BOT_ID: "{{azure-bot.botId}}",
+            BOT_PASSWORD: "{{azure-bot.botPassword}}",
+          },
+        },
       },
     });
     provisionSequences.push({
@@ -503,18 +514,6 @@ async function planAction(
       throw new Error("targetAction not exist: " + action.targetAction);
     }
     if (targetAction) {
-      if (action.inputs) {
-        if (action.inputs) {
-          for (const key of Object.keys(action.inputs)) {
-            let value = action.inputs[key];
-            if (value.startsWith("${") && value.endsWith("}")) {
-              const vname = value.substring(2, value.length - 1).trim();
-              value = inputs[vname];
-            }
-            inputs[key] = value;
-          }
-        }
-      }
       planAction(context, inputs, targetAction, actions);
     }
   } else {
@@ -529,6 +528,41 @@ async function planAction(
       await planAction(context, inputs, act, actions);
     }
   }
+}
+
+function _templateReplace(schema: Json, context: Json, rootContext: Json) {
+  let change = false;
+  for (const key of Object.keys(schema)) {
+    const subSchema = schema[key];
+    if (typeof subSchema === "string") {
+      const template = Handlebars.compile(subSchema);
+      const newValue = template(rootContext);
+      if (newValue !== subSchema) {
+        change = true;
+      }
+      schema[key] = newValue;
+      context[key] = newValue;
+    } else if (typeof subSchema === "object") {
+      let subContext = context[key];
+      if (!subContext) {
+        subContext = {};
+        assign(subContext, subSchema);
+        context[key] = subContext;
+      } else {
+        merge(subContext, subSchema);
+      }
+      const valueIsChange = _templateReplace(subSchema, subContext, rootContext);
+      if (valueIsChange) change = true;
+    }
+  }
+  return change;
+}
+
+function templateReplace(schema: Json, params: Json) {
+  let change;
+  do {
+    change = _templateReplace(schema, params, params);
+  } while (change);
 }
 
 async function executeAction(
@@ -549,27 +583,15 @@ async function executeAction(
     }
     if (targetAction) {
       if (action.inputs) {
-        for (const key of Object.keys(action.inputs)) {
-          let value = action.inputs[key];
-          if (value.startsWith("${") && value.endsWith("}")) {
-            const vname = value.substring(2, value.length - 1).trim();
-            value = inputs[vname];
-          }
-          inputs[key] = value;
-        }
+        templateReplace(action.inputs, inputs);
+        merge(inputs, action.inputs);
       }
       await executeAction(context, inputs, targetAction, actions);
     }
   } else {
     if (action.inputs) {
-      for (const key of Object.keys(action.inputs)) {
-        let value = action.inputs[key];
-        if (value.startsWith("${") && value.endsWith("}")) {
-          const vname = value.substring(2, value.length - 1).trim();
-          value = inputs[vname];
-        }
-        inputs[key] = value;
-      }
+      templateReplace(action.inputs, inputs);
+      merge(inputs, action.inputs);
     }
     for (const act of action.actions) {
       await executeAction(context, inputs, act, actions);

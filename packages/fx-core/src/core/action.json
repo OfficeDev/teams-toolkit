@@ -1,0 +1,95 @@
+{
+  "name": "teamsfx-solution.provision",
+  "type": "group",
+  "actions": [
+    {
+      "type": "call",
+      "required": false,
+      "targetAction": "teamsfx-solution.pre-provision"
+    },
+    {
+      "type": "group",
+      "mode": "parallel",
+      "actions": [
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "aad.provision"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-storage.provision"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-web-app.provision"
+        }
+      ]
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "teamsfx-solution.deployBicep"
+    },
+    {
+      "type": "call",
+      "required": false,
+      "targetAction": "azure-bot.provision"
+    },
+    {
+      "type": "group",
+      "mode": "parallel",
+      "actions": [
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "aad.configure"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-storage.configure"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-web-app.configure"
+        },
+        {
+          "type": "call",
+          "required": false,
+          "targetAction": "azure-bot.configure"
+        }
+      ],
+      "inputs": {
+        "tab": {
+          "endpoint": "{{azure-storage.endpoint}}"
+        },
+        "bot": {
+          "endpoint": "{{azure-web-app.endpoint}}"
+        },
+        "aad": {
+          "m365ApplicationIdUri": "api://{{tab.endpoint}}/botid-{{azure-bot.botId}}"
+        },
+        "azure-web-app": {
+          "appSettings": {
+            "M365_AUTHORITY_HOST": "{{aad.authAuthorityHost}}",
+            "M365_CLIENT_ID": "{{aad.clientId}}",
+            "M365_CLIENT_SECRET": "{{aad.clientSecret}}",
+            "M365_TENANT_ID": "{{aad.tenantId}}",
+            "M365_APPLICATION_ID_URI": "{{aad.m365ApplicationIdUri}}",
+            "BOT_ID": "{{azure-bot.botId}}",
+            "BOT_PASSWORD": "{{azure-bot.botPassword}}"
+          }
+        }
+      }
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "teams-manifest.provision"
+    }
+  ]
+}

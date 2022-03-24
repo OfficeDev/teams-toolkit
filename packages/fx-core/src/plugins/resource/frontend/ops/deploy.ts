@@ -22,8 +22,7 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { envFileName, envFileNamePrefix, envFilePath, loadEnvFile, RemoteEnvs } from "../env";
-import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { envFileName, envFileNamePrefix, envFilePath, loadEnvFile } from "../env";
 import * as v3error from "../v3/error";
 
 interface DeploymentInfo {
@@ -62,10 +61,7 @@ export class FrontendDeployment {
 
     const scripts = await runWithErrorCatchAndWrap(
       (error) => new FileIOError(error.message),
-      async () => {
-        const pack = await fs.readFile(path.join(componentPath, PathInfo.NodePackageFile), "utf8");
-        return JSON.parse(pack).scripts;
-      }
+      async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
     );
 
     await progressHandler?.next(DeployProgress.steps.NPMInstall);
@@ -109,10 +105,7 @@ export class FrontendDeployment {
 
     const scripts = await runWithErrorCatchAndWrap(
       (error) => new FileIOError(error.message),
-      async () => {
-        const pack = await fs.readFile(path.join(componentPath, PathInfo.NodePackageFile), "utf8");
-        return JSON.parse(pack).scripts;
-      }
+      async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
     );
 
     await progress?.next(DeployProgress.steps.NPMInstall);

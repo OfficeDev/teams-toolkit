@@ -18,7 +18,12 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory, isBotNotificationEnabled, isM365AppEnabled } from "../common/tools";
+import {
+  getRootDirectory,
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isM365AppEnabled,
+} from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -29,6 +34,7 @@ import {
   M365LaunchPageOptionItem,
   M365MessagingExtensionOptionItem,
   CommandAndResponseOptionItem,
+  TabNonSsoItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -202,6 +208,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...[TabOptionItem, BotOptionItem],
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...[MessageExtensionItem, TabSPFxItem],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
@@ -277,6 +284,16 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
           previousSelectedIds,
           currentSelectedIds
         );
+      }
+
+      if (isAadManifestEnabled()) {
+        if (currentSelectedIds.has(TabNonSsoItem.id) && currentSelectedIds.has(TabOptionItem.id)) {
+          if (previousSelectedIds.has(TabNonSsoItem.id)) {
+            currentSelectedIds.delete(TabNonSsoItem.id);
+          } else {
+            currentSelectedIds.delete(TabOptionItem.id);
+          }
+        }
       }
 
       return currentSelectedIds;

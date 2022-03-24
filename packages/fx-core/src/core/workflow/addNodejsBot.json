@@ -1,0 +1,22 @@
+{
+  "name": "fx.add",
+  "type": "group",
+  "actions": [
+    {
+      "name": "nodejs-bot.addInstance",
+      "type": "function"
+    },
+    {
+      "name": "nodejs-bot.generateCode",
+      "type": "function"
+    },
+    {
+      "name": "azure-web-app.generateBicep",
+      "type": "function"
+    },
+    {
+      "type": "function",
+      "name": "fx.persistBicep"
+    }
+  ]
+}

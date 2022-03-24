@@ -24,7 +24,7 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\workflow\\action.js",
+      "program": "${workspaceFolder}\\build\\core\\workflow\\test.js",
       "outFiles": [
           "${workspaceFolder}/**/*.js"
       ]

@@ -84,7 +84,7 @@ export interface CallAction {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
   inputs?: {
-    [k: string]: string;
+    [k: string]: Json;
   };
   /**
    * execution priority in a sequential group, default is 3

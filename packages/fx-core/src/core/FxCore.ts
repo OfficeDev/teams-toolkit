@@ -1519,10 +1519,14 @@ export async function ensureBasicFolderStructure(
     }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
-      const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
-      const lines = content.split("\n");
-      for (let i = 0; i < lines.length; ++i) {
-        lines[i] = lines[i].trim();
+      let lines: string[] = [];
+      const exists = await fs.pathExists(gitIgnoreFilePath);
+      if (exists) {
+        const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
+        lines = content.split("\n");
+        for (let i = 0; i < lines.length; ++i) {
+          lines[i] = lines[i].trim();
+        }
       }
       const gitIgnoreContent = [
         "\n# TeamsFx files",
@@ -1534,7 +1538,6 @@ export async function ensureBasicFolderStructure(
         "subscriptionInfo.json",
         BuildFolderName,
       ];
-
       if (isConfigUnifyEnabled()) {
         gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
         gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);

@@ -91,6 +91,10 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }
+        {
+          name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
+          value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
+        }
       ]
     }
   }

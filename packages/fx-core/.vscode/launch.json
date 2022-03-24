@@ -24,11 +24,10 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\action.js",
+      "program": "${workspaceFolder}\\build\\core\\workflow\\action.js",
       "outFiles": [
           "${workspaceFolder}/**/*.js"
-      ],
-      "preLaunchTask": "npm: build"
+      ]
   }
   ]
 }

@@ -604,8 +604,14 @@ export async function addApiConnectorHandler(args?: any[]): Promise<Result<null,
 
   const res = await runUserTask(func, TelemetryEvent.AddApiConnector, true);
   if (!res.isOk()) {
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddApiConnector, res.error);
     return err(res.error);
   }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddApiConnector, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
   return ok(null);
 }
 

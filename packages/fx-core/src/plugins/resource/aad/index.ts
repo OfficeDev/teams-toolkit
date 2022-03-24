@@ -139,6 +139,14 @@ export class AadAppForTeamsPlugin implements Plugin {
     );
   }
 
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.deploy(ctx),
+      ctx,
+      Messages.Deploy.telemetry
+    );
+  }
+
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,

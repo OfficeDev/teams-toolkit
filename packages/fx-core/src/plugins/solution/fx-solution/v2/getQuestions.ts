@@ -53,6 +53,7 @@ import { NoCapabilityFoundError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isAadManifestEnabled } from "../../../../common";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -272,7 +273,11 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter((plugin) => !!plugin.deploy);
+    plugins = plugins.filter(
+      (plugin) =>
+        !!plugin.deploy &&
+        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
+    );
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }

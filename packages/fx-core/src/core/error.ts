@@ -275,7 +275,7 @@ export class OperationNotPermittedError extends UserError {
 }
 
 export class NoCapabilityFoundError extends UserError {
-  constructor(operation: Stage) {
+  constructor(operation: string) {
     super(
       new.target.name,
       getLocalizedString("core.deploy.noCapabilityFound", operation),

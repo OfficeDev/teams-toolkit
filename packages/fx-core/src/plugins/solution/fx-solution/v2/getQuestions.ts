@@ -29,6 +29,7 @@ import {
   AzureResourcesQuestion,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
@@ -72,6 +73,7 @@ export async function getQuestionsForScaffolding(
         TabOptionItem.id,
         BotOptionItem.id,
         NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
       ],
     };

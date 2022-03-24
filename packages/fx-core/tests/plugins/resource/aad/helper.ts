@@ -16,6 +16,7 @@ import {
   ok,
   LocalSettings,
   ConfigMap,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -37,7 +38,6 @@ import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-import { EnvConfig } from "@microsoft/teamsfx-api";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -167,6 +167,12 @@ export class TestHelper {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       projectSettings: {
         appName: "aad-plugin-unit-test",
+        solutionSettings: {
+          capabilities: ["Tab"],
+          hostType: "Azure",
+          azureResources: [],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
       },
       permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;

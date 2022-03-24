@@ -50,11 +50,12 @@ export class TeamsBotConfig {
       .capabilities;
 
     if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
-      if (
-        context.answers &&
-        context.answers[AzureSolutionQuestionNames.Scenario] === BotScenario.NotificationBot
-      ) {
+      if (context.answers?.[AzureSolutionQuestionNames.Scenario] === BotScenario.NotificationBot) {
         this.actRoles.push(PluginActRoles.Notification);
+      } else if (
+        context.answers?.[AzureSolutionQuestionNames.Scenario] === BotScenario.CommandAndResponseBot
+      ) {
+        this.actRoles.push(PluginActRoles.CommandAndResponse);
       } else {
         this.actRoles.push(PluginActRoles.Bot);
       }

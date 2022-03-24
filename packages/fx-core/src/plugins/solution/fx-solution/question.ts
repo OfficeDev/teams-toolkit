@@ -35,6 +35,14 @@ export const NotificationOptionItem: OptionItem = {
   detail: getLocalizedString("core.NotificationOption.detail"),
 };
 
+export const CommandAndResponseOptionItem: OptionItem = {
+  id: "CommandAndResponse",
+  label: "Command and Response Bot",
+  cliName: "command-and-response-bot",
+  description: getLocalizedString("core.CommandAndResponseOption.description"),
+  detail: getLocalizedString("core.CommandAndResponseOption.detail"),
+};
+
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",
@@ -125,7 +133,7 @@ export const AzureResourceKeyVault: OptionItem = {
 
 export enum BotScenario {
   NotificationBot = "notificationBot",
-  CommandBot = "commandBot",
+  CommandAndResponseBot = "commandAndResponseBot",
 }
 
 export const BotNotificationTriggers = {

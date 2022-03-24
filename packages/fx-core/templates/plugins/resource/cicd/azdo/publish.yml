@@ -1,9 +1,8 @@
 {{=<% %>=}}
 # This is just an example workflow for publishing Teams app.
 # You should customize it to meet your own requirements.
-trigger:
+trigger: none
 # Manually trigger this workflow, and you should pick the right branch.
-- main 
 
 pool:
   vmImage: ubuntu-latest
@@ -26,7 +25,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      set -vuxo pipefail
+      set -evuxo pipefail
       
       # Install the local dev dependency of @microsoft/teamsfx-cli. 
       # 'npm ci' is used here to install dependencies and it depends on package-lock.json.

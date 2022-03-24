@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { isAADEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -32,6 +32,7 @@ import {
   BotNotificationTriggers,
   BotOptionItem,
   BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
@@ -100,9 +101,11 @@ export async function ensurePermissionRequest(
     );
   }
 
-  const result = await permissionRequestProvider.checkPermissionRequest();
-  if (result && result.isErr()) {
-    return result.map(err);
+  if (isAADEnabled(solutionSettings)) {
+    const result = await permissionRequestProvider.checkPermissionRequest();
+    if (result && result.isErr()) {
+      return result.map(err);
+    }
   }
 
   return ok(Void);
@@ -231,15 +234,25 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(NotificationOptionItem.id)) {
-    // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+  if (
+    capabilities.includes(NotificationOptionItem.id) ||
+    capabilities.includes(CommandAndResponseOptionItem.id)
+  ) {
+    // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
     const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
     if (notificationIndex !== -1) {
       capabilities[notificationIndex] = BotOptionItem.id;
-      // dedup
-      capabilities = [...new Set(capabilities)];
       answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
     }
+
+    const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
+    if (commandAndResponseIndex !== -1) {
+      capabilities[commandAndResponseIndex] = BotOptionItem.id;
+      answers[AzureSolutionQuestionNames.Scenario] = BotScenario.CommandAndResponseBot;
+    }
+
+    // dedup
+    capabilities = [...new Set(capabilities)];
 
     hostType = HostTypeOptionAzure.id;
   } else if (

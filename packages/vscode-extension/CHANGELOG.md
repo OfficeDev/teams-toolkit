@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.6.0 - Mar 21, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Optimized Get Started page for Teams Toolkit. User can check environment prerequisites from Get started now.
+- User can use Teams Toolkit to create workflow automation templates for Github, Azure DevOps and Jenkins.
+
+Enhancement:
+- Enhance TeamsFx SDK.
+
 ## 3.5.0 - Mar 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

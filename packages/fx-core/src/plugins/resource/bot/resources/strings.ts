@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { BotScenario } from "../../../solution/fx-solution/question";
+import { PluginActRoles } from "../enums/pluginActRoles";
 
 export class CommonStrings {
   public static readonly BOT_WORKING_DIR_NAME = "bot";
@@ -80,6 +82,9 @@ export class PluginBot {
   public static readonly BOT_WEB_APP_RESOURCE_ID = "botWebAppResourceId";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly HOST_TYPE = "host-type";
+  // Bot capabilities, for example: notification, command-and-response.
+  // Don't mix up with Teams capabilities (tab, bot, etc.)
+  public static readonly BOT_CAPABILITIES = "capabilities";
 }
 
 export class ConfigNames {
@@ -114,6 +119,23 @@ export class ClientNames {
   public static readonly WEB_SITE_MGMT_CLIENT = "webSiteMgmtClient";
   public static readonly BOT_SERVICE_CLIENT = "botServiceClient";
 }
+
+export const BotCapabilities = {
+  NOTIFICATION: "notification",
+  COMMAND_AND_RESPONSE: "command-response",
+} as const;
+
+export type BotCapability = typeof BotCapabilities[keyof typeof BotCapabilities];
+
+export const QuestionBotScenarioToPluginActRoles = new Map<BotScenario, PluginActRoles>([
+  [BotScenario.NotificationBot, PluginActRoles.Notification],
+  [BotScenario.CommandAndResponseBot, PluginActRoles.CommandAndResponse],
+]);
+
+export const QuestionBotScenarioToBotCapability = new Map<BotScenario, BotCapability>([
+  [BotScenario.NotificationBot, BotCapabilities.NOTIFICATION],
+  [BotScenario.CommandAndResponseBot, BotCapabilities.COMMAND_AND_RESPONSE],
+]);
 
 export const HostTypes = {
   APP_SERVICE: "app-service",

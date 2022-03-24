@@ -13,6 +13,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   location: resourceGroup().location
   name: sqlServerName
   properties: {
+    minimalTlsVersion:'1.2'
     administratorLogin: empty(administratorLogin) ? null : administratorLogin
     administratorLoginPassword: administratorLoginPassword
   }

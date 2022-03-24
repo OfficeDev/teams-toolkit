@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DeployConfigs } from "../constants";
-
 export class CommonConstants {
   public static readonly msInOneSecond: number = 1000;
   public static readonly zipTimeMSGranularity: number = 2 * CommonConstants.msInOneSecond;

@@ -10,11 +10,11 @@ import { CommonConstants, FuncHostedBotDeployConfigs } from "./constants";
 import { Logger } from "../logger";
 
 export class FuncHostedDeployMgr {
-  private workingDir: string;
-  private deploymentDir: string;
-  private deploymentInfoFile: string;
-  private deploymentZipCacheFile: string;
-  private envName: string;
+  private readonly workingDir: string;
+  private readonly deploymentDir: string;
+  private readonly deploymentInfoFile: string;
+  private readonly deploymentZipCacheFile: string;
+  private readonly envName: string;
 
   public constructor(workingDir: string, envName: string) {
     this.workingDir = workingDir;
@@ -44,7 +44,7 @@ export class FuncHostedDeployMgr {
     try {
       const lastDeployTime = await this.getLastDeployTime();
       // Always ignore node_modules folder and bin folder and the file ignored both by git and func.
-      const ignore = await this.prepareIgnore(ignoreRules);
+      const ignore = await FuncHostedDeployMgr.prepareIgnore(ignoreRules);
 
       let changed = false;
       await forEachFileAndDir(
@@ -91,8 +91,7 @@ export class FuncHostedDeployMgr {
   private async loadLastDeploymentZipCache(): Promise<AdmZip | undefined> {
     try {
       const content = await fs.readFile(this.deploymentZipCacheFile);
-      const zip = new AdmZip(content);
-      return zip;
+      return new AdmZip(content);
     } catch {
       // Failed to load cache, it doesn't block deployment.
     }
@@ -116,7 +115,7 @@ export class FuncHostedDeployMgr {
     const zip = (await this.loadLastDeploymentZipCache()) || new AdmZip();
 
     // TODO: update .funcignore in template
-    const ig = await this.prepareIgnore(rules);
+    const ig = await FuncHostedDeployMgr.prepareIgnore(rules);
     const tasks: Promise<void>[] = [];
     const zipFiles = new Set<string>();
 
@@ -170,7 +169,7 @@ export class FuncHostedDeployMgr {
     return zip.toBuffer();
   }
 
-  private async prepareIgnore(rules: string[]): Promise<Ignore> {
+  private static async prepareIgnore(rules: string[]): Promise<Ignore> {
     const ig = ignore().add(DeployConfigs.DEPLOYMENT_FOLDER);
     for (const rule of rules) {
       ig.add(rule);

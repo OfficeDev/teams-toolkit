@@ -562,8 +562,7 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 
   // Zip Teams metadata package
   const buildPackageCmd = vscode.commands.registerCommand("fx-extension.build", (...args) =>
-    // Correlator.run(handlers.buildPackageHandler, args)
-    Correlator.run(treeViewManager.runCommand, "fx-extension.build", args)
+    Correlator.run(runTreeViewCommand, "fx-extension.build", args)
   );
   context.subscriptions.push(buildPackageCmd);
 
@@ -613,4 +612,8 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.openReportIssues, args)
   );
   context.subscriptions.push(openReportIssuesCmd);
+}
+
+function runTreeViewCommand(commandName: string, ...args: unknown[]) {
+  treeViewManager.runCommand(commandName, args);
 }

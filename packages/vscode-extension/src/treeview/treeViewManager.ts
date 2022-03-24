@@ -3,6 +3,7 @@
 
 // eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
+import * as AsyncLock from "async-lock";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { isInitAppEnabled, isValidProject } from "@microsoft/teamsfx-core";
@@ -12,16 +13,21 @@ import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { TreeViewCommand } from "./treeViewCommand";
+import { buildPackageHandler } from "../handlers";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
+  private commandMap: Map<string, [TreeViewCommand, CommandsTreeViewProvider]>;
+
   private treeviewMap: Map<string, any>;
-  private commandMap: Map<string, TreeViewCommand>;
   private exclusiveCommands: string[];
+  private runningCommand: TreeViewCommand | undefined;
+  private asyncLock: AsyncLock;
 
   private constructor() {
     this.treeviewMap = new Map();
-    this.commandMap = new Map<string, TreeViewCommand>();
+    this.commandMap = new Map<string, [TreeViewCommand, CommandsTreeViewProvider]>();
+    this.asyncLock = new AsyncLock();
     this.exclusiveCommands = [
       "fx-extension.create",
       "fx-extension.addCapability",
@@ -58,10 +64,22 @@ class TreeViewManager {
   }
 
   public async runCommand(commandName: string, ...args: unknown[]) {
-    const command = this.commandMap.get(commandName);
-    command?.setStatus(true);
-    await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
-    command?.setStatus(false);
+    if (this.runningCommand) {
+      return;
+    }
+    const commandData = this.commandMap.get(commandName);
+    if (!commandData) {
+      return;
+    }
+    const [command, treeViewProvider] = commandData;
+    command.setStatus(true);
+    treeViewProvider.refresh([]);
+    // await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
+    if (command.callback) {
+      await command.callback(args);
+    }
+    command.setStatus(false);
+    treeViewProvider.refresh([]);
   }
 
   public dispose() {
@@ -106,9 +124,6 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "new-folder", custom: false }
       ),
     ];
@@ -119,9 +134,6 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
           "fx-extension.init",
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          undefined,
           { name: "new-folder", custom: false }
         )
       );
@@ -131,10 +143,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "library", custom: false }
+        { name: "library", custom: false },
+        TreeCategory.GettingStarted
       )
     );
 
@@ -144,18 +154,12 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
           "fx-extension.addCapability",
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          undefined,
           { name: "addCapability", custom: true }
         ),
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
           "fx-extension.update",
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          undefined,
           { name: "addResources", custom: true }
         )
       );
@@ -166,9 +170,6 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
         "fx-extension.openManifest",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "edit", custom: false }
       )
     );
@@ -179,9 +180,6 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
           localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
           "fx-extension.OpenAdaptiveCardExt",
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          undefined,
           { name: "eye", custom: false }
         )
       );
@@ -191,11 +189,11 @@ class TreeViewManager {
   }
 
   private registerDevelopment(commands: TreeViewCommand[], disposables: vscode.Disposable[]) {
-    this.storeCommandsIntoMap(commands);
     const developmentProvider = new CommandsTreeViewProvider(commands);
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-development", developmentProvider)
     );
+    this.storeCommandsIntoMap(commands, developmentProvider);
     this.treeviewMap.set("teamsfx-development", developmentProvider);
     // codes for webview experiment:
     // let developmentProvider: any;
@@ -229,61 +227,45 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.provisionDescription"),
         "fx-extension.provision",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
-        vscode.TreeItemCollapsibleState.None,
+        { name: "package", custom: false },
         undefined,
-        undefined,
-        { name: "package", custom: false }
+        buildPackageHandler
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.deployTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.deployDescription"),
         "fx-extension.deploy",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "cloud-upload", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.publishTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.publishDescription"),
         "fx-extension.publish",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
         "fx-extension.addCICDWorkflows",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "sync", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
         { name: "developerPortal", custom: true }
       ),
     ];
 
-    this.storeCommandsIntoMap(deployCommand);
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
+    this.storeCommandsIntoMap(deployCommand, deployProvider);
     this.treeviewMap.set("teamsfx-deployment", deployProvider);
     // codes for webview experiment:
     // let deployProvider: any;
@@ -314,28 +296,22 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.quickStartTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "lightningBolt_16", custom: true }
+        { name: "lightningBolt_16", custom: true },
+        TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.GettingStarted,
-        undefined,
-        { name: "book", custom: false }
+        { name: "book", custom: false },
+        TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openReportIssues",
-        vscode.TreeItemCollapsibleState.None,
-        TreeCategory.Feedback,
-        undefined,
-        { name: "github", custom: false }
+        { name: "github", custom: false },
+        TreeCategory.Feedback
       ),
     ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);
@@ -345,10 +321,13 @@ class TreeViewManager {
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
   }
 
-  private storeCommandsIntoMap(commands: TreeViewCommand[]) {
+  private storeCommandsIntoMap(
+    commands: TreeViewCommand[],
+    treeViewProvider: CommandsTreeViewProvider
+  ) {
     for (const command of commands) {
       if (command.commandId) {
-        this.commandMap.set(command.commandId, command);
+        this.commandMap.set(command.commandId, [command, treeViewProvider]);
       }
     }
   }

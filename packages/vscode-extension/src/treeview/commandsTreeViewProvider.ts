@@ -121,22 +121,23 @@ export class CommandsTreeViewProvider
         treeItem.label,
         tooltip,
         treeItem.commandId,
-        (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
-          ? vscode.TreeItemCollapsibleState.Expanded
-          : treeItem.expanded === false
-          ? vscode.TreeItemCollapsibleState.Collapsed
-          : undefined,
-        typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
-        [],
         treeItem.icon
           ? {
               name: treeItem.icon,
               custom: treeItem.isCustom === undefined ? true : treeItem.isCustom,
             }
           : undefined,
-        treeItem.contextValue,
-        treeItem.description
+        typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined
       );
+      command.collapsibleState =
+        (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : treeItem.expanded === false
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : undefined;
+      command.description = treeItem.description;
+      command.contextValue = treeItem.contextValue;
+      command.children = [];
 
       let parentCmd = undefined;
       if (typeof treeItem.parent === "number") {
@@ -180,23 +181,24 @@ export class CommandsTreeViewProvider
               subTreeItem.label,
               tooltip,
               subTreeItem.commandId,
-              (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
-              subTreeItem.expanded
-                ? vscode.TreeItemCollapsibleState.Expanded
-                : undefined,
-              typeof subTreeItem.parent === "number"
-                ? (subTreeItem.parent as TreeCategory)
-                : undefined,
-              [],
               subTreeItem.icon
                 ? {
                     name: subTreeItem.icon,
                     custom: subTreeItem.isCustom === undefined ? true : subTreeItem.isCustom,
                   }
                 : undefined,
-              subTreeItem.contextValue,
-              subTreeItem.description
+              typeof subTreeItem.parent === "number"
+                ? (subTreeItem.parent as TreeCategory)
+                : undefined
             );
+            command.collapsibleState =
+              (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
+              subTreeItem.expanded
+                ? vscode.TreeItemCollapsibleState.Expanded
+                : undefined;
+            command.description = treeItem.description;
+            command.contextValue = treeItem.contextValue;
+            command.children = [];
 
             if (command.children === undefined) {
               command.children = [];

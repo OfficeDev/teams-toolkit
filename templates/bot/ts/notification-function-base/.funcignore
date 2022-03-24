@@ -10,3 +10,4 @@ tsconfig.json
 .DS_Store
 node_modules/.bin
 _storage_emulator
+.notification.localstore.json

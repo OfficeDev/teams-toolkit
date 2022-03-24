@@ -35,11 +35,10 @@ describe("getBotHostType Tests", () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
     const answers = pluginContext.answers!;
-    answers.stage = Stage.create;
     answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
 
     // Act
-    const hostType = ScaffoldConfig.getBotHostType(pluginContext);
+    const hostType = ScaffoldConfig.getBotHostType(pluginContext, true);
 
     // Assert
     chai.assert.equal(hostType, HostTypes.AZURE_FUNCTIONS);
@@ -50,7 +49,6 @@ describe("getBotHostType Tests", () => {
     const pluginContext = testUtils.newPluginContext();
     const answers = pluginContext.answers!;
     const projectSettings = pluginContext.projectSettings!;
-    answers.stage = Stage.provision;
     projectSettings.pluginSettings = {
       [PluginBot.PLUGIN_NAME]: {
         [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
@@ -59,7 +57,7 @@ describe("getBotHostType Tests", () => {
     answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
 
     // Act
-    const hostType = ScaffoldConfig.getBotHostType(pluginContext);
+    const hostType = ScaffoldConfig.getBotHostType(pluginContext, false);
 
     // Assert
     chai.assert.equal(hostType, HostTypes.AZURE_FUNCTIONS);
@@ -69,11 +67,10 @@ describe("getBotHostType Tests", () => {
     // Arrange
     const pluginContext = testUtils.newPluginContext();
     const answers = pluginContext.answers!;
-    answers.stage = Stage.create;
     answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
 
     // Act
-    const hostType = ScaffoldConfig.getBotHostType(pluginContext);
+    const hostType = ScaffoldConfig.getBotHostType(pluginContext, true);
 
     // Assert
     chai.assert.equal(hostType, HostTypes.APP_SERVICE);
@@ -84,7 +81,6 @@ describe("getBotHostType Tests", () => {
     const pluginContext = testUtils.newPluginContext();
     const answers = pluginContext.answers!;
     const projectSettings = pluginContext.projectSettings!;
-    answers.stage = Stage.provision;
     projectSettings.pluginSettings = {
       [PluginBot.PLUGIN_NAME]: {
         [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
@@ -93,7 +89,7 @@ describe("getBotHostType Tests", () => {
     answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
 
     // Act
-    const hostType = ScaffoldConfig.getBotHostType(pluginContext);
+    const hostType = ScaffoldConfig.getBotHostType(pluginContext, false);
 
     // Assert
     chai.assert.equal(hostType, HostTypes.APP_SERVICE);

@@ -78,12 +78,16 @@ export class ScaffoldConfig {
 
   /**
    * Get bot host type from plugin context.
-   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For stages like scaffolding (including create new and add capability),
+   *    the host type is from user inputs of question model (i.e. context.answers).
    * For later stages, the host type is persisted in projectSettings.json.
+   * @param isScaffold true for the `scaffold` lifecycle, false otherwise.
    */
-  public static getBotHostType(context: PluginContext): HostType | undefined {
-    // TODO: support other stages (maybe addCapability)
-    const fromInputs = context.answers?.stage === Stage.create;
+  public static getBotHostType(context: PluginContext, isScaffold: boolean): HostType | undefined {
+    if (context.answers === undefined) {
+      return undefined;
+    }
+    const fromInputs = isScaffold;
     if (fromInputs) {
       return context.answers
         ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)

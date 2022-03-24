@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { BotFrameworkAdapter } from "botbuilder";
 import { NotificationTargetStorage, TeamsFxBotCommandHandler } from "./interface";
 import { ConversationReferenceStore } from "./storage";

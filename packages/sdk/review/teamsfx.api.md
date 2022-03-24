@@ -6,8 +6,12 @@
 
 import { AccessToken } from '@azure/identity';
 import { Activity } from 'botbuilder-core';
+import { Activity as Activity_2 } from 'botbuilder';
+import { Attachment } from 'botbuilder';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import { BotFrameworkAdapter } from 'botbuilder';
+import { CardAction } from 'botbuilder';
+import { CardImage } from 'botbuilder';
 import { ChannelInfo } from 'botbuilder';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConnectionConfig } from 'tedious';
@@ -16,7 +20,11 @@ import { Dialog } from 'botbuilder-dialogs';
 import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
+import { HeroCard } from 'botbuilder';
+import { O365ConnectorCard } from 'botbuilder';
+import { ReceiptCard } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
+import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder-core';
@@ -56,7 +64,6 @@ export class ConversationBot {
 
 // @beta
 export interface ConversationOptions {
-    // Warning: (ae-forgotten-export) The symbol "TeamsFxBotCommandHandler" needs to be exported by the entry point index.d.ts
     commandHandlers?: TeamsFxBotCommandHandler[];
     enableNotification?: boolean;
     // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
@@ -141,6 +148,26 @@ export class Member implements NotificationTarget {
     readonly type: NotificationTargetType;
 }
 
+// @public
+export class MessageBuilder {
+    // @beta
+    static attachAdaptiveCard<TData>(getCardData: () => TData, cardTemplate: any): Partial<Activity_2>;
+    // @beta
+    static attachAdaptiveCardWithoutData(card: any): Partial<Activity_2>;
+    // @beta
+    static attachContent(attachement: Attachment): Partial<Activity_2>;
+    // @beta
+    static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<HeroCard>): Partial<Activity_2>;
+    // @beta
+    static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity_2>;
+    // @beta
+    static AttachReceiptCard(card: ReceiptCard): Partial<Activity_2>;
+    // @beta
+    static attachSigninCard(title: string, url: string, text?: string): Partial<Activity_2>;
+    // @beta (undocumented)
+    static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity_2>;
+}
+
 // @beta
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
@@ -222,6 +249,12 @@ export class TeamsFx implements TeamsFxConfiguration {
     hasConfig(key: string): boolean;
     login(scopes: string | string[]): Promise<void>;
     setSsoToken(ssoToken: string): TeamsFx;
+}
+
+// @beta
+export interface TeamsFxBotCommandHandler {
+    commandNameOrPattern: string | RegExp;
+    handleCommandReceived(context: TurnContext, receivedText: string): Promise<string | Partial<Activity>>;
 }
 
 // @beta

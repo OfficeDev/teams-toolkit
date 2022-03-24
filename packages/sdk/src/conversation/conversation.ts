@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { BotFrameworkAdapter, TeamsInfo } from "botbuilder";
 import * as path from "path";
 import { NotificationTargetStorage, TeamsFxBotCommandHandler } from "./interface";

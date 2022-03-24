@@ -14,6 +14,7 @@
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [IncomingWebhookTarget](./teamsfx.incomingwebhooktarget.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel, creating from incoming webhook. |
 |  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
+|  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
 |  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
@@ -52,6 +53,7 @@
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | <b><i>(BETA)</i></b> Represent a notification target. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |
+|  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | <b><i>(BETA)</i></b> Interface for a command handler thar can process command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | <b><i>(BETA)</i></b> UserInfo with user displayName, objectId and preferredUserName. |
 
 ## Type Aliases

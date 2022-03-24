@@ -9,8 +9,9 @@ import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-
 import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
-import { TaskFailed } from "./errors";
+import { OpeningBrowserFailed, TaskFailed } from "./errors";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
+import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -22,6 +23,7 @@ import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
+import CLIUIInstance from "../../userInteraction";
 
 export async function openBrowser(
   browser: constants.Browser,
@@ -283,5 +285,99 @@ export function getAutomaticNpmInstallSetting(): boolean {
   } catch (error: any) {
     cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
     return false;
+  }
+}
+
+export async function generateAccountHint(
+  tenantIdFromConfig: string,
+  includeTenantId = true
+): Promise<string> {
+  let tenantId = undefined,
+    loginHint = undefined;
+  try {
+    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    if (tokenObject) {
+      // user signed in
+      tenantId = tokenObject.tid;
+      loginHint = tokenObject.upn;
+    } else {
+      // no signed user
+      tenantId = tenantIdFromConfig;
+      loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
+    }
+  } catch {
+    // ignore error
+  }
+  if (includeTenantId) {
+    return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+  } else {
+    return loginHint ? `login_hint=${loginHint}` : "";
+  }
+}
+
+export async function openHubWebClient(
+  includeFrontend: boolean,
+  tenantIdFromConfig: string,
+  appId: string,
+  hub: string,
+  browser: constants.Browser,
+  browserArguments: string[] = [],
+  telemetryProperties?: { [key: string]: string } | undefined
+): Promise<void> {
+  if (telemetryProperties) {
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloadingStart, telemetryProperties);
+  }
+  let sideloadingUrl = "";
+  if (hub === constants.Hub.teams) {
+    sideloadingUrl = constants.LaunchUrl.teams;
+  } else if (hub === constants.Hub.outlook) {
+    sideloadingUrl = includeFrontend
+      ? constants.LaunchUrl.outlookTab
+      : constants.LaunchUrl.outlookBot;
+  } else if (hub === constants.Hub.office) {
+    sideloadingUrl = constants.LaunchUrl.officeTab;
+  }
+  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppIdPlaceholder, appId);
+  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppInternalIdPlaceholder, appId);
+  const accountHint = await generateAccountHint(tenantIdFromConfig, hub === constants.Hub.teams);
+  sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, accountHint);
+
+  const message = [
+    {
+      content: `preview url: `,
+      color: Colors.WHITE,
+    },
+    {
+      content: sideloadingUrl,
+      color: Colors.BRIGHT_CYAN,
+    },
+  ];
+  cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
+
+  const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
+  await previewBar.start(constants.previewStartMessage);
+  await previewBar.next(constants.previewStartMessage);
+  try {
+    await openBrowser(browser, sideloadingUrl, browserArguments);
+  } catch {
+    const error = OpeningBrowserFailed(browser);
+    if (telemetryProperties) {
+      cliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PreviewSideloading,
+        error,
+        telemetryProperties
+      );
+    }
+    cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+    await previewBar.end(false);
+    return;
+  }
+  await previewBar.end(true);
+
+  if (telemetryProperties) {
+    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
+      ...telemetryProperties,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
   }
 }

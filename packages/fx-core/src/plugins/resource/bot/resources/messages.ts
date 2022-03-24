@@ -24,6 +24,9 @@ export class Messages {
     "plugins.bot.FailedListPublishingCredentials"
   );
   public static readonly FailToDoZipDeploy = getLocalizedString("plugins.bot.FailedDeployZipFile");
+  public static readonly FailToRestartWebApp = getLocalizedString(
+    "plugins.bot.FailedRestartWebApp"
+  );
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): string =>
     getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);
   public static readonly FailToDownloadFrom = (url: string): string =>

@@ -59,10 +59,11 @@ export class FrontendDeployment {
 
     const progressHandler = ProgressHelper.progressHandler;
 
-    const scripts = await runWithErrorCatchAndWrap(
-      (error) => new FileIOError(error.message),
-      async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
-    );
+    const scripts =
+      (await runWithErrorCatchAndWrap(
+        (error) => new FileIOError(error.message),
+        async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
+      )) ?? [];
 
     await progressHandler?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new NpmInstallError(), async () => {
@@ -103,10 +104,11 @@ export class FrontendDeployment {
       return;
     }
 
-    const scripts = await runWithErrorCatchAndWrap(
-      (error) => new FileIOError(error.message),
-      async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
-    );
+    const scripts =
+      (await runWithErrorCatchAndWrap(
+        (error) => new FileIOError(error.message),
+        async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
+      )) ?? [];
 
     await progress?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {

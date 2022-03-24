@@ -131,6 +131,14 @@ export class AadAppForTeamsPlugin implements Plugin {
     );
   }
 
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.scaffold(ctx),
+      ctx,
+      Messages.Scaffold.telemetry
+    );
+  }
+
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,
@@ -203,3 +211,4 @@ export class AadAppForTeamsPlugin implements Plugin {
 }
 
 export default new AadAppForTeamsPlugin();
+export { getPermissionMap } from "./permissions";

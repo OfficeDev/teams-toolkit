@@ -159,6 +159,9 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
 }
 
 export enum TelemetryProperty {

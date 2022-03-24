@@ -163,6 +163,8 @@ export class LanguageStrategy {
       } else {
         return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;
       }
+    } else if (config.actRoles.includes(PluginActRoles.CommandAndResponse)) {
+      return TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME;
     } else {
       return TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
     }

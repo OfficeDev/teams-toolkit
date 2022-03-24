@@ -86,7 +86,7 @@ export class YoChecker implements DependencyChecker {
   }
 
   public getBinFolder(): string {
-    return path.join(this.getDefaultInstallPath(), "node_modules", "yo", "bin");
+    return this.getDefaultInstallPath();
   }
 
   private async validate(): Promise<boolean> {

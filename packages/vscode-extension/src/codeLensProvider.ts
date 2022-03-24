@@ -3,10 +3,12 @@
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
 import * as fs from "fs-extra";
+import * as parser from "jsonc-parser";
 import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
-import { isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
+import { isConfigUnifyEnabled, getPermissionMap, getAllowedAppMaps } from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
+import isUUID from "validator/lib/isUUID";
 
 /**
  * CodelensProvider
@@ -192,5 +194,169 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
     return codeLenses;
+  }
+}
+
+export interface PropertyPair {
+  name: parser.Node;
+  value: parser.Node;
+}
+
+export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
+  constructor() {}
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (document.fileName.endsWith("aad.template.json")) {
+      return this.computeCodeLenses(document);
+    } else {
+      return [];
+    }
+  }
+
+  private getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
+    if (node.type !== "object" || !node.children) {
+      return undefined;
+    }
+    let propertyPair: PropertyPair | undefined;
+    for (const child of node.children) {
+      propertyPair = this.parseProperty(child);
+      if (!propertyPair) {
+        continue;
+      }
+      if (propertyPair.name.value === key) {
+        return propertyPair.value;
+      }
+    }
+    return undefined;
+  }
+
+  private parseProperty(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== "property" || !node.children || node.children.length !== 2) {
+      return undefined;
+    }
+    return { name: node.children[0], value: node.children[1] };
+  }
+
+  private computeRequiredResAccessCodeLenses(
+    document: vscode.TextDocument,
+    jsonNode: parser.Node
+  ): vscode.CodeLens[] {
+    const codeLenses: vscode.CodeLens[] = [];
+    const requiredResourceAccessNode = parser.findNodeAtLocation(jsonNode, [
+      "requiredResourceAccess",
+    ]);
+    const map = getPermissionMap();
+    requiredResourceAccessNode?.children?.forEach((requiredResource) => {
+      const resIdNode = this.getPropertyValueOfObjectByKey("resourceAppId", requiredResource);
+      if (resIdNode) {
+        const range = new vscode.Range(
+          document.positionAt(resIdNode.offset),
+          document.positionAt(resIdNode.offset + resIdNode.length)
+        );
+
+        const resIdOrName = resIdNode.value;
+
+        let title = "";
+        if (isUUID(resIdNode.value)) {
+          title = map[resIdOrName]?.displayName;
+        } else {
+          title = map[resIdOrName]?.id;
+        }
+
+        if (title) {
+          codeLenses.push(
+            new vscode.CodeLens(range, {
+              command: "",
+              title: `👉 resourceAppId: "${title}"`,
+            })
+          );
+        }
+
+        const resAccessArrNode = this.getPropertyValueOfObjectByKey(
+          "resourceAccess",
+          requiredResource
+        );
+
+        resAccessArrNode?.children?.forEach((resAccessNode) => {
+          const resAccessIdNode = this.getPropertyValueOfObjectByKey("id", resAccessNode);
+          if (resAccessIdNode) {
+            const type = this.getPropertyValueOfObjectByKey("type", resAccessNode);
+            let title = "";
+            if (isUUID(resAccessIdNode?.value)) {
+              if (type?.value === "Scope") {
+                title = map[resIdOrName]?.scopeIds[resAccessIdNode?.value];
+              } else if (type?.value === "Role") {
+                title = map[resIdOrName]?.roleIds[resAccessIdNode?.value];
+              }
+            } else {
+              if (type?.value === "Scope") {
+                title = map[resIdOrName]?.scopes[resAccessIdNode?.value];
+              } else if (type?.value === "Role") {
+                title = map[resIdOrName]?.roles[resAccessIdNode?.value];
+              }
+            }
+            const range = new vscode.Range(
+              document.positionAt(resAccessIdNode.offset),
+              document.positionAt(resAccessIdNode.offset + resAccessIdNode.length)
+            );
+
+            if (title) {
+              codeLenses.push(
+                new vscode.CodeLens(range, {
+                  command: "",
+                  title: `👉 id: "${title}"`,
+                })
+              );
+            }
+          }
+        });
+      }
+    });
+
+    return codeLenses;
+  }
+
+  private computePreAuthAppCodeLenses(
+    document: vscode.TextDocument,
+    jsonNode: parser.Node
+  ): vscode.CodeLens[] {
+    const preAuthAppArrNode = parser.findNodeAtLocation(jsonNode, ["preAuthorizedApplications"]);
+    const map = getAllowedAppMaps();
+    const codeLenses: vscode.CodeLens[] = [];
+
+    preAuthAppArrNode?.children?.forEach((preAuthAppNode) => {
+      const appIdNode = this.getPropertyValueOfObjectByKey("appId", preAuthAppNode);
+      if (appIdNode) {
+        const range = new vscode.Range(
+          document.positionAt(appIdNode.offset),
+          document.positionAt(appIdNode.offset + appIdNode.length)
+        );
+        const appName = map[appIdNode.value];
+        if (appName) {
+          codeLenses.push(
+            new vscode.CodeLens(range, {
+              command: "",
+              title: `👉 resource name: "${appName}"`,
+            })
+          );
+        }
+      }
+    });
+    return codeLenses;
+  }
+
+  private computeCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const text = document.getText();
+    const jsonNode: parser.Node | undefined = parser.parseTree(text);
+    if (jsonNode) {
+      const resAccessCodeLenses = this.computeRequiredResAccessCodeLenses(document, jsonNode);
+      const preAuthAppCodeLenses = this.computePreAuthAppCodeLenses(document, jsonNode);
+
+      return [...resAccessCodeLenses, ...preAuthAppCodeLenses];
+    }
+
+    return [];
   }
 }

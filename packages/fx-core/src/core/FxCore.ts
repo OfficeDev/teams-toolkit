@@ -782,7 +782,10 @@ export class FxCore implements v3.ICore {
         }
         // reset provisionSucceeded state for all env
         if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
-          if (ctx.envInfoV2?.state?.solution?.provisionSucceeded) {
+          if (
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"
+          ) {
             ctx.envInfoV2.state.solution.provisionSucceeded = false;
           }
           const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
@@ -796,16 +799,19 @@ export class FxCore implements v3.ICore {
               );
               if (loadEnvRes.isOk()) {
                 const envInfo = loadEnvRes.value;
-                if (envInfo.state?.solution?.provisionSucceeded) {
+                if (
+                  envInfo.state?.solution?.provisionSucceeded === true ||
+                  envInfo.state?.solution?.provisionSucceeded === "true"
+                ) {
                   envInfo.state.solution.provisionSucceeded = false;
+                  await environmentManager.writeEnvState(
+                    envInfo.state,
+                    inputs.projectPath!,
+                    ctx.contextV2.cryptoProvider,
+                    env,
+                    true
+                  );
                 }
-                await environmentManager.writeEnvState(
-                  envInfo.state,
-                  inputs.projectPath!,
-                  ctx.contextV2.cryptoProvider,
-                  env,
-                  true
-                );
               }
             }
           }

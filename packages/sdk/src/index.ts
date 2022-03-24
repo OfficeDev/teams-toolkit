@@ -27,5 +27,13 @@ export {
   setLogFunction,
 } from "./util/logger";
 
+export { createApiClient } from "./authentication/ApiClient";
+export { IAuthProvider } from "./authentication/IAuthProvider";
+export { BasicAuthProvider } from "./authentication/BasicAuthProvider";
+export { BearerAuthProvider } from "./authentication/BearerAuthProvider";
+export { CertificateProvider } from "./authentication/CertificateProvider";
+export { ApiKeyLocation, ApiKeyProvider } from "./authentication/ApiKeyProvider";
+export { createPermCertOptions, createPfxCertOptions } from "./authentication/helper";
+
 export { TeamsFx } from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";

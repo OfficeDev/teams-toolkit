@@ -6,7 +6,11 @@ import { IAuthProvider } from "./IAuthProvider";
 import { Agent } from "https";
 import { SecureContextOptions } from "tls";
 
-// Provider that handles Certificate authentication
+/**
+ * Provider that handles Certificate authentication
+ *
+ * @beta
+ */
 export class CertificateProvider implements IAuthProvider {
   private certOption: SecureContextOptions;
 

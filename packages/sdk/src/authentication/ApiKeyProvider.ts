@@ -4,6 +4,11 @@
 import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
+/**
+ * Provider that handles API Key authentication
+ *
+ * @beta
+ */
 export class ApiKeyProvider implements IAuthProvider {
   private keyName: string;
   private keyValue: string;
@@ -42,8 +47,18 @@ export class ApiKeyProvider implements IAuthProvider {
   }
 }
 
-// Define available location for API Key location
+/**
+ * Define available location for API Key location
+ *
+ * @beta
+ */
 export enum ApiKeyLocation {
-  Header, // The API Key is placed in request header
-  QueryParams, // The API Key is placed in query parameter
+  /**
+   * The API Key is placed in request header
+   */
+  Header,
+  /**
+   * The API Key is placed in query parameter
+   */
+  QueryParams,
 }

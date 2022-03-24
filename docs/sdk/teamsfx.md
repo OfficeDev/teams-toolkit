@@ -8,7 +8,11 @@
 
 |  Class | Description |
 |  --- | --- |
+|  [ApiKeyProvider](./teamsfx.apikeyprovider.md) | <b><i>(BETA)</i></b> Provider that handles API Key authentication |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
+|  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Basic authentication |
+|  [BearerAuthProvider](./teamsfx.bearerauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
+|  [CertificateProvider](./teamsfx.certificateprovider.md) | <b><i>(BETA)</i></b> Provider that handles Certificate authentication |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
@@ -20,6 +24,7 @@
 
 |  Enumeration | Description |
 |  --- | --- |
+|  [ApiKeyLocation](./teamsfx.apikeylocation.md) | <b><i>(BETA)</i></b> Define available location for API Key location |
 |  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | <b><i>(BETA)</i></b> Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> Log level. |
@@ -28,7 +33,10 @@
 
 |  Function | Description |
 |  --- | --- |
+|  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
+|  [createPermCertOptions(key, cert, ca, passphrase)](./teamsfx.createpermcertoptions.md) | Helper to create SecureContextOptions from PEM format cert |
+|  [createPfxCertOptions(pfx, passphrase)](./teamsfx.createpfxcertoptions.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | <b><i>(BETA)</i></b> Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
@@ -40,6 +48,7 @@
 |  Interface | Description |
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
+|  [IAuthProvider](./teamsfx.iauthprovider.md) |  |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |

@@ -4,7 +4,11 @@
 import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
-// Provider that handles Bearer Token authentication
+/**
+ * Provider that handles Bearer Token authentication
+ *
+ * @beta
+ */
 export class BearerAuthProvider implements IAuthProvider {
   private getToken: () => Promise<string>;
 

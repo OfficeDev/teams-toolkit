@@ -4,7 +4,11 @@
 import { AxiosRequestConfig } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
-// Provider that handles Basic authentication
+/**
+ * Provider that handles Basic authentication
+ *
+ * @beta
+ */
 export class BasicAuthProvider implements IAuthProvider {
   private userName: string;
   private password: string;

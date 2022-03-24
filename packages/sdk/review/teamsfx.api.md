@@ -4,16 +4,35 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@azure/identity';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
+import { AxiosRequestConfig } from 'axios';
+import { AxiosStatic } from 'axios';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConnectionConfig } from 'tedious';
 import { Dialog } from 'botbuilder-dialogs';
 import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
+import { KeyObject } from 'crypto';
+import { PxfObject } from 'tls';
+import { SecureContextOptions } from 'tls';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
+
+// @beta
+export enum ApiKeyLocation {
+    Header = 0,
+    QueryParams = 1
+}
+
+// @beta
+export class ApiKeyProvider implements IAuthProvider {
+    constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void>;
+}
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -32,10 +51,37 @@ export interface AuthenticationConfiguration {
     readonly tenantId?: string;
 }
 
+// @beta
+export class BasicAuthProvider implements IAuthProvider {
+    constructor(userName: string, password: string);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void>;
+}
+
+// @beta
+export class BearerAuthProvider implements IAuthProvider {
+    constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void>;
+}
+
+// @beta
+export class CertificateProvider implements IAuthProvider {
+    constructor(certOption: SecureContextOptions);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void>;
+}
+
+// @public
+export function createApiClient(apiEndpoint: string, authProvider: IAuthProvider): AxiosStatic;
+
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
 // @beta
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
+
+// @public
+export function createPermCertOptions(key: string | Buffer | Array<Buffer | KeyObject> | undefined, cert: string | Buffer | Array<string | Buffer> | undefined, ca?: string | Buffer | Array<string | Buffer> | undefined, passphrase?: string | undefined): SecureContextOptions;
+
+// @public
+export function createPfxCertOptions(pfx: string | Buffer | Array<string | Buffer | PxfObject> | undefined, passphrase?: string | undefined): SecureContextOptions;
 
 // @beta
 export enum ErrorCode {
@@ -65,6 +111,11 @@ export function getLogLevel(): LogLevel | undefined;
 
 // @beta
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
+
+// @public (undocumented)
+export interface IAuthProvider {
+    AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<void>;
+}
 
 // @beta
 export enum IdentityType {

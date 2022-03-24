@@ -9,10 +9,12 @@ import {
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
   AADJwtPayLoad,
+  extractIntegrationEnvVariables,
 } from "../helper";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 let restore: () => void;
 
 describe("MsGraphAuthProvider Tests - Node", () => {

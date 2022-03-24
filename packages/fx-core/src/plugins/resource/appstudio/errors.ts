@@ -139,24 +139,18 @@ export class AppStudioError {
 
   public static readonly TeamsPackageBuildError = {
     name: "TeamsPackageBuildError",
-    message: (error: any): [string, string] =>
-      error.message
-        ? error.message
-        : [
-            getDefaultString("error.appstudio.buildError"),
-            getLocalizedString("error.appstudio.buildError"),
-          ],
+    message: (error: any): [string, string] => [
+      error.message ?? getDefaultString("error.appstudio.buildError"),
+      error.displayMessage ?? getLocalizedString("error.appstudio.buildError"),
+    ],
   };
 
   public static readonly ScaffoldFailedError = {
     name: "ScaffoldFailed",
-    message: (error: any): [string, string] =>
-      error.message
-        ? error.message
-        : [
-            getDefaultString("error.appstudio.scaffoldFailed"),
-            getLocalizedString("error.appstudio.scaffoldFailed"),
-          ],
+    message: (error: any): [string, string] => [
+      error.message ?? getDefaultString("error.appstudio.scaffoldFailed"),
+      error.displayMessage ?? getLocalizedString("error.appstudio.scaffoldFailed"),
+    ],
   };
 
   public static readonly CheckPermissionFailedError = {

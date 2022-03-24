@@ -52,7 +52,7 @@ import { FRONTEND_INDEX_PATH } from "../appstudio/constants";
 export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startProgress(ctx, ScaffoldProgress);
+    const progressHandler = await ProgressHelper.startProgress(ctx.ui, ScaffoldProgress);
     await progressHandler?.next(ScaffoldProgress.steps.Scaffold);
 
     const templateInfo = new TemplateInfo(ctx);
@@ -69,7 +69,7 @@ export class FrontendPluginImpl implements PluginImpl {
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startProgress(ctx, PostProvisionProgress);
+    const progressHandler = await ProgressHelper.startProgress(ctx.ui, PostProvisionProgress);
     await progressHandler?.next(PostProvisionProgress.steps.EnableStaticWebsite);
 
     const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
@@ -88,7 +88,7 @@ export class FrontendPluginImpl implements PluginImpl {
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartPreDeploy(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startProgress(ctx, PreDeployProgress);
+    const progressHandler = await ProgressHelper.startProgress(ctx.ui, PreDeployProgress);
 
     await this.updateDotEnv(ctx);
 
@@ -102,7 +102,7 @@ export class FrontendPluginImpl implements PluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
-    await ProgressHelper.startProgress(ctx, DeployProgress);
+    await ProgressHelper.startProgress(ctx.ui, DeployProgress);
 
     const config = await FrontendConfig.fromPluginContext(ctx);
     const client = new AzureStorageClient(config);

@@ -578,8 +578,9 @@ export class AppStudioPluginImpl {
         ?.solutionSettings as AzureSolutionSettings;
       const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
       const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+      const scenarios = ctx.answers?.[AzureSolutionQuestionNames.Scenarios];
       const hasCommandAndResponseBot =
-        ctx.answers?.[AzureSolutionQuestionNames.Scenario] === BotScenario.CommandAndResponseBot;
+        scenarios?.includes && scenarios.includes(BotScenario.CommandAndResponseBot);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
       const hasAad = isAADEnabled(solutionSettings);
       const isM365 = ctx.projectSettings?.isM365;

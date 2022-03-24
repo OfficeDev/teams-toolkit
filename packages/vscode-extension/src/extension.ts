@@ -443,6 +443,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(listCollaborator);
 
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",

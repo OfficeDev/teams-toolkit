@@ -159,6 +159,8 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  ShowOutputChannel = "show-output-channel",
 }
 
 export enum TelemetryProperty {

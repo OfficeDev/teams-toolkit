@@ -744,6 +744,12 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
   return ok(null);
 }
 
+export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
+  VsCodeLogInstance.outputChannel.show();
+  return ok(null);
+}
+
 export async function runCommand(
   stage: Stage,
   defaultInputs?: Inputs

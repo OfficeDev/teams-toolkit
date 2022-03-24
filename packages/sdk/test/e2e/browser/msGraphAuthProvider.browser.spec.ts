@@ -7,10 +7,17 @@ import * as chaiPromises from "chai-as-promised";
 import { MsGraphAuthProvider, TeamsFx, IdentityType } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
 import * as sinon from "sinon";
-import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.browser";
+import {
+  getSSOToken,
+  AADJwtPayLoad,
+  SSOToken,
+  getGraphToken,
+  extractIntegrationEnvVariables,
+} from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 const env = (window as any).__env__;
 
 describe("MsGraphAuthProvider Tests - Browser", () => {

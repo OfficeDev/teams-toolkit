@@ -10,9 +10,12 @@ import {
   MockAuthenticationConfiguration,
   AADJwtPayLoad,
   convertCertificateContent,
+  extractIntegrationEnvVariables,
 } from "../helper";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
+
 describe("AppCredential Tests - Node", () => {
   const fake_client_secret = "fake_client_secret";
   const defaultGraphScope = ["https://graph.microsoft.com/.default"];

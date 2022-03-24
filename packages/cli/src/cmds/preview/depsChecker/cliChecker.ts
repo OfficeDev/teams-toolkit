@@ -10,39 +10,32 @@ import {
 } from "./cliUtils";
 
 export class CliDepsChecker {
-  public static async getEnabledDeps(
-    deps: DepsType[],
-    hasBackend: boolean,
-    hasBot: boolean,
-    hasFuncHostedBot: boolean
-  ): Promise<DepsType[]> {
+  public static async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
     const res: DepsType[] = [];
     for (const dep of deps) {
-      if (await CliDepsChecker.isEnabled(dep, hasBackend, hasBot, hasFuncHostedBot)) {
+      if (await CliDepsChecker.isEnabled(dep)) {
         res.push(dep);
       }
     }
     return res;
   }
 
-  public static async isEnabled(
-    dep: DepsType,
-    hasBackend: boolean,
-    hasBot: boolean,
-    hasFuncHostedBot: boolean
-  ): Promise<boolean> {
+  public static getNodeDeps(): DepsType[] {
+    return [DepsType.FunctionNode, DepsType.SpfxNode, DepsType.AzureNode];
+  }
+
+  public static async isEnabled(dep: DepsType): Promise<boolean> {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return await isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return (await isNodeCheckerEnabled()) && (hasBackend || hasFuncHostedBot);
+        return await isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return await isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return (await isFuncCoreToolsEnabled()) && (hasBackend || hasFuncHostedBot);
+        return await isFuncCoreToolsEnabled();
       case DepsType.Ngrok:
-        return hasBot && (await isNgrokCheckerEnabled());
+        return await isNgrokCheckerEnabled();
       default:
         return false;
     }

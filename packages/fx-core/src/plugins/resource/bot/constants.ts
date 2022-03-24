@@ -51,6 +51,7 @@ export enum TemplateProjectsScenarios {
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
   NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
   NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
+  COMMAND_AND_RESPONSE_SCENARIO_NAME = "command-and-response",
 }
 
 export const TriggerTemplateScenarioMappings = {

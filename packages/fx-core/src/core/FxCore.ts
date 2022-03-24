@@ -120,9 +120,11 @@ import {
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
+  ScratchOptionYesM365,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
+import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { getTemplatesFolder } from "../folder";
 import { getLocalizedString } from "../common/localizeUtils";
 
@@ -216,8 +218,12 @@ export class FxCore implements v3.ICore {
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
-      if (inputs.isM365) {
+      if (
+        inputs.isM365 ||
+        inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionYesM365.id
+      ) {
         projectSettings.isM365 = true;
+        inputs.isM365 = true;
       }
 
       projectSettings.solutionSettings = {
@@ -401,6 +407,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -432,6 +439,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -503,6 +511,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -543,6 +552,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -574,14 +584,15 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(!isConfigUnifyEnabled()),
+    EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(!isConfigUnifyEnabled()),
+    EnvInfoWriterMW(true),
     LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -642,6 +653,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -674,6 +686,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -713,6 +726,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -766,6 +780,42 @@ export class FxCore implements v3.ICore {
         ) {
           await ensureBasicFolderStructure(inputs);
         }
+        // reset provisionSucceeded state for all env
+        if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
+          if (
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"
+          ) {
+            ctx.envInfoV2.state.solution.provisionSucceeded = false;
+          }
+          const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+          if (allEnvRes.isOk()) {
+            for (const env of allEnvRes.value) {
+              const loadEnvRes = await loadEnvInfoV3(
+                inputs as v2.InputsWithProjectPath,
+                ctx.projectSettings!,
+                env,
+                false
+              );
+              if (loadEnvRes.isOk()) {
+                const envInfo = loadEnvRes.value;
+                if (
+                  envInfo.state?.solution?.provisionSucceeded === true ||
+                  envInfo.state?.solution?.provisionSucceeded === "true"
+                ) {
+                  envInfo.state.solution.provisionSucceeded = false;
+                  await environmentManager.writeEnvState(
+                    envInfo.state,
+                    inputs.projectPath!,
+                    ctx.contextV2.cryptoProvider,
+                    env,
+                    true
+                  );
+                }
+              }
+            }
+          }
+        }
         return res;
       } else return err(FunctionRouterError(func));
     }
@@ -775,6 +825,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
@@ -880,6 +931,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -939,6 +991,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -964,6 +1017,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -997,6 +1051,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1022,6 +1077,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1054,6 +1110,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1079,6 +1136,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1263,6 +1321,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
+    ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,
@@ -1333,7 +1392,7 @@ export class FxCore implements v3.ICore {
     // create folder structure
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
-    const basicFolderRes = await ensureBasicFolderStructure(inputs);
+    const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
     }
@@ -1427,42 +1486,54 @@ export class FxCore implements v3.ICore {
   _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
-export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
+export async function ensureBasicFolderStructure(
+  inputs: Inputs,
+  createPackageJson = true
+): Promise<Result<null, FxError>> {
   if (!inputs.projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
   try {
-    // {
-    //   const appName = inputs[CoreQuestionNames.AppName] as string;
-    //   if (inputs.platform !== Platform.VS) {
-    //     const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-    //     const exists = await fs.pathExists(packageJsonFilePath);
-    //     if (!exists) {
-    //       await fs.writeFile(
-    //         packageJsonFilePath,
-    //         JSON.stringify(
-    //           {
-    //             name: appName,
-    //             version: "0.0.1",
-    //             description: "",
-    //             author: "",
-    //             scripts: {
-    //               test: 'echo "Error: no test specified" && exit 1',
-    //             },
-    //             devDependencies: {
-    //               "@microsoft/teamsfx-cli": "0.*",
-    //             },
-    //             license: "MIT",
-    //           },
-    //           null,
-    //           4
-    //         )
-    //       );
-    //     }
-    //   }
-    // }
+    if (createPackageJson) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      if (inputs.platform !== Platform.VS) {
+        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
+        const exists = await fs.pathExists(packageJsonFilePath);
+        if (!exists) {
+          await fs.writeFile(
+            packageJsonFilePath,
+            JSON.stringify(
+              {
+                name: appName,
+                version: "0.0.1",
+                description: "",
+                author: "",
+                scripts: {
+                  test: 'echo "Error: no test specified" && exit 1',
+                },
+                devDependencies: {
+                  "@microsoft/teamsfx-cli": "0.*",
+                },
+                license: "MIT",
+              },
+              null,
+              4
+            )
+          );
+        }
+      }
+    }
     {
       const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
+      let lines: string[] = [];
+      const exists = await fs.pathExists(gitIgnoreFilePath);
+      if (exists) {
+        const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
+        lines = content.split("\n");
+        for (let i = 0; i < lines.length; ++i) {
+          lines[i] = lines[i].trim();
+        }
+      }
       const gitIgnoreContent = [
         "\n# TeamsFx files",
         "node_modules",
@@ -1473,17 +1544,19 @@ export async function ensureBasicFolderStructure(inputs: Inputs): Promise<Result
         "subscriptionInfo.json",
         BuildFolderName,
       ];
-
       if (isConfigUnifyEnabled()) {
         gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
         gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
       }
-
       if (inputs.platform === Platform.VS) {
         gitIgnoreContent.push("appsettings.Development.json");
       }
-
-      await fs.appendFile(gitIgnoreFilePath, gitIgnoreContent.join("\n"), { encoding: "utf8" });
+      gitIgnoreContent.forEach((line) => {
+        if (!lines.includes(line.trim())) {
+          lines.push(line.trim());
+        }
+      });
+      await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
     return err(WriteFileError(e));

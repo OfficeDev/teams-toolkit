@@ -15,6 +15,7 @@ import { SSOTokenV2Info } from "../../../src/models/ssoTokenInfo";
 import { parseJwt } from "../../../src/util/utils";
 import {
   convertCertificateContent,
+  extractIntegrationEnvVariables,
   getSsoTokenFromTeams,
   MockAuthenticationConfiguration,
   MockEnvironmentVariable,
@@ -22,6 +23,7 @@ import {
 } from "../helper";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 let restore: () => void;
 
 let ssoToken: string;

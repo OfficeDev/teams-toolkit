@@ -5,19 +5,26 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { ScaffoldConfig } from "../../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import * as testUtils from "../utils";
-import { Stage } from "@microsoft/teamsfx-api";
+import { Stage, Json } from "@microsoft/teamsfx-api";
 import {
+  BotCapabilities,
+  BotCapability,
   HostTypes,
   NotificationTriggers,
   PluginBot,
 } from "../../../../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../../../../src/common/local/constants";
+import { ResourcePlugins } from "../../../../../../src/common/constants";
 import { QuestionNames } from "../../../../../../src/plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../../../../../src/plugins/resource/bot/question";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../../../src/plugins/solution/fx-solution/question";
 
 describe("getBotHostType Tests", () => {
   afterEach(() => {
@@ -132,4 +139,83 @@ describe("triggers Tests", () => {
       chai.assert.deepEqual(result, expected, message);
     }
   });
+});
+
+describe("Plugin Settings: 'capabilities'", () => {
+  // stage, pluginSettings, answer["scenarios"], expected, message
+  const cases: [Stage, Json, BotScenario[], BotCapability[], string][] = [
+    [Stage.create, {}, [], [], "Scaffold legacy bot"],
+    [
+      Stage.create,
+      {},
+      [BotScenario.NotificationBot],
+      [BotCapabilities.NOTIFICATION],
+      "Scaffold notification bot",
+    ],
+    [
+      Stage.create,
+      {},
+      [BotScenario.CommandAndResponseBot],
+      [BotCapabilities.COMMAND_AND_RESPONSE],
+      "Scaffold command and response bot",
+    ],
+    [
+      Stage.create,
+      {},
+      [BotScenario.NotificationBot, BotScenario.CommandAndResponseBot],
+      [BotCapabilities.NOTIFICATION, BotCapabilities.COMMAND_AND_RESPONSE],
+      // Currently not supported end to end but tested for generality
+      "Scaffold multiple capabilities",
+    ],
+    [Stage.provision, {}, [], [], "Provision legacy bot"],
+    [Stage.provision, {}, [BotScenario.NotificationBot], [], "Provision legacy bot 2"],
+    [
+      Stage.provision,
+      {
+        [ResourcePlugins.Bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
+        },
+      },
+      // In reality this should be empty but this is a test case to make sure the result not use this.
+      [BotScenario.CommandAndResponseBot],
+      [BotCapabilities.NOTIFICATION],
+      "Provision notification bot",
+    ],
+    [
+      Stage.provision,
+      {
+        [ResourcePlugins.Bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [
+            BotCapabilities.NOTIFICATION,
+            BotCapabilities.COMMAND_AND_RESPONSE,
+          ],
+        },
+      },
+      [],
+      [BotCapabilities.NOTIFICATION, BotCapabilities.COMMAND_AND_RESPONSE],
+      "Provision multiple capabilities",
+    ],
+  ];
+  for (const [stage, pluginSettings, scenarios, expectedList, message] of cases) {
+    it(`Case '${message}'`, async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      const answers = pluginContext.answers!;
+      const projectSettings = pluginContext.projectSettings!;
+
+      answers.stage = stage;
+      answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
+      projectSettings.pluginSettings = pluginSettings;
+      const scaffoldConfig = new ScaffoldConfig();
+
+      // Act
+      scaffoldConfig.restoreConfigFromContext(pluginContext);
+
+      // Assert
+      const result = [...(scaffoldConfig.botCapabilities || [])].sort();
+      const expected = [...new Set(expectedList)].sort();
+
+      chai.assert.deepEqual(result, expected, message);
+    });
+  }
 });

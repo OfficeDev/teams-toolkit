@@ -27,7 +27,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      set -vuxo pipefail
+      set -evuxo pipefail
       
       # Install the local dev dependency of @microsoft/teamsfx-cli. 
       # 'npm ci' is used here to install dependencies and it depends on package-lock.json.

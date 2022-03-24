@@ -29,6 +29,7 @@ import {
   AzureResourcesQuestion,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
@@ -72,31 +73,34 @@ export async function getQuestionsForScaffolding(
         TabOptionItem.id,
         BotOptionItem.id,
         NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
       ],
     };
-    // 1.1.1 SPFX Tab
-    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-      ResourcePluginsV2.SpfxPlugin
-    );
-    if (spfxPlugin.getQuestionsForScaffolding) {
-      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const spfxNode = res.value as QTreeNode;
-        spfxNode.condition = {
-          validFunc: (input: any, inputs?: Inputs) => {
-            if (!inputs) {
-              return "Invalid inputs";
-            }
-            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-            if (cap.includes(TabSPFxItem.id)) {
-              return undefined;
-            }
-            return "SPFx is not selected";
-          },
-        };
-        if (spfxNode.data) node.addChild(spfxNode);
+    if (!inputs.isM365) {
+      // 1.1.1 SPFX Tab
+      const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+        ResourcePluginsV2.SpfxPlugin
+      );
+      if (spfxPlugin.getQuestionsForScaffolding) {
+        const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+        if (res.isErr()) return res;
+        if (res.value) {
+          const spfxNode = res.value as QTreeNode;
+          spfxNode.condition = {
+            validFunc: (input: any, inputs?: Inputs) => {
+              if (!inputs) {
+                return "Invalid inputs";
+              }
+              const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+              if (cap.includes(TabSPFxItem.id)) {
+                return undefined;
+              }
+              return "SPFx is not selected";
+            },
+          };
+          if (spfxNode.data) node.addChild(spfxNode);
+        }
       }
     }
   } else {

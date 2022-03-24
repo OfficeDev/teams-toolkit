@@ -5,6 +5,29 @@ import { JwtPayload } from "jwt-decode";
 
 const env = (window as any).__env__;
 
+export function extractIntegrationEnvVariables() {
+  if (!env.SDK_INTEGRATION_TEST_ACCOUNT) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_ACCOUNT");
+  }
+  const accountData = env.SDK_INTEGRATION_TEST_ACCOUNT.split(";");
+  if (accountData.length === 2) {
+    env.SDK_INTEGRATION_TEST_ACCOUNT_NAME = accountData[0];
+    env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD = accountData[1];
+  }
+  if (!env.SDK_INTEGRATION_TEST_AAD) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_AAD");
+  }
+  const aadData = env.SDK_INTEGRATION_TEST_AAD.split(";");
+  if (aadData.length === 6) {
+    env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST = aadData[0];
+    env.SDK_INTEGRATION_TEST_AAD_TENANT_ID = aadData[1];
+    env.SDK_INTEGRATION_TEST_USER_OBJECT_ID = aadData[2];
+    env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID = aadData[3];
+    env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET = aadData[4];
+    env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT = aadData[5];
+  }
+}
+
 /**
  * Get SSO Token from a specific AAD app client id.
  */

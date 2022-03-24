@@ -4,10 +4,18 @@
 import axios, { AxiosStatic } from "axios";
 import { IAuthProvider } from "./IAuthProvider";
 
-// Initializes a new axios instance to call API
-// Usage:
-// const kudosClient = createApiClient("kudos_api_endpoint", new MyAuthProvider(param1, param2, ...));
-// const kudosResult = await kudosClient.get("kudos_api_name");
+/**
+ * Initializes new Axios instance with specific auth provider
+ *
+ * @param apiEndpoint - Base url of the API
+ * @param authProvider - Auth provider that injects authentication info to each request
+ * @returns axios instance configured with specfic auth provider
+ *
+ * @example
+ * ```typescript
+ * const client = createApiClient("https://kudos.microsoft.com/api", new BasicAuthProvider("xxx","xxx"));
+ * ```
+ */
 export function createApiClient(apiEndpoint: string, authProvider: IAuthProvider): AxiosStatic {
   // Add a request interceptor
   axios.interceptors.request.use(

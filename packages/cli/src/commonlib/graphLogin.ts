@@ -13,7 +13,7 @@ import { signedIn, signedOut } from "./common/constant";
 import { CryptoCachePlugin } from "./cacheAccess";
 
 const accountName = "appStudio";
-const scopes = ["Application.ReadWrite.All"];
+const scopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 
 const cachePlugin = new CryptoCachePlugin(accountName);
 

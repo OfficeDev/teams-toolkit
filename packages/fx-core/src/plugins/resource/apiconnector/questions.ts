@@ -29,21 +29,14 @@ export const apiLoginUserNameQuestion: TextInputQuestion = {
   type: "text",
 };
 
-export const apiPasswordQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiPassword,
-  title: getLocalizedString("plugins.apiConnector.getQuestionApiPassword.title"),
-  type: "text",
-  password: true,
-};
-
 export const botOption: OptionItem = {
-  id: "bot service",
+  id: "bot",
   label: "bot",
   detail: getLocalizedString("plugins.apiConnector.botOption.detail"),
 };
 
 export const functionOption: OptionItem = {
-  id: "api service",
+  id: "api",
   label: "api",
   detail: getLocalizedString("plugins.apiConnector.functionOption.detail"),
 };
@@ -51,29 +44,29 @@ export const functionOption: OptionItem = {
 export const BasicAuthOption: OptionItem = {
   id: "basic",
   label: "Basic Authentication",
-  detail: "basic authentication",
+  detail: getLocalizedString("plugins.apiConnector.BasicAuthOption.detail"),
 };
 
 export const CertAuthOption: OptionItem = {
   id: "cert",
   label: "Certification Authentication",
-  detail: "Certification authentication",
+  detail: getLocalizedString("plugins.apiConnector.CertAuthOption.detail"),
 };
 
 export const AADAuthOption: OptionItem = {
   id: "aad",
   label: "Azure Active Directory Authentication",
-  detail: "AAD authentication",
+  detail: getLocalizedString("plugins.apiConnector.AADAuthOption.detail"),
 };
 
 export const APIKeyAuthOption: OptionItem = {
   id: "APIkey",
   label: "API Key Authentication",
-  detail: "API key authentication",
+  detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
 };
 
 export const OtherAuthOPtion: OptionItem = {
   id: "other",
   label: "Self define Authentication",
-  detail: "Authentication self define",
+  detail: getLocalizedString("plugins.apiConnector.SelfAuthOption.detail"),
 };

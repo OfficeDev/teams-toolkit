@@ -3,14 +3,11 @@
 "use strict";
 import {
   AzureSolutionSettings,
-  FxError,
   Inputs,
   Json,
   ProjectSettings,
-  Result,
   SystemError,
   v2,
-  Void,
   err,
   Func,
   ok,
@@ -18,14 +15,13 @@ import {
   QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-import { Inject, Service } from "typedi";
+import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ApiConnectorImpl } from "./plugin";
 import { Constants } from "./constants";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import {
   apiNameQuestion,
-  apiTypeQuestion,
   apiLoginUserNameQuestion,
   botOption,
   functionOption,

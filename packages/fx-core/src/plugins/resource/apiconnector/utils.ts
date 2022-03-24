@@ -3,10 +3,10 @@
 "use strict";
 
 export interface ApiConnectorConfiguration extends Record<any, any> {
-  ProjectPath: string;
-  EndPoint: string;
-  ServerName: string;
+  ServicePath: string;
+  APIName: string;
   ApiAuthType?: string;
+  EndPoint: string;
   ApiUserName?: string;
 }
 

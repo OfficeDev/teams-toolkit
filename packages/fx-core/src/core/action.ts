@@ -1,12 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok, Result } from "neverthrow";
-import { v2, v3 } from "..";
-import { Platform } from "../constants";
-import { FxError } from "../error";
-import { QTreeNode } from "../qm";
-import { AzureSolutionSettings, Inputs } from "../types";
-import { TokenProvider } from "../utils";
+
+import {
+  ok,
+  Result,
+  AzureSolutionSettings,
+  Inputs,
+  v2,
+  v3,
+  Platform,
+  FxError,
+  QTreeNode,
+  TokenProvider,
+} from "@microsoft/teamsfx-api";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -346,20 +352,6 @@ export class TeamsManifestResource implements Resource {
 
 export class TeamsfxSolutionResource implements Resource {
   name = "teamsfx-solution";
-  // async copyKey(context: any): Promise<Action> {
-  //   return {
-  //     type: "function",
-  //     name: "teamsfx-solution.copyKey",
-  //     plan: (context: v2.Context, inputs: Inputs) => {
-  //       return "copy key";
-  //     },
-  //     execute: async (context: any, inputs: Inputs) => {
-  //       inputs["copyKey"] as {from: string; to: string}[];
-  //       inputs["azure-web-app.endpoint"] = "MockAzureWebAppEndpoint";
-  //       return ok(undefined);
-  //     },
-  //   };
-  // }
   async deployBicep(context: v2.Context): Promise<Action> {
     return {
       type: "function",

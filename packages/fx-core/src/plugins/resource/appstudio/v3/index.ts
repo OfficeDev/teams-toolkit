@@ -49,6 +49,7 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -69,7 +70,7 @@ export class AppStudioPluginV3 {
     const res = await init(
       inputs.projectPath,
       ctx.projectSetting.appName,
-      ctx.projectSetting.solutionSettings === undefined
+      isPureExistingApp(ctx.projectSetting)
     );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();

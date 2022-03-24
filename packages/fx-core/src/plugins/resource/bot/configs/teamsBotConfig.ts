@@ -1,15 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { ConfigValue, PluginContext, AzureSolutionSettings, Stage } from "@microsoft/teamsfx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";
 import { ScaffoldConfig } from "./scaffoldConfig";
-import { PluginSolution, PluginAAD } from "../resources/strings";
+import {
+  PluginSolution,
+  PluginAAD,
+  QuestionBotScenarioToPluginActRoles,
+} from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
-import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 
 export class TeamsBotConfig {
   public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -49,13 +53,16 @@ export class TeamsBotConfig {
     const capabilities = (context.projectSettings?.solutionSettings as AzureSolutionSettings)
       .capabilities;
 
-    if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
-      if (
-        context.answers &&
-        context.answers[AzureSolutionQuestionNames.Scenario] === BotScenario.NotificationBot
-      ) {
-        this.actRoles.push(PluginActRoles.Notification);
+    if (capabilities?.includes(PluginActRoles.Bot)) {
+      const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
+      if (Array.isArray(scenarios)) {
+        const scenarioActRoles = scenarios
+          .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
+          .filter((item): item is PluginActRoles => item !== undefined);
+        // dedup
+        this.actRoles = [...new Set([...this.actRoles, ...scenarioActRoles])];
       } else {
+        // for legacy bot
         this.actRoles.push(PluginActRoles.Bot);
       }
     }

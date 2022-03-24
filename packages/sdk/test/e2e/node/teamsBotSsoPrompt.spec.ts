@@ -26,6 +26,7 @@ import {
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import {
+  extractIntegrationEnvVariables,
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
@@ -35,6 +36,7 @@ import * as sinon from "sinon";
 import { TeamsInfo } from "botbuilder";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 let restore: () => void;
 
 describe("TeamsBotSsoPrompt Tests - Node", () => {

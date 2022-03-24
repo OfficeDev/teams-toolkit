@@ -7,9 +7,14 @@ import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
 import { getTediousConnectionConfig, TeamsFx } from "../../../src";
-import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../helper";
+import {
+  extractIntegrationEnvVariables,
+  MockEnvironmentVariable,
+  RestoreEnvironmentVariable,
+} from "../helper";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 let restore: () => void;
 
 describe("DefaultTediousConnection Tests - Node", () => {

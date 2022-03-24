@@ -29,9 +29,9 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
-  BotNotificationTriggers,
   BotOptionItem,
   BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
@@ -233,15 +233,25 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(NotificationOptionItem.id)) {
-    // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+  if (
+    capabilities.includes(NotificationOptionItem.id) ||
+    capabilities.includes(CommandAndResponseOptionItem.id)
+  ) {
+    // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+    const scenarios: BotScenario[] = [];
     const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
     if (notificationIndex !== -1) {
       capabilities[notificationIndex] = BotOptionItem.id;
-      // dedup
-      capabilities = [...new Set(capabilities)];
-      answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
+      scenarios.push(BotScenario.NotificationBot);
     }
+    const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
+    if (commandAndResponseIndex !== -1) {
+      capabilities[commandAndResponseIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.CommandAndResponseBot);
+    }
+    answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
+    // dedup
+    capabilities = [...new Set(capabilities)];
 
     hostType = HostTypeOptionAzure.id;
   } else if (

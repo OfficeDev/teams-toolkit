@@ -303,7 +303,7 @@ describe("Scaffold", () => {
       },
     };
     if (ctx.answers) {
-      ctx.answers[AzureSolutionQuestionNames.Scenario] = BotScenario.CommandAndResponseBot;
+      ctx.answers[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
     }
 
     const result = await plugin.scaffold(ctx);

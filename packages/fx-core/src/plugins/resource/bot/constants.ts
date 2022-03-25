@@ -273,6 +273,7 @@ export class TelemetryKeys {
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";
+  public static readonly BotCapabilities = "bot-capabilities";
 }
 
 export class TelemetryValues {

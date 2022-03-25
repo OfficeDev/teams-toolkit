@@ -79,7 +79,7 @@ export class TeamsBotImpl implements PluginImpl {
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     Logger.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(

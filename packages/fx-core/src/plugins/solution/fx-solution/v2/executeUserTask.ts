@@ -52,8 +52,11 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,
+  NotificationOptionItem,
   SsoItem,
   TabNonSsoItem,
   TabOptionItem,
@@ -256,7 +259,7 @@ export async function addCapability(
     }
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew = {
+  const inputsNew: Inputs = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -268,7 +271,7 @@ export async function addCapability(
   }
 
   // 2. check answer
-  const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+  let capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
   if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -277,6 +280,20 @@ export async function addCapability(
     });
     return ok({});
   }
+  // normalize capability answer
+  const scenarios: BotScenario[] = [];
+  const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
+  if (notificationIndex !== -1) {
+    capabilitiesAnswer[notificationIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.NotificationBot);
+  }
+  const commandAndResponseIndex = capabilitiesAnswer.indexOf(CommandAndResponseOptionItem.id);
+  if (commandAndResponseIndex !== -1) {
+    capabilitiesAnswer[commandAndResponseIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.CommandAndResponseBot);
+  }
+  inputsNew[AzureSolutionQuestionNames.Scenarios] = scenarios;
+  capabilitiesAnswer = [...new Set(capabilitiesAnswer)];
 
   // 3. check capability limit
   const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);

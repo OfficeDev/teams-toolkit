@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import { Inputs, MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import {
+  AzureSolutionQuestionNames,
+  NotificationOptionItem,
+} from "../../solution/fx-solution/question";
 import { QuestionNames } from "./constants";
 import {
   HostType,
@@ -17,13 +21,13 @@ export interface HostTypeTriggerOptionItem extends OptionItem {
 
 // NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
 export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "timer",
+  id: "timer-functions",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.TIMER,
 });
 
 export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http",
+  id: "http-functions",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.HTTP,
 });
@@ -31,12 +35,13 @@ export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionW
 export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-restify",
   hostType: HostTypes.APP_SERVICE,
+  // trigger of app service host is hard-coded to http, so no need to set here
 });
 
 export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
-  FunctionsTimerTriggerOptionItem,
-  FunctionsHttpTriggerOptionItem,
   AppServiceOptionItem,
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
 ];
 
 // The restrictions of this question:
@@ -49,7 +54,7 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
     title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
     staticOptions: HostTypeTriggerOptions,
-    default: [FunctionsTimerTriggerOptionItem.id],
+    default: [AppServiceOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
@@ -81,6 +86,21 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
     },
   };
 }
+
+// Question model condition to determine whether to show "Select triggers" question after "Select capabilities".
+// Return undefined for true, a string for false. The string itself it not used.
+export const showNotificationTriggerCondition = {
+  validFunc: (input: unknown, inputs?: Inputs): string | undefined => {
+    if (!inputs) {
+      return "Invalid inputs";
+    }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities];
+    if (Array.isArray(cap) && cap.includes(NotificationOptionItem.id)) {
+      return undefined;
+    }
+    return "Notification is not selected";
+  },
+};
 
 type HostTypeTriggerOptionItemWithoutText = Omit<
   HostTypeTriggerOptionItem,

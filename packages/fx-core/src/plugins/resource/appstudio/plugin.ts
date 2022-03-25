@@ -761,7 +761,28 @@ export class AppStudioPluginImpl {
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
-      await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+      const spfxTeamsPath = `${ctx.root}/SPFx/teams`;
+      await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+
+      for (const file of await fs.readdir(`${ctx.root}/SPFx/teams/`)) {
+        if (
+          file.endsWith("color.png") &&
+          manifest.icons.color &&
+          !manifest.icons.color.startsWith("https://")
+        ) {
+          const colorFile = `${appDirectory}/${manifest.icons.color}`;
+          const color = await fs.readFile(colorFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), color);
+        } else if (
+          file.endsWith("outline.png") &&
+          manifest.icons.outline &&
+          !manifest.icons.outline.startsWith("https://")
+        ) {
+          const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+          const outline = await fs.readFile(outlineFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), outline);
+        }
+      }
     }
 
     if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {

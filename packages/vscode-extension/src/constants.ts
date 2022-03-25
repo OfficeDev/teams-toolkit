@@ -5,6 +5,7 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
   UnifyConfigs = "unifyConfigs",
   EnableInitApp = "enableInitApp",
+  BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

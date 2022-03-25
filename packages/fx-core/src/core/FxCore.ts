@@ -58,6 +58,7 @@ import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
+  CommandAndResponseOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
   SsoItem,
@@ -375,7 +376,8 @@ export class FxCore implements v3.ICore {
           if (
             capabilities.includes(BotOptionItem.id) ||
             capabilities.includes(MessageExtensionItem.id) ||
-            capabilities.includes(NotificationOptionItem.id)
+            capabilities.includes(NotificationOptionItem.id) ||
+            capabilities.includes(CommandAndResponseOptionItem.id)
           ) {
             features.push(BuiltInFeaturePluginNames.bot);
           }

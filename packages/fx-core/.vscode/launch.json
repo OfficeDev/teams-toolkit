@@ -25,6 +25,9 @@
           "<node_internals>/**"
       ],
       "program": "${workspaceFolder}\\build\\core\\workflow\\test.js",
+      "args": [
+        "tab"
+      ],
       "outFiles": [
           "${workspaceFolder}/**/*.js"
       ]

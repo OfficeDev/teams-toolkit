@@ -28,26 +28,24 @@ export class TeamsfxCore {
   name = "fx";
   add(
     context: v2.Context,
-    inputs: v2.InputsWithProjectPath & { resources: string[] }
+    inputs: v2.InputsWithProjectPath & { resource: string }
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const resources = inputs.resources;
+    const resource = inputs.resource;
     const actions: Action[] = [];
-    resources.forEach((p) => {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: `${p}.addInstance`,
-      });
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: `${p}.generateCode`,
-      });
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: `${p}.generateBicep`,
-      });
+    actions.push({
+      type: "call",
+      required: false,
+      targetAction: `${resource}.addInstance`,
+    });
+    actions.push({
+      type: "call",
+      required: false,
+      targetAction: `${resource}.generateCode`,
+    });
+    actions.push({
+      type: "call",
+      required: false,
+      targetAction: `${resource}.generateBicep`,
     });
     actions.push({
       type: "call",
@@ -69,7 +67,7 @@ export class TeamsfxCore {
       type: "function",
       name: "fx.persistBicep",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("persist bicep files");
+        return ok(["persist bicep files"]);
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("persist bicep files");
@@ -86,7 +84,7 @@ export class TeamsfxCore {
       type: "function",
       name: "fx.deployBicep",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("deploy bicep");
+        return ok(["deploy bicep to ARM"]);
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("deploy bicep");
@@ -109,7 +107,7 @@ export class TeamsfxCore {
       type: "function",
       name: "fx.preProvision",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("check common configs (account, resource group)");
+        return ok(["check common configs (account, resource group)"]);
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
         console.log("check common configs (account, resource group)");
@@ -168,16 +166,6 @@ export class TeamsfxCore {
         targetAction: "azure-bot.provision",
       });
     }
-    // provisionSequences.push({
-    //   name: "fx.configure",
-    //   type: "function",
-    //   plan: (context: v2.Context, inputs: Inputs) => {
-    //     return "configure after bicep deployment";
-    //   },
-    //   execute: async (context: any, inputs: Inputs) => {
-    //     return ok(undefined);
-    //   },
-    // });
     provisionSequences.push({
       type: "group",
       mode: "parallel",
@@ -212,6 +200,34 @@ export class TeamsfxCore {
       actions: provisionSequences,
     });
   }
+  deploy(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const botConfig = (context.projectSetting as any).bot;
+    const tabConfig = (context.projectSetting as any).tab;
+    const actions: Action[] = [];
+    if (botConfig) {
+      actions.push({
+        type: "call",
+        targetAction: "teams-bot.deploy",
+        required: true,
+      });
+    }
+    if (tabConfig) {
+      actions.push({
+        type: "call",
+        targetAction: "teams-tab.deploy",
+        required: true,
+      });
+    }
+    const action: GroupAction = {
+      type: "group",
+      name: "fx.deploy",
+      actions: actions,
+    };
+    return ok(action);
+  }
 }
 
 export async function getAction(
@@ -225,7 +241,10 @@ export async function getAction(
   const resource = Container.get(resourceName) as any;
   if (resource[actionName]) {
     const res = await resource[actionName](context, inputs);
-    if (res.isOk()) return res.value;
+    if (res.isOk()) {
+      const action = res.value;
+      return action;
+    }
   }
   return undefined;
 }
@@ -265,28 +284,35 @@ function templateReplace(schema: Json, params: Json) {
   } while (change);
 }
 
-async function resolveAction(context: any, inputs: any, action: Action): Promise<Action> {
+export async function resolveAction(action: Action, context: any, inputs: any): Promise<Action> {
   if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
-    if (targetAction) return await resolveAction(context, inputs, targetAction);
+    if (targetAction) {
+      if (targetAction.type !== "function") {
+        return await resolveAction(targetAction, context, inputs);
+      }
+    }
+    return action;
   } else if (action.type === "group") {
     for (let i = 0; i < action.actions.length; ++i) {
-      action.actions[i] = await resolveAction(context, inputs, action.actions[i]);
+      action.actions[i] = await resolveAction(action.actions[i], context, inputs);
     }
   }
   return action;
 }
 
 export async function planAction(context: any, inputs: any, action: Action): Promise<void> {
-  // console.log(`### planAction:`);
-  // console.log(action);
+  if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
     const planRes = await action.plan(context, inputs);
     if (planRes.isOk()) {
-      console.log(`---- plan: [${action.name}] - ${planRes.value}`);
+      for (const plan of planRes.value) {
+        console.log(`---- plan [${inputs.step}]: [${action.name}] - ${plan}`);
+      }
+      inputs.step++;
     }
   } else if (action.type === "shell") {
-    console.log("---- plan: shell " + action.command);
+    console.log(`---- plan[${inputs.step++}]: shell command: ${action.command}`);
   } else if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
@@ -312,11 +338,12 @@ export async function planAction(context: any, inputs: any, action: Action): Pro
 }
 
 export async function executeAction(context: any, inputs: any, action: Action): Promise<void> {
+  if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
-    console.log(`---- execute: [${action.name}]`);
+    console.log(`##### execute [${inputs.step++}]: [${action.name}]`);
     await action.execute(context, inputs);
   } else if (action.type === "shell") {
-    console.log("---- shell:" + action.command);
+    console.log(`##### shell [${inputs.step++}]: ${action.command}`);
   } else if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {

@@ -12,13 +12,9 @@ import {
   GroupAction,
   MaybePromise,
   CallAction,
+  TeamsTabInputs,
+  ProjectConfig,
 } from "./interface";
-
-export interface TeamsTabInputs extends v2.InputsWithProjectPath {
-  language: "csharp" | "javascript" | "typescript";
-  framework: "react" | "vue" | "angular";
-  hostingResource: "azure-web-app" | "azure-function" | "azure-storage";
-}
 
 /**
  * teams tab - feature level action
@@ -31,19 +27,25 @@ export class TeamsTabFeature implements ResourcePlugin {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const tabInputs = inputs as TeamsTabInputs;
-    const addInstance: AddInstanceAction = {
-      name: "teams-tab.addInstance",
+    const register: AddInstanceAction = {
+      name: "teams-tab.register",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          "add 'tab' entry in projectSettings",
+          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         ensureSolutionSettings(context.projectSetting);
+        const projectConfig = context.projectSetting as ProjectConfig;
+        projectConfig.tab = {
+          language: tabInputs.language,
+          hostingResource: tabInputs.hostingResource,
+        };
         if (
           !context.projectSetting.solutionSettings?.activeResourcePlugins.includes(
             tabInputs.hostingResource
@@ -60,8 +62,9 @@ export class TeamsTabFeature implements ResourcePlugin {
     };
     const group: GroupAction = {
       type: "group",
+      name: "teams-tab.addInstance",
       actions: [
-        addInstance,
+        register,
         {
           type: "call",
           required: true,
@@ -96,5 +99,43 @@ export class TeamsTabFeature implements ResourcePlugin {
       required: true,
       targetAction: `${tabInputs.hostingResource}.generateBicep`,
     });
+  }
+  build(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok({
+      type: "call",
+      targetAction: "tab-scaffold.build",
+      required: true,
+    });
+  }
+  deploy(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const tabConfig = (context.projectSetting as any).tab;
+    const hostResource = tabConfig.hostingResource;
+    const action: GroupAction = {
+      type: "group",
+      name: "teams-tab.deploy",
+      actions: [
+        {
+          type: "call",
+          targetAction: "teams-tab.build",
+          required: false,
+        },
+        {
+          type: "call",
+          targetAction: `${hostResource}.deploy`,
+          required: false,
+          inputs: {
+            path: "tab",
+            type: "folder",
+          },
+        },
+      ],
+    };
+    return ok(action);
   }
 }

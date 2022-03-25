@@ -29,6 +29,7 @@ import {
   GroupAction,
   MaybePromise,
   ProvisionAction,
+  DeployAction,
 } from "./interface";
 import { MockTools } from "./utils";
 
@@ -43,9 +44,9 @@ export class AzureStorageResource implements ResourcePlugin {
       name: "azure-storage.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
@@ -65,7 +66,7 @@ export class AzureStorageResource implements ResourcePlugin {
       name: "azure-storage.generateBicep",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("create azure storage bicep");
+        return ok(["create azure storage bicep"]);
       },
       execute: async (
         context: v2.Context,
@@ -84,7 +85,7 @@ export class AzureStorageResource implements ResourcePlugin {
       name: "azure-storage.configure",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("configure azure storage (enable static web site)");
+        return ok(["configure azure storage (enable static web site)"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
@@ -95,5 +96,28 @@ export class AzureStorageResource implements ResourcePlugin {
       },
     };
     return ok(configure);
+  }
+  deploy(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: DeployAction = {
+      name: "azure-storage.deploy",
+      type: "function",
+      plan: (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: v2.InputsWithProjectPath
+      ) => {
+        return ok([`deploy azure storage with path: ${inputs.path}, type: ${inputs.type}`]);
+      },
+      execute: async (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        console.log(`deploy azure storage with path: ${inputs.path}, type: ${inputs.type}`);
+        return ok(undefined);
+      },
+    };
+    return ok(action);
   }
 }

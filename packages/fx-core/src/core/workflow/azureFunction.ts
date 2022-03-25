@@ -24,9 +24,9 @@ export class AzureFunctionResource implements ResourcePlugin {
       name: "azure-function.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
@@ -38,6 +38,26 @@ export class AzureFunctionResource implements ResourcePlugin {
     };
     return ok(addInstance);
   }
+  generateCode(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<undefined, FxError>> {
+    const generateBicep: GenerateBicepAction = {
+      name: "azure-function.generateCode",
+      type: "function",
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(["generate azure function code"]);
+      },
+      execute: async (
+        context: v2.Context,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+        console.log("generate azure function code");
+        return ok([]);
+      },
+    };
+    return ok(undefined);
+  }
   generateBicep(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -46,7 +66,7 @@ export class AzureFunctionResource implements ResourcePlugin {
       name: "azure-function.generateBicep",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok("generate azure function bicep");
+        return ok(["generate azure function bicep"]);
       },
       execute: async (
         context: v2.Context,
@@ -66,13 +86,13 @@ export class AzureFunctionResource implements ResourcePlugin {
       name: "azure-function.updateBicep",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(`update azure function bicep with added resource: ${inputs.resources}`);
+        return ok([`update azure function bicep with added resource: ${inputs.resource}`]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<v3.BicepTemplate[], FxError>> => {
-        console.log(`update azure function bicep with added resource: ${inputs.resources}`);
+        console.log(`update azure function bicep with added resource: ${inputs.resource}`);
         return ok([]);
       },
     };
@@ -86,7 +106,7 @@ export class AzureFunctionResource implements ResourcePlugin {
       name: "azure-function.configure",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("configure azure function");
+        return ok(["configure azure function"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },

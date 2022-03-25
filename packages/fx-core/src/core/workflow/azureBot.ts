@@ -23,9 +23,9 @@ export class AzureBotResource implements ResourcePlugin {
       name: "azure-bot.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
@@ -45,9 +45,10 @@ export class AzureBotResource implements ResourcePlugin {
       name: "azure-bot.provision",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          "provision azure-bot (1.create AAD app for bot service; 2. create azure bot service)"
-        );
+        return ok([
+          "provision azure-bot step 1.create AAD app for bot service",
+          "provision azure-bot step 2. create azure bot service)",
+        ]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },

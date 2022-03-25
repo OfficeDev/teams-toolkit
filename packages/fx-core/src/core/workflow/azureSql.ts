@@ -34,9 +34,9 @@ export class AzureSqlResource implements ResourcePlugin {
       name: "azure-sql.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
@@ -57,7 +57,7 @@ export class AzureSqlResource implements ResourcePlugin {
       name: "azure-sql.generateBicep",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("generate azure sql bicep");
+        return ok(["generate azure sql bicep"]);
       },
       execute: async (
         context: v2.Context,
@@ -103,7 +103,7 @@ export class AzureSqlResource implements ResourcePlugin {
       name: "azure-sql.configure",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok("configure azure sql");
+        return ok(["configure azure sql"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },

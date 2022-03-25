@@ -1,0 +1,41 @@
+{
+  "name": "fx.add",
+  "type": "group",
+  "actions": [
+    {
+      "type": "group",
+      "actions": [
+        {
+          "name": "teams-tab.addInstance",
+          "type": "function"
+        },
+        {
+          "type": "call",
+          "required": true,
+          "targetAction": "teams-manifest.addCapability",
+          "inputs": {
+            "capabilities": [
+              "Tab"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "teams-tab.generateCode",
+      "type": "call",
+      "required": true,
+      "targetAction": "tab-scaffold.generateCode"
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "azure-storage.generateBicep"
+    },
+    {
+      "type": "call",
+      "required": true,
+      "targetAction": "fx.persistBicep"
+    }
+  ]
+}

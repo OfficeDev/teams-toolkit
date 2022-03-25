@@ -17,7 +17,7 @@ export class TeamsManifestResource {
       name: "azure-bot.init",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok("init manifest template");
+        return ok(["init manifest template"]);
       },
       execute: async (
         context: v2.Context,
@@ -36,7 +36,7 @@ export class TeamsManifestResource {
       name: "teams-manifest.addCapability",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(`add capability in teams manifest: ${inputs["capabilities"]}`);
+        return ok([`add capability in teams manifest: ${inputs["capabilities"]}`]);
       },
       execute: async (
         context: v2.Context,
@@ -56,7 +56,7 @@ export class TeamsManifestResource {
       name: "teams-manifest.provision",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok("provision teams manifest");
+        return ok(["provision teams manifest"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },

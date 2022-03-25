@@ -4,6 +4,7 @@
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import bot from "../../plugins/resource/bot";
 import { ensureSolutionSettings } from "../../plugins/solution/fx-solution/utils/solutionSettingsHelper";
 import {
   Action,
@@ -12,13 +13,9 @@ import {
   GroupAction,
   MaybePromise,
   CallAction,
+  TeamsBotInputs,
+  ProjectConfig,
 } from "./interface";
-
-export interface TeamsBotInputs extends v2.InputsWithProjectPath {
-  language: "csharp" | "javascript" | "typescript";
-  scenario: "notification" | "commandAndResponse" | "messageExtension";
-  hostingResource: "azure-web-app" | "azure-function";
-}
 
 /**
  * teams bot - feature level action
@@ -35,15 +32,21 @@ export class TeamsBotFeature implements ResourcePlugin {
       name: "teams-bot.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(
-          `ensure entry '${botInputs.hostingResource}', 'azure-bot' in projectSettings.solutionSettings.activeResourcePlugins`
-        );
+        return ok([
+          "add 'bot' entry in projectSettings",
+          `ensure entry '${botInputs.hostingResource}', 'azure-bot' in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         ensureSolutionSettings(context.projectSetting);
+        const projectConfig = context.projectSetting as ProjectConfig;
+        projectConfig.bot = {
+          language: botInputs.language,
+          hostingResource: botInputs.hostingResource,
+        };
         if (
           !context.projectSetting.solutionSettings?.activeResourcePlugins.includes(
             botInputs.hostingResource
@@ -62,6 +65,7 @@ export class TeamsBotFeature implements ResourcePlugin {
     };
     const group: GroupAction = {
       type: "group",
+      name: "teams-bot.addInstance",
       actions: [
         addInstance,
         {
@@ -97,5 +101,43 @@ export class TeamsBotFeature implements ResourcePlugin {
       required: true,
       targetAction: `${inputs.hostingResource}.generateBicep`,
     });
+  }
+  build(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok({
+      type: "call",
+      targetAction: "bot-scaffold.build",
+      required: true,
+    });
+  }
+  deploy(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const botConfig = (context.projectSetting as any).bot;
+    const hostResource = botConfig.hostingResource;
+    const action: GroupAction = {
+      type: "group",
+      name: "teams-bot.deploy",
+      actions: [
+        {
+          type: "call",
+          targetAction: "teams-bot.build",
+          required: false,
+        },
+        {
+          type: "call",
+          targetAction: `${hostResource}.deploy`,
+          required: false,
+          inputs: {
+            path: "bot",
+            type: "folder",
+          },
+        },
+      ],
+    };
+    return ok(action);
   }
 }

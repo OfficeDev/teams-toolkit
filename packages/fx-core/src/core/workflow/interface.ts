@@ -2,21 +2,14 @@
 // Licensed under the MIT license.
 
 import {
-  ok,
+  FxError,
+  ProjectSettings,
+  QTreeNode,
   Result,
-  AzureSolutionSettings,
-  Inputs,
+  TokenProvider,
   v2,
   v3,
-  Platform,
-  FxError,
-  QTreeNode,
-  TokenProvider,
-  Json,
 } from "@microsoft/teamsfx-api";
-import * as Handlebars from "handlebars";
-import { assign, merge } from "lodash";
-import { Service } from "typedi";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -98,7 +91,7 @@ export interface CallAction {
 export interface FunctionAction {
   name?: string;
   type: "function";
-  plan(context: any, inputs: any): MaybePromise<Result<string, FxError>>;
+  plan(context: any, inputs: any): MaybePromise<Result<string[], FxError>>;
   /**
    * question is to define inputs of the task
    */
@@ -143,6 +136,14 @@ export interface ResourcePlugin {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
+  build?: (
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ) => MaybePromise<Result<Action | undefined, FxError>>;
+  deploy?: (
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ) => MaybePromise<Result<Action | undefined, FxError>>;
 }
 /**
  * common function actions used in the built-in plugins
@@ -151,7 +152,7 @@ export interface AddInstanceAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -168,7 +169,7 @@ export interface GenerateCodeAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -183,7 +184,7 @@ export interface GenerateBicepAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -198,7 +199,7 @@ export interface ProvisionAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -213,7 +214,7 @@ export interface ConfigureAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
@@ -228,7 +229,7 @@ export interface BuildAction extends FunctionAction {
   plan(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string, FxError>>;
+  ): MaybePromise<Result<string[], FxError>>;
   question?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -243,7 +244,7 @@ export interface DeployAction extends FunctionAction {
   plan: (
     context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<string, FxError>>;
+  ) => MaybePromise<Result<string[], FxError>>;
   question?: (
     context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
@@ -252,4 +253,32 @@ export interface DeployAction extends FunctionAction {
     context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<undefined, FxError>>;
+}
+
+export interface TeamsBotInputs extends v2.InputsWithProjectPath {
+  language: "csharp" | "javascript" | "typescript";
+  scenarios: ("notification" | "commandAndResponse" | "messageExtension")[];
+  hostingResource: "azure-web-app" | "azure-function";
+}
+
+export interface TeamsTabInputs extends v2.InputsWithProjectPath {
+  language: "csharp" | "javascript" | "typescript";
+  framework: "react" | "vue" | "angular";
+  hostingResource: "azure-web-app" | "azure-function" | "azure-storage";
+}
+
+export interface DeployInputs extends v2.InputsWithProjectPath {
+  path: string;
+  type: "zip" | "folder";
+}
+
+export interface ProjectConfig extends ProjectSettings {
+  tab?: {
+    language: "csharp" | "javascript" | "typescript";
+    hostingResource: string;
+  };
+  bot?: {
+    language: "csharp" | "javascript" | "typescript";
+    hostingResource: string;
+  };
 }

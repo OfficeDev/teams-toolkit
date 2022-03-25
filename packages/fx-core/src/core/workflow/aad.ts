@@ -24,7 +24,7 @@ export class AADResource implements ResourcePlugin {
       name: "aad.provision",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok("provision aad app registration");
+        return ok(["provision aad app registration"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
@@ -49,7 +49,7 @@ export class AADResource implements ResourcePlugin {
       name: "aad.configure",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok("configure aad app registration");
+        return ok(["configure aad app registration"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },

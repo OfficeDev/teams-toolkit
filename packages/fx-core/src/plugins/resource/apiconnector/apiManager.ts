@@ -18,7 +18,7 @@ export class ApiManager {
   }
 
   public addApiEnvs(config: ApiConnectorConfiguration) {
-    const apiName: string = config.APIName;
+    const apiName: string = config.APIName.toUpperCase();
     if (!this.apiConnector[apiName]) {
       this.apiConnector[apiName] = {};
     }

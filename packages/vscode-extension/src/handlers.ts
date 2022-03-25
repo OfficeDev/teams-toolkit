@@ -1255,8 +1255,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
-  const result = await env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
-  return Promise.resolve(ok(result));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
@@ -1569,8 +1568,7 @@ export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxE
 
 export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  const result = await env.openExternal(Uri.parse("https://dev.teams.microsoft.com/home"));
-  return Promise.resolve(ok(result));
+  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/home");
 }
 
 export async function openBotManagement(args?: any[]) {
@@ -1580,8 +1578,7 @@ export async function openBotManagement(args?: any[]) {
 
 export async function openReportIssues(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ReportIssues, getTriggerFromProperty(args));
-  const result = await env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
-  return Promise.resolve(ok(result));
+  return VS_CODE_UI.openUrl("https://github.com/OfficeDev/TeamsFx/issues");
 }
 
 export async function openExternalHandler(args?: any[]) {

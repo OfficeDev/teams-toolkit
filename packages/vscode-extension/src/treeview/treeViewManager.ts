@@ -1,18 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Mutex } from "async-mutex";
 // eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
-import { Mutex } from "async-mutex";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { isInitAppEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { isSPFxProject } from "../utils/commonUtils";
-import { localize } from "../utils/localizeUtils";
-import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { VS_CODE_UI } from "../extension";
 import {
   addCapabilityHandler,
   addCICDWorkflowsHandler,
@@ -31,7 +28,10 @@ import {
   provisionHandler,
   publishHandler,
 } from "../handlers";
-import { VS_CODE_UI } from "../extension";
+import { isSPFxProject } from "../utils/commonUtils";
+import { localize } from "../utils/localizeUtils";
+import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
+import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -48,6 +48,7 @@ class TreeViewManager {
     this.mutex = new Mutex();
     this.exclusiveCommands = new Set([
       "fx-extension.create",
+      "fx-extension.init",
       "fx-extension.addCapability",
       "fx-extension.update",
       "fx-extension.openManifest",

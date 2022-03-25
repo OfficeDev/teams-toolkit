@@ -7,8 +7,6 @@ import {
   Inputs,
   Json,
   ok,
-  Platform,
-  ProjectSettings,
   Result,
   v2,
 } from "@microsoft/teamsfx-api";
@@ -16,15 +14,12 @@ import * as Handlebars from "handlebars";
 import { assign, merge } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { createV2Context } from "../../common";
-import { setTools } from "../globalVars";
-import { Action, GroupAction, MaybePromise } from "./interface";
-import { MockTools } from "./utils";
 import "./aad";
 import "./azureBot";
 import "./azureFunction";
 import "./azureStorage";
 import "./azureWebApp";
+import { Action, GroupAction, MaybePromise } from "./interface";
 import "./teamsBot";
 import "./teamsManifest";
 
@@ -219,7 +214,11 @@ export class TeamsfxCore {
   }
 }
 
-async function getAction(name: string, context: any, inputs: any) {
+export async function getAction(
+  name: string,
+  context: any,
+  inputs: any
+): Promise<Action | undefined> {
   const arr = name.split(".");
   const resourceName = arr[0];
   const actionName = arr[1];
@@ -269,7 +268,7 @@ function templateReplace(schema: Json, params: Json) {
 async function resolveAction(context: any, inputs: any, action: Action): Promise<Action> {
   if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
-    return await resolveAction(context, inputs, targetAction);
+    if (targetAction) return await resolveAction(context, inputs, targetAction);
   } else if (action.type === "group") {
     for (let i = 0; i < action.actions.length; ++i) {
       action.actions[i] = await resolveAction(context, inputs, action.actions[i]);
@@ -278,14 +277,16 @@ async function resolveAction(context: any, inputs: any, action: Action): Promise
   return action;
 }
 
-async function planAction(context: any, inputs: any, action: Action) {
+export async function planAction(context: any, inputs: any, action: Action): Promise<void> {
+  // console.log(`### planAction:`);
+  // console.log(action);
   if (action.type === "function") {
     const planRes = await action.plan(context, inputs);
     if (planRes.isOk()) {
-      console.log(`plan: ${action.name} - ${planRes.value}`);
+      console.log(`---- plan: [${action.name}] - ${planRes.value}`);
     }
   } else if (action.type === "shell") {
-    console.log("plan: shell " + action.command);
+    console.log("---- plan: shell " + action.command);
   } else if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
@@ -310,12 +311,12 @@ async function planAction(context: any, inputs: any, action: Action) {
   }
 }
 
-async function executeAction(context: any, inputs: any, action: Action) {
+export async function executeAction(context: any, inputs: any, action: Action): Promise<void> {
   if (action.type === "function") {
-    console.log(`execute: ${action.name}`);
+    console.log(`---- execute: [${action.name}]`);
     await action.execute(context, inputs);
   } else if (action.type === "shell") {
-    console.log("shell:" + action.command);
+    console.log("---- shell:" + action.command);
   } else if (action.type === "call") {
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {

@@ -24,7 +24,7 @@ import { setTools } from "../globalVars";
 import {
   Action,
   AddInstanceAction,
-  AzureResourcePlugin,
+  ResourcePlugin,
   GenerateBicepAction,
   GroupAction,
   MaybePromise,
@@ -33,7 +33,7 @@ import {
 import { MockTools } from "./utils";
 
 @Service("azure-storage")
-export class AzureStorageResource implements AzureResourcePlugin {
+export class AzureStorageResource implements ResourcePlugin {
   name = "azure-storage";
   addInstance(
     context: v2.Context,

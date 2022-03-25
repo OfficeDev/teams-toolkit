@@ -4,10 +4,10 @@
 import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { Action, AzureResourcePlugin, MaybePromise, ProvisionAction } from "./interface";
+import { Action, ResourcePlugin, MaybePromise, ProvisionAction } from "./interface";
 
 @Service("aad")
-export class AADResource implements AzureResourcePlugin {
+export class AADResource implements ResourcePlugin {
   name = "aad";
   addInstance(
     context: v2.Context,

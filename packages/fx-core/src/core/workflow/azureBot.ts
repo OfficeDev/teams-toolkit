@@ -7,13 +7,13 @@ import { Service } from "typedi";
 import {
   Action,
   AddInstanceAction,
-  AzureResourcePlugin,
+  ResourcePlugin,
   MaybePromise,
   ProvisionAction,
 } from "./interface";
 
 @Service("azure-bot")
-export class AzureBotResource implements AzureResourcePlugin {
+export class AzureBotResource implements ResourcePlugin {
   name = "azure-bot";
   addInstance(
     context: v2.Context,

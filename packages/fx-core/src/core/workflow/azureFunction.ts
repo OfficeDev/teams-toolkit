@@ -7,14 +7,14 @@ import { Service } from "typedi";
 import {
   Action,
   AddInstanceAction,
-  AzureResourcePlugin,
+  ResourcePlugin,
   GenerateBicepAction,
   MaybePromise,
   ProvisionAction,
 } from "./interface";
 
 @Service("azure-function")
-export class AzureFunctionResource implements AzureResourcePlugin {
+export class AzureFunctionResource implements ResourcePlugin {
   name = "azure-function";
   addInstance(
     context: v2.Context,
@@ -45,14 +45,34 @@ export class AzureFunctionResource implements AzureResourcePlugin {
     const generateBicep: GenerateBicepAction = {
       name: "azure-function.generateBicep",
       type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok("generate azure function bicep");
       },
       execute: async (
         context: v2.Context,
-        inputs: Inputs
+        inputs: v2.InputsWithProjectPath
       ): Promise<Result<v3.BicepTemplate[], FxError>> => {
         console.log("generate azure function bicep");
+        return ok([]);
+      },
+    };
+    return ok(generateBicep);
+  }
+  updateBicep(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const generateBicep: GenerateBicepAction = {
+      name: "azure-function.updateBicep",
+      type: "function",
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(`update azure function bicep with added resource: ${inputs.resources}`);
+      },
+      execute: async (
+        context: v2.Context,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+        console.log(`update azure function bicep with added resource: ${inputs.resources}`);
         return ok([]);
       },
     };

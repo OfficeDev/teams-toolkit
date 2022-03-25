@@ -14,29 +14,29 @@ import {
   CallAction,
 } from "./interface";
 
-export interface TeamsBotInputs extends v2.InputsWithProjectPath {
+export interface TeamsTabInputs extends v2.InputsWithProjectPath {
   language: "csharp" | "javascript" | "typescript";
-  scenario: "notification" | "commandAndResponse" | "messageExtension";
-  hostingResource: "azure-web-app" | "azure-function";
+  framework: "react" | "vue" | "angular";
+  hostingResource: "azure-web-app" | "azure-function" | "azure-storage";
 }
 
 /**
- * teams bot - feature level action
+ * teams tab - feature level action
  */
-@Service("teams-bot")
-export class TeamsBotFeature implements ResourcePlugin {
-  name = "teams-bot";
+@Service("teams-tab")
+export class TeamsTabFeature implements ResourcePlugin {
+  name = "teams-tab";
   addInstance(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const botInputs = inputs as TeamsBotInputs;
+    const tabInputs = inputs as TeamsTabInputs;
     const addInstance: AddInstanceAction = {
-      name: "teams-bot.addInstance",
+      name: "teams-tab.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok(
-          `ensure entry '${botInputs.hostingResource}', 'azure-bot' in projectSettings.solutionSettings.activeResourcePlugins`
+          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`
         );
       },
       execute: async (
@@ -46,16 +46,14 @@ export class TeamsBotFeature implements ResourcePlugin {
         ensureSolutionSettings(context.projectSetting);
         if (
           !context.projectSetting.solutionSettings?.activeResourcePlugins.includes(
-            botInputs.hostingResource
+            tabInputs.hostingResource
           )
         )
           context.projectSetting.solutionSettings?.activeResourcePlugins.push(
-            botInputs.hostingResource
+            tabInputs.hostingResource
           );
-        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes("azure-bot"))
-          context.projectSetting.solutionSettings?.activeResourcePlugins.push("azure-bot");
         console.log(
-          `ensure entry '${botInputs.hostingResource}', 'azure-bot' in projectSettings.solutionSettings.activeResourcePlugins`
+          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`
         );
         return ok(undefined);
       },
@@ -69,7 +67,7 @@ export class TeamsBotFeature implements ResourcePlugin {
           required: true,
           targetAction: "teams-manifest.addCapability",
           inputs: {
-            capabilities: ["Bot"],
+            capabilities: ["Tab"],
           },
         },
       ],
@@ -81,10 +79,10 @@ export class TeamsBotFeature implements ResourcePlugin {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: CallAction = {
-      name: "nodejs-bot.generateCode",
+      name: "teams-tab.generateCode",
       type: "call",
       required: true,
-      targetAction: "bot-scaffold.generateCode",
+      targetAction: "tab-scaffold.generateCode",
     };
     return ok(action);
   }
@@ -92,10 +90,11 @@ export class TeamsBotFeature implements ResourcePlugin {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
+    const tabInputs = inputs as TeamsTabInputs;
     return ok({
       type: "call",
       required: true,
-      targetAction: `${inputs.hostingResource}.generateBicep`,
+      targetAction: `${tabInputs.hostingResource}.generateBicep`,
     });
   }
 }

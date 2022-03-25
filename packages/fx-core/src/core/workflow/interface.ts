@@ -50,7 +50,7 @@ export interface GroupAction {
    */
   mode?: "sequential" | "parallel";
   actions: Action[];
-  inputs?: Json;
+  inputs?: any;
   /**
    * execution priority in a sequential group, default is 3
    */
@@ -84,7 +84,7 @@ export interface CallAction {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
   inputs?: {
-    [k: string]: Json;
+    [k: string]: any;
   };
   /**
    * execution priority in a sequential group, default is 3
@@ -116,10 +116,10 @@ export interface FunctionAction {
 /**
  * a resource defines a collection of actions
  */
-export interface AzureResourcePlugin {
+export interface ResourcePlugin {
   readonly name: string;
   readonly description?: string;
-  addInstance: (
+  addInstance?: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;

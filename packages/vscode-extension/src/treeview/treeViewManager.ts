@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
-import * as AsyncLock from "async-lock";
+import { Mutex } from "async-mutex";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { isInitAppEnabled, isValidProject } from "@microsoft/teamsfx-core";
@@ -12,7 +12,7 @@ import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { TreeViewCommand } from "./treeViewCommand";
+import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 import { buildPackageHandler } from "../handlers";
 
 class TreeViewManager {
@@ -20,26 +20,26 @@ class TreeViewManager {
   private commandMap: Map<string, [TreeViewCommand, CommandsTreeViewProvider]>;
 
   private treeviewMap: Map<string, any>;
-  private exclusiveCommands: string[];
+  private exclusiveCommands: Set<string>;
   private runningCommand: TreeViewCommand | undefined;
-  private asyncLock: AsyncLock;
+  private mutex: Mutex;
 
   private constructor() {
     this.treeviewMap = new Map();
     this.commandMap = new Map<string, [TreeViewCommand, CommandsTreeViewProvider]>();
-    this.asyncLock = new AsyncLock();
-    this.exclusiveCommands = [
-      "fx-extension.create",
-      "fx-extension.addCapability",
-      "fx-extension.update",
-      "fx-extension.openManifest",
-      "fx-extension.OpenAdaptiveCardExt",
+    this.mutex = new Mutex();
+    this.exclusiveCommands = new Set([
+      // "fx-extension.create",
+      // "fx-extension.addCapability",
+      // "fx-extension.update",
+      // "fx-extension.openManifest",
+      // "fx-extension.OpenAdaptiveCardExt",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",
       "fx-extension.publish",
-      "fx-extension.addCICDWorkflows",
-    ];
+      // "fx-extension.addCICDWorkflows",
+    ]);
   }
 
   public static getInstance() {
@@ -64,22 +64,56 @@ class TreeViewManager {
   }
 
   public async runCommand(commandName: string, ...args: unknown[]) {
+    if (!this.exclusiveCommands.has(commandName)) {
+      return this.runNonBlockingCommand(commandName, args);
+    }
     if (this.runningCommand) {
+      // show warning message.
+      console.log("blocked");
       return;
     }
+    this.mutex.runExclusive(async () => await this.runBlockingCommand(commandName, args));
+  }
+
+  private runNonBlockingCommand(commandName: string, ...args: unknown[]) {
+    const commandData = this.commandMap.get(commandName);
+    if (commandData && commandData[0].callback) {
+      commandData[0].callback(args);
+    }
+  }
+
+  private async runBlockingCommand(commandName: string, ...args: unknown[]) {
     const commandData = this.commandMap.get(commandName);
     if (!commandData) {
       return;
     }
     const [command, treeViewProvider] = commandData;
-    command.setStatus(true);
-    treeViewProvider.refresh([]);
-    // await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
-    if (command.callback) {
-      await command.callback(args);
+    this.runningCommand = command;
+    command.setStatus(CommandStatus.Running);
+    for (const key of this.exclusiveCommands.values()) {
+      if (key !== commandName) {
+        const data = this.commandMap.get(key);
+        if (data && data[0]) {
+          data[0].setStatus(CommandStatus.Blocked, "Wait for " + command.runningLabel);
+        }
+      }
     }
-    command.setStatus(false);
     treeViewProvider.refresh([]);
+    await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
+    // if (command.callback) {
+    //   await command.callback(args);
+    // }
+    command.setStatus(CommandStatus.Ready);
+    for (const key of this.exclusiveCommands.values()) {
+      if (key !== commandName) {
+        const data = this.commandMap.get(key);
+        if (data && data[0]) {
+          data[0].setStatus(CommandStatus.Ready);
+        }
+      }
+    }
+    treeViewProvider.refresh([]);
+    this.runningCommand = undefined;
   }
 
   public dispose() {
@@ -227,7 +261,10 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.provisionDescription"),
         "fx-extension.provision",
-        { name: "type-hierarchy", custom: false }
+        { name: "type-hierarchy", custom: false },
+        undefined,
+        undefined,
+        undefined
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
@@ -235,7 +272,8 @@ class TreeViewManager {
         "fx-extension.build",
         { name: "package", custom: false },
         undefined,
-        buildPackageHandler
+        buildPackageHandler,
+        "Building..."
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.deployTitle"),

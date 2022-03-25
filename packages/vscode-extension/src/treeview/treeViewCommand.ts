@@ -8,10 +8,18 @@ import { Result, FxError, TreeCategory } from "@microsoft/teamsfx-api";
 
 import { ext } from "../extensionVariables";
 
+export enum CommandStatus {
+  Ready,
+  Running,
+  Blocked,
+}
+
 export class TreeViewCommand extends vscode.TreeItem {
   public static readonly TreeViewFlag = "TreeView";
 
   public children?: TreeViewCommand[];
+  private readyLabel: string;
+  private readyTooltip: string | vscode.MarkdownString;
 
   constructor(
     public label: string,
@@ -19,9 +27,12 @@ export class TreeViewCommand extends vscode.TreeItem {
     public commandId?: string,
     public image?: { name: string; custom: boolean },
     public category?: TreeCategory,
-    public callback?: (args?: unknown[]) => Promise<Result<unknown, FxError>>
+    public callback?: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
+    public runningLabel?: string
   ) {
     super(label, vscode.TreeItemCollapsibleState.None);
+    this.readyLabel = label;
+    this.readyTooltip = tooltip;
 
     this.setImagetoIcon();
 
@@ -34,11 +45,25 @@ export class TreeViewCommand extends vscode.TreeItem {
     }
   }
 
-  public setStatus(running: boolean) {
-    if (running) {
-      this.iconPath = new vscode.ThemeIcon("loading~spin");
-    } else {
-      this.setImagetoIcon();
+  public setStatus(status: CommandStatus, blockedTooltip?: string) {
+    switch (status) {
+      case CommandStatus.Running:
+        this.iconPath = new vscode.ThemeIcon("loading~spin");
+        if (this.runningLabel) {
+          this.label = this.runningLabel;
+        }
+        break;
+      case CommandStatus.Blocked:
+        if (blockedTooltip) {
+          this.tooltip = blockedTooltip;
+        }
+        break;
+      case CommandStatus.Ready:
+      default:
+        this.setImagetoIcon();
+        this.label = this.readyLabel;
+        this.tooltip = this.readyTooltip;
+        break;
     }
   }
 

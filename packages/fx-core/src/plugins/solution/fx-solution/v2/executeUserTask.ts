@@ -1,39 +1,49 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
-  Func,
-  returnSystemError,
-  TelemetryReporter,
   AzureSolutionSettings,
-  Void,
-  Platform,
-  UserInteraction,
-  SolutionSettings,
-  TokenProvider,
   combine,
+  err,
+  Func,
+  FxError,
+  Inputs,
   Json,
-  UserError,
+  ok,
+  Platform,
   ProjectSettings,
-  v3,
+  Result,
+  returnSystemError,
+  returnUserError,
+  SolutionSettings,
   SystemError,
+  TelemetryReporter,
+  TokenProvider,
+  UserError,
+  UserInteraction,
+  v2,
+  v3,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
+import fs from "fs-extra";
+import { cloneDeep } from "lodash";
+import { Container } from "typedi";
+import * as util from "util";
+import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { OperationNotPermittedError } from "../../../../core/error";
+import { CoreQuestionNames } from "../../../../core/question";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
+  DEFAULT_PERMISSION_REQUEST,
+  PluginNames,
   SolutionError,
+  SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-  SolutionSource,
-  PluginNames,
-  DEFAULT_PERMISSION_REQUEST,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
-import * as util from "util";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -41,29 +51,21 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,
+  NotificationOptionItem,
   SsoItem,
   TabOptionItem,
 } from "../question";
-import { cloneDeep } from "lodash";
-import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { Container } from "typedi";
-import { scaffoldByPlugins } from "./scaffolding";
-import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
-import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { OperationNotPermittedError } from "../../../../core/error";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
-import fs from "fs-extra";
-import { CoreQuestionNames } from "../../../../core/question";
-import { Certificate } from "crypto";
-import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
-import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
+import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
+import { scaffoldByPlugins } from "./scaffolding";
+import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -255,7 +257,7 @@ export async function addCapability(
     }
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew = {
+  const inputsNew: Inputs = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -267,7 +269,7 @@ export async function addCapability(
   }
 
   // 2. check answer
-  const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+  let capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
   if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -276,6 +278,20 @@ export async function addCapability(
     });
     return ok({});
   }
+  // normalize capability answer
+  const scenarios: BotScenario[] = [];
+  const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
+  if (notificationIndex !== -1) {
+    capabilitiesAnswer[notificationIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.NotificationBot);
+  }
+  const commandAndResponseIndex = capabilitiesAnswer.indexOf(CommandAndResponseOptionItem.id);
+  if (commandAndResponseIndex !== -1) {
+    capabilitiesAnswer[commandAndResponseIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.CommandAndResponseBot);
+  }
+  inputsNew[AzureSolutionQuestionNames.Scenarios] = scenarios;
+  capabilitiesAnswer = [...new Set(capabilitiesAnswer)];
 
   // 3. check capability limit
   const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);

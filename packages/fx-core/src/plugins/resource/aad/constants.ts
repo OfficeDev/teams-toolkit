@@ -223,8 +223,13 @@ export class Messages {
   };
 
   static readonly Scaffold: Messages = {
-    log: Messages.getLog("Successfolly scaffold resources"),
+    log: Messages.getLog("Successfully scaffold resources"),
     telemetry: Messages.getEventName("scaffold"),
+  };
+
+  static readonly Deploy: Messages = {
+    log: Messages.getLog("Successfully deploy resources"),
+    telemetry: Messages.getEventName("deploy"),
   };
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";

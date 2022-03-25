@@ -136,6 +136,7 @@ import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
 import { localize } from "./utils/localizeUtils";
+import { registerEnvTreeHandler } from "./envTree";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -587,7 +588,9 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
+    await registerEnvTreeHandler();
   }
+
   return result;
 }
 
@@ -741,6 +744,12 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+  return ok(null);
+}
+
+export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
+  VsCodeLogInstance.outputChannel.show();
   return ok(null);
 }
 

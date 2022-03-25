@@ -52,7 +52,7 @@ class TreeViewManager {
       "fx-extension.addCapability",
       "fx-extension.update",
       "fx-extension.openManifest",
-      "fx-extension.OpenAdaptiveCardExt",
+      // "fx-extension.OpenAdaptiveCardExt",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",
@@ -243,7 +243,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
         "fx-extension.openManifest",
         openManifestHandler,
-        undefined,
+        "manifestEditor",
         { name: "edit", custom: false }
       )
     );
@@ -312,7 +312,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
         buildPackageHandler,
-        "build",
+        "buildPackage",
         { name: "package", custom: false }
       ),
       new TreeViewCommand(
@@ -336,7 +336,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
         "fx-extension.addCICDWorkflows",
         addCICDWorkflowsHandler,
-        "cicd",
+        "addCICDWorkflows",
         { name: "sync", custom: false }
       ),
       new TreeViewCommand(

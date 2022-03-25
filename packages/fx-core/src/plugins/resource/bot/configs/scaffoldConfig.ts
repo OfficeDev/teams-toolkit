@@ -90,8 +90,7 @@ export class ScaffoldConfig {
     if (context.answers === undefined) {
       return undefined;
     }
-    const fromInputs = isScaffold;
-    if (fromInputs) {
+    if (isScaffold) {
       return context.answers
         ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)
         : undefined;

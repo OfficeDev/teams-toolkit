@@ -385,6 +385,33 @@ export async function getQuestionsForUserTask(
   return ok(undefined);
 }
 
+async function validateAddCapability(input: string[]): Promise<string | undefined> {
+  if (
+    input.includes(NotificationOptionItem.id) &&
+    input.includes(CommandAndResponseOptionItem.id)
+  ) {
+    return getLocalizedString("core.addCapabilityQuestion.notificationCommandAndResponseConflict");
+  }
+
+  // undefined for success
+  return undefined;
+}
+
+async function onDidChangeSelectionForAddCapability(
+  currentSelectedIds: Set<string>,
+  previousSelectedIds: Set<string>
+): Promise<Set<string>> {
+  return handleSelectionConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    previousSelectedIds,
+    currentSelectedIds
+  );
+}
+
 export async function getQuestionsForAddCapability(
   ctx: v2.Context,
   inputs: Inputs,
@@ -400,34 +427,9 @@ export async function getQuestionsForAddCapability(
     staticOptions: [],
     default: [],
     validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        if (
-          input.includes(NotificationOptionItem.id) &&
-          input.includes(CommandAndResponseOptionItem.id)
-        ) {
-          return getLocalizedString(
-            "core.addCapabilityQuestion.notificationCommandAndResponseConflict"
-          );
-        }
-
-        // undefined for success
-        return undefined;
-      },
+      validFunc: validateAddCapability,
     },
-    onDidChangeSelection: async function (
-      currentSelectedIds: Set<string>,
-      previousSelectedIds: Set<string>
-    ): Promise<Set<string>> {
-      return handleSelectionConflict(
-        [
-          new Set([BotOptionItem.id, MessageExtensionItem.id]),
-          new Set([NotificationOptionItem.id]),
-          new Set([CommandAndResponseOptionItem.id]),
-        ],
-        previousSelectedIds,
-        currentSelectedIds
-      );
-    },
+    onDidChangeSelection: onDidChangeSelectionForAddCapability,
   };
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {

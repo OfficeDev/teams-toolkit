@@ -60,7 +60,7 @@ export class TeamsBot implements Plugin {
   public getImpl(context: PluginContext, isScaffold = false): PluginImpl {
     if (isVSProject(context.projectSettings)) {
       return this.dotnetBotImpl;
-    } else if (this.isFunctionsHostedBot(context, isScaffold)) {
+    } else if (TeamsBot.isFunctionsHostedBot(context, isScaffold)) {
       return this.functionsBotImpl;
     } else {
       return this.teamsBotImpl;
@@ -326,7 +326,7 @@ export class TeamsBot implements Plugin {
     }
   }
 
-  private isFunctionsHostedBot(context: PluginContext, isScaffold: boolean): boolean {
+  private static isFunctionsHostedBot(context: PluginContext, isScaffold: boolean): boolean {
     return ScaffoldConfig.getBotHostType(context, isScaffold) === BotHostTypes.AzureFunctions;
   }
 }

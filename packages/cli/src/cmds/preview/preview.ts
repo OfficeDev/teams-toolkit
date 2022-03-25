@@ -73,6 +73,7 @@ import { performance } from "perf_hooks";
 import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
 import { NotM365Project } from "./errors";
 import * as util from "util";
+import { openHubWebClient } from "./launch";
 
 enum Checker {
   M365Account = "M365 Account",
@@ -443,7 +444,7 @@ export default class Preview extends YargsCommand {
 
     // launch Teams
     if (hub === constants.Hub.teams) {
-      await commonUtils.openHubWebClient(
+      await openHubWebClient(
         includeFrontend,
         tenantId,
         localTeamsAppId,
@@ -467,7 +468,7 @@ export default class Preview extends YargsCommand {
       if (shouldContinue) {
         const internalId = await getTeamsAppInternalId(localTeamsAppId);
         if (internalId) {
-          await commonUtils.openHubWebClient(
+          await openHubWebClient(
             includeFrontend,
             tenantId,
             internalId,
@@ -482,7 +483,7 @@ export default class Preview extends YargsCommand {
     } else {
       const internalId = await getTeamsAppInternalId(localTeamsAppId);
       if (internalId) {
-        await commonUtils.openHubWebClient(
+        await openHubWebClient(
           includeFrontend,
           tenantId,
           internalId,
@@ -748,7 +749,7 @@ export default class Preview extends YargsCommand {
 
     // launch Teams
     if (hub === constants.Hub.teams) {
-      await commonUtils.openHubWebClient(
+      await openHubWebClient(
         includeFrontend,
         tenantId,
         remoteTeamsAppId,
@@ -772,7 +773,7 @@ export default class Preview extends YargsCommand {
       if (shouldContinue) {
         const internalId = await getTeamsAppInternalId(remoteTeamsAppId);
         if (internalId) {
-          await commonUtils.openHubWebClient(
+          await openHubWebClient(
             includeFrontend,
             tenantId,
             internalId,
@@ -786,7 +787,7 @@ export default class Preview extends YargsCommand {
     } else {
       const internalId = await getTeamsAppInternalId(remoteTeamsAppId);
       if (internalId) {
-        await commonUtils.openHubWebClient(
+        await openHubWebClient(
           includeFrontend,
           tenantId,
           internalId,

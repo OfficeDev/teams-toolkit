@@ -9,8 +9,8 @@ import { GetTeamsAppInstallationFailed, M365AccountInfoNotFound } from "./errors
 import CLIUIInstance from "../../userInteraction";
 import { installApp } from "./constants";
 import cliLogger from "../../commonlib/log";
-import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
+import { openHubWebClient } from "./launch";
 
 const installOptionItem: OptionItem = {
   id: installApp.installInTeams,
@@ -52,7 +52,7 @@ export async function showInstallAppInTeamsMessage(
     if (result.value.result === cancelOptionItem.id) {
       return false;
     } else if (result.value.result === installOptionItem.id) {
-      await commonUtils.openHubWebClient(
+      await openHubWebClient(
         true,
         tenantIdFromConfig,
         appId,

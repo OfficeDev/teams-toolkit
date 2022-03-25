@@ -17,16 +17,18 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "./localSettingsHelper";
+import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse } from "./portChecker";
-import { waitSeconds } from "../tools";
+import { isConfigUnifyEnabled, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
 import { DepsManager } from "../deps-checker/depsManager";
+import { LocalStateProvider } from "../localStateProvider";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -78,9 +80,19 @@ export class LocalEnvManager {
   public async getLocalDebugEnvs(
     projectPath: string,
     projectSettings: ProjectSettings,
-    localSettings: Json | undefined
+    localSettings: Json | undefined,
+    localState?: Json | undefined
   ): Promise<Record<string, string>> {
-    return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
+    if (isConfigUnifyEnabled()) {
+      return await localStateHelper.convertToLocalEnvs(
+        projectPath,
+        projectSettings,
+        localState,
+        this.logger
+      );
+    } else {
+      return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
+    }
   }
 
   public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {
@@ -102,6 +114,17 @@ export class LocalEnvManager {
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
     return await this.retry(async () => {
       return await localSettingsProvider.loadV2(crypto);
+    });
+  }
+
+  public async getLocalState(
+    projectPath: string,
+    cryptoOption?: { projectId: string }
+  ): Promise<Json | undefined> {
+    const localStateProvider = new LocalStateProvider(projectPath);
+    const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
+    return await this.retry(async () => {
+      return await localStateProvider.loadV2(crypto);
     });
   }
 

@@ -49,6 +49,7 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import {
   createV2Context,
   getRootDirectory,
+  isAadManifestEnabled,
   isConfigUnifyEnabled,
   mapToJson,
   undefinedName,
@@ -59,6 +60,7 @@ import {
   BotOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -356,7 +358,10 @@ export class FxCore implements v3.ICore {
       if (!inputs.existingAppConfig?.isCreatedFromExistingApp) {
         // addFeature
         const features: string[] = [];
-        if (!capabilities.includes(TabSPFxItem.id)) {
+        if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
+          features.push(BuiltInFeaturePluginNames.aad);
+        }
+        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {

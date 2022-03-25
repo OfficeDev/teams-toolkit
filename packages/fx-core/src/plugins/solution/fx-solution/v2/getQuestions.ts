@@ -35,6 +35,7 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -53,6 +54,7 @@ import { NoCapabilityFoundError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isAadManifestEnabled } from "../../../../common";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -75,6 +77,7 @@ export async function getQuestionsForScaffolding(
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
+        ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
       ],
     };
     if (!inputs.isM365) {
@@ -122,7 +125,10 @@ export async function getQuestionsForScaffolding(
           return "Invalid inputs";
         }
         const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-        if (cap.includes(TabOptionItem.id)) {
+        if (
+          cap.includes(TabOptionItem.id) ||
+          (isAadManifestEnabled() && cap.includes(TabNonSsoItem.id))
+        ) {
           return undefined;
         }
         return "Tab is not selected";

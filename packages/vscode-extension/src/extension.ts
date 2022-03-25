@@ -444,6 +444,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(listCollaborator);
 
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
   const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
     Correlator.run(handlers.addSsoHanlder)
   );

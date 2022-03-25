@@ -69,19 +69,27 @@ export class SPFxPluginImpl {
       const replaceMap: Map<string, string> = new Map();
       if (yeomanScaffoldEnabled()) {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
-        await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
+        await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
         const yoChecker = new YoChecker(ctx.logProvider!);
-        const yoRes = await yoChecker.ensureDependency(ctx);
-        if (yoRes.isErr()) {
-          throw DependencyInstallError("yo");
-        }
         const spGeneratorChecker = new GeneratorChecker(ctx.logProvider!);
-        const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
-        if (spGeneratorRes.isErr()) {
-          throw DependencyInstallError("sharepoint generator");
+
+        const yoInstalled = await yoChecker.isInstalled();
+        const generatorInstalled = await spGeneratorChecker.isInstalled();
+
+        if (!yoInstalled || !generatorInstalled) {
+          await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
+          const yoRes = await yoChecker.ensureDependency(ctx);
+          if (yoRes.isErr()) {
+            throw DependencyInstallError("yo");
+          }
+          const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
+          if (spGeneratorRes.isErr()) {
+            throw DependencyInstallError("sharepoint generator");
+          }
         }
 
+        await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
         const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
         const solutionName = ctx.projectSettings?.appName as string;
         if (ctx.answers?.platform === Platform.VSCode) {

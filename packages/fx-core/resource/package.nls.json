@@ -351,6 +351,8 @@
   "core.TabSPFxOption.detail": "Auto-hosted SPFx web part tightly integrated with Microsoft Teams",
   "core.Sso.description": "Single Sign On",
   "core.Sso.detail": "Enable Single Sign On in your Teams app",
+  "core.TabNonSso.description": "UI-based app without SSO",
+  "core.TabNonSso.detail": "Teams-aware webpages embedded in Microsoft Teams without Single Sign On",
   "core.createCapabilityQuestion.title": "Select capabilities",
   "core.createCapabilityQuestion.placeholder": "Select at least 1 capability",
   "core.createCapabilityQuestion.validation1": "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available",

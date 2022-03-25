@@ -90,7 +90,6 @@ export class SPFxPluginImpl {
         }
 
         await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
-        const webpartDescription = ctx.answers![SPFXQuestionNames.webpart_desp] as string;
         const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
         const solutionName = ctx.projectSettings?.appName as string;
         if (ctx.answers?.platform === Platform.VSCode) {
@@ -112,8 +111,6 @@ export class SPFxPluginImpl {
           "true",
           "--component-type",
           "webpart",
-          "--component-description",
-          webpartDescription,
           "--component-name",
           webpartName,
           "--framework",

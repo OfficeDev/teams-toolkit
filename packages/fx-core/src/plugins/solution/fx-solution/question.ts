@@ -208,6 +208,8 @@ export function addCapabilityQuestion(
   if (!alreadyHaveBot) {
     options.push(BotOptionItem);
     options.push(MessageExtensionItem);
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,

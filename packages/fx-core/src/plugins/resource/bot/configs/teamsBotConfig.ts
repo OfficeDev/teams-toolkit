@@ -28,8 +28,8 @@ export class TeamsBotConfig {
   public actRoles: PluginActRoles[] = [];
   public resourceNameSuffix = "";
 
-  public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    await this.scaffold.restoreConfigFromContext(context);
+  public async restoreConfigFromContext(context: PluginContext, isScaffold = false): Promise<void> {
+    await this.scaffold.restoreConfigFromContext(context, isScaffold);
     await this.provision.restoreConfigFromContext(context);
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);

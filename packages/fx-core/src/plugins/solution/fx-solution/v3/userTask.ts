@@ -51,7 +51,7 @@ export async function getQuestionsForUserTask(
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (func.method === "addCapability") {
-    return await getQuestionsForAddCapability(ctx, inputs);
+    return await getQuestionsForAddCapability(ctx, inputs, func, envInfo, tokenProvider);
   }
   if (func.method === "addResource") {
     return await getQuestionsForAddResource(ctx, inputs);

@@ -29,6 +29,7 @@ import "../../../src/plugins/resource/function/v2";
 import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/spfx/v2";
 import "../../../src/plugins/resource/sql/v2";
+import * as tool from "../../../src/common/tools";
 import {
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
@@ -78,7 +79,7 @@ describe("getQuestionsForScaffolding()", async () => {
       hostType: HostTypeOptionAzure.id,
       name: "test",
       version: "1.0",
-      activeResourcePlugins: ["fx-resource-frontend-hosting"],
+      activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
       capabilities: [],
       azureResources: [],
     },
@@ -143,8 +144,24 @@ describe("getQuestionsForScaffolding()", async () => {
     const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
     if (result2.isOk()) {
-      const node = result2.value;
-      assert.isTrue(node !== undefined && node.data !== undefined);
+      const node = result2.value as any;
+      assert.isTrue(
+        node !== undefined &&
+          node.children[0].data.default.length === 1 &&
+          node.children[0].data.default.includes("fx-resource-frontend-hosting")
+      );
+    }
+
+    sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    const result3 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
+    chai.assert.isTrue(result3.isOk());
+    if (result3.isOk()) {
+      const node = result3.value as any;
+      assert.isTrue(
+        node !== undefined &&
+          node.children[0].data.default.length === 2 &&
+          node.children[0].data.default.includes("fx-resource-aad-app-for-teams")
+      );
     }
   });
 

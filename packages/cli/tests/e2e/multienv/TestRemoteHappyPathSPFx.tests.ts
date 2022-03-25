@@ -107,11 +107,12 @@ describe("Multi Env Happy Path for SPFx", function () {
     }
 
     // deploy
-    await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
+    result = await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
     });
+    console.log(`[Successfully] deploy, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
 
     {
       // Validate sharepoint package, see fx-core/src/plugins/resource/spfx/plugin.ts: SPFxPluginImpl.buildSPPackge()
@@ -127,6 +128,9 @@ describe("Multi Env Happy Path for SPFx", function () {
       env: processEnv,
       timeout: 0,
     });
+    console.log(
+      `[Successfully] validation, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+    );
 
     {
       // Validate validate manifest
@@ -146,7 +150,9 @@ describe("Multi Env Happy Path for SPFx", function () {
       expect(await fs.pathExists(file)).to.be.true;
     }
 
+    // Temporarily disable publish
     // publish
+    /*
     result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
@@ -155,7 +161,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
     {
       expect(result.stderr).to.be.empty;
-    }
+    }*/
   });
 
   after(async () => {

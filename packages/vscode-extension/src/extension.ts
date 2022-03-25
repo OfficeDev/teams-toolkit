@@ -17,6 +17,7 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
+  AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -26,6 +27,7 @@ import {
   isConfigUnifyEnabled,
   isInitAppEnabled,
   isM365AppEnabled,
+  isAadManifestEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -358,6 +360,17 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(listCollaborator);
 
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
+  const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
+    Correlator.run(handlers.addSsoHanlder)
+  );
+  context.subscriptions.push(addSso);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
@@ -373,6 +386,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAadManifestEnabled()
   );
 
   // Setup CodeLens provider for userdata file
@@ -410,6 +429,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
+  const aadAppTemplateSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -432,6 +458,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
       manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadAppTemplateSelector,
+      aadAppTemplateCodeLensProvider
     )
   );
 

@@ -50,7 +50,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
-import { isConfigUnifyEnabled } from "../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 
 export class AadAppForTeamsImpl {
@@ -586,5 +586,20 @@ export class AadAppForTeamsImpl {
     });
 
     return requiredResourceAccessList;
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<AadResult> {
+    if (isAadManifestEnabled()) {
+      const templatesFolder = getTemplatesFolder();
+      const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
+      const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
+      await fs.ensureDir(appDir);
+      await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
+    }
+    return ResultFactory.Success();
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return ResultFactory.Success();
   }
 }

@@ -54,17 +54,22 @@ export function getPermissionMap(): any {
     map[resourceId] = {};
     map[resourceId].scopes = {};
     map[resourceId].roles = {};
-
-    map[permission.displayName] = {};
-    map[permission.displayName].id = resourceId;
+    map[resourceId].scopeIds = {};
+    map[resourceId].roleIds = {};
+    map[resourceId].id = resourceId;
+    map[resourceId].displayName = permission.displayName;
 
     permission.oauth2PermissionScopes.forEach((scope) => {
       map[resourceId].scopes[scope.value] = scope.id;
+      map[resourceId].scopeIds[scope.id] = scope.value;
     });
 
     permission.appRoles.forEach((appRole) => {
       map[resourceId].roles[appRole.value] = appRole.id;
+      map[resourceId].roleIds[appRole.id] = appRole.value;
     });
+
+    map[permission.displayName] = map[resourceId];
   });
 
   return map;

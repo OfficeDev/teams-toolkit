@@ -51,6 +51,7 @@ export enum TemplateProjectsScenarios {
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
   NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
   NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
+  COMMAND_AND_RESPONSE_SCENARIO_NAME = "command-and-response",
 }
 
 export const TriggerTemplateScenarioMappings = {
@@ -70,7 +71,6 @@ export class ProgressBarConstants {
 
   public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
-  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE = "Scaffolding notification bot";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_START =
     "Scaffolding notification bot.";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_PROJECT_TEMPLATE =
@@ -154,6 +154,7 @@ export class ErrorNames {
   public static readonly CONFIG_VALIDATION_ERROR = "ConfigValidationError";
   public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
   public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
+  public static readonly RESTART_WEBAPP_ERROR = "RestartWebappError";
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
   public static readonly DOWNLOAD_ERROR = "DownloadError";
   public static readonly MANIFEST_FORMAT_ERROR = "TemplateManifestFormatError";
@@ -271,6 +272,7 @@ export class TelemetryKeys {
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";
+  public static readonly BotCapabilities = "bot-capabilities";
 }
 
 export class TelemetryValues {

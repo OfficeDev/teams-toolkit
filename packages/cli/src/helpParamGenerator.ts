@@ -20,7 +20,7 @@ import {
   OptionItem,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isM365AppEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -30,8 +30,11 @@ import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
 import {
+  azureSolutionGroupNodeName,
   CollaboratorEmailNode,
   EnvNodeNoCreate,
+  m365AppTypeNodeName,
+  m365CapabilitiesNodeName,
   RootFolderNode,
   sqlPasswordConfirmQuestionName,
 } from "./constants";
@@ -110,8 +113,11 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  public getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public getQuestionRootNodeForHelp(stage: string, inputs?: Inputs): QTreeNode | undefined {
     if (this.questionsMap.has(stage)) {
+      if (stage === Stage.create && inputs?.isM365) {
+        return this.questionsMap.get(`${stage}-m365`);
+      }
       return this.questionsMap.get(stage);
     }
     return undefined;
@@ -130,6 +136,17 @@ export class HelpParamGenerator {
         this.setQuestionNodes(stage, result.value);
       }
     }
+    if (isM365AppEnabled()) {
+      const result = await this.core.getQuestions(Stage.create, {
+        ...systemInput,
+        isM365: true,
+      });
+      if (result.isErr()) {
+        return err(result.error);
+      } else {
+        this.setQuestionNodes(`${Stage.create}-m365`, result.value);
+      }
+    }
     const userTasks = ["addCapability", "addResource"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
@@ -142,7 +159,7 @@ export class HelpParamGenerator {
     return ok(true);
   }
 
-  public getYargsParamForHelp(stage: string): { [_: string]: Options } {
+  public getYargsParamForHelp(stage: string, inputs?: Inputs): { [_: string]: Options } {
     if (!this.initialized) {
       throw NoInitializedHelpGenerator();
     }
@@ -155,7 +172,7 @@ export class HelpParamGenerator {
       capabilityId = stage.split("-")[1];
       stage = "addCapability";
     }
-    const root = this.getQuestionRootNodeForHelp(stage);
+    const root = this.getQuestionRootNodeForHelp(stage, inputs);
     let nodes: QTreeNode[] = [];
     if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
@@ -237,6 +254,25 @@ export class HelpParamGenerator {
     // Add user email node for grant permission
     if (stage === Stage.grantPermission) {
       nodes = nodes.concat([CollaboratorEmailNode]);
+    }
+
+    if (stage === Stage.create) {
+      for (const node of nodes) {
+        // hide --azure-solution-group
+        if (node.data.name === azureSolutionGroupNodeName) {
+          (node.data as any).hide = true;
+        }
+
+        // hide --m365-capabilities
+        if (node.data.name === m365CapabilitiesNodeName) {
+          (node.data as any).hide = true;
+        }
+
+        // hide --app-type if not inputs.isM365
+        if (node.data.name === m365AppTypeNodeName) {
+          (node.data as any).hide = !inputs?.isM365;
+        }
+      }
     }
 
     const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");

@@ -26,6 +26,10 @@ export class Constants {
     type: "M365",
   };
 
+  static appPackageFolder = "templates/appPackage";
+  static aadManifestTemplateFolder = "plugins/resource/aad/manifest";
+  static aadManifestTemplateName = "aad.template.json";
+
   static createOwnerDuplicatedMessage =
     "One or more added object references already exist for the following modified properties: 'owners'.";
 
@@ -216,6 +220,16 @@ export class Messages {
   static readonly EndListCollaborator: Messages = {
     log: Messages.getLog("Successfully list collaborator"),
     telemetry: Messages.getEventName("list-collaborator"),
+  };
+
+  static readonly Scaffold: Messages = {
+    log: Messages.getLog("Successfully scaffold resources"),
+    telemetry: Messages.getEventName("scaffold"),
+  };
+
+  static readonly Deploy: Messages = {
+    log: Messages.getLog("Successfully deploy resources"),
+    telemetry: Messages.getEventName("deploy"),
   };
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";

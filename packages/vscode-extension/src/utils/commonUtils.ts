@@ -211,6 +211,14 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
     ConfigurationKey.RootDirectory
   ).toString();
+
+  process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
+
+  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableInitApp).toString();
+
+  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
+    ConfigurationKey.BotNotificationCommandAndResponseEnabled
+  ).toString();
 }
 
 export class FeatureFlags {

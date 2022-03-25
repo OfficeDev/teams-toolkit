@@ -50,6 +50,7 @@ import {
   Void,
   VsCodeEnv,
   IProgressHandler,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -135,6 +136,7 @@ import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
 import { localize } from "./utils/localizeUtils";
+import { registerEnvTreeHandler } from "./envTree";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -244,6 +246,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
 
         await refreshEnvTreeOnFileChanged(workspacePath, files);
       });
+
+      workspace.onDidSaveTextDocument(async (event) => {
+        await refreshEnvTreeOnFileContentChanged(workspacePath, event.uri.fsPath);
+      });
     }
   } catch (e) {
     const FxError: FxError = {
@@ -301,6 +307,20 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
+    await envTree.registerEnvTreeHandler();
+  }
+}
+
+async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  // check if file is project config
+  if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
     await envTree.registerEnvTreeHandler();
   }
 }
@@ -568,7 +588,9 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
+    await registerEnvTreeHandler();
   }
+
   return result;
 }
 
@@ -722,6 +744,12 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+  return ok(null);
+}
+
+export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
+  VsCodeLogInstance.outputChannel.show();
   return ok(null);
 }
 
@@ -980,6 +1008,9 @@ async function processResult(
   if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
   }
+  if (eventName === TelemetryEvent.CreateProject && inputs?.isM365) {
+    createProperty[TelemetryProperty.IsM365] = "true";
+  }
 
   if (result.isErr()) {
     if (eventName) {
@@ -1121,7 +1152,17 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    shouldContinue = await showInstallAppInTeamsMessage(false);
+    const debugConfig = isConfigUnifyEnabled()
+      ? await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName())
+      : await commonUtils.getDebugConfig(true);
+    if (debugConfig?.appId === undefined) {
+      throw returnUserError(
+        new Error("Debug config not found"),
+        ExtensionSource,
+        ExtensionErrors.GetTeamsAppInstallationFailed
+      );
+    }
+    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
   } catch (error: any) {
     showError(error);
   }
@@ -1333,9 +1374,9 @@ function getTriggerFromProperty(args?: any[]) {
 }
 
 async function autoOpenProjectHandler(): Promise<void> {
-  const isOpenWalkThrough = globalStateGet(GlobalKey.OpenWalkThrough, false);
-  const isOpenReadMe = globalStateGet(GlobalKey.OpenReadMe, false);
-  const isOpenSampleReadMe = globalStateGet(GlobalKey.OpenSampleReadMe, false);
+  const isOpenWalkThrough = await globalStateGet(GlobalKey.OpenWalkThrough, false);
+  const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, false);
+  const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
     showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
@@ -1438,7 +1479,7 @@ async function postUpgrade(): Promise<void> {
 
 async function popupAfterUpgrade(): Promise<void> {
   const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
-  const aadClientSecret = globalStateGet(aadClientSecretFlag, "");
+  const aadClientSecret = await globalStateGet(aadClientSecretFlag, "");
   if (
     aadClientSecret !== "" &&
     workspace.workspaceFolders &&
@@ -1472,7 +1513,7 @@ async function popupAfterUpgrade(): Promise<void> {
 async function openUpgradeChangeLogsHandler() {
   const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
   if (
-    globalStateGet(openUpgradeChangelogsFlag, false) &&
+    (await globalStateGet(openUpgradeChangelogsFlag, false)) &&
     workspace.workspaceFolders &&
     workspace.workspaceFolders.length > 0
   ) {
@@ -1517,7 +1558,7 @@ async function openSampleReadmeHandler(args?: any) {
 }
 
 async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
+  const isShowLocalDebugMessage = await globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
 
   if (!isShowLocalDebugMessage) {
     return;
@@ -2677,4 +2718,15 @@ export async function openDeploymentTreeview(args?: any[]) {
   } else {
     vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
+}
+
+export async function addSsoHanlder(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddSsoStart);
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addSso",
+  };
+
+  const result = await runUserTask(func, TelemetryEvent.AddSso, true);
+  return result;
 }

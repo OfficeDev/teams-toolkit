@@ -35,6 +35,7 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -398,7 +399,12 @@ export async function getQuestionsForAddCapability(
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     // For CLI_HELP
-    addCapQuestion.staticOptions = [TabOptionItem, BotOptionItem, MessageExtensionItem];
+    addCapQuestion.staticOptions = [
+      TabOptionItem,
+      BotOptionItem,
+      MessageExtensionItem,
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+    ];
     return ok(new QTreeNode(addCapQuestion));
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
@@ -442,7 +448,13 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem);
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(TabOptionItem);
+    } else {
+      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+    }
+  }
   if (isBotAddable) options.push(BotOptionItem);
   if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;

@@ -7,12 +7,15 @@ import * as vscode from "vscode";
 import { Result, FxError, TreeCategory } from "@microsoft/teamsfx-api";
 
 import { ext } from "../extensionVariables";
+import { localize } from "../utils/localizeUtils";
 
 export enum CommandStatus {
   Ready,
   Running,
   Blocked,
 }
+
+const labelPrefix = "teamstoolkit.commandsTreeViewProvider.";
 
 export class TreeViewCommand extends vscode.TreeItem {
   public static readonly TreeViewFlag = "TreeView";
@@ -24,7 +27,7 @@ export class TreeViewCommand extends vscode.TreeItem {
     private readyTooltip: string | vscode.MarkdownString,
     public commandId?: string,
     public callback?: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
-    public blockingAction?: string,
+    public runningLabelKey?: string,
     public image?: { name: string; custom: boolean },
     public category?: TreeCategory
   ) {
@@ -45,8 +48,11 @@ export class TreeViewCommand extends vscode.TreeItem {
     switch (status) {
       case CommandStatus.Running:
         this.iconPath = new vscode.ThemeIcon("loading~spin");
-        if (this.blockingAction) {
-          this.label = this.blockingAction + "ing...";
+        if (this.runningLabelKey) {
+          const label = localize(`${labelPrefix}${this.runningLabelKey}Running`);
+          if (label) {
+            this.label = label;
+          }
         }
         break;
       case CommandStatus.Blocked:
@@ -60,6 +66,13 @@ export class TreeViewCommand extends vscode.TreeItem {
         this.label = this.readyLabel;
         this.tooltip = this.readyTooltip;
         break;
+    }
+  }
+
+  public getBlockingTooltip(): string | undefined {
+    if (this.runningLabelKey) {
+      const tooltip = localize(`${labelPrefix}${this.runningLabelKey}BlockTooltip`);
+      return tooltip;
     }
   }
 

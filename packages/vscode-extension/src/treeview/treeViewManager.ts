@@ -87,13 +87,10 @@ class TreeViewManager {
       return this.runNonBlockingCommand(commandName, args);
     }
     if (this.runningCommand) {
-      // show warning message.
-      console.log("blocked");
-      VS_CODE_UI.showMessage(
-        "warn",
-        `Cannot run command during ${this.runningCommand.blockingAction}ing. Please try again after it completes.`,
-        false
-      );
+      const blockedTooltip = this.runningCommand.getBlockingTooltip();
+      if (blockedTooltip) {
+        VS_CODE_UI.showMessage("warn", blockedTooltip, false);
+      }
       return;
     }
     this.mutex.runExclusive(async () => await this.runBlockingCommand(commandName, args));
@@ -108,22 +105,27 @@ class TreeViewManager {
 
   private async runBlockingCommand(commandName: string, ...args: unknown[]) {
     const commandData = this.commandMap.get(commandName);
+    const treeViewProviderToUpdate = new Set<CommandsTreeViewProvider>();
     if (!commandData) {
       return;
     }
     const [command, treeViewProvider] = commandData;
     this.runningCommand = command;
+    treeViewProviderToUpdate.add(treeViewProvider);
     command.setStatus(CommandStatus.Running);
+    const blockingTooltip = command.getBlockingTooltip();
     for (const key of this.exclusiveCommands.values()) {
       if (key !== commandName) {
         const data = this.commandMap.get(key);
         if (data && data[0]) {
-          data[0].setStatus(CommandStatus.Blocked, `Wait for running command completes`);
+          data[0].setStatus(CommandStatus.Blocked, blockingTooltip);
+          treeViewProviderToUpdate.add(data[1]);
         }
       }
     }
-    treeViewProvider.refresh([]);
-    // await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
+    for (const provider of treeViewProviderToUpdate.values()) {
+      provider.refresh([]);
+    }
     if (command.callback) {
       await command.callback(args);
     }
@@ -136,7 +138,9 @@ class TreeViewManager {
         }
       }
     }
-    treeViewProvider.refresh([]);
+    for (const provider of treeViewProviderToUpdate.values()) {
+      provider.refresh([]);
+    }
     this.runningCommand = undefined;
   }
 
@@ -183,7 +187,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
         createNewProjectHandler,
-        "create",
+        "createProject",
         { name: "new-folder", custom: false }
       ),
     ];
@@ -195,7 +199,7 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
           "fx-extension.init",
           initProjectHandler,
-          "initialize",
+          "initProject",
           { name: "new-folder", custom: false }
         )
       );
@@ -219,7 +223,7 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
           "fx-extension.addCapability",
           addCapabilityHandler,
-          "add",
+          "addCapabilities",
           { name: "addCapability", custom: true }
         ),
         new TreeViewCommand(
@@ -227,7 +231,7 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
           "fx-extension.update",
           addResourceHandler,
-          "update",
+          "addResources",
           { name: "addResources", custom: true }
         )
       );

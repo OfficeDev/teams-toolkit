@@ -278,7 +278,11 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter((plugin) => !!plugin.deploy);
+    plugins = plugins.filter(
+      (plugin) =>
+        !!plugin.deploy &&
+        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
+    );
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }

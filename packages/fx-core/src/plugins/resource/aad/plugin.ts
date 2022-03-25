@@ -598,4 +598,8 @@ export class AadAppForTeamsImpl {
     }
     return ResultFactory.Success();
   }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return ResultFactory.Success();
+  }
 }

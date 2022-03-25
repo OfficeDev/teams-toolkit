@@ -230,7 +230,7 @@ export function fillInSolutionSettings(
       capabilities.push(SsoItem.id);
     } else if (capabilities.includes(TabNonSsoItem.id)) {
       const index = capabilities.indexOf(TabNonSsoItem.id);
-      capabilities.splice(index);
+      capabilities.splice(index, 1);
       capabilities.push(TabOptionItem.id);
     }
   }

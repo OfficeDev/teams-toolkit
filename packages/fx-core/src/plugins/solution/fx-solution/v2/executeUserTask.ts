@@ -1,6 +1,7 @@
 import {
   AzureSolutionSettings,
   combine,
+  Err,
   err,
   Func,
   FxError,
@@ -327,7 +328,7 @@ export async function addCapability(
 
     if (toAddTabNonSso) {
       const index = capabilitiesAnswer.indexOf(TabNonSsoItem.id);
-      capabilitiesAnswer.splice(index);
+      capabilitiesAnswer.splice(index, 1);
       capabilitiesAnswer.push(TabOptionItem.id);
     }
   }
@@ -402,13 +403,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, true, false, true);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -420,13 +415,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, true, false);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -444,13 +433,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -462,13 +445,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -486,13 +463,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -504,13 +475,7 @@ export async function addCapability(
         if (isAadManifestEnabled() && alreadyHasSso) {
           const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
           if (createAuthFilesRes.isErr()) {
-            return err(
-              sendErrorTelemetryThenReturnError(
-                SolutionTelemetryEvent.AddCapability,
-                createAuthFilesRes.error,
-                ctx.telemetryReporter
-              )
-            );
+            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
         }
       }
@@ -1005,6 +970,7 @@ export async function addSso(
   return ok(undefined);
 }
 
+// TODO: use 'isVsProject' for changes in VS
 export async function createAuthFiles(
   input: Inputs,
   needTab: boolean,
@@ -1059,3 +1025,16 @@ export async function createAuthFiles(
 
   return ok(undefined);
 }
+
+const addAuthFileError = (
+  createAuthFilesRes: Err<unknown, FxError>,
+  telemetryReporter: TelemetryReporter
+): Err<any, FxError> => {
+  return err(
+    sendErrorTelemetryThenReturnError(
+      SolutionTelemetryEvent.AddCapability,
+      createAuthFilesRes.error,
+      telemetryReporter
+    )
+  );
+};

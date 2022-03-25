@@ -121,12 +121,11 @@ describe("triggers Tests", () => {
       const pluginContext = testUtils.newPluginContext();
       const answers = pluginContext.answers!;
 
-      answers.stage = Stage.create;
       answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] = answer;
       const scaffoldConfig = new ScaffoldConfig();
 
       // Act
-      scaffoldConfig.restoreConfigFromContext(pluginContext);
+      scaffoldConfig.restoreConfigFromContext(pluginContext, true);
 
       // Assert
       const result = [...scaffoldConfig.triggers].sort();
@@ -138,35 +137,35 @@ describe("triggers Tests", () => {
 });
 
 describe("Plugin Settings: 'capabilities'", () => {
-  // stage, pluginSettings, answer["scenarios"], expected, message
-  const cases: [Stage, Json, BotScenario[], BotCapability[], string][] = [
-    [Stage.create, {}, [], [], "Scaffold legacy bot"],
+  // isScaffold, pluginSettings, answer["scenarios"], expected, message
+  const cases: [boolean, Json, BotScenario[], BotCapability[], string][] = [
+    [true, {}, [], [], "Scaffold legacy bot"],
     [
-      Stage.create,
+      true,
       {},
       [BotScenario.NotificationBot],
       [BotCapabilities.NOTIFICATION],
       "Scaffold notification bot",
     ],
     [
-      Stage.create,
+      true,
       {},
       [BotScenario.CommandAndResponseBot],
       [BotCapabilities.COMMAND_AND_RESPONSE],
       "Scaffold command and response bot",
     ],
     [
-      Stage.create,
+      true,
       {},
       [BotScenario.NotificationBot, BotScenario.CommandAndResponseBot],
       [BotCapabilities.NOTIFICATION, BotCapabilities.COMMAND_AND_RESPONSE],
       // Currently not supported end to end but tested for generality
       "Scaffold multiple capabilities",
     ],
-    [Stage.provision, {}, [], [], "Provision legacy bot"],
-    [Stage.provision, {}, [BotScenario.NotificationBot], [], "Provision legacy bot 2"],
+    [false, {}, [], [], "Provision legacy bot"],
+    [false, {}, [BotScenario.NotificationBot], [], "Provision legacy bot 2"],
     [
-      Stage.provision,
+      false,
       {
         [ResourcePlugins.Bot]: {
           [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
@@ -178,7 +177,7 @@ describe("Plugin Settings: 'capabilities'", () => {
       "Provision notification bot",
     ],
     [
-      Stage.provision,
+      false,
       {
         [ResourcePlugins.Bot]: {
           [PluginBot.BOT_CAPABILITIES]: [
@@ -192,20 +191,19 @@ describe("Plugin Settings: 'capabilities'", () => {
       "Provision multiple capabilities",
     ],
   ];
-  for (const [stage, pluginSettings, scenarios, expectedList, message] of cases) {
+  for (const [isScaffold, pluginSettings, scenarios, expectedList, message] of cases) {
     it(`Case '${message}'`, async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       const answers = pluginContext.answers!;
       const projectSettings = pluginContext.projectSettings!;
 
-      answers.stage = stage;
       answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
       projectSettings.pluginSettings = pluginSettings;
       const scaffoldConfig = new ScaffoldConfig();
 
       // Act
-      scaffoldConfig.restoreConfigFromContext(pluginContext);
+      scaffoldConfig.restoreConfigFromContext(pluginContext, isScaffold);
 
       // Assert
       const result = [...(scaffoldConfig.botCapabilities || [])].sort();

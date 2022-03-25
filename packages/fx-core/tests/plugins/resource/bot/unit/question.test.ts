@@ -10,7 +10,7 @@ import {
   createHostTypeTriggerQuestion,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
-  showNotificationCondition,
+  showNotificationTriggerCondition,
 } from "../../../../../src/plugins/resource/bot/question";
 import {
   AzureSolutionQuestionNames,
@@ -137,7 +137,9 @@ describe("Test question", () => {
       // Act
       inputs[AzureSolutionQuestionNames.Capabilities] = undefined;
       // Assert
-      chai.assert.isTrue(showNotificationCondition.validFunc(undefined, inputs) !== undefined);
+      chai.assert.isTrue(
+        showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined
+      );
     });
     it("Should ask trigger questions for notification bot", async () => {
       // Arrange
@@ -145,7 +147,7 @@ describe("Test question", () => {
       // Act
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       // Assert
-      chai.assert.isUndefined(showNotificationCondition.validFunc(undefined, inputs));
+      chai.assert.isUndefined(showNotificationTriggerCondition.validFunc(undefined, inputs));
     });
     it("Should not ask trigger questions for command and response bot", async () => {
       // Arrange
@@ -153,7 +155,9 @@ describe("Test question", () => {
       // Act
       inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
       // Assert
-      chai.assert.isTrue(showNotificationCondition.validFunc(undefined, inputs) !== undefined);
+      chai.assert.isTrue(
+        showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined
+      );
     });
   });
 });

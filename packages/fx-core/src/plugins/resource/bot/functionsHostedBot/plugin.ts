@@ -41,7 +41,7 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
 
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     this.config.scaffold.hostType = HostTypes.AZURE_FUNCTIONS;
 
     Logger.info(Messages.ScaffoldingBot);

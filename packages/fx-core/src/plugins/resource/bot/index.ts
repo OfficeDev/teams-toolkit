@@ -39,7 +39,7 @@ import { PluginImpl } from "./interface";
 import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import { createHostTypeTriggerQuestion, showNotificationCondition } from "./question";
+import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.BotPlugin)
@@ -211,7 +211,7 @@ export class TeamsBot implements Plugin {
               type: "group",
             });
             res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
-            res.condition = showNotificationCondition;
+            res.condition = showNotificationTriggerCondition;
             return ok(res);
           } else {
             return ok(undefined);
@@ -239,7 +239,7 @@ export class TeamsBot implements Plugin {
             type: "group",
           });
           res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
-          res.condition = showNotificationCondition;
+          res.condition = showNotificationTriggerCondition;
           return ok(res);
         } else {
           return ok(undefined);

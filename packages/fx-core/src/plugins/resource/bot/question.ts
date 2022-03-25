@@ -88,7 +88,7 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
 
 // Question model condition to determine whether to show "Select triggers" question after "Select capabilities".
 // Return undefined for true, a string for false. The string itself it not used.
-export const showNotificationCondition = {
+export const showNotificationTriggerCondition = {
   validFunc: (input: unknown, inputs?: Inputs): string | undefined => {
     if (!inputs) {
       return "Invalid inputs";

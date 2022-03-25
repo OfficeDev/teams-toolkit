@@ -36,7 +36,10 @@ export class ScaffoldConfig {
     return false;
   }
 
-  public async restoreConfigFromContext(context: PluginContext): Promise<void> {
+  public async restoreConfigFromContext(
+    context: PluginContext,
+    isScaffold: boolean
+  ): Promise<void> {
     this.workingDir = path.join(context.root, CommonStrings.BOT_WORKING_DIR_NAME);
     this.botId = context.config.get(PluginBot.BOT_ID) as string;
     this.botPassword = context.config.get(PluginBot.BOT_PASSWORD) as string;
@@ -52,7 +55,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage;
     }
 
-    this.botCapabilities = ScaffoldConfig.getBotCapabilities(context);
+    this.botCapabilities = ScaffoldConfig.getBotCapabilities(context, isScaffold);
 
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
 
@@ -117,10 +120,9 @@ export class ScaffoldConfig {
     return utils.convertToConstValues(rawHostType, HostTypes);
   }
 
-  private static getBotCapabilities(context: PluginContext): BotCapability[] {
-    if (context.answers?.stage === Stage.create) {
+  private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {
+    if (isScaffold) {
       // For scaffolding and addCapability, the bot capabilities are from user input (context.answers)
-      // TODO: support addCapability
       const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
       if (Array.isArray(scenarios)) {
         return scenarios

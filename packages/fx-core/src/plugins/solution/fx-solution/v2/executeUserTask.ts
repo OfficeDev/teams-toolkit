@@ -287,7 +287,7 @@ export async function addCapability(
   }
   const commandAndResponseIndex = capabilitiesAnswer.indexOf(CommandAndResponseOptionItem.id);
   if (commandAndResponseIndex !== -1) {
-    capabilitiesAnswer[commandAndResponseIndex] = NotificationOptionItem.id;
+    capabilitiesAnswer[commandAndResponseIndex] = BotOptionItem.id;
     scenarios.push(BotScenario.CommandAndResponseBot);
   }
   inputsNew[AzureSolutionQuestionNames.Scenarios] = scenarios;

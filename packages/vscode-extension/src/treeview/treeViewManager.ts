@@ -410,6 +410,7 @@ class TreeViewManager {
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
     );
+    this.storeCommandsIntoMap(helpCommand, helpProvider);
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);
   }
 

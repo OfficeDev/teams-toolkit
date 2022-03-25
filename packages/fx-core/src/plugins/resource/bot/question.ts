@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import { Inputs, MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import {
+  AzureSolutionQuestionNames,
+  NotificationOptionItem,
+} from "../../solution/fx-solution/question";
 import { QuestionNames } from "./constants";
 import {
   HostType,
@@ -82,6 +86,21 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
     },
   };
 }
+
+// Question model condition to determine whether to show "Select triggers" question after "Select capabilities".
+// Return undefined for true, a string for false. The string itself it not used.
+export const showNotificationTriggerCondition = {
+  validFunc: (input: unknown, inputs?: Inputs): string | undefined => {
+    if (!inputs) {
+      return "Invalid inputs";
+    }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities];
+    if (Array.isArray(cap) && cap.includes(NotificationOptionItem.id)) {
+      return undefined;
+    }
+    return "Notification is not selected";
+  },
+};
 
 type HostTypeTriggerOptionItemWithoutText = Omit<
   HostTypeTriggerOptionItem,

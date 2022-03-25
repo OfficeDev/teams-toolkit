@@ -6,7 +6,6 @@ import * as fse from "fs-extra";
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ApiConnectorConfiguration } from "./utils";
-import { AzureSolutionQuestionNames } from "../../solution/fx-solution/question";
 import { Constants, ProjectType, LanguageType, FileType } from "./constants";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { getTemplatesFolder } from "../../../folder";
@@ -47,7 +46,7 @@ export class ApiConnectorImpl {
   }
 
   // Generate {apiName}.js or {apiName}.ts in this project
-  private async generateSampleCode(
+  public async generateSampleCode(
     projectPath: string,
     languageType: string,
     config: ApiConnectorConfiguration

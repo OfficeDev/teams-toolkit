@@ -3,7 +3,6 @@
 
 import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
 import * as path from "path";
 import fs from "fs-extra";
 import * as dotenv from "dotenv";
@@ -14,7 +13,6 @@ import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apic
 import { LocalEnvProvider, LocalEnvs } from "../../../../src/common/local/localEnvProvider";
 
 describe("EnvHandler", () => {
-  const mocker = sinon.createSandbox();
   const fakeProjectPath = path.join(__dirname, "test-api-connector");
   const botPath = path.join(fakeProjectPath, "bot");
   const apiPath = path.join(fakeProjectPath, "api");

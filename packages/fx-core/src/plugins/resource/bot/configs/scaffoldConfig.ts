@@ -87,9 +87,6 @@ export class ScaffoldConfig {
    * @param isScaffold true for the `scaffold` lifecycle, false otherwise.
    */
   public static getBotHostType(context: PluginContext, isScaffold: boolean): HostType | undefined {
-    if (context.answers === undefined) {
-      return undefined;
-    }
     if (isScaffold) {
       return context.answers
         ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)

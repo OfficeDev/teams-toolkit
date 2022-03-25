@@ -1,5 +1,5 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/releases/tag/v0.1.0",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/release/",
     "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v0.1.0.zip",
     "samples": [
         {

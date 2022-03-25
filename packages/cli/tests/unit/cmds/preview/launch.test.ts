@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { expect } from "../../utils";

@@ -544,7 +544,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
   return result;
 }
 
-export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
+export async function addCapabilityHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure",
@@ -1253,9 +1253,10 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   });
 }
 
-export async function openDocumentHandler(args: any[]): Promise<boolean> {
+export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
+  const result = await env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
+  return Promise.resolve(ok(result));
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
@@ -1282,12 +1283,13 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
-export async function openWelcomeHandler(args?: any[]) {
+export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  vscode.commands.executeCommand(
+  const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
     "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
   );
+  return Promise.resolve(ok(data));
 }
 
 export async function checkUpgrade(args?: any[]) {
@@ -1559,14 +1561,16 @@ async function showLocalDebugMessage() {
     });
 }
 
-export async function openSamplesHandler(args?: any[]) {
+export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
+  return Promise.resolve(ok(null));
 }
 
-export async function openAppManagement(args?: any[]) {
+export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/home"));
+  const result = await env.openExternal(Uri.parse("https://dev.teams.microsoft.com/home"));
+  return Promise.resolve(ok(result));
 }
 
 export async function openBotManagement(args?: any[]) {
@@ -1574,9 +1578,10 @@ export async function openBotManagement(args?: any[]) {
   return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/bots"));
 }
 
-export async function openReportIssues(args?: any[]) {
+export async function openReportIssues(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ReportIssues, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
+  const result = await env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
+  return Promise.resolve(ok(result));
 }
 
 export async function openExternalHandler(args?: any[]) {
@@ -2127,7 +2132,9 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.TreeView]) {
+export async function openAdaptiveCardExt(
+  args: any[] = [TelemetryTiggerFrom.TreeView]
+): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
   const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
   const extension = vscode.extensions.getExtension(acExtId);
@@ -2147,6 +2154,7 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
+  return Promise.resolve(ok(null));
 }
 
 export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {

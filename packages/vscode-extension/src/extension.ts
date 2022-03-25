@@ -511,44 +511,44 @@ function initializeContextKey() {
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
   // Create a new Teams app
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
-    Correlator.run(handlers.createNewProjectHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.create", args)
   );
   context.subscriptions.push(createCmd);
 
   // Initialize an existing application
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
-    Correlator.run(handlers.initProjectHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.init", args)
   );
   context.subscriptions.push(initCmd);
 
   // View samples
   const openSamplesCmd = vscode.commands.registerCommand("fx-extension.openSamples", (...args) =>
-    Correlator.run(handlers.openSamplesHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.openSamples", args)
   );
   context.subscriptions.push(openSamplesCmd);
 
   // Add capabilities
   const addCapCmd = vscode.commands.registerCommand("fx-extension.addCapability", (...args) =>
-    Correlator.run(handlers.addCapabilityHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.addCapability", args)
   );
   context.subscriptions.push(addCapCmd);
 
   // Add cloud resources
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
-    Correlator.run(handlers.addResourceHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.update", args)
   );
   context.subscriptions.push(updateCmd);
 
   // Edit manifest file
   const openManifestCmd = vscode.commands.registerCommand("fx-extension.openManifest", (...args) =>
-    Correlator.run(handlers.openManifestHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.openManifest", args)
   );
   context.subscriptions.push(openManifestCmd);
 
   // Open adaptive card
   const adaptiveCardCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.OpenAdaptiveCardExt",
-    (...args) => Correlator.run(handlers.openAdaptiveCardExt, args)
+    (...args) => Correlator.run(runTreeViewCommand, "fx-extension.OpenAdaptiveCardExt", args)
   );
   context.subscriptions.push(adaptiveCardCodeLensCmd);
 }
@@ -556,7 +556,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
 function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) {
   // Provision in the cloud
   const provisionCmd = vscode.commands.registerCommand("fx-extension.provision", (...args) =>
-    Correlator.run(handlers.provisionHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.provision", args)
   );
   context.subscriptions.push(provisionCmd);
 
@@ -568,27 +568,27 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 
   // Deploy to the cloud
   const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", (...args) =>
-    Correlator.run(handlers.deployHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.deploy", args)
   );
   context.subscriptions.push(deployCmd);
 
   // Publish to Teams
   const publishCmd = vscode.commands.registerCommand("fx-extension.publish", (...args) =>
-    Correlator.run(handlers.publishHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.publish", args)
   );
   context.subscriptions.push(publishCmd);
 
   // Add CI/CD Workflows
   const addCICDWorkflowsCmd = vscode.commands.registerCommand(
     "fx-extension.addCICDWorkflows",
-    (...args) => Correlator.run(handlers.addCICDWorkflowsHandler, args)
+    (...args) => Correlator.run(runTreeViewCommand, "fx-extension.addCICDWorkflows", args)
   );
   context.subscriptions.push(addCICDWorkflowsCmd);
 
   // Developer Portal for Teams
   const openAppManagementCmd = vscode.commands.registerCommand(
     "fx-extension.openAppManagement",
-    (...args) => Correlator.run(handlers.openAppManagement, args)
+    (...args) => Correlator.run(runTreeViewCommand, "fx-extension.openAppManagement", args)
   );
   context.subscriptions.push(openAppManagementCmd);
 }
@@ -596,20 +596,20 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
   // Quick start
   const openWelcomeCmd = vscode.commands.registerCommand("fx-extension.openWelcome", (...args) =>
-    Correlator.run(handlers.openWelcomeHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.openWelcome", args)
   );
   context.subscriptions.push(openWelcomeCmd);
 
   // Documentation
   const openDocumentCmd = vscode.commands.registerCommand("fx-extension.openDocument", (...args) =>
-    Correlator.run(handlers.openDocumentHandler, args)
+    Correlator.run(runTreeViewCommand, "fx-extension.openDocument", args)
   );
   context.subscriptions.push(openDocumentCmd);
 
   // Report issues on GitHub
   const openReportIssuesCmd = vscode.commands.registerCommand(
     "fx-extension.openReportIssues",
-    (...args) => Correlator.run(handlers.openReportIssues, args)
+    (...args) => Correlator.run(runTreeViewCommand, "fx-extension.openReportIssues", args)
   );
   context.subscriptions.push(openReportIssuesCmd);
 }

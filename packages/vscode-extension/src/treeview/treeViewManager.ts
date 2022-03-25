@@ -13,7 +13,25 @@ import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { buildPackageHandler } from "../handlers";
+import {
+  addCapabilityHandler,
+  addCICDWorkflowsHandler,
+  addResourceHandler,
+  buildPackageHandler,
+  createNewProjectHandler,
+  deployHandler,
+  initProjectHandler,
+  openAdaptiveCardExt,
+  openAppManagement,
+  openDocumentHandler,
+  openManifestHandler,
+  openReportIssues,
+  openSamplesHandler,
+  openWelcomeHandler,
+  provisionHandler,
+  publishHandler,
+} from "../handlers";
+import { VS_CODE_UI } from "../extension";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -29,16 +47,16 @@ class TreeViewManager {
     this.commandMap = new Map<string, [TreeViewCommand, CommandsTreeViewProvider]>();
     this.mutex = new Mutex();
     this.exclusiveCommands = new Set([
-      // "fx-extension.create",
-      // "fx-extension.addCapability",
-      // "fx-extension.update",
-      // "fx-extension.openManifest",
-      // "fx-extension.OpenAdaptiveCardExt",
+      "fx-extension.create",
+      "fx-extension.addCapability",
+      "fx-extension.update",
+      "fx-extension.openManifest",
+      "fx-extension.OpenAdaptiveCardExt",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",
       "fx-extension.publish",
-      // "fx-extension.addCICDWorkflows",
+      "fx-extension.addCICDWorkflows",
     ]);
   }
 
@@ -70,6 +88,11 @@ class TreeViewManager {
     if (this.runningCommand) {
       // show warning message.
       console.log("blocked");
+      VS_CODE_UI.showMessage(
+        "warn",
+        `Cannot run command during ${this.runningCommand.blockingAction}ing. Please try again after it completes.`,
+        false
+      );
       return;
     }
     this.mutex.runExclusive(async () => await this.runBlockingCommand(commandName, args));
@@ -94,15 +117,15 @@ class TreeViewManager {
       if (key !== commandName) {
         const data = this.commandMap.get(key);
         if (data && data[0]) {
-          data[0].setStatus(CommandStatus.Blocked, "Wait for " + command.runningLabel);
+          data[0].setStatus(CommandStatus.Blocked, `Wait for running command completes`);
         }
       }
     }
     treeViewProvider.refresh([]);
-    await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
-    // if (command.callback) {
-    //   await command.callback(args);
-    // }
+    // await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
+    if (command.callback) {
+      await command.callback(args);
+    }
     command.setStatus(CommandStatus.Ready);
     for (const key of this.exclusiveCommands.values()) {
       if (key !== commandName) {
@@ -158,6 +181,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
+        createNewProjectHandler,
+        "create",
         { name: "new-folder", custom: false }
       ),
     ];
@@ -168,6 +193,8 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
           "fx-extension.init",
+          initProjectHandler,
+          "initialize",
           { name: "new-folder", custom: false }
         )
       );
@@ -177,6 +204,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
+        openSamplesHandler,
+        undefined,
         { name: "library", custom: false },
         TreeCategory.GettingStarted
       )
@@ -188,12 +217,16 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
           "fx-extension.addCapability",
+          addCapabilityHandler,
+          "add",
           { name: "addCapability", custom: true }
         ),
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew"),
           localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
           "fx-extension.update",
+          addResourceHandler,
+          "update",
           { name: "addResources", custom: true }
         )
       );
@@ -204,6 +237,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
         "fx-extension.openManifest",
+        openManifestHandler,
+        undefined,
         { name: "edit", custom: false }
       )
     );
@@ -214,6 +249,8 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
           localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
           "fx-extension.OpenAdaptiveCardExt",
+          openAdaptiveCardExt,
+          undefined,
           { name: "eye", custom: false }
         )
       );
@@ -261,42 +298,48 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.provisionDescription"),
         "fx-extension.provision",
-        { name: "type-hierarchy", custom: false },
-        undefined,
-        undefined,
-        undefined
+        provisionHandler,
+        "provision",
+        { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
-        { name: "package", custom: false },
-        undefined,
         buildPackageHandler,
-        "Building..."
+        "build",
+        { name: "package", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.deployTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.deployDescription"),
         "fx-extension.deploy",
+        deployHandler,
+        "deploy",
         { name: "cloud-upload", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.publishTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.publishDescription"),
         "fx-extension.publish",
+        publishHandler,
+        "publish",
         { name: "publish", custom: true }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
         "fx-extension.addCICDWorkflows",
+        addCICDWorkflowsHandler,
+        "cicd",
         { name: "sync", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
+        openAppManagement,
+        undefined,
         { name: "developerPortal", custom: true }
       ),
     ];
@@ -334,6 +377,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.quickStartTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
+        openWelcomeHandler,
+        undefined,
         { name: "lightningBolt_16", custom: true },
         TreeCategory.GettingStarted
       ),
@@ -341,6 +386,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",
+        openDocumentHandler,
+        undefined,
         { name: "book", custom: false },
         TreeCategory.GettingStarted
       ),
@@ -348,6 +395,8 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openReportIssues",
+        openReportIssues,
+        undefined,
         { name: "github", custom: false },
         TreeCategory.Feedback
       ),

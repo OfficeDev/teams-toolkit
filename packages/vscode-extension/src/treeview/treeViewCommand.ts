@@ -18,27 +18,23 @@ export class TreeViewCommand extends vscode.TreeItem {
   public static readonly TreeViewFlag = "TreeView";
 
   public children?: TreeViewCommand[];
-  private readyLabel: string;
-  private readyTooltip: string | vscode.MarkdownString;
 
   constructor(
-    public label: string,
-    public tooltip: string | vscode.MarkdownString,
+    private readyLabel: string,
+    private readyTooltip: string | vscode.MarkdownString,
     public commandId?: string,
-    public image?: { name: string; custom: boolean },
-    public category?: TreeCategory,
     public callback?: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
-    public runningLabel?: string
+    public blockingAction?: string,
+    public image?: { name: string; custom: boolean },
+    public category?: TreeCategory
   ) {
-    super(label, vscode.TreeItemCollapsibleState.None);
-    this.readyLabel = label;
-    this.readyTooltip = tooltip;
+    super(readyLabel, vscode.TreeItemCollapsibleState.None);
 
     this.setImagetoIcon();
 
     if (commandId) {
       this.command = {
-        title: label,
+        title: readyLabel,
         command: commandId,
         arguments: [TreeViewCommand.TreeViewFlag, this],
       };
@@ -49,8 +45,8 @@ export class TreeViewCommand extends vscode.TreeItem {
     switch (status) {
       case CommandStatus.Running:
         this.iconPath = new vscode.ThemeIcon("loading~spin");
-        if (this.runningLabel) {
-          this.label = this.runningLabel;
+        if (this.blockingAction) {
+          this.label = this.blockingAction + "ing...";
         }
         break;
       case CommandStatus.Blocked:

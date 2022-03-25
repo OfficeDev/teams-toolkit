@@ -318,4 +318,90 @@ describe("Bot Generates Arm Templates", () => {
       );
     }
   });
+
+  it("Generate Arm Template in func hosted scenario", async () => {
+    const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
+    const pluginContext: PluginContext = testUtils.newPluginContext();
+    pluginContext.projectSettings!.solutionSettings = settings;
+    pluginContext.projectSettings!.pluginSettings = {
+      "fx-resource-bot": { "host-type": "azure-functions" },
+    };
+    const result = await botPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const provisionModuleFileName = "botProvisionOfFuncHosted.result.bicep";
+    const configurationModuleFileName = "botConfigWithoutAadPlugin.result.bicep";
+    const configurationFileName = "configWithoutAadPlugin.result.bicep";
+    const pluginOutput = {
+      "fx-resource-bot": {
+        Provision: {
+          bot: {
+            path: `./${provisionModuleFileName}`,
+          },
+        },
+        Configuration: {
+          bot: {
+            path: `./${configurationModuleFileName}`,
+          },
+        },
+      },
+      "fx-resource-identity": {
+        References: {
+          identityName: "provisionOutputs.identityOutput.value.identityName",
+          identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+          identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: { ...pluginOutput },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const compiledResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const provisionModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, provisionModuleFileName),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.bot, provisionModuleFile);
+
+      const configModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, configurationModuleFileName),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
+
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provisionOfFuncHosted.result.bicep"),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Orchestration, orchestrationProvisionFile);
+
+      chai.assert.strictEqual(
+        compiledResult.Configuration!.Orchestration,
+        fs.readFileSync(
+          path.join(expectedBicepFileDirectory, configurationFileName),
+          ConstantString.UTF8Encoding
+        )
+      );
+      chai.assert.strictEqual(
+        JSON.stringify(compiledResult.Parameters, undefined, 2),
+        fs.readFileSync(
+          path.join(expectedBicepFileDirectory, "parameters.json"),
+          ConstantString.UTF8Encoding
+        )
+      );
+    }
+  });
 });

@@ -3,7 +3,7 @@ if [ $1 == 'templates' ]; then
     if [[ $SkipSyncup == *"template"* ]]; then
         echo "skip sync up templates version with sdk version"
     elif [[ -z "$(git diff -- ../../templates)" ]]; then
-        echo "need bump up templates version since templates don not bump up by self"
+        echo "need bump up templates version since templates do not bump up by themselves"
         node ../../.github/scripts/sdk-sync-up-version.js sdk yes;
     else 
         echo "no need to bump up templates version"
@@ -12,7 +12,7 @@ if [ $1 == 'templates' ]; then
     git add ../../templates
 elif [ $1 == 'fx-core' ]; then
     if [[ -z "$(git diff -- ../fx-core)" ]]; then
-        echo "need bump up fx-core version since fx-core don not bump up by self"
+        echo "need bump up fx-core version since fx-core does not bump up by itself"
         node ../../.github/scripts/sync-up-dotnet-ver.js yes;
     else 
         echo "no need to bump up templates version"
@@ -36,7 +36,7 @@ elif [ $1 == 'template-adaptive-card' ]; then
     if [[ $SkipSyncup == *"template"* ]]; then
         echo "skip sync up templates version with adaptive-card version"
     elif [[ -z "$(git diff -- ../../templates)" ]]; then
-        echo "need bump up templates version since templates don not bump up by self"
+        echo "need bump up templates version since templates do not bump up by themselves"
         node ../../.github/scripts/sdk-sync-up-version.js adaptivecards-tools-sdk yes;
     else 
         echo "no need to bump up templates version"

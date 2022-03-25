@@ -159,6 +159,11 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  ShowOutputChannel = "show-output-channel",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
 }
 
 export enum TelemetryProperty {
@@ -203,6 +208,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",

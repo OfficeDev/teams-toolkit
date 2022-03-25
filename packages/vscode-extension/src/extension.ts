@@ -17,6 +17,7 @@ import { VsCodeUI } from "./qm/vsc_ui";
 import * as exp from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import {
+  AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -26,6 +27,8 @@ import {
   isValidProject,
   isConfigUnifyEnabled,
   isInitAppEnabled,
+  isM365AppEnabled,
+  isAadManifestEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -86,6 +89,11 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.createNewProjectHandler, args)
   );
   context.subscriptions.push(createCmd);
+
+  const createM365Cmd = vscode.commands.registerCommand("fx-extension.create-M365", (...args) =>
+    Correlator.run(handlers.createNewM365ProjectHandler, args)
+  );
+  context.subscriptions.push(createM365Cmd);
 
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
     Correlator.run(handlers.initProjectHandler, args)
@@ -436,6 +444,17 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(listCollaborator);
 
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
+  const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
+    Correlator.run(handlers.addSsoHanlder)
+  );
+  context.subscriptions.push(addSso);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
@@ -445,10 +464,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
+  vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
+
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAadManifestEnabled()
   );
 
   // Setup CodeLens provider for userdata file
@@ -486,6 +513,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
+  const aadAppTemplateSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -508,6 +542,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
       manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadAppTemplateSelector,
+      aadAppTemplateCodeLensProvider
     )
   );
 

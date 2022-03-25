@@ -46,6 +46,7 @@
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
+    "onCommand:fx-extension.create-M365",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
@@ -62,6 +63,7 @@
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:workbench.action.tasks.runTask",
+    "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
@@ -438,6 +440,11 @@
         "title": "%teamstoolkit.commands.createProject.title%"
       },
       {
+        "command": "fx-extension.create-M365",
+        "title": "%teamstoolkit.commands.createM365Project.title%",
+        "enablement": "fx-extension.isM365AppEnabled"
+      },
+      {
         "command": "fx-extension.init",
         "title": "Teams: Initialize your application with Teams Toolkit",
         "enablement": "fx-extension.isInitAppEnabled"
@@ -648,6 +655,11 @@
         "command": "fx-extension.openDeploymentTreeview",
         "title": "Teams: Open Deployment Treeview",
         "enablement": "never"
+      },
+      {
+        "command": "fx-extension.addSso",
+        "title": "%teamstoolkit.commands.addSso.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
       }
     ],
     "taskDefinitions": [
@@ -851,6 +863,27 @@
             }
           }
         }
+      },
+      {
+        "title": "Experimental Features",
+        "order": 3,
+        "properties": {
+          "fx-extension.unifyConfigs": {
+            "type": "boolean",
+            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.enableInitApp": {
+            "type": "boolean",
+            "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.enableNotification / CommandAndResponseBot": {
+            "type": "boolean",
+            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
+            "default": false
+          }
+        }
       }
     ],
     "languages": [
@@ -973,6 +1006,7 @@
     "@types/tmp": "^0.2.0",
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
+    "@types/validator": "^13.1.1",
     "@types/vscode": "^1.58.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -1045,11 +1079,13 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",
+    "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
+    "validator": "^13.7.0",
     "vscode-extension-telemetry": "^0.2.9",
     "vscode-tas-client": "^0.1.22",
     "vscode-test": "^1.5.2"

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { OptionItem } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const githubOption: OptionItem = {
   id: "github",
@@ -23,25 +24,25 @@ export const jenkinsOption: OptionItem = {
 export const ciOption: OptionItem = {
   id: "ci",
   label: "CI",
-  detail: "Help checkout code, build and run test.",
+  detail: getLocalizedString("plugins.cicd.ciOption.detail"),
 };
 
 export const cdOption: OptionItem = {
   id: "cd",
   label: "CD",
-  detail: "Help checkout code, build, test and deploy to cloud.",
+  detail: getLocalizedString("plugins.cicd.cdOption.detail"),
 };
 
 export const provisionOption: OptionItem = {
   id: "provision",
   label: "Provision",
-  detail: "Help create/update resources in cloud and Teams app registration.",
+  detail: getLocalizedString("plugins.cicd.provisionOption.detail"),
 };
 
 export const publishOption: OptionItem = {
   id: "publish",
   label: "Publish",
-  detail: "Help publish Teams app to tenants.",
+  detail: getLocalizedString("plugins.cicd.publishOption.detail"),
 };
 
 export enum questionNames {

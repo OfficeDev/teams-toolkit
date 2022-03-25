@@ -18,7 +18,9 @@ import {
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
 import {
+  AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
   MessageExtensionItem,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
@@ -63,6 +65,9 @@ import {
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
   WEB_APPLICATION_INFO_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
+  DEVELOPER_PREVIEW_SCHEMA,
+  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -212,6 +217,14 @@ export class AppStudioPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const provisionProgress = ctx.ui?.createProgressBar(
+      getLocalizedString("plugins.appstudio.provisionTitle"),
+      1
+    );
+    await provisionProgress?.start();
+    await provisionProgress?.next(
+      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSettings!.appName)
+    );
     let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
     let create = false;
@@ -229,6 +242,7 @@ export class AppStudioPluginImpl {
     if (create) {
       const result = await this.createApp(ctx, false);
       if (result.isErr()) {
+        await provisionProgress?.end(false);
         return err(result.error);
       }
       remoteTeamsAppId = result.value.teamsAppId!;
@@ -237,14 +251,24 @@ export class AppStudioPluginImpl {
       );
     }
     ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
+    await provisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    const postProvisionProgress = ctx.ui?.createProgressBar(
+      getLocalizedString("plugins.appstudio.provisionTitle"),
+      1
+    );
+    await postProvisionProgress?.start(
+      getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName)
+    );
+    await postProvisionProgress?.next();
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const manifestResult = await loadManifest(ctx.root, false);
     if (manifestResult.isErr()) {
+      await postProvisionProgress?.end(false);
       return err(manifestResult.error);
     } else {
       manifestString = JSON.stringify(manifestResult.value);
@@ -259,12 +283,14 @@ export class AppStudioPluginImpl {
         false
       );
       if (appDefinitionRes.isErr()) {
+        await postProvisionProgress?.end(false);
         return err(appDefinitionRes.error);
       }
       appDefinition = appDefinitionRes.value;
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
+        await postProvisionProgress?.end(false);
         return err(remoteManifest.error);
       }
       [appDefinition] = remoteManifest.value;
@@ -283,12 +309,14 @@ export class AppStudioPluginImpl {
       ctx.logProvider
     );
     if (result.isErr()) {
+      await postProvisionProgress?.end(false);
       return err(result.error);
     }
 
     ctx.logProvider?.info(
       getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
     );
+    await postProvisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
 
@@ -352,6 +380,10 @@ export class AppStudioPluginImpl {
       }
     }
     return ok(errors);
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return this.updateManifest(ctx, false);
   }
 
   public async updateManifest(
@@ -546,15 +578,21 @@ export class AppStudioPluginImpl {
         ?.solutionSettings as AzureSolutionSettings;
       const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
       const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+      const scenarios = ctx.answers?.[AzureSolutionQuestionNames.Scenarios];
+      const hasCommandAndResponseBot =
+        scenarios?.includes && scenarios.includes(BotScenario.CommandAndResponseBot);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
       const hasAad = isAADEnabled(solutionSettings);
+      const isM365 = ctx.projectSettings?.isM365;
       manifest = await createManifest(
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
+        hasCommandAndResponseBot,
         hasMessageExtension,
         false,
-        hasAad
+        hasAad,
+        isM365
       );
       if (!isConfigUnifyEnabled()) {
         const localDebugManifest = await createLocalManifest(
@@ -563,7 +601,8 @@ export class AppStudioPluginImpl {
           hasBot,
           hasMessageExtension,
           false,
-          hasAad
+          hasAad,
+          isM365
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -722,7 +761,28 @@ export class AppStudioPluginImpl {
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
-      await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+      const spfxTeamsPath = `${ctx.root}/SPFx/teams`;
+      await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+
+      for (const file of await fs.readdir(`${ctx.root}/SPFx/teams/`)) {
+        if (
+          file.endsWith("color.png") &&
+          manifest.icons.color &&
+          !manifest.icons.color.startsWith("https://")
+        ) {
+          const colorFile = `${appDirectory}/${manifest.icons.color}`;
+          const color = await fs.readFile(colorFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), color);
+        } else if (
+          file.endsWith("outline.png") &&
+          manifest.icons.outline &&
+          !manifest.icons.outline.startsWith("https://")
+        ) {
+          const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+          const outline = await fs.readFile(outlineFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), outline);
+        }
+      }
     }
 
     if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {
@@ -1687,7 +1747,8 @@ export async function createLocalManifest(
   hasBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
-  hasAad = true
+  hasAad = true,
+  isM365 = false
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1711,13 +1772,19 @@ export async function createLocalManifest(
     }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
-      manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
+      if (!isM365) {
+        manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
+      }
     }
     if (hasBot) {
       manifest.bots = BOTS_TPL_LOCAL_DEBUG;
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
+    }
+    if (isM365) {
+      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
+      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
     }
     return manifest;
   }
@@ -1727,9 +1794,11 @@ export async function createManifest(
   appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
+  hasCommandAndResponseBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
-  hasAad = true
+  hasAad = true,
+  isM365 = false
 ): Promise<TeamsAppManifest | undefined> {
   if (!hasBot && !hasMessageExtension && !hasFrontend && !hasAad) {
     throw new Error(`Invalid capability`);
@@ -1742,13 +1811,23 @@ export async function createManifest(
     }
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_FOR_MULTI_ENV;
-      manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
+      if (!isM365) {
+        manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
+      }
     }
     if (hasBot) {
-      manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
+      if (hasCommandAndResponseBot) {
+        manifest.bots = BOTS_TPL_FOR_COMMAND_AND_RESPONSE;
+      } else {
+        manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
+      }
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
+    }
+    if (isM365) {
+      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
+      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
     }
 
     return manifest;

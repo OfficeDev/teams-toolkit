@@ -4,7 +4,7 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import { Argv, choices } from "yargs";
 
 import {
   FxError,
@@ -42,15 +42,20 @@ export default class Deploy extends YargsCommand {
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs.positional("components", {
       array: true,
-      choices: deployPluginOption.choices,
+      choices: deployPluginOption.choices?.map((elem) =>
+        // rename appstudio to manifest, because we want the command
+        // to be `teamsfx deploy manifest`
+        elem === "appstudio" ? "manifest" : elem
+      ),
       description: deployPluginOption.description,
-      coerce: toLocaleLowerCase,
+      coerce: (arg) => toLocaleLowerCase(arg),
     });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
         yargs.options(name, this.params[name]);
       }
     }
+
     return yargs.version(false);
   }
 
@@ -84,7 +89,12 @@ export default class Deploy extends YargsCommand {
         } else {
           ids = (choices as OptionItem[]).map((choice) => choice.id);
         }
-        const components = (args.components as string[]) || [];
+        // change manifest back to appstudio, because the real name of the resource
+        // is appstudio
+        const components = ((args.components as string[]) || []).map((c) =>
+          c === "manifest" ? "appstudio" : c
+        );
+
         const options = this.params[this.deployPluginNodeName].choices as string[];
         const indexes = components.map((c) => options.findIndex((op) => op === c));
         if (components.length === 0) {

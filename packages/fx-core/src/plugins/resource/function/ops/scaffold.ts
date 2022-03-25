@@ -64,7 +64,6 @@ export class FunctionScaffold {
       group: group,
       lang: this.convertTemplateLanguage(language),
       scenario: scenario,
-      templatesFolderName: PathInfo.templateFolderName,
       dst: componentPath,
       fileNameReplaceFn: _nameReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),

@@ -1,38 +1,49 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
-  Func,
-  returnSystemError,
-  TelemetryReporter,
   AzureSolutionSettings,
-  Void,
-  Platform,
-  UserInteraction,
-  SolutionSettings,
-  TokenProvider,
   combine,
+  err,
+  Func,
+  FxError,
+  Inputs,
   Json,
-  UserError,
+  ok,
+  Platform,
   ProjectSettings,
+  Result,
+  returnSystemError,
+  returnUserError,
+  SolutionSettings,
+  SystemError,
+  TelemetryReporter,
+  TokenProvider,
+  UserError,
+  UserInteraction,
+  v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
+import fs from "fs-extra";
+import { cloneDeep } from "lodash";
+import { Container } from "typedi";
+import * as util from "util";
+import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { OperationNotPermittedError } from "../../../../core/error";
+import { CoreQuestionNames } from "../../../../core/question";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
+  DEFAULT_PERMISSION_REQUEST,
+  PluginNames,
   SolutionError,
+  SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-  SolutionSource,
-  PluginNames,
-  DEFAULT_PERMISSION_REQUEST,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
-import * as util from "util";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -40,29 +51,21 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,
+  NotificationOptionItem,
   SsoItem,
   TabOptionItem,
 } from "../question";
-import { cloneDeep } from "lodash";
-import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { Container } from "typedi";
-import { scaffoldByPlugins } from "./scaffolding";
-import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
-import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { OperationNotPermittedError } from "../../../../core/error";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
-import fs from "fs-extra";
-import { CoreQuestionNames } from "../../../../core/question";
-import { Certificate } from "crypto";
-import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
-import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
+import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
+import { scaffoldByPlugins } from "./scaffolding";
+import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -79,6 +82,9 @@ export async function executeUserTask(
   }
   if (method === "addResource") {
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (method === "addSso") {
+    return addSso(ctx, inputs, localSettings);
   }
   if (namespace.includes("solution")) {
     if (method === "registerTeamsAppAndAad") {
@@ -243,13 +249,15 @@ export async function addCapability(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
-    //aad need this file
-    await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
-      spaces: 4,
-    });
+    if (isAADEnabled(solutionSettings)) {
+      //aad need this file
+      await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
+        spaces: 4,
+      });
+    }
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew = {
+  const inputsNew: Inputs = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -261,7 +269,7 @@ export async function addCapability(
   }
 
   // 2. check answer
-  const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+  let capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
   if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -270,6 +278,20 @@ export async function addCapability(
     });
     return ok({});
   }
+  // normalize capability answer
+  const scenarios: BotScenario[] = [];
+  const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
+  if (notificationIndex !== -1) {
+    capabilitiesAnswer[notificationIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.NotificationBot);
+  }
+  const commandAndResponseIndex = capabilitiesAnswer.indexOf(CommandAndResponseOptionItem.id);
+  if (commandAndResponseIndex !== -1) {
+    capabilitiesAnswer[commandAndResponseIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.CommandAndResponseBot);
+  }
+  inputsNew[AzureSolutionQuestionNames.Scenarios] = scenarios;
+  capabilitiesAnswer = [...new Set(capabilitiesAnswer)];
 
   // 3. check capability limit
   const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);
@@ -331,7 +353,10 @@ export async function addCapability(
   if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
     pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
   }
-  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+  if (
+    !isAadManifestEnabled() &&
+    !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+  ) {
     pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
   }
 
@@ -388,7 +413,10 @@ export async function addCapability(
   solutionSettings.capabilities = Array.from(newCapabilitySet);
   setActivatedResourcePluginsV2(ctx.projectSetting);
 
-  if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+  if (
+    !isAadManifestEnabled() &&
+    !solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+  ) {
     solutionSettings.activeResourcePlugins.push(BuiltInFeaturePluginNames.aad);
   }
 
@@ -704,3 +732,147 @@ export type ParamForRegisterTeamsAppAndAad = {
   endpoint: string;
   "root-path": string;
 };
+
+// TODO: handle VS scenario
+export function canAddSso(
+  solutionSettings: AzureSolutionSettings,
+  telemetryReporter: TelemetryReporter
+): Result<Void, FxError> {
+  // Can not add sso if feature flag is not enabled
+  if (!isAadManifestEnabled()) {
+    const e = new SystemError(
+      SolutionError.NeedEnableFeatureFlag,
+      getLocalizedString("core.addSso.needEnableFeatureFlag"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+    const e = new UserError(
+      SolutionError.AddSsoNotSupported,
+      getLocalizedString("core.addSso.onlySupportAzure"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
+  // Can only add sso when capability includes Tab, Bot, Messaging Extension, etc.
+  if (
+    !solutionSettings.capabilities.includes(TabOptionItem.id) &&
+    !solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !solutionSettings.capabilities.includes(MessageExtensionItem.id)
+  ) {
+    const e = new UserError(
+      SolutionError.AddSsoNotSupported,
+      getLocalizedString("core.addSso.needCapability"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
+  // Check whether SSO is enabled
+  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
+  const containSsoItem = solutionSettings.capabilities.includes(SsoItem.id);
+  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
+  if (containSsoItem && containAadPlugin) {
+    // Throw error if sso is already enabled
+    const e = new UserError(
+      SolutionError.SsoEnabled,
+      getLocalizedString("core.addSso.ssoEnabled"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  } else if (containSsoItem || containAadPlugin) {
+    // Throw error if the project is invalid
+    const e = new UserError(
+      SolutionError.InvalidSsoProject,
+      getLocalizedString("core.addSso.invalidSsoProject"),
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
+  return ok(Void);
+}
+
+export async function addSso(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json
+): Promise<Result<unknown, FxError>> {
+  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+
+  let solutionSettings = getAzureSolutionSettings(ctx);
+  if (!solutionSettings) {
+    // pure existing app
+    solutionSettings = {
+      name: TeamsAppSolutionNameV2,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    ctx.projectSetting.solutionSettings = solutionSettings;
+  }
+
+  // Check whether can add sso
+  const canProceed = canAddSso(solutionSettings, ctx.telemetryReporter);
+  if (canProceed.isErr()) {
+    return err(canProceed.error);
+  }
+
+  // Update project settings
+  solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  solutionSettings.capabilities.push(SsoItem.id);
+
+  const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+    existingCapabilities: originalSettings.capabilities,
+  };
+
+  // TODO: Create folder with readme, auth page, etc.
+
+  // Scaffold aad plugin and arm template
+  const scaffoldRes = await scaffoldCodeAndResourceTemplate(
+    ctx,
+    inputsNew,
+    localSettings,
+    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)],
+    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)]
+  );
+  if (scaffoldRes.isErr()) {
+    ctx.projectSetting.solutionSettings = originalSettings;
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.AddSso,
+        scaffoldRes.error,
+        ctx.telemetryReporter
+      )
+    );
+  }
+
+  // Update manifest
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+    { name: "WebApplicationInfo" },
+  ]);
+
+  return ok(undefined);
+}

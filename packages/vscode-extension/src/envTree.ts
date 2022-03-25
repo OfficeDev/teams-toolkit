@@ -85,7 +85,10 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
             contextValue: envInfo,
             icon: envInfo === EnvInfo.ProvisionedRemoteEnv ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: envInfo === EnvInfo.Local || isSpfxProject ? undefined : true,
+            expanded:
+              envInfo === EnvInfo.Local || envInfo === EnvInfo.LocalForExistingApp || isSpfxProject
+                ? undefined
+                : true,
           },
         ]);
       }

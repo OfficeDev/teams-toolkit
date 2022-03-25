@@ -160,6 +160,8 @@ export enum TelemetryEvent {
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
 
+  ShowOutputChannel = "show-output-channel",
+
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
 }

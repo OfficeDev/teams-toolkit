@@ -14,8 +14,8 @@ export const frameworkQuestion: Question = {
   staticOptions: yeomanScaffoldEnabled()
     ? [
         { id: "react", label: "React" },
-        { id: "none", label: "None" },
         { id: "minimal", label: "Minimal" },
+        { id: "none", label: "None" },
       ]
     : [
         { id: "react", label: "React" },

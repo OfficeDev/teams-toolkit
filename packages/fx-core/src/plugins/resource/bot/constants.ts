@@ -71,7 +71,6 @@ export class ProgressBarConstants {
 
   public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
-  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE = "Scaffolding notification bot";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_START =
     "Scaffolding notification bot.";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_PROJECT_TEMPLATE =
@@ -273,6 +272,7 @@ export class TelemetryKeys {
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";
+  public static readonly BotCapabilities = "bot-capabilities";
 }
 
 export class TelemetryValues {

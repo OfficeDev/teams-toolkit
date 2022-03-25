@@ -46,8 +46,9 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
 
     Logger.info(Messages.ScaffoldingBot);
 
+    // title must match closeProgressBar in bot/index.ts::scaffold()
     const handler = await ProgressBarFactory.newProgressBar(
-      ProgressBarConstants.SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE,
+      ProgressBarConstants.SCAFFOLD_TITLE,
       ProgressBarConstants.SCAFFOLD_FUNCTIONS_NOTIFICATION_STEPS_NUM,
       this.ctx
     );

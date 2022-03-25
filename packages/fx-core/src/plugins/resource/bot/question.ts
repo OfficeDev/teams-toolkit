@@ -17,13 +17,13 @@ export interface HostTypeTriggerOptionItem extends OptionItem {
 
 // NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
 export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "timer",
+  id: "timer-functions",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.TIMER,
 });
 
 export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http",
+  id: "http-functions",
   hostType: HostTypes.AZURE_FUNCTIONS,
   trigger: NotificationTriggers.HTTP,
 });
@@ -31,12 +31,13 @@ export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionW
 export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-restify",
   hostType: HostTypes.APP_SERVICE,
+  // trigger of app service host is hard-coded to http, so no need to set here
 });
 
 export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
-  FunctionsTimerTriggerOptionItem,
-  FunctionsHttpTriggerOptionItem,
   AppServiceOptionItem,
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
 ];
 
 // The restrictions of this question:
@@ -49,7 +50,7 @@ export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
     title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
     staticOptions: HostTypeTriggerOptions,
-    default: [FunctionsTimerTriggerOptionItem.id],
+    default: [AppServiceOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {

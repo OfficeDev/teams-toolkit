@@ -1,12 +1,12 @@
 import { AzureFunction, Context } from "@azure/functions";
-import { BotNotification } from "@microsoft/teamsfx";
+import { ConversationBot } from "@microsoft/teamsfx";
 import { buildAdaptiveCard } from "./adaptiveCard";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json
 const timerTrigger: AzureFunction = async function (context: Context, myTimer: any): Promise<void> {
   const timeStamp = new Date().toISOString();
-  for (const target of await BotNotification.installations()) {
+  for (const target of await ConversationBot.installations()) {
     await target.sendAdaptiveCard(
       buildAdaptiveCard(() => {
         return {

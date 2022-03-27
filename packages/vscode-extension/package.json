@@ -928,7 +928,7 @@
           {
             "id": "teamsToolkitCreateFreeAccount",
             "title": "Create a M365 testing tenant for free",
-            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, sign in to M365 and validate sideloading is enabled.",
+            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and [validate](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D) sideloading is enabled.",
             "media": {
               "markdown": "media/itp/itp.md"
             }

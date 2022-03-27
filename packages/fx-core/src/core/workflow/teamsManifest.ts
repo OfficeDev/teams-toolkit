@@ -14,7 +14,7 @@ export class TeamsManifestResource {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const init: AddInstanceAction = {
-      name: "azure-bot.init",
+      name: "azure-manifest.init",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok(["init manifest template"]);

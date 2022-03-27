@@ -26,6 +26,57 @@ import "./teamsManifest";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
+  init(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action1: Action = {
+      type: "function",
+      name: "fx.init",
+      plan: (context: v2.Context, inputs: Inputs) => {
+        return ok(["init teamsfx project"]);
+      },
+      execute: async (context: v2.Context, inputs: Inputs) => {
+        console.log("init teamsfx project");
+        return ok(undefined);
+      },
+    };
+    const action: Action = {
+      type: "group",
+      name: "fx.init",
+      actions: [
+        action1,
+        {
+          type: "call",
+          targetAction: "teams-manifest.init",
+          required: true,
+        },
+      ],
+    };
+    return ok(action);
+  }
+  create(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath & { capabilities: string[] }
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const actions: Action[] = [];
+    actions.push({
+      type: "call",
+      required: false,
+      targetAction: `teams-manifest.init`,
+    });
+    actions.push({
+      type: "call",
+      required: false,
+      targetAction: `teams-manifest.addCapability`,
+    });
+    const action: GroupAction = {
+      name: "fx.create",
+      type: "group",
+      actions: actions,
+    };
+    return ok(action);
+  }
   add(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath & { resource: string }

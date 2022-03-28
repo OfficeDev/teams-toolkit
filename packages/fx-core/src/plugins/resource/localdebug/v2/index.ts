@@ -117,7 +117,8 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
       const localEnvs = await localEnvManager.getLocalDebugEnvs(
         inputs.projectPath as string,
         ctx.projectSetting,
-        localSettings
+        localSettings,
+        envInfo.state
       );
       return ok(localEnvs);
     } else {

@@ -10,8 +10,7 @@ As the default behavior, Teams Toolkit will try to install them locally under `H
 ### Step 1: Disable Prerequisite Checker 
 
 Go to _Manage > Extension > Teams Toolkit > SPFx Prerequisite Check_
-
-    ![image](../images/fx-core/spfx/setting.png)
+![image](../images/fx-core/spfx/setting.png)
 
 And uncheck these 2: 
 - Ensure Yeoman CLI is installed
@@ -19,9 +18,8 @@ And uncheck these 2:
 
 
 ## Step 2: Manually install or upgrade
-In the output message in VSC, you should see the versions for Yeoman CLI and SPFx generator that Teams Toolkit supports:
-
-    ![image](../images/fx-core/spfx/output.png)
+In the output message in VSC, you should see the versions for Yeoman CLI and SPFx generator that Teams Toolkit supports. In this example output message, you can see that they are `4.3.0` and `1.14.0`:
+![image](../images/fx-core/spfx/output.png)
 
 In the following, navigate to **your applicable scenario**:
 

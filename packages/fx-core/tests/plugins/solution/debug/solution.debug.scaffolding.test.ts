@@ -18,7 +18,6 @@ import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../../src/plugins/solution/fx-solution/question";
-import { PluginNames } from "../../../../src/plugins/solution/fx-solution/constants";
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../../src/common";
 

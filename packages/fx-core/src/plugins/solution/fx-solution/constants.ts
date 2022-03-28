@@ -156,6 +156,7 @@ export enum SolutionError {
   NeedEnableFeatureFlag = "NeedEnableFeatureFlag",
   SsoEnabled = "SsoEnabled",
   InvalidSsoProject = "InvalidSsoProject",
+  InvalidProjectPath = "InvalidProjectPath",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

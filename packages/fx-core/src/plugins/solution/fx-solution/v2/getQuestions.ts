@@ -35,6 +35,7 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -443,6 +444,7 @@ export async function getQuestionsForAddCapability(
       BotOptionItem,
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
     return ok(new QTreeNode(addCapQuestion));
   }
@@ -487,7 +489,13 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem);
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(TabOptionItem);
+    } else {
+      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+    }
+  }
   if (isBotAddable) {
     options.push(BotOptionItem);
     if (isBotNotificationEnabled()) {

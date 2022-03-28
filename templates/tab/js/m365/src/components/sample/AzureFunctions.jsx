@@ -1,18 +1,14 @@
-import { useContext } from "react";
+import React from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
-import { useData } from "@microsoft/teamsfx-react";
+import { useData } from "./lib/useData";
 import * as axios from "axios";
 import { TeamsFx } from "@microsoft/teamsfx";
-import { TeamsFxContext } from "../Context";
 
-const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-let teamsfx: TeamsFx | undefined;
+var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
 async function callFunction() {
-  if (!teamsfx) {
-    return;
-  }
   try {
+    const teamsfx = new TeamsFx();
     const accessToken = await teamsfx.getCredential().getToken("");
     const endpoint = teamsfx.getConfig("apiEndpoint");
     const response = await axios.default.get(endpoint + "/api/" + functionName, {
@@ -49,9 +45,8 @@ export function AzureFunctions(props) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  teamsfx = useContext(TeamsFxContext).teamsfx;
   const { loading, data, error, reload } = useData(callFunction, {
-    autoLoad: false,
+    auto: false,
   });
   return (
     <div>

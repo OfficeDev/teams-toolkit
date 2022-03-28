@@ -23,7 +23,7 @@ import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 import { execSync } from "child_process";
 import * as versionUtil from "./versionUtil";
-import { TelemetryTiggerFrom } from "../telemetry/extTelemetryEvents";
+import { TelemetryTiggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -215,6 +215,10 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
 
   process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableInitApp).toString();
+
+  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
+    ConfigurationKey.BotNotificationCommandAndResponseEnabled
+  ).toString();
 }
 
 export class FeatureFlags {
@@ -428,4 +432,36 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   }
 
   return false;
+}
+
+export function getTriggerFromProperty(args?: any[]) {
+  // if not args are not supplied, by default, it is trigger from "CommandPalette"
+  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
+  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
+  if (!args || (args && args.length === 0)) {
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
+
+  switch (args[0].toString()) {
+    case TelemetryTiggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
+    case TelemetryTiggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    case TelemetryTiggerFrom.CodeLens:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
+    case TelemetryTiggerFrom.EditorTitle:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
+    case TelemetryTiggerFrom.SideBar:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
+    case TelemetryTiggerFrom.Notification:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
+    case TelemetryTiggerFrom.WalkThrough:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
+    case TelemetryTiggerFrom.Auto:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
+    case TelemetryTiggerFrom.Other:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
+  }
 }

@@ -1,10 +1,9 @@
 // Create adapter.
-
-import { BotFrameworkAdapter, TeamsActivityHandler, TurnContext } from "botbuilder";
-import { server } from "./server";
+import { ConversationBot } from "@microsoft/teamsfx";
+import { BotFrameworkAdapter, TurnContext } from "botbuilder";
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
-const adapter = new BotFrameworkAdapter({
+export const adapter = new BotFrameworkAdapter({
   appId: process.env.BOT_ID,
   appPassword: process.env.BOT_PASSWORD,
 });
@@ -30,12 +29,4 @@ adapter.onTurnError = async (context: TurnContext, error: Error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-// Process Teams activity with Bot Framework.
-const handler = new TeamsActivityHandler();
-server.post("/api/messages", async (req, res) => {
-  await adapter.processActivity(req, res, async (context) => {
-    await handler.run(context);
-  });
-});
-
-export { adapter };
+ConversationBot.initialize(adapter, { enableNotification: true });

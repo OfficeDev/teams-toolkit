@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
-import { FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
+import { FolderName, isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -36,6 +36,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
       let projectSettings: ProjectSettings;
       let localSettings: Json | undefined;
+      let localState: Json | undefined;
       let localEnv: { [key: string]: string } | undefined;
 
       try {
@@ -43,10 +44,16 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         localSettings = await localEnvManager.getLocalSettings(workspacePath, {
           projectId: projectSettings.projectId,
         });
+        if (isConfigUnifyEnabled()) {
+          localState = await localEnvManager.getLocalState(workspacePath, {
+            projectId: projectSettings.projectId,
+          });
+        }
         localEnv = await localEnvManager.getLocalDebugEnvs(
           workspacePath,
           projectSettings,
-          localSettings
+          localSettings,
+          localState
         );
       } catch (error: any) {
         showError(error);

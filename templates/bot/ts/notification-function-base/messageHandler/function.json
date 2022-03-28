@@ -8,7 +8,7 @@
       "methods": [
         "post"
       ],
-      "route": "messages"
+      "route": "api/messages"
     },
     {
       "type": "http",

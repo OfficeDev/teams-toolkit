@@ -49,6 +49,7 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -63,14 +64,14 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async init(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    existingApp = false
-  ): Promise<Result<any, FxError>> {
+  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.init);
-    const res = await init(inputs.projectPath, ctx.projectSetting.appName, existingApp);
+    const res = await init(
+      inputs.projectPath,
+      ctx.projectSetting.appName,
+      isPureExistingApp(ctx.projectSetting)
+    );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);

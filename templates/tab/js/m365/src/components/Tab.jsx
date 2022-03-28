@@ -1,11 +1,11 @@
-import { useContext } from "react";
+import React from "react";
 import { Welcome } from "./sample/Welcome";
-import { TeamsFxContext } from "./Context";
+import { useTeamsFx } from "./sample/lib/useTeamsFx";
 
-const showFunction = Boolean(process.env.REACT_APP_FUNC_NAME);
+var showFunction = Boolean(process.env.REACT_APP_FUNC_NAME);
 
 export default function Tab() {
-  const { themeString } = useContext(TeamsFxContext);
+  const { themeString } = useTeamsFx();
   return (
     <div className={themeString === "default" ? "" : "dark"}>
       <Welcome showFunction={showFunction} />

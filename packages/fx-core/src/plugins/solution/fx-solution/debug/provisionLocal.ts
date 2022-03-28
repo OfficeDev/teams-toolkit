@@ -184,6 +184,7 @@ export async function setupLocalEnvironment(
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -192,7 +193,7 @@ export async function setupLocalEnvironment(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -221,6 +222,16 @@ export async function setupLocalEnvironment(
         localTabEndpoint = `https://localhost:${frontendPort}`;
         localAuthEndpoint = `http://localhost:${authPort}`;
         localFuncEndpoint = "http://localhost:7071";
+      }
+
+      if (includeAAD) {
+        if (!envInfo.state[ResourcePlugins.SimpleAuth]) {
+          envInfo.state[ResourcePlugins.SimpleAuth] = {};
+        }
+
+        if (includeSimpleAuth) {
+          envInfo.state[ResourcePlugins.SimpleAuth].endpoint = localAuthEndpoint;
+        }
       }
 
       if (includeFrontend) {
@@ -443,6 +454,7 @@ export async function configLocalEnvironment(
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -450,7 +462,7 @@ export async function configLocalEnvironment(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -475,6 +487,10 @@ export async function configLocalEnvironment(
       const localTabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting]?.endpoint;
       const localFuncEndpoint = envInfo.state[ResourcePlugins.Function]?.functionEndpoint;
 
+      const localAuthEndpoint = envInfo.state[ResourcePlugins.SimpleAuth]?.endpoint as string;
+      const localAuthPackagePath = envInfo.state[ResourcePlugins.SimpleAuth]
+        ?.simpleAuthFilePath as string;
+
       if (includeFrontend) {
         frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
@@ -483,6 +499,11 @@ export async function configLocalEnvironment(
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+          await prepareLocalAuthService(localAuthPackagePath);
         }
 
         if (includeBackend) {

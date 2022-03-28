@@ -18,7 +18,9 @@ import {
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
 import {
+  AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
   MessageExtensionItem,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
@@ -65,6 +67,8 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   DEVELOPER_PREVIEW_SCHEMA,
   M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
+  BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -575,6 +579,11 @@ export class AppStudioPluginImpl {
         ?.solutionSettings as AzureSolutionSettings;
       const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
       const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+      const scenarios = ctx.answers?.[AzureSolutionQuestionNames.Scenarios];
+      const hasCommandAndResponseBot =
+        scenarios?.includes && scenarios.includes(BotScenario.CommandAndResponseBot);
+      const hasNotificationBot =
+        scenarios?.includes && scenarios.includes(BotScenario.NotificationBot);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
       const hasAad = isAADEnabled(solutionSettings);
       const isM365 = ctx.projectSettings?.isM365;
@@ -582,6 +591,8 @@ export class AppStudioPluginImpl {
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
+        hasNotificationBot,
+        hasCommandAndResponseBot,
         hasMessageExtension,
         false,
         hasAad,
@@ -754,7 +765,28 @@ export class AppStudioPluginImpl {
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
-      await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+      const spfxTeamsPath = `${ctx.root}/SPFx/teams`;
+      await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+
+      for (const file of await fs.readdir(`${ctx.root}/SPFx/teams/`)) {
+        if (
+          file.endsWith("color.png") &&
+          manifest.icons.color &&
+          !manifest.icons.color.startsWith("https://")
+        ) {
+          const colorFile = `${appDirectory}/${manifest.icons.color}`;
+          const color = await fs.readFile(colorFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), color);
+        } else if (
+          file.endsWith("outline.png") &&
+          manifest.icons.outline &&
+          !manifest.icons.outline.startsWith("https://")
+        ) {
+          const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+          const outline = await fs.readFile(outlineFile);
+          await fs.writeFile(path.join(spfxTeamsPath, file), outline);
+        }
+      }
     }
 
     if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {
@@ -1766,6 +1798,8 @@ export async function createManifest(
   appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
+  hasNotificationBot: boolean,
+  hasCommandAndResponseBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
   hasAad = true,
@@ -1787,7 +1821,13 @@ export async function createManifest(
       }
     }
     if (hasBot) {
-      manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
+      if (hasCommandAndResponseBot) {
+        manifest.bots = BOTS_TPL_FOR_COMMAND_AND_RESPONSE;
+      } else if (hasNotificationBot) {
+        manifest.bots = BOTS_TPL_FOR_NOTIFICATION;
+      } else {
+        manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
+      }
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;

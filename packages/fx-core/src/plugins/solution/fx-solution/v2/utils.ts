@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isAADEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -36,6 +36,8 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -100,7 +102,7 @@ export async function ensurePermissionRequest(
     );
   }
 
-  if (isAADEnabled(solutionSettings)) {
+  if (!isAadManifestEnabled()) {
     const result = await permissionRequestProvider.checkPermissionRequest();
     if (result && result.isErr()) {
       return result.map(err);
@@ -223,6 +225,15 @@ export function fillInSolutionSettings(
 ): Result<Void, FxError> {
   const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
+  if (isAadManifestEnabled()) {
+    if (capabilities.includes(TabOptionItem.id)) {
+      capabilities.push(SsoItem.id);
+    } else if (capabilities.includes(TabNonSsoItem.id)) {
+      const index = capabilities.indexOf(TabNonSsoItem.id);
+      capabilities.splice(index, 1);
+      capabilities.push(TabOptionItem.id);
+    }
+  }
   if (!capabilities || capabilities.length === 0) {
     return err(
       returnSystemError(

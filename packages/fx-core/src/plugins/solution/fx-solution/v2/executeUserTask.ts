@@ -859,7 +859,7 @@ export function canAddSso(
     );
   }
 
-  // Can only add sso for bot with host type == 'app-service'
+  // Will throw error if bot host type is Azure Function
   if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
     if (botHostType === BotHostTypes.AzureFunctions) {

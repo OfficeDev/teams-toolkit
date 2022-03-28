@@ -139,3 +139,33 @@ export function PrerequisitesValidationError(error: string | Error, helpLink?: s
 export function NpmInstallFailed(): UserError {
   return returnUserError(new Error("Npm install failed."), constants.cliSource, "NpmInstallFailed");
 }
+
+export function M365AccountInfoNotFound(): UserError {
+  return returnUserError(
+    new Error("M365 account info not found"),
+    constants.cliSource,
+    "M365AccountInfoNotFound"
+  );
+}
+
+export function GetTeamsAppInstallationFailed(error: Error): SystemError {
+  return returnSystemError(error, constants.cliSource, "GetTeamsAppInstallationFailed");
+}
+
+export function NotM365Project(): UserError {
+  return returnUserError(
+    new Error("Not a Microsoft 365 project."),
+    constants.cliSource,
+    "NotM365Project"
+  );
+}
+
+export function OnlyLaunchPageSupportedInOffice(): UserError {
+  return returnUserError(
+    new Error(
+      "Only launch page is supported in Office. Messaging extension is not supported in Office."
+    ),
+    constants.cliSource,
+    "OnlyLaunchPageSupportedByOffice"
+  );
+}

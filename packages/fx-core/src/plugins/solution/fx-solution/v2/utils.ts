@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isAADEnabled, isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -102,7 +102,7 @@ export async function ensurePermissionRequest(
     );
   }
 
-  if (isAADEnabled(solutionSettings)) {
+  if (!isAadManifestEnabled()) {
     const result = await permissionRequestProvider.checkPermissionRequest();
     if (result && result.isErr()) {
       return result.map(err);
@@ -230,7 +230,7 @@ export function fillInSolutionSettings(
       capabilities.push(SsoItem.id);
     } else if (capabilities.includes(TabNonSsoItem.id)) {
       const index = capabilities.indexOf(TabNonSsoItem.id);
-      capabilities.splice(index);
+      capabilities.splice(index, 1);
       capabilities.push(TabOptionItem.id);
     }
   }

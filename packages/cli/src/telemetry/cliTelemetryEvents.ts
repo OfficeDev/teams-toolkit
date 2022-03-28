@@ -97,6 +97,7 @@ export enum TelemetryProperty {
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
   PreviewBrowser = "preview-browser",
+  PreviewHub = "preview-hub",
   PreviewNpmInstallName = "preview-npm-install-name",
   PreviewGulpCertName = "preview-gulp-cert-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",

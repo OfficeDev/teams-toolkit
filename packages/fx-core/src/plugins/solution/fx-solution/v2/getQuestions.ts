@@ -35,6 +35,7 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -153,11 +154,11 @@ export async function getQuestionsForScaffolding(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+          // TODO(aochengwang): add a parent question node to prevent overwriting bot question.condition
           if (
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
-            cap.includes(NotificationOptionItem.id) ||
-            cap.includes(CommandAndResponseOptionItem.id)
+            cap.includes(NotificationOptionItem.id)
           ) {
             return undefined;
           }
@@ -443,6 +444,7 @@ export async function getQuestionsForAddCapability(
       BotOptionItem,
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
     return ok(new QTreeNode(addCapQuestion));
   }
@@ -487,7 +489,13 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem);
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(TabOptionItem);
+    } else {
+      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+    }
+  }
   if (isBotAddable) {
     options.push(BotOptionItem);
     if (isBotNotificationEnabled()) {

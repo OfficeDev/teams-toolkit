@@ -40,7 +40,7 @@ import { Container } from "typedi";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { getTemplatesFolder } from "../../../../folder";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isAADEnabled } from "./../../../../common/tools";
+import { isAadManifestEnabled } from "./../../../../common/tools";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
@@ -94,7 +94,7 @@ export async function scaffoldSourceCode(
       await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
     }
     if (isAzureProject(solutionSettings)) {
-      if (isAADEnabled(solutionSettings as AzureSolutionSettings)) {
+      if (!isAadManifestEnabled()) {
         await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
           spaces: 4,
         });

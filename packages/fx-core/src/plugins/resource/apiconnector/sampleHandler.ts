@@ -31,10 +31,11 @@ export class SampleHandler {
       "sample",
       fileSuffix
     );
-    const fileName: string = config.APIName + "." + fileSuffix;
+    const sampleFileName: string = Constants.pluginNameShort + "." + fileSuffix;
+    const targetFileName: string = config.APIName + "." + fileSuffix;
     await fse.copyFile(
-      path.join(sampleCodeDirectory, fileName),
-      path.join(this.projectRoot, this.component, fileName)
+      path.join(sampleCodeDirectory, sampleFileName),
+      path.join(this.projectRoot, this.component, targetFileName)
     );
     return ResultFactory.Success();
   }

@@ -68,6 +68,7 @@ import {
   DEVELOPER_PREVIEW_SCHEMA,
   M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
+  BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -581,6 +582,8 @@ export class AppStudioPluginImpl {
       const scenarios = ctx.answers?.[AzureSolutionQuestionNames.Scenarios];
       const hasCommandAndResponseBot =
         scenarios?.includes && scenarios.includes(BotScenario.CommandAndResponseBot);
+      const hasNotificationBot =
+        scenarios?.includes && scenarios.includes(BotScenario.NotificationBot);
       const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
       const hasAad = isAADEnabled(solutionSettings);
       const isM365 = ctx.projectSettings?.isM365;
@@ -588,6 +591,7 @@ export class AppStudioPluginImpl {
         ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
+        hasNotificationBot,
         hasCommandAndResponseBot,
         hasMessageExtension,
         false,
@@ -1794,6 +1798,7 @@ export async function createManifest(
   appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
+  hasNotificationBot: boolean,
   hasCommandAndResponseBot: boolean,
   hasMessageExtension: boolean,
   isSPFx: boolean,
@@ -1818,6 +1823,8 @@ export async function createManifest(
     if (hasBot) {
       if (hasCommandAndResponseBot) {
         manifest.bots = BOTS_TPL_FOR_COMMAND_AND_RESPONSE;
+      } else if (hasNotificationBot) {
+        manifest.bots = BOTS_TPL_FOR_NOTIFICATION;
       } else {
         manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
       }

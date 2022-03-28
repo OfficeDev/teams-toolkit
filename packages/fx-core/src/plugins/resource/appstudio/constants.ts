@@ -364,6 +364,15 @@ export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
   },
 ];
 
+export const BOTS_TPL_FOR_NOTIFICATION: IBot[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+  },
+];
+
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE: IBot[] = [
   {
     botId: "{{state.fx-resource-bot.botId}}",

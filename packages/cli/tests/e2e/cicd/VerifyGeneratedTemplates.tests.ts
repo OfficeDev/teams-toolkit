@@ -10,7 +10,7 @@ import "mocha";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import { getTemplatesFolder } from "@microsoft/teamsfx-core/src";
+import { getTemplatesFolder } from "@microsoft/teamsfx-core";
 import Mustache from "mustache";
 import { CICDProviderFactory } from "../../../../fx-core/src/plugins/resource/cicd/providers/factory";
 import { ProviderKind } from "../../../../fx-core/src/plugins/resource/cicd/providers/enums";

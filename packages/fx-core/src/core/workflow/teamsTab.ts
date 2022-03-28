@@ -96,7 +96,7 @@ export class TeamsTabFeature implements ResourcePlugin {
     const tabInputs = inputs as TeamsTabInputs;
     return ok({
       type: "call",
-      required: true,
+      required: false,
       targetAction: `${tabInputs.hostingResource}.generateBicep`,
     });
   }

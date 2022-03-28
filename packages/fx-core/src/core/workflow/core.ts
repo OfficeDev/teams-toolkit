@@ -14,6 +14,14 @@ import * as Handlebars from "handlebars";
 import { assign, merge } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import {
+  BotOptionItem,
+  CommandAndResponseOptionItem,
+  MessageExtensionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../plugins/solution/fx-solution/question";
 import "./aad";
 import "./azureBot";
 import "./azureFunction";
@@ -30,14 +38,22 @@ export class TeamsfxCore {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action1: Action = {
+    const initProjectSettings: Action = {
       type: "function",
       name: "fx.init",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["init teamsfx project"]);
+        return ok(["init teamsfx project settings"]);
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
-        console.log("init teamsfx project");
+        console.log("init teamsfx project settings");
+        context.projectSetting = {
+          projectId: "123",
+          appName: "test",
+          solutionSettings: {
+            name: "fx",
+            activeResourcePlugins: [],
+          },
+        };
         return ok(undefined);
       },
     };
@@ -45,7 +61,7 @@ export class TeamsfxCore {
       type: "group",
       name: "fx.init",
       actions: [
-        action1,
+        initProjectSettings,
         {
           type: "call",
           targetAction: "teams-manifest.init",
@@ -59,17 +75,91 @@ export class TeamsfxCore {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath & { capabilities: string[] }
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const actions: Action[] = [];
-    actions.push({
-      type: "call",
-      required: false,
-      targetAction: `teams-manifest.init`,
-    });
-    actions.push({
-      type: "call",
-      required: false,
-      targetAction: `teams-manifest.addCapability`,
-    });
+    const actions: Action[] = [
+      {
+        type: "call",
+        required: false,
+        targetAction: `fx.init`,
+      },
+    ];
+    if (inputs.capabilities.includes(TabOptionItem.id)) {
+      actions.push({
+        type: "call",
+        required: false,
+        targetAction: `fx.add`,
+        inputs: {
+          resource: "teams-tab",
+          framework: "react",
+          hostingResource: "{{tab.hostingResource}}",
+        },
+      });
+    }
+    if (inputs.capabilities.includes(TabSPFxItem.id)) {
+      actions.push({
+        type: "call",
+        required: false,
+        targetAction: `fx.add`,
+        inputs: {
+          resource: "teams-tab",
+          hostingResource: "spfx",
+        },
+      });
+    }
+    if (
+      inputs.capabilities.includes(BotOptionItem.id) ||
+      inputs.capabilities.includes(NotificationOptionItem.id) ||
+      inputs.capabilities.includes(CommandAndResponseOptionItem.id) ||
+      inputs.capabilities.includes(MessageExtensionItem.id)
+    ) {
+      if (inputs.capabilities.includes(BotOptionItem.id)) {
+        actions.push({
+          type: "call",
+          required: false,
+          targetAction: `fx.add`,
+          inputs: {
+            resource: "teams-bot",
+            scenario: "default",
+            hostingResource: "{{bot.hostingResource}}",
+          },
+        });
+      }
+      if (inputs.capabilities.includes(NotificationOptionItem.id)) {
+        actions.push({
+          type: "call",
+          required: false,
+          targetAction: `fx.add`,
+          inputs: {
+            resource: "teams-bot",
+            scenario: "notification",
+            hostingResource: "{{bot.hostingResource}}",
+          },
+        });
+      }
+      if (inputs.capabilities.includes(CommandAndResponseOptionItem.id)) {
+        actions.push({
+          type: "call",
+          required: false,
+          targetAction: `fx.add`,
+          inputs: {
+            resource: "teams-bot",
+            scenario: "commandAndResponse",
+            hostingResource: "{{bot.hostingResource}}",
+          },
+        });
+      }
+      if (inputs.capabilities.includes(MessageExtensionItem.id)) {
+        actions.push({
+          type: "call",
+          required: false,
+          targetAction: `fx.add`,
+          inputs: {
+            resource: "teams-bot",
+            scenario: "messageExtension",
+            hostingResource: "{{bot.hostingResource}}",
+          },
+        });
+      }
+    }
     const action: GroupAction = {
       name: "fx.create",
       type: "group",
@@ -82,6 +172,7 @@ export class TeamsfxCore {
     inputs: v2.InputsWithProjectPath & { resource: string }
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const resource = inputs.resource;
+    if (!resource) throw new Error(`fx.add: resource is empty`);
     const actions: Action[] = [];
     actions.push({
       type: "call",
@@ -107,6 +198,9 @@ export class TeamsfxCore {
       name: "fx.add",
       type: "group",
       actions: actions,
+      inputs: {
+        bicep: {},
+      },
     };
     return ok(action);
   }
@@ -118,10 +212,14 @@ export class TeamsfxCore {
       type: "function",
       name: "fx.persistBicep",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["persist bicep files"]);
+        return ok(["persist bicep files if there are bicep outputs"]);
       },
       execute: async (context: v2.Context, inputs: Inputs) => {
-        console.log("persist bicep files");
+        if (inputs.bicep && Object.keys(inputs.bicep).length > 0) {
+          console.log(`persist bicep files: ${Object.keys(inputs.bicep)}`);
+        } else {
+          console.log("nothing to persist for bicep files");
+        }
         return ok(undefined);
       },
     };
@@ -289,6 +387,7 @@ export async function getAction(
   const arr = name.split(".");
   const resourceName = arr[0];
   const actionName = arr[1];
+  if (!resourceName) throw new Error(`invalid action name: ${name}`);
   const resource = Container.get(resourceName) as any;
   if (resource[actionName]) {
     const res = await resource[actionName](context, inputs);
@@ -336,7 +435,12 @@ function templateReplace(schema: Json, params: Json) {
 }
 
 export async function resolveAction(action: Action, context: any, inputs: any): Promise<Action> {
+  // console.log(`resolveAction`);
+  // console.log(action);
   if (action.type === "call") {
+    if (action.inputs) {
+      templateReplace(action.inputs, inputs);
+    }
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (targetAction) {
       if (targetAction.type !== "function") {
@@ -345,6 +449,9 @@ export async function resolveAction(action: Action, context: any, inputs: any): 
     }
     return action;
   } else if (action.type === "group") {
+    if (action.inputs) {
+      templateReplace(action.inputs, inputs);
+    }
     for (let i = 0; i < action.actions.length; ++i) {
       action.actions[i] = await resolveAction(action.actions[i], context, inputs);
     }
@@ -365,22 +472,19 @@ export async function planAction(context: any, inputs: any, action: Action): Pro
   } else if (action.type === "shell") {
     console.log(`---- plan[${inputs.step++}]: shell command: ${action.command}`);
   } else if (action.type === "call") {
+    if (action.inputs) {
+      templateReplace(action.inputs, inputs);
+    }
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
       throw new Error("targetAction not exist: " + action.targetAction);
     }
     if (targetAction) {
-      if (action.inputs) {
-        merge(inputs, action.inputs);
-      }
       await planAction(context, inputs, targetAction);
     }
   } else {
-    if (!action.actions) {
-      console.log(action.actions);
-    }
     if (action.inputs) {
-      merge(inputs, action.inputs);
+      templateReplace(action.inputs, inputs);
     }
     for (const act of action.actions) {
       await planAction(context, inputs, act);
@@ -396,14 +500,14 @@ export async function executeAction(context: any, inputs: any, action: Action): 
   } else if (action.type === "shell") {
     console.log(`##### shell [${inputs.step++}]: ${action.command}`);
   } else if (action.type === "call") {
+    if (action.inputs) {
+      templateReplace(action.inputs, inputs);
+    }
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
       throw new Error("action not exist: " + action.targetAction);
     }
     if (targetAction) {
-      if (action.inputs) {
-        templateReplace(action.inputs, inputs);
-      }
       await executeAction(context, inputs, targetAction);
     }
   } else {

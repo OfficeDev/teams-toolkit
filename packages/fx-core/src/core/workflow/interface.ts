@@ -192,7 +192,7 @@ export interface GenerateBicepAction extends FunctionAction {
   execute: (
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<v3.BicepTemplate[], FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
 }
 
 export interface ProvisionAction extends FunctionAction {
@@ -257,14 +257,14 @@ export interface DeployAction extends FunctionAction {
 
 export interface TeamsBotInputs extends v2.InputsWithProjectPath {
   language: "csharp" | "javascript" | "typescript";
-  scenarios: ("notification" | "commandAndResponse" | "messageExtension")[];
+  scenarios: ("notification" | "commandAndResponse" | "messageExtension" | "default")[];
   hostingResource: "azure-web-app" | "azure-function";
 }
 
 export interface TeamsTabInputs extends v2.InputsWithProjectPath {
   language: "csharp" | "javascript" | "typescript";
-  framework: "react" | "vue" | "angular";
-  hostingResource: "azure-web-app" | "azure-function" | "azure-storage";
+  framework?: "react" | "vue" | "angular" | "none";
+  hostingResource: "azure-web-app" | "azure-function" | "azure-storage" | "spfx";
 }
 
 export interface DeployInputs extends v2.InputsWithProjectPath {

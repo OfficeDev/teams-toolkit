@@ -42,6 +42,9 @@ export class AzureSqlResource implements ResourcePlugin {
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
+        console.log(
+          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
+        );
         if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
           context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
         return ok(undefined);
@@ -61,10 +64,11 @@ export class AzureSqlResource implements ResourcePlugin {
       },
       execute: async (
         context: v2.Context,
-        inputs: Inputs
-      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
         console.log("generate azure sql bicep");
-        return ok([]);
+        inputs.bicep[this.name] = "azure sql bicep";
+        return ok(undefined);
       },
     };
     const actions: Action[] = [];

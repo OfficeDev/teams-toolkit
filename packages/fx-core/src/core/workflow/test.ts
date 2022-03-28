@@ -7,6 +7,12 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../common";
+import {
+  BotOptionItem,
+  NotificationOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../plugins/solution/fx-solution/question";
 import { setTools } from "../globalVars";
 import "./aad";
 import "./azureBot";
@@ -21,6 +27,7 @@ import "./tabScaffold";
 import "./teamsBot";
 import "./teamsManifest";
 import "./teamsTab";
+import "./spfx";
 import { MockTools } from "./utils";
 
 async function provision() {
@@ -209,6 +216,102 @@ async function deployFromScript() {
   }
 }
 
+async function createTab() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    capabilities: [TabOptionItem.id],
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    await planAction(context, inputs, action);
+    inputs.step = 1;
+    await executeAction(context, inputs, action);
+  }
+  console.log("inputs:");
+  console.log(inputs);
+  console.log("projectSetting:");
+  console.log(context.projectSetting);
+}
+
+async function createTabBot() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    capabilities: [TabOptionItem.id, BotOptionItem.id],
+    tab: {
+      hostingResource: "azure-storage",
+    },
+    bot: {
+      hostingResource: "azure-web-app",
+    },
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    const resolved = await resolveAction(action, context, inputs);
+    await fs.writeFile("createTabBot.json", JSON.stringify(resolved, undefined, 4));
+    // await planAction(context, inputs, action);
+    // inputs.step = 1;
+    // await executeAction(context, inputs, action);
+  }
+  // console.log("inputs:");
+  // console.log(inputs);
+  // console.log("projectSetting:");
+  // console.log(context.projectSetting);
+}
+
+async function createNotificationBot() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    capabilities: [NotificationOptionItem.id],
+    bot: {
+      hostingResource: "azure-function",
+    },
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    await planAction(context, inputs, action);
+    inputs.step = 1;
+    await executeAction(context, inputs, action);
+  }
+  console.log("inputs:");
+  console.log(inputs);
+  console.log("projectSetting:");
+  console.log(context.projectSetting);
+}
+
+async function createSPFx() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    framework: "react",
+    capabilities: [TabSPFxItem.id],
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    await planAction(context, inputs, action);
+    inputs.step = 1;
+    await executeAction(context, inputs, action);
+  }
+  console.log("inputs:");
+  console.log(inputs);
+  console.log("projectSetting:");
+  console.log(context.projectSetting);
+}
+
 const arg = process.argv[2];
 
 if (arg === "tab") {
@@ -221,4 +324,12 @@ if (arg === "tab") {
   generateDeployScript();
 } else if (arg === "deploy") {
   deployFromScript();
+} else if (arg === "create-tab") {
+  createTab();
+} else if (arg === "create-tab-bot") {
+  createTabBot();
+} else if (arg === "create-notification-bot") {
+  createNotificationBot();
+} else if (arg === "create-spfx") {
+  createSPFx();
 }

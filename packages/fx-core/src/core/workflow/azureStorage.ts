@@ -1,37 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  Inputs,
-  Json,
-  ok,
-  Platform,
-  ProjectSettings,
-  Result,
-  TokenProvider,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
-import * as Handlebars from "handlebars";
-import { assign, merge } from "lodash";
+import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Container, Service } from "typedi";
-import { createV2Context } from "../../common";
-import { ensureSolutionSettings } from "../../plugins/solution/fx-solution/utils/solutionSettingsHelper";
-import { setTools } from "../globalVars";
+import { Service } from "typedi";
 import {
   Action,
   AddInstanceAction,
-  ResourcePlugin,
+  DeployAction,
   GenerateBicepAction,
-  GroupAction,
   MaybePromise,
   ProvisionAction,
-  DeployAction,
+  ResourcePlugin,
 } from "./interface";
-import { MockTools } from "./utils";
 
 @Service("azure-storage")
 export class AzureStorageResource implements ResourcePlugin {
@@ -45,14 +26,18 @@ export class AzureStorageResource implements ResourcePlugin {
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok([
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
         ]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
+        console.log(
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
+        );
+        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
+          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
         return ok(undefined);
       },
     };
@@ -66,13 +51,15 @@ export class AzureStorageResource implements ResourcePlugin {
       name: "azure-storage.generateBicep",
       type: "function",
       plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["create azure storage bicep"]);
+        return ok(["generate azure storage bicep"]);
       },
       execute: async (
         context: v2.Context,
-        inputs: Inputs
-      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
-        return ok([]);
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        console.log("generate azure storage bicep");
+        inputs.bicep[this.name] = "azure storage bicep";
+        return ok(undefined);
       },
     };
     return ok(generateBicep);

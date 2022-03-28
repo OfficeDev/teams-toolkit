@@ -4,7 +4,14 @@
 import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { Action, ResourcePlugin, MaybePromise, ProvisionAction } from "./interface";
+import {
+  Action,
+  ResourcePlugin,
+  MaybePromise,
+  ProvisionAction,
+  AddInstanceAction,
+  GenerateBicepAction,
+} from "./interface";
 
 @Service("aad")
 export class AADResource implements ResourcePlugin {
@@ -13,8 +20,48 @@ export class AADResource implements ResourcePlugin {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
-    return ok(undefined);
+    const addInstance: AddInstanceAction = {
+      name: "aad.addInstance",
+      type: "function",
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok([
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+        ]);
+      },
+      execute: async (
+        context: v2.Context,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        console.log(
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
+        );
+        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
+          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
+        return ok(undefined);
+      },
+    };
+    return ok(addInstance);
+  }
+  generateBicep(
+    context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const generateBicep: GenerateBicepAction = {
+      name: "azure-function.generateBicep",
+      type: "function",
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(["generate aad bicep"]);
+      },
+      execute: async (
+        context: v2.Context,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        console.log("generate aad bicep");
+        inputs.bicep[this.name] = "aad bicep";
+        return ok(undefined);
+      },
+    };
+    return ok(generateBicep);
   }
   provision(
     context: v2.Context,
@@ -30,6 +77,7 @@ export class AADResource implements ResourcePlugin {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
+        console.log("provision aad app registration");
         inputs.aad = {
           clientId: "mockM365ClientId",
           clientSecret: "mockM365ClientId",
@@ -55,6 +103,7 @@ export class AADResource implements ResourcePlugin {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
+        console.log("configure aad app registration");
         return ok(undefined);
       },
     };

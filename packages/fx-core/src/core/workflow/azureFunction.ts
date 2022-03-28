@@ -25,14 +25,18 @@ export class AzureFunctionResource implements ResourcePlugin {
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok([
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
+          `ensure an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
         ]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
+        console.log(
+          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
+        );
+        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
+          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
         return ok(undefined);
       },
     };
@@ -51,9 +55,9 @@ export class AzureFunctionResource implements ResourcePlugin {
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+      ): Promise<Result<undefined, FxError>> => {
         console.log("generate azure function code");
-        return ok([]);
+        return ok(undefined);
       },
     };
     return ok(undefined);
@@ -71,9 +75,10 @@ export class AzureFunctionResource implements ResourcePlugin {
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
+      ): Promise<Result<undefined, FxError>> => {
         console.log("generate azure function bicep");
-        return ok([]);
+        inputs.bicep[this.name] = "azure function bicep";
+        return ok(undefined);
       },
     };
     return ok(generateBicep);
@@ -91,9 +96,10 @@ export class AzureFunctionResource implements ResourcePlugin {
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<v3.BicepTemplate[], FxError>> => {
-        console.log(`update azure function bicep with added resource: ${inputs.resource}`);
-        return ok([]);
+      ): Promise<Result<undefined, FxError>> => {
+        console.log("update azure function bicep");
+        inputs.bicep[this.name] = "azure function bicep (updated)";
+        return ok(undefined);
       },
     };
     return ok(generateBicep);

@@ -1,26 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import {
-  Action,
-  AddInstanceAction,
-  ResourcePlugin,
-  MaybePromise,
-  ProvisionAction,
-} from "./interface";
+import { Action, AddInstanceAction, DeployAction, MaybePromise, ResourcePlugin } from "./interface";
 
-@Service("azure-bot")
-export class AzureBotResource implements ResourcePlugin {
-  name = "azure-bot";
+@Service("spfx")
+export class SpfxResource implements ResourcePlugin {
+  name = "spfx";
   addInstance(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const addInstance: AddInstanceAction = {
-      name: "azure-bot.addInstance",
+      name: "spfx.addInstance",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok([
@@ -41,33 +35,27 @@ export class AzureBotResource implements ResourcePlugin {
     };
     return ok(addInstance);
   }
-  provision(
+  deploy(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const provision: ProvisionAction = {
-      name: "azure-bot.provision",
+    const action: DeployAction = {
+      name: "spfx.deploy",
       type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          "provision azure-bot step 1.create AAD app for bot service",
-          "provision azure-bot step 2. create azure bot service",
-        ]);
+      plan: (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: v2.InputsWithProjectPath
+      ) => {
+        return ok([`deploy spfx with path: ${inputs.path}, type: ${inputs.type}`]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-        inputs: Inputs
+        inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log("provision azure-bot step 1.create AAD app for bot service");
-        console.log("provision azure-bot step 2. create azure bot service");
-        inputs["azure-bot"] = {
-          botAadAppClientId: "MockBotAadAppClientId",
-          botId: "MockBotId",
-          botPassword: "MockBotPassword",
-        };
+        console.log(`deploy spfx with path: ${inputs.path}, type: ${inputs.type}`);
         return ok(undefined);
       },
     };
-    return ok(provision);
+    return ok(action);
   }
 }

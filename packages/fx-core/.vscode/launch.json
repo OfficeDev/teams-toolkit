@@ -26,7 +26,7 @@
       ],
       "program": "${workspaceFolder}\\build\\core\\workflow\\test.js",
       "args": [
-        "tab"
+        "create-tab-bot"
       ],
       "outFiles": [
           "${workspaceFolder}/**/*.js"

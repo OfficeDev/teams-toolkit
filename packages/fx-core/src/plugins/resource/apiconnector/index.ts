@@ -20,21 +20,8 @@ import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginCont
 import { ApiConnectorImpl } from "./plugin";
 import { Constants } from "./constants";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
-import {
-  apiNameQuestion,
-  apiLoginUserNameQuestion,
-  botOption,
-  functionOption,
-  apiEndpointQuestion,
-  BasicAuthOption,
-  CertAuthOption,
-  AADAuthOption,
-  APIKeyAuthOption,
-  OtherAuthOPtion,
-} from "./questions";
 import { ApiConnectorResult, ResultFactory } from "./result";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { ResourcePlugins } from "../../../common/constants";
+
 @Service(ResourcePluginsV2.ApiConnectorPlugin)
 export class ApiConnectorPluginV2 implements ResourcePlugin {
   name = "fx-resource-api-connector";
@@ -57,46 +44,8 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     if (!activeResourcePlugins) {
       throw ResultFactory.UserError("no plugins", "no plugins");
     }
-    const options = [];
-    if (activeResourcePlugins.includes(ResourcePlugins.Bot)) {
-      options.push(botOption);
-    }
-    if (activeResourcePlugins.includes(ResourcePlugins.Function)) {
-      options.push(functionOption);
-    }
-    if (options.length === 0) {
-      throw ResultFactory.UserError("no bot plugin or func plugin", "no bot plugin or func plugin");
-    }
-    const whichService = new QTreeNode({
-      name: Constants.questionKey.serviceSelect,
-      type: "singleSelect",
-      staticOptions: options,
-      title: getLocalizedString("plugins.apiConnector.whichService.title"),
-      default: options[0].id,
-    });
-    const whichAuthType = new QTreeNode({
-      name: Constants.questionKey.apiType,
-      type: "singleSelect",
-      staticOptions: [
-        BasicAuthOption,
-        CertAuthOption,
-        AADAuthOption,
-        APIKeyAuthOption,
-        OtherAuthOPtion,
-      ],
-      title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
-      default: BasicAuthOption.id,
-    });
-    const question = new QTreeNode({
-      type: "group",
-    });
-    question.addChild(whichService);
-    question.addChild(new QTreeNode(apiNameQuestion));
-    question.addChild(whichAuthType);
-    question.addChild(new QTreeNode(apiEndpointQuestion));
-    question.addChild(new QTreeNode(apiLoginUserNameQuestion));
-
-    return ok(question);
+    const res: QTreeNode = this.apiConnectorImpl.generateQuestion(activeResourcePlugins);
+    return ok(res);
   }
 
   async executeUserTask(

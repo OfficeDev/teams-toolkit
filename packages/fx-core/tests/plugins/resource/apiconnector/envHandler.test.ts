@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as dotenv from "dotenv";
 import { expect } from "chai";
 import { EnvHandler } from "../../../../src/plugins/resource/apiconnector/envHandler";
-import { ProjectType } from "../../../../src/plugins/resource/apiconnector/constants";
+import { ComponentType } from "../../../../src/plugins/resource/apiconnector/constants";
 import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/utils";
 import { LocalEnvProvider, LocalEnvs } from "../../../../src/common/local/localEnvProvider";
 
@@ -27,7 +27,7 @@ describe("EnvHandler", () => {
   });
 
   it("should create .env.teamsfx.local if not exist with empty api envs", async () => {
-    const service: ProjectType = ProjectType.BOT;
+    const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     expect(await fs.pathExists(path.join(botPath, localEnvFileName))).to.be.false;
     await envHandler.saveLocalEnvFile();
@@ -40,10 +40,10 @@ describe("EnvHandler", () => {
   });
 
   it("env save to .env.teamsfx.local first time", async () => {
-    const service: ProjectType = ProjectType.BOT;
+    const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ServicePath: "fake_service_path",
+      ComponentPath: ["bot"],
       APIName: "FAKE",
       ApiAuthType: "fake_basic_type",
       EndPoint: "fake_endpoint",
@@ -60,10 +60,10 @@ describe("EnvHandler", () => {
   });
 
   it("env update in .env.teamsfx.local", async () => {
-    const service: ProjectType = ProjectType.BOT;
+    const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ServicePath: "fake_service_path",
+      ComponentPath: ["bot"],
       APIName: "FAKE",
       ApiAuthType: "fake_basic_type",
       EndPoint: "fake_endpoint",
@@ -79,7 +79,7 @@ describe("EnvHandler", () => {
     chai.assert.exists(envs["API_FAKE_PASSWORD"]);
 
     const fakeConfig2: ApiConnectorConfiguration = {
-      ServicePath: "fake_service_path2",
+      ComponentPath: ["bot"],
       APIName: "FAKE",
       ApiAuthType: "fake_basic_type2",
       EndPoint: "fake_endpoint2",

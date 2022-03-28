@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-export enum ProjectType {
+export enum ComponentType {
   API = "api",
   BOT = "bot",
 }
@@ -21,7 +21,7 @@ export class Constants {
   public static readonly pluginNameShort = "api-connector";
 
   public static readonly questionKey = {
-    serviceSelect: "ServiceSelect",
+    componentsSelect: "ComponentSelect",
     endpoint: "api-connector-endpoint",
     apiName: "api-connector-name",
     apiType: "api-connector-auth-type",

@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as path from "path";
 import fs from "fs-extra";
 import { expect } from "chai";
-import { ApiConnectorImpl } from "../../../../src/plugins/resource/apiconnector/plugin";
+import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
 import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/utils";
 import { ConstantString } from "../util";
 
@@ -26,15 +26,9 @@ describe("Api Connector scaffold sample code", async () => {
 
   it("generate js sample code file", async () => {
     const languageType = "javascript";
-    const pluginImp: ApiConnectorImpl = new ApiConnectorImpl();
-    const fakeConfig: ApiConnectorConfiguration = {
-      ServicePath: "bot",
-      APIName: "FAKE",
-      ApiAuthType: "fake_basic_type",
-      EndPoint: "fake_endpoint",
-      ApiUserName: "fake_api_user_name",
-    };
-    await pluginImp.generateSampleCode(testpath, languageType, fakeConfig);
+    const componet = "bot";
+    const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
+    await sampleHandler.generateSampleCode();
     expect(await fs.pathExists(path.join(botPath, "api-connector.js"))).to.be.true;
     const actualFile = await fs.readFile(
       path.join(botPath, "api-connector.js"),
@@ -49,15 +43,9 @@ describe("Api Connector scaffold sample code", async () => {
 
   it("generate ts sample code file", async () => {
     const languageType = "typescript";
-    const pluginImp: ApiConnectorImpl = new ApiConnectorImpl();
-    const fakeConfig: ApiConnectorConfiguration = {
-      ServicePath: "bot",
-      APIName: "FAKE",
-      ApiAuthType: "fake_basic_type",
-      EndPoint: "fake_endpoint",
-      ApiUserName: "fake_api_user_name",
-    };
-    await pluginImp.generateSampleCode(testpath, languageType, fakeConfig);
+    const componet = "bot";
+    const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
+    await sampleHandler.generateSampleCode();
     expect(await fs.pathExists(path.join(botPath, "api-connector.ts"))).to.be.true;
     const actualFile = await fs.readFile(
       path.join(botPath, "api-connector.ts"),

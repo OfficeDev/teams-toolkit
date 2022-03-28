@@ -3,7 +3,7 @@
 "use strict";
 
 export interface ApiConnectorConfiguration extends Record<any, any> {
-  ServicePath: string;
+  ComponentPath: string[];
   APIName: string;
   ApiAuthType?: string;
   EndPoint: string;

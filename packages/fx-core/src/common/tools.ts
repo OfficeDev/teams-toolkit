@@ -423,6 +423,14 @@ export function getRootDirectory(): string {
   }
 }
 
+export function isYoCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+}
+
+export function isGeneratorCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any

@@ -6,6 +6,8 @@
 
 import { AccessToken } from '@azure/identity';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
+import { AxiosRequestConfig } from 'axios';
+import { AxiosStatic } from 'axios';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { ConnectionConfig } from 'tedious';
 import { Dialog } from 'botbuilder-dialogs';
@@ -31,6 +33,15 @@ export interface AuthenticationConfiguration {
     readonly initiateLoginEndpoint?: string;
     readonly tenantId?: string;
 }
+
+// @beta
+export class BearerAuthProvider implements IAuthProvider {
+    constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void>;
+}
+
+// @public
+export function createApiClient(apiEndpoint: string, authProvider: IAuthProvider): AxiosStatic;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
@@ -65,6 +76,11 @@ export function getLogLevel(): LogLevel | undefined;
 
 // @beta
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
+
+// @public (undocumented)
+export interface IAuthProvider {
+    AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<void>;
+}
 
 // @beta
 export enum IdentityType {

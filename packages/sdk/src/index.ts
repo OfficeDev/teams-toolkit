@@ -27,5 +27,9 @@ export {
   setLogFunction,
 } from "./util/logger";
 
+export { createApiClient } from "./authentication/apiClient";
+export { IAuthProvider } from "./authentication/iAuthProvider";
+export { BearerAuthProvider } from "./authentication/bearerAuthProvider";
+
 export { TeamsFx } from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";

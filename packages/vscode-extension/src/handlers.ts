@@ -2699,3 +2699,39 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
   const result = await runUserTask(func, TelemetryEvent.AddSso, true);
   return result;
 }
+
+export async function selectTutorialsHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ClickViewGuidedTutorials,
+    getTriggerFromProperty(args)
+  );
+  const config: SingleSelectConfig = {
+    name: "tutorialName",
+    title: "Choose a tutorial",
+    options: ["Add Function", "Add SQL database"],
+  };
+  const selectedTutorial = await VS_CODE_UI.selectOption(config);
+  if (selectedTutorial.isErr()) {
+    return err(selectedTutorial.error);
+  } else {
+    const tutorialName = selectedTutorial.value.result as string;
+    commands.executeCommand("fx-extension.openTutorial", TelemetryTiggerFrom.Auto, tutorialName);
+  }
+}
+
+export function openTutorialHandler(args?: any) {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const uri = Uri.file(`${workspacePath}/tabs/README.md`);
+    workspace.openTextDocument(uri).then(() => {
+      if (isTriggerFromWalkThrough(args)) {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      } else {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      }
+    });
+  }
+}

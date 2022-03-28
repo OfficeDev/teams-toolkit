@@ -951,6 +951,14 @@
               "svg": "media/Readme.svg",
               "altText": "Explore more"
             }
+          },
+          {
+            "id": "teamsToolkitGuidedTutorials",
+            "title": "View guided tutorials",
+            "description": "Click on the tutorials to jump start the app development.\n[View all tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D)",
+            "media": {
+              "markdown": "media/guidedTutorial.md"
+            }
           }
         ]
       }

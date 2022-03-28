@@ -19,7 +19,7 @@ import {
 import activate from "../activate";
 import { getSystemInputs } from "../utils";
 
-class AddCICD extends YargsCommand {
+export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;
   public readonly description = "Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins.";

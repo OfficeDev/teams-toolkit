@@ -76,7 +76,7 @@ describe("Add CICD Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new AddCICD();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add", "cicd"]);
+    expect(registeredCommands).deep.equals(["add <feature>", "cicd"]);
   });
 
   it("CICD Command Running Check", async () => {

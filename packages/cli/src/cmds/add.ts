@@ -72,7 +72,7 @@ class AddCICD extends YargsCommand {
 
 export default class Add extends YargsCommand {
   public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} <action>`;
+  public readonly command = `${this.commandHead} <feature>`;
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [new AddCICD()];

@@ -28,10 +28,17 @@ describe("Api Connector scaffold sample code", async () => {
     const languageType = "javascript";
     const componet = "bot";
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
-    await sampleHandler.generateSampleCode();
-    expect(await fs.pathExists(path.join(botPath, "api-connector.js"))).to.be.true;
+    const fakeConfig: ApiConnectorConfiguration = {
+      ComponentPath: ["bot"],
+      APIName: "fake",
+      ApiAuthType: "fake_basic_type",
+      EndPoint: "fake_endpoint",
+      ApiUserName: "fake_api_user_name",
+    };
+    await sampleHandler.generateSampleCode(fakeConfig);
+    expect(await fs.pathExists(path.join(botPath, "fake.js"))).to.be.true;
     const actualFile = await fs.readFile(
-      path.join(botPath, "api-connector.js"),
+      path.join(botPath, "fake.js"),
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(
@@ -45,10 +52,17 @@ describe("Api Connector scaffold sample code", async () => {
     const languageType = "typescript";
     const componet = "bot";
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
-    await sampleHandler.generateSampleCode();
-    expect(await fs.pathExists(path.join(botPath, "api-connector.ts"))).to.be.true;
+    const fakeConfig: ApiConnectorConfiguration = {
+      ComponentPath: ["bot"],
+      APIName: "fake",
+      ApiAuthType: "fake_basic_type",
+      EndPoint: "fake_endpoint",
+      ApiUserName: "fake_api_user_name",
+    };
+    await sampleHandler.generateSampleCode(fakeConfig);
+    expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.true;
     const actualFile = await fs.readFile(
-      path.join(botPath, "api-connector.ts"),
+      path.join(botPath, "fake.ts"),
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(

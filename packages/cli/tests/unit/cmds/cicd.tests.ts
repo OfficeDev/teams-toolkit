@@ -91,7 +91,7 @@ describe("Add CICD Command Tests", function () {
       });
     const cmd = new Add();
     const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "cicd");
-    await cicd.handler({});
+    await cicd!.handler({});
     expect(telemetryEvents).deep.equals([TelemetryEvent.AddCICDStart, TelemetryEvent.AddCICD]);
   });
 });

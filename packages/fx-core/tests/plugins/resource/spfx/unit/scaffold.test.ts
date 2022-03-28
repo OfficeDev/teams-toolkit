@@ -10,7 +10,7 @@ import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { TestHelper } from "../helper";
 import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/yoChecker";
 import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
-import { cpUtils } from "../../../../../src";
+import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 
 describe("SPFxScaffold", function () {

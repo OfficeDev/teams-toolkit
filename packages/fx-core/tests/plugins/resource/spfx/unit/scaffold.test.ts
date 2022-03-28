@@ -32,6 +32,7 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "writeFile").resolves();
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
+    sinon.stub(fs, "remove").resolves();
   });
 
   it("scaffold SPFx project without framework", async function () {

@@ -102,6 +102,7 @@ import {
   isSPFxProject,
   isTeamsfx,
   isTriggerFromWalkThrough,
+  getTriggerFromProperty,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -1339,38 +1340,6 @@ export async function checkUpgrade(args?: any[]) {
 
 export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
-}
-
-function getTriggerFromProperty(args?: any[]) {
-  // if not args are not supplied, by default, it is trigger from "CommandPalette"
-  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
-  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
-  if (!args || (args && args.length === 0)) {
-    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
-  }
-
-  switch (args[0].toString()) {
-    case TelemetryTiggerFrom.TreeView:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
-    case TelemetryTiggerFrom.Webview:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    case TelemetryTiggerFrom.CodeLens:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
-    case TelemetryTiggerFrom.EditorTitle:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
-    case TelemetryTiggerFrom.SideBar:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
-    case TelemetryTiggerFrom.Notification:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
-    case TelemetryTiggerFrom.WalkThrough:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
-    case TelemetryTiggerFrom.Auto:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
-    case TelemetryTiggerFrom.Other:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
-    default:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
-  }
 }
 
 async function autoOpenProjectHandler(): Promise<void> {

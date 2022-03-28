@@ -28,7 +28,9 @@ import {
   provisionHandler,
   publishHandler,
 } from "../handlers";
-import { isSPFxProject } from "../utils/commonUtils";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { getTriggerFromProperty, isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
@@ -80,11 +82,16 @@ class TreeViewManager {
     return this.treeviewMap.get(viewName);
   }
 
-  public async runCommand(commandName: string, ...args: unknown[]) {
+  public async runCommand(commandName: string, args: unknown[]) {
     if (!this.exclusiveCommands.has(commandName)) {
       return this.runNonBlockingCommand(commandName, args);
     }
     if (this.runningCommand) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewCommandConcurrentExecution, {
+        ...getTriggerFromProperty(args),
+        [TelemetryProperty.RunningCommand]: this.runningCommand.commandId ?? "unknown",
+        [TelemetryProperty.BlockedCommand]: commandName,
+      });
       const blockedTooltip = this.runningCommand.getBlockingTooltip();
       if (blockedTooltip) {
         VS_CODE_UI.showMessage("warn", blockedTooltip, false);

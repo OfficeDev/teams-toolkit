@@ -646,6 +646,6 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
   context.subscriptions.push(openReportIssuesCmd);
 }
 
-function runTreeViewCommand(commandName: string, ...args: unknown[]) {
+function runTreeViewCommand(commandName: string, args: unknown[]) {
   treeViewManager.runCommand(commandName, args);
 }

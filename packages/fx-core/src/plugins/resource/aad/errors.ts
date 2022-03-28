@@ -65,7 +65,7 @@ export const UpdateRedirectUriError: AadError = {
 
 export const UpdateAadAppError: AadError = {
   name: "UpdateAadAppError",
-  message: (reason: string) => `Failed to update application in Azure Active Directory: ${reason}`,
+  message: (reason: string) => getLocalizedString("error.aad.UpdateAadAppError", reason),
 };
 
 export const UpdateAppIdUriError: AadError = {
@@ -159,13 +159,13 @@ export const ListCollaboratorError: AadError = {
 
 export const AadManifestNotFoundError: AadError = {
   name: "AadManifestNotFoundError",
-  message: () => "Aad manifest file not found",
+  message: () => getLocalizedString("error.aad.AadManifestNotFoundError"),
 };
 
 export const AadManifestLoadError: AadError = {
   name: "AadManifestLoadError",
   message: (manifestPath: string, reason: string) =>
-    util.format("Failed to load manifest file from %s, due to %s", manifestPath, reason),
+    getLocalizedString("error.aad.AadManifestLoadError", manifestPath, reason),
 };
 
 export class ConfigErrorMessages {

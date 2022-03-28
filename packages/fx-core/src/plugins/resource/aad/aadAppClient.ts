@@ -117,7 +117,7 @@ export class AadAppClient {
         TOOLS.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
-        throw AadAppClient.handleError(error, UpdateAadAppError, error.toString());
+        throw AadAppClient.handleError(error, UpdateAadAppError, error.message);
       }
     }
   }

@@ -22,24 +22,16 @@ export namespace AadAppManifestManager {
     const instance = initAxiosInstance(graphToken);
     const aadApp = AadManifestHelper.manifestToApplication(manifest);
     deleteUnusedProperties(aadApp);
-    try {
-      const response = await instance.post(`${baseUrl}/applications`, aadApp);
-      if (response && response.data) {
-        const app = <AADApplication>response.data;
-        if (app) {
-          return AadManifestHelper.applicationToManifest(app);
-        }
+    const response = await instance.post(`${baseUrl}/applications`, aadApp);
+    if (response && response.data) {
+      const app = <AADApplication>response.data;
+      if (app) {
+        return AadManifestHelper.applicationToManifest(app);
       }
-      throw new Error(
-        `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
-      );
-    } catch (err: any) {
-      let errMsg = err.toString();
-      if (err?.response?.data?.error?.message) {
-        errMsg = err.response.data.error.message;
-      }
-      throw new Error(`${GraphClientErrorMessage.CreateFailed}: ${errMsg}.`);
     }
+    throw new Error(
+      `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+    );
   }
 
   export async function updateAadApp(
@@ -49,16 +41,8 @@ export namespace AadAppManifestManager {
     const instance = initAxiosInstance(graphToken);
     const aadApp = AadManifestHelper.manifestToApplication(manifest);
     deleteUnusedProperties(aadApp);
-    try {
-      await instance.patch(`${baseUrl}/applications/${manifest.id}`, aadApp);
-      return manifest;
-    } catch (err: any) {
-      let errMsg = err.toString();
-      if (err?.response?.data?.error?.message) {
-        errMsg = err.response.data.error.message;
-      }
-      throw new Error(`${GraphClientErrorMessage.UpdateFailed}:${errMsg}`);
-    }
+    await instance.patch(`${baseUrl}/applications/${manifest.id}`, aadApp);
+    return manifest;
   }
 
   export async function getAadAppManifest(

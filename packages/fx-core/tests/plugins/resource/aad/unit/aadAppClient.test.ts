@@ -149,7 +149,7 @@ describe("AAD App Client Test", () => {
           message: "errorMessage",
         },
       };
-      sinon.stub(GraphClient, "createAADApp").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
@@ -256,35 +256,31 @@ describe("AAD App Client Test", () => {
 
     it("System Error", async () => {
       TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
-      const error = {
-        response: {
-          status: 500,
-          message: "errorMessage",
-        },
+      const err: any = new Error("create AAD failed");
+      err.response = {
+        status: 500,
       };
-      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(err);
       try {
         await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.message, UpdateAadAppError.message());
+        chai.assert.isTrue(error.message.indexOf("create AAD failed") > 0);
       }
     });
 
     it("User Error", async () => {
       TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
-      const error = {
-        response: {
-          status: 404,
-          message: "errorMessage",
-        },
+      const err: any = new Error("create AAD failed");
+      err.response = {
+        status: 404,
       };
-      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(err);
       try {
         await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.message, UpdateAadAppError.message());
+        chai.assert.isTrue(error.message.indexOf("create AAD failed") > 0);
       }
     });
   });

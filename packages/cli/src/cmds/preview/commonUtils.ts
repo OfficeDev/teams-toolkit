@@ -11,6 +11,7 @@ import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
+import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -283,5 +284,32 @@ export function getAutomaticNpmInstallSetting(): boolean {
   } catch (error: any) {
     cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
     return false;
+  }
+}
+
+export async function generateAccountHint(
+  tenantIdFromConfig: string,
+  includeTenantId = true
+): Promise<string> {
+  let tenantId = undefined,
+    loginHint = undefined;
+  try {
+    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    if (tokenObject) {
+      // user signed in
+      tenantId = tokenObject.tid;
+      loginHint = tokenObject.upn;
+    } else {
+      // no signed user
+      tenantId = tenantIdFromConfig;
+      loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
+    }
+  } catch {
+    // ignore error
+  }
+  if (includeTenantId) {
+    return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+  } else {
+    return loginHint ? `login_hint=${loginHint}` : "";
   }
 }

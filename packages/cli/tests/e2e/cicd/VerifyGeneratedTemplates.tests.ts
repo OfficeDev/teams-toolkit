@@ -7,6 +7,7 @@
 
 import path from "path";
 import "mocha";
+import * as chai from "chai";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -22,7 +23,7 @@ describe("Verify generated templates & readme", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, false, false);
   });
 
   it(`Verify generated templates & readme`, async function () {
@@ -48,7 +49,7 @@ describe("Verify generated templates & readme", function () {
       const templatePromises = ["ci", "cd", "provision", "publish"].map(async (template) => {
         const replacements = {
           env_name: "dev",
-          build_script: "cd bot; npm install; cd -;",
+          build_script: "cd bot; npm ci; cd -;",
           hosting_type_contains_spfx: false,
           hosting_type_contains_azure: true,
           cloud_resources_contains_sql: false,

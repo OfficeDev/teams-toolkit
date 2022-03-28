@@ -7,7 +7,7 @@ import yargs, { Options } from "yargs";
 import { FxError, Inputs, LogLevel, ok, Func } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
-import AddCICD from "../../../src/cmds/add";
+import Add, { AddCICD } from "../../../src/cmds/add";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
@@ -89,8 +89,9 @@ describe("Add CICD Command Tests", function () {
         });
         return ok("");
       });
-    const cmd = new AddCICD();
-    await cmd.handler({});
+    const cmd = new Add();
+    const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "cicd");
+    await cicd.handler({});
     expect(telemetryEvents).deep.equals([TelemetryEvent.AddCICDStart, TelemetryEvent.AddCICD]);
   });
 });

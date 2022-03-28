@@ -52,7 +52,6 @@ class TreeViewManager {
       "fx-extension.addCapability",
       "fx-extension.update",
       "fx-extension.openManifest",
-      // "fx-extension.OpenAdaptiveCardExt",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",

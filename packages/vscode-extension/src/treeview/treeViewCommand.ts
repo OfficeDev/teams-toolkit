@@ -49,7 +49,7 @@ export class TreeViewCommand extends vscode.TreeItem {
       case CommandStatus.Running:
         this.iconPath = new vscode.ThemeIcon("loading~spin");
         if (this.runningLabelKey) {
-          const label = localize(`${labelPrefix}${this.runningLabelKey}Running`);
+          const label = localize(`${labelPrefix}${this.runningLabelKey}.running`);
           if (label) {
             this.label = label;
           }
@@ -71,7 +71,7 @@ export class TreeViewCommand extends vscode.TreeItem {
 
   public getBlockingTooltip(): string | undefined {
     if (this.runningLabelKey) {
-      const tooltip = localize(`${labelPrefix}${this.runningLabelKey}BlockTooltip`);
+      const tooltip = localize(`${labelPrefix}${this.runningLabelKey}.blockTooltip`);
       return tooltip;
     }
   }

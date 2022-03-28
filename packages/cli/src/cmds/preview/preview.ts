@@ -1205,7 +1205,7 @@ export default class Preview extends YargsCommand {
       return new UnknownError(source, e as string);
     } else if (e instanceof Error) {
       const err = e as Error;
-      const fxError = new SystemError(err, source);
+      const fxError = new SystemError({ error: err, source });
       fxError.stack = err.stack;
       return fxError;
     } else {

@@ -4,8 +4,7 @@
 
 "use strict";
 
-import { UserError } from "@microsoft/teamsfx-api";
-import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+import { UserError, GraphTokenProvider } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
@@ -22,7 +21,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
 const scopes = ["Application.ReadWrite.All"];
@@ -97,15 +96,18 @@ export class GraphLogin extends login implements GraphTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${localize(
+            [TelemetryProperty.ErrorCode]: `${getDefaultString(
               "teamstoolkit.codeFlowLogin.loginComponent"
             )}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
+            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
+              "teamstoolkit.common.userCancel"
+            )}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.common.userCancel"),
-            "Login"
+            getDefaultString("teamstoolkit.common.userCancel"),
+            localize("teamstoolkit.common.userCancel")
           );
         }
       }

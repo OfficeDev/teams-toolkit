@@ -33,7 +33,7 @@ import "./v2";
 import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -352,14 +352,12 @@ export class AppStudioPlugin implements Plugin {
         );
         return err(error);
       } else {
-        const publishFailed = new SystemError(
-          AppStudioError.TeamsAppPublishFailedError.name,
-          error.message,
-          Constants.PLUGIN_NAME,
-          undefined,
-          undefined,
-          error
-        );
+        const publishFailed = new SystemError({
+          name: AppStudioError.TeamsAppPublishFailedError.name,
+          message: error.message,
+          source: Constants.PLUGIN_NAME,
+          error: error,
+        });
         TelemetryUtils.sendErrorEvent(
           TelemetryEventName.publish,
           publishFailed,
@@ -498,13 +496,12 @@ export class AppStudioPlugin implements Plugin {
         );
       }
       return err(
-        new SystemError(
-          "InvalidParam",
-          `Invalid param:${JSON.stringify(func)}`,
-          Constants.PLUGIN_NAME,
-          undefined,
-          Links.ISSUE_LINK
-        )
+        new SystemError({
+          name: "InvalidParam",
+          message: `Invalid param:${JSON.stringify(func)}`,
+          source: Constants.PLUGIN_NAME,
+          issueLink: Links.ISSUE_LINK,
+        })
       );
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
@@ -514,12 +511,19 @@ export class AppStudioPlugin implements Plugin {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");
     }
     return err(
-      new SystemError(
-        Constants.PLUGIN_NAME,
-        "FunctionRouterError",
-        getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
-        Links.ISSUE_LINK
-      )
+      new SystemError({
+        name: "FunctionRouterError",
+        message: getDefaultString(
+          "error.appstudio.executeUserTaskRouteFailed",
+          JSON.stringify(func)
+        ),
+        displayMessage: getLocalizedString(
+          "error.appstudio.executeUserTaskRouteFailed",
+          JSON.stringify(func)
+        ),
+        source: Constants.PLUGIN_NAME,
+        issueLink: Links.ISSUE_LINK,
+      })
     );
   }
 }

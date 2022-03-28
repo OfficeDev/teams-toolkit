@@ -14,8 +14,6 @@ import {
   LogProvider,
   ok,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionContext,
   SystemError,
   UserError,
@@ -57,7 +55,7 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -101,7 +99,7 @@ export async function generateArmTemplate(
     }
   } catch (error) {
     result = err(
-      returnSystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
+      new SystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
     );
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.GenerateArmTemplate,
@@ -138,7 +136,11 @@ export async function generateBicep(
     }
   } catch (error) {
     result = err(
-      returnSystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
+      new SystemError({
+        error,
+        source: SolutionSource,
+        name: SolutionError.FailedToGenerateArmTemplates,
+      })
     );
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.GenerateArmTemplate,
@@ -278,11 +280,11 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
           )
         );
       } else if (tryCount === maxRetryTimes) {
-        const pollError = returnSystemError(
+        const pollError = new SystemError({
           error,
-          SolutionSource,
-          SolutionError.FailedToPollArmDeploymentStatus
-        );
+          source: SolutionSource,
+          name: SolutionError.FailedToPollArmDeploymentStatus,
+        });
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.ArmDeployment,
           pollError,
@@ -304,10 +306,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     return err(
-      returnSystemError(
-        new Error(getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")),
+      new SystemError(
         SolutionSource,
-        "NoResourceGroupFound"
+        "NoResourceGroupFound",
+        getDefaultString("core.deployArmTemplates.FailedToReadResourceGroup"),
+        getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")
       )
     );
   }
@@ -379,7 +382,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToValidateArmTemplates)
+        new UserError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToValidateArmTemplates,
+        })
       );
     }
 
@@ -391,7 +398,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       // return thrown error if deploymentError is empty
       if (!deploymentError) {
         return err(
-          returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+          new UserError({
+            error,
+            source: SolutionSource,
+            name: SolutionError.FailedToDeployArmTemplatesToAzure,
+          })
         );
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
@@ -409,13 +420,13 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         HelpLinks.ArmHelpLink
       );
       const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
-      const returnError = new UserError(
-        new Error(errorMessage),
-        SolutionSource,
-        SolutionError.FailedToDeployArmTemplatesToAzure,
-        HelpLinks.ArmHelpLink,
-        notificationMessage
-      );
+      const returnError = new UserError({
+        source: SolutionSource,
+        message: errorMessage,
+        displayMessage: notificationMessage,
+        name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        helpLink: HelpLinks.ArmHelpLink,
+      });
       returnError.innerError = {
         value: JSON.stringify(deploymentErrorObj),
       } as DeploymentErrorMessage;
@@ -446,10 +457,11 @@ export async function doDeployArmTemplatesV3(
   const resourceGroupName = envState.solution.resourceGroupName;
   if (!resourceGroupName) {
     return err(
-      returnSystemError(
-        new Error(getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")),
+      new SystemError(
         SolutionSource,
-        "NoResourceGroupFound"
+        "NoResourceGroupFound",
+        getDefaultString("core.deployArmTemplates.FailedToReadResourceGroup"),
+        getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")
       )
     );
   }
@@ -520,7 +532,11 @@ export async function doDeployArmTemplatesV3(
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToValidateArmTemplates)
+        new UserError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToValidateArmTemplates,
+        })
       );
     }
 
@@ -532,7 +548,11 @@ export async function doDeployArmTemplatesV3(
       // return thrown error if deploymentError is empty
       if (!deploymentError) {
         return err(
-          returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+          new UserError({
+            error,
+            source: SolutionSource,
+            name: SolutionError.FailedToDeployArmTemplatesToAzure,
+          })
         );
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
@@ -550,13 +570,13 @@ export async function doDeployArmTemplatesV3(
         HelpLinks.ArmHelpLink
       );
       const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
-      const returnError = new UserError(
-        new Error(errorMessage),
-        SolutionSource,
-        SolutionError.FailedToDeployArmTemplatesToAzure,
-        HelpLinks.ArmHelpLink,
-        notificationMessage
-      );
+      const returnError = new UserError({
+        message: errorMessage,
+        source: SolutionSource,
+        name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        helpLink: HelpLinks.ArmHelpLink,
+        displayMessage: notificationMessage,
+      });
       returnError.innerError = JSON.stringify(deploymentErrorObj);
       return err(returnError);
     } else {
@@ -634,15 +654,19 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       result = err(error);
     } else if (error instanceof Error) {
       result = err(
-        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        new SystemError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        })
       );
     } else {
       result = err(
-        returnSystemError(
-          new Error(JSON.stringify(error)),
-          SolutionSource,
-          SolutionError.FailedToDeployArmTemplatesToAzure
-        )
+        new SystemError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        })
       );
     }
     sendErrorTelemetryThenReturnError(
@@ -692,15 +716,19 @@ export async function deployArmTemplatesV3(
       result = err(error);
     } else if (error instanceof Error) {
       result = err(
-        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        new SystemError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        })
       );
     } else {
       result = err(
-        returnSystemError(
-          new Error(JSON.stringify(error)),
-          SolutionSource,
-          SolutionError.FailedToDeployArmTemplatesToAzure
-        )
+        new SystemError({
+          error,
+          source: SolutionSource,
+          name: SolutionError.FailedToDeployArmTemplatesToAzure,
+        })
       );
     }
     sendErrorTelemetryThenReturnError(
@@ -749,7 +777,12 @@ export async function copyParameterJson(
 
 export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo.envName) {
-    throw new Error(getLocalizedString("core.deployArmTemplates.FailedToGetEnvironmentName"));
+    throw new SystemError(
+      "Solution",
+      "FailedToGetEnvironmentName",
+      getDefaultString("core.deployArmTemplates.FailedToGetEnvironmentName"),
+      getLocalizedString("core.deployArmTemplates.FailedToGetEnvironmentName")
+    );
   }
 
   const parameterFileName = parameterFileNameTemplate.replace(
@@ -761,13 +794,14 @@ export async function getParameterJson(ctx: SolutionContext) {
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
-    ctx.logProvider?.error(
+    const error = new UserError(
+      SolutionSource,
+      "ParameterFileNotExist",
+      getDefaultString("core.deployArmTemplates.ParameterNotExist", parameterFilePath),
       getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
     );
-    const returnError = new Error(
-      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
-    );
-    throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
+    ctx.logProvider?.error(error.message);
+    throw error;
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath); // only expand secrets in memory
@@ -790,13 +824,14 @@ export async function getParameterJsonV3(
   try {
     await fs.stat(parameterFilePath);
   } catch (err) {
-    ctx.logProvider?.error(
+    const error = new UserError(
+      SolutionSource,
+      "ParameterFileNotExist",
+      getDefaultString("core.deployArmTemplates.ParameterNotExist", parameterFilePath),
       getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
     );
-    const returnError = new Error(
-      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
-    );
-    throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
+    ctx.logProvider?.error(error.message);
+    throw error;
   }
 
   const parameterJson = await getExpandedParameterV3(ctx, envInfo, parameterFilePath); // only expand secrets in memory
@@ -1031,20 +1066,22 @@ async function persistBicepTemplates(
             Object.keys(appendParam).includes(val)
           );
           if (duplicateParam && duplicateParam.length != 0) {
-            const duplicateParamError = new Error(
-              getLocalizedString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                duplicateParam
-              )
-            );
             return err(
-              returnUserError(
-                duplicateParamError,
-                SolutionSource,
-                SolutionError.FailedToUpdateArmParameters,
-                HelpLinks.ArmHelpLink
-              )
+              new UserError({
+                name: SolutionError.FailedToUpdateArmParameters,
+                source: SolutionSource,
+                helpLink: HelpLinks.ArmHelpLink,
+                message: getDefaultString(
+                  "core.generateArmTemplates.DuplicateParameter",
+                  parameterEnvFilePath,
+                  duplicateParam
+                ),
+                displayMessage: getLocalizedString(
+                  "core.generateArmTemplates.DuplicateParameter",
+                  parameterEnvFilePath,
+                  duplicateParam
+                ),
+              })
             );
           }
           parameterFile.parameters.provisionParameters.value = Object.assign(
@@ -1053,20 +1090,22 @@ async function persistBicepTemplates(
           );
           parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
-          const parameterFileError = new Error(
-            getLocalizedString(
-              "core.generateArmTemplates.InvalidParameterFile",
-              parameterEnvFilePath,
-              (error as Error).message
-            )
-          );
           return err(
-            returnUserError(
-              parameterFileError,
-              SolutionSource,
-              SolutionError.FailedToUpdateArmParameters,
-              HelpLinks.ArmHelpLink
-            )
+            new UserError({
+              name: SolutionError.FailedToUpdateArmParameters,
+              source: SolutionSource,
+              helpLink: HelpLinks.ArmHelpLink,
+              message: getDefaultString(
+                "core.generateArmTemplates.InvalidParameterFile",
+                parameterEnvFilePath,
+                (error as Error).message
+              ),
+              displayMessage: getLocalizedString(
+                "core.generateArmTemplates.InvalidParameterFile",
+                parameterEnvFilePath,
+                (error as Error).message
+              ),
+            })
           );
         }
       } else {
@@ -1177,17 +1216,19 @@ async function getResourceManagementClientForArmDeployment(
 ): Promise<ResourceManagementClient> {
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
   if (!azureToken) {
-    throw returnSystemError(
-      new Error(getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")),
+    throw new SystemError(
       PluginDisplayName.Solution,
-      SolutionError.FailedToGetAzureCredential
+      SolutionError.FailedToGetAzureCredential,
+      getDefaultString("core.deployArmTemplates.InvalidAzureCredential"),
+      getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")
     );
   }
   if (!subscriptionId) {
-    throw returnSystemError(
-      new Error(getLocalizedString("core.deployArmTemplates.FailedToGetSubsId")),
+    throw new SystemError(
       PluginDisplayName.Solution,
-      SolutionError.NoSubscriptionSelected
+      SolutionError.NoSubscriptionSelected,
+      getDefaultString("core.deployArmTemplates.FailedToGetSubsId"),
+      getLocalizedString("core.deployArmTemplates.FailedToGetSubsId")
     );
   }
   return new ResourceManagementClient(azureToken, subscriptionId);
@@ -1479,14 +1520,22 @@ export async function wrapGetDeploymentError(
     deployCtx.ctx.logProvider?.error(
       getLocalizedString("core.deployArmTemplates.FailedToGetDeploymentError", error.message)
     );
-    const returnError = new Error(
-      getLocalizedString(
-        "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
-        deployCtx.deploymentName,
-        deployCtx.resourceGroupName
+    return err(
+      new UserError(
+        SolutionSource,
+        "GetDeploymentErrorFailed",
+        getDefaultString(
+          "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
+          deployCtx.deploymentName,
+          deployCtx.resourceGroupName
+        ),
+        getLocalizedString(
+          "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
+          deployCtx.deploymentName,
+          deployCtx.resourceGroupName
+        )
       )
     );
-    return err(returnUserError(returnError, SolutionSource, "GetDeploymentErrorFailed"));
   }
 }
 

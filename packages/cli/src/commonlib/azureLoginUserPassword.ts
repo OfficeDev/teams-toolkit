@@ -10,7 +10,7 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import dotenv from "dotenv";
 
-import { returnUserError, AzureAccountProvider, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
 
@@ -143,10 +143,10 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
         return;
       }
     }
-    throw returnUserError(
-      new Error(`Inputed subscription not found in your tenant`),
+    throw new UserError(
       "CI",
-      "NotFoundSubscriptionId"
+      "NotFoundSubscriptionId",
+      "Inputed subscription not found in your tenant"
     );
   }
 

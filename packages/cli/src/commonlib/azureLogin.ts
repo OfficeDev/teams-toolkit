@@ -495,7 +495,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       if (AzureAccountManager.codeFlowInstance.account && !AzureAccountManager.subscriptionId) {
         const subscriptionList = await this.listSubscriptions();
         if (!subscriptionList || subscriptionList.length === 0) {
-          throw new UserError(noSubscriptionFound, failToFindSubscription, loginComponent);
+          throw new UserError(loginComponent, noSubscriptionFound, failToFindSubscription);
         }
         if (subscriptionList && subscriptionList.length === 1) {
           await this.setSubscription(subscriptionList[0].subscriptionId);

@@ -292,15 +292,8 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
-      return err(
-        new SystemError(
-          GetConfigError.name,
-          GetConfigError.message(
-            ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-          ),
-          Plugins.pluginNameShort
-        )
-      );
+      const msgs = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      return err(new SystemError(Plugins.pluginNameShort, GetConfigError.name, msgs[0], msgs[1]));
     }
 
     const owners = await AadAppClient.listCollaborator(
@@ -330,18 +323,10 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
-      return err(
-        new SystemError(
-          GetConfigError.name,
-          getPermissionErrorMessage(
-            GetConfigError.message(
-              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-            ),
-            false
-          ),
-          Plugins.pluginNameShort
-        )
-      );
+      const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      const msgs0 = getPermissionErrorMessage(params[0], false);
+      const msgs1 = getPermissionErrorMessage(params[1], false);
+      return err(new SystemError(Plugins.pluginNameShort, GetConfigError.name, msgs0, msgs1));
     }
 
     const userObjectId = userInfo.aadId;
@@ -377,18 +362,10 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
-      return err(
-        new SystemError(
-          GetConfigError.name,
-          getPermissionErrorMessage(
-            GetConfigError.message(
-              ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-            ),
-            true
-          ),
-          Plugins.pluginNameShort
-        )
-      );
+      const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      const msg0 = getPermissionErrorMessage(params[0], true);
+      const msg1 = getPermissionErrorMessage(params[1], true);
+      return err(new SystemError(Plugins.pluginNameShort, GetConfigError.name, msg0, msg1));
     }
 
     const userObjectId = userInfo.aadId;

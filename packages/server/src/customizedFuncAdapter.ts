@@ -55,7 +55,7 @@ export async function callFunc(
       return err(assembleError(e));
     }
   }
-  return err(new SystemError("FuncNotFound", `Function not found, id: ${id}`, "FxCoreServer"));
+  return err(new SystemError("FxCoreServer", "FuncNotFound", `Function not found, id: ${id}`));
 }
 
 export function reset(): void {

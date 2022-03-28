@@ -92,7 +92,10 @@ export class CICDPluginV2 implements ResourcePlugin {
 
       const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
-        throw new InternalError("Failed to list multi env.", envProfilesResult.error);
+        throw new InternalError(
+          ["Failed to list multi env.", "Failed to list multi env."],
+          envProfilesResult.error
+        );
       }
 
       const whichEnvironment: SingleSelectQuestion = {
@@ -168,8 +171,17 @@ export class CICDPluginV2 implements ResourcePlugin {
       if (e instanceof PluginError) {
         const result =
           e.errorType === ErrorType.System
-            ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-            : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+            ? ResultFactory.SystemError(
+                e.name,
+                [e.genDefaultMessage(), e.genMessage()],
+                e.innerError
+              )
+            : ResultFactory.UserError(
+                e.name,
+                [e.genDefaultMessage(), e.genMessage()],
+                e.showHelpLink,
+                e.innerError
+              );
         sendTelemetry &&
           telemetryHelper.sendResultEvent(
             context,
@@ -189,7 +201,7 @@ export class CICDPluginV2 implements ResourcePlugin {
             name,
             ResultFactory.SystemError(
               UnhandledErrorCode,
-              `Got an unhandled error: ${e.message}`,
+              [`Got an unhandled error: ${e.message}`, `Got an unhandled error: ${e.message}`],
               e.innerError
             ),
             this.cicdImpl.commonProperties

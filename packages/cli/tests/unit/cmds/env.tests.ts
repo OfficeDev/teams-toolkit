@@ -12,7 +12,6 @@ import {
   LogLevel,
   ok,
   Result,
-  returnUserError,
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -237,11 +236,8 @@ describe("Env Add Command Tests", function () {
     validProject = true;
     const cmd = new Env();
     const addCmd = getCommand(cmd, CommandName.Add);
-    createEnvError = returnUserError(
-      new Error("mock createEnv error"),
-      "CLII",
-      "MockCreateEnvError"
-    );
+    createEnvError = new UserError("CLII", "MockCreateEnvError", "mock createEnv error");
+
     let exceptionThrown = false;
     const args = {
       name: "production",

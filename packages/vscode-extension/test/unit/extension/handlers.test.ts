@@ -364,7 +364,7 @@ suite("handlers", () => {
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const decrypt = sinon.stub(handlers.core, "decrypt");
-      decrypt.returns(Promise.resolve(err(new UserError("fake error", "", ""))));
+      decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
       const editBuilder = sinon.spy();

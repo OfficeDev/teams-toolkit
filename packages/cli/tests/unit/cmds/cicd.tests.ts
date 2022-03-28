@@ -61,7 +61,7 @@ describe("Add CICD Command Tests", function () {
     });
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 

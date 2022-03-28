@@ -532,13 +532,13 @@ export const EnvStateFileNameTemplate: string;
 // @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
+    displayMessage?: string;
+    // (undocumented)
     error?: Error;
     // (undocumented)
     message?: string;
     // (undocumented)
     name?: string;
-    // (undocumented)
-    notificationMessage?: string;
     // (undocumented)
     source?: string;
     // (undocumented)
@@ -1242,12 +1242,6 @@ export type ResourceTemplates = {
     [k: string]: ResourceTemplate | undefined;
 };
 
-// @public (undocumented)
-export function returnSystemError(e: Error, source: string, name: string, issueLink?: string, innerError?: any): SystemError;
-
-// @public (undocumented)
-export function returnUserError(e: Error, source: string, name: string, helpLink?: string, innerError?: any): UserError;
-
 // @public
 export interface RunnableTask<T> {
     cancel?(): void;
@@ -1427,6 +1421,8 @@ export enum Stage {
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
+    addCiCdFlow = "addCiCdFlow",
+    // (undocumented)
     addFeature = "addFeature",
     // (undocumented)
     addResource = "addResource",
@@ -1518,12 +1514,11 @@ export type SubscriptionInfo = {
 
 // @public
 export class SystemError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, issueLink?: string, notificationMessage?: string);
     constructor(opt: SystemErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any, notificationMessage?: string);
+    constructor(source: string, name: string, message: string, displayMessage?: string);
+    displayMessage?: string;
     innerError?: any;
     issueLink?: string;
-    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1730,12 +1725,11 @@ export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, helpLink?: string, notificationMessage?: string);
     constructor(opt: UserErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any, notificationMessage?: string);
+    constructor(source: string, name: string, message: string, displayMessage?: string);
+    displayMessage?: string;
     helpLink?: string;
     innerError?: any;
-    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;

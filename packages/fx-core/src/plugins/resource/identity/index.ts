@@ -4,13 +4,11 @@ import {
   Plugin,
   ok,
   AzureSolutionSettings,
-  Func,
   Result,
   FxError,
   SystemError,
   UserError,
   err,
-  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { Constants, IdentityBicep, IdentityBicepFile, Telemetry } from "./constants";
 import { getTemplatesFolder } from "../../../folder";
@@ -103,7 +101,9 @@ export class IdentityPlugin implements Plugin {
       if (e instanceof SystemError || e instanceof UserError) {
         res = err(e);
       } else {
-        res = err(returnSystemError(e, Constants.pluginNameShort, "UnhandledError"));
+        res = err(
+          new SystemError({ error: e, source: Constants.pluginNameShort, name: "UnhandledError" })
+        );
       }
       const errorCode = res.error.source + "." + res.error.name;
       const errorType =

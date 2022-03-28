@@ -127,10 +127,16 @@ export class FrontendPlugin implements Plugin {
       if (e instanceof FrontendPluginError) {
         const error =
           e.errorType === ErrorType.User
-            ? ErrorFactory.UserError(e.code, e.getMessage(), undefined, undefined, e.helpLink)
+            ? ErrorFactory.UserError(
+                e.code,
+                [e.getDefaultMessage(), e.getMessage()],
+                undefined,
+                undefined,
+                e.helpLink
+              )
             : ErrorFactory.SystemError(
                 e.code,
-                e.getMessage(),
+                [e.getDefaultMessage(), e.getMessage()],
                 e.getInnerError(),
                 e.getInnerError()?.stack
               );
@@ -143,7 +149,12 @@ export class FrontendPlugin implements Plugin {
         return err(e);
       }
 
-      const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);
+      const error = ErrorFactory.SystemError(
+        UnhandledErrorCode,
+        [UnhandledErrorMessage, UnhandledErrorMessage],
+        e,
+        e.stack
+      );
       TelemetryHelper.sendErrorEvent(stage, error, properties);
       return err(error);
     }

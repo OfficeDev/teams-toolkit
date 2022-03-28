@@ -7,13 +7,8 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import {
-  returnSystemError,
-  returnUserError,
-  UserError,
-  LogLevel,
-  Colors,
-} from "@microsoft/teamsfx-api";
+import { UserError, LogLevel, Colors, SystemError } from "@microsoft/teamsfx-api";
+
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -162,17 +157,18 @@ export class CodeFlowLogin {
         })
         .catch((error) => {
           CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
-          deferredRedirect.reject(new UserError(error, ErrorMessage.loginComponent));
+          deferredRedirect.reject(new UserError({ error, source: ErrorMessage.loginComponent }));
+
           res.status(500).send(error);
         });
     });
 
     const codeTimer = setTimeout(() => {
       deferredRedirect.reject(
-        returnUserError(
-          new Error(ErrorMessage.loginTimeoutDescription),
+        new UserError(
           ErrorMessage.loginComponent,
-          ErrorMessage.loginTimeoutTitle
+          ErrorMessage.loginTimeoutTitle,
+          ErrorMessage.loginTimeoutDescription
         )
       );
     }, 5 * 60 * 1000);
@@ -358,10 +354,10 @@ export class CodeFlowLogin {
     );
     const portTimer = setTimeout(() => {
       defferedPort.reject(
-        returnSystemError(
-          new Error(ErrorMessage.loginPortConflictDescription),
+        new SystemError(
           ErrorMessage.loginComponent,
-          ErrorMessage.loginPortConflictTitle
+          ErrorMessage.loginPortConflictTitle,
+          ErrorMessage.loginPortConflictDescription
         )
       );
     }, 5000);
@@ -421,25 +417,21 @@ async function sendFile(
 }
 
 export function LoginFailureError(innerError?: any): UserError {
-  return new UserError(
-    ErrorMessage.loginCodeFlowFailureTitle,
-    ErrorMessage.loginCodeFlowFailureDescription,
-    ErrorMessage.loginComponent,
-    new Error().stack,
-    undefined,
-    innerError
-  );
+  return new UserError({
+    name: ErrorMessage.loginCodeFlowFailureTitle,
+    message: ErrorMessage.loginCodeFlowFailureDescription,
+    source: ErrorMessage.loginComponent,
+    error: innerError,
+  });
 }
 
 export function LoginCodeFlowError(innerError?: any): UserError {
-  return new UserError(
-    ErrorMessage.loginCodeFlowFailureTitle,
-    ErrorMessage.loginCodeFlowFailureDescription,
-    ErrorMessage.loginComponent,
-    new Error().stack,
-    undefined,
-    innerError
-  );
+  return new UserError({
+    name: ErrorMessage.loginCodeFlowFailureTitle,
+    message: ErrorMessage.loginCodeFlowFailureDescription,
+    source: ErrorMessage.loginComponent,
+    error: innerError,
+  });
 }
 
 export function ConvertTokenToJson(token: string): any {

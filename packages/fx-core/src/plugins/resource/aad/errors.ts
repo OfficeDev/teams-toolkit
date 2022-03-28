@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as util from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ConfigKeys, Plugins } from "./constants";
 
@@ -60,6 +61,11 @@ export const CreateSecretError: AadError = {
 export const UpdateRedirectUriError: AadError = {
   name: "UpdateRedirectUriError",
   message: () => getLocalizedString("error.aad.UpdateRedirectUriError"),
+};
+
+export const UpdateAadAppError: AadError = {
+  name: "UpdateAadAppError",
+  message: (reason: string) => `Failed to update application in Azure Active Directory: ${reason}`,
 };
 
 export const UpdateAppIdUriError: AadError = {
@@ -149,6 +155,17 @@ export const GrantPermissionError: AadError = {
 export const ListCollaboratorError: AadError = {
   name: "ListCollaboratorError",
   message: () => getLocalizedString("error.aad.ListCollaboratorError"),
+};
+
+export const AadManifestNotFoundError: AadError = {
+  name: "AadManifestNotFoundError",
+  message: () => "Aad manifest file not found",
+};
+
+export const AadManifestLoadError: AadError = {
+  name: "AadManifestLoadError",
+  message: (manifestPath: string, reason: string) =>
+    util.format("Failed to load manifest file from %s, due to %s", manifestPath, reason),
 };
 
 export class ConfigErrorMessages {

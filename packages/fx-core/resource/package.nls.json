@@ -470,6 +470,7 @@
   "plugins.aad.UpdatePermissionHelpMessage": "update the permission under \"API permissions\"",
   "plugins.aad.UpdateAppIdUriHelpMessage": "set \"%s\" as \"Application ID URI\" under \"Expose an API\"",
   "plugins.aad.UpdateRedirectUriHelpMessage": "set \"%s\" as \"Redirect URIs\" under \"Authentication\"",
+  "plugins.aad.UpdateAadHelpMessage": "update Azure AD app manifest",
   "plugins.apim.QuestionConstants.VSCode.OpenApiDocument.description": "Select Open API document.",
   "plugins.apim.QuestionConstants.VSCode.ApiPrefix.description": "Input the API name prefix.",
   "plugins.apim.QuestionConstants.VSCode.ApiPrefix.prompt": "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.",

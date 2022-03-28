@@ -7,7 +7,7 @@ import yargs, { Options } from "yargs";
 import { FxError, Inputs, LogLevel, ok, Func } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
-import Add, { AddCICD } from "../../../src/cmds/add";
+import Add from "../../../src/cmds/add";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
@@ -16,13 +16,13 @@ import { expect } from "../utils";
 
 describe("Add CICD Command Tests", function () {
   const sandbox = sinon.createSandbox();
-  let registeredCommands: string[] = [];
+  const registeredCommands: string[] = [];
   let options: string[] = [];
-  let positionals: string[] = [];
-  let telemetryEvents: string[] = [];
-  let logs: string[] = [];
+  const positionals: string[] = [];
+  const telemetryEvents: string[] = [];
+  const logs: string[] = [];
 
-  before(() => {
+  beforeEach(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });
@@ -65,21 +65,13 @@ describe("Add CICD Command Tests", function () {
     sandbox.restore();
   });
 
-  beforeEach(() => {
-    registeredCommands = [];
-    options = [];
-    positionals = [];
-    telemetryEvents = [];
-    logs = [];
-  });
-
   it("Builder Check", () => {
-    const cmd = new AddCICD();
+    const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["add <feature>", "cicd"]);
   });
 
-  it("CICD Command Running Check", async () => {
+  it("Add CICD Command Running Check", async () => {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

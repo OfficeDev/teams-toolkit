@@ -31,6 +31,9 @@ export enum TelemetryEvent {
   BuildStart = "build-start",
   Build = "build",
 
+  AddCICDStart = "add-cicd-start",
+  AddCICD = "add-cicd",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 

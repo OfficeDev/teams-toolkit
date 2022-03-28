@@ -68,7 +68,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
     // add CI CD workflows for minimal app is not supported.
-    if (ctx.projectSetting && isPureExistingApp(ctx.projectSetting)) {
+    if (inputs.platform !== Platform.CLI_HELP && isPureExistingApp(ctx.projectSetting)) {
       throw new NoCapabilityFoundError("add CI CD workflows");
     }
 

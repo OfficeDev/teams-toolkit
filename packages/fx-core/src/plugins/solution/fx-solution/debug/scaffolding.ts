@@ -196,7 +196,7 @@ export async function _scaffoldLocalDebugSettings(
 
       await fs.writeJSON(
         `${inputs.projectPath}/.vscode/settings.json`,
-        Settings.generateSettings(includeBackend),
+        Settings.generateSettings(includeBackend || includeFuncHostedBot),
         {
           spaces: 4,
           EOL: os.EOL,

@@ -31,8 +31,8 @@ import * as util from "util";
 import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { OperationNotPermittedError } from "../../../../core/error";
-import { CoreQuestionNames } from "../../../../core/question";
+import { InvalidInputError, OperationNotPermittedError } from "../../../../core/error";
+import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -56,11 +56,13 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
   SsoItem,
   TabNonSsoItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -241,6 +243,7 @@ export async function addCapability(
 
   // 1. checking addable
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let isMiniApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -258,6 +261,7 @@ export async function addCapability(
         spaces: 4,
       });
     }
+    isMiniApp = true;
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: Inputs = {
@@ -281,6 +285,15 @@ export async function addCapability(
     });
     return ok({});
   }
+  const validateRes = validateCapabilities(capabilitiesAnswer);
+  if (validateRes) {
+    return err(InvalidInputError(validateRes));
+  }
+  // add spfx tab is not permitted for non-mini app
+  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id)) {
+    return err(InvalidInputError(getLocalizedString("core.capability.validation.spfx")));
+  }
+
   // normalize capability answer
   const scenarios: BotScenario[] = [];
   const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
@@ -306,7 +319,7 @@ export async function addCapability(
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-
+  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxItem.id);
   if (isAadManifestEnabled()) {
     if (alreadyHasSso && toAddTabNonSso) {
       const e = new SystemError(
@@ -394,7 +407,7 @@ export async function addCapability(
   }
 
   // 4. check Tab
-  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+  if (toAddTab) {
     if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasTab) {
@@ -424,7 +437,7 @@ export async function addCapability(
     newCapabilitySet.add(TabOptionItem.id);
   }
   // 5. check Bot
-  if (capabilitiesAnswer.includes(BotOptionItem.id)) {
+  if (toAddBot) {
     if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasBot && !alreadyHasME) {
@@ -454,7 +467,7 @@ export async function addCapability(
     newCapabilitySet.add(BotOptionItem.id);
   }
   // 6. check MessageExtension
-  if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
+  if (toAddME) {
     if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasBot && !alreadyHasME) {
@@ -482,6 +495,14 @@ export async function addCapability(
     }
     capabilitiesToAddManifest.push({ name: "MessageExtension" });
     newCapabilitySet.add(MessageExtensionItem.id);
+  }
+
+  // 6.5 check SPFx
+  if (toAddSpfx) {
+    pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
+    capabilitiesToAddManifest.push({ name: "staticTab" });
+    newCapabilitySet.add(TabSPFxItem.id);
+    solutionSettings.hostType = HostTypeOptionSPFx.id;
   }
 
   // 7. update solution settings

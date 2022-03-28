@@ -65,8 +65,8 @@ export const APIKeyAuthOption: OptionItem = {
   detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
 };
 
-export const OtherAuthOPtion: OptionItem = {
-  id: "other",
-  label: "Self define Authentication",
-  detail: getLocalizedString("plugins.apiConnector.SelfAuthOption.detail"),
+export const ImplementMyselfOption: OptionItem = {
+  id: "ImplementMyself",
+  label: "Implement authentication by myself",
+  detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
 };

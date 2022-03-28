@@ -6,6 +6,7 @@ import * as fse from "fs-extra";
 import { Constants, LanguageType, FileType } from "./constants";
 import { getTemplatesFolder } from "../../../folder";
 import { ApiConnectorResult, ResultFactory } from "./result";
+import { ApiConnectorConfiguration } from "./utils";
 export class SampleHandler {
   private readonly projectRoot: string;
   private readonly laguageType: FileType;
@@ -20,7 +21,7 @@ export class SampleHandler {
     return this.laguageType;
   }
 
-  public async generateSampleCode(): Promise<ApiConnectorResult> {
+  public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
     const fileSuffix: string = this.getFileType();
     const sampleCodeDirectory = path.join(
       getTemplatesFolder(),
@@ -30,7 +31,7 @@ export class SampleHandler {
       "sample",
       fileSuffix
     );
-    const fileName: string = Constants.pluginNameShort + "." + fileSuffix;
+    const fileName: string = config.APIName + "." + fileSuffix;
     await fse.copyFile(
       path.join(sampleCodeDirectory, fileName),
       path.join(this.projectRoot, this.component, fileName)

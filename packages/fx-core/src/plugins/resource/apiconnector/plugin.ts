@@ -20,22 +20,22 @@ import {
   CertAuthOption,
   AADAuthOption,
   APIKeyAuthOption,
-  OtherAuthOPtion,
+  ImplementMyselfOption,
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
-      throw ResultFactory.SystemError(
-        ErrorMessage.ApiConnectorPathError.name,
-        ErrorMessage.ApiConnectorPathError.message("")
+      throw ResultFactory.UserError(
+        ErrorMessage.InvalidProjectError.name,
+        ErrorMessage.InvalidProjectError.message()
       );
     }
     const projectPath = inputs.projectPath;
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
-    for (const componentItem in config.ComponentPath) {
+    for (const componentItem of config.ComponentPath) {
       await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
       await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
       // await this.addSDKDependency(ComponentPath);
@@ -73,7 +73,7 @@ export class ApiConnectorImpl {
     languageType: string
   ): Promise<ApiConnectorResult> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
-    await sampleHandler.generateSampleCode();
+    await sampleHandler.generateSampleCode(config);
     return ResultFactory.Success();
   }
 
@@ -86,7 +86,10 @@ export class ApiConnectorImpl {
       options.push(functionOption);
     }
     if (options.length === 0) {
-      throw ResultFactory.UserError("no bot plugin or func plugin", "no bot plugin or func plugin");
+      throw ResultFactory.UserError(
+        ErrorMessage.NoValidCompoentExistError.name,
+        ErrorMessage.NoValidCompoentExistError.message()
+      );
     }
     const whichComponent = new QTreeNode({
       name: Constants.questionKey.componentsSelect,
@@ -113,7 +116,7 @@ export class ApiConnectorImpl {
         CertAuthOption,
         AADAuthOption,
         APIKeyAuthOption,
-        OtherAuthOPtion,
+        ImplementMyselfOption,
       ],
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
     });

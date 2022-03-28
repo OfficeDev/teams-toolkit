@@ -40,8 +40,8 @@ export enum TelemetryEvent {
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
 
-  AddApiConnectorStart = "add-api-connector-start",
-  AddApiConnector = "add-api-connector",
+  ConnectExistingApiStart = "connect-exist-api-start",
+  ConnectExistingApi = "aconnect-exist-api",
 
   EditManifestTemplate = "edit-manifest-template",
 

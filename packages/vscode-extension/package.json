@@ -469,8 +469,8 @@
         "title": "%teamstoolkit.commands.validateManifest.title%"
       },
       {
-        "command": "fx-extension.addApiConnector",
-        "title": "%teamstoolkit.commands.addApiConnector.title%"
+        "command": "fx-extension.connectExistingApi",
+        "title": "%teamstoolkit.commands.connectExistingApi.title%"
       },
       {
         "command": "fx-extension.build",

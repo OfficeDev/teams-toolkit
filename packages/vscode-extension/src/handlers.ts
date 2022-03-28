@@ -591,25 +591,25 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   return result;
 }
 
-export async function addApiConnectorHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function connectExistingApiHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.AddApiConnectorStart,
+    TelemetryEvent.ConnectExistingApiStart,
     getTriggerFromProperty(args)
   );
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-api-connector",
-    method: "addApiConnector",
+    method: "connectExistingApi",
     params: {},
   };
 
-  const res = await runUserTask(func, TelemetryEvent.AddApiConnector, true);
+  const res = await runUserTask(func, TelemetryEvent.ConnectExistingApi, true);
   if (!res.isOk()) {
     showError(res.error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddApiConnector, res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, res.error);
     return err(res.error);
   }
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddApiConnector, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ConnectExistingApi, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
   return ok(null);

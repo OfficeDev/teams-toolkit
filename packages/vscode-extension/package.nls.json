@@ -76,7 +76,7 @@
     "teamstoolkit.commands.updateManifest.title": "Teams: Update manifest to Teams platform",
     "teamstoolkit.commands.upgradeProject.title": "Teams: Upgrade project",
     "teamstoolkit.commands.validateManifest.title": "Teams: Validate manifest file",
-    "teamstoolkit.commands.addApiConnector.title": "Teams: Connect to an API",
+    "teamstoolkit.commands.connectExistingApi.title": "Teams: Connect to an API",
     "teamstoolkit.commands.viewSamples.title": "Teams: View samples",
     "teamstoolkit.commands.zipPackage.title": "Teams: Zip Teams metadata package",
     "teamstoolkit.commands.addSso.title": "Teams: Add SSO",

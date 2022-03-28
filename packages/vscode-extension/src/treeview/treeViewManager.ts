@@ -72,7 +72,6 @@ class TreeViewManager {
       return this.registerTreeViewsForTeamsFxProject(workspacePath);
     } else {
       // No need to register TreeView because walkthrough is enabled.
-      // return this.registerTreeViewsForNonTeamsFxProject();
     }
     return [];
   }
@@ -422,19 +421,6 @@ class TreeViewManager {
         this.commandMap.set(command.commandId, [command, treeViewProvider]);
       }
     }
-  }
-
-  private async registerTreeViewsForNonTeamsFxProject() {
-    const disposables: vscode.Disposable[] = [];
-
-    this.registerAccount(disposables);
-    this.registerEnvironment(disposables);
-    const developmentCommands = this.getDevelopmentCommands(false, false);
-    this.registerDevelopment(developmentCommands, disposables);
-    this.registerDeployment(disposables);
-    this.registerHelper(disposables);
-
-    return disposables;
   }
 }
 

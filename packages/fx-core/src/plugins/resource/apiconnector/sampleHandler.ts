@@ -2,11 +2,15 @@
 // Licensed under the MIT license.
 "use strict";
 import * as path from "path";
-import * as fse from "fs-extra";
+import * as fs from "fs-extra";
 import { Constants, LanguageType, FileType } from "./constants";
 import { getTemplatesFolder } from "../../../folder";
 import { ApiConnectorResult, ResultFactory } from "./result";
+import { returnSystemError } from "@microsoft/teamsfx-api";
+import { compileHandlebarsTemplateString } from "../../../common";
+import { ConstantString } from "../../../common/constants";
 import { ApiConnectorConfiguration } from "./utils";
+import { ErrorMessage } from "./errors";
 export class SampleHandler {
   private readonly projectRoot: string;
   private readonly laguageType: FileType;
@@ -23,7 +27,7 @@ export class SampleHandler {
 
   public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
     const fileSuffix: string = this.getFileType();
-    const sampleCodeDirectory = path.join(
+    const templateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
       "resource",
@@ -31,12 +35,23 @@ export class SampleHandler {
       "sample",
       fileSuffix
     );
-    const sampleFileName: string = Constants.pluginNameShort + "." + fileSuffix;
-    const targetFileName: string = config.APIName + "." + fileSuffix;
-    await fse.copyFile(
-      path.join(sampleCodeDirectory, sampleFileName),
-      path.join(this.projectRoot, this.component, targetFileName)
-    );
-    return ResultFactory.Success();
+    const templateName: string = Constants.pluginNameShort + ".template";
+    const templateFilePath = path.join(templateDirectory, templateName);
+    try {
+      const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+      const context = {
+        config: config,
+        capitalName: config.APIName.toUpperCase(),
+      };
+      const codeFile = compileHandlebarsTemplateString(templateString, context);
+      const codeFileName: string = config.APIName + "." + fileSuffix;
+      await fs.writeFile(path.join(this.projectRoot, this.component, codeFileName), codeFile);
+      return ResultFactory.Success();
+    } catch (error) {
+      throw ResultFactory.SystemError(
+        ErrorMessage.ApiConnectorSampleCodeCreateFailError.name,
+        ErrorMessage.ApiConnectorSampleCodeCreateFailError.message(templateFilePath, error.message)
+      );
+    }
   }
 }

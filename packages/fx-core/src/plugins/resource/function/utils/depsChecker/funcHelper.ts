@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, returnUserError } from "@microsoft/teamsfx-api";
+import { Inputs, UserError } from "@microsoft/teamsfx-api";
 import { DepsCheckerError } from "../../../../../common/deps-checker/depsError";
 import { defaultHelpLink } from "../../../../../common/deps-checker/constant/helpLink";
 import { Messages } from "../../../../../common/deps-checker/constant/message";
@@ -34,15 +34,16 @@ export class FuncHelper {
     const defaultAnchor = "report-issues";
     if (error instanceof DepsCheckerError) {
       const [helpLink, anchor] = this.splitHelpLink(error.helpLink);
-      return returnUserError(error, source, anchor || defaultAnchor, helpLink, error);
+      return new UserError({ error, source, name: anchor || defaultAnchor, helpLink });
     } else {
-      return returnUserError(
-        new Error(Messages.defaultErrorMessage),
+      return new UserError({
         source,
-        defaultAnchor,
-        defaultHelpLink,
-        error
-      );
+        name: defaultAnchor,
+        helpLink: defaultHelpLink,
+        error,
+        message: Messages.defaultErrorMessage[0],
+        displayMessage: Messages.defaultErrorMessage[1],
+      });
     }
   }
 

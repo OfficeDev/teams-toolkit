@@ -28,10 +28,16 @@ export class CICDProvider {
       throw new NoProjectOpenedError();
     }
     if (!Object.values<string>(TemplateKind).includes(templateName)) {
-      throw new InternalError(`${templateName} as template kind was not recognized.`);
+      throw new InternalError([
+        `${templateName} as template kind was not recognized.`,
+        `${templateName} as template kind was not recognized.`,
+      ]);
     }
     if (!this.sourceTemplateName || !this.targetTemplateName) {
-      throw new InternalError("sourceTemplateName or targetTemplateName shoudn't be undefined.");
+      throw new InternalError([
+        "sourceTemplateName or targetTemplateName shoudn't be undefined.",
+        "sourceTemplateName or targetTemplateName shoudn't be undefined.",
+      ]);
     }
 
     // 1. Ensure the target path is existing.
@@ -39,7 +45,10 @@ export class CICDProvider {
     try {
       await fs.ensureDir(targetPath);
     } catch (e) {
-      throw new FileSystemError(`Fail to create path: ${targetPath}`, e as Error);
+      throw new FileSystemError(
+        [`Fail to create path: ${targetPath}`, `Fail to create path: ${targetPath}`],
+        e as Error
+      );
     }
 
     // 2. Generate README file.
@@ -57,7 +66,10 @@ export class CICDProvider {
       try {
         await fs.copyFile(localReadMePath, targetReadMePath);
       } catch (e) {
-        throw new FileSystemError(`Fail to write file: ${targetReadMePath}`, e as Error);
+        throw new FileSystemError(
+          [`Fail to write file: ${targetReadMePath}`, `Fail to write file: ${targetReadMePath}`],
+          e as Error
+        );
       }
     }
 
@@ -93,7 +105,13 @@ export class CICDProvider {
       try {
         await fs.writeFile(targetTemplatePath, renderedContent);
       } catch (e) {
-        throw new FileSystemError(`Fail to write file: ${targetTemplatePath}`, e as Error);
+        throw new FileSystemError(
+          [
+            `Fail to write file: ${targetTemplatePath}`,
+            `Fail to write file: ${targetTemplatePath}`,
+          ],
+          e as Error
+        );
       }
     } else {
       return ok(true); // indicate that the template is existing before this scaffold.
@@ -104,13 +122,19 @@ export class CICDProvider {
 
   public async readLocalFile(localPath: string): Promise<string> {
     if (!(await fs.pathExists(localPath))) {
-      throw new InternalError(`local path: ${localPath} not found.`);
+      throw new InternalError([
+        `local path: ${localPath} not found.`,
+        `local path: ${localPath} not found.`,
+      ]);
     }
 
     try {
       return (await fs.readFile(localPath)).toString();
     } catch (e) {
-      throw new FileSystemError(`Fail to read file: ${localPath}`, e as Error);
+      throw new FileSystemError(
+        [`Fail to read file: ${localPath}`, `Fail to read file: ${localPath}`],
+        e as Error
+      );
     }
   }
 }

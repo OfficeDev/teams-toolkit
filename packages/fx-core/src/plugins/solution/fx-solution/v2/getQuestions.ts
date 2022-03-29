@@ -12,14 +12,14 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  returnUserError,
   Stage,
   TokenProvider,
+  UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { HelpLinks } from "../../../../common/constants";
-import { SolutionError, SolutionSource } from "../constants";
+import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
   AzureResourceApim,
@@ -35,6 +35,8 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -51,8 +53,11 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { handleSelectionConflict } from "../../../../core/question";
+import { isAadManifestEnabled } from "../../../../common";
+import { isBotNotificationEnabled } from "../../../../common";
 import { ProgrammingLanguageQuestion } from "../../../../core/question";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -75,6 +80,7 @@ export async function getQuestionsForScaffolding(
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
+        ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
       ],
     };
     if (!inputs.isM365) {
@@ -122,7 +128,10 @@ export async function getQuestionsForScaffolding(
           return "Invalid inputs";
         }
         const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-        if (cap.includes(TabOptionItem.id)) {
+        if (
+          cap.includes(TabOptionItem.id) ||
+          (isAadManifestEnabled() && cap.includes(TabNonSsoItem.id))
+        ) {
           return undefined;
         }
         return "Tab is not selected";
@@ -146,6 +155,7 @@ export async function getQuestionsForScaffolding(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+          // TODO(aochengwang): add a parent question node to prevent overwriting bot question.condition
           if (
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
@@ -257,12 +267,13 @@ export async function getQuestions(
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
         return err(
-          returnUserError(
-            new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
-            SolutionSource,
-            SolutionError.CannotDeployBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotDeployBeforeProvision,
+            message: getDefaultString("core.deploy.FailedToDeployBeforeProvision"),
+            displayMessage: getLocalizedString("core.deploy.FailedToDeployBeforeProvision"),
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }
@@ -272,7 +283,11 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter((plugin) => !!plugin.deploy);
+    plugins = plugins.filter(
+      (plugin) =>
+        !!plugin.deploy &&
+        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
+    );
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }
@@ -315,13 +330,17 @@ export async function getQuestions(
         const errorMsg = isAzure
           ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
           : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
+        const defaultMsg = isAzure
+          ? getDefaultString("core.publish.FailedToPublishBeforeProvision")
+          : getDefaultString("core.publish.SPFxAskProvisionBeforePublish");
         return err(
-          returnUserError(
-            new Error(errorMsg),
-            SolutionSource,
-            SolutionError.CannotPublishBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotPublishBeforeProvision,
+            message: defaultMsg,
+            displayMessage: errorMsg,
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }
@@ -361,7 +380,7 @@ export async function getQuestionsForUserTask(
   const namespace = func.namespace;
   const array = namespace.split("/");
   if (func.method === "addCapability") {
-    return await getQuestionsForAddCapability(ctx, inputs);
+    return await getQuestionsForAddCapability(ctx, inputs, func, envInfo, tokenProvider);
   }
   if (func.method === "addResource") {
     return await getQuestionsForAddResource(ctx, inputs, func, envInfo, tokenProvider);
@@ -377,9 +396,39 @@ export async function getQuestionsForUserTask(
   return ok(undefined);
 }
 
+async function validateAddCapability(input: string[]): Promise<string | undefined> {
+  if (
+    input.includes(NotificationOptionItem.id) &&
+    input.includes(CommandAndResponseOptionItem.id)
+  ) {
+    return getLocalizedString("core.addCapabilityQuestion.notificationCommandAndResponseConflict");
+  }
+
+  // undefined for success
+  return undefined;
+}
+
+async function onDidChangeSelectionForAddCapability(
+  currentSelectedIds: Set<string>,
+  previousSelectedIds: Set<string>
+): Promise<Set<string>> {
+  return handleSelectionConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    previousSelectedIds,
+    currentSelectedIds
+  );
+}
+
 export async function getQuestionsForAddCapability(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: Inputs,
+  func: Func,
+  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+  tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
@@ -388,11 +437,21 @@ export async function getQuestionsForAddCapability(
     type: "multiSelect",
     staticOptions: [],
     default: [],
+    validation: {
+      validFunc: validateAddCapability,
+    },
+    onDidChangeSelection: onDidChangeSelectionForAddCapability,
   };
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     // For CLI_HELP
-    addCapQuestion.staticOptions = [TabOptionItem, BotOptionItem, MessageExtensionItem];
+    addCapQuestion.staticOptions = [
+      TabOptionItem,
+      BotOptionItem,
+      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
+      MessageExtensionItem,
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+    ];
     return ok(new QTreeNode(addCapQuestion));
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
@@ -436,11 +495,48 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem);
-  if (isBotAddable) options.push(BotOptionItem);
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(TabOptionItem);
+    } else {
+      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+    }
+  }
+  if (isBotAddable) {
+    options.push(BotOptionItem);
+    if (isBotNotificationEnabled()) {
+      options.push(NotificationOptionItem);
+      options.push(CommandAndResponseOptionItem);
+    }
+  }
   if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
+
+  if (isBotNotificationEnabled()) {
+    // Hardcoded to call bot plugin to get notification trigger questions.
+    // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+    // V3 will not need this hardcoding.
+    const pluginMap = getAllV2ResourcePluginMap();
+    const plugin = pluginMap.get(PluginNames.BOT);
+    if (plugin && plugin.getQuestionsForUserTask) {
+      const result = await plugin.getQuestionsForUserTask(
+        ctx,
+        inputs,
+        func,
+        envInfo,
+        tokenProvider
+      );
+      if (result.isErr()) {
+        return result;
+      }
+      const botQuestionNode = result.value;
+      if (botQuestionNode) {
+        addCapNode.addChild(botQuestionNode);
+      }
+    }
+  }
+
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);

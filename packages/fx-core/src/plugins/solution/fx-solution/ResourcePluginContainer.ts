@@ -4,8 +4,8 @@ import {
   v2,
   AzureSolutionSettings,
   Plugin,
-  returnUserError,
   ProjectSettings,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
@@ -107,10 +107,10 @@ export function getActivatedResourcePlugins(solutionSettings: AzureSolutionSetti
     (p) => p.activate && p.activate(solutionSettings) === true
   );
   if (activatedPlugins.length === 0) {
-    throw returnUserError(
-      new Error(`No plugin selected`),
+    throw new UserError(
       SolutionSource,
-      SolutionError.NoResourcePluginSelected
+      SolutionError.NoResourcePluginSelected,
+      "No plugin selected"
     );
   }
   return activatedPlugins;

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
+import { ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 
 import Telemetry, { CliTelemetry } from "../../../src/telemetry/cliTelemetry";
@@ -85,12 +85,12 @@ describe("Telemetry", function () {
     });
 
     it("UserError", () => {
-      const userError = returnUserError(new Error("UserError"), "ut", "user");
+      const userError = new UserError("ut", "user", "UserError");
       Telemetry.sendTelemetryErrorEvent("UserError", userError);
     });
 
     it("SystemError", () => {
-      const systemError = returnSystemError(new Error("SystemError"), "ut", "system");
+      const systemError = new SystemError("ut", "system", "SystemError");
       Telemetry.sendTelemetryErrorEvent("SystemError", systemError);
     });
   });

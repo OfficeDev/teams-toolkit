@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -882,6 +882,11 @@
             "type": "boolean",
             "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
             "default": false
+          },
+          "fx-extension.enableNotification / CommandAndResponseBot": {
+            "type": "boolean",
+            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
+            "default": false
           }
         }
       }
@@ -1070,8 +1075,8 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.17.0",
-    "@microsoft/teamsfx-core": "^1.6.0",
+    "@microsoft/teamsfx-api": "^0.17.1",
+    "@microsoft/teamsfx-core": "^1.6.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "ajv": "^8.5.0",

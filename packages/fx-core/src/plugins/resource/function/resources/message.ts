@@ -1,83 +1,118 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { FunctionPluginPathInfo as PathInfo } from "../constants";
 
 export class InfoMessages {
-  public static readonly askNodeVersion: string = "Select Node version for the function app.";
-  public static readonly askFunctionName: string = "Provide a function name.";
+  public static readonly askNodeVersion: string = getLocalizedString(
+    "plugins.function.askNodeVersion"
+  );
+  public static readonly askFunctionName: string = getLocalizedString(
+    "plugins.function.askFunctionName"
+  );
 
-  public static readonly checkDotNetVersion: string = "Check your .NET Core version.";
-  public static readonly buildFunctionComponent: string = "Build API Project.";
+  public static readonly checkDotNetVersion: string = getLocalizedString(
+    "plugins.function.checkDotNetVersion"
+  );
+  public static readonly buildFunctionComponent: string = getLocalizedString(
+    "plugins.function.buildFunctionComponent"
+  );
   public static readonly dotNetVersionUnexpected = (current: string, expected: string[]) =>
-    `The installed .NET Core version is '${current}'. We recommend using version '${expected.join(
-      ", "
-    )}'.`;
+    getLocalizedString("plugins.function.dotNetVersionUnexpected", current, expected.join(", "));
 
-  public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
-  public static readonly noChange: string = "No change was detected since last deployment.";
-  public static readonly skipDeployment: string = `Skip deployment of function project because no change was detected. To fully redeploy function project, please remove '${path.join(
-    PathInfo.solutionFolderName,
-    PathInfo.funcDeploymentFolderName
-  )}' folder and rerun the command.`;
+  public static readonly installFunctionExtensions: string = getLocalizedString(
+    "plugins.function.installFunctionExtensions"
+  );
+  public static readonly noChange: string = getLocalizedString("plugins.function.noChange");
+  public static readonly skipDeployment: string = getLocalizedString(
+    "plugins.function.skipDeployment",
+    path.join(PathInfo.solutionFolderName, PathInfo.funcDeploymentFolderName)
+  );
   public static readonly failedToInstallDotnet = (error: Error) =>
-    `Failed to install .NET SDK, error = '${error}'`;
+    getLocalizedString("plugins.function.failedToInstallDotnet", error);
 
-  public static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
-  public static readonly getTemplateFromLocal =
-    "Failed to get newest template from github, trying to use the local template.";
+  public static readonly getTemplateFrom = (url: string) =>
+    getLocalizedString("plugins.function.getTemplateFrom", url);
+  public static readonly getTemplateFromLocal = getLocalizedString(
+    "plugins.function.getTemplateFromLocal"
+  );
 
   public static readonly projectScaffoldAt = (basePath: string) =>
-    `Project scaffolded at '${basePath}'.`;
+    getLocalizedString("plugins.function.projectScaffoldAt", basePath);
   public static readonly functionScaffoldAt = (functionPath: string) =>
-    `Function scaffolded at '${functionPath}'.`;
+    getLocalizedString("plugins.function.functionScaffoldAt", functionPath);
   public static readonly generateStorageAccountName = (name: string) =>
-    `Using Azure Storage account name: ${name}.`;
+    getLocalizedString("plugins.function.generateStorageAccountName", name);
   public static readonly generateAppServicePlanName = (name: string) =>
-    `Using Azure App Service plan name: ${name}.`;
+    getLocalizedString("plugins.function.generateAppServicePlanName", name);
   public static readonly generateFunctionAppName = (name: string) =>
-    `Using function app name: ${name}.`;
+    getLocalizedString("plugins.function.generateFunctionAppName", name);
 
   public static readonly ensureResourceProviders = (namespaces: string[], subscriptionId: string) =>
-    `Registering required resource providers ${namespaces.join(
-      ","
-    )} for subscription ${subscriptionId}...`;
+    getLocalizedString(
+      "plugins.function.ensureResourceProviders",
+      namespaces.join(","),
+      subscriptionId
+    );
 
   public static readonly checkResource = (
     resourceType: string,
     resourceName: string,
     resourceGroup: string
   ) =>
-    `Check resource '${resourceType}' with name '${resourceName}' under resource group '${resourceGroup}'.`;
-  public static readonly resourceCreating = "Resource does not exist. Creating...";
-  public static readonly resourceExists = "Resource exists. Skipping...";
-  public static readonly functionAppConfigIsEmpty = "Function app configuration is empty.";
-  public static readonly functionAppSettingsUpdated = "Function app settings updated.";
-  public static readonly functionAppAuthSettingsUpdated = "Function app auth settings updated.";
+    getLocalizedString("plugins.function.checkResource", resourceType, resourceName, resourceGroup);
+  public static readonly resourceCreating = getLocalizedString("plugins.function.resourceCreating");
+  public static readonly resourceExists = getLocalizedString("plugins.function.resourceExists");
+  public static readonly functionAppConfigIsEmpty = getLocalizedString(
+    "plugins.function.functionAppConfigIsEmpty"
+  );
+  public static readonly functionAppSettingsUpdated = getLocalizedString(
+    "plugins.function.functionAppSettingsUpdated"
+  );
+  public static readonly functionAppAuthSettingsUpdated = getLocalizedString(
+    "plugins.function.functionAppAuthSettingsUpdated"
+  );
   public static readonly dependPluginDetected = (name: string) =>
-    `Found dependent plugin '${name}'; updating function app settings.`;
+    getLocalizedString("plugins.function.dependPluginDetected", name);
 
-  public static readonly dotnetVersion = (version: string) => `Found .NET SDK version ${version}.`;
-  public static readonly uploadZipSize = (size: number) => `Upload zip package (${size}B).`;
+  public static readonly dotnetVersion = (version: string) =>
+    getLocalizedString("plugins.function.dotnetVersion", version);
+  public static readonly uploadZipSize = (size: number) =>
+    getLocalizedString("plugins.function.uploadZipSize", size);
 
   public static readonly succeedWithRetry = (op: string, count: number) =>
-    `Successfully completed '${op}'. Retry count is ${count}.`;
+    getLocalizedString("plugins.function.succeedWithRetry", op, count);
 
-  public static readonly reuseZipNotice =
-    `Found '${PathInfo.solutionFolderName}/${PathInfo.funcDeploymentFolderName}/${PathInfo.funcDeploymentZipCacheFileName}'. ` +
-    "If there are errors after deployment, delete this file and retry.";
+  public static readonly reuseZipNotice = getLocalizedString(
+    "plugins.function.reuseZipNotice",
+    `'${PathInfo.solutionFolderName}/${PathInfo.funcDeploymentFolderName}/${PathInfo.funcDeploymentZipCacheFileName}'`
+  );
 }
 
 export class ErrorMessages {
-  public static readonly invalidFunctionName: string = `Invalid function name. Function names can only contain alphanumerical characters. The max length is 127 characters.`;
-  public static readonly functionAlreadyExists: string = "Function already exists.";
-  public static readonly noFunctionNameGiven: string = "No function name was specified.";
-  public static readonly failToGetConnectionString: string =
-    "Failed to retrieve Azure Storage account connection string.";
-  public static readonly failToGetAppServicePlanId: string =
-    "Failed to retrieve Azure App Service plan ID.";
-  public static readonly failToGetFunctionAppEndpoint: string =
-    "Failed to retrieve function app endpoint.";
-  public static readonly failToFindFunctionApp = "Failed to find function app.";
-  public static readonly failToQueryPublishCred: string = "Failed to find publish credential.";
+  public static readonly invalidFunctionName: string = getLocalizedString(
+    "plugins.function.invalidFunctionName"
+  );
+  public static readonly functionAlreadyExists: string = getLocalizedString(
+    "plugins.function.functionAlreadyExists"
+  );
+  public static readonly noFunctionNameGiven: string = getLocalizedString(
+    "plugins.function.noFunctionNameGiven"
+  );
+  public static readonly failToGetConnectionString: string = getLocalizedString(
+    "plugins.function.failToGetConnectionString"
+  );
+  public static readonly failToGetAppServicePlanId: string = getLocalizedString(
+    "plugins.function.failToGetAppServicePlanId"
+  );
+  public static readonly failToGetFunctionAppEndpoint: string = getLocalizedString(
+    "plugins.function.failToGetFunctionAppEndpoint"
+  );
+  public static readonly failToFindFunctionApp = getLocalizedString(
+    "plugins.function.failToFindFunctionApp"
+  );
+  public static readonly failToQueryPublishCred: string = getLocalizedString(
+    "plugins.function.failToQueryPublishCred"
+  );
 }

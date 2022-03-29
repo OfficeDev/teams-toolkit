@@ -24,6 +24,7 @@ import {
   collaborationApiAdaptor,
   configureLocalResourceAdapter,
   configureResourceAdapter,
+  deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
@@ -176,5 +177,14 @@ export class AadPluginV2 implements v2.ResourcePlugin {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v2.DeploymentInputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

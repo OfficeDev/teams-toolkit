@@ -223,8 +223,13 @@ export class Messages {
   };
 
   static readonly Scaffold: Messages = {
-    log: Messages.getLog("Successfolly scaffold resources"),
+    log: Messages.getLog("Successfully scaffold resources"),
     telemetry: Messages.getEventName("scaffold"),
+  };
+
+  static readonly Deploy: Messages = {
+    log: Messages.getLog("Successfully deploy resources"),
+    telemetry: Messages.getEventName("deploy"),
   };
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
@@ -253,6 +258,9 @@ export class Messages {
     getLocalizedString("plugins.aad.UpdateAppIdUriHelpMessage", appIdUri);
   static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
     getLocalizedString("plugins.aad.UpdateRedirectUriHelpMessage", redirectUri);
+
+  static readonly UpdateAadHelpMessage = () =>
+    getLocalizedString("plugins.aad.UpdateAadHelpMessage");
 }
 
 export class ProgressTitle {
@@ -271,6 +279,7 @@ export class ProgressDetail {
   static readonly CreateAadAppSecret = "Create secret for Azure AD app";
   static readonly GetAadApp = "Get Azure AD app";
 
+  static readonly UpdateAadApp = "Update AD app";
   static readonly UpdateRedirectUri = "Update redirect uri for Azure AD app";
   static readonly UpdateAppIdUri = "Update application id uri for Azure AD app";
 

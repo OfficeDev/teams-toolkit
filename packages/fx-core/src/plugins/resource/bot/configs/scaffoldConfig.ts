@@ -36,7 +36,10 @@ export class ScaffoldConfig {
     return false;
   }
 
-  public async restoreConfigFromContext(context: PluginContext): Promise<void> {
+  public async restoreConfigFromContext(
+    context: PluginContext,
+    isScaffold: boolean
+  ): Promise<void> {
     this.workingDir = path.join(context.root, CommonStrings.BOT_WORKING_DIR_NAME);
     this.botId = context.config.get(PluginBot.BOT_ID) as string;
     this.botPassword = context.config.get(PluginBot.BOT_PASSWORD) as string;
@@ -52,7 +55,7 @@ export class ScaffoldConfig {
       this.programmingLanguage = rawProgrammingLanguage;
     }
 
-    this.botCapabilities = ScaffoldConfig.getBotCapabilities(context);
+    this.botCapabilities = ScaffoldConfig.getBotCapabilities(context, isScaffold);
 
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
 
@@ -78,13 +81,13 @@ export class ScaffoldConfig {
 
   /**
    * Get bot host type from plugin context.
-   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For stages like scaffolding (including create new and add capability),
+   *    the host type is from user inputs of question model (i.e. context.answers).
    * For later stages, the host type is persisted in projectSettings.json.
+   * @param isScaffold true for the `scaffold` lifecycle, false otherwise.
    */
-  public static getBotHostType(context: PluginContext): HostType | undefined {
-    // TODO: support other stages (maybe addCapability)
-    const fromInputs = context.answers?.stage === Stage.create;
-    if (fromInputs) {
+  public static getBotHostType(context: PluginContext, isScaffold: boolean): HostType | undefined {
+    if (isScaffold) {
       return context.answers
         ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)
         : undefined;
@@ -113,10 +116,9 @@ export class ScaffoldConfig {
     return utils.convertToConstValues(rawHostType, HostTypes);
   }
 
-  private static getBotCapabilities(context: PluginContext): BotCapability[] {
-    if (context.answers?.stage === Stage.create) {
+  private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {
+    if (isScaffold) {
       // For scaffolding and addCapability, the bot capabilities are from user input (context.answers)
-      // TODO: support addCapability
       const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
       if (Array.isArray(scenarios)) {
         return scenarios

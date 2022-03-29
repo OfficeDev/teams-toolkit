@@ -41,13 +41,14 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
 
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     this.config.scaffold.hostType = HostTypes.AZURE_FUNCTIONS;
 
     Logger.info(Messages.ScaffoldingBot);
 
+    // title must match closeProgressBar in bot/index.ts::scaffold()
     const handler = await ProgressBarFactory.newProgressBar(
-      ProgressBarConstants.SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE,
+      ProgressBarConstants.SCAFFOLD_TITLE,
       ProgressBarConstants.SCAFFOLD_FUNCTIONS_NOTIFICATION_STEPS_NUM,
       this.ctx
     );

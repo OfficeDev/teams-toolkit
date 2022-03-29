@@ -12,9 +12,9 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  returnUserError,
   Stage,
   TokenProvider,
+  UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
@@ -46,21 +46,20 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
-import { isV3 } from "../../../..";
+import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { NoCapabilityFoundError } from "../../../../core";
+import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
 import {
-  handleSelectionConflict,
-  onChangeSelectionForCapabilities,
   ProgrammingLanguageQuestion,
+  onChangeSelectionForCapabilities,
   validateCapabilities,
 } from "../../../../core/question";
-import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -270,12 +269,13 @@ export async function getQuestions(
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
         return err(
-          returnUserError(
-            new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
-            SolutionSource,
-            SolutionError.CannotDeployBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotDeployBeforeProvision,
+            message: getDefaultString("core.deploy.FailedToDeployBeforeProvision"),
+            displayMessage: getLocalizedString("core.deploy.FailedToDeployBeforeProvision"),
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }
@@ -332,13 +332,17 @@ export async function getQuestions(
         const errorMsg = isAzure
           ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
           : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
+        const defaultMsg = isAzure
+          ? getDefaultString("core.publish.FailedToPublishBeforeProvision")
+          : getDefaultString("core.publish.SPFxAskProvisionBeforePublish");
         return err(
-          returnUserError(
-            new Error(errorMsg),
-            SolutionSource,
-            SolutionError.CannotPublishBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotPublishBeforeProvision,
+            message: defaultMsg,
+            displayMessage: errorMsg,
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }

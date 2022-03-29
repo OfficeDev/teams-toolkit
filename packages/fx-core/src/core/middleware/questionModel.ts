@@ -396,7 +396,10 @@ async function getQuestionsForCreateM365ProjectV2(
     res = v2plugin.getQuestionsForScaffolding
       ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
       : ok(undefined);
-    if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
+    if (res.isErr())
+      return err(
+        new SystemError({ error: res.error, source: CoreSource, name: "QuestionModelFail" })
+      );
     if (res.value) {
       const solutionNode = Array.isArray(res.value)
         ? (res.value as QTreeNode[])
@@ -461,7 +464,10 @@ export async function getQuestionsForCreateProjectV2(
     res = v2plugin.getQuestionsForScaffolding
       ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
       : ok(undefined);
-    if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
+    if (res.isErr())
+      return err(
+        new SystemError({ source: CoreSource, name: "QuestionModelFail", error: res.error })
+      );
     if (res.value) {
       const solutionNode = Array.isArray(res.value)
         ? (res.value as QTreeNode[])

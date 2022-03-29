@@ -9,6 +9,7 @@ import {
   LogProvider,
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import * as os from "os";
 import { ResourcePlugins } from "../constants";
 import {
@@ -53,9 +54,12 @@ function appendEnvWithPrefix(
 export async function convertToLocalEnvs(
   projectPath: string,
   projectSettings: ProjectSettings,
-  localState: Json | undefined,
+  envInfo: EnvInfoV2 | undefined,
   logger?: LogProvider
 ): Promise<Record<string, string>> {
+  const localState = envInfo?.state;
+  const localConfig = envInfo?.config;
+
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
@@ -131,12 +135,14 @@ export async function convertToLocalEnvs(
       localEnvs[LocalEnvBackendKeys.AllowedAppIds] = getAllowedAppIds().join(";");
     }
 
-    localEnvs[LocalEnvCertKeys.SslCrtFile] = frontendConfigs?.get(
-      LocalStateFrontendKeys.SslCertFile
-    );
-    localEnvs[LocalEnvCertKeys.SslKeyFile] = frontendConfigs?.get(
-      LocalStateFrontendKeys.SslKeyFile
-    );
+    if (
+      localConfig?.frontend &&
+      localConfig.frontend.sslCertFile &&
+      localConfig.frontend.sslKeyFile
+    ) {
+      localEnvs[LocalEnvCertKeys.SslCrtFile] = localConfig.frontend.sslCertFile;
+      localEnvs[LocalEnvCertKeys.SslKeyFile] = localConfig.frontend.sslKeyFile;
+    }
   }
 
   if (includeBot) {

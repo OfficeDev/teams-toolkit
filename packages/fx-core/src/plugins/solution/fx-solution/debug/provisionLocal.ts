@@ -255,7 +255,7 @@ export async function setupLocalEnvironment(
         }
 
         if (skipNgrok) {
-          const localBotEndpoint = envInfo.state[ResourcePlugins.Bot].siteEndPoint as string;
+          const localBotEndpoint = envInfo.config.bot.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -532,7 +532,20 @@ export async function configLocalEnvironment(
           const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
 
           const localCert = await certManager.setupCertificate(trustDevCert);
-          if (localCert) {
+          if (
+            envInfo.config.frontend &&
+            envInfo.config.frontend.sslCertFile &&
+            envInfo.config.frontend.sslKeyFile
+          ) {
+            envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile =
+              envInfo.config.frontend.sslCertFile;
+            envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile =
+              envInfo.config.frontend.sslKeyFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] =
+              envInfo.config.frontend.sslCertFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] =
+              envInfo.config.frontend.sslKeyFile;
+          } else if (localCert) {
             envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile = localCert.certPath;
             envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile = localCert.keyPath;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;

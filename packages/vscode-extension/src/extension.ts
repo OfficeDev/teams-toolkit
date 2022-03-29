@@ -131,22 +131,6 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.connectExistingApiHandler, args)
   );
 
-  const buildPackageCmd = vscode.commands.registerCommand("fx-extension.build", (...args) =>
-    Correlator.run(handlers.buildPackageHandler, args)
-  );
-  context.subscriptions.push(buildPackageCmd);
-
-  const publishCmd = vscode.commands.registerCommand("fx-extension.publish", (...args) =>
-    Correlator.run(handlers.publishHandler, args)
-  );
-  context.subscriptions.push(publishCmd);
-
-  const addCICDWorkflowsCmd = vscode.commands.registerCommand(
-    "fx-extension.addCICDWorkflows",
-    (...args) => Correlator.run(handlers.addCICDWorkflowsHandler, args)
-  );
-  context.subscriptions.push(addCICDWorkflowsCmd);
-
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(

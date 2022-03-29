@@ -39,7 +39,6 @@
       "validateManifestTitle": "Validate App Manifest File",
       "validateManifestTitleNew": "Validate manifest file",
       "validateManifestDescription": "Validate the Teams app manifest file",
-      "addApiConnectorTitle": "Connect to an API",
       "buildPackageTitle": "Build Teams Package",
       "buildPackageTitleNew": "Zip Teams metadata package",
       "buildPackageDescription": "Build your Teams app into a package for publishing",

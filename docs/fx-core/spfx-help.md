@@ -9,7 +9,7 @@ As the default behavior, Teams Toolkit will try to install them locally under `H
 ## Remediation Steps
 ### Step 1: Disable Prerequisite Checker 
 
-Go to _Manage > Extension > Teams Toolkit > SPFx Prerequisite Check_
+Go to _Manage > Settings > Extension > Teams Toolkit > SPFx Prerequisite Check_ or run 'Preferences: Open User Settings'.
 ![image](../images/fx-core/spfx/setting.png)
 
 And uncheck these 2: 
@@ -47,7 +47,7 @@ npm install @microsoft/generator-sharepoint@1.14 -g
 Install the Yeoman CLI version that Teams Toolkit supports, say `4.3.0`:
 
 ```sh
-npm install yo@4.3.0
+npm install --global yo@4.3.0
 ```
 
 ### If you have Yeoman CLI installed but no SPFx generator

@@ -1116,8 +1116,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddSsoNotSupported);
+      expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
     });
   });
 });

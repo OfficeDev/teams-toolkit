@@ -63,6 +63,16 @@ export function CopyFileError(e: Error): SystemError {
   });
 }
 
+export class InitializedFileAlreadyExistError extends UserError {
+  constructor(filePath: string) {
+    super({
+      message: getDefaultString("error.InitializedFileExistError", filePath),
+      displayMessage: getLocalizedString("error.InitializedFileExistError", filePath),
+      source: CoreSource,
+    });
+  }
+}
+
 export class NoProjectOpenedError extends UserError {
   constructor() {
     super({

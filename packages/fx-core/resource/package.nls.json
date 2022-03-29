@@ -282,6 +282,7 @@
   "error.PathNotExistError": "Path does not exist: %s",
   "error.ProjectFolderInvalidError": "Path %s is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \\${homeDir} ).",
   "error.NoProjectOpenedError": "No project opened, you can create a new project or open an existing one.",
+  "error.InitializedFileExistError": "Initialized file(s) %s already exist, please clean up and try again.",
   "error.InvalidProjectError": "The command only works for project created by Teams Toolkit. %s",
   "error.InvalidProjectSettingsFileError": "The projectSettings.json file is invalid: %s.",
   "error.FetchSampleError": "Failed to get data from remote repository for %s.",

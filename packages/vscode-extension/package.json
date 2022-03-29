@@ -62,6 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.addApiConnector",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
@@ -468,6 +469,10 @@
         "title": "%teamstoolkit.commands.validateManifest.title%"
       },
       {
+        "command": "fx-extension.connectExistingApi",
+        "title": "%teamstoolkit.commands.connectExistingApi.title%"
+      },
+      {
         "command": "fx-extension.build",
         "title": "%teamstoolkit.commands.zipPackage.title%"
       },
@@ -860,6 +865,30 @@
               "bicep": true,
               "ngrok": true,
               "devCert": true
+            }
+          }
+        }
+      },
+      {
+        "title": "SPFx Prerequisite Check",
+        "order": 2,
+        "properties": {
+          "fx-extension.spfxPrerequisiteCheck": {
+            "type": "object",
+            "properties": {
+              "yo": {
+                "type": "boolean",
+                "description": "Ensure Yeoman CLI is installed. (requires reload of VS Code)"
+              },
+              "sharepointYeomanGenerator": {
+                "type": "boolean",
+                "description": "Ensure Sharepoint Yeoman generator is installed. (requires reload of VS Code)"
+              }
+            },
+            "additionalProperties": false,
+            "default": {
+              "yo": true,
+              "sharepointYeomanGenerator": true
             }
           }
         }

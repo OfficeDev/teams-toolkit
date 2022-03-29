@@ -78,6 +78,7 @@
     "teamstoolkit.commands.updateManifest.title": "Teams: Update manifest to Teams platform",
     "teamstoolkit.commands.upgradeProject.title": "Teams: Upgrade project",
     "teamstoolkit.commands.validateManifest.title": "Teams: Validate manifest file",
+    "teamstoolkit.commands.connectExistingApi.title": "Teams: Connect to an API",
     "teamstoolkit.commands.viewSamples.title": "Teams: View samples",
     "teamstoolkit.commands.zipPackage.title": "Teams: Zip Teams metadata package",
     "teamstoolkit.commandsTreeViewProvider.accountsDescription": "Your account list",

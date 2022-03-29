@@ -219,6 +219,12 @@ export function syncFeatureFlags() {
   process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
     ConfigurationKey.BotNotificationCommandAndResponseEnabled
   ).toString();
+  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.YoEnvCheckerEnable
+  ).toString();
+  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.generatorEnvCheckerEnable
+  ).toString();
 }
 
 export class FeatureFlags {

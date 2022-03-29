@@ -33,7 +33,6 @@ import {
   isAadManifestEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { OperationNotPermittedError } from "../../../../core/error";
 import { CoreQuestionNames } from "../../../../core/question";
@@ -76,7 +75,6 @@ import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils
 import { Certificate } from "crypto";
 import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,

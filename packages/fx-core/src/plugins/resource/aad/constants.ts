@@ -258,6 +258,9 @@ export class Messages {
     getLocalizedString("plugins.aad.UpdateAppIdUriHelpMessage", appIdUri);
   static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
     getLocalizedString("plugins.aad.UpdateRedirectUriHelpMessage", redirectUri);
+
+  static readonly UpdateAadHelpMessage = () =>
+    getLocalizedString("plugins.aad.UpdateAadHelpMessage");
 }
 
 export class ProgressTitle {
@@ -276,6 +279,7 @@ export class ProgressDetail {
   static readonly CreateAadAppSecret = "Create secret for Azure AD app";
   static readonly GetAadApp = "Get Azure AD app";
 
+  static readonly UpdateAadApp = "Update AD app";
   static readonly UpdateRedirectUri = "Update redirect uri for Azure AD app";
   static readonly UpdateAppIdUri = "Update application id uri for Azure AD app";
 

@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import { validate as uuidValidate } from "uuid";
+import { UserError } from "@microsoft/teamsfx-api";
+import { Plugins } from "../constants";
 import { ConfigErrorMessages } from "../errors";
 
 export enum Formats {
@@ -37,7 +39,8 @@ function formatEndpoint(endpoint: string): string {
     }
     return endpoint;
   } catch {
-    throw new Error(ConfigErrorMessages.FormatError(Formats.Endpoint, endpoint));
+    const msg = ConfigErrorMessages.FormatError(Formats.Endpoint, endpoint);
+    throw new UserError(Plugins.pluginNameShort, "FormatError", msg[0], msg[1]);
   }
 }
 
@@ -49,7 +52,8 @@ function formatDomain(domain: string): string {
     domain = url.host;
     return domain;
   } catch {
-    throw new Error(ConfigErrorMessages.FormatError(Formats.Domain, domain));
+    const msg = ConfigErrorMessages.FormatError(Formats.Domain, domain);
+    throw new UserError(Plugins.pluginNameShort, "FormatError", msg[0], msg[1]);
   }
 }
 
@@ -57,6 +61,7 @@ function formatUUID(uuid: string): string {
   if (uuidValidate(uuid)) {
     return uuid;
   } else {
-    throw new Error(ConfigErrorMessages.FormatError(Formats.UUID, uuid));
+    const msg = ConfigErrorMessages.FormatError(Formats.UUID, uuid);
+    throw new UserError(Plugins.pluginNameShort, "FormatError", msg[0], msg[1]);
   }
 }

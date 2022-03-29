@@ -387,7 +387,7 @@ export class AadAppClient {
       }
     }
 
-    throw new Error(AppStudioErrorMessage.ReachRetryLimit);
+    throw new Error(AppStudioErrorMessage.ReachRetryLimit[0]);
   }
   private static getAadAppProvisionObject(
     displayName: string,

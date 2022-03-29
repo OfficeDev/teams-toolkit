@@ -91,6 +91,9 @@ export interface CallAction {
 export interface FunctionAction {
   name?: string;
   type: "function";
+  inputs?: {
+    [k: string]: any;
+  };
   plan(context: any, inputs: any): MaybePromise<Result<string[], FxError>>;
   /**
    * question is to define inputs of the task

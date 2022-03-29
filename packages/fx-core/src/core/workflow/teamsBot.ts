@@ -85,7 +85,7 @@ export class TeamsBotFeature implements ResourcePlugin {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: CallAction = {
-      name: "nodejs-bot.generateCode",
+      name: "teams-bot.generateCode",
       type: "call",
       required: true,
       targetAction: "bot-scaffold.generateCode",

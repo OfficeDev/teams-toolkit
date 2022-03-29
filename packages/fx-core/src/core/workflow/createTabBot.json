@@ -8,7 +8,7 @@
             "actions": [
                 {
                     "type": "function",
-                    "name": "fx.init"
+                    "name": "fx.initConfig"
                 },
                 {
                     "type": "call",
@@ -59,7 +59,9 @@
                 }
             ],
             "inputs": {
-                "bicep": {}
+                "resource": "teams-tab",
+                "framework": "react",
+                "hostingResource": "azure-storage"
             }
         },
         {
@@ -87,7 +89,7 @@
                     ]
                 },
                 {
-                    "name": "nodejs-bot.generateCode",
+                    "name": "teams-bot.generateCode",
                     "type": "call",
                     "required": true,
                     "targetAction": "bot-scaffold.generateCode"
@@ -95,7 +97,7 @@
                 {
                     "type": "call",
                     "required": true,
-                    "targetAction": "azure-web-app.generateBicep"
+                    "targetAction": "azure-function.generateBicep"
                 },
                 {
                     "type": "call",
@@ -104,7 +106,9 @@
                 }
             ],
             "inputs": {
-                "bicep": {}
+                "resource": "teams-bot",
+                "scenario": "notification",
+                "hostingResource": "azure-function"
             }
         }
     ]

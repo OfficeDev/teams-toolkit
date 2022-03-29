@@ -1,41 +1,61 @@
 {
-  "name": "fx.add",
-  "type": "group",
-  "actions": [
-    {
-      "type": "group",
-      "actions": [
+    "type": "group",
+    "name": "fx.deploy",
+    "actions": [
         {
-          "name": "teams-tab.addInstance",
-          "type": "function"
+            "type": "group",
+            "name": "teams-bot.deploy",
+            "actions": [
+                {
+                    "type": "shell",
+                    "name": "bot-scaffold.build",
+                    "command": "MsBuild",
+                    "description": "MsBuild for bot",
+                    "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\bot"
+                },
+                {
+                    "type": "call",
+                    "targetAction": "azure-web-app.deploy",
+                    "required": false,
+                    "inputs": {
+                        "path": "bot",
+                        "type": "folder"
+                    }
+                }
+            ]
         },
         {
-          "type": "call",
-          "required": true,
-          "targetAction": "teams-manifest.addCapability",
-          "inputs": {
-            "capabilities": [
-              "Tab"
+            "type": "group",
+            "name": "teams-tab.deploy",
+            "actions": [
+                {
+                    "type": "group",
+                    "name": "tab-scaffold.build",
+                    "actions": [
+                        {
+                            "type": "shell",
+                            "command": "npm install",
+                            "description": "npm install",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
+                        },
+                        {
+                            "type": "shell",
+                            "command": "npm run build",
+                            "description": "npm run build",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
+                        }
+                    ]
+                },
+                {
+                    "type": "call",
+                    "targetAction": "azure-storage.deploy",
+                    "required": false,
+                    "inputs": {
+                        "path": "tab",
+                        "type": "folder"
+                    }
+                }
             ]
-          }
         }
-      ]
-    },
-    {
-      "name": "teams-tab.generateCode",
-      "type": "call",
-      "required": true,
-      "targetAction": "tab-scaffold.generateCode"
-    },
-    {
-      "type": "call",
-      "required": true,
-      "targetAction": "azure-storage.generateBicep"
-    },
-    {
-      "type": "call",
-      "required": true,
-      "targetAction": "fx.persistBicep"
-    }
-  ]
+    ]
 }

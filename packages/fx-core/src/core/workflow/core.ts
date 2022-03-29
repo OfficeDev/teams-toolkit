@@ -40,7 +40,7 @@ export class TeamsfxCore {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const initProjectSettings: Action = {
       type: "function",
-      name: "fx.init",
+      name: "fx.initConfig",
       plan: (context: v2.Context, inputs: Inputs) => {
         return ok(["init teamsfx project settings"]);
       },
@@ -444,7 +444,11 @@ export async function resolveAction(action: Action, context: any, inputs: any): 
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (targetAction) {
       if (targetAction.type !== "function") {
-        return await resolveAction(targetAction, context, inputs);
+        const resolvedAction = await resolveAction(targetAction, context, inputs);
+        if (action.inputs) {
+          (resolvedAction as any)["inputs"] = action.inputs;
+        }
+        return resolvedAction;
       }
     }
     return action;

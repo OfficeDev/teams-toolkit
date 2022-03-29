@@ -244,26 +244,26 @@ async function createTabBot() {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
     language: "typescript",
-    capabilities: [TabOptionItem.id, BotOptionItem.id],
+    capabilities: [TabOptionItem.id, NotificationOptionItem.id],
     tab: {
       hostingResource: "azure-storage",
     },
     bot: {
-      hostingResource: "azure-web-app",
+      hostingResource: "azure-function",
     },
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, inputs);
-    await fs.writeFile("createTabBot.json", JSON.stringify(resolved, undefined, 4));
-    // await planAction(context, inputs, action);
-    // inputs.step = 1;
-    // await executeAction(context, inputs, action);
+    // const resolved = await resolveAction(action, context, inputs);
+    // await fs.writeFile("createTabBot.json", JSON.stringify(resolved, undefined, 4));
+    await planAction(context, inputs, action);
+    inputs.step = 1;
+    await executeAction(context, inputs, action);
   }
-  // console.log("inputs:");
-  // console.log(inputs);
-  // console.log("projectSetting:");
-  // console.log(context.projectSetting);
+  console.log("inputs:");
+  console.log(inputs);
+  console.log("projectSetting:");
+  console.log(context.projectSetting);
 }
 
 async function createNotificationBot() {

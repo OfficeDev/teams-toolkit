@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.6.1 - Mar 23, 2022
+Hotfix version for Teams Toolkit with multiple bugs fixed.
+
 ## 3.6.0 - Mar 21, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

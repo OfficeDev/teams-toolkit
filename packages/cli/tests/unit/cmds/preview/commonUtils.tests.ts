@@ -1,13 +1,19 @@
-import { IProgressHandler, err, ok, returnUserError } from "@microsoft/teamsfx-api";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { IProgressHandler, err, ok, UserError } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import {
   createTaskStartCb,
   createTaskStopCb,
   getAutomaticNpmInstallSetting,
+  generateAccountHint,
 } from "../../../../src/cmds/preview/commonUtils";
 import { expect } from "../../utils";
 import { UserSettings } from "../../../../src/userSetttings";
 import { cliSource } from "../../../../src/constants";
+import AppStudioTokenInstance from "../../../../src/commonlib/appStudioLogin";
+import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 
 describe("commonUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -74,7 +80,7 @@ describe("commonUtils", () => {
     });
 
     it("getConfigSync error", () => {
-      const error = returnUserError(new Error("Test"), cliSource, "Test");
+      const error = new UserError(cliSource, "Test", "Test");
       sandbox.stub(UserSettings, "getConfigSync").returns(err(error));
       expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
@@ -82,6 +88,45 @@ describe("commonUtils", () => {
     it("getConfigSync exception", () => {
       sandbox.stub(UserSettings, "getConfigSync").throws("Test");
       expect(getAutomaticNpmInstallSetting()).to.be.false;
+    });
+  });
+
+  describe("generateAccountHint", () => {
+    it("not signed", async () => {
+      sandbox.stub(AppStudioTokenInstance, "getStatus").returns(
+        Promise.resolve({
+          status: signedOut,
+          accountInfo: undefined,
+        })
+      );
+      const tenantIdFromConfig = "tenantIdFromConfig";
+      expect(await generateAccountHint(tenantIdFromConfig, true)).to.deep.equals(
+        `appTenantId=${tenantIdFromConfig}&login_hint=login_your_m365_account`
+      );
+      expect(await generateAccountHint(tenantIdFromConfig, false)).to.deep.equals(
+        "login_hint=login_your_m365_account"
+      );
+    });
+
+    it("signed", async () => {
+      const tenantId = "tenantId";
+      const upn = "upn";
+      sandbox.stub(AppStudioTokenInstance, "getStatus").returns(
+        Promise.resolve({
+          status: signedIn,
+          accountInfo: {
+            tid: tenantId,
+            upn,
+          },
+        })
+      );
+      const tenantIdFromConfig = "tenantIdFromConfig";
+      expect(await generateAccountHint(tenantIdFromConfig, true)).to.deep.equals(
+        `appTenantId=${tenantId}&login_hint=${upn}`
+      );
+      expect(await generateAccountHint(tenantIdFromConfig, false)).to.deep.equals(
+        `login_hint=${upn}`
+      );
     });
   });
 });

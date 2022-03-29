@@ -40,6 +40,9 @@ export enum TelemetryEvent {
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
 
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
+
   EditManifestTemplate = "edit-manifest-template",
 
   getManifestTemplatePath = "get-manifest-path",
@@ -164,6 +167,10 @@ export enum TelemetryEvent {
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
+
+  // To track the effect of UX changes
+  // that prevents user performing concurrent operations.
+  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 }
 
 export enum TelemetryProperty {
@@ -212,6 +219,9 @@ export enum TelemetryProperty {
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
+  // Used with TreeViewCommandConcurrentExecution
+  RunningCommand = "running-command",
+  BlockedCommand = "blocked-command",
 }
 
 export enum TelemetrySuccess {

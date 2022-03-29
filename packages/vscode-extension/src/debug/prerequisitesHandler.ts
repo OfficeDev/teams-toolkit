@@ -9,8 +9,7 @@ import {
   ProductName,
   ProjectSettings,
   Result,
-  returnSystemError,
-  returnUserError,
+  SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import {
@@ -65,7 +64,7 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
 import { ProgressHelper } from "./progressHelper";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 
 enum Checker {
@@ -147,7 +146,7 @@ async function checkPort(
     return {
       checker: Checker.Ports,
       result: ResultStatus.failed,
-      error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
+      error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
     };
   }
   return {
@@ -389,10 +388,10 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
     if (token === undefined) {
       // corner case but need to handle
       result = ResultStatus.failed;
-      error = returnSystemError(
-        new Error("No M365 account login"),
+      error = new SystemError(
         ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
+        ExtensionErrors.PrerequisitesValidationError,
+        "No M365 account login"
       );
     } else {
       const isSideloadingEnabled = await getSideloadingStatus(token);
@@ -400,9 +399,10 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
         // sideloading disabled
         result = ResultStatus.failed;
         error = new UserError(
+          ExtensionSource,
           ExtensionErrors.PrerequisitesValidationError,
-          localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-          ExtensionSource
+          getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
+          localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
         );
       }
     }
@@ -549,12 +549,12 @@ async function resolveLocalCertificate(
 
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
-      error = returnUserError(
-        new Error("Skip trusting development certificate for localhost."),
-        ExtensionSource,
-        "SkipTrustDevCertError",
-        trustDevCertHelpLink
-      );
+      error = new UserError({
+        source: ExtensionSource,
+        name: "SkipTrustDevCertError",
+        helpLink: trustDevCertHelpLink,
+        message: "Skip trusting development certificate for localhost.",
+      });
     } else if (localCertResult.isTrusted === false) {
       result = ResultStatus.failed;
       error = localCertResult.error;
@@ -582,12 +582,12 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
     }
   }
   return error instanceof DepsCheckerError
-    ? returnUserError(
+    ? new UserError({
         error,
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError,
-        error.helpLink
-      )
+        source: ExtensionSource,
+        name: ExtensionErrors.PrerequisitesValidationError,
+        helpLink: error.helpLink,
+      })
     : assembleError(error);
 }
 
@@ -665,9 +665,9 @@ async function checkNpmInstall(
       if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
         result = ResultStatus.failed;
         error = new UserError(
+          ExtensionSource,
           "NpmInstallFailure",
-          `Failed to npm install for ${component}`,
-          ExtensionSource
+          `Failed to npm install for ${component}`
         );
       }
     }
@@ -736,12 +736,11 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      throw returnUserError(
-        new Error(
-          `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
-        ),
+      throw new UserError(
         ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
+        ExtensionErrors.PrerequisitesValidationError,
+        getDefaultString("teamstoolkit.PrerequisitesValidationError"),
+        localize("teamstoolkit.PrerequisitesValidationError")
       );
     }
   }

@@ -1,14 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  FxError,
-  ok,
-  Result,
-  err,
-  returnUserError,
-  returnSystemError,
-} from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, err, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
@@ -64,7 +57,13 @@ export class TeamsAppMigrationHandler {
         return ok(false);
       }
     } catch (e: any) {
-      return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UpdatePackageJsonError));
+      return err(
+        new SystemError({
+          error: e,
+          source: ExtensionSource,
+          name: ExtensionErrors.UpdatePackageJsonError,
+        })
+      );
     }
 
     return ok(true);
@@ -74,7 +73,13 @@ export class TeamsAppMigrationHandler {
     try {
       return ok(await updateCodes(this.sourcePath, TeamsAppMigrationHandler.excludeFolders));
     } catch (e: any) {
-      return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UpdateCodesError));
+      return err(
+        new SystemError({
+          error: e,
+          source: ExtensionSource,
+          name: ExtensionErrors.UpdateCodesError,
+        })
+      );
     }
   }
 
@@ -91,7 +96,13 @@ export class TeamsAppMigrationHandler {
       await fs.writeJSON(this.sourcePath, manifest, { spaces: 4, EOL: os.EOL });
       return ok(null);
     } catch (e: any) {
-      return err(returnUserError(e, ExtensionSource, ExtensionErrors.UpdateManifestError));
+      return err(
+        new UserError({
+          error: e,
+          source: ExtensionSource,
+          name: ExtensionErrors.UpdateManifestError,
+        })
+      );
     }
   }
 }
@@ -164,7 +175,11 @@ async function updateCodeInplace(
       error.message
     );
     vsCodeLogProvider.warning(message);
-    const fxError = returnUserError(error, ExtensionSource, ExtensionErrors.UpdateCodeError);
+    const fxError = new UserError({
+      error,
+      source: ExtensionSource,
+      name: ExtensionErrors.UpdateCodeError,
+    });
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabAppCode, fxError);
     return err(fxError);
   }

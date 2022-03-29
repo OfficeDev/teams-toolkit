@@ -42,6 +42,7 @@ import {
   ErrorMessages,
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
+  TEAMS_APP_MANIFEST_TEMPLATE_V3,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
 import { AppStudioPluginImpl } from "./plugin";
@@ -50,6 +51,7 @@ import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
 import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { InitializedFileAlreadyExistError } from "../../../../core/error";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -83,6 +85,32 @@ export class AppStudioPluginV3 {
     await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.init);
     return ok(undefined);
+  }
+
+  /**
+   * Check if manifest templates already exist.
+   */
+  async preCheck(projectPath: string): Promise<string[]> {
+    const existFiles = new Array<string>();
+
+    const appPackageDir = path.resolve(projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
+    if (await fs.pathExists(manifestPath)) {
+      existFiles.push(manifestPath);
+    }
+
+    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+    const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+    if (await fs.pathExists(defaultColorPath)) {
+      existFiles.push(defaultColorPath);
+    }
+
+    const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+    if (await fs.pathExists(defaultOutlinePath)) {
+      existFiles.push(defaultOutlinePath);
+    }
+
+    return existFiles;
   }
 
   /**
@@ -325,9 +353,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }
@@ -375,9 +403,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }
@@ -411,13 +439,13 @@ export class AppStudioPluginV3 {
 
     const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
     if (!teamsAppId) {
+      const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           AppStudioError.GrantPermissionFailedError.name,
-          AppStudioError.GrantPermissionFailedError.message(
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
-          ),
-          Constants.PLUGIN_NAME
+          msgs[0],
+          msgs[1]
         )
       );
     }
@@ -425,11 +453,13 @@ export class AppStudioPluginV3 {
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
     } catch (error: any) {
+      const msgs = AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId);
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           AppStudioError.GrantPermissionFailedError.name,
-          AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId),
-          Constants.PLUGIN_NAME
+          msgs[0],
+          msgs[1]
         )
       );
     }

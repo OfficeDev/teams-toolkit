@@ -20,7 +20,7 @@ import {
   Result,
   FxError,
   err,
-  returnSystemError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { SolutionError, SolutionSource } from "../constants";
@@ -186,11 +186,7 @@ export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
         !ctx.answers
       ) {
         return err(
-          returnSystemError(
-            new Error(`invalid plugin context`),
-            SolutionSource,
-            SolutionError.InternelError
-          )
+          new SystemError(SolutionSource, SolutionError.InternelError, "invalid plugin context")
         );
       }
       const v2ctx: v2.Context = {
@@ -219,11 +215,7 @@ export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
         !ctx.answers
       ) {
         return err(
-          returnSystemError(
-            new Error(`invalid plugin context`),
-            SolutionSource,
-            SolutionError.InternelError
-          )
+          new SystemError(SolutionSource, SolutionError.InternelError, "invalid plugin context")
         );
       }
       const v2ctx: v2.Context = {

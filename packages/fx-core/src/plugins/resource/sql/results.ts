@@ -10,39 +10,35 @@ export class SqlResultFactory {
 
   public static UserError(
     name: string,
-    message: string,
+    messages: [string, string],
     innerError?: any,
     stack?: string,
-    helpLink?: string,
-    notificationMessage?: string
+    helpLink?: string
   ): UserError {
-    return new UserError(
+    return new UserError({
       name,
-      message,
-      this.source,
-      stack,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: this.source,
       helpLink,
-      innerError,
-      notificationMessage
-    );
+      error: innerError,
+    });
   }
 
   public static SystemError(
     name: string,
-    message: string,
+    messages: [string, string],
     innerError?: any,
     stack?: string,
-    issueLink?: string,
-    notificationMessage?: string
+    issueLink?: string
   ): SystemError {
-    return new SystemError(
+    return new SystemError({
       name,
-      message,
-      this.source,
-      stack,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: this.source,
       issueLink,
-      innerError,
-      notificationMessage
-    );
+      error: innerError,
+    });
   }
 }

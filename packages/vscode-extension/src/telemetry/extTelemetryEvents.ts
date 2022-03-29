@@ -89,7 +89,7 @@ export enum TelemetryEvent {
   ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
-  ClickViewGuidedTutorials = "click-view-guided-tutorials",
+  ViewGuidedTutorials = "view-guided-tutorials",
 
   GetStartedPrerequisitesStart = "get-started-prerequisites-start",
   GetStartedPrerequisites = "get-started-prerequisites",

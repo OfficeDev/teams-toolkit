@@ -70,6 +70,7 @@
     "teamstoolkit.commands.quickStart.title": "Teams: Quick Start",
     "teamstoolkit.commands.refresh.title": "Refresh",
     "teamstoolkit.commands.reportIssue.title": "Teams: Report issues on GitHub",
+    "teamstoolkit.commands.selectTutorials.title": "Teams: View Guided Tutorials",
     "teamstoolkit.commands.signInGuideline.title": "Learn more about Teams development accounts",
     "teamstoolkit.commands.signOut.title": "Sign Out",
     "teamstoolkit.commands.specifySubscription.title": "Specify subscription",

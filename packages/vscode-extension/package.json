@@ -660,6 +660,15 @@
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
+      },
+      {
+        "command": "fx-extension.selectTutorials",
+        "title": "%teamstoolkit.commands.selectTutorials.title%"
+      },
+      {
+        "command": "fx-extension.openTutorial",
+        "title": "Teams: Open Guided Tutorial",
+        "enablement": "never"
       }
     ],
     "taskDefinitions": [

@@ -173,7 +173,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context.graphTokenProvider = mockTokenProviderGraph();
     sinon
       .stub<any, any>(AadAppManifestManager, "loadAadManifest")
-      .resolves({ id: "", oauth2Permissions: [{}] });
+      .resolves({ id: "", name: "fake-aad-name", oauth2Permissions: [{}] });
     sinon
       .stub<any, any>(AadAppManifestManager, "createAadApp")
       .resolves({ appId: "fake-appId", id: "fake-object-id" });
@@ -315,6 +315,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("scaffold", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub(fs, "ensureDir").resolves();
     sinon.stub(fs, "copy").resolves();
     const config = new Map();

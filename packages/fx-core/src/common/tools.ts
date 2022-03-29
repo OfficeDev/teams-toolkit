@@ -395,6 +395,10 @@ export function isM365AppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
 }
 
+export function isApiConnectEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.

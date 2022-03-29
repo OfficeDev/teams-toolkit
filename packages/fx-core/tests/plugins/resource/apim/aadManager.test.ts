@@ -63,7 +63,7 @@ describe("AadManager", () => {
       // Act & Assert
       await chai
         .expect(aadManager.provision(apimPluginConfig, DefaultTestInput.aadDisplayName.new))
-        .to.be.rejectedWith(InvalidAadObjectId.message(DefaultTestInput.aadObjectId.new));
+        .to.be.rejectedWith(InvalidAadObjectId.message(DefaultTestInput.aadObjectId.new)[0]);
       sandbox.assert.calledOnceWithMatch(requestStub, aadMatcher.getAad);
     });
 

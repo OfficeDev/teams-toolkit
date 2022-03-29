@@ -662,7 +662,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.name === SolutionError.InvalidInput).to.be.true;
+    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
   });
 
   it("should return err when adding non sso tab to tab when aad manifest enabled", async () => {
@@ -729,7 +729,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.name === SolutionError.InvalidInput).to.be.true;
+    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
   });
 
   it("should return err when adding tab to bot when aad manifest enabled", async () => {
@@ -796,7 +796,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.name === SolutionError.InvalidInput).to.be.true;
+    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
   });
 
   it("should success when adding non sso tab to bot when aad manifest enabled", async () => {
@@ -1023,8 +1023,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.SsoEnabled);
+      expect(result.isErr() && result.error.source === SolutionError.SsoEnabled).to.be.true;
     });
 
     it("should return error when no capability", async () => {
@@ -1053,8 +1052,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddSsoNotSupported);
+      expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
     });
 
     it("should return error when project setting is invalid", async () => {
@@ -1083,8 +1081,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.InvalidSsoProject);
+      expect(result.isErr() && result.error.source === SolutionError.InvalidSsoProject).to.be.true;
     });
   });
 });

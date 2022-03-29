@@ -325,9 +325,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }
@@ -375,9 +375,9 @@ export class AppStudioPluginV3 {
     if (!teamsAppId) {
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           "GetConfigError",
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name),
-          Constants.PLUGIN_NAME
+          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
         )
       );
     }
@@ -411,13 +411,13 @@ export class AppStudioPluginV3 {
 
     const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
     if (!teamsAppId) {
+      const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           AppStudioError.GrantPermissionFailedError.name,
-          AppStudioError.GrantPermissionFailedError.message(
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
-          ),
-          Constants.PLUGIN_NAME
+          msgs[0],
+          msgs[1]
         )
       );
     }
@@ -425,11 +425,13 @@ export class AppStudioPluginV3 {
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
     } catch (error: any) {
+      const msgs = AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId);
       return err(
         new UserError(
+          Constants.PLUGIN_NAME,
           AppStudioError.GrantPermissionFailedError.name,
-          AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId),
-          Constants.PLUGIN_NAME
+          msgs[0],
+          msgs[1]
         )
       );
     }

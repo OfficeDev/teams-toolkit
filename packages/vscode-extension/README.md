@@ -8,7 +8,7 @@ The Teams Toolkit helps developers create and deploy Teams apps with integrated 
 
 ## What are Teams app "Capabilities"?
 
-Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) and [entry points](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/extensibility-points). For example, people can chat with your app's bot (capability) in a channel (entry point).
+Teams apps are a combination of [capabilities](https://aka.ms/teamsfx-capabilities-overview) and [entry points](https://aka.ms/teamsfx-understand-usecase). For example, people can chat with your app's bot (capability) in a channel (entry point).
 
 ### Tab
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import * as util from "util";
 import { ConfigKeys, Plugins } from "./constants";
 
 const referHelpLink = "Please refer to the help link for further steps.";
@@ -94,7 +93,10 @@ export const UpdateRedirectUriError: AadError = {
 
 export const UpdateAadAppError: AadError = {
   name: "UpdateAadAppError",
-  message: (reason: string) => getLocalizedString("error.aad.UpdateAadAppError", reason),
+  message: (reason: string): [string, string] => [
+    getDefaultString("error.aad.UpdateAadAppError", reason),
+    getLocalizedString("error.aad.UpdateAadAppError", reason),
+  ],
 };
 
 export const UpdateAppIdUriError: AadError = {
@@ -229,13 +231,18 @@ export const ListCollaboratorError: AadError = {
 
 export const AadManifestNotFoundError: AadError = {
   name: "AadManifestNotFoundError",
-  message: () => getLocalizedString("error.aad.AadManifestNotFoundError"),
+  message: () => [
+    getDefaultString("error.aad.AadManifestNotFoundError"),
+    getLocalizedString("error.aad.AadManifestNotFoundError"),
+  ],
 };
 
 export const AadManifestLoadError: AadError = {
   name: "AadManifestLoadError",
-  message: (manifestPath: string, reason: string) =>
+  message: (manifestPath: string, reason: string) => [
+    getDefaultString("error.aad.AadManifestLoadError", manifestPath, reason),
     getLocalizedString("error.aad.AadManifestLoadError", manifestPath, reason),
+  ],
 };
 
 export class ConfigErrorMessages {

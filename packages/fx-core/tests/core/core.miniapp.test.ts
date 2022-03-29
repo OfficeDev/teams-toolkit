@@ -50,7 +50,7 @@ describe("Core API for mini app", () => {
         method: "addCapability",
       };
       const addRes = await core.executeUserTaskV2(func, addInputs);
-      assert(addRes.isOk());
+      assert.isTrue(addRes.isOk());
     }
   });
 });

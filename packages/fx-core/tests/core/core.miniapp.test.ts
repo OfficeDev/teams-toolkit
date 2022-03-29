@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Func, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { Func, Inputs, ok, Platform, v2, Void } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import { Container } from "typedi";
 import { FxCore, setTools } from "../../src";
 import { TabSPFxItem } from "../../src/plugins/solution/fx-solution/question";
+import { ResourcePluginsV2 } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 describe("Core API for mini app", () => {
   const sandbox = sinon.createSandbox();
@@ -37,6 +39,8 @@ describe("Core API for mini app", () => {
     const initRes = await core.init(inputs);
     assert.isTrue(initRes.isOk());
     if (initRes.isOk()) {
+      const spfxPlugin = Container.get(ResourcePluginsV2.SpfxPlugin) as v2.ResourcePlugin;
+      sandbox.stub(spfxPlugin, "scaffoldSourceCode").resolves(ok(Void));
       const addInputs: Inputs = {
         platform: Platform.CLI,
         projectPath: projectPath,

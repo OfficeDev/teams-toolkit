@@ -162,6 +162,16 @@ export class Messages {
     telemetry: Messages.getEventName("post-provision"),
   };
 
+  static readonly StartDeploy: Messages = {
+    log: Messages.getLog("Start to deploy"),
+    telemetry: Messages.getEventName("deploy-start"),
+  };
+
+  static readonly EndDeploy: Messages = {
+    log: Messages.getLog("Successfully deploy"),
+    telemetry: Messages.getEventName("deploy"),
+  };
+
   static readonly StartGenerateArmTemplates: Messages = {
     log: Messages.getLog("Start to generate arm templates"),
     telemetry: Messages.getEventName("generate-arm-templates-start"),
@@ -270,6 +280,12 @@ export class ProgressTitle {
   static readonly PostProvisionSteps = 2;
   static readonly UpdatePermission = "Updating permission for Azure AD app";
   static readonly UpdatePermissionSteps = 1;
+
+  static readonly Deploy = "Deploying Azure AD app";
+  static readonly DeploySteps = 1;
+
+  static readonly PostProvisionUsingManifest = "Configuring Azure AD app using manifest";
+  static readonly PostProvisionUsingManifestSteps = 1;
 }
 
 export class ProgressDetail {

@@ -168,6 +168,26 @@ export const AadManifestLoadError: AadError = {
     getLocalizedString("error.aad.AadManifestLoadError", manifestPath, reason),
 };
 
+export const AadManifestMissingName: AadError = {
+  name: "AadManifestMissingName",
+  message: () => getLocalizedString("error.aad.AadManifestMissingName"),
+};
+
+export const AadManifestMissingObjectId: AadError = {
+  name: "AadManifestMissingObjectId",
+  message: () => getLocalizedString("error.aad.AadManifestMissingObjectId"),
+};
+
+export const AadManifestMissingReplyUrlsWithType: AadError = {
+  name: "AadManifestMissingReplyUrlsWithType",
+  message: () => getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+};
+
+export const AadManifestMissingIdentifierUris: AadError = {
+  name: "AadManifestMissingIdentifierUris",
+  message: () => getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = getLocalizedString("error.aad.GetDisplayNameError");
   static readonly GetConfigError = (configName: string, plugin: string) =>
@@ -229,6 +249,7 @@ export class AadManifestErrorMessage {
   static readonly OptionalClaimsMissingIdtypClaim = getLocalizedString(
     "error.aad.manifest.OptionalClaimsMissingIdtypClaim"
   );
+  static readonly AADManifestIssues = getLocalizedString("error.aad.manifest.AADManifestIssues");
 
   static readonly UnknownResourceAppId = getLocalizedString(
     "error.aad.manifest.UnknownResourceAppId"

@@ -13,12 +13,12 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  returnUserError,
   traverse,
   UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { desensitize } from "../../../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
@@ -67,7 +67,7 @@ export class ResourceGroupApiError extends UserError {
       resourceGroupName ? "resource group:" + resourceGroupName : ""
     }`;
     const errorName = new.target.name;
-    if (!error) super(new.target.name, baseErrorMessage, SolutionSource);
+    if (!error) super(SolutionSource, new.target.name, baseErrorMessage);
     else if (error instanceof RestError) {
       const restError = error as RestError;
       // Avoid sensitive information like request headers in the error message.
@@ -78,11 +78,11 @@ export class ResourceGroupApiError extends UserError {
         name: restError.name,
         message: restError.message,
       });
-      super(errorName, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
       super({ name: errorName, error: error });
     } else {
-      super(errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`, SolutionSource);
+      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`);
     }
   }
 }
@@ -99,9 +99,9 @@ export class ResourceGroupHelper {
     if (!azureToken)
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential",
-          SolutionSource
+          "Failed to get azure credential"
         )
       );
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
@@ -112,9 +112,9 @@ export class ResourceGroupHelper {
     if (maybeExist.value) {
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToCreateResourceGroup,
-          `Failed to create resource group "${resourceGroupName}": the resource group exists`,
-          SolutionSource
+          `Failed to create resource group "${resourceGroupName}": the resource group exists`
         )
       );
     }
@@ -171,9 +171,9 @@ export class ResourceGroupHelper {
     if (!azureToken)
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential",
-          SolutionSource
+          "Failed to get azure credential"
         )
       );
     const subscriptionClient = new SubscriptionClient(azureToken);
@@ -190,10 +190,11 @@ export class ResourceGroupHelper {
     const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
     if (!rgLocations || rgLocations.length == 0) {
       return err(
-        returnUserError(
-          new Error(`Failed to list resource group locations`),
+        new UserError(
           SolutionSource,
-          SolutionError.FailedToListResourceGroupLocation
+          SolutionError.FailedToListResourceGroupLocation,
+          getDefaultString("error.FailedToListResourceGroupLocation"),
+          getLocalizedString("error.FailedToListResourceGroupLocation")
         )
       );
     }
@@ -280,7 +281,7 @@ export class ResourceGroupHelper {
     const targetResourceGroupName = inputs.targetResourceGroupName;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
       return err(
-        new UserError("InvalidInputError", "Invalid targetResourceGroupName", SolutionSource)
+        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
       );
     }
     const resourceGroupName = inputs.targetResourceGroupName;

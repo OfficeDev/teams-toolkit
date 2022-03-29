@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import { SystemError } from "@microsoft/teamsfx-api";
-import { UserError } from "@microsoft/teamsfx-api";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 chaiUse(chaiPromises);
@@ -18,8 +17,13 @@ describe(FunctionPluginInfo.pluginName, async () => {
   describe("Error Catch Test", async () => {
     it("Test catch UserError", async () => {
       // Arrange
-      const errorOld = new UserError("ut-name", "ut-msg", "ut-source");
-      const errorNew = new FunctionPluginError(ErrorType.System, "ut-code", "ut-msg", []);
+      const errorOld = new UserError("ut-source", "ut-name", "ut-msg");
+      const errorNew = new FunctionPluginError(
+        ErrorType.System,
+        "ut-code",
+        ["ut-msg", "ut-msg"],
+        []
+      );
       // Act
       const res = runWithErrorCatchAndThrow(
         errorNew,
@@ -32,8 +36,13 @@ describe(FunctionPluginInfo.pluginName, async () => {
 
     it("Test catch SystemError", async () => {
       // Arrange
-      const errorOld = new SystemError("ut-name", "ut-msg", "ut-source");
-      const errorNew = new FunctionPluginError(ErrorType.System, "ut-code", "ut-msg", []);
+      const errorOld = new SystemError("ut-source", "ut-name", "ut-msg");
+      const errorNew = new FunctionPluginError(
+        ErrorType.System,
+        "ut-code",
+        ["ut-msg", "ut-msg"],
+        []
+      );
       // Act
       const res = runWithErrorCatchAndThrow(
         errorNew,
@@ -47,7 +56,12 @@ describe(FunctionPluginInfo.pluginName, async () => {
     it("Test catch Error", async () => {
       // Arrange
       const errorOld = new Error("ut-name");
-      const errorNew = new FunctionPluginError(ErrorType.System, "ut-code", "ut-msg", []);
+      const errorNew = new FunctionPluginError(
+        ErrorType.System,
+        "ut-code",
+        ["ut-msg", "ut-msg"],
+        []
+      );
       // Act
       const res = runWithErrorCatchAndThrow(
         errorNew,

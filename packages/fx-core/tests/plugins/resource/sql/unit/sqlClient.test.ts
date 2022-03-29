@@ -58,7 +58,7 @@ describe("sqlClient", () => {
     } catch (error) {
       // Assert
       chai.assert.include(
-        error.notificationMessage,
+        error.displayMessage,
         getLocalizedString("plugins.sql.errorMessage.GetDetail")
       );
     }
@@ -92,7 +92,7 @@ describe("sqlClient", () => {
       await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
-      chai.assert.include(error.notificationMessage, ErrorMessage.GuestAdminError);
+      chai.assert.include(error.displayMessage, ErrorMessage.GuestAdminError);
     }
   });
 });
@@ -146,7 +146,7 @@ describe("sqlClient", () => {
     } catch (error) {
       // Assert
       chai.assert.include(
-        error.notificationMessage,
+        error.displayMessage,
         getLocalizedString("plugins.sql.errorMessage.GetDetail")
       );
     }
@@ -163,7 +163,7 @@ describe("sqlClient", () => {
       await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.notificationMessage, ErrorMessage.DomainError);
+      chai.assert.include(error.displayMessage, ErrorMessage.DomainError);
     }
   });
 });

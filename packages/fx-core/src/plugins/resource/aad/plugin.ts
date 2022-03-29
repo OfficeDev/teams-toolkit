@@ -457,9 +457,7 @@ export class AadAppForTeamsImpl {
     if (!objectId) {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(
-          ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-        )
+        ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
       );
     }
 

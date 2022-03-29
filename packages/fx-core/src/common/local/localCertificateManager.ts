@@ -8,7 +8,7 @@ import {
   LogProvider,
   UserInteraction,
   FxError,
-  returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
 import { CoreSource } from "../../core/error";
+import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 const installText = "Install";
 const learnMoreText = "Learn More";
@@ -31,14 +32,13 @@ const confirmMessage =
   warningMessage +
   " You may be asked for your account credentials when installing the certificate.";
 
-const trustCertificateCancelError = returnUserError(
-  new Error(
-    "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store."
-  ),
-  CoreSource,
-  "TrustCertificateCancelError",
-  learnMoreUrl
-);
+const trustCertificateCancelError = new UserError({
+  source: CoreSource,
+  name: "TrustCertificateCancelError",
+  helpLink: learnMoreUrl,
+  message: getDefaultString("error.TrustCertificateCancelError"),
+  displayMessage: getLocalizedString("error.TrustCertificateCancelError"),
+});
 export interface LocalCertificate {
   certPath: string;
   keyPath: string;
@@ -109,7 +109,12 @@ export class LocalCertificateManager {
     } catch (error: any) {
       this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
       localCert.isTrusted = false;
-      localCert.error = returnUserError(error, CoreSource, "SetupCertificateError", learnMoreUrl);
+      localCert.error = new UserError({
+        error,
+        source: CoreSource,
+        name: "SetupCertificateError",
+        helpLink: learnMoreUrl,
+      });
     } finally {
       return localCert;
     }
@@ -341,7 +346,12 @@ export class LocalCertificateManager {
       // treat any error as install failure, to not block the main progress
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
       localCert.isTrusted = false;
-      localCert.error = returnUserError(error, CoreSource, "TrustCertificateError", learnMoreUrl);
+      localCert.error = new UserError({
+        error,
+        source: CoreSource,
+        name: "TrustCertificateError",
+        helpLink: learnMoreUrl,
+      });
       return;
     }
   }

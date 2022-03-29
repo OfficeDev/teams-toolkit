@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -62,6 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.addApiConnector",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
@@ -468,6 +469,10 @@
         "title": "%teamstoolkit.commands.validateManifest.title%"
       },
       {
+        "command": "fx-extension.connectExistingApi",
+        "title": "%teamstoolkit.commands.connectExistingApi.title%"
+      },
+      {
         "command": "fx-extension.build",
         "title": "%teamstoolkit.commands.zipPackage.title%"
       },
@@ -865,6 +870,30 @@
         }
       },
       {
+        "title": "SPFx Prerequisite Check",
+        "order": 2,
+        "properties": {
+          "fx-extension.spfxPrerequisiteCheck": {
+            "type": "object",
+            "properties": {
+              "yo": {
+                "type": "boolean",
+                "description": "Ensure Yeoman CLI is installed. (requires reload of VS Code)"
+              },
+              "sharepointYeomanGenerator": {
+                "type": "boolean",
+                "description": "Ensure Sharepoint Yeoman generator is installed. (requires reload of VS Code)"
+              }
+            },
+            "additionalProperties": false,
+            "default": {
+              "yo": true,
+              "sharepointYeomanGenerator": true
+            }
+          }
+        }
+      },
+      {
         "title": "Experimental Features",
         "order": 3,
         "properties": {
@@ -1070,8 +1099,8 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.17.0",
-    "@microsoft/teamsfx-core": "^1.6.0",
+    "@microsoft/teamsfx-api": "^0.17.1",
+    "@microsoft/teamsfx-core": "^1.6.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "ajv": "^8.5.0",

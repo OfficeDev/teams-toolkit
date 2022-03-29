@@ -32,7 +32,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
       await channel.sendAdaptiveCard(...);
     }
 
-    // List all members in the Team then notify individual person
+    // List all members in the Team then notify each member
     const members = await target.members();
     for (const member of members) {
       await member.sendAdaptiveCard(...);
@@ -40,12 +40,12 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
   }
   **/
 
-  /** "Group" means this bot is installe to a Group Chat
+  /** "Group" means this bot is installed to a Group Chat
   if (target.type === "Group") {
     // Directly notify the Group Chat
     await target.sendAdaptiveCard(...);
 
-    // List all members in the Group Chat then notify individual person
+    // List all members in the Group Chat then notify each member
     const members = await target.members();
     for (const member of members) {
       await member.sendAdaptiveCard(...);
@@ -53,7 +53,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
   }
   **/
 
-  /** "Person" means this bot is installed as Personal app
+  /** "Person" means this bot is installed as a Personal app
   if (target.type === "Person") {
     // Directly notify the individual person
     await target.sendAdaptiveCard(...);

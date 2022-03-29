@@ -38,7 +38,7 @@ describe("Core API for mini app", () => {
     assert.isTrue(initRes.isOk());
     if (initRes.isOk()) {
       const addInputs: Inputs = {
-        platform: Platform.VSCode,
+        platform: Platform.CLI,
         projectPath: projectPath,
         capabilities: [TabSPFxItem.id],
         "spfx-framework-type": "react",

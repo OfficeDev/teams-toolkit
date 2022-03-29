@@ -372,7 +372,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, true);
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
 export function isInitAppEnabled(): boolean {
@@ -380,7 +380,7 @@ export function isInitAppEnabled(): boolean {
 }
 
 export function isAadManifestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, true);
+  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }
 
 export function isM365AppEnabled(): boolean {

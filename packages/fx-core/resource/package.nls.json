@@ -410,7 +410,7 @@
   "core.createCapabilityQuestion.title": "Select capabilities",
   "core.createCapabilityQuestion.placeholder": "Select at least 1 capability",
   "core.capability.validation": "Invalid capability combinations: %s, option sets: %s are mutually exclusive",
-  "core.capability.validation.spfx": "Invalid capability, add TabSPFx is only permitted",
+  "core.capability.validation.spfx": "Add SPFx Tab is only permitted for minimal app",
   "core.createCapabilityQuestion.validation1": "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available",
   "core.createCapabilityQuestion.botNotificationConflict": "Bot and Notification capabilities are in conflict",
   "core.createCapabilityQuestion.botCommandAndResponseConflict": "Bot and Command and Response capabilities are in conflict",

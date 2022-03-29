@@ -501,6 +501,7 @@ export async function getQuestionsForAddCapability(
       }
       const spfxQuestionNode = result.value;
       if (spfxQuestionNode) {
+        spfxQuestionNode.condition = { contains: TabSPFxItem.id };
         addCapNode.addChild(spfxQuestionNode);
       }
     }

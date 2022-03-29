@@ -258,6 +258,7 @@
   "error.cicd.FailedToListMultiEnv": "Failed to list multi env.",
   "error.cicd.PreconditionNotMet": "Some preconditions of inputs are not met.",
   "error.cicd.NoProjectOpened.details": "No project opened.",
+  "error.InitializedFileExistError": "Initialized file(s) %s already exist, please clean up and try again.",
   "error.ProjectFolderExistError": "Path %s already exists. Select a different folder.",
   "error.PathNotExistError": "Path does not exist: %s",
   "error.ProjectFolderInvalidError": "Path %s is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \\${homeDir} ).",

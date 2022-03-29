@@ -6,3 +6,6 @@ local.settings.json
 test
 tsconfig.json
 .teamsfx.bot.json
+node_modules/.bin
+node_modules/azure-functions-core-tools
+node_modules/azurite

@@ -77,7 +77,7 @@ import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { CommandsTreeViewProvider, TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -102,6 +102,7 @@ import {
   isSPFxProject,
   isTeamsfx,
   isTriggerFromWalkThrough,
+  getTriggerFromProperty,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -564,7 +565,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
   return result;
 }
 
-export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
+export async function addCapabilityHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure",
@@ -664,7 +665,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     },
   };
 
-  if (args && args.length > 0 && args[0] != CommandsTreeViewProvider.TreeViewFlag) {
+  if (args && args.length > 0 && args[0] != TreeViewCommand.TreeViewFlag) {
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
@@ -1294,9 +1295,9 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   });
 }
 
-export async function openDocumentHandler(args: any[]): Promise<boolean> {
+export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
@@ -1323,12 +1324,13 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
-export async function openWelcomeHandler(args?: any[]) {
+export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  vscode.commands.executeCommand(
+  const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
     "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
   );
+  return Promise.resolve(ok(data));
 }
 
 export async function checkUpgrade(args?: any[]) {
@@ -1338,38 +1340,6 @@ export async function checkUpgrade(args?: any[]) {
 
 export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
-}
-
-function getTriggerFromProperty(args?: any[]) {
-  // if not args are not supplied, by default, it is trigger from "CommandPalette"
-  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
-  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
-  if (!args || (args && args.length === 0)) {
-    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
-  }
-
-  switch (args[0].toString()) {
-    case TelemetryTiggerFrom.TreeView:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
-    case TelemetryTiggerFrom.Webview:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    case TelemetryTiggerFrom.CodeLens:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
-    case TelemetryTiggerFrom.EditorTitle:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
-    case TelemetryTiggerFrom.SideBar:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
-    case TelemetryTiggerFrom.Notification:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
-    case TelemetryTiggerFrom.WalkThrough:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
-    case TelemetryTiggerFrom.Auto:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
-    case TelemetryTiggerFrom.Other:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
-    default:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
-  }
 }
 
 async function autoOpenProjectHandler(): Promise<void> {
@@ -1600,14 +1570,15 @@ async function showLocalDebugMessage() {
     });
 }
 
-export async function openSamplesHandler(args?: any[]) {
+export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
+  return Promise.resolve(ok(null));
 }
 
-export async function openAppManagement(args?: any[]) {
+export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/home"));
+  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/home");
 }
 
 export async function openBotManagement(args?: any[]) {
@@ -1615,9 +1586,9 @@ export async function openBotManagement(args?: any[]) {
   return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/bots"));
 }
 
-export async function openReportIssues(args?: any[]) {
+export async function openReportIssues(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ReportIssues, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
+  return VS_CODE_UI.openUrl("https://github.com/OfficeDev/TeamsFx/issues");
 }
 
 export async function openExternalHandler(args?: any[]) {
@@ -1962,13 +1933,8 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
   }
-  if (!isValidProject(getWorkspacePath())) {
-    const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
-    context.subscriptions.push(...disposables);
-  } else {
-    const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
-    context.subscriptions.push(...disposables);
-  }
+  const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
+  context.subscriptions.push(...disposables);
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
@@ -2173,7 +2139,9 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.TreeView]) {
+export async function openAdaptiveCardExt(
+  args: any[] = [TelemetryTiggerFrom.TreeView]
+): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
   const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
   const extension = vscode.extensions.getExtension(acExtId);
@@ -2193,6 +2161,7 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
+  return Promise.resolve(ok(null));
 }
 
 export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {

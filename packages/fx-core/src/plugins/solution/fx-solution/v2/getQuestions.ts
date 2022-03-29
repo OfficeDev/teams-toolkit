@@ -154,11 +154,11 @@ export async function getQuestionsForScaffolding(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+          // TODO(aochengwang): add a parent question node to prevent overwriting bot question.condition
           if (
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
-            cap.includes(NotificationOptionItem.id) ||
-            cap.includes(CommandAndResponseOptionItem.id)
+            cap.includes(NotificationOptionItem.id)
           ) {
             return undefined;
           }

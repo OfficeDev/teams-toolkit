@@ -27,7 +27,7 @@ import {
 import axios from "axios";
 import * as util from "util";
 import { registerEnvTreeHandler } from "./envTree";
-import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { localize } from "./utils/localizeUtils";
 
 export async function getSubscriptionId(): Promise<string | undefined> {

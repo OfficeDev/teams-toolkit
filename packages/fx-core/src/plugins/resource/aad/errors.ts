@@ -247,22 +247,34 @@ export const AadManifestLoadError: AadError = {
 
 export const AadManifestMissingName: AadError = {
   name: "AadManifestMissingName",
-  message: () => getLocalizedString("error.aad.AadManifestMissingName"),
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingName"),
+    getLocalizedString("error.aad.AadManifestMissingName"),
+  ],
 };
 
 export const AadManifestMissingObjectId: AadError = {
   name: "AadManifestMissingObjectId",
-  message: () => getLocalizedString("error.aad.AadManifestMissingObjectId"),
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingObjectId"),
+    getLocalizedString("error.aad.AadManifestMissingObjectId"),
+  ],
 };
 
 export const AadManifestMissingReplyUrlsWithType: AadError = {
   name: "AadManifestMissingReplyUrlsWithType",
-  message: () => getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingReplyUrlsWithType"),
+    getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+  ],
 };
 
 export const AadManifestMissingIdentifierUris: AadError = {
   name: "AadManifestMissingIdentifierUris",
-  message: () => getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingIdentifierUris"),
+    getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+  ],
 };
 
 export class ConfigErrorMessages {

@@ -20,6 +20,7 @@ import {
   ProjectConfig,
   ProjectConfigV3,
   ProjectSettings,
+  ProjectSettingsFileName,
   QTreeNode,
   Result,
   Stage,
@@ -1451,6 +1452,17 @@ export class FxCore implements v3.ICore {
     projectPath: string
   ): Promise<Result<Void, FxError>> {
     const existFiles = new Array<string>();
+    // 0. check if projectSettings.json exists
+    const settingsFile = path.resolve(
+      projectPath,
+      `.${ConfigFolderName}`,
+      "configs",
+      ProjectSettingsFileName
+    );
+    if (await fs.pathExists(settingsFile)) {
+      existFiles.push(settingsFile);
+    }
+
     // 1. check if manifest templates exist
     const manifestPreCheckResult = await appStudioV3.preCheck(projectPath);
     existFiles.push(...manifestPreCheckResult);

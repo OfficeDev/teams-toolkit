@@ -90,6 +90,7 @@ export enum TelemetryEvent {
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
   ViewGuidedTutorials = "view-guided-tutorials",
+  OpenTutorial = "open-tutorial",
 
   GetStartedPrerequisitesStart = "get-started-prerequisites-start",
   GetStartedPrerequisites = "get-started-prerequisites",
@@ -220,6 +221,8 @@ export enum TelemetryProperty {
   // Used with TreeViewCommandConcurrentExecution
   RunningCommand = "running-command",
   BlockedCommand = "blocked-command",
+  // Used with OpenTutorial
+  TutorialName = "tutorial-name",
 }
 
 export enum TelemetrySuccess {

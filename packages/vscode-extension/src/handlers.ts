@@ -2701,10 +2701,7 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
 }
 
 export async function selectTutorialsHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ClickViewGuidedTutorials,
-    getTriggerFromProperty(args)
-  );
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: "Choose a tutorial",
@@ -2719,7 +2716,16 @@ export async function selectTutorialsHandler(args?: any[]) {
   }
 }
 
-export function openTutorialHandler(args?: any) {
+export function openTutorialHandler(args?: any[]) {
+  if (!args || args.length !== 2) {
+    // should never happen
+    return;
+  }
+  const tutorialName = args[1] as string;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTutorial, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.TutorialName]: tutorialName,
+  });
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;

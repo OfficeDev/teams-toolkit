@@ -552,7 +552,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   );
   context.subscriptions.push(createCmd);
 
-  // Initialize an existing application
+  // Initialize
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
     Correlator.run(runTreeViewCommand, "fx-extension.init", args)
   );

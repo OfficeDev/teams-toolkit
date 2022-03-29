@@ -90,7 +90,7 @@
       },
       {
         "view": "teamsfx-empty-project-and-init",
-        "contents": "To start Teams app development experience, create a new Teams app or initialize your application with Teams Toolkit.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Initialize an existing application](command:fx-extension.init?%5B%22SideBar%22%5D)\nYou can also explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a new Teams app or initialize your workspace.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Initialize your workspace](command:fx-extension.init?%5B%22SideBar%22%5D)\nYou can also explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -447,7 +447,7 @@
       },
       {
         "command": "fx-extension.init",
-        "title": "Teams: Initialize your application with Teams Toolkit",
+        "title": "%teamstoolkit.commands.init.title%",
         "enablement": "fx-extension.isInitAppEnabled"
       },
       {

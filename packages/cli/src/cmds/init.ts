@@ -23,7 +23,7 @@ import { NotFoundInputedFolder } from "../error";
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
   public readonly command = this.commandHead;
-  public readonly description = "Initialize an existing application.";
+  public readonly description = "Initialize your workspace.";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.init);

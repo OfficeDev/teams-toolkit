@@ -9,7 +9,7 @@ import { QuestionNames } from "../../../../../../src/plugins/resource/bot/consta
 import { PluginActRoles } from "../../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import { BotOptionItem } from "../../../../../../src/plugins/solution/fx-solution/question";
 
-describe("getBotHostType Tests", () => {
+describe("TeamsBotConfig Tests", () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {
     sandbox.restore();

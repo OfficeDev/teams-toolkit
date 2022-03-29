@@ -257,9 +257,9 @@ class BicepChecker {
     await this.cleanup();
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallError);
     throw new SystemError(
+      source,
       DepsCheckerEvent.bicepInstallError,
-      Messages.failToInstallBicep.split("@NameVersion").join(displayBicepName),
-      source
+      Messages.failToInstallBicep.split("@NameVersion").join(displayBicepName)
     );
   }
 
@@ -347,11 +347,11 @@ function sendSystemErrorEvent(
   telemetry?: TelemetryReporter
 ): void {
   const error = new SystemError(
-    eventName,
-    `errorMsg=${errorMessage},errorStack=${errorStack}`,
     source,
-    errorStack
+    eventName,
+    `errorMsg=${errorMessage},errorStack=${errorStack}`
   );
+  error.stack = errorStack;
   sendErrorTelemetryThenReturnError(eventName, error, telemetry, getCommonProps());
 }
 

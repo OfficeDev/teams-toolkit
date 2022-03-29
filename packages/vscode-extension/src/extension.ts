@@ -126,6 +126,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateManifestCmd);
 
+  const addApiConnector = vscode.commands.registerCommand(
+    "fx-extension.connectExistingApi",
+    (...args) => Correlator.run(handlers.connectExistingApiHandler, args)
+  );
+
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(

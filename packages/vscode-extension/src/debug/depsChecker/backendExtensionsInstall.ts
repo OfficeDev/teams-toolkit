@@ -23,7 +23,7 @@ export async function installBackendExtension(
     if (e instanceof DepsCheckerError) {
       await depsChecker.display(e.message, e.helpLink);
     } else {
-      await depsChecker.display(Messages.defaultErrorMessage, defaultHelpLink);
+      await depsChecker.display(Messages.defaultErrorMessage[0], defaultHelpLink);
     }
     return false;
   }

@@ -45,7 +45,7 @@ import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
 import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
-import { getLocalizedString } from "../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export async function listCollaborator(
   ctx: v2.Context,
@@ -365,9 +365,10 @@ export async function grantPermission(
     if (!email || email === result.value.userPrincipalName) {
       return err(
         new UserError(
+          CoreSource,
           SolutionError.EmailCannotBeEmptyOrSame,
-          getLocalizedString("core.collaboration.EmailCannotBeEmptyOrSame"),
-          CoreSource
+          getDefaultString("core.collaboration.EmailCannotBeEmptyOrSame"),
+          getLocalizedString("core.collaboration.EmailCannotBeEmptyOrSame")
         )
       );
     }
@@ -377,9 +378,10 @@ export async function grantPermission(
     if (!userInfo) {
       return err(
         new UserError(
+          CoreSource,
           SolutionError.CannotFindUserInCurrentTenant,
-          getLocalizedString("core.collaboration.CannotFindUserInCurrentTenant"),
-          CoreSource
+          getDefaultString("core.collaboration.CannotFindUserInCurrentTenant"),
+          getLocalizedString("core.collaboration.CannotFindUserInCurrentTenant")
         )
       );
     }

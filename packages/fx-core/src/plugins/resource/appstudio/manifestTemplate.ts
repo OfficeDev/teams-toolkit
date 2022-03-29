@@ -12,7 +12,7 @@ import {
   v3,
   IStaticTab,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory, isConfigUnifyEnabled } from "../../../common";
+import { getAppDirectory, isConfigUnifyEnabled, deepCopy } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -248,15 +248,13 @@ export async function addCapabilities(
           remoteManifest.staticTabs!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            STATIC_TABS_TPL_EXISTING_APP[0].entityId = "index" + staticTabIndex;
-            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_EXISTING_APP
-            );
+            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
+            template.entityId = "index" + staticTabIndex;
+            remoteManifest.staticTabs!.push(template);
           } else {
-            STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
-            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_FOR_MULTI_ENV
-            );
+            const template = deepCopy(STATIC_TABS_TPL_FOR_MULTI_ENV[0]);
+            template.entityId = "index" + staticTabIndex;
+            remoteManifest.staticTabs!.push(template);
           }
           staticTabIndex++;
         }
@@ -340,15 +338,13 @@ export async function addCapabilities(
             Object.assign(localManifest, { staticTabs: [] });
           }
           if (capability.existingApp) {
-            STATIC_TABS_TPL_EXISTING_APP[0].entityId = "index" + staticTabIndex;
-            localManifest.staticTabs = localManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_EXISTING_APP
-            );
+            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
+            template.entityId = "index" + staticTabIndex;
+            localManifest.staticTabs!.push(template);
           } else {
-            STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
-            localManifest.staticTabs = localManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_LOCAL_DEBUG
-            );
+            const template = deepCopy(STATIC_TABS_TPL_LOCAL_DEBUG[0]);
+            template.entityId = "index" + staticTabIndex;
+            localManifest.staticTabs!.push(template);
           }
           staticTabIndex++;
           break;

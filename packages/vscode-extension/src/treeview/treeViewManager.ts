@@ -76,7 +76,6 @@ class TreeViewManager {
       // TODO: remove this logic because walkthrough is enabled.
       return this.registerTreeViewsForNonTeamsFxProject();
     }
-    return [];
   }
 
   public getTreeView(viewName: string) {
@@ -177,6 +176,10 @@ class TreeViewManager {
 
     this.registerAccount(disposables);
     this.registerEnvironment(disposables);
+    const developmentCommands = this.getDevelopmentCommands(false, false);
+    this.registerDevelopment(developmentCommands, disposables);
+    this.registerDeployment(disposables);
+    this.registerHelper(disposables);
 
     return disposables;
   }

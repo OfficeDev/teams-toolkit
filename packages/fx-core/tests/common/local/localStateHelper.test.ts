@@ -58,7 +58,7 @@ describe("localSettingsHelper", () => {
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 7);
+      chai.assert.equal(Object.keys(localEnvs).length, 5);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
         "https://localhost:53000/auth-start.html"
@@ -83,7 +83,7 @@ describe("localSettingsHelper", () => {
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 5);
+      chai.assert.equal(Object.keys(localEnvs).length, 3);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"]);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
     });
@@ -97,7 +97,7 @@ describe("localSettingsHelper", () => {
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 17);
+      chai.assert.equal(Object.keys(localEnvs).length, 15);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
         "https://localhost:53000/auth-start.html"

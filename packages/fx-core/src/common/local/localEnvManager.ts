@@ -12,7 +12,6 @@ import {
   TelemetryReporter,
   UserError,
   UserInteraction,
-  v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -84,7 +83,7 @@ export class LocalEnvManager {
     projectPath: string,
     projectSettings: ProjectSettings,
     localSettings: Json | undefined,
-    envInfo?: v2.EnvInfoV2
+    envInfo?: EnvInfoV2
   ): Promise<Record<string, string>> {
     if (isConfigUnifyEnabled()) {
       return await localStateHelper.convertToLocalEnvs(

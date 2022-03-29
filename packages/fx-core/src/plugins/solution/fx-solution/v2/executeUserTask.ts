@@ -400,14 +400,12 @@ export async function addCapability(
   const vsProject = isVSProject(ctx.projectSetting);
 
   // check SPFx
-  let concurrent = true;
   if (toAddSpfx) {
-    pluginNamesToScaffold.add(ResourcePluginsV2.AppStudioPlugin);
     pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
     capabilitiesToAddManifest.push({ name: "staticTab" });
+    capabilitiesToAddManifest.push({ name: "configurableTab" });
     newCapabilitySet.add(TabSPFxItem.id);
     solutionSettings.hostType = HostTypeOptionSPFx.id;
-    concurrent = false;
   } else {
     if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
       pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
@@ -536,8 +534,7 @@ export async function addCapability(
       inputsNew,
       localSettings,
       pluginsToScaffold,
-      pluginsToArm,
-      concurrent
+      pluginsToArm
     );
     if (scaffoldRes.isErr()) {
       ctx.projectSetting.solutionSettings = originalSettings;
@@ -551,7 +548,7 @@ export async function addCapability(
     }
   }
   // 4. update manifest
-  if (capabilitiesToAddManifest.length > 0 && !toAddSpfx) {
+  if (capabilitiesToAddManifest.length > 0) {
     await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {

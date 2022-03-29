@@ -23,6 +23,9 @@ import {
   UnknownPermissionScope,
   GetConfigError,
   ConfigErrorMessages,
+  AadManifestNotFoundError,
+  AadManifestLoadError,
+  AadManifestErrorMessage,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -42,7 +45,7 @@ import {
   RequiredResourceAccess,
   ResourceAccess,
 } from "./interfaces/IAADDefinition";
-import { validate as uuidValidate } from "uuid";
+import { validate as uuidValidate, v4 as uuidv4 } from "uuid";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -52,9 +55,14 @@ import { AadOwner, ResourcePermission } from "../../../common/permissionInterfac
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
+import { AadAppManifestManager } from "./aadAppManifestManager";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      return await this.provisionUsingManifest(ctx, isLocalDebug);
+    }
+
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -136,6 +144,73 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
+  public async provisionUsingManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.StartProvision,
+      Messages.StartLocalDebug,
+      isLocalDebug
+    );
+
+    const telemetryMessage = isLocalDebug
+      ? Messages.EndLocalDebug.telemetry
+      : Messages.EndProvision.telemetry;
+
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+
+    // Move objectId etc. from input to output.
+    const skip = Utils.skipAADProvision(ctx, false);
+    DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
+
+    let config: ProvisionConfig = new ProvisionConfig(false);
+    await config.restoreConfigFromContext(ctx);
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
+
+    await DialogUtils.progress?.start(ProgressDetail.Starting);
+    if (manifest.id) {
+      if (!skip) {
+        await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
+        config = await AadAppClient.getAadAppUsingManifest(
+          telemetryMessage,
+          manifest.id,
+          config.password,
+          ctx.graphTokenProvider,
+          ctx.envInfo.envName
+        );
+        ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
+      }
+    } else {
+      await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
+      await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
+      config.password = undefined;
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
+    }
+
+    if (!config.password) {
+      await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
+      await AadAppClient.createAadAppSecret(telemetryMessage, config);
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
+    }
+
+    await DialogUtils.progress?.end(true);
+    config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
+
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.EndProvision,
+      Messages.EndLocalDebug,
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+    );
+    return ResultFactory.Success();
+  }
+
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
@@ -155,6 +230,9 @@ export class AadAppForTeamsImpl {
   }
 
   public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      return await this.postProvisionUsingManifest(ctx, isLocalDebug);
+    }
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -208,6 +286,48 @@ export class AadAppForTeamsImpl {
       isLocalDebug,
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
+    return ResultFactory.Success();
+  }
+
+  public async postProvisionUsingManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.StartPostProvision,
+      Messages.StartPostLocalDebug,
+      isLocalDebug
+    );
+
+    const skip = Utils.skipAADProvision(ctx, false);
+    DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
+
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    const config: PostProvisionConfig = new PostProvisionConfig(false);
+    config.restoreConfigFromContext(ctx);
+
+    await DialogUtils.progress?.start(ProgressDetail.Starting);
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+
+    await AadAppClient.updateAadAppUsingManifest(
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
+      manifest,
+      skip
+    );
+
+    await DialogUtils.progress?.end(true);
+
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.EndPostProvision,
+      Messages.EndPostLocalDebug,
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+    );
+
     return ResultFactory.Success();
   }
 

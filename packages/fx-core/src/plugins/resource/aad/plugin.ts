@@ -727,11 +727,16 @@ export class AadAppForTeamsImpl {
 
   public async scaffold(ctx: PluginContext): Promise<AadResult> {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      TelemetryUtils.init(ctx);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartScaffold);
+
       const templatesFolder = getTemplatesFolder();
       const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
       const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
       await fs.ensureDir(appDir);
       await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
+
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
     }
     return ResultFactory.Success();
   }

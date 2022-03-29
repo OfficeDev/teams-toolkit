@@ -163,13 +163,23 @@ export class Messages {
   };
 
   static readonly StartDeploy: Messages = {
-    log: Messages.getLog("Start to deploy"),
+    log: Messages.getLog("Start to deploy resources"),
     telemetry: Messages.getEventName("deploy-start"),
   };
 
   static readonly EndDeploy: Messages = {
-    log: Messages.getLog("Successfully deploy"),
+    log: Messages.getLog("Successfully deploy resources"),
     telemetry: Messages.getEventName("deploy"),
+  };
+
+  static readonly StartScaffold: Messages = {
+    log: Messages.getLog("Start to scaffold resources"),
+    telemetry: Messages.getEventName("scaffold-start"),
+  };
+
+  static readonly EndScaffold: Messages = {
+    log: Messages.getLog("Successfully scaffold resources"),
+    telemetry: Messages.getEventName("scaffold"),
   };
 
   static readonly StartGenerateArmTemplates: Messages = {
@@ -230,16 +240,6 @@ export class Messages {
   static readonly EndListCollaborator: Messages = {
     log: Messages.getLog("Successfully list collaborator"),
     telemetry: Messages.getEventName("list-collaborator"),
-  };
-
-  static readonly Scaffold: Messages = {
-    log: Messages.getLog("Successfully scaffold resources"),
-    telemetry: Messages.getEventName("scaffold"),
-  };
-
-  static readonly Deploy: Messages = {
-    log: Messages.getLog("Successfully deploy resources"),
-    telemetry: Messages.getEventName("deploy"),
   };
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";

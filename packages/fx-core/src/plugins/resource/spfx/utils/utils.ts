@@ -3,7 +3,7 @@
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import { glob } from "glob";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 
@@ -72,6 +72,22 @@ export class Utils {
       },
     });
     return axiosInstance;
+  }
+
+  static getPackageVersion(pkgName: string): string | undefined {
+    try {
+      const output = execSync(`npm list ${pkgName} -g --depth=0`);
+
+      const regex = /(?<installPath>[^\n]+)\n`-- ([^@]+)@(?<version>\d+\.\d+\.\d+)/;
+      const match = regex.exec(output.toString());
+      if (match && match.groups) {
+        return match.groups.version;
+      } else {
+        return undefined;
+      }
+    } catch (e) {
+      return undefined;
+    }
   }
 }
 

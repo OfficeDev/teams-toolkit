@@ -63,7 +63,7 @@ describe("OpenApiProcessor", () => {
       });
     });
 
-    const errorInput: { message: string; filePath: string; error: string }[] = [
+    const errorInput: { message: string; filePath: string; error: [string, string] }[] = [
       {
         message: "invalid json file",
         filePath: `${testDataBaseFolder}/errorSpec/invalid.json`,
@@ -120,7 +120,7 @@ describe("OpenApiProcessor", () => {
         const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
         await chai
           .expect(openApiProcessor.loadOpenApiDocument(input.filePath))
-          .to.be.rejectedWith(input.error);
+          .to.be.rejectedWith(input.error[0]);
       });
     });
   });
@@ -227,7 +227,7 @@ describe("OpenApiProcessor", () => {
       message: string;
       schemaVersion: OpenApiSchemaVersion;
       endpoint: string;
-      error: string;
+      error: [string, string];
     }[] = [
       {
         message: "v2 test-host",
@@ -271,7 +271,7 @@ describe("OpenApiProcessor", () => {
               input.endpoint
             )
           )
-          .Throw(input.error);
+          .Throw(input.error[0]);
       });
     });
   });

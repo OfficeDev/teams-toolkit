@@ -31,6 +31,7 @@ import { LocalCertificate, LocalCertificateManager } from "./localCertificateMan
 import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -141,9 +142,10 @@ export class LocalEnvManager {
 
       if (!(await fs.pathExists(projectSettingsPath))) {
         throw new UserError(
+          CoreSource,
           "FileNotFoundError",
-          `Project settings file does not exist: ${projectSettingsPath}`,
-          CoreSource
+          getDefaultString("error.FileNotFoundError", projectSettingsPath),
+          getLocalizedString("error.FileNotFoundError", projectSettingsPath)
         );
       }
 

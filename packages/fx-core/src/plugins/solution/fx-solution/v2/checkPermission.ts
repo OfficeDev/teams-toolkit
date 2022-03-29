@@ -8,8 +8,6 @@ import {
   Platform,
   PluginContext,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionContext,
   v2,
   Err,
@@ -19,6 +17,8 @@ import {
   LogProvider,
   ConfigMap,
   Json,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
@@ -41,7 +41,7 @@ import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { PluginsWithContext } from "../types";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,
@@ -159,10 +159,11 @@ async function checkPermissionImpl(
       return err(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.CheckPermission,
-          returnSystemError(
-            new Error(getLocalizedString("core.collaboration.FailedToGetEnvName")),
+          new SystemError(
             SolutionSource,
-            SolutionError.FailedToGetEnvName
+            SolutionError.FailedToGetEnvName,
+            getDefaultString("core.collaboration.FailedToGetEnvName"),
+            getLocalizedString("core.collaboration.FailedToGetEnvName")
           ),
           telemetryReporter
         )
@@ -241,7 +242,7 @@ async function checkPermissionImpl(
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.CheckPermission,
-        returnUserError(new Error(errorMsg), SolutionSource, SolutionError.FailedToCheckPermission),
+        new UserError(SolutionSource, SolutionError.FailedToCheckPermission, errorMsg),
         telemetryReporter
       )
     );
@@ -292,13 +293,13 @@ export async function checkPermission(
     const configMap = ConfigMap.fromJSON(param.envInfo.state);
     if (!configMap) {
       return err(
-        returnSystemError(
-          new Error(
-            getLocalizedString("core.collaboration.FailedToConvertProfile") +
-              JSON.stringify(param.envInfo.state)
-          ),
+        new SystemError(
           PluginNames.SOLUTION,
-          SolutionError.InternelError
+          SolutionError.InternelError,
+          getDefaultString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state),
+          getLocalizedString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state)
         )
       );
     }

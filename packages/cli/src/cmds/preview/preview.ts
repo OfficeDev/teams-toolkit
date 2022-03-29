@@ -270,7 +270,7 @@ export default class Preview extends YargsCommand {
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
 
-    if (hub !== constants.Hub.teams && projectSettings.isM365) {
+    if (hub !== constants.Hub.teams && !projectSettings.isM365) {
       throw NotM365Project();
     }
 
@@ -713,7 +713,7 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
-    if (hub !== constants.Hub.teams && config?.settings?.isM365) {
+    if (hub !== constants.Hub.teams && !config?.settings?.isM365) {
       throw NotM365Project();
     }
 
@@ -1439,7 +1439,7 @@ export default class Preview extends YargsCommand {
       return new UnknownError(source, e as string);
     } else if (e instanceof Error) {
       const err = e as Error;
-      const fxError = new SystemError(err, source);
+      const fxError = new SystemError({ error: err, source });
       fxError.stack = err.stack;
       return fxError;
     } else {

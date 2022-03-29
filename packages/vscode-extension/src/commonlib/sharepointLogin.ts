@@ -21,7 +21,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
 const cachePlugin = new CryptoCachePlugin(accountName);
@@ -155,15 +155,18 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${localize(
+            [TelemetryProperty.ErrorCode]: `${getDefaultString(
               "teamstoolkit.codeFlowLogin.loginComponent"
             )}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
+            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
+              "teamstoolkit.common.userCancel"
+            )}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.common.userCancel"),
-            "Login"
+            getDefaultString("teamstoolkit.common.userCancel"),
+            localize("teamstoolkit.common.userCancel")
           );
         }
         this.graphCodeFlowInstance.status = loggingIn;

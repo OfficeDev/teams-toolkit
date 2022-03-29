@@ -5,14 +5,14 @@ import {
   Inputs,
   ok,
   Result,
-  returnUserError,
+  UserError,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import Container from "typedi";
+import { Container } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 import {
   GLOBAL_CONFIG,
@@ -35,10 +35,11 @@ export async function publishApplication(
 
   if (inAzureProject && !provisioned) {
     return err(
-      returnUserError(
-        new Error(getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)),
+      new UserError(
         SolutionSource,
-        SolutionError.CannotDeployBeforeProvision
+        SolutionError.CannotDeployBeforeProvision,
+        getDefaultString("core.NotProvisionedNotice", ctx.projectSetting.appName),
+        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
       )
     );
   }

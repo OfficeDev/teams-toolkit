@@ -123,11 +123,11 @@ export async function getDebugConfig(
       if (getConfigRes.isErr()) throw getConfigRes.error;
       const config = getConfigRes.value;
       if (!config)
-        throw new UserError("GetConfigError", "Failed to get project config", "extension");
+        throw new UserError("extension", "GetConfigError", "Failed to get project config");
       if (isLocalSideloadingConfiguration) {
         const envInfo = config.envInfos["local"];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", "Local Env config not exist", "extension");
+          throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
@@ -144,13 +144,13 @@ export async function getDebugConfig(
         }
         if (!env)
           throw new UserError(
+            "extension",
             "GetSelectedEnvError",
-            "Failed to get selected Env name",
-            "extension"
+            "Failed to get selected Env name"
           );
         const envInfo = config.envInfos[env];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", `Env '${env} ' config not exist`, "extension");
+          throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: env };
       }

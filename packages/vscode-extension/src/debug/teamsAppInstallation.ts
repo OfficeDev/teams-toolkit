@@ -7,10 +7,11 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
 import { delay } from "../utils/commonUtils";
 import { generateAccountHint } from "./teamsfxDebugProvider";
+import * as commonUtils from "./commonUtils";
 
 import axios from "axios";
-import { returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
-
+import { UserError, SystemError } from "@microsoft/teamsfx-api";
+import { environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 export async function showInstallAppInTeamsMessage(
   detected: boolean,
   appId: string
@@ -32,6 +33,17 @@ export async function showInstallAppInTeamsMessage(
       return false;
     }
 
+    const debugConfig = isConfigUnifyEnabled()
+      ? await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName())
+      : await commonUtils.getDebugConfig(true);
+    if (debugConfig?.appId === undefined) {
+      throw new UserError(
+        ExtensionSource,
+        ExtensionErrors.GetTeamsAppInstallationFailed,
+        "Debug config not found"
+      );
+    }
+
     if (result.value === localize("teamstoolkit.localDebug.installApp.installInTeams")) {
       const url = `https://teams.microsoft.com/l/app/${appId}?installAppPackage=true&webjoin=true&${await generateAccountHint()}`;
       await VS_CODE_UI.openUrl(url);
@@ -47,10 +59,10 @@ export async function showInstallAppInTeamsMessage(
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
   const loginStatus = await graphLoginInstance.getStatus();
   if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
-    throw returnUserError(
-      new Error("M365 account info not found"),
+    throw new UserError(
       ExtensionSource,
-      ExtensionErrors.GetTeamsAppInstallationFailed
+      ExtensionErrors.GetTeamsAppInstallationFailed,
+      "M365 account info not found"
     );
   }
   const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${appId}'`;
@@ -69,11 +81,11 @@ export async function getTeamsAppInternalId(appId: string): Promise<string | und
       return undefined;
     } catch (error: any) {
       if (numRetries === 0) {
-        throw returnSystemError(
+        throw new SystemError({
+          source: ExtensionSource,
           error,
-          ExtensionSource,
-          ExtensionErrors.GetTeamsAppInstallationFailed
-        );
+          name: ExtensionErrors.GetTeamsAppInstallationFailed,
+        });
       }
       await delay(1000);
     }

@@ -23,7 +23,7 @@ export interface ErrorOptionBase {
   message?: string;
   error?: Error;
   userData?: any;
-  notificationMessage?: string;
+  displayMessage?: string;
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -58,72 +58,37 @@ export class UserError extends Error implements FxError {
    */
   userData?: string;
   /**
-   * customized message instead of error message which will be shown in notification box
+   * message show in the UI
    */
-  notificationMessage?: string;
+  displayMessage?: string;
 
-  constructor(
-    error: Error,
-    source?: string,
-    name?: string,
-    helpLink?: string,
-    notificationMessage?: string
-  );
   constructor(opt: UserErrorOptions);
+  constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
-    name: string,
-    message: string,
-    source: string,
-    stack?: string,
-    helpLink?: string,
-    innerError?: any,
-    notificationMessage?: string
-  );
-  constructor(
-    param1: string | Error | UserErrorOptions,
+    param1: string | UserErrorOptions,
     param2?: string,
     param3?: string,
-    param4?: string,
-    param5?: string,
-    innerError?: any,
-    notificationMessage?: string
+    param4?: string
   ) {
     let option: UserErrorOptions;
     let stack: string | undefined;
     if (typeof param1 === "string") {
       option = {
-        name: param1,
-        message: param2,
-        source: param3,
-        helpLink: param5,
-        notificationMessage: notificationMessage,
-        error: innerError instanceof Error ? innerError : undefined,
+        source: param1,
+        name: param2,
+        message: param3,
+        displayMessage: param4,
       };
-      if (innerError instanceof Error) {
-        stack = innerError.stack;
-      }
-    } else if (param1 instanceof Error) {
-      option = {
-        error: param1,
-        name: param3,
-        source: param2,
-        helpLink: param4,
-        notificationMessage: param5,
-      };
-      stack = param1.stack;
     } else {
       option = param1;
     }
 
     // message
-    const messages = new Set<string>();
-    if (option.message) messages.add(option.message);
-    if (option.error && option.error.message) messages.add(option.error.message);
-    const message = Array.from(messages).join(", ") || "";
+    const message = option.message || option.error?.message;
     super(message);
 
     //name
-    this.name = option.name || (option.error && option.error.name) || new.target.name;
+    this.name = option.name || option.error?.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";
@@ -139,16 +104,12 @@ export class UserError extends Error implements FxError {
     Object.setPrototypeOf(this, new.target.prototype);
 
     //innerError
-    if (typeof param1 === "string") {
-      this.innerError = innerError;
-    } else if (param1 instanceof Error) {
-      this.innerError = param1;
-    }
+    this.innerError = option.error;
 
     //other fields
     this.helpLink = option.helpLink;
     this.userData = option.userData;
-    this.notificationMessage = option.notificationMessage;
+    this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
   }
 }
@@ -179,72 +140,37 @@ export class SystemError extends Error implements FxError {
    */
   userData?: string;
   /**
-   * customized message instead of error message which will be shown in notification box
+   * message show in the UI
    */
-  notificationMessage?: string;
+  displayMessage?: string;
 
-  constructor(
-    error: Error,
-    source?: string,
-    name?: string,
-    issueLink?: string,
-    notificationMessage?: string
-  );
   constructor(opt: SystemErrorOptions);
+  constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
-    name: string,
-    message: string,
-    source: string,
-    stack?: string,
-    issueLink?: string,
-    innerError?: any,
-    notificationMessage?: string
-  );
-  constructor(
-    param1: string | Error | SystemErrorOptions,
+    param1: string | SystemErrorOptions,
     param2?: string,
     param3?: string,
-    param4?: string,
-    param5?: string,
-    innerError?: any,
-    notificationMessage?: string
+    param4?: string
   ) {
     let option: SystemErrorOptions;
     let stack: string | undefined;
     if (typeof param1 === "string") {
       option = {
-        name: param1,
-        message: param2,
-        source: param3,
-        issueLink: param5,
-        notificationMessage: notificationMessage,
-        error: innerError instanceof Error ? innerError : undefined,
+        source: param1,
+        name: param2,
+        message: param3,
+        displayMessage: param4,
       };
-      if (innerError instanceof Error) {
-        stack = innerError.stack;
-      }
-    } else if (param1 instanceof Error) {
-      option = {
-        error: param1,
-        name: param3,
-        source: param2,
-        issueLink: param4,
-        notificationMessage: param5,
-      };
-      stack = param1.stack;
     } else {
       option = param1;
     }
 
     // message
-    const messages = new Set<string>();
-    if (option.message) messages.add(option.message);
-    if (option.error && option.error.message) messages.add(option.error.message);
-    const message = Array.from(messages).join(", ") || "";
+    const message = option.message || option.error?.message;
     super(message);
 
     //name
-    this.name = option.name || (option.error && option.error.name) || new.target.name;
+    this.name = option.name || option.error?.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";
@@ -260,58 +186,14 @@ export class SystemError extends Error implements FxError {
     Object.setPrototypeOf(this, new.target.prototype);
 
     //innerError
-    if (typeof param1 === "string") {
-      this.innerError = innerError;
-    } else if (param1 instanceof Error) {
-      this.innerError = param1;
-    }
+    this.innerError = option.error;
 
     //other fields
     this.issueLink = option.issueLink;
     this.userData = option.userData;
-    this.notificationMessage = option.notificationMessage;
+    this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
   }
-}
-
-/**
- *
- * @param e Original error
- * @param source Source name of error. (plugin name, eg: tab-scaffhold-plugin)
- * @param name Name of error. (error name, eg: Dependency not found)
- * @param helpLink A wiki website that shows mapping relationship between error names, descriptions, and fix solutions.
- * @param innerError Custom error details.
- *
- * @returns UserError.
- */
-export function returnUserError(
-  e: Error,
-  source: string,
-  name: string,
-  helpLink?: string,
-  innerError?: any
-): UserError {
-  return new UserError(e, source, name, helpLink);
-}
-
-/**
- *
- * @param e Original error
- * @param source Source name of error. (plugin name, eg: tab-scaffhold-plugin)
- * @param name Name of error. (error name, eg: Dependency not found)
- * @param issueLink A github issue page where users can submit a new issue.
- * @param innerError Custom error details.
- *
- * @returns SystemError.
- */
-export function returnSystemError(
-  e: Error,
-  source: string,
-  name: string,
-  issueLink?: string,
-  innerError?: any
-): SystemError {
-  return new SystemError(e, source, name, issueLink);
 }
 
 export function assembleError(e: any, source?: string): FxError {
@@ -322,7 +204,7 @@ export function assembleError(e: any, source?: string): FxError {
     return new UnknownError(source, e as string);
   } else if (e instanceof Error) {
     const err = e as Error;
-    const fxError = new SystemError(err, source);
+    const fxError = new SystemError({ error: err, source });
     fxError.stack = err.stack;
     return fxError;
   } else {
@@ -336,7 +218,7 @@ export class UnknownError extends SystemError {
   }
 }
 
-export const UserCancelError: UserError = new UserError("UserCancel", "User canceled.", "UI");
+export const UserCancelError: UserError = new UserError("UI", "UserCancel", "User canceled.");
 
 export class EmptyOptionError extends SystemError {
   constructor(source?: string) {

@@ -6,6 +6,7 @@ import { AADManifest } from "../../../../../src/plugins/resource/aad/interfaces/
 import sinon from "sinon";
 import axios from "axios";
 import { AadManifestHelper } from "../../../../../src/plugins/resource/aad/utils/aadManifestHelper";
+import fs from "fs-extra";
 
 describe("AAD manifest manager test", () => {
   const sandbox = sinon.createSandbox();
@@ -53,6 +54,25 @@ describe("AAD manifest manager test", () => {
       fakeAadManifest.id
     );
     chai.expect(responseManifest.id).equal(fakeAadManifest.id);
+  });
+
+  it("load manifest", async () => {
+    const fakeStateMap: Map<string, any> = new Map();
+    fakeStateMap.set("fx-resource-aad-app-for-teams", {});
+    const mockContext: any = {
+      root: "fake-root",
+      envInfo: {
+        state: fakeStateMap,
+        config: null,
+      },
+    };
+
+    fakeAadManifest.id = "fake-aad-object-id";
+    fakeAadManifest.appId = "fake-aad-client-id";
+    sinon.stub(fs, "readFile").resolves(JSON.stringify(fakeAadManifest) as any);
+    sinon.stub(fs, "pathExists").resolves(true);
+    const loadedManifest = await AadAppManifestManager.loadAadManifest(mockContext);
+    chai.expect(loadedManifest).to.be.deep.equal(fakeAadManifest);
   });
 });
 

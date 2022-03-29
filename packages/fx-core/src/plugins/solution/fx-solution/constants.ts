@@ -190,7 +190,7 @@ export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",
   "Solution"
 );
-export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
+export const CancelError = new UserError("Solution", "UserCancel", "UserCancel");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
@@ -250,9 +250,9 @@ export class UnauthorizedToCheckResourceGroupError extends UserError {
     const subscriptionInfoString =
       subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
     super(
+      SolutionSource,
       new.target.name,
-      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`,
-      SolutionSource
+      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
     );
   }
 }
@@ -278,16 +278,16 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
         message: error.message,
       });
 
-      super(new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+      super(SolutionSource, new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
       // Reuse the original error object to prevent losing the stack info
       error.message = `${baseErrorMessage}, error: '${error.message}'`;
-      super(error, SolutionSource, new.target.name);
+      super({ error, source: SolutionSource });
     } else {
       super(
+        SolutionSource,
         new.target.name,
-        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`,
-        SolutionSource
+        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`
       );
     }
   }

@@ -100,11 +100,11 @@ export async function executeConcurrently(
           }
           return err(
             new SystemError(
+              "Solution",
               "UnknownError",
               `[Solution.executeConcurrently part 1] unknown error from plugin: ${pluginName}, taskName:${taskname}, error: ${JSON.stringify(
                 e
-              )}`,
-              "Solution"
+              )}`
             )
           );
         }
@@ -147,9 +147,9 @@ export async function executeConcurrently(
       throw e;
     }
     throw new SystemError(
+      "Solution",
       "UnknownError",
-      `[Solution.executeConcurrently part 2] unknown error: ${JSON.stringify(e)}`,
-      "Solution"
+      `[Solution.executeConcurrently part 2] unknown error: ${JSON.stringify(e)}`
     );
   }
 }

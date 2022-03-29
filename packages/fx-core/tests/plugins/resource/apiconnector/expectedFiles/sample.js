@@ -1,23 +1,23 @@
-import { TeamsFx, createApiClient } from "@microsoft/teamsfx";
+const teamsfxSdk = require("@microsoft/teamsfx");
 
 // Loads current app's configuration
 
-const teamsFx = new TeamsFx();
+const teamsFx = new teamsfxSdk.TeamsFx();
 
-// Initializes a new axios instance to call kudos API
-
-const kudosClient = createApiClient(teamsFx.getConfig["API_KUDOS_ENDPOINT"], {
-  UserName: teamsFx.getConfig["API_KUDOS_USERNAME"],
-  Password: teamsFx.getConfig["API_KUDOS_PASSWORD"],
-});
+// Initializes a new axios instance to call fake API
+const authProvider = new teamsfxSdk.BasicAuthProvider(
+  teamsFx.getConfig("API_FAKE_USERNAME"),
+  teamsFx.getConfig("API_FAKE_PASSWORD")
+);
+const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig["API_FAKE_ENDPOINT"], authProvider);
 
 /* 
 
-You can now call kudos APIs without worrying about authentication. 
+You can now call fake APIs without worrying about authentication. 
 
 Here is an example for a GET request to "relative_path_of_target_api": 
 
-const result = await kudosClient.get("relative_path_of_target_api"); 
+const result = await fakeClient.get("relative_path_of_target_api"); 
 
  
 
@@ -33,11 +33,11 @@ We have already set the configuration to .env.teamsfx.local based on your answer
 
 Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
 
-API_KUDOS_ENDPOINT 
+API_FAKE_ENDPOINT 
 
-API_KUDOS_USERNAME 
+API_FAKE_USERNAME 
 
-API_KUDOS_PASSWORD 
+API_FAKE_PASSWORD 
 
  
 

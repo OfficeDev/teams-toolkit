@@ -47,7 +47,7 @@ export class TemplateProjectsConstants {
 
 export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
-  NOTIFICATION_SCENARIO_NAME = "notification",
+  NOTIFICATION_RESTIFY_SCENARIO_NAME = "notification-restify",
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
   NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
   NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",

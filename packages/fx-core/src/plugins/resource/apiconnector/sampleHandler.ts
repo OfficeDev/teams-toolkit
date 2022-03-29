@@ -17,12 +17,8 @@ export class SampleHandler {
     this.component = component;
   }
 
-  private getFileType(): FileType {
-    return this.laguageType;
-  }
-
   public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
-    const fileSuffix: string = this.getFileType();
+    const fileSuffix: string = this.laguageType;
     const sampleCodeDirectory = path.join(
       getTemplatesFolder(),
       "plugins",

@@ -73,7 +73,8 @@ class TreeViewManager {
     if (isValidProject(workspacePath)) {
       return this.registerTreeViewsForTeamsFxProject(workspacePath);
     } else {
-      // No need to register TreeView because walkthrough is enabled.
+      // TODO: remove this logic because walkthrough is enabled.
+      return this.registerTreeViewsForNonTeamsFxProject();
     }
     return [];
   }
@@ -167,6 +168,15 @@ class TreeViewManager {
     this.registerDevelopment(developmentCommands, disposables);
     this.registerDeployment(disposables);
     this.registerHelper(disposables);
+
+    return disposables;
+  }
+
+  private async registerTreeViewsForNonTeamsFxProject() {
+    const disposables: vscode.Disposable[] = [];
+
+    this.registerAccount(disposables);
+    this.registerEnvironment(disposables);
 
     return disposables;
   }

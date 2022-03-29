@@ -31,6 +31,7 @@ import {
   StaticOptions,
   TaskConfig,
   TextInputQuestion,
+  StringValidation,
   traverse,
   UserCancelError,
   UserInteraction,
@@ -162,6 +163,77 @@ describe("Question Model - Visitor Test", () => {
       node2.addChild(node3);
       const trimed = node1.trim();
       assert.isTrue(trimed && trimed.data.name === "t1" && trimed.validate());
+    });
+
+    it("trim() case 3 - parent node has condition, and child node has no condition.", async () => {
+      const condition: StringValidation = {
+        equals: "test",
+      };
+
+      // Arrange
+      // input
+      const node1 = new QTreeNode({ type: "group" });
+      node1.condition = condition;
+      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      node1.addChild(node2);
+
+      // expected
+      const expected1 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      expected1.condition = condition;
+
+      // Act
+      const trimmed = node1.trim();
+
+      // Assert
+      assert.deepEqual(trimmed, expected1);
+    });
+    it("trim() case 4 - parent node has no condition, and child node has condition.", async () => {
+      const condition: StringValidation = {
+        equals: "test",
+      };
+
+      // Arrange
+      // input
+      const node1 = new QTreeNode({ type: "group" });
+      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      node2.condition = condition;
+      node1.addChild(node2);
+
+      // expected
+      const expected1 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      expected1.condition = condition;
+
+      // Act
+      const trimmed = node1.trim();
+
+      // Assert
+      assert.deepEqual(trimmed, expected1);
+    });
+    it("trim() case 5 - parent node has condition, and child node has condition.", async () => {
+      const condition: StringValidation = {
+        equals: "test",
+      };
+
+      // Arrange
+      // input
+      const node1 = new QTreeNode({ type: "group" });
+      node1.condition = condition;
+      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      node2.condition = condition;
+      node1.addChild(node2);
+
+      // expected
+      const expected1 = new QTreeNode({ type: "group" });
+      expected1.condition = condition;
+      const expected2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
+      expected2.condition = condition;
+      expected1.addChild(expected2);
+
+      // Act
+      const trimmed = node1.trim();
+
+      // Assert
+      assert.deepEqual(trimmed, expected1);
     });
   });
   describe("traverse()", () => {

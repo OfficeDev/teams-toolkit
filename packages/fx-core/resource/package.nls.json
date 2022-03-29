@@ -273,6 +273,7 @@
   "plugins.apiConnector.errorMessage.ApiConnectorInputError": "Api connector input empty",
   "plugins.apiConnector.errorMessage.ApiConnectorPathNotExistError": "Path %s not exists. Select a valid folder.",
   "plugins.apiConnector.errorMessage.ApiConnectorCreateFileFail": "Failed to create %s",
+  "plugins.apiConnector.errorMessage.ApiConnectorSampleCodeCreateFailError": "Failed to generate sample code file %s. Reason: %s",
   "plugins.apiConnector.errorMessage.NoActivePluginsExistError": "Please create active resource first.",
   "plugins.apiConnector.errorMessage.NoBotOrFunctionExistError": "Please create bot or function resource first.",
   "plugins.apiConnector.errorMessage.InvalidProjectError": "Please select a valid TeamsFx project",

@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { Inputs } from "@microsoft/teamsfx-api";
+import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ApiConnectorConfiguration } from "./utils";
 import { Constants } from "./constants";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
-import { QTreeNode } from "@microsoft/teamsfx-api";
 import { ResourcePlugins } from "../../../common/constants";
 import {
   apiNameQuestion,

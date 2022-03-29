@@ -7,7 +7,12 @@ import * as path from "path";
 import fs from "fs-extra";
 import * as util from "util";
 
-export function getLocalizedString(key: string, ...params: any[]): string {
+const LocaleStringMap = new Map<string, any>();
+
+function getLocaleJson(locale?: string): any {
+  locale = locale || "";
+  const jsonInMap = LocaleStringMap.get(locale);
+  if (jsonInMap) return jsonInMap;
   const nlsFileName = Locale ? `package.nls.${Locale}.json` : "package.nls.json";
   let nlsFilePath = path.join(getResourceFolder(), nlsFileName);
   if (!fs.pathExistsSync(nlsFilePath)) {
@@ -15,6 +20,14 @@ export function getLocalizedString(key: string, ...params: any[]): string {
     nlsFilePath = path.join(getResourceFolder(), "package.nls.json");
   }
   const json = fs.readJSONSync(nlsFilePath);
+  if (json) {
+    LocaleStringMap.set(locale, json);
+  }
+  return json;
+}
+
+export function getLocalizedString(key: string, ...params: any[]): string {
+  const json = getLocaleJson(Locale);
   let value = json[key];
   if (value && params && params.length > 0) {
     value = util.format(value, ...params);
@@ -23,9 +36,7 @@ export function getLocalizedString(key: string, ...params: any[]): string {
 }
 
 export function getDefaultString(key: string, ...params: any[]): string {
-  const nlsFileName = "package.nls.json";
-  const nlsFilePath = path.join(getResourceFolder(), nlsFileName);
-  const json = fs.readJSONSync(nlsFilePath);
+  const json = getLocaleJson("");
   let value = json[key];
   if (value && params && params.length > 0) {
     value = util.format(value, ...params);

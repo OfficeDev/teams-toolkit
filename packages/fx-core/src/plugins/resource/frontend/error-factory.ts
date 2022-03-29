@@ -13,21 +13,35 @@ export class ErrorFactory {
 
   public static UserError(
     name: string,
-    message: string,
+    message: [string, string],
     innerError?: any,
     stack?: string,
     helpLink?: string
   ): FxError {
-    return new UserError(name, message, this.source, stack, helpLink, innerError);
+    return new UserError({
+      name,
+      message: message[0],
+      displayMessage: message[1],
+      source: this.source,
+      helpLink,
+      error: innerError,
+    });
   }
 
   public static SystemError(
     name: string,
-    message: string,
+    message: [string, string],
     innerError?: any,
     stack?: string,
     issueLink = this.issueLink
   ): FxError {
-    return new SystemError(name, message, this.source, stack, issueLink, innerError);
+    return new SystemError({
+      name,
+      message: message[0],
+      displayMessage: message[1],
+      source: this.source,
+      issueLink,
+      error: innerError,
+    });
   }
 }

@@ -8,7 +8,7 @@ import { ProviderKind } from "./providers/enums";
 import { questionNames } from "./questions";
 import { InternalError, NoProjectOpenedError } from "./errors";
 import { Logger } from "./logger";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -32,7 +32,10 @@ export class CICDImpl {
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length === 0) {
-      throw new InternalError(getLocalizedString("error.cicd.PreconditionNotMet"));
+      throw new InternalError([
+        getDefaultString("error.cicd.PreconditionNotMet"),
+        getLocalizedString("error.cicd.PreconditionNotMet"),
+      ]);
     }
 
     this.commonProperties = {

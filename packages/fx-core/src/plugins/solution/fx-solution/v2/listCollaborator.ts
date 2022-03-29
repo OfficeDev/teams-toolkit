@@ -6,8 +6,6 @@ import {
   Platform,
   PluginContext,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionContext,
   v2,
   Plugin,
@@ -19,6 +17,8 @@ import {
   LogProvider,
   Colors,
   ConfigMap,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   AadOwner,
@@ -49,7 +49,7 @@ import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import * as util from "util";
 import { PluginsWithContext } from "../types";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -169,10 +169,11 @@ async function listCollaboratorImpl(
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ListCollaborator,
-        returnSystemError(
-          new Error(getLocalizedString("core.collaboration.FailedToGetEnvName")),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToGetEnvName
+          SolutionError.FailedToGetEnvName,
+          getDefaultString("core.collaboration.FailedToGetEnvName"),
+          getLocalizedString("core.collaboration.FailedToGetEnvName")
         ),
         telemetryReporter
       )
@@ -202,11 +203,7 @@ async function listCollaboratorImpl(
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ListCollaborator,
-        returnUserError(
-          new Error(errorMsg),
-          SolutionSource,
-          SolutionError.FailedToListCollaborator
-        ),
+        new UserError(SolutionSource, SolutionError.FailedToListCollaborator, errorMsg),
         telemetryReporter
       )
     );
@@ -354,13 +351,13 @@ export async function listCollaborator(
     const configMap = ConfigMap.fromJSON(param.envInfo.state);
     if (!configMap) {
       return err(
-        returnSystemError(
-          new Error(
-            getLocalizedString("core.collaboration.FailedToConvertProfile") +
-              JSON.stringify(param.envInfo.state)
-          ),
+        new SystemError(
           PluginNames.SOLUTION,
-          SolutionError.InternelError
+          SolutionError.InternelError,
+          getDefaultString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state),
+          getLocalizedString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state)
         )
       );
     }

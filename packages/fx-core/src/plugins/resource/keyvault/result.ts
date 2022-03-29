@@ -11,22 +11,36 @@ export class ResultFactory {
 
   public static UserError(
     name: string,
-    message: string,
+    messages: [string, string],
     innerError?: any,
     stack?: string,
     helpLink?: string
   ): UserError {
-    return new UserError(name, message, this.source, stack, helpLink, innerError);
+    return new UserError({
+      name,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: this.source,
+      helpLink,
+      error: innerError,
+    });
   }
 
   public static SystemError(
     name: string,
-    message: string,
+    messages: [string, string],
     innerError?: any,
     stack?: string,
     issueLink?: string
   ): SystemError {
-    return new SystemError(name, message, this.source, stack, issueLink, innerError);
+    return new SystemError({
+      name,
+      message: messages[0],
+      displayMessage: messages[1],
+      source: this.source,
+      issueLink,
+      error: innerError,
+    });
   }
 
   public static Success(result?: any): TeamsFxResult {

@@ -25,7 +25,12 @@ describe("Test Errors", () => {
       const details = "some error occurs";
       const suggestions: string[] = ["suggestions"];
       // Act
-      const pluginError = new PluginError(ErrorType.SYSTEM, errorName, details, suggestions);
+      const pluginError = new PluginError(
+        ErrorType.SYSTEM,
+        errorName,
+        [details, details],
+        suggestions
+      );
 
       // Assert
       chai.assert.isTrue(pluginError instanceof PluginError);

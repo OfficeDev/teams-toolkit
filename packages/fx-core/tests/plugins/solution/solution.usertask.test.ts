@@ -1083,5 +1083,40 @@ describe("V2 implementation", () => {
       );
       expect(result.isErr() && result.error.source === SolutionError.InvalidSsoProject).to.be.true;
     });
+
+    it("should return error when bot is host on Azure Function", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name],
+          capabilities: [BotOptionItem.id],
+          azureResources: [],
+        },
+        pluginSettings: {
+          "fx-resource-bot": {
+            "host-type": "azure-functions",
+            capabilities: [],
+          },
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+      expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
+    });
   });
 });

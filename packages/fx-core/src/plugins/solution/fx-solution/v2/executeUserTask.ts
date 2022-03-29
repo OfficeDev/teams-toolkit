@@ -26,6 +26,13 @@ import { cloneDeep } from "lodash";
 import path from "path";
 import { Container } from "typedi";
 import * as util from "util";
+import {
+  BotHostTypeName,
+  BotHostTypes,
+  isAADEnabled,
+  isAadManifestEnabled,
+} from "../../../../common";
+import { ResourcePlugins } from "../../../../common/constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { OperationNotPermittedError } from "../../../../core/error";
 import { CoreQuestionNames } from "../../../../core/question";
@@ -68,7 +75,6 @@ import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils
 import { Certificate } from "crypto";
 import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -812,7 +818,7 @@ export type ParamForRegisterTeamsAppAndAad = {
 
 // TODO: handle VS scenario
 export function canAddSso(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
   // Can not add sso if feature flag is not enabled
@@ -827,6 +833,7 @@ export function canAddSso(
     );
   }
 
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddSsoNotSupported,
@@ -852,6 +859,21 @@ export function canAddSso(
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
+  }
+
+  // Will throw error if bot host type is Azure Function
+  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      const e = new UserError(
+        SolutionError.AddSsoNotSupported,
+        getLocalizedString("core.addSso.functionNotSupport"),
+        SolutionSource
+      );
+      return err(
+        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+      );
+    }
   }
 
   // Check whether SSO is enabled
@@ -907,7 +929,7 @@ export async function addSso(
   }
 
   // Check whether can add sso
-  const canProceed = canAddSso(solutionSettings, ctx.telemetryReporter);
+  const canProceed = canAddSso(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }

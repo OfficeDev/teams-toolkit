@@ -56,6 +56,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   properties: {
     serverFarmId: serverfarm.id
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
+    httpsOnly: true
     siteConfig: {
       alwaysOn: true
       appSettings: [
@@ -96,6 +97,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
       ]
+      ftpsState: 'FtpsOnly'
     }
   }
   identity: {

@@ -46,11 +46,11 @@ export class ErrorMessage {
       ),
   };
 
-  public static readonly ApiConnectorSampleCodeCreateFailError = {
-    name: "ApiConnectorSampleCodeCreateFailError",
+  public static readonly SampleCodeCreateFailError = {
+    name: "SampleCodeCreateFailError",
     message: (pathName: string, reason: string) =>
       getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.ApiConnectorSampleCodeCreateFailError.name}`,
+        `error.apiConnector.${ErrorMessage.SampleCodeCreateFailError.name}`,
         pathName,
         reason
       ),

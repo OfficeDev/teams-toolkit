@@ -12,20 +12,16 @@ import { ApiConnectorConfiguration } from "./utils";
 import { ErrorMessage } from "./errors";
 export class SampleHandler {
   private readonly projectRoot: string;
-  private readonly laguageType: FileType;
+  private readonly languageExt: FileType;
   private readonly component: string;
   constructor(projectPath: string, languageType: string, component: string) {
     this.projectRoot = projectPath;
-    this.laguageType = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
+    this.languageExt = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
     this.component = component;
   }
 
-  private getFileType(): FileType {
-    return this.laguageType;
-  }
-
   public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
-    const fileSuffix: string = this.getFileType();
+    const fileSuffix: string = this.languageExt;
     const templateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -42,14 +38,18 @@ export class SampleHandler {
         config: config,
         capitalName: config.APIName.toUpperCase(),
       };
-      const codeFile = compileHandlebarsTemplateString(templateString, context);
       const codeFileName: string = config.APIName + "." + fileSuffix;
-      await fs.writeFile(path.join(this.projectRoot, this.component, codeFileName), codeFile);
+      const codeFilePath = path.join(this.projectRoot, this.component, codeFileName);
+      if (await fs.pathExists(codeFilePath)) {
+        await fs.remove(codeFilePath);
+      }
+      const codeFile = compileHandlebarsTemplateString(templateString, context);
+      await fs.writeFile(codeFilePath, codeFile);
       return ResultFactory.Success();
     } catch (error) {
       throw ResultFactory.SystemError(
-        ErrorMessage.ApiConnectorSampleCodeCreateFailError.name,
-        ErrorMessage.ApiConnectorSampleCodeCreateFailError.message(templateFilePath, error.message)
+        ErrorMessage.SampleCodeCreateFailError.name,
+        ErrorMessage.SampleCodeCreateFailError.message(templateFilePath, error.message)
       );
     }
   }

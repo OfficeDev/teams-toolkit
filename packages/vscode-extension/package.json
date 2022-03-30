@@ -518,11 +518,6 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.validate-itp-prerequisites",
-        "title": "Teams - Validate ITP Prerequisites",
-        "enablement": "never"
-      },
-      {
         "command": "fx-extension.get-func-path",
         "title": "Teams - Get Func Path for Environment Variable",
         "enablement": "never"

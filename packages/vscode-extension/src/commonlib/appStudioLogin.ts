@@ -177,21 +177,21 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   private async doesUserConfirmLogin(): Promise<boolean> {
     const message = localize("teamstoolkit.appStudioLogin.message");
     const signin = localize("teamstoolkit.common.signin");
-    const readMore = localize("teamstoolkit.common.readMore");
+    const createTestingTenant = localize("teamstoolkit.appStudioLogin.createM365TestingTenant");
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
         message,
         { modal: true },
         signin,
-        readMore
+        createTestingTenant
       );
-      if (userSelected === readMore) {
+      if (userSelected === createTestingTenant) {
         vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
         );
       }
-    } while (userSelected === readMore);
+    } while (userSelected === createTestingTenant);
     return Promise.resolve(userSelected === signin);
   }
 

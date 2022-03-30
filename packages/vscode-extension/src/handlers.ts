@@ -1305,6 +1305,34 @@ export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
 }
 
+export async function createAccountHandler(args: any[]): Promise<void> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccountStart, getTriggerFromProperty(args));
+  const m365Option = `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`;
+  const azureOption = `$(add) ${localize("teamstoolkit.commands.createAccount.azure")}`;
+  const option: SingleSelectConfig = {
+    name: "CreateAccounts",
+    title: localize("teamstoolkit.commands.createAccount.title"),
+    options: [m365Option, azureOption],
+  };
+  const result = await VS_CODE_UI.selectOption(option);
+  if (result.isOk()) {
+    if (result.value.result === m365Option) {
+      await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
+        [TelemetryProperty.AccountType]: AccountType.M365,
+        ...getTriggerFromProperty(args),
+      });
+    } else if (result.value.result === azureOption) {
+      await VS_CODE_UI.openUrl("https://azure.microsoft.com/en-us/free/");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        ...getTriggerFromProperty(args),
+      });
+    }
+  }
+  return;
+}
+
 export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
@@ -2053,6 +2081,14 @@ export async function cmpAccountsHandler() {
       }),
   };
 
+  const createAccountsOption: VscQuickPickItem = {
+    id: "createAccounts",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.title")}`,
+    function: async () => {
+      Correlator.run(() => createAccountHandler([]));
+    },
+  };
+
   //TODO: hide subscription list until core or api expose the get subscription list API
   // let selectSubscriptionOption: VscQuickPickItem = {
   //   id: "selectSubscription",
@@ -2094,6 +2130,7 @@ export async function cmpAccountsHandler() {
     }
   }
 
+  quickItemOptionArray.push(createAccountsOption);
   quickPick.items = quickItemOptionArray;
   quickPick.onDidChangeSelection((selection) => {
     if (selection[0]) {

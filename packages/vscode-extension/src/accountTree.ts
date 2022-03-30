@@ -503,11 +503,10 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
 
 function showSideloadingWarning() {
   VS_CODE_UI.showMessage(
-    "warn",
+    "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
-    localize("teamstoolkit.accountTree.sideloadingJoinM365"),
-    localize("teamstoolkit.common.readMore")
+    localize("teamstoolkit.accountTree.sideloadingJoinM365")
   )
     .then(async (result) => {
       if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {

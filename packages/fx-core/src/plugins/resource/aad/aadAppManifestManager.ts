@@ -89,8 +89,7 @@ export namespace AadAppManifestManager {
       let manifestString = await fs.readFile(manifestFilePath, "utf8");
       const stateObject = JSON.parse(JSON.stringify(fromEntries(ctx.envInfo.state)));
       if (!stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId) {
-        const scopeId = uuidv4();
-        stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId = scopeId;
+        stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId = uuidv4();
       }
 
       const view = {
@@ -110,7 +109,9 @@ export namespace AadAppManifestManager {
       AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       const warningMsg = AadManifestHelper.validateManifest(manifest);
       if (warningMsg) {
-        ctx.logProvider?.warning(warningMsg);
+        warningMsg.split("\n").forEach((warning) => {
+          ctx.logProvider?.warning(warning);
+        });
       }
       return manifest;
     } catch (e: any) {

@@ -181,8 +181,20 @@ export class FunctionPlugin implements Plugin {
       if (e instanceof FunctionPluginError) {
         const res =
           e.errorType === ErrorType.User
-            ? ResultFactory.UserError(e.getMessage(), e.code, undefined, e, e.stack)
-            : ResultFactory.SystemError(e.getMessage(), e.code, undefined, e, e.stack);
+            ? ResultFactory.UserError(
+                [e.getDefaultMessage(), e.getMessage()],
+                e.code,
+                undefined,
+                e,
+                e.stack
+              )
+            : ResultFactory.SystemError(
+                [e.getDefaultMessage(), e.getMessage()],
+                e.code,
+                undefined,
+                e,
+                e.stack
+              );
         sendTelemetry && TelemetryHelper.sendResultEvent(event, res);
         return res;
       }
@@ -192,9 +204,18 @@ export class FunctionPlugin implements Plugin {
       sendTelemetry &&
         TelemetryHelper.sendResultEvent(
           event,
-          ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode)
+          ResultFactory.SystemError(
+            ["Got an unhandled error", "Got an unhandled error"],
+            UnhandledErrorCode
+          )
         );
-      return ResultFactory.SystemError(e.message, UnhandledErrorCode, undefined, e, e.stack);
+      return ResultFactory.SystemError(
+        [e.message, e.message],
+        UnhandledErrorCode,
+        undefined,
+        e,
+        e.stack
+      );
     }
   }
 }

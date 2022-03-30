@@ -30,24 +30,26 @@ export async function getResponseWithErrorHandling<T>(
           if (v.error instanceof UserError || v.error instanceof SystemError) {
             resolve(err(v.error));
           } else if ((v.error as any).errorType === "UserError") {
-            const userError = new UserError(
-              new Error(v.error.message),
-              v.error.source,
-              v.error.name,
-              (v.error as any).helpLink
-            );
+            const userError = new UserError({
+              message: v.error.message,
+              source: v.error.source,
+              name: v.error.name,
+              helpLink: (v.error as any).helpLink,
+              displayMessage: (v.error as any).displayMessage,
+            });
             userError.stack = v.error.stack;
             userError.timestamp = v.error.timestamp;
             userError.userData = v.error.userData;
             userError.innerError = v.error.innerError;
             resolve(err(userError));
           } else {
-            const systemError = new SystemError(
-              new Error(v.error.message),
-              v.error.source,
-              v.error.name,
-              (v.error as any).issueLink
-            );
+            const systemError = new SystemError({
+              message: v.error.message,
+              source: v.error.source,
+              name: v.error.name,
+              issueLink: (v.error as any).issueLink,
+              displayMessage: (v.error as any).displayMessage,
+            });
             systemError.stack = v.error.stack;
             systemError.timestamp = v.error.timestamp;
             systemError.userData = v.error.userData;
@@ -105,6 +107,7 @@ export function standardizeResult<R>(result: Result<R, FxError>): Result<R, FxEr
       timestamp: result.error.timestamp,
       helpLink: (result.error as any).helpLink,
       issueLink: (result.error as any).issueLink,
+      displayMessage: (result.error as any).displayMessage,
     });
   }
   return ok(result.value);

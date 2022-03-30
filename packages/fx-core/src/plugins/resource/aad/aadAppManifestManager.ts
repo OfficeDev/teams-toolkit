@@ -2,7 +2,14 @@ import { AADApplication } from "./interfaces/AADApplication";
 import { AADManifest } from "./interfaces/AADManifest";
 import { AadManifestHelper } from "./utils/aadManifestHelper";
 import axios, { AxiosInstance } from "axios";
-import { GraphClientErrorMessage } from "./errors";
+import { AadManifestLoadError, AadManifestNotFoundError, GraphClientErrorMessage } from "./errors";
+import { ResultFactory } from "./results";
+import { Constants } from "./constants";
+import { PluginContext } from "@microsoft/teamsfx-api/build/context";
+import { v4 as uuidv4 } from "uuid";
+import * as fs from "fs-extra";
+import Mustache from "mustache";
+import { getAppDirectory } from "../../../common/tools";
 
 const baseUrl = `https://graph.microsoft.com/v1.0`;
 
@@ -14,26 +21,17 @@ export namespace AadAppManifestManager {
   ): Promise<AADManifest> {
     const instance = initAxiosInstance(graphToken);
     const aadApp = AadManifestHelper.manifestToApplication(manifest);
-    delete aadApp.id;
-    delete aadApp.appId;
-    try {
-      const response = await instance.post(`${baseUrl}/applications`, aadApp);
-      if (response && response.data) {
-        const app = <AADApplication>response.data;
-        if (app) {
-          return AadManifestHelper.applicationToManifest(app);
-        }
+    deleteUnusedProperties(aadApp);
+    const response = await instance.post(`${baseUrl}/applications`, aadApp);
+    if (response && response.data) {
+      const app = <AADApplication>response.data;
+      if (app) {
+        return AadManifestHelper.applicationToManifest(app);
       }
-      throw new Error(
-        `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
-      );
-    } catch (err: any) {
-      let errMsg = err.toString();
-      if (err?.response?.data?.error?.message) {
-        errMsg = err.response.data.error.message;
-      }
-      throw new Error(`${GraphClientErrorMessage.CreateFailed}: ${errMsg}.`);
     }
+    throw new Error(
+      `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+    );
   }
 
   export async function updateAadApp(
@@ -42,18 +40,9 @@ export namespace AadAppManifestManager {
   ): Promise<AADManifest> {
     const instance = initAxiosInstance(graphToken);
     const aadApp = AadManifestHelper.manifestToApplication(manifest);
-    delete aadApp.id;
-    delete aadApp.appId;
-    try {
-      await instance.patch(`${baseUrl}/applications/${manifest.id}`, aadApp);
-      return manifest;
-    } catch (err: any) {
-      let errMsg = err.toString();
-      if (err?.response?.data?.error?.message) {
-        errMsg = err.response.data.error.message;
-      }
-      throw new Error(`${GraphClientErrorMessage.CreateFailed}:${errMsg}`);
-    }
+    deleteUnusedProperties(aadApp);
+    await instance.patch(`${baseUrl}/applications/${manifest.id}`, aadApp);
+    return manifest;
   }
 
   export async function getAadAppManifest(
@@ -84,5 +73,74 @@ export namespace AadAppManifestManager {
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
     return instance;
+  }
+
+  export async function loadAadManifest(ctx: PluginContext): Promise<AADManifest> {
+    const appDir = await getAppDirectory(ctx.root);
+    const manifestFilePath = `${appDir}/${Constants.aadManifestTemplateName}`;
+    if (!(await fs.pathExists(manifestFilePath))) {
+      throw ResultFactory.UserError(
+        AadManifestNotFoundError.name,
+        AadManifestNotFoundError.message()
+      );
+    }
+
+    try {
+      let manifestString = await fs.readFile(manifestFilePath, "utf8");
+      const stateObject = JSON.parse(JSON.stringify(fromEntries(ctx.envInfo.state)));
+      if (!stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId) {
+        stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId = uuidv4();
+      }
+
+      const view = {
+        config: ctx.envInfo.config,
+        state: stateObject,
+        env: process.env,
+      };
+
+      Mustache.escape = (value) => value;
+      manifestString = Mustache.render(manifestString, view, undefined, {});
+      const manifest: AADManifest = JSON.parse(manifestString);
+      manifest.identifierUris = manifest.identifierUris.filter((item) => !!item);
+      manifest.replyUrlsWithType = manifest.replyUrlsWithType.filter((item) =>
+        item.url.startsWith("https")
+      );
+
+      AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      const warningMsg = AadManifestHelper.validateManifest(manifest);
+      if (warningMsg) {
+        warningMsg.split("\n").forEach((warning) => {
+          ctx.logProvider?.warning(warning);
+        });
+      }
+      return manifest;
+    } catch (e: any) {
+      if (e.stack && e.stack.startsWith("SyntaxError")) {
+        throw ResultFactory.UserError(
+          AadManifestLoadError.name,
+          AadManifestLoadError.message(manifestFilePath, e.message)
+        );
+      }
+      throw ResultFactory.SystemError(
+        AadManifestLoadError.name,
+        AadManifestLoadError.message(manifestFilePath, e.message)
+      );
+    }
+  }
+
+  function fromEntries(iterable: Map<string, any>) {
+    return [...iterable].reduce((obj, [key, val]) => {
+      (obj as any)[key] = val;
+      return obj;
+    }, {});
+  }
+
+  function deleteUnusedProperties(aadApp: AADApplication) {
+    delete aadApp.id;
+    delete aadApp.appId;
+    aadApp.api?.oauth2PermissionScopes?.forEach((item) => {
+      delete (item as any).lang;
+      delete (item as any).origin;
+    });
   }
 }

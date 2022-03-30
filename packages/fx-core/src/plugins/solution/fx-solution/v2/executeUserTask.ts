@@ -8,28 +8,31 @@ import {
   Inputs,
   Json,
   ok,
+  TelemetryReporter,
+  Void,
   Platform,
   ProjectSettings,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionSettings,
   SystemError,
-  TelemetryReporter,
   TokenProvider,
   UserError,
   UserInteraction,
   v2,
   v3,
-  Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import path from "path";
 import { Container } from "typedi";
 import * as util from "util";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import {
+  BotHostTypeName,
+  BotHostTypes,
+  isAADEnabled,
+  isAadManifestEnabled,
+} from "../../../../common";
+import { ResourcePlugins } from "../../../../common/constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { OperationNotPermittedError } from "../../../../core/error";
 import { CoreQuestionNames } from "../../../../core/question";
@@ -69,6 +72,9 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldByPlugins } from "./scaffolding";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
+import { Certificate } from "crypto";
+import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -93,11 +99,7 @@ export async function executeUserTask(
     if (method === "registerTeamsAppAndAad") {
       // not implemented for now
       return err(
-        returnSystemError(
-          new Error("Not implemented"),
-          SolutionSource,
-          SolutionError.FeatureNotSupported
-        )
+        new SystemError(SolutionSource, SolutionError.FeatureNotSupported, "Not implemented")
       );
     } else if (method === "VSpublish") {
       // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
@@ -105,10 +107,11 @@ export async function executeUserTask(
       // Using executeUserTask here could bypass the fx project check.
       if (inputs.platform !== "vs") {
         return err(
-          returnSystemError(
-            new Error(`VS publish is not supposed to run on platform ${inputs.platform}`),
+          new SystemError(
             SolutionSource,
-            SolutionError.UnsupportedPlatform
+            SolutionError.UnsupportedPlatform,
+            getDefaultString("error.UnsupportedPlatformVS"),
+            getLocalizedString("error.UnsupportedPlatformVS")
           )
         );
       }
@@ -168,10 +171,11 @@ export async function executeUserTask(
   }
 
   return err(
-    returnUserError(
-      new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
+    new UserError(
       SolutionSource,
-      `executeUserTaskRouteFailed`
+      "executeUserTaskRouteFailed",
+      getDefaultString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
+      getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func))
     )
   );
 }
@@ -182,9 +186,10 @@ export function canAddCapability(
 ): Result<Void, FxError> {
   if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddCapabilityNotSupport,
-      getLocalizedString("core.addCapability.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addCapability.onlySupportAzure"),
+      getLocalizedString("core.addCapability.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, telemetryReporter)
@@ -200,9 +205,10 @@ export function canAddResource(
   const isVS = isVSProject(projectSetting);
   if (isVS) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.notSupportForVSProject"),
-      SolutionSource
+      getDefaultString("core.addResource.notSupportForVSProject"),
+      getLocalizedString("core.addResource.notSupportForVSProject")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -211,9 +217,10 @@ export function canAddResource(
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addResource.onlySupportAzure"),
+      getLocalizedString("core.addResource.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -364,9 +371,10 @@ export async function addCapability(
   const isMEAddable = !meExceedRes.value;
   if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
+      SolutionSource,
       SolutionError.FailedToAddCapability,
-      getLocalizedString("core.addCapability.exceedMaxLimit"),
-      SolutionSource
+      getDefaultString("core.addCapability.exceedMaxLimit"),
+      getLocalizedString("core.addCapability.exceedMaxLimit")
     );
     return err(
       sendErrorTelemetryThenReturnError(
@@ -632,9 +640,9 @@ export async function addResource(
   // 3. check APIM and KeyVault addable
   if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
     const e = new UserError(
-      new Error("APIM/KeyVault is already added."),
       SolutionSource,
-      SolutionError.AddResourceNotSupport
+      SolutionError.AddResourceNotSupport,
+      "APIM/KeyVault is already added."
     );
     return err(
       sendErrorTelemetryThenReturnError(
@@ -770,10 +778,10 @@ export function extractParamForRegisterTeamsAppAndAad(
 ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
   if (answers == undefined) {
     return err(
-      returnSystemError(
-        new Error("Input is undefined"),
+      new SystemError(
         SolutionSource,
-        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+        "Input is undefined"
       )
     );
   }
@@ -788,10 +796,10 @@ export function extractParamForRegisterTeamsAppAndAad(
     const value = answers[key];
     if (value == undefined) {
       return err(
-        returnSystemError(
-          new Error(`${key} not found`),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+          `${key} not found`
         )
       );
     }
@@ -810,7 +818,7 @@ export type ParamForRegisterTeamsAppAndAad = {
 
 // TODO: handle VS scenario
 export function canAddSso(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
   // Can not add sso if feature flag is not enabled
@@ -825,6 +833,7 @@ export function canAddSso(
     );
   }
 
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddSsoNotSupported,
@@ -850,6 +859,21 @@ export function canAddSso(
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
+  }
+
+  // Will throw error if bot host type is Azure Function
+  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      const e = new UserError(
+        SolutionError.AddSsoNotSupported,
+        getLocalizedString("core.addSso.functionNotSupport"),
+        SolutionSource
+      );
+      return err(
+        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+      );
+    }
   }
 
   // Check whether SSO is enabled
@@ -905,7 +929,7 @@ export async function addSso(
   }
 
   // Check whether can add sso
-  const canProceed = canAddSso(solutionSettings, ctx.telemetryReporter);
+  const canProceed = canAddSso(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }

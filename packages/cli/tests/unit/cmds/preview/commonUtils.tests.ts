@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler, err, ok, returnUserError } from "@microsoft/teamsfx-api";
+import { IProgressHandler, err, ok, UserError } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import {
   createTaskStartCb,
@@ -80,7 +80,7 @@ describe("commonUtils", () => {
     });
 
     it("getConfigSync error", () => {
-      const error = returnUserError(new Error("Test"), cliSource, "Test");
+      const error = new UserError(cliSource, "Test", "Test");
       sandbox.stub(UserSettings, "getConfigSync").returns(err(error));
       expect(getAutomaticNpmInstallSetting()).to.be.false;
     });

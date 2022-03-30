@@ -12,40 +12,40 @@ class FxResultFactory {
   static readonly defaultIssueLink = CommonConstants.emptyString;
 
   public static UserError(
-    errorMessage: string,
+    errorMessage: [string, string],
     name: string,
     helpLink?: string,
     innerError?: any,
     stack?: string
   ): FxResult {
     return err(
-      new UserError(
-        name,
-        errorMessage,
-        this.source,
-        stack,
-        helpLink ?? this.defaultHelpLink,
-        innerError
-      )
+      new UserError({
+        name: name,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: this.source,
+        helpLink: helpLink ?? this.defaultHelpLink,
+        error: innerError,
+      })
     );
   }
 
   public static SystemError(
-    errorMessage: string,
+    errorMessage: [string, string],
     name: string,
     issueLink?: string,
     innerError?: any,
     stack?: string
   ): FxResult {
     return err(
-      new SystemError(
-        name,
-        errorMessage,
-        this.source,
-        stack,
-        issueLink ?? this.defaultIssueLink,
-        innerError
-      )
+      new SystemError({
+        name: name,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: this.source,
+        issueLink: issueLink ?? this.defaultIssueLink,
+        error: innerError,
+      })
     );
   }
 

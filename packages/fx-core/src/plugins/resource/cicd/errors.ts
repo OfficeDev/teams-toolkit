@@ -11,7 +11,7 @@ export enum ErrorType {
 
 export class PluginError extends Error {
   public name: string;
-  public details: string;
+  public details: [string, string];
   public suggestions: string[];
   public errorType: ErrorType;
   public innerError?: Error;
@@ -20,12 +20,12 @@ export class PluginError extends Error {
   constructor(
     type: ErrorType,
     name: string,
-    details: string,
+    details: [string, string],
     suggestions: string[],
     innerError?: Error,
     showHelpLink = false
   ) {
-    super(details);
+    super(details[0]);
     this.name = name;
     this.details = details;
     this.suggestions = suggestions;
@@ -36,16 +36,15 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    return getLocalizedString(
-      "plugins.baseErrorMessage",
-      this.message,
-      this.suggestions.join("\n")
-    );
+    return `${this.details[1]} Suggestions: ${this.suggestions.join("\n")}`;
+  }
+  genDefaultMessage(): string {
+    return `${this.details[0]} Suggestions: ${this.suggestions.join("\n")}`;
   }
 }
 
 export class InternalError extends PluginError {
-  constructor(details: string, innerError?: Error) {
+  constructor(details: [string, string], innerError?: Error) {
     super(
       ErrorType.System,
       ErrorNames.INTERNAL_ERROR,
@@ -61,14 +60,14 @@ export class NoProjectOpenedError extends PluginError {
     super(
       ErrorType.User,
       ErrorNames.NO_PROJECT_OPENED_ERROR,
-      getLocalizedString("error.cicd.NoProjectOpened.details"),
+      ["No project opened.", "No project opened."],
       [Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING]
     );
   }
 }
 
 export class FileSystemError extends PluginError {
-  constructor(details: string, innerError?: Error) {
+  constructor(details: [string, string], innerError?: Error) {
     super(
       ErrorType.User,
       ErrorNames.FILE_SYSTEM_ERROR,

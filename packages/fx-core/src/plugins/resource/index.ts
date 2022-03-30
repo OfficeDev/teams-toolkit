@@ -15,3 +15,4 @@ export * from "./spfx";
 export * from "./sql";
 export * from "./keyvault";
 export * from "./cicd";
+export * from "./apiconnector";

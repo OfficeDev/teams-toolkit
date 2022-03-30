@@ -2,44 +2,50 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { SolutionSource } from "../constants";
 
 export function ScaffoldLocalDebugSettingsError(error: any): SystemError {
-  return returnSystemError(error, SolutionSource, "ScaffoldLocalDebugSettingsError");
+  return new SystemError({
+    error,
+    source: SolutionSource,
+    name: "ScaffoldLocalDebugSettingsError",
+  });
 }
 
 export function SetupLocalDebugSettingsError(error: any): SystemError {
-  return returnSystemError(error, SolutionSource, "SetupLocalDebugSettingsError");
+  return new SystemError({ error, source: SolutionSource, name: "SetupLocalDebugSettingsError" });
 }
 
 export function ConfigLocalDebugSettingsError(error: any): SystemError {
-  return returnSystemError(error, SolutionSource, "ConfigLocalDebugSettingsError");
+  return new SystemError({ error, source: SolutionSource, name: "ConfigLocalDebugSettingsError" });
 }
 
 export function NgrokTunnelNotConnected(): UserError {
-  return returnUserError(
-    new Error("Ngrok tunnel is not connected. Check your network settings and try again."),
-    SolutionSource,
-    "NgrokTunnelNotConnected",
-    "https://aka.ms/teamsfx-localdebug"
-  );
+  return new UserError({
+    name: "NgrokTunnelNotConnected",
+    source: "localdebug-plugin",
+    message: getDefaultString("error.NgrokTunnelNotConnected"),
+    displayMessage: getLocalizedString("error.NgrokTunnelNotConnected"),
+    helpLink: "https://aka.ms/teamsfx-localdebug",
+  });
 }
 
 export function LocalBotEndpointNotConfigured(): UserError {
-  return returnUserError(
-    new Error(
-      'Local bot endpoint is not configured. Set "fx-resource-local-debug.localBotEndpoint" in ".fx/default.user.data" and try again.'
-    ),
+  return new UserError(
     SolutionSource,
-    "LocalBotEndpointNotConfigured"
+    "LocalBotEndpointNotConfigured",
+    getDefaultString("error.LocalBotEndpointNotConfigured"),
+    getLocalizedString("error.LocalBotEndpointNotConfigured")
   );
 }
 
 export function InvalidLocalBotEndpointFormat(localBotEndpoint: string): UserError {
-  return returnUserError(
-    new Error(`Local bot endpoint format is invalid: ${localBotEndpoint}.`),
+  return new UserError(
     SolutionSource,
-    "InvalidLocalBotEndpointFormat"
+    "InvalidLocalBotEndpointFormat",
+    getDefaultString("error.LocalBotEndpointNotConfigured", localBotEndpoint),
+    getLocalizedString("error.LocalBotEndpointNotConfigured", localBotEndpoint)
   );
 }

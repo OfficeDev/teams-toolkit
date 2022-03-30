@@ -34,6 +34,10 @@ export class BearerTokenAuthProvider implements AuthProvider {
     if (!config.headers) {
       config.headers = {};
     }
+    if (config.headers["Authorization"]) {
+      throw new Error("Authorization configuration already exists in header!");
+    }
+
     config.headers["Authorization"] = `Bearer ${token}`;
     return config;
   }

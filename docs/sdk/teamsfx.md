@@ -12,7 +12,6 @@
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide static utilities for bot conversation, including - send notification to varies targets (e.g., member, channel, incoming wehbook) - handle command and response. |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
-|  [IncomingWebhookTarget](./teamsfx.incomingwebhooktarget.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel, creating from incoming webhook. |
 |  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |

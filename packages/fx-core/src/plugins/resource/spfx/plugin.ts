@@ -12,6 +12,7 @@ import {
   v3,
   IStaticTab,
   IConfigurableTab,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -41,7 +42,11 @@ import {
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
-import { getAppDirectory } from "../../../common/tools";
+import {
+  getAppDirectory,
+  isYoCheckerEnabled,
+  isGeneratorCheckerEnabled,
+} from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
   MANIFEST_LOCAL,
@@ -61,14 +66,16 @@ import { cpUtils } from "../../solution/fx-solution/utils/depsChecker/cpUtils";
 
 export class SPFxPluginImpl {
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
     try {
       const webpartName = ctx.answers![SPFXQuestionNames.webpart_name] as string;
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = lodash.camelCase(componentName);
+      const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const outputFolderPath = `${ctx.root}/SPFx`;
       let componentId: string;
       const replaceMap: Map<string, string> = new Map();
       if (yeomanScaffoldEnabled()) {
-        const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx.ui);
         await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
         const yoChecker = new YoChecker(ctx.logProvider!);
@@ -79,13 +86,19 @@ export class SPFxPluginImpl {
 
         if (!yoInstalled || !generatorInstalled) {
           await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
-          const yoRes = await yoChecker.ensureDependency(ctx);
-          if (yoRes.isErr()) {
-            throw DependencyInstallError("yo");
+
+          if (isYoCheckerEnabled()) {
+            const yoRes = await yoChecker.ensureDependency(ctx);
+            if (yoRes.isErr()) {
+              throw DependencyInstallError("yo");
+            }
           }
-          const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
-          if (spGeneratorRes.isErr()) {
-            throw DependencyInstallError("sharepoint generator");
+
+          if (isGeneratorCheckerEnabled()) {
+            const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
+            if (spGeneratorRes.isErr()) {
+              throw DependencyInstallError("sharepoint generator");
+            }
           }
         }
 
@@ -97,7 +110,12 @@ export class SPFxPluginImpl {
         }
 
         const yoEnv: NodeJS.ProcessEnv = process.env;
-        yoEnv.PATH = `${yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`;
+        yoEnv.PATH = isYoCheckerEnabled()
+          ? `${yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
+          : process.env.PATH;
+        const generator = isGeneratorCheckerEnabled()
+          ? spGeneratorChecker.getSpGeneratorPath()
+          : "@microsoft/sharepoint";
         await cpUtils.executeCommand(
           ctx.root,
           ctx.logProvider,
@@ -106,7 +124,7 @@ export class SPFxPluginImpl {
             env: yoEnv,
           },
           "yo",
-          spGeneratorChecker.getSpGeneratorPath(),
+          generator,
           "--skip-install",
           "true",
           "--component-type",
@@ -139,6 +157,12 @@ export class SPFxPluginImpl {
         );
         await fs.writeFile(manifestPath, manifestString);
 
+        const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
+        const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
+        componentId = manifestJson.id;
+        replaceMap.set(PlaceHolders.componentId, componentId);
+        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+
         // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
         const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
         const codeFile = await fs.readFile(webpartFile, "utf8");
@@ -157,12 +181,11 @@ export class SPFxPluginImpl {
         const debugPath = `${newPath}/.vscode`;
         await fs.remove(debugPath);
 
-        const solutionPath = `${newPath}/config/package-solution.json`;
-        const solution = await fs.readJson(solutionPath);
-        componentId = solution.solution.id;
-
-        replaceMap.set(PlaceHolders.componentId, componentId);
-        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+        // update readme
+        await fs.copyFile(
+          path.resolve(templateFolder, "./solution/README.md"),
+          `${outputFolderPath}/README.md`
+        );
       } else {
         componentId = uuid.v4();
         const componentClassName = `${componentName}WebPart`;
@@ -187,13 +210,10 @@ export class SPFxPluginImpl {
           }
         }
 
-        const outputFolderPath = `${ctx.root}/SPFx`;
         await fs.mkdir(outputFolderPath);
 
         // teams folder
         const teamsDir = `${outputFolderPath}/teams`;
-
-        const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
 
         await fs.mkdir(teamsDir);
         await fs.copyFile(
@@ -361,8 +381,30 @@ export class SPFxPluginImpl {
         await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
         await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
       }
+      await progressHandler?.end(true);
       return ok(undefined);
     } catch (error) {
+      if ((error as any).name === "DependencyInstallFailed") {
+        const globalYoVersion = Utils.getPackageVersion("yo");
+        const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
+        const yoInfo = YoChecker.getDependencyInfo();
+        const genInfo = GeneratorChecker.getDependencyInfo();
+        const yoMessage =
+          globalYoVersion === undefined
+            ? "    yo not installed"
+            : `    globally installed yo@${globalYoVersion}`;
+        const generatorMessage =
+          globalGenVersion === undefined
+            ? "    @microsoft/generator-sharepoint not installed"
+            : `    globally installed @microsoft/generator-sharepoint@${globalYoVersion}`;
+        ctx.logProvider?.error(
+          `We've encountered some issues when trying to install prerequisites under HOME/.fx folder.  Learn how to remediate by going to this link(aka.ms/teamsfx-spfx-help) and following the steps applicable to your system: \n ${yoMessage} \n ${generatorMessage}`
+        );
+        ctx.logProvider?.error(
+          `Teams Toolkit recommends using ${yoInfo.displayName} ${genInfo.displayName}`
+        );
+      }
+      await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }
   }

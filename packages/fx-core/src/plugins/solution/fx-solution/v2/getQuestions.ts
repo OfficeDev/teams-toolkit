@@ -150,18 +150,20 @@ export async function getQuestionsForScaffolding(
     const res = await botPlugin.getQuestionsForScaffolding(ctx, inputs);
     if (res.isErr()) return res;
     if (res.value) {
-      const botGroup = res.value as QTreeNode;
+      // Create a parent node of the node returned by plugin to prevent overwriting node.condition.
+      const botGroup = new QTreeNode({ type: "group" });
+      botGroup.addChild(res.value);
       botGroup.condition = {
         validFunc: (input: any, inputs?: Inputs) => {
           if (!inputs) {
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-          // TODO(aochengwang): add a parent question node to prevent overwriting bot question.condition
           if (
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
-            cap.includes(NotificationOptionItem.id)
+            cap.includes(NotificationOptionItem.id) ||
+            cap.includes(CommandAndResponseOptionItem.id)
           ) {
             return undefined;
           }

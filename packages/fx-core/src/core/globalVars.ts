@@ -21,8 +21,12 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+/**
+ * @deprecated Please DO NOT use this feature flag anymore. This will be removed later
+ * @returns whether yeoman CLI scaffold is used
+ */
 export function yeomanScaffoldEnabled(): boolean {
-  return featureFlagEnabled(FeatureFlagName.YeomanScaffold);
+  return true;
 }
 
 export let Logger: LogProvider;

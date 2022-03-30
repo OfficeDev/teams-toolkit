@@ -9,6 +9,7 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "../../../src/common/local/localStateHelper";
+import { v3 } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 
@@ -29,6 +30,7 @@ describe("localSettingsHelper", () => {
       },
     };
     const localState0 = {
+      solution: {},
       "fx-resource-appstudio": {
         teamsAppId: "33333333-3333-3333-3333-333333333333",
       },
@@ -42,16 +44,21 @@ describe("localSettingsHelper", () => {
         endpoint: "https://localhost:53000",
       },
     };
+    const envInfo0: v3.EnvInfoV3 = {
+      envName: "local",
+      state: localState0,
+      config: {},
+    };
     const projectPath = path.resolve(__dirname, "data");
 
     it("happy path", async () => {
       await fs.ensureDir(projectPath);
       await fs.emptyDir(projectPath);
 
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, localState0);
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 7);
+      chai.assert.equal(Object.keys(localEnvs).length, 5);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
         "https://localhost:53000/auth-start.html"
@@ -73,10 +80,10 @@ describe("localSettingsHelper", () => {
       if (aadPluginKey > -1) {
         projectSettingsAll.solutionSettings.activeResourcePlugins.splice(aadPluginKey, 1);
       }
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localState0);
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 5);
+      chai.assert.equal(Object.keys(localEnvs).length, 3);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"]);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
     });
@@ -87,10 +94,10 @@ describe("localSettingsHelper", () => {
 
       const projectSettingsAll = cloneDeep(projectSettings0);
       projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localState0);
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 17);
+      chai.assert.equal(Object.keys(localEnvs).length, 15);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
         "https://localhost:53000/auth-start.html"

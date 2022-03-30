@@ -395,6 +395,10 @@ export function isM365AppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
 }
 
+export function isApiConnectEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
@@ -429,6 +433,14 @@ export function getRootDirectory(): string {
   } else {
     return path.resolve(root.replace("${homeDir}", os.homedir()));
   }
+}
+
+export function isYoCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+}
+
+export function isGeneratorCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
 export async function generateBicepFromFile(

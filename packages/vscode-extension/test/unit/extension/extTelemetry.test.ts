@@ -5,6 +5,9 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
+import * as fs from "fs-extra";
+import { ext } from "../../../src/extensionVariables";
+import { Uri } from "vscode";
 
 chai.use(spies);
 const spy = chai.spy;
@@ -86,6 +89,8 @@ suite("ExtTelemetry", () => {
       const sandbox = sinon.createSandbox();
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
       sandbox.stub(commonUtils, "isSPFxProject").returns(false);
+      sandbox.stub(fs, "pathExistsSync").returns(false);
+      ext.workspaceUri = Uri.file("");
     });
 
     test("sendTelemetryEvent", () => {
@@ -101,7 +106,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
-          "is-spfx": false,
+          "is-spfx": "false",
         },
         { numericMeasure: 123 }
       );
@@ -124,7 +129,7 @@ suite("ExtTelemetry", () => {
           component: "extension",
           success: "no",
           "is-existing-user": "",
-          "is-spfx": false,
+          "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
@@ -148,7 +153,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
-          "is-spfx": false,
+          "is-spfx": "false",
         },
         { numericMeasure: 123 }
       );

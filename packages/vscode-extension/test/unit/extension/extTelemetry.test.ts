@@ -90,7 +90,7 @@ suite("ExtTelemetry", () => {
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
       sandbox.stub(commonUtils, "isSPFxProject").returns(false);
       sandbox.stub(fs, "pathExistsSync").returns(false);
-      ext.workspaceUri = Uri.file("");
+      ext.workspaceUri = Uri.file("test");
     });
 
     suiteTeardown(() => {

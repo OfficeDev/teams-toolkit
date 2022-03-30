@@ -305,5 +305,4 @@ export class AddSsoParameters {
   static readonly Bot = "bot";
   static readonly Tab = "tab";
   static readonly Readme = "README.md";
-  static readonly AuthFiles = "auth.zip";
 }

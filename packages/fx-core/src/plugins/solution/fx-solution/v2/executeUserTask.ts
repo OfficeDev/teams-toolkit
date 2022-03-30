@@ -1075,13 +1075,9 @@ export async function createAuthFiles(
         fs.writeFile(readmeTargetPath, readme);
 
         // Sample Code
-        const sampleSourcePath = path.join(
-          botTemplateFolder,
-          languageFolderName,
-          AddSsoParameters.AuthFiles
-        );
-        const sample: Buffer = await fs.readFile(sampleSourcePath);
-        const sampleZip = new AdmZip(sample);
+        const sampleSourceFolder = path.join(botTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
         await unzip(sampleZip, botFolder);
       }
     } catch (error) {

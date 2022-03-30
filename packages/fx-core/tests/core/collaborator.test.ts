@@ -178,9 +178,9 @@ describe("Collaborator APIs for V3", () => {
         .resolves(
           err(
             new UserError(
+              "AppStudioPlugin",
               SolutionError.FailedToListCollaborator,
-              "List collaborator failed.",
-              "AppStudioPlugin"
+              "List collaborator failed."
             )
           )
         );
@@ -343,9 +343,9 @@ describe("Collaborator APIs for V3", () => {
         .resolves(
           err(
             new UserError(
+              "AppStudioPlugin",
               SolutionError.FailedToCheckPermission,
-              "List collaborator failed.",
-              "AppStudioPlugin"
+              "List collaborator failed."
             )
           )
         );
@@ -555,9 +555,9 @@ describe("Collaborator APIs for V3", () => {
         .resolves(
           err(
             new UserError(
+              "AppStudioPlugin",
               SolutionError.FailedToGrantPermission,
-              "Grant permission failed.",
-              "AppStudioPlugin"
+              "Grant permission failed."
             )
           )
         );

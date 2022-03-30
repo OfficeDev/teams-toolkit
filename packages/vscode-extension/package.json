@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -62,6 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.connectExistingApi",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
@@ -86,10 +87,6 @@
       {
         "view": "teamsfx-empty-project",
         "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-and-init",
-        "contents": "To start Teams app development experience, create a new Teams app or initialize your application with Teams Toolkit.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Initialize an existing application](command:fx-extension.init?%5B%22SideBar%22%5D)\nYou can also explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -139,11 +136,6 @@
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-and-init",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isInitAppEnabled"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -450,11 +442,6 @@
         "enablement": "fx-extension.isM365AppEnabled"
       },
       {
-        "command": "fx-extension.init",
-        "title": "Teams: Initialize your application with Teams Toolkit",
-        "enablement": "fx-extension.isInitAppEnabled"
-      },
-      {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
         "enablement": "!fx-extension.isSPFx"
@@ -471,6 +458,11 @@
       {
         "command": "fx-extension.validateManifest",
         "title": "%teamstoolkit.commands.validateManifest.title%"
+      },
+      {
+        "command": "fx-extension.connectExistingApi",
+        "title": "%teamstoolkit.commands.connectExistingApi.title%",
+        "enablement": "fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -880,22 +872,36 @@
         }
       },
       {
+        "title": "SPFx Prerequisite Check",
+        "order": 2,
+        "properties": {
+          "fx-extension.spfxPrerequisiteCheck": {
+            "type": "object",
+            "properties": {
+              "yo": {
+                "type": "boolean",
+                "description": "Ensure Yeoman CLI is installed. (requires reload of VS Code)"
+              },
+              "sharepointYeomanGenerator": {
+                "type": "boolean",
+                "description": "Ensure Sharepoint Yeoman generator is installed. (requires reload of VS Code)"
+              }
+            },
+            "additionalProperties": false,
+            "default": {
+              "yo": true,
+              "sharepointYeomanGenerator": true
+            }
+          }
+        }
+      },
+      {
         "title": "Experimental Features",
         "order": 3,
         "properties": {
           "fx-extension.unifyConfigs": {
             "type": "boolean",
             "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableInitApp": {
-            "type": "boolean",
-            "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableNotification / CommandAndResponseBot": {
-            "type": "boolean",
-            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
             "default": false
           }
         }
@@ -1093,8 +1099,8 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.17.0",
-    "@microsoft/teamsfx-core": "^1.6.0",
+    "@microsoft/teamsfx-api": "^0.17.1",
+    "@microsoft/teamsfx-core": "^1.6.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "ajv": "^8.5.0",

@@ -34,7 +34,6 @@ import {
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { ResourcePlugins } from "../../../../common/constants";
 
 export async function setupLocalDebugSettings(
@@ -177,7 +176,7 @@ export async function setupLocalDebugSettings(
 export async function setupLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
@@ -255,7 +254,7 @@ export async function setupLocalEnvironment(
         }
 
         if (skipNgrok) {
-          const localBotEndpoint = envInfo.state[ResourcePlugins.Bot].siteEndPoint as string;
+          const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -448,7 +447,7 @@ export async function configLocalDebugSettings(
 export async function configLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
@@ -532,7 +531,20 @@ export async function configLocalEnvironment(
           const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
 
           const localCert = await certManager.setupCertificate(trustDevCert);
-          if (localCert) {
+          if (
+            envInfo.config.frontend &&
+            envInfo.config.frontend.sslCertFile &&
+            envInfo.config.frontend.sslKeyFile
+          ) {
+            envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile =
+              envInfo.config.frontend.sslCertFile;
+            envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile =
+              envInfo.config.frontend.sslKeyFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] =
+              envInfo.config.frontend.sslCertFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] =
+              envInfo.config.frontend.sslKeyFile;
+          } else if (localCert) {
             envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile = localCert.certPath;
             envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile = localCert.keyPath;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;

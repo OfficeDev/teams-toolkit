@@ -1,4 +1,3 @@
-import { TeamsClientId } from "../../../../common/constants";
 import { AADApplication } from "../interfaces/AADApplication";
 import { AADManifest } from "../interfaces/AADManifest";
 import isUUID from "validator/lib/isUUID";
@@ -26,18 +25,18 @@ export class AadManifestHelper {
         knownClientApplications: manifest.knownClientApplications,
         requestedAccessTokenVersion: manifest.accessTokenAcceptedVersion,
         oauth2PermissionScopes: manifest.oauth2Permissions,
-        preAuthorizedApplications: manifest.preAuthorizedApplications.map((item) => {
+        preAuthorizedApplications: manifest.preAuthorizedApplications?.map((item) => {
           return { appId: item.appId, delegatedPermissionIds: item.permissionIds };
         }),
       },
       appRoles: manifest.appRoles,
       info: {
-        marketingUrl: manifest.informationalUrls.marketing,
-        privacyStatementUrl: manifest.informationalUrls.privacy,
-        supportUrl: manifest.informationalUrls.support,
-        termsOfServiceUrl: manifest.informationalUrls.termsOfService,
+        marketingUrl: manifest.informationalUrls?.marketing,
+        privacyStatementUrl: manifest.informationalUrls?.privacy,
+        supportUrl: manifest.informationalUrls?.support,
+        termsOfServiceUrl: manifest.informationalUrls?.termsOfService,
       },
-      keyCredentials: manifest.keyCredentials.map((item) => {
+      keyCredentials: manifest.keyCredentials?.map((item) => {
         return {
           customKeyIdentifier: item.customKeyIdentifier,
           displayName: item.displayName,
@@ -197,7 +196,10 @@ export class AadManifestHelper {
       warningMsg += AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim;
     }
 
-    return warningMsg;
+    if (warningMsg) {
+      warningMsg = AadManifestErrorMessage.AADManifestIssues + warningMsg;
+    }
+    return warningMsg.trimEnd();
   }
 
   public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {

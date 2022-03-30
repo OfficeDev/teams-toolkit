@@ -27,7 +27,6 @@ import {
   SelectFolderResult,
   OptionItem,
   Result,
-  returnSystemError,
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
@@ -43,6 +42,7 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -51,7 +51,7 @@ import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import * as packageJson from "../../package.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -118,10 +118,11 @@ export class VsCodeUI implements UserInteraction {
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(localize("teamstoolkit.qm.emptySelection")),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }
@@ -199,10 +200,11 @@ export class VsCodeUI implements UserInteraction {
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(localize("teamstoolkit.qm.emptySelection")),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }
@@ -476,6 +478,8 @@ export class VsCodeUI implements UserInteraction {
               ];
               resolve(ok({ type: "success", result: result }));
             }
+          } else {
+            resolve(err(UserCancelError));
           }
         };
         const onDidChangeSelection = async function (

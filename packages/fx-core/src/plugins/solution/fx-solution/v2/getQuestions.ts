@@ -12,9 +12,9 @@ import {
   OptionItem,
   QTreeNode,
   Result,
-  returnUserError,
   Stage,
   TokenProvider,
+  UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
@@ -53,10 +53,11 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { handleSelectionConflict, ProgrammingLanguageQuestion } from "../../../../core/question";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { handleSelectionConflict } from "../../../../core/question";
 import { isAadManifestEnabled } from "../../../../common";
 import { isBotNotificationEnabled } from "../../../../common";
+import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -147,7 +148,9 @@ export async function getQuestionsForScaffolding(
     const res = await botPlugin.getQuestionsForScaffolding(ctx, inputs);
     if (res.isErr()) return res;
     if (res.value) {
-      const botGroup = res.value as QTreeNode;
+      // Create a parent node of the node returned by plugin to prevent overwriting node.condition.
+      const botGroup = new QTreeNode({ type: "group" });
+      botGroup.addChild(res.value);
       botGroup.condition = {
         validFunc: (input: any, inputs?: Inputs) => {
           if (!inputs) {
@@ -266,12 +269,13 @@ export async function getQuestions(
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
         return err(
-          returnUserError(
-            new Error(getLocalizedString("core.deploy.FailedToDeployBeforeProvision")),
-            SolutionSource,
-            SolutionError.CannotDeployBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotDeployBeforeProvision,
+            message: getDefaultString("core.deploy.FailedToDeployBeforeProvision"),
+            displayMessage: getLocalizedString("core.deploy.FailedToDeployBeforeProvision"),
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }
@@ -328,13 +332,17 @@ export async function getQuestions(
         const errorMsg = isAzure
           ? getLocalizedString("core.publish.FailedToPublishBeforeProvision")
           : getLocalizedString("core.publish.SPFxAskProvisionBeforePublish");
+        const defaultMsg = isAzure
+          ? getDefaultString("core.publish.FailedToPublishBeforeProvision")
+          : getDefaultString("core.publish.SPFxAskProvisionBeforePublish");
         return err(
-          returnUserError(
-            new Error(errorMsg),
-            SolutionSource,
-            SolutionError.CannotPublishBeforeProvision,
-            HelpLinks.WhyNeedProvision
-          )
+          new UserError({
+            source: SolutionSource,
+            name: SolutionError.CannotPublishBeforeProvision,
+            message: defaultMsg,
+            displayMessage: errorMsg,
+            helpLink: HelpLinks.WhyNeedProvision,
+          })
         );
       }
     }

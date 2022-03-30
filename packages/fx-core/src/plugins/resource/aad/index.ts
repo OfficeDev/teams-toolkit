@@ -11,6 +11,7 @@ import {
   ok,
   Result,
   FxError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
@@ -18,7 +19,6 @@ import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { Messages, Plugins, Telemetry } from "./constants";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
@@ -91,13 +91,12 @@ export class AadAppForTeamsPlugin implements Plugin {
       return Promise.resolve(this.setApplicationInContext(ctx, isLocal));
     }
     return err(
-      new SystemError(
-        "FunctionRouterError",
-        `Failed to route function call:${JSON.stringify(func)}`,
-        Plugins.pluginNameShort,
-        undefined,
-        Links.ISSUE_LINK
-      )
+      new SystemError({
+        source: Plugins.pluginNameShort,
+        name: "FunctionRouterError",
+        message: `Failed to route function call:${JSON.stringify(func)}`,
+        issueLink: Links.ISSUE_LINK,
+      })
     );
   }
 
@@ -135,7 +134,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.scaffold(ctx),
       ctx,
-      Messages.Scaffold.telemetry
+      Messages.EndScaffold.telemetry
     );
   }
 
@@ -143,7 +142,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.deploy(ctx),
       ctx,
-      Messages.Deploy.telemetry
+      Messages.EndDeploy.telemetry
     );
   }
 

@@ -10,13 +10,7 @@ import {
   MultiSelectQuestion,
 } from "./question";
 import { getValidationFunction, validate } from "./validation";
-import {
-  assembleError,
-  EmptyOptionError,
-  FxError,
-  returnUserError,
-  UserCancelError,
-} from "../error";
+import { assembleError, EmptyOptionError, FxError, UserCancelError, UserError } from "../error";
 import { Inputs, OptionItem, Void } from "../types";
 import { InputResult, UserInteraction } from "./ui";
 import { err, ok, Result } from "neverthrow";
@@ -219,10 +213,11 @@ const questionVisitor = async function (
     }
   }
   return err(
-    returnUserError(
-      new Error(`Unsupported question node type:${JSON.stringify(question)}`),
+    new UserError(
       "API",
-      "UnsupportedNodeType"
+      "UnsupportedNodeType",
+      `Unsupported question node type:${JSON.stringify(question)}`,
+      `Unsupported question node type:${JSON.stringify(question)}`
     )
   );
 };

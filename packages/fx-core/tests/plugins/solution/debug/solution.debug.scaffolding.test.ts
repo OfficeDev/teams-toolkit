@@ -728,7 +728,7 @@ describe("solution.debug.scaffolding", () => {
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
       const compounds: [] = launch["compounds"];
-      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(configurations.length, 4);
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json

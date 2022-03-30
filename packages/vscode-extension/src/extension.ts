@@ -28,6 +28,7 @@ import {
   isInitAppEnabled,
   isM365AppEnabled,
   isAadManifestEnabled,
+  isApiConnectEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -125,6 +126,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
+
+  const connectExistingApiCmd = vscode.commands.registerCommand(
+    "fx-extension.connectExistingApi",
+    (...args) => Correlator.run(handlers.connectExistingApiHandler, args)
+  );
+  context.subscriptions.push(connectExistingApiCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
@@ -398,6 +405,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isAadManifestEnabled",
     isAadManifestEnabled()
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiConnectEnabled",
+    isApiConnectEnabled()
   );
 
   // Setup CodeLens provider for userdata file

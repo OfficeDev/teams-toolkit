@@ -1,11 +1,18 @@
+import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsoft/teamsfx-api";
+import { isUndefined } from "lodash";
+import { Container } from "typedi";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { environmentManager } from "../../../../core/environment";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { PluginNames, SolutionError } from "../constants";
 import {
-  v2,
-  Inputs,
-  FxError,
-  TokenProvider,
-  returnSystemError,
-  Json,
-} from "@microsoft/teamsfx-api";
+  configLocalDebugSettings,
+  configLocalEnvironment,
+  setupLocalDebugSettings,
+  setupLocalEnvironment,
+} from "../debug/provisionLocal";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { executeConcurrently } from "./executor";
 import {
   checkWhetherLocalDebugM365TenantMatches,
@@ -15,37 +22,17 @@ import {
   isAzureProject,
   loadTeamsAppTenantIdForLocal,
 } from "./utils";
-import { PluginNames, SolutionError, SolutionSource } from "../constants";
-import { isUndefined } from "lodash";
-import Container from "typedi";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { environmentManager } from "../../../../core/environment";
-import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import {
-  configLocalDebugSettings,
-  configLocalEnvironment,
-  setupLocalDebugSettings,
-  setupLocalEnvironment,
-} from "../debug/provisionLocal";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  envInfo?: EnvInfoV2
+  envInfo?: v2.EnvInfoV2
 ): Promise<v2.FxResult<Json, FxError>> {
   if (inputs.projectPath === undefined) {
     return new v2.FxFailure(
-      returnSystemError(
-        new Error("projectPath is undefined"),
-        "Solution",
-        SolutionError.InternelError
-      )
+      new SystemError("Solution", SolutionError.InternelError, "projectPath is undefined")
     );
   }
   const azureSolutionSettings = getAzureSolutionSettings(ctx);

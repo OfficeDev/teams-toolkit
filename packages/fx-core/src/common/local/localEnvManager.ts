@@ -12,6 +12,7 @@ import {
   TelemetryReporter,
   UserError,
   UserInteraction,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -29,6 +30,7 @@ import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
 import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
+import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -81,13 +83,13 @@ export class LocalEnvManager {
     projectPath: string,
     projectSettings: ProjectSettings,
     localSettings: Json | undefined,
-    localState?: Json | undefined
+    envInfo?: v2.EnvInfoV2
   ): Promise<Record<string, string>> {
     if (isConfigUnifyEnabled()) {
       return await localStateHelper.convertToLocalEnvs(
         projectPath,
         projectSettings,
-        localState,
+        envInfo,
         this.logger
       );
     } else {
@@ -117,10 +119,10 @@ export class LocalEnvManager {
     });
   }
 
-  public async getLocalState(
+  public async getLocalEnvInfo(
     projectPath: string,
     cryptoOption?: { projectId: string }
-  ): Promise<Json | undefined> {
+  ): Promise<v2.EnvInfoV2 | undefined> {
     const localStateProvider = new LocalStateProvider(projectPath);
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
     return await this.retry(async () => {
@@ -139,9 +141,10 @@ export class LocalEnvManager {
 
       if (!(await fs.pathExists(projectSettingsPath))) {
         throw new UserError(
+          CoreSource,
           "FileNotFoundError",
-          `Project settings file does not exist: ${projectSettingsPath}`,
-          CoreSource
+          getDefaultString("error.FileNotFoundError", projectSettingsPath),
+          getLocalizedString("error.FileNotFoundError", projectSettingsPath)
         );
       }
 

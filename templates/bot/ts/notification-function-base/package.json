@@ -12,8 +12,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "prestart": "npm run build",
-    "start": "npx func start",
-    "test": "npm run build && mocha --require ts-node/register \"tests/**/*.test.ts\""
+    "start": "npx func start"
   },
   "repository": {
     "type": "git",

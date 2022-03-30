@@ -31,7 +31,7 @@ describe("AAD manifest helper Test", () => {
     chai.expect(warning).contain(AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.Oauth2PermissionsIsMissing);
     chai.expect(warning).contain(AadManifestErrorMessage.AccessTokenAcceptedVersionIs1);
-    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim);
+    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
   });
 
   it("processRequiredResourceAccessInManifest with id", async () => {

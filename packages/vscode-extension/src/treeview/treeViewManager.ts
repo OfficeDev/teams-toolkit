@@ -209,19 +209,6 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
     ];
-    if (isInitAppEnabled()) {
-      // insert the init tree view command after the create project command
-      developmentCommand.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
-          "fx-extension.init",
-          initProjectHandler,
-          "initProject",
-          { name: "new-folder", custom: false }
-        )
-      );
-    }
     developmentCommand.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),

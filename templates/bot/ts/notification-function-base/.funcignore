@@ -6,6 +6,10 @@ local.settings.json
 test
 tsconfig.json
 .teamsfx.bot.json
+.development
+.DS_Store
 node_modules/.bin
 node_modules/azure-functions-core-tools
 node_modules/azurite
+_storage_emulator
+.notification.localstore.json

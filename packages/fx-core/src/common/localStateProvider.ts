@@ -3,9 +3,8 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { CryptoProvider, v3 } from "@microsoft/teamsfx-api";
+import { CryptoProvider, v3, v2 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../core/environment";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export class LocalStateProvider {
   public readonly projectPath: string;
@@ -16,7 +15,7 @@ export class LocalStateProvider {
   public async loadV2(
     cryptoProvider?: CryptoProvider,
     includeAAD?: boolean
-  ): Promise<EnvInfoV2 | undefined> {
+  ): Promise<v2.EnvInfoV2 | undefined> {
     if (await fs.pathExists(this.projectPath)) {
       const envDataResult = await environmentManager.loadEnvInfo(
         this.projectPath,

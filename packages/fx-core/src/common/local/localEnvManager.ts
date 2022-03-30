@@ -12,6 +12,7 @@ import {
   TelemetryReporter,
   UserError,
   UserInteraction,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -29,7 +30,6 @@ import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
 import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class LocalEnvManager {
@@ -83,7 +83,7 @@ export class LocalEnvManager {
     projectPath: string,
     projectSettings: ProjectSettings,
     localSettings: Json | undefined,
-    envInfo?: EnvInfoV2
+    envInfo?: v2.EnvInfoV2
   ): Promise<Record<string, string>> {
     if (isConfigUnifyEnabled()) {
       return await localStateHelper.convertToLocalEnvs(
@@ -122,7 +122,7 @@ export class LocalEnvManager {
   public async getLocalEnvInfo(
     projectPath: string,
     cryptoOption?: { projectId: string }
-  ): Promise<EnvInfoV2 | undefined> {
+  ): Promise<v2.EnvInfoV2 | undefined> {
     const localStateProvider = new LocalStateProvider(projectPath);
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
     return await this.retry(async () => {

@@ -34,7 +34,6 @@ import {
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { ResourcePlugins } from "../../../../common/constants";
 
 export async function setupLocalDebugSettings(
@@ -177,7 +176,7 @@ export async function setupLocalDebugSettings(
 export async function setupLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
@@ -255,7 +254,7 @@ export async function setupLocalEnvironment(
         }
 
         if (skipNgrok) {
-          const localBotEndpoint = envInfo.config.bot.siteEndpoint as string;
+          const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -448,7 +447,7 @@ export async function configLocalDebugSettings(
 export async function configLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);

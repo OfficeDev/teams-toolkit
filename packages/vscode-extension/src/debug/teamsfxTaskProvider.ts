@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { Json, ProductName, ProjectSettings, v2, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { FolderName, isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
@@ -20,7 +20,6 @@ import {
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -37,7 +36,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
       let projectSettings: ProjectSettings;
       let localSettings: Json | undefined;
-      let localEnvInfo: EnvInfoV2 | undefined;
+      let localEnvInfo: v2.EnvInfoV2 | undefined;
       let localEnv: { [key: string]: string } | undefined;
 
       try {

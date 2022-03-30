@@ -5,11 +5,10 @@
 import {
   ConfigFolderName,
   ConfigMap,
-  Json,
   LogProvider,
   ProjectSettings,
+  v2,
 } from "@microsoft/teamsfx-api";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import * as os from "os";
 import { ResourcePlugins } from "../constants";
 import {
@@ -54,7 +53,7 @@ function appendEnvWithPrefix(
 export async function convertToLocalEnvs(
   projectPath: string,
   projectSettings: ProjectSettings,
-  envInfo: EnvInfoV2 | undefined,
+  envInfo: v2.EnvInfoV2 | undefined,
   logger?: LogProvider
 ): Promise<Record<string, string>> {
   const localState = envInfo?.state;

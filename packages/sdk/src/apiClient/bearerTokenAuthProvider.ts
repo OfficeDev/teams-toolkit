@@ -2,16 +2,21 @@
 // Licensed under the MIT license.
 
 import { AxiosRequestConfig } from "axios";
-import { IAuthProvider } from "./iAuthProvider";
+import { AuthProvider } from "./authProvider";
 
 /**
  * Provider that handles Bearer Token authentication
  *
  * @beta
  */
-export class BearerAuthProvider implements IAuthProvider {
+export class BearerTokenAuthProvider implements AuthProvider {
   private getToken: () => Promise<string>;
 
+  /**
+   * @param getToken Function that returns the content of bearer token used in http request
+   *
+   * @beta
+   */
   constructor(getToken: () => Promise<string>) {
     this.getToken = getToken;
   }
@@ -21,11 +26,15 @@ export class BearerAuthProvider implements IAuthProvider {
    *
    * @param config - Contains all the request information and can be updated to include extra authentication info.
    * Refer https://axios-http.com/docs/req_config for detailed document.
+   *
+   * @beta
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<void> {
+  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     const token = await this.getToken();
-    config.headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    if (!config.headers) {
+      config.headers = {};
+    }
+    config.headers["Authorization"] = `Bearer ${token}`;
+    return config;
   }
 }

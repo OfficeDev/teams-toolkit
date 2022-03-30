@@ -4,12 +4,15 @@
 
 ## createApiClient() function
 
+> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> 
+
 Initializes new Axios instance with specific auth provider
 
 <b>Signature:</b>
 
 ```typescript
-export declare function createApiClient(apiEndpoint: string, authProvider: IAuthProvider): AxiosStatic;
+export declare function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 ```
 
 ## Parameters
@@ -17,11 +20,11 @@ export declare function createApiClient(apiEndpoint: string, authProvider: IAuth
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  apiEndpoint | string | Base url of the API |
-|  authProvider | [IAuthProvider](./teamsfx.iauthprovider.md) | Auth provider that injects authentication info to each request |
+|  authProvider | [AuthProvider](./teamsfx.authprovider.md) | Auth provider that injects authentication info to each request |
 
 <b>Returns:</b>
 
-AxiosStatic
+AxiosInstance
 
 axios instance configured with specfic auth provider
 
@@ -29,6 +32,6 @@ axios instance configured with specfic auth provider
 
 
 ```typescript
-const client = createApiClient("https://kudos.microsoft.com/api", new BasicAuthProvider("xxx","xxx"));
+const client = createApiClient("https://my-api-endpoint-base-url", new BasicAuthProvider("xxx","xxx"));
 ```
 

@@ -115,8 +115,8 @@ export function getProjectId(): string | undefined {
   }
 }
 
-export async function isSPFxProject(workspacePath: string): Promise<boolean> {
-  if (await fs.pathExists(`${workspacePath}/SPFx`)) {
+export function isSPFxProject(workspacePath: string): boolean {
+  if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;
   }
 
@@ -230,6 +230,8 @@ export function syncFeatureFlags() {
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
+  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

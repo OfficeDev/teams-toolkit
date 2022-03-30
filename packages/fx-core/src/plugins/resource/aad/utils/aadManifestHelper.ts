@@ -196,7 +196,10 @@ export class AadManifestHelper {
       warningMsg += AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim;
     }
 
-    return warningMsg;
+    if (warningMsg) {
+      warningMsg = AadManifestErrorMessage.AADManifestIssues + warningMsg;
+    }
+    return warningMsg.trimEnd();
   }
 
   public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {

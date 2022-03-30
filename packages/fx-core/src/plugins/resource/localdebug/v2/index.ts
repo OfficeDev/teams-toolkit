@@ -118,7 +118,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
         inputs.projectPath as string,
         ctx.projectSetting,
         localSettings,
-        envInfo.state
+        envInfo
       );
       return ok(localEnvs);
     } else {

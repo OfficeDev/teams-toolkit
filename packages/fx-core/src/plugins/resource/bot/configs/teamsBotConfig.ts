@@ -14,6 +14,7 @@ import { PluginActRoles } from "../enums/pluginActRoles";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import { isBotNotificationEnabled } from "../../../../common";
 
 export class TeamsBotConfig {
   public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -55,7 +56,7 @@ export class TeamsBotConfig {
 
     if (capabilities?.includes(PluginActRoles.Bot)) {
       const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
-      if (Array.isArray(scenarios)) {
+      if (isBotNotificationEnabled() && Array.isArray(scenarios)) {
         const scenarioActRoles = scenarios
           .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
           .filter((item): item is PluginActRoles => item !== undefined);

@@ -76,7 +76,6 @@ class TreeViewManager {
       // TODO: remove this logic because walkthrough is enabled.
       return this.registerTreeViewsForNonTeamsFxProject();
     }
-    return [];
   }
 
   public getTreeView(viewName: string) {
@@ -177,6 +176,10 @@ class TreeViewManager {
 
     this.registerAccount(disposables);
     this.registerEnvironment(disposables);
+    const developmentCommands = this.getDevelopmentCommands(false, false);
+    this.registerDevelopment(developmentCommands, disposables);
+    this.registerDeployment(disposables);
+    this.registerHelper(disposables);
 
     return disposables;
   }
@@ -206,19 +209,6 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
     ];
-    if (isInitAppEnabled()) {
-      // insert the init tree view command after the create project command
-      developmentCommand.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
-          "fx-extension.init",
-          initProjectHandler,
-          "initProject",
-          { name: "new-folder", custom: false }
-        )
-      );
-    }
     developmentCommand.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),

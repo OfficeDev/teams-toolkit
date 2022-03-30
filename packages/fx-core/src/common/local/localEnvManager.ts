@@ -12,6 +12,7 @@ import {
   TelemetryReporter,
   UserError,
   UserInteraction,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -82,13 +83,13 @@ export class LocalEnvManager {
     projectPath: string,
     projectSettings: ProjectSettings,
     localSettings: Json | undefined,
-    localState?: Json | undefined
+    envInfo?: v2.EnvInfoV2
   ): Promise<Record<string, string>> {
     if (isConfigUnifyEnabled()) {
       return await localStateHelper.convertToLocalEnvs(
         projectPath,
         projectSettings,
-        localState,
+        envInfo,
         this.logger
       );
     } else {
@@ -118,10 +119,10 @@ export class LocalEnvManager {
     });
   }
 
-  public async getLocalState(
+  public async getLocalEnvInfo(
     projectPath: string,
     cryptoOption?: { projectId: string }
-  ): Promise<Json | undefined> {
+  ): Promise<v2.EnvInfoV2 | undefined> {
     const localStateProvider = new LocalStateProvider(projectPath);
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
     return await this.retry(async () => {

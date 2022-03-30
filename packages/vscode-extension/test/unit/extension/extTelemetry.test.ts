@@ -84,13 +84,17 @@ suite("ExtTelemetry", () => {
   });
 
   suite("Send Telemetry", () => {
+    const sandbox = sinon.createSandbox();
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-      const sandbox = sinon.createSandbox();
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
       sandbox.stub(commonUtils, "isSPFxProject").returns(false);
       sandbox.stub(fs, "pathExistsSync").returns(false);
       ext.workspaceUri = Uri.file("");
+    });
+
+    suiteTeardown(() => {
+      sandbox.restore();
     });
 
     test("sendTelemetryEvent", () => {

@@ -8,6 +8,7 @@ const authProvider = new BasicAuthProvider(
   teamsFx.getConfig("API_{{capitalName}}_PASSWORD")
 );
 const {{config.APIName}}Client = createApiClient(teamsFx.getConfig("API_{{capitalName}}_ENDPOINT"), authProvider);
+export { {{config.APIName}}Client };
 
 /* 
 You can now call {{config.APIName}} APIs without worrying about authentication. 

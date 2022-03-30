@@ -8,6 +8,7 @@ const authProvider = new teamsfxSdk.BasicAuthProvider(
   teamsFx.getConfig("API_FAKE_PASSWORD")
 );
 const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+export { fakeClient };
 
 /* 
 You can now call fake APIs without worrying about authentication. 

@@ -44,17 +44,17 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Phone verification](./phoneverification.png)
 
-- Now you have an instant sandbox. You can `sign in Teams Toolkit with admin or users account in this tenant`.
+- Now you have an instant sandbox. You can sign in Teams Toolkit with admin or users account in this tenant, and the sideloading permission is pre-configured. 
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
 
-## Turn on sideloading option
+## (Optional) Check whether sideloading option is on
 
 - Sign in to [Teams Admin Center](https://admin.teams.microsoft.com) with your admin credentials.
 
 - Navigate to `Teams apps > Setup Policies > Global`.
 
-- Toggle `Upload custom apps` to the `On` position.
+- Check whether `Upload custom apps` is `On`.
 
 ![Instant sandbox](./turn-on-sideload.png)
 

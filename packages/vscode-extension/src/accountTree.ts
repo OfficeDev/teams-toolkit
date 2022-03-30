@@ -311,6 +311,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           treeItem.label += " ";
           tools.treeProvider?.refresh([treeItem]);
         }
+        await registerEnvTreeHandler();
       } else if (accountInfo !== undefined) {
         const treeItem = {
           commandId: "fx-extension.signinM365",
@@ -322,6 +323,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         };
         tools.treeProvider?.refresh([treeItem]);
       }
+      await registerEnvTreeHandler();
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([
         {
@@ -351,6 +353,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ]);
     }
+    await registerEnvTreeHandler();
     return Promise.resolve();
   };
 

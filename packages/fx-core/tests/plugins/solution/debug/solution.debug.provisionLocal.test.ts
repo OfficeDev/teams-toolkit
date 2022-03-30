@@ -122,7 +122,11 @@ describe("solution.debug.provisionLocal", () => {
       const v2Context = new MockedV2Context(projectSetting);
       const envInfo = {
         envName: "default",
-        config: {},
+        config: {
+          bot: {
+            siteEndpoint: "https://endpoint.com/",
+          },
+        },
         state: {
           solution: {},
           "fx-resource-bot": {

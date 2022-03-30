@@ -134,7 +134,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.scaffold(ctx),
       ctx,
-      Messages.Scaffold.telemetry
+      Messages.EndScaffold.telemetry
     );
   }
 
@@ -142,7 +142,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.deploy(ctx),
       ctx,
-      Messages.Deploy.telemetry
+      Messages.EndDeploy.telemetry
     );
   }
 

@@ -57,9 +57,13 @@ export class Utils {
     }
   }
 
-  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages): void {
+  public static addLogAndTelemetry(
+    logProvider: LogProvider | undefined,
+    message: Messages,
+    properties?: { [key: string]: string }
+  ): void {
     logProvider?.info(message.log);
-    TelemetryUtils.sendSuccessEvent(message.telemetry);
+    TelemetryUtils.sendSuccessEvent(message.telemetry, properties);
   }
 
   public static addLocalDebugPrefix(isLocalDebug: boolean, key: string): string {

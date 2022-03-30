@@ -173,7 +173,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context.graphTokenProvider = mockTokenProviderGraph();
     sinon
       .stub<any, any>(AadAppManifestManager, "loadAadManifest")
-      .resolves({ id: "", oauth2Permissions: [{}] });
+      .resolves({ id: "", name: "fake-aad-name", oauth2Permissions: [{}] });
     sinon
       .stub<any, any>(AadAppManifestManager, "createAadApp")
       .resolves({ appId: "fake-appId", id: "fake-object-id" });
@@ -315,12 +315,33 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("scaffold", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub(fs, "ensureDir").resolves();
     sinon.stub(fs, "copy").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
     const result = await plugin.scaffold(context);
     chai.assert.equal(result.isOk(), true);
+  });
+
+  it("deploy", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    sinon.stub<any, any>(AadAppManifestManager, "loadAadManifest").resolves({
+      id: "fake-aad-id",
+      name: "fake-aad-name",
+      replyUrlsWithType: [{ url: "fake-url", type: "Web" }],
+      identifierUris: ["fake-identifier-uri"],
+    });
+    sinon.stub(AadAppManifestManager, "updateAadApp").resolves();
+    sinon.stub(fs, "ensureDir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    await plugin.deploy(context);
   });
 });
 

@@ -12,7 +12,6 @@ import {
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SimpleAuthPlugin } from "../..";
 import {
@@ -56,7 +55,7 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider,
-    envInfo?: EnvInfoV2
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
@@ -73,7 +72,7 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider,
-    envInfo?: EnvInfoV2
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,

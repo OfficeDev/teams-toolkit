@@ -73,9 +73,9 @@ class TreeViewManager {
     if (isValidProject(workspacePath)) {
       return this.registerTreeViewsForTeamsFxProject(workspacePath);
     } else {
-      // No need to register TreeView because walkthrough is enabled.
+      // TODO: remove this logic because walkthrough is enabled.
+      return this.registerTreeViewsForNonTeamsFxProject();
     }
-    return [];
   }
 
   public getTreeView(viewName: string) {
@@ -171,6 +171,19 @@ class TreeViewManager {
     return disposables;
   }
 
+  private async registerTreeViewsForNonTeamsFxProject() {
+    const disposables: vscode.Disposable[] = [];
+
+    this.registerAccount(disposables);
+    this.registerEnvironment(disposables);
+    const developmentCommands = this.getDevelopmentCommands(false, false);
+    this.registerDevelopment(developmentCommands, disposables);
+    this.registerDeployment(disposables);
+    this.registerHelper(disposables);
+
+    return disposables;
+  }
+
   private registerAccount(disposables: vscode.Disposable[]) {
     const accountProvider = new CommandsTreeViewProvider([]);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
@@ -196,19 +209,6 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
     ];
-    if (isInitAppEnabled()) {
-      // insert the init tree view command after the create project command
-      developmentCommand.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
-          "fx-extension.init",
-          initProjectHandler,
-          "initProject",
-          { name: "new-folder", custom: false }
-        )
-      );
-    }
     developmentCommand.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),

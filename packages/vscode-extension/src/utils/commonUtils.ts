@@ -214,16 +214,15 @@ export function syncFeatureFlags() {
 
   process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
 
-  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableInitApp).toString();
-
-  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
-    ConfigurationKey.BotNotificationCommandAndResponseEnabled
-  ).toString();
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();
   process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.generatorEnvCheckerEnable
+  ).toString();
+
+  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
+    ConfigurationKey.BotNotificationCommandAndResponseEnabled
   ).toString();
 }
 

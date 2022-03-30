@@ -245,6 +245,38 @@ export const AadManifestLoadError: AadError = {
   ],
 };
 
+export const AadManifestMissingName: AadError = {
+  name: "AadManifestMissingName",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingName"),
+    getLocalizedString("error.aad.AadManifestMissingName"),
+  ],
+};
+
+export const AadManifestMissingObjectId: AadError = {
+  name: "AadManifestMissingObjectId",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingObjectId"),
+    getLocalizedString("error.aad.AadManifestMissingObjectId"),
+  ],
+};
+
+export const AadManifestMissingReplyUrlsWithType: AadError = {
+  name: "AadManifestMissingReplyUrlsWithType",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingReplyUrlsWithType"),
+    getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+  ],
+};
+
+export const AadManifestMissingIdentifierUris: AadError = {
+  name: "AadManifestMissingIdentifierUris",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingIdentifierUris"),
+    getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+  ],
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError: [string, string] = [
     getDefaultString("error.aad.GetDisplayNameError"),
@@ -363,6 +395,7 @@ export class AadManifestErrorMessage {
   static readonly OptionalClaimsMissingIdtypClaim = getLocalizedString(
     "error.aad.manifest.OptionalClaimsMissingIdtypClaim"
   );
+  static readonly AADManifestIssues = getLocalizedString("error.aad.manifest.AADManifestIssues");
 
   static readonly UnknownResourceAppId = getLocalizedString(
     "error.aad.manifest.UnknownResourceAppId"

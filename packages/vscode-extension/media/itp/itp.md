@@ -1,10 +1,10 @@
-# ITP 
+# How to create a free M365 test tenant?
 
-ITP(Instant Tenant Procurement) is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant. E.g. The Teams App sideloading permission is pre-configured and you don' have to turn on the sideloading and wait for up to 24 hours util it takes effect.
+M365 test tenant is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant.
 
 ## Prequisitives
 
-- A personal Microsoft account, or a work or school account
+- A personal Microsoft account, or a work or school account.
 
 ## Steps to create instant sandbox
 
@@ -20,9 +20,13 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Sign in with wrong account](./joinnowerror.png)
 
-- Click `Join now`
+- Click `Join now`, this will navigate you to instant sandbox creation page.
 
 ![Join now](./joinnow.png)
+
+- (Optional) If you already have a normal subscription before, you can click `Start` button on dashboard page to setup an instant sandbox.
+
+![questions](./withnormalsubscription.png)
 
 - Answer some questions to customize your Developer Program experience
 
@@ -40,10 +44,20 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Phone verification](./phoneverification.png)
 
-- Now you have an instant sandbox. You can sign in Teams Toolkit with admin or users account in this tenant, and the sideloading permission is pre-configured.
+- Now you have an instant sandbox. You can `sign in Teams Toolkit with admin or users account in this tenant`.
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
 
-## Limitations
+## Turn on sideloading option
 
-- If you already have a subscription in your M365 dev program, you cannot create the instant sandbox from Microsoft 365 Dev Program site. No UI entry. (Need to confirm with M365 Dev program team)
+- Sign in to [Teams Admin Center](https://admin.teams.microsoft.com) with your admin credentials.
+
+- Navigate to `Teams apps > Setup Policies > Global`.
+
+- Toggle `Upload custom apps` to the `On` position.
+
+![Instant sandbox](./turn-on-sideload.png)
+
+- Select `Save`.
+
+>Note: It can take up to 24 hours for the sideloading option to be active.

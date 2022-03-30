@@ -736,12 +736,31 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
+      /*
+      VS_CODE_UI.showMessage(
+        "error",
+        util.format(
+          localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
+          `${failures.length}/${results.length}`,
+          "[output panel](command:fx-extension.showOutputChannel)"
+        ),
+        false,
+        localize("teamstoolkit.localDebug.howToFixIssues")
+      ).then((value) => {
+
+      });
+      */
       throw returnUserError(
         new Error(
-          `Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.`
+          util.format(
+            localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
+            `${failures.length}/${results.length}`,
+            "[output panel](command:fx-extension.showOutputChannel)"
+          )
         ),
         ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
+        ExtensionErrors.PrerequisitesValidationError,
+        "https://aka.ms/teamsfx-envchecker-help"
       );
     }
   }

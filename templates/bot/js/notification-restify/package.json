@@ -1,7 +1,7 @@
 {
-  "name": "echobot",
+  "name": "notification-resitfy-bot",
   "version": "1.0.0",
-  "description": "Microsoft Teams Toolkit hello world Bot sample",
+  "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./src/index.js",

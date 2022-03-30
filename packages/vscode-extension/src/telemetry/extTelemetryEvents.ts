@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 export enum TelemetryEvent {
   CreateAccountStart = "create-account-start",
-  CreateAccount = "create-account-start",
+  CreateAccount = "create-account",
 
   QuickStart = "quick-start",
 

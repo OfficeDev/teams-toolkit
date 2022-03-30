@@ -558,7 +558,12 @@ function initializeContextKey() {
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
   // Create a new Teams app
-  registerCommand(context, "fx-extension.create", handlers.createNewProjectHandler);
+  registerInCommandController(
+    context,
+    "fx-extension.create",
+    handlers.createNewProjectHandler,
+    "createProject"
+  );
   // const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
   //   Correlator.run(runTreeViewCommand, "fx-extension.create", args)
   // );
@@ -577,7 +582,12 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   context.subscriptions.push(openSamplesCmd);
 
   // Add capabilities
-  registerCommand(context, "fx-extension.addCapability", handlers.addCapabilityHandler);
+  registerInCommandController(
+    context,
+    "fx-extension.addCapability",
+    handlers.addCapabilityHandler,
+    "addCapabilities"
+  );
   // const addCapCmd = vscode.commands.registerCommand("fx-extension.addCapability", (...args) =>
   //   Correlator.run(runTreeViewCommand, "fx-extension.addCapability", args)
   // );
@@ -668,12 +678,13 @@ function runTreeViewCommand(commandName: string, args: unknown[]) {
   treeViewManager.runCommand(commandName, args);
 }
 
-function registerCommand(
+function registerInCommandController(
   context: vscode.ExtensionContext,
   name: string,
-  callback: (args?: unknown[]) => Promise<Result<unknown, FxError>>
+  callback: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
+  runningLabelKey?: string
 ) {
-  commandController.registerCommand(name, callback);
+  commandController.registerCommand(name, callback, runningLabelKey);
   const command = vscode.commands.registerCommand(name, (...args) =>
     Correlator.run(runCommand, name, args)
   );

@@ -10,7 +10,6 @@
     "dev": "nodemon -e ts --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
     "build": "tsc --build",
     "start": "node ./lib/src/index.js",
-    "test": "npm run build && mocha --require ts-node/register \"tests/**/*.test.ts\"",
     "watch": "nodemon --watch ./src -e ts --exec \"npm run start\""
   },
   "repository": {
@@ -24,12 +23,8 @@
     "restify": "^8.5.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/mocha": "^9.1.0",
     "@types/restify": "8.4.2",
-    "chai": "^4.3.6",
     "env-cmd": "^10.1.0",
-    "mocha": "^9.2.0",
     "nodemon": "^2.0.7",
     "ts-node": "~9.1.1",
     "typescript": "~3.9.2"

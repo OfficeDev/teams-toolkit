@@ -46,6 +46,7 @@ suite("npmInstallHandler", () => {
     let showMessageCalledCount: number;
 
     setup(() => {
+      sinon.restore();
       sinon.stub(vscode.workspace, "workspaceFolders").value([workspaceFolder]);
       globalStateGetStub = sinon.stub(globalState, "globalStateGet").callsFake(async () => state);
       globalStateUpdateStub = sinon

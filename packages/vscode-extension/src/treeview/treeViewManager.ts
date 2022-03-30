@@ -82,6 +82,54 @@ class TreeViewManager {
     return this.treeviewMap.get(viewName);
   }
 
+  public async setRunningCommand(commandName: string) {
+    const commandData = this.commandMap.get(commandName);
+    const treeViewProviderToUpdate = new Set<CommandsTreeViewProvider>();
+    if (!commandData) {
+      return;
+    }
+    const [command, treeViewProvider] = commandData;
+    this.runningCommand = command;
+    treeViewProviderToUpdate.add(treeViewProvider);
+    command.setStatus(CommandStatus.Running);
+    const blockingTooltip = command.getBlockingTooltip();
+    for (const key of this.exclusiveCommands.values()) {
+      if (key !== commandName) {
+        const data = this.commandMap.get(key);
+        if (data && data[0]) {
+          data[0].setStatus(CommandStatus.Blocked, blockingTooltip);
+          treeViewProviderToUpdate.add(data[1]);
+        }
+      }
+    }
+    for (const provider of treeViewProviderToUpdate.values()) {
+      provider.refresh([]);
+    }
+  }
+
+  public async restoreRunningCommand(commandName: string) {
+    const commandData = this.commandMap.get(commandName);
+    const treeViewProviderToUpdate = new Set<CommandsTreeViewProvider>();
+    if (!commandData) {
+      return;
+    }
+    const [command, treeViewProvider] = commandData;
+    command.setStatus(CommandStatus.Ready);
+    treeViewProviderToUpdate.add(treeViewProvider);
+    for (const key of this.exclusiveCommands.values()) {
+      if (key !== commandName) {
+        const data = this.commandMap.get(key);
+        if (data && data[0]) {
+          data[0].setStatus(CommandStatus.Ready);
+          treeViewProviderToUpdate.add(data[1]);
+        }
+      }
+    }
+    for (const provider of treeViewProviderToUpdate.values()) {
+      provider.refresh([]);
+    }
+  }
+
   public async runCommand(commandName: string, args: unknown[]) {
     if (!this.exclusiveCommands.has(commandName)) {
       return this.runNonBlockingCommand(commandName, args);

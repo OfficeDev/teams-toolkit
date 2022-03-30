@@ -46,6 +46,8 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   TemplateFolderName,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { getWorkspacePath } from "./handlers";
@@ -54,6 +56,7 @@ import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUt
 import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 import { loadLocalizedStrings, localize } from "./utils/localizeUtils";
 import treeViewManager from "./treeview/treeViewManager";
+import commandController from "./commandController";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -555,10 +558,11 @@ function initializeContextKey() {
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
   // Create a new Teams app
-  const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
-    Correlator.run(runTreeViewCommand, "fx-extension.create", args)
-  );
-  context.subscriptions.push(createCmd);
+  registerCommand(context, "fx-extension.create", handlers.createNewProjectHandler);
+  // const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>
+  //   Correlator.run(runTreeViewCommand, "fx-extension.create", args)
+  // );
+  // context.subscriptions.push(createCmd);
 
   // Initialize an existing application
   const initCmd = vscode.commands.registerCommand("fx-extension.init", (...args) =>
@@ -573,10 +577,11 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   context.subscriptions.push(openSamplesCmd);
 
   // Add capabilities
-  const addCapCmd = vscode.commands.registerCommand("fx-extension.addCapability", (...args) =>
-    Correlator.run(runTreeViewCommand, "fx-extension.addCapability", args)
-  );
-  context.subscriptions.push(addCapCmd);
+  registerCommand(context, "fx-extension.addCapability", handlers.addCapabilityHandler);
+  // const addCapCmd = vscode.commands.registerCommand("fx-extension.addCapability", (...args) =>
+  //   Correlator.run(runTreeViewCommand, "fx-extension.addCapability", args)
+  // );
+  // context.subscriptions.push(addCapCmd);
 
   // Add cloud resources
   const updateCmd = vscode.commands.registerCommand("fx-extension.update", (...args) =>
@@ -661,4 +666,20 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
 
 function runTreeViewCommand(commandName: string, args: unknown[]) {
   treeViewManager.runCommand(commandName, args);
+}
+
+function registerCommand(
+  context: vscode.ExtensionContext,
+  name: string,
+  callback: (args?: unknown[]) => Promise<Result<unknown, FxError>>
+) {
+  commandController.registerCommand(name, callback);
+  const command = vscode.commands.registerCommand(name, (...args) =>
+    Correlator.run(runCommand, name, args)
+  );
+  context.subscriptions.push(command);
+}
+
+function runCommand(commandName: string, args: unknown[]) {
+  commandController.runCommand(commandName, args);
 }

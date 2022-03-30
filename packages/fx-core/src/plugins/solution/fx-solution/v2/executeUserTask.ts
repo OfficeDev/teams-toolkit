@@ -39,6 +39,7 @@ import { CoreQuestionNames } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   DEFAULT_PERMISSION_REQUEST,
+  Language,
   PluginNames,
   SolutionError,
   SolutionSource,
@@ -75,6 +76,9 @@ import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils
 import { Certificate } from "crypto";
 import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { getTemplatesFolder } from "../../../../folder";
+import AdmZip from "adm-zip";
+import { unzip } from "../../../../common/template-utils/templatesUtils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -409,7 +413,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false, true);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, true, false, true);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -421,7 +425,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, true, false);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -439,7 +443,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, false, true, true);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -451,7 +455,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, false, true);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -469,7 +473,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, false, true, true);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -481,7 +485,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
 
         if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
+          const createAuthFilesRes = await createAuthFiles(inputsNew, ctx, false, true);
           if (createAuthFilesRes.isErr()) {
             return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
           }
@@ -952,6 +956,7 @@ export async function addSso(
     solutionSettings.capabilities.includes(MessageExtensionItem.id);
   const createAuthFilesRes = await createAuthFiles(
     inputsNew,
+    ctx,
     needsTab,
     needsBot,
     isVSProject(ctx.projectSetting)
@@ -997,6 +1002,7 @@ export async function addSso(
 // TODO: use 'isVsProject' for changes in VS
 export async function createAuthFiles(
   input: Inputs,
+  ctx: v2.Context,
   needTab: boolean,
   needBot: boolean,
   isVsProject = false
@@ -1010,6 +1016,13 @@ export async function createAuthFiles(
     );
     return err(e);
   }
+
+  const language = (ctx.projectSetting.programmingLanguage as string) ?? Language.JavaScript;
+  const languageFolderResult = validateAndParseLanguage(language);
+  if (languageFolderResult.isErr()) {
+    return err(languageFolderResult.error);
+  }
+  const languageFolderName = languageFolderResult.value;
 
   const projectFolderExists = await fs.pathExists(projectPath!);
   if (!projectFolderExists) {
@@ -1044,10 +1057,59 @@ export async function createAuthFiles(
       await fs.ensureDir(botFolder);
     }
 
-    // TODO: Add necessary files here for bot
+    try {
+      const templateFolder = getTemplatesFolder();
+      const botTemplateFolder = path.join(
+        templateFolder,
+        "plugins",
+        "resource",
+        "aad",
+        "auth",
+        "bot"
+      );
+      if (isVsProject) {
+        // TODO: add steps for VS
+      } else {
+        // README.md
+        const readmeSourcePath = path.join(botTemplateFolder, "README.md");
+        const readmeTargetPath = path.join(botFolder, "README.md");
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourcePath = path.join(botTemplateFolder, languageFolderName, "auth.zip");
+        const sample: Buffer = await fs.readFile(sampleSourcePath);
+        const sampleZip = new AdmZip(sample);
+        await unzip(sampleZip, botFolder);
+      }
+    } catch (error) {
+      const e = new SystemError(
+        SolutionError.FailedToCreateAuthFiles,
+        getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
+        SolutionSource
+      );
+      return err(e);
+    }
   }
 
   return ok(undefined);
+}
+
+export function validateAndParseLanguage(language: string): Result<string, FxError> {
+  if (language.toLowerCase() == Language.TypeScript) {
+    return ok("ts");
+  }
+
+  if (language.toLowerCase() == Language.JavaScript) {
+    return ok("js");
+  }
+
+  const e = new SystemError(
+    SolutionError.InvalidInput,
+    getLocalizedString("core.addSsoFiles.invalidLanguage"),
+    SolutionSource
+  );
+  return err(e);
 }
 
 const addAuthFileError = (

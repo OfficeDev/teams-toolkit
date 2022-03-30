@@ -157,6 +157,7 @@ export enum SolutionError {
   SsoEnabled = "SsoEnabled",
   InvalidSsoProject = "InvalidSsoProject",
   InvalidProjectPath = "InvalidProjectPath",
+  FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -291,4 +292,9 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
       );
     }
   }
+}
+
+export enum Language {
+  JavaScript = "javascript",
+  TypeScript = "typescript",
 }

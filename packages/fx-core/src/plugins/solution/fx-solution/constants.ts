@@ -4,6 +4,7 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
+import path from "path";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -297,4 +298,12 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
 export enum Language {
   JavaScript = "javascript",
   TypeScript = "typescript",
+}
+
+export class AddSsoParameters {
+  static readonly filePath = path.join("plugins", "resource", "aad", "auth");
+  static readonly Bot = "bot";
+  static readonly Tab = "tab";
+  static readonly Readme = "README.md";
+  static readonly AuthFiles = "auth.zip";
 }

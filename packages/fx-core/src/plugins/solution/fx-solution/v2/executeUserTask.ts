@@ -38,6 +38,7 @@ import { OperationNotPermittedError } from "../../../../core/error";
 import { CoreQuestionNames } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
+  AddSsoParameters,
   DEFAULT_PERMISSION_REQUEST,
   Language,
   PluginNames,
@@ -1041,7 +1042,7 @@ export async function createAuthFiles(
   }
 
   if (needTab) {
-    const tabFolder = path.join(authFolder, "tab");
+    const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
     const tabFolderExists = await fs.pathExists(tabFolder);
     if (!tabFolderExists) {
       await fs.ensureDir(tabFolder);
@@ -1051,7 +1052,7 @@ export async function createAuthFiles(
   }
 
   if (needBot) {
-    const botFolder = path.join(authFolder, "bot");
+    const botFolder = path.join(authFolder, AddSsoParameters.Bot);
     const botFolderExists = await fs.pathExists(botFolder);
     if (!botFolderExists) {
       await fs.ensureDir(botFolder);
@@ -1061,23 +1062,24 @@ export async function createAuthFiles(
       const templateFolder = getTemplatesFolder();
       const botTemplateFolder = path.join(
         templateFolder,
-        "plugins",
-        "resource",
-        "aad",
-        "auth",
-        "bot"
+        AddSsoParameters.filePath,
+        AddSsoParameters.Bot
       );
       if (isVsProject) {
         // TODO: add steps for VS
       } else {
         // README.md
-        const readmeSourcePath = path.join(botTemplateFolder, "README.md");
-        const readmeTargetPath = path.join(botFolder, "README.md");
+        const readmeSourcePath = path.join(botTemplateFolder, AddSsoParameters.Readme);
+        const readmeTargetPath = path.join(botFolder, AddSsoParameters.Readme);
         const readme = await fs.readFile(readmeSourcePath);
         fs.writeFile(readmeTargetPath, readme);
 
         // Sample Code
-        const sampleSourcePath = path.join(botTemplateFolder, languageFolderName, "auth.zip");
+        const sampleSourcePath = path.join(
+          botTemplateFolder,
+          languageFolderName,
+          AddSsoParameters.AuthFiles
+        );
         const sample: Buffer = await fs.readFile(sampleSourcePath);
         const sampleZip = new AdmZip(sample);
         await unzip(sampleZip, botFolder);

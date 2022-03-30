@@ -406,6 +406,7 @@
   "error.dotnet.FetchConfigError": "Failed to find %s from configuration",
   "error.dotnet.NoProjectSettingError": "Failed to load project setting",
   "error.dotnet.UnhandledError": "Unhandled error.",
+  "error.apiConnector.SampleCodeCreateFailError": "Failed to generate sample code file %s. Reason: %s",
   "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
   "core.ProgrammingLanguageQuestion.title": "Programming Language",

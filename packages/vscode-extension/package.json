@@ -888,6 +888,11 @@
             "type": "boolean",
             "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
             "default": false
+          },
+          "fx-extension.enableNotification / CommandAndResponseBot": {
+            "type": "boolean",
+            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
+            "default": false
           }
         }
       }
@@ -910,7 +915,7 @@
     "walkthroughs": [
       {
         "id": "teamsToolkitQuickStart",
-        "title": "Get started with Teams toolkit",
+        "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {

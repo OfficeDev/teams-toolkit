@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
+import * as path from "path";
+import * as fs from "fs-extra";
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ApiConnectorConfiguration } from "./utils";
@@ -36,12 +38,60 @@ export class ApiConnectorImpl {
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
     for (const componentItem of config.ComponentPath) {
-      await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-      await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-      // await this.addSDKDependency(ComponentPath);
+      const timestamp = Date.now();
+      const backupFolderName = "backup-" + timestamp;
+      const sampleFileName = config.APIName + "." + languageType;
+      await this.backupExistingFiles(
+        path.join(projectPath, componentItem),
+        "abc",
+        backupFolderName
+      );
+      try {
+        await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
+        await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
+        // await this.addSDKDependency(ComponentPath);
+      } catch (err) {
+        await fs.move(
+          path.join(projectPath, componentItem, backupFolderName),
+          path.join(projectPath, componentItem),
+          { overwrite: true }
+        );
+      } finally {
+        if (await fs.pathExists(path.join(projectPath, componentItem, backupFolderName))) {
+          await fs.remove(path.join(projectPath, componentItem, backupFolderName));
+        }
+      }
     }
 
     return ResultFactory.Success();
+  }
+
+  private async backupExistingFiles(folderPath: string, sampleFile: string, backupFolder: string) {
+    await fs.ensureDir(path.join(folderPath, backupFolder));
+    if (await fs.pathExists(path.join(folderPath, ".env.local.teamsfx.lcoal"))) {
+      await fs.copyFile(
+        path.join(folderPath, ".env.local.teamsfx.lcoal"),
+        path.join(folderPath, backupFolder, ".env.local.teamsfx.lcoal")
+      );
+    }
+    if (await fs.pathExists(path.join(folderPath, sampleFile))) {
+      await fs.copyFile(
+        path.join(folderPath, sampleFile),
+        path.join(folderPath, backupFolder, sampleFile)
+      );
+    }
+    if (await fs.pathExists(path.join(folderPath, "package.json"))) {
+      await fs.copyFile(
+        path.join(folderPath, "package.json"),
+        path.join(folderPath, backupFolder, "package.json")
+      );
+    }
+    if (await fs.pathExists(path.join(folderPath, "package-lock.json"))) {
+      await fs.copyFile(
+        path.join(folderPath, "package-lock.json"),
+        path.join(folderPath, backupFolder, "package-lock.json")
+      );
+    }
   }
 
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {

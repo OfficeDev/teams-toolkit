@@ -1,5 +1,3 @@
-// the same as .initialize
-
 const { TeamsActivityHandler } = require("botbuilder");
 const { adapter } = require("./initialize");
 

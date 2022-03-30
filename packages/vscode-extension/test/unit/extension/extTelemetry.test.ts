@@ -85,6 +85,7 @@ suite("ExtTelemetry", () => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       const sandbox = sinon.createSandbox();
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
+      sandbox.stub(commonUtils, "isSPFxProject").returns(false);
     });
 
     test("sendTelemetryEvent", () => {
@@ -100,6 +101,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
+          "is-spfx": false,
         },
         { numericMeasure: 123 }
       );
@@ -122,6 +124,7 @@ suite("ExtTelemetry", () => {
           component: "extension",
           success: "no",
           "is-existing-user": "",
+          "is-spfx": false,
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
@@ -145,6 +148,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
+          "is-spfx": false,
         },
         { numericMeasure: 123 }
       );

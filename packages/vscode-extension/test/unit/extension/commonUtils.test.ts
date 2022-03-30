@@ -84,7 +84,7 @@ suite("CommonUtils", () => {
     test("return true for spfx project", async () => {
       const testPath = "./testProject";
 
-      sinon.stub(fs, "pathExists").callsFake((path: string) => {
+      sinon.stub(fs, "pathExistsSync").callsFake((path: string) => {
         if (path === `${testPath}/SPFx`) {
           return true;
         }

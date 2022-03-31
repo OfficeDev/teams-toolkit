@@ -83,7 +83,7 @@ export const AadManifestMigrationMW: Middleware = async (
 
 async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {
   try {
-    if (!isConfigUnifyEnabled() && !isAadManifestEnabled()) {
+    if (!isConfigUnifyEnabled() || !isAadManifestEnabled()) {
       return false;
     }
 

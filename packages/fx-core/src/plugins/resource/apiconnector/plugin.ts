@@ -49,6 +49,10 @@ export class ApiConnectorImpl {
         await fs.move(path.join(componentPath, backupFolderName), componentPath, {
           overwrite: true,
         });
+        throw ResultFactory.SystemError(
+          ErrorMessage.generateApiConFilesError.name,
+          ErrorMessage.generateApiConFilesError.message(componentPath, err.message)
+        );
       } finally {
         if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
           await fs.remove(path.join(componentPath, backupFolderName));

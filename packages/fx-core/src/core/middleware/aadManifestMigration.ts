@@ -225,11 +225,12 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationBackupStart);
 
     const backupPath = path.join(inputs.projectPath as string, backupFolder);
+    await fs.ensureDir(path.join(backupPath, ".fx", "configs"));
+
     await fs.move(permissionFilePath, path.join(backupPath, "permissions.json"), {
       overwrite: true,
     });
     fileList.push(path.join(backupPath, "permissions.json"));
-
     await fs.writeJSON(
       path.join(backupPath, ".fx", "configs", "projectSettings.json"),
       projectSettings,

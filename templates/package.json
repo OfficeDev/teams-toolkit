@@ -13,7 +13,11 @@
         "bot/csharp/default",
         "bot/js/default",
         "bot/ts/default",
-        "bot/ts/notification",
+        "bot/ts/notification-function-base",
+        "bot/ts/notification-restify",
+        "bot/ts/notification-trigger-http",
+        "bot/ts/notification-trigger-timer",
+        "bot/ts/command-and-response",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",
@@ -22,7 +26,9 @@
         "tab/js/default",
         "tab/ts/default",
         "tab/js/non-sso",
-        "tab/ts/non-sso"
+        "tab/ts/non-sso",
+        "tab/js/m365",
+        "tab/ts/m365"
     ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",

@@ -26,7 +26,6 @@ import {
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import * as path from "path";
-import * as fs from "fs-extra";
 
 export class LanguageStrategy {
   public static async scaffoldProject(
@@ -69,7 +68,6 @@ export class LanguageStrategy {
         group: group_name,
         lang: utils.convertToLangKey(config.scaffold.programmingLanguage!),
         scenario: scenario,
-        templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
         dst: dst,
         onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
           if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
@@ -161,10 +159,12 @@ export class LanguageStrategy {
   ): TemplateProjectsScenarios {
     if (config.actRoles.includes(PluginActRoles.Notification)) {
       if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
-        return TemplateProjectsScenarios.NOTIFICATION_SCENARIO_NAME;
+        return TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME;
       } else {
         return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;
       }
+    } else if (config.actRoles.includes(PluginActRoles.CommandAndResponse)) {
+      return TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME;
     } else {
       return TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
     }

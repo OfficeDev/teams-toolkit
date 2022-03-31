@@ -478,6 +478,8 @@ export class VsCodeUI implements UserInteraction {
               ];
               resolve(ok({ type: "success", result: result }));
             }
+          } else {
+            resolve(err(UserCancelError));
           }
         };
         const onDidChangeSelection = async function (

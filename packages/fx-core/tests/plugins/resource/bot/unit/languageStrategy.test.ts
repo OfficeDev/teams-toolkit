@@ -38,7 +38,7 @@ describe("Language Strategy", () => {
       actRoles: [PluginActRoles.Bot],
     } as TeamsBotConfig;
     before(() => {
-      const commonPath = path.join(getTemplatesFolder(), "plugins", "resource", "bot");
+      const commonPath = path.join(getTemplatesFolder(), "fallback");
       const botJsPath = path.join(
         commonPath,
         `${TemplateProjectsConstants.GROUP_NAME_BOT}.${utils.convertToLangKey(
@@ -148,7 +148,10 @@ describe("Language Strategy", () => {
       // Assert
       chai.assert.equal(scaffoldContext.group, group_name);
       chai.assert.equal(scaffoldContext.lang, "ts");
-      chai.assert.equal(scaffoldContext.scenario, "notification");
+      chai.assert.equal(
+        scaffoldContext.scenario,
+        TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME
+      );
     });
 
     it("Fetch Notification with Functions hosting", async () => {
@@ -166,7 +169,10 @@ describe("Language Strategy", () => {
       // Assert
       chai.assert.equal(scaffoldContext.group, group_name);
       chai.assert.equal(scaffoldContext.lang, "ts");
-      chai.assert.equal(scaffoldContext.scenario, "notification-function-base");
+      chai.assert.equal(
+        scaffoldContext.scenario,
+        TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
+      );
     });
   });
 

@@ -91,6 +91,14 @@ export const UpdateRedirectUriError: AadError = {
   ],
 };
 
+export const UpdateAadAppError: AadError = {
+  name: "UpdateAadAppError",
+  message: (reason: string): [string, string] => [
+    getDefaultString("error.aad.UpdateAadAppError", reason),
+    getLocalizedString("error.aad.UpdateAadAppError", reason),
+  ],
+};
+
 export const UpdateAppIdUriError: AadError = {
   name: "UpdateAppIdUriError",
   message: () => [
@@ -221,6 +229,54 @@ export const ListCollaboratorError: AadError = {
   ],
 };
 
+export const AadManifestNotFoundError: AadError = {
+  name: "AadManifestNotFoundError",
+  message: () => [
+    getDefaultString("error.aad.AadManifestNotFoundError"),
+    getLocalizedString("error.aad.AadManifestNotFoundError"),
+  ],
+};
+
+export const AadManifestLoadError: AadError = {
+  name: "AadManifestLoadError",
+  message: (manifestPath: string, reason: string) => [
+    getDefaultString("error.aad.AadManifestLoadError", manifestPath, reason),
+    getLocalizedString("error.aad.AadManifestLoadError", manifestPath, reason),
+  ],
+};
+
+export const AadManifestMissingName: AadError = {
+  name: "AadManifestMissingName",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingName"),
+    getLocalizedString("error.aad.AadManifestMissingName"),
+  ],
+};
+
+export const AadManifestMissingObjectId: AadError = {
+  name: "AadManifestMissingObjectId",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingObjectId"),
+    getLocalizedString("error.aad.AadManifestMissingObjectId"),
+  ],
+};
+
+export const AadManifestMissingReplyUrlsWithType: AadError = {
+  name: "AadManifestMissingReplyUrlsWithType",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingReplyUrlsWithType"),
+    getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+  ],
+};
+
+export const AadManifestMissingIdentifierUris: AadError = {
+  name: "AadManifestMissingIdentifierUris",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingIdentifierUris"),
+    getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+  ],
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError: [string, string] = [
     getDefaultString("error.aad.GetDisplayNameError"),
@@ -314,4 +370,40 @@ export class GraphClientErrorMessage {
     getDefaultString("error.aad.client.ReachRetryLimit"),
     getLocalizedString("error.aad.client.ReachRetryLimit"),
   ];
+}
+
+export class AadManifestErrorMessage {
+  static readonly NameIsMissing = getLocalizedString("error.aad.manifest.NameIsMissing");
+  static readonly SignInAudienceIsMissing = getLocalizedString(
+    "error.aad.manifest.SignInAudienceIsMissing"
+  );
+  static readonly RequiredResourceAccessIsMissing = getLocalizedString(
+    "error.aad.manifest.RequiredResourceAccessIsMissing"
+  );
+  static readonly Oauth2PermissionsIsMissing = getLocalizedString(
+    "error.aad.manifest.Oauth2PermissionsIsMissing"
+  );
+  static readonly PreAuthorizedApplicationsIsMissing = getLocalizedString(
+    "error.aad.manifest.PreAuthorizedApplicationsIsMissing"
+  );
+  static readonly AccessTokenAcceptedVersionIs1 = getLocalizedString(
+    "error.aad.manifest.AccessTokenAcceptedVersionIs1"
+  );
+  static readonly OptionalClaimsIsMissing = getLocalizedString(
+    "error.aad.manifest.OptionalClaimsIsMissing"
+  );
+  static readonly OptionalClaimsMissingIdtypClaim = getLocalizedString(
+    "error.aad.manifest.OptionalClaimsMissingIdtypClaim"
+  );
+  static readonly AADManifestIssues = getLocalizedString("error.aad.manifest.AADManifestIssues");
+
+  static readonly UnknownResourceAppId = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAppId"
+  );
+  static readonly UnknownResourceAccessType = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAccessType"
+  );
+  static readonly UnknownResourceAccessId = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAccessId"
+  );
 }

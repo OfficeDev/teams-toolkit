@@ -8,6 +8,7 @@ import { Argv } from "yargs";
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
+import Add from "./add";
 import Capability from "./capability";
 import Resource from "./resource";
 import Provision from "./provision";
@@ -27,6 +28,7 @@ import { isInitAppEnabled } from "@microsoft/teamsfx-core";
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
+  new Add(),
   new Capability(),
   new Resource(),
   new Provision(),

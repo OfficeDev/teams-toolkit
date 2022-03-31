@@ -12,6 +12,7 @@ import {
   MissingSubscriptionRegistrationError,
   InvalidBotDataError,
   isErrorWithCode,
+  RestartWebAppError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
@@ -177,6 +178,23 @@ export class AzureOperations {
 
     if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
       throw new ZipDeployError();
+    }
+  }
+
+  public static async RestartWebApp(
+    webSiteMgmtClient: appService.WebSiteManagementClient,
+    resourceGroup: string,
+    siteName: string
+  ): Promise<void> {
+    let res = undefined;
+    try {
+      res = await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);
+    } catch (e) {
+      throw new RestartWebAppError(e);
+    }
+
+    if (!res || !utils.isHttpCodeOkOrCreated(res?._response.status)) {
+      throw new RestartWebAppError();
     }
   }
 }

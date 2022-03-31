@@ -4,13 +4,19 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 
-import { FuncValidation } from "@microsoft/teamsfx-api";
+import { FuncValidation, Inputs, Platform } from "@microsoft/teamsfx-api";
 import {
   AppServiceOptionItem,
   createHostTypeTriggerQuestion,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
+  showNotificationTriggerCondition,
 } from "../../../../../src/plugins/resource/bot/question";
+import {
+  AzureSolutionQuestionNames,
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Test question", () => {
   describe("HostTypeTrigger question", () => {
@@ -104,6 +110,54 @@ describe("Test question", () => {
 
         chai.assert.deepEqual(result, expected, message);
       }
+    });
+  });
+
+  describe("Workaround CLI default value issue, remove me after CLI is fixed", () => {
+    it("cliName and ID must be the same", () => {
+      // Arrange
+      const question = createHostTypeTriggerQuestion();
+      for (const option of question.staticOptions) {
+        if (typeof option !== "string") {
+          // Assert
+          chai.assert.equal(
+            option.id,
+            option.cliName,
+            "option.id and option.cliName must be the same to workaround CLI default value issue"
+          );
+        }
+      }
+    });
+  });
+
+  describe("Test showNotificationCondition", () => {
+    it("Should not ask trigger questions for legacy bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = undefined;
+      // Assert
+      chai.assert.isTrue(
+        showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined
+      );
+    });
+    it("Should ask trigger questions for notification bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
+      // Assert
+      chai.assert.isUndefined(showNotificationTriggerCondition.validFunc(undefined, inputs));
+    });
+    it("Should not ask trigger questions for command and response bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
+      // Assert
+      chai.assert.isTrue(
+        showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined
+      );
     });
   });
 });

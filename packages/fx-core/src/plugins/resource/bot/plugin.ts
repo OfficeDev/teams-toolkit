@@ -68,7 +68,7 @@ export class TeamsBotImpl implements PluginImpl {
   public config: TeamsBotConfig = new TeamsBotConfig();
   protected ctx?: PluginContext;
 
-  private async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
+  protected async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
       await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
@@ -79,7 +79,7 @@ export class TeamsBotImpl implements PluginImpl {
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     Logger.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(
@@ -307,6 +307,7 @@ export class TeamsBotImpl implements PluginImpl {
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
+
     const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
       `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
     ]);

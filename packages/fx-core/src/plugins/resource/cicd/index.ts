@@ -14,6 +14,7 @@ import {
   ProjectSettings,
   SingleSelectQuestion,
   Platform,
+  Stage,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -36,6 +37,9 @@ import {
 import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { isPureExistingApp } from "../../../common";
+import { NoCapabilityFoundError } from "../../../core/error";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -64,6 +68,11 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
+    // add CI CD workflows for minimal app is not supported.
+    if (inputs.platform !== Platform.CLI_HELP && isPureExistingApp(ctx.projectSetting)) {
+      throw new NoCapabilityFoundError(Stage.addCiCdFlow);
+    }
+
     const cicdWorkflowQuestions = new QTreeNode({
       type: "group",
     });
@@ -72,7 +81,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       name: questionNames.Provider,
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
-      title: "Select a CI/CD Provider",
+      title: getLocalizedString("plugins.cicd.whichProvider.title"),
       default: githubOption.id,
     });
 
@@ -80,7 +89,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       name: questionNames.Template,
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
-      title: "Select template(s)",
+      title: getLocalizedString("plugins.cicd.whichTemplate.title"),
       default: [ciOption.id],
     });
 
@@ -101,7 +110,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
         name: questionNames.Environment,
-        title: "Select an environment",
+        title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
       };
       whichEnvironment.staticOptions = envProfilesResult.value;

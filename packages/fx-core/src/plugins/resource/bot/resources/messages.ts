@@ -45,6 +45,10 @@ export class Messages {
     getDefaultString("plugins.bot.FailedDeployZipFile"),
     getLocalizedString("plugins.bot.FailedDeployZipFile"),
   ];
+  public static readonly FailToRestartWebApp: [string, string] = [
+    getDefaultString("plugins.bot.FailedRestartWebApp"),
+    getLocalizedString("plugins.bot.FailedRestartWebApp"),
+  ];
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] => [
     getDefaultString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
     getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
@@ -139,7 +143,9 @@ export class Messages {
   ];
 
   // Suggestions
-  public static readonly RetryTheCurrentStep = getLocalizedString("plugins.bot.RetryCurrent");
+  public static readonly RetryTheCurrentStep = getLocalizedString(
+    "suggestions.retryTheCurrentStep"
+  );
   public static readonly RegisterYouSubsToUseBot = getLocalizedString(
     "plugins.bot.RegisterSubscription"
   );

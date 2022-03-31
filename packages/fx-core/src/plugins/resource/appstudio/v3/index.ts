@@ -42,6 +42,7 @@ import {
   ErrorMessages,
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
+  TEAMS_APP_MANIFEST_TEMPLATE_V3,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
 import { AppStudioPluginImpl } from "./plugin";
@@ -49,6 +50,8 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { InitializedFileAlreadyExistError } from "../../../../core/error";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -63,14 +66,14 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async init(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    existingApp = false
-  ): Promise<Result<any, FxError>> {
+  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.init);
-    const res = await init(inputs.projectPath, ctx.projectSetting.appName, existingApp);
+    const res = await init(
+      inputs.projectPath,
+      ctx.projectSetting.appName,
+      isPureExistingApp(ctx.projectSetting)
+    );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
@@ -82,6 +85,32 @@ export class AppStudioPluginV3 {
     await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.init);
     return ok(undefined);
+  }
+
+  /**
+   * Check if manifest templates already exist.
+   */
+  async preCheck(projectPath: string): Promise<string[]> {
+    const existFiles = new Array<string>();
+
+    const appPackageDir = path.resolve(projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
+    if (await fs.pathExists(manifestPath)) {
+      existFiles.push(manifestPath);
+    }
+
+    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+    const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+    if (await fs.pathExists(defaultColorPath)) {
+      existFiles.push(defaultColorPath);
+    }
+
+    const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+    if (await fs.pathExists(defaultOutlinePath)) {
+      existFiles.push(defaultOutlinePath);
+    }
+
+    return existFiles;
   }
 
   /**

@@ -24,7 +24,7 @@ import {
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
-const scopes = ["Application.ReadWrite.All"];
+const scopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 
 const cachePlugin = new CryptoCachePlugin(accountName);
 
@@ -161,6 +161,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    await GraphLogin.codeFlowInstance.reloadCache();
     if (GraphLogin.codeFlowInstance.account) {
       const loginToken = await GraphLogin.codeFlowInstance.getToken(false);
       const tokenJson = await this.getJsonObject();

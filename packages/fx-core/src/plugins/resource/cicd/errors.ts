@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorNames, Suggestions } from "./constants";
 
 export enum ErrorType {

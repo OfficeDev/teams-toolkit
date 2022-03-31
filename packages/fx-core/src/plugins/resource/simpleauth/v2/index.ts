@@ -54,14 +54,16 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
     ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await provisionLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,
       tokenProvider,
-      this.plugin
+      this.plugin,
+      envInfo
     );
   }
 
@@ -69,14 +71,16 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
     ctx: v2.Context,
     inputs: Inputs,
     localSettings: Json,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: v2.EnvInfoV2
   ): Promise<Result<Void, FxError>> {
     return await configureLocalResourceAdapter(
       ctx,
       inputs,
       localSettings,
       tokenProvider,
-      this.plugin
+      this.plugin,
+      envInfo
     );
   }
 

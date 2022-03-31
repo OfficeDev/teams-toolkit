@@ -41,7 +41,6 @@ export class DotnetPathInfo {
 
   static readonly bicepTemplateFolder = (templateFolder: string) =>
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
-  static readonly TemplateFolderName = "dotnet";
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
 
   static readonly indexPath = ""; // Index path is '/', relative path is empty.

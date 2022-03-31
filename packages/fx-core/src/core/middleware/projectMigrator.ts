@@ -793,7 +793,7 @@ async function backup(projectPath: string, backupFolder: string): Promise<void> 
 }
 
 // append folder path to .gitignore under the project root.
-async function addPathToGitignore(
+export async function addPathToGitignore(
   projectPath: string,
   ignoredPath: string,
   log: LogProvider
@@ -875,7 +875,7 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
   }
 }
 
-async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
+export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;

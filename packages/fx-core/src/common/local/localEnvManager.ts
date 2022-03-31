@@ -12,21 +12,24 @@ import {
   TelemetryReporter,
   UserError,
   UserInteraction,
+  v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "./localSettingsHelper";
+import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse } from "./portChecker";
-import { waitSeconds } from "../tools";
+import { isConfigUnifyEnabled, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
 import { DepsManager } from "../deps-checker/depsManager";
+import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class LocalEnvManager {
@@ -79,9 +82,19 @@ export class LocalEnvManager {
   public async getLocalDebugEnvs(
     projectPath: string,
     projectSettings: ProjectSettings,
-    localSettings: Json | undefined
+    localSettings: Json | undefined,
+    envInfo?: v2.EnvInfoV2
   ): Promise<Record<string, string>> {
-    return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
+    if (isConfigUnifyEnabled()) {
+      return await localStateHelper.convertToLocalEnvs(
+        projectPath,
+        projectSettings,
+        envInfo,
+        this.logger
+      );
+    } else {
+      return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
+    }
   }
 
   public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {
@@ -103,6 +116,17 @@ export class LocalEnvManager {
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
     return await this.retry(async () => {
       return await localSettingsProvider.loadV2(crypto);
+    });
+  }
+
+  public async getLocalEnvInfo(
+    projectPath: string,
+    cryptoOption?: { projectId: string }
+  ): Promise<v2.EnvInfoV2 | undefined> {
+    const localStateProvider = new LocalStateProvider(projectPath);
+    const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);
+    return await this.retry(async () => {
+      return await localStateProvider.loadV2(crypto);
     });
   }
 

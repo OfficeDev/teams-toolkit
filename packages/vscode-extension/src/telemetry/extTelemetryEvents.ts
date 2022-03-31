@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  CreateAccountStart = "create-account-start",
+  CreateAccount = "create-account",
+
   QuickStart = "quick-start",
 
   Samples = "samples",
@@ -39,6 +42,9 @@ export enum TelemetryEvent {
 
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
+
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
 
   EditManifestTemplate = "edit-manifest-template",
 
@@ -159,6 +165,15 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  ShowOutputChannel = "show-output-channel",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
+
+  // To track the effect of UX changes
+  // that prevents user performing concurrent operations.
+  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 }
 
 export enum TelemetryProperty {
@@ -203,9 +218,14 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsSpfx = "is-spfx",
+  IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
+  // Used with TreeViewCommandConcurrentExecution
+  RunningCommand = "running-command",
+  BlockedCommand = "blocked-command",
 }
 
 export enum TelemetrySuccess {

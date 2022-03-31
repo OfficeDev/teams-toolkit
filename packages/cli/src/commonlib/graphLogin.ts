@@ -13,29 +13,29 @@ import { signedIn, signedOut } from "./common/constant";
 import { CryptoCachePlugin } from "./cacheAccess";
 
 const accountName = "appStudio";
-const scopes = ["Application.ReadWrite.All"];
+const scopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 
 const cachePlugin = new CryptoCachePlugin(accountName);
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
       loggerCallback(loglevel: any, message: any, containsPii: any) {
-        if (this.logLevel<=LogLevel.Error) {
+        if (this.logLevel <= LogLevel.Error) {
           CLILogProvider.log(4 - loglevel, message);
         }
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
-    }
+      logLevel: LogLevel.Error,
+    },
   },
   cache: {
-    cachePlugin
-  }
+    cachePlugin,
+  },
 };
 
 const SERVER_PORT = 0;
@@ -113,6 +113,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    await GraphLogin.codeFlowInstance.reloadCache();
     if (GraphLogin.codeFlowInstance.account) {
       const loginToken = await GraphLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
@@ -126,6 +127,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
 import GraphTokenProviderUserPassword from "./graphLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const graphLogin = ciEnabled && ciEnabled === "true" ? GraphTokenProviderUserPassword : GraphLogin.getInstance();
+const graphLogin =
+  ciEnabled && ciEnabled === "true" ? GraphTokenProviderUserPassword : GraphLogin.getInstance();
 
 export default graphLogin;

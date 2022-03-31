@@ -6,9 +6,9 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
-import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
+import { ProvisionConfig, Utils } from "../../../../../src/plugins/resource/aad/utils/configs";
 import { TestHelper } from "../helper";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext, UserError, SystemError } from "@microsoft/teamsfx-api";
 import {
   GraphAndAppStudioTokenProvider,
   TokenAudience,
@@ -20,18 +20,16 @@ import {
   RequiredResourceAccess,
 } from "../../../../../src/plugins/resource/aad/interfaces/IAADDefinition";
 import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
-import { UserError } from "@microsoft/teamsfx-api";
-import { SystemError } from "@microsoft/teamsfx-api";
 import {
   CreateAppError,
   CreateSecretError,
   GetAppConfigError,
   GetAppError,
+  UpdateAadAppError,
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
-import { Utils } from "../../../../../src/plugins/resource/aad/utils/configs";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
 import {
   MockAppStudioTokenProvider,
@@ -39,6 +37,7 @@ import {
   MockTools,
 } from "../../../../core/utils";
 import { setTools } from "../../../../../src";
+import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -56,6 +55,57 @@ describe("AAD App Client Test", () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe("createAadAppUsingManifest", async () => {
+    it("Happy Path", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const objectId = faker.datatype.uuid();
+
+      sinon
+        .stub<any, any>(AadAppManifestManager, "createAadApp")
+        .resolves({ appId: "fake-appId", id: objectId });
+
+      await AadAppClient.createAadAppUsingManifest("createAADApp", {} as any, config);
+      chai.assert.equal(config.objectId, objectId);
+    });
+
+    it("System Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+
+      try {
+        await AadAppClient.createAadAppUsingManifest("createAADApp", {} as any, config);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+        chai.assert.equal(error.message, CreateAppError.message()[0]);
+      }
+    });
+
+    it("User Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+
+      const error = {
+        response: {
+          status: 404,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        await AadAppClient.createAadAppUsingManifest("createAADApp", {} as any, config);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(error.message, CreateAppError.message()[0]);
+      }
+    });
   });
 
   describe("createAadApp", async () => {
@@ -96,7 +146,7 @@ describe("AAD App Client Test", () => {
           message: "errorMessage",
         },
       };
-      sinon.stub(GraphClient, "createAADApp").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
@@ -186,6 +236,48 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateSecretError.message()[0]);
+      }
+    });
+  });
+
+  describe("updateAadUsingManifest", () => {
+    it("Happy Path", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const objectId = faker.datatype.uuid();
+      sinon
+        .stub<any, any>(AadAppManifestManager, "updateAadApp")
+        .resolves({ appId: "fake-appId", id: objectId });
+
+      await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
+    });
+
+    it("System Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const err: any = new Error("create AAD failed");
+      err.response = {
+        status: 500,
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(err);
+      try {
+        await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+        chai.assert.isTrue(error.message.indexOf("create AAD failed") > 0);
+      }
+    });
+
+    it("User Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const err: any = new Error("create AAD failed");
+      err.response = {
+        status: 404,
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(err);
+      try {
+        await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.isTrue(error.message.indexOf("create AAD failed") > 0);
       }
     });
   });
@@ -390,6 +482,138 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, UpdatePermissionError.message()[0]);
+      }
+    });
+  });
+
+  describe("getAadAppUsingManifest", async () => {
+    it("Happy Path", async () => {
+      const objectId = faker.datatype.uuid();
+      const clientId = faker.datatype.uuid();
+      const oauth2PermissionScopeId = faker.datatype.uuid();
+      const secret = "secret";
+      const displayName = "getAadApp";
+
+      sinon.stub<any, any>(AadAppManifestManager, "getAadAppManifest").resolves({
+        id: objectId,
+        appId: clientId,
+        name: displayName,
+        oauth2Permissions: [
+          {
+            adminConsentDescription: "Allows Teams to call the app's web APIs as the current user.",
+            adminConsentDisplayName: "Teams can access app's web APIs",
+            id: oauth2PermissionScopeId,
+            isEnabled: true,
+            type: "User",
+            userConsentDescription:
+              "Enable Teams to call this app's web APIs with the same rights that you have",
+            userConsentDisplayName:
+              "Teams can access app's web APIs and make requests on your behalf",
+            value: "access_as_user",
+          },
+        ],
+      });
+
+      const getResult = await AadAppClient.getAadAppUsingManifest(
+        "getAadApp",
+        objectId,
+        secret,
+        new MockGraphTokenProvider()
+      );
+      chai.assert.equal(getResult.objectId, objectId);
+      chai.assert.equal(getResult.clientId, clientId);
+    });
+
+    it("throw GetAppConfigError", async () => {
+      const objectId = faker.datatype.uuid();
+      const clientId = faker.datatype.uuid();
+      const fileName = "fileName";
+      const secret = "secret";
+      const displayName = "getAadApp";
+
+      sinon.stub<any, any>(AadAppManifestManager, "getAadAppManifest").resolves({
+        id: objectId,
+        appId: clientId,
+        name: displayName,
+        oauth2Permissions: [],
+      });
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
+
+      try {
+        const getResult = await AadAppClient.getAadAppUsingManifest(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(
+          error.message,
+          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)[0]
+        );
+      }
+    });
+
+    it("System Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const objectId = faker.datatype.uuid();
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
+      const secret = "secret";
+
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+
+      sinon.stub<any, any>(AadAppManifestManager, "getAadAppManifest").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
+      try {
+        const getResult = await AadAppClient.getAadAppUsingManifest(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof SystemError);
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName)[0]);
+      }
+    });
+
+    it("User Error", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const objectId = faker.datatype.uuid();
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
+      const secret = "secret";
+
+      const error = {
+        response: {
+          status: 404,
+          message: "errorMessage",
+        },
+      };
+
+      sinon.stub<any, any>(AadAppManifestManager, "getAadAppManifest").throws(error);
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
+      try {
+        const getResult = await AadAppClient.getAadAppUsingManifest(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName)[0]);
       }
     });
   });

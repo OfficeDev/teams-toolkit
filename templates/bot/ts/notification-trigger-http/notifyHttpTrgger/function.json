@@ -8,7 +8,7 @@
       "methods": [
         "post"
       ],
-      "route": "notification"
+      "route": "api/notification"
     },
     {
       "type": "http",

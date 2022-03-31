@@ -395,6 +395,10 @@ export function isM365AppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
 }
 
+export function isApiConnectEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
@@ -429,6 +433,14 @@ export function getRootDirectory(): string {
   } else {
     return path.resolve(root.replace("${homeDir}", os.homedir()));
   }
+}
+
+export function isYoCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+}
+
+export function isGeneratorCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
 export async function generateBicepFromFile(
@@ -642,6 +654,19 @@ export function getAllowedAppIds(): string[] {
     OutlookClientId.Web1,
     OutlookClientId.Web2,
   ];
+}
+
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {

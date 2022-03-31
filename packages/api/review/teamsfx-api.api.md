@@ -1421,6 +1421,8 @@ export enum Stage {
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
+    addCiCdFlow = "addCiCdFlow",
+    // (undocumented)
     addFeature = "addFeature",
     // (undocumented)
     addResource = "addResource",

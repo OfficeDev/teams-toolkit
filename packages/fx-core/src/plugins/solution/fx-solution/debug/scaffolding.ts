@@ -64,6 +64,7 @@ export async function _scaffoldLocalDebugSettings(
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
   const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
+  const isM365 = projectSetting.isM365;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -124,14 +125,25 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = (await useNewTasks(inputs.projectPath))
+        const launchConfigurations = isM365
+          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
           : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
-        const launchCompounds = (await useNewTasks(inputs.projectPath))
+        const launchCompounds = isM365
+          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
           : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-        const tasks = (await useNewTasks(inputs.projectPath))
+        const tasks = isM365
+          ? TasksNext.generateM365Tasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              programmingLanguage
+            )
+          : (await useNewTasks(inputs.projectPath))
           ? TasksNext.generateTasks(
               includeFrontend,
               includeBackend,
@@ -184,7 +196,7 @@ export async function _scaffoldLocalDebugSettings(
 
       await fs.writeJSON(
         `${inputs.projectPath}/.vscode/settings.json`,
-        Settings.generateSettings(includeBackend),
+        Settings.generateSettings(includeBackend || includeFuncHostedBot),
         {
           spaces: 4,
           EOL: os.EOL,

@@ -7,9 +7,7 @@ import {
   ProgrammingLanguageQuestion,
 } from "../../src/core/question";
 import { FuncValidation, Inputs, Platform } from "@microsoft/teamsfx-api";
-import { isBotNotificationEnabled } from "../../src/common/tools";
 import {
-  BotNotificationTriggers,
   BotOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
@@ -36,33 +34,69 @@ describe("Programming Language Questions", async () => {
 describe("handleSelectionConflicts", () => {
   it("supports valid cases", async () => {
     // Arrange
-    // [set1, set2, previous, current, expectedList, message]
-    const cases: [string[], string[], string[], string[], string[]][] = [
+    // [sets, previous, current, expected]
+    const cases: [string[][], string[], string[], string[]][] = [
+      // zero set
+      [[], [], [], []],
+      [[], [], ["a"], ["a"]],
+      [[], ["a"], ["a", "b"], ["a", "b"]],
+
+      // one set
+      [[["a", "b"]], ["a"], ["a", "b"], ["a", "b"]],
+      [[["a", "b"]], ["a"], ["a"], ["a"]],
+      [[["a", "b"]], ["a"], ["a", "b"], ["a", "b"]],
+      [[["a", "b"]], ["b"], ["a", "b"], ["a", "b"]],
+      [[["a", "b"]], ["b"], [], []],
+
+      // two sets
       // "a" and "b" conflict
-      [["a"], ["b"], [], ["b"], ["b"]],
-      [["a"], ["b"], ["a"], ["a", "b"], ["b"]],
-      [["a"], ["b"], ["b"], [""], [""]],
-      [["a"], ["b"], ["b"], ["b"], ["b"]],
+      [[["a"], ["b"]], [], ["b"], ["b"]],
+      [[["a"], ["b"]], ["a"], ["a", "b"], ["b"]],
+      [[["a"], ["b"]], ["b"], [""], [""]],
+      [[["a"], ["b"]], ["b"], ["b"], ["b"]],
 
       // "a" and "b","c" conflict
-      [["a"], ["b", "c"], ["a"], ["a", "b"], ["b"]],
-      [["a"], ["b", "c"], ["b"], ["b", "c"], ["b", "c"]],
-      [["a"], ["b", "c"], ["b", "c"], ["b", "c", "a"], ["a"]],
+      [[["a"], ["b", "c"]], ["a"], ["a", "b"], ["b"]],
+      [[["a"], ["b", "c"]], ["b"], ["b", "c"], ["b", "c"]],
+      [[["a"], ["b", "c"]], ["b", "c"], ["b", "c", "a"], ["a"]],
 
       // "a","b" and "c","d" conflict
-      [["a", "b"], ["c", "d"], ["a"], ["a", "b"], ["a", "b"]],
-      [["a", "b"], ["c", "d"], ["a", "b"], ["a", "b", "c"], ["c"]],
+      [
+        [
+          ["a", "b"],
+          ["c", "d"],
+        ],
+        ["a"],
+        ["a", "b"],
+        ["a", "b"],
+      ],
+      [
+        [
+          ["a", "b"],
+          ["c", "d"],
+        ],
+        ["a", "b"],
+        ["a", "b", "c"],
+        ["c"],
+      ],
+
+      // multiple sets
+      [[["a", "b"], ["c"], ["d"]], ["a"], ["a", "c"], ["c"]],
+      [[["a", "b"], ["c"], ["d"]], ["a", "b"], ["a", "b", "c"], ["c"]],
+      [
+        [["a", "b"], ["c"], ["d"]],
+        ["a", "b", "x"],
+        ["a", "b", "c", "x"],
+        ["c", "x"],
+      ],
+      [[["a", "b"], ["c"], ["d"]], ["c"], ["a", "b", "c"], ["a", "b"]],
     ];
 
     for (const c of cases) {
-      const [set1, set2, previous, current, expectedList] = c;
+      const [arrs, previous, current, expectedList] = c;
       // Act
-      const resultSet = handleSelectionConflict(
-        new Set(set1),
-        new Set(set2),
-        new Set(previous),
-        new Set(current)
-      );
+      const sets = [...arrs.map((item) => new Set<string>(item))];
+      const resultSet = handleSelectionConflict(sets, new Set(previous), new Set(current));
 
       // Assert
       const result = [...resultSet].sort();

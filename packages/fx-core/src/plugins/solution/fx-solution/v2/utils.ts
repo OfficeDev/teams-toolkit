@@ -17,7 +17,7 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -29,19 +29,20 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
-  BotNotificationTriggers,
   BotOptionItem,
   BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -100,9 +101,11 @@ export async function ensurePermissionRequest(
     );
   }
 
-  const result = await permissionRequestProvider.checkPermissionRequest();
-  if (result && result.isErr()) {
-    return result.map(err);
+  if (!isAadManifestEnabled()) {
+    const result = await permissionRequestProvider.checkPermissionRequest();
+    if (result && result.isErr()) {
+      return result.map(err);
+    }
   }
 
   return ok(Void);
@@ -194,7 +197,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
   appStudioToken?: Record<string, unknown>,
-  envInfo?: EnvInfoV2
+  envInfo?: v2.EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
@@ -214,21 +217,40 @@ export function fillInSolutionSettings(
 ): Result<Void, FxError> {
   const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
+  if (isAadManifestEnabled()) {
+    if (capabilities.includes(TabOptionItem.id)) {
+      capabilities.push(SsoItem.id);
+    } else if (capabilities.includes(TabNonSsoItem.id)) {
+      const index = capabilities.indexOf(TabNonSsoItem.id);
+      capabilities.splice(index, 1);
+      capabilities.push(TabOptionItem.id);
+    }
+  }
   if (!capabilities || capabilities.length === 0) {
     return err(
       new SystemError(SolutionSource, SolutionError.InternelError, "capabilities is empty")
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(NotificationOptionItem.id)) {
-    // find and replace "NotificationOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+  if (
+    capabilities.includes(NotificationOptionItem.id) ||
+    capabilities.includes(CommandAndResponseOptionItem.id)
+  ) {
+    // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+    const scenarios: BotScenario[] = [];
     const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
     if (notificationIndex !== -1) {
       capabilities[notificationIndex] = BotOptionItem.id;
-      // dedup
-      capabilities = [...new Set(capabilities)];
-      answers[AzureSolutionQuestionNames.Scenario] = BotScenario.NotificationBot;
+      scenarios.push(BotScenario.NotificationBot);
     }
+    const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
+    if (commandAndResponseIndex !== -1) {
+      capabilities[commandAndResponseIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.CommandAndResponseBot);
+    }
+    answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
+    // dedup
+    capabilities = [...new Set(capabilities)];
 
     hostType = HostTypeOptionAzure.id;
   } else if (

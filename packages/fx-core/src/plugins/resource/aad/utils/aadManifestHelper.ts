@@ -1,6 +1,9 @@
 import { AADApplication } from "../interfaces/AADApplication";
 import { AADManifest } from "../interfaces/AADManifest";
-
+import isUUID from "validator/lib/isUUID";
+import { getPermissionMap } from "../permissions";
+import { AadManifestErrorMessage } from "../errors";
+import * as util from "util";
 export class AadManifestHelper {
   public static manifestToApplication(manifest: AADManifest): AADApplication {
     const result: AADApplication = {
@@ -22,18 +25,18 @@ export class AadManifestHelper {
         knownClientApplications: manifest.knownClientApplications,
         requestedAccessTokenVersion: manifest.accessTokenAcceptedVersion,
         oauth2PermissionScopes: manifest.oauth2Permissions,
-        preAuthorizedApplications: manifest.preAuthorizedApplications.map((item) => {
+        preAuthorizedApplications: manifest.preAuthorizedApplications?.map((item) => {
           return { appId: item.appId, delegatedPermissionIds: item.permissionIds };
         }),
       },
       appRoles: manifest.appRoles,
       info: {
-        marketingUrl: manifest.informationalUrls.marketing,
-        privacyStatementUrl: manifest.informationalUrls.privacy,
-        supportUrl: manifest.informationalUrls.support,
-        termsOfServiceUrl: manifest.informationalUrls.termsOfService,
+        marketingUrl: manifest.informationalUrls?.marketing,
+        privacyStatementUrl: manifest.informationalUrls?.privacy,
+        supportUrl: manifest.informationalUrls?.support,
+        termsOfServiceUrl: manifest.informationalUrls?.termsOfService,
       },
-      keyCredentials: manifest.keyCredentials.map((item) => {
+      keyCredentials: manifest.keyCredentials?.map((item) => {
         return {
           customKeyIdentifier: item.customKeyIdentifier,
           displayName: item.displayName,
@@ -47,7 +50,6 @@ export class AadManifestHelper {
       }),
       optionalClaims: manifest.optionalClaims,
       parentalControlSettings: manifest.parentalControlSettings,
-      passwordCredentials: manifest.passwordCredentials,
       publicClient: {
         redirectUris: manifest.replyUrlsWithType
           .filter((item) => item.type === "InstalledClient")
@@ -115,7 +117,6 @@ export class AadManifestHelper {
       oauth2Permissions: app.api.oauth2PermissionScopes,
       optionalClaims: app.optionalClaims,
       parentalControlSettings: app.parentalControlSettings,
-      passwordCredentials: app.passwordCredentials,
       preAuthorizedApplications: app.api.preAuthorizedApplications.map((item) => {
         return {
           appId: item.appId,
@@ -153,5 +154,94 @@ export class AadManifestHelper {
     };
 
     return result;
+  }
+
+  public static validateManifest(manifest: AADManifest): string {
+    let warningMsg = "";
+
+    // if manifest doesn't contain name property or name is empty
+    if (!manifest.name || manifest.name === "") {
+      warningMsg += AadManifestErrorMessage.NameIsMissing;
+    }
+
+    // if manifest doesn't contain signInAudience property
+    if (!manifest.signInAudience) {
+      warningMsg += AadManifestErrorMessage.SignInAudienceIsMissing;
+    }
+
+    // if manifest doesn't contain requiredResourceAccess property
+    if (!manifest.requiredResourceAccess) {
+      warningMsg += AadManifestErrorMessage.RequiredResourceAccessIsMissing;
+    }
+
+    // if manifest doesn't contain oauth2Permissions or oauth2Permissions length is 0
+    if (!manifest.oauth2Permissions || manifest.oauth2Permissions.length === 0) {
+      warningMsg += AadManifestErrorMessage.Oauth2PermissionsIsMissing;
+    }
+
+    // if manifest doesn't contain preAuthorizedApplications
+    if (!manifest.preAuthorizedApplications || manifest.preAuthorizedApplications.length === 0) {
+      warningMsg += AadManifestErrorMessage.PreAuthorizedApplicationsIsMissing;
+    }
+
+    // if accessTokenAcceptedVersion in manifest is not 2
+    if (manifest.accessTokenAcceptedVersion !== 2) {
+      warningMsg += AadManifestErrorMessage.AccessTokenAcceptedVersionIs1;
+    }
+
+    // if manifest doesn't contain optionalClaims or access token doesn't contain idtyp clams
+    if (!manifest.optionalClaims) {
+      warningMsg += AadManifestErrorMessage.OptionalClaimsIsMissing;
+    } else if (!manifest.optionalClaims.accessToken.find((item) => item.name === "idtyp")) {
+      warningMsg += AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim;
+    }
+
+    if (warningMsg) {
+      warningMsg = AadManifestErrorMessage.AADManifestIssues + warningMsg;
+    }
+    return warningMsg.trimEnd();
+  }
+
+  public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {
+    const map = getPermissionMap();
+    manifest.requiredResourceAccess.forEach((requiredResourceAccessItem) => {
+      const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
+      let resourceId = resourceIdOrName;
+      if (!isUUID(resourceIdOrName)) {
+        resourceId = map[resourceIdOrName]?.id;
+        if (!resourceId) {
+          throw new Error(
+            util.format(AadManifestErrorMessage.UnknownResourceAppId, resourceIdOrName)
+          );
+        }
+        requiredResourceAccessItem.resourceAppId = resourceId;
+      }
+
+      requiredResourceAccessItem.resourceAccess.forEach((resourceAccessItem) => {
+        const resourceAccessIdOrName = resourceAccessItem.id;
+        if (!isUUID(resourceAccessIdOrName)) {
+          let resourceAccessId;
+          if (resourceAccessItem.type === "Scope") {
+            resourceAccessId = map[resourceId].scopes[resourceAccessItem.id];
+          } else if (resourceAccessItem.type === "Role") {
+            resourceAccessId = map[resourceId].roles[resourceAccessItem.id];
+          } else {
+            throw new Error(
+              util.format(
+                AadManifestErrorMessage.UnknownResourceAccessType,
+                resourceAccessItem.type
+              )
+            );
+          }
+
+          if (!resourceAccessId) {
+            throw new Error(
+              util.format(AadManifestErrorMessage.UnknownResourceAccessId, resourceAccessItem.id)
+            );
+          }
+          resourceAccessItem.id = resourceAccessId;
+        }
+      });
+    });
   }
 }

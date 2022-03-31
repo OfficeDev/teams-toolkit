@@ -39,7 +39,7 @@ import { PluginImpl } from "./interface";
 import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import { createHostTypeTriggerQuestion } from "./question";
+import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.BotPlugin)
@@ -54,10 +54,13 @@ export class TeamsBot implements Plugin {
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
   public functionsBotImpl: FunctionsHostedBotImpl = new FunctionsHostedBotImpl();
 
-  public getImpl(context: PluginContext): PluginImpl {
+  /**
+   * @param isScaffold true for `scaffold` lifecycle, false otherwise.
+   */
+  public getImpl(context: PluginContext, isScaffold = false): PluginImpl {
     if (isVSProject(context.projectSettings)) {
       return this.dotnetBotImpl;
-    } else if (this.isFunctionsHostedBot(context)) {
+    } else if (TeamsBot.isFunctionsHostedBot(context, isScaffold)) {
       return this.functionsBotImpl;
     } else {
       return this.teamsBotImpl;
@@ -69,7 +72,7 @@ export class TeamsBot implements Plugin {
 
     const result = await TeamsBot.runWithExceptionCatching(
       context,
-      () => this.getImpl(context).scaffold(context),
+      () => this.getImpl(context, true).scaffold(context),
       true,
       LifecycleFuncNames.SCAFFOLD
     );
@@ -208,6 +211,7 @@ export class TeamsBot implements Plugin {
               type: "group",
             });
             res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+            res.condition = showNotificationTriggerCondition;
             return ok(res);
           } else {
             return ok(undefined);
@@ -235,6 +239,7 @@ export class TeamsBot implements Plugin {
             type: "group",
           });
           res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          res.condition = showNotificationTriggerCondition;
           return ok(res);
         } else {
           return ok(undefined);
@@ -329,8 +334,8 @@ export class TeamsBot implements Plugin {
     }
   }
 
-  private isFunctionsHostedBot(context: PluginContext): boolean {
-    return ScaffoldConfig.getBotHostType(context) === BotHostTypes.AzureFunctions;
+  private static isFunctionsHostedBot(context: PluginContext, isScaffold: boolean): boolean {
+    return ScaffoldConfig.getBotHostType(context, isScaffold) === BotHostTypes.AzureFunctions;
   }
 }
 

@@ -1,5 +1,4 @@
 import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsoft/teamsfx-api";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
@@ -29,7 +28,7 @@ export async function provisionLocalResource(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  envInfo?: EnvInfoV2
+  envInfo?: v2.EnvInfoV2
 ): Promise<v2.FxResult<Json, FxError>> {
   if (inputs.projectPath === undefined) {
     return new v2.FxFailure(

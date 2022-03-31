@@ -30,17 +30,17 @@ jobs:
           command: |
             npm run setup
 
-      - name: run test
-        working-directory: packages/sdk
-        run: |
-          npm run test:e2e
-
       - name: setup python
         uses: actions/setup-python@v3
 
       - name: install xq
         run: |
           pip install yq
+
+      - name: run test
+        working-directory: packages/sdk
+        run: |
+          npm run test:e2e
 
       - name: List jobs
         if: ${{ always() }}

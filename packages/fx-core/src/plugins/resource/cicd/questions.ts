@@ -45,24 +45,24 @@ export const publishOption: OptionItem = {
   detail: getLocalizedString("plugins.cicd.publishOption.detail"),
 };
 
-export function templateIdToLabel(templateId: string): string {
-  const templateIdLabelMap = new Map<string, string>([
-    [ciOption.id, ciOption.label],
-    [cdOption.id, cdOption.label],
-    [provisionOption.id, provisionOption.label],
-    [publishOption.id, publishOption.label],
-  ]);
+const templateIdLabelMap = new Map<string, string>([
+  [ciOption.id, ciOption.label],
+  [cdOption.id, cdOption.label],
+  [provisionOption.id, provisionOption.label],
+  [publishOption.id, publishOption.label],
+]);
 
+const providerIdLabelMap = new Map<string, string>([
+  [githubOption.id, githubOption.label],
+  [azdoOption.id, azdoOption.label],
+  [jenkinsOption.id, jenkinsOption.label],
+]);
+
+export function templateIdToLabel(templateId: string): string {
   return templateIdLabelMap.get(templateId) ?? templateId;
 }
 
 export function providerIdToLabel(providerId: string): string {
-  const providerIdLabelMap = new Map<string, string>([
-    [githubOption.id, githubOption.label],
-    [azdoOption.id, azdoOption.label],
-    [jenkinsOption.id, jenkinsOption.label],
-  ]);
-
   return providerIdLabelMap.get(providerId) ?? providerId;
 }
 

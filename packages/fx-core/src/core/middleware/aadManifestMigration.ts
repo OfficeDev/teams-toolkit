@@ -45,9 +45,9 @@ export const AadManifestMigrationMW: Middleware = async (
   next: NextFunction
 ) => {
   if (await needMigrateToArmAndMultiEnv(ctx)) {
-    next();
+    await next();
   } else if (await needConsolidateLocalRemote(ctx)) {
-    next();
+    await next();
   } else if ((await needMigrateToAadManifest(ctx)) && checkMethod(ctx)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
     const res = await TOOLS?.ui.showMessage(

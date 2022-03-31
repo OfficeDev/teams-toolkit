@@ -49,6 +49,7 @@ import {
   VsCodeEnv,
   IProgressHandler,
   ProjectSettingsFileName,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -1333,8 +1334,16 @@ export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
 
 export async function createAccountHandler(args: any[]): Promise<void> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccountStart, getTriggerFromProperty(args));
-  const m365Option = `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`;
-  const azureOption = `$(add) ${localize("teamstoolkit.commands.createAccount.azure")}`;
+  const m365Option: OptionItem = {
+    id: "createAccountM365",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`,
+    description: localize("teamstoolkit.commands.createAccount.free"),
+  };
+  const azureOption: OptionItem = {
+    id: "createAccountAzure",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.azure")}`,
+    description: localize("teamstoolkit.commands.createAccount.free"),
+  };
   const option: SingleSelectConfig = {
     name: "CreateAccounts",
     title: localize("teamstoolkit.commands.createAccount.title"),
@@ -1342,19 +1351,23 @@ export async function createAccountHandler(args: any[]): Promise<void> {
   };
   const result = await VS_CODE_UI.selectOption(option);
   if (result.isOk()) {
-    if (result.value.result === m365Option) {
+    if (result.value.result === m365Option.id) {
       await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
         [TelemetryProperty.AccountType]: AccountType.M365,
         ...getTriggerFromProperty(args),
       });
-    } else if (result.value.result === azureOption) {
+    } else if (result.value.result === azureOption.id) {
       await VS_CODE_UI.openUrl("https://azure.microsoft.com/en-us/free/");
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         ...getTriggerFromProperty(args),
       });
     }
+  } else {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateAccount, result.error, {
+      ...getTriggerFromProperty(args),
+    });
   }
   return;
 }

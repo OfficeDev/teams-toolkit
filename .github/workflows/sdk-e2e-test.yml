@@ -37,10 +37,17 @@ jobs:
         run: |
           pip install yq
 
-      - name: run test
+      - name: run test - node
+        if: ${{ always() }}
         working-directory: packages/sdk
         run: |
-          npm run test:e2e
+          npm run test:e2e:node
+
+      - name: run test - browser
+        if: ${{ always() }}
+        working-directory: packages/sdk
+        run: |
+          npm run test:e2e:browser
 
       - name: List jobs
         if: ${{ always() }}
@@ -116,7 +123,7 @@ jobs:
           echo "::set-output name=to::$emails"
           echo "::set-output name=subject::$subject"
 
-      - name: Send E-mail to the whole team
+      - name: Report result
         uses: satak/webrequest-action@master
         if: ${{ always() && github.event_name == 'schedule' }}
         with:

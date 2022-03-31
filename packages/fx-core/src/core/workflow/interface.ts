@@ -287,6 +287,7 @@ const settings: ProjectSettingsV3 = {
     {
       type: "compound",
       name: "teams-tab",
+      hostingResource: "azure-storage",
     },
     {
       type: "cloud",
@@ -295,6 +296,7 @@ const settings: ProjectSettingsV3 = {
     {
       type: "scaffold",
       name: "tab-scaffold",
+      folder: "tab",
       hostingResource: "azure-storage",
     },
   ],

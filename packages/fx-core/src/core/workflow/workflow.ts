@@ -103,9 +103,9 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
   } else if (action.type === "shell") {
     console.log(`---- plan[${inputs.step++}]: shell command: ${action.command}`);
   } else if (action.type === "call") {
-    if (action.inputs) {
-      templateReplace(action.inputs, inputs);
-    }
+    // if (action.inputs) {
+    //   templateReplace(action.inputs, inputs);
+    // }
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
       throw new Error("targetAction not exist: " + action.targetAction);
@@ -114,9 +114,9 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
       await planAction(targetAction, context, inputs);
     }
   } else {
-    if (action.inputs) {
-      templateReplace(action.inputs, inputs);
-    }
+    // if (action.inputs) {
+    //   templateReplace(action.inputs, inputs);
+    // }
     for (const act of action.actions) {
       await planAction(act, context, inputs);
     }

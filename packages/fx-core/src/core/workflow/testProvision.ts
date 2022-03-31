@@ -24,6 +24,7 @@ import { MockTools } from "./utils";
 import { executeAction, getAction, planAction } from "./workflow";
 import * as os from "os";
 import * as path from "path";
+import { cloneDeep } from "lodash";
 
 async function provision() {
   const tools = new MockTools();
@@ -47,6 +48,7 @@ async function provision() {
         hostingResource: "azure-web-app",
       },
       { name: "azure-web-app", type: "cloud" },
+      { name: "aad", type: "cloud" },
     ],
   };
   const envInfo: v3.EnvInfoV3 = {
@@ -66,7 +68,7 @@ async function provision() {
   };
   const action = await getAction("fx.provision", context, inputs);
   if (action) {
-    await planAction(action, context, inputs);
+    await planAction(action, context, cloneDeep(inputs));
     await executeAction(action, context, inputs);
   }
   console.log("inputs:");

@@ -148,7 +148,8 @@ export async function scaffoldByPlugins(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings: Json,
-  plugins: v2.ResourcePlugin[]
+  plugins: v2.ResourcePlugin[],
+  concurrent = true
 ): Promise<Result<Void, FxError>> {
   if (plugins.length === 0) return ok(Void);
   ctx.logProvider?.info(`start scaffolding ${plugins.map((p) => p.name).join(",")}.....`);
@@ -163,7 +164,7 @@ export async function scaffoldByPlugins(
       };
     });
 
-  const result = await executeConcurrently(thunks, ctx.logProvider);
+  const result = await executeConcurrently(thunks, ctx.logProvider, concurrent);
   const solutionSettings = getAzureSolutionSettings(ctx);
   if (result.kind === "success") {
     const capabilities = solutionSettings?.capabilities || [];

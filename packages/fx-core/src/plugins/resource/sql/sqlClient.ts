@@ -59,10 +59,7 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          [
-            errorMessage[0],
-            errorMessage[1] + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`,
-          ],
+          [errorMessage[0], errorMessage[1] + `. ${getLocalizedString("error.sql.GetDetail")}`],
           error,
           undefined,
           link
@@ -119,10 +116,7 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          [
-            errorMessage[0],
-            errorMessage[1] + `. ${getLocalizedString("plugins.sql.errorMessage.GetDetail")}`,
-          ],
+          [errorMessage[0], errorMessage[1] + `. ${getLocalizedString("error.sql.GetDetail")}`],
           error,
           undefined,
           link

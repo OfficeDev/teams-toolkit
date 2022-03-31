@@ -313,23 +313,9 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
-
-      const fakeBotClient = factory.createAzureBotServiceClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(fakeBotClient.bots, "create").resolves({
-        status: 200,
-      });
-      sinon.stub(fakeBotClient.channels, "create").resolves({
-        status: 200,
-      });
-
-      sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 
       // Act
@@ -369,11 +355,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
       // Act
@@ -434,11 +415,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
 

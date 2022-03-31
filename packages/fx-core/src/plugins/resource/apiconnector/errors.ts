@@ -46,6 +46,16 @@ export class ErrorMessage {
       ),
   };
 
+  public static readonly SampleCodeCreateFailError = {
+    name: "SampleCodeCreateFailError",
+    message: (pathName: string, reason: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.SampleCodeCreateFailError.name}`,
+        pathName,
+        reason
+      ),
+  };
+
   public static readonly NoValidCompoentExistError = {
     name: "NoValidCompoentExistError",
     message: () =>

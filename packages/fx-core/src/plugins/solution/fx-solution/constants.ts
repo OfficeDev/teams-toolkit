@@ -237,6 +237,9 @@ export enum SolutionTelemetryProperty {
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
+  ErrorCode = "error-code",
+  ErrorMessage = "error-message",
+  HostType = "host-type",
 }
 
 export enum SolutionTelemetrySuccess {

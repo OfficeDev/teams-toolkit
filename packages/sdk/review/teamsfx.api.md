@@ -111,15 +111,6 @@ export enum IdentityType {
 }
 
 // @beta
-export class IncomingWebhookTarget implements NotificationTarget {
-    constructor(webhook: URL);
-    sendAdaptiveCard(card: unknown): Promise<void>;
-    sendMessage(text: string): Promise<void>;
-    readonly type: NotificationTargetType;
-    readonly webhook: URL;
-}
-
-// @beta
 export type LogFunction = (level: LogLevel, message: string) => void;
 
 // @beta

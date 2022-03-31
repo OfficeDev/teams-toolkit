@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import axios from "axios";
 import {
   BotFrameworkAdapter,
   CardFactory,
@@ -380,91 +379,5 @@ export class TeamsBotInstallation implements NotificationTarget {
     }
 
     return members;
-  }
-}
-
-/**
- * A {@link NotificationTarget} that represents a team channel, creating from incoming webhook.
- *
- * @example
- * Here's an example on how to send notification via incoming webhook.
- * ```typescript
- * const target = new IncomingWebhookTarget(new URL("your-webhook-url"));
- * await target.sendMessage("Hello Notification");
- * ```
- *
- * @beta
- */
-export class IncomingWebhookTarget implements NotificationTarget {
-  /**
-   * Notification target type. For incoming webhook it's always "Channel".
-   *
-   * @beta
-   */
-  public readonly type: NotificationTargetType = "Channel";
-
-  /**
-   * The bound incoming webhook URL.
-   *
-   * @beta
-   */
-  public readonly webhook: URL;
-
-  /**
-   * Constructor.
-   *
-   * @param webhook - the incoming webhook URL.
-   *
-   * @beta
-   */
-  constructor(webhook: URL) {
-    this.webhook = webhook;
-  }
-
-  /**
-   * Send a plain text message.
-   *
-   * @param text - the plain text message.
-   * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
-   */
-  public sendMessage(text: string): Promise<void> {
-    return axios.post(
-      this.webhook.toString(),
-      {
-        text: text,
-      },
-      {
-        headers: { "content-type": "application/json" },
-      }
-    );
-  }
-
-  /**
-   * Send an adaptive card message.
-   *
-   * @param card - the adaptive card raw JSON.
-   * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
-   */
-  public sendAdaptiveCard(card: unknown): Promise<void> {
-    return axios.post(
-      this.webhook.toString(),
-      {
-        type: "message",
-        attachments: [
-          {
-            contentType: "application/vnd.microsoft.card.adaptive",
-            contentUrl: null,
-            content: card,
-          },
-        ],
-      },
-      {
-        headers: { "content-type": "application/json" },
-      }
-    );
   }
 }

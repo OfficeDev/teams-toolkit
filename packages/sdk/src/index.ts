@@ -38,7 +38,6 @@ export {
 
 export {
   Channel,
-  IncomingWebhookTarget,
   Member,
   sendAdaptiveCard,
   sendMessage,

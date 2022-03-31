@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   BotFrameworkAdapter,
   CardFactory,
@@ -16,7 +15,6 @@ import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
 import {
   Channel,
-  IncomingWebhookTarget,
   Member,
   sendAdaptiveCard,
   sendMessage,
@@ -288,48 +286,6 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(installation.type, "Channel");
       const members = await installation.members();
       assert.strictEqual(members.length, 2);
-    });
-  });
-
-  describe("IncomingWebhookTarget Tests - Node", () => {
-    const sandbox = sinon.createSandbox();
-    const webhook = new URL("http://localhost/");
-    let content: any;
-
-    beforeEach(() => {
-      sandbox.stub(axios, "post").callsFake((url, data, config) => {
-        return new Promise((resolve) => {
-          content = data;
-          resolve({});
-        });
-      });
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("sendMessage should send correct text", async () => {
-      const target = new IncomingWebhookTarget(webhook);
-      assert.strictEqual(target.type, "Channel");
-      await target.sendMessage("text");
-      assert.deepStrictEqual(content, { text: "text" });
-    });
-
-    it("sendAdaptiveCard should send correct card", async () => {
-      const target = new IncomingWebhookTarget(webhook);
-      assert.strictEqual(target.type, "Channel");
-      await target.sendAdaptiveCard({ foo: "bar" });
-      assert.deepStrictEqual(content, {
-        type: "message",
-        attachments: [
-          {
-            contentType: "application/vnd.microsoft.card.adaptive",
-            contentUrl: null,
-            content: { foo: "bar" },
-          },
-        ],
-      });
     });
   });
 });

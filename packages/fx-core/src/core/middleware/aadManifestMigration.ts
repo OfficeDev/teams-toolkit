@@ -27,6 +27,7 @@ import {
   AADManifest,
 } from "../../plugins/resource/aad/interfaces/AADManifest";
 import { Constants } from "../../plugins/resource/aad/constants";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import * as os from "os";
 
 const upgradeButton = "Upgrade";
@@ -111,7 +112,7 @@ async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> 
       path.join(inputs.projectPath as string, ".fx", "configs", "projectSettings.json")
     );
     const aadPluginIsActive = projectSettingsJson.solutionSettings.activeResourcePlugins.includes(
-      "fx-resource-aad-app-for-teams"
+      PluginNames.AAD
     );
 
     if (!aadPluginIsActive || !permissionFileExist) {

@@ -11,6 +11,7 @@ import {
   Result,
   SystemError,
   UserError,
+  UserErrorOptions,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -736,12 +737,22 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError,
-        getDefaultString("teamstoolkit.PrerequisitesValidationError"),
-        localize("teamstoolkit.PrerequisitesValidationError")
+      const message = util.format(
+        getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"),
+        "[output panel](command:fx-extension.showOutputChannel)"
       );
+      const displayMessage = util.format(
+        localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
+        "[output panel](command:fx-extension.showOutputChannel)"
+      );
+      const errorOptions: UserErrorOptions = {
+        source: ExtensionSource,
+        name: ExtensionErrors.PrerequisitesValidationError,
+        message: message, //getDefaultString("teamstoolkit.PrerequisitesValidationError"),
+        displayMessage: displayMessage, //localize("teamstoolkit.PrerequisitesValidationError"),
+        helpLink: "https://aka.ms/teamsfx-envchecker-help",
+      };
+      throw new UserError(errorOptions);
     }
   }
 }

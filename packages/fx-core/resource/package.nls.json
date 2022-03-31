@@ -626,6 +626,8 @@
   "core.addSsoFiles.projectPathNotExists": "Project path does not exist",
   "core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled": "Failed to add non SSO Tab. SSO is enabled in this project",
   "core.addSsoFiles.canNotAddTabWhenSsoNotEnabled": "Failed to add Tab. You need to run 'add SSO' first",
+  "core.addSsoFiles.FailedToCreateAuthFiles": "Failed to create files for add sso. Detail error: %s.",
+  "core.addSsoFiles.invalidLanguage": "Invalid language. Please make sure '.fx/projectSettings.json' is not modified and try again.",
   "core.getUserEmailQuestion.validation3": "Email address is not valid",
   "plugins.bot.DetailedError": "Detailed error: %s.",
   "plugins.bot.DetailedErrorReason": "Reason: %s",

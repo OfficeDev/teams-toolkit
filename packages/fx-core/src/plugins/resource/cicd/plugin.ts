@@ -88,24 +88,29 @@ export class CICDImpl {
     await progressBar.end(true);
 
     // 4. Send notification messages.
-    let message = "";
+    const messages = [];
     if (created.length > 0) {
-      message += getLocalizedString(
-        "plugins.cicd.result.scaffold.created",
-        created.join(","),
-        providerIdToLabel(providerName),
-        envName
+      messages.push(
+        getLocalizedString(
+          "plugins.cicd.result.scaffold.created",
+          created.join(", "),
+          providerIdToLabel(providerName),
+          envName
+        )
       );
     }
     if (skipped.length > 0) {
-      message += getLocalizedString(
-        "plugins.cicd.result.scaffold.skipped",
-        skipped.join(","),
-        providerIdToLabel(providerName),
-        envName
+      messages.push(
+        getLocalizedString(
+          "plugins.cicd.result.scaffold.skipped",
+          skipped.join(", "),
+          providerIdToLabel(providerName),
+          envName
+        )
       );
     }
 
+    const message = messages.join(" ");
     context.userInteraction.showMessage("info", message, false);
     Logger.info(message);
 

@@ -4,138 +4,79 @@
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ensureSolutionSettings } from "../../plugins/solution/fx-solution/utils/solutionSettingsHelper";
 import {
   Action,
-  AddInstanceAction,
-  ResourcePlugin,
+  ContextV3,
   GroupAction,
   MaybePromise,
-  CallAction,
+  ProjectSettingsV3,
+  ResourceConfig,
   TeamsTabInputs,
-  ProjectConfig,
 } from "./interface";
 
 /**
  * teams tab - feature level action
  */
 @Service("teams-tab")
-export class TeamsTabFeature implements ResourcePlugin {
+export class TeamsTabFeature {
   name = "teams-tab";
-  addInstance(
-    context: v2.Context,
+  add(
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const tabInputs = inputs as TeamsTabInputs;
-    const register: AddInstanceAction = {
-      name: "teams-tab.register",
-      type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          "add 'tab' entry in projectSettings",
-          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`,
-        ]);
+    const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+    const actions: Action[] = [
+      {
+        name: "teams-tab.add",
+        type: "function",
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+          const addInput = (inputs as TeamsTabInputs)["teams-tab"];
+          return ok([`add resources: 'teams-tab' in projectSettings: ${addInput}`]);
+        },
+        execute: async (
+          context: ContextV3,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<undefined, FxError>> => {
+          const projectSettings = context.projectSetting as ProjectSettingsV3;
+          const teamsTabResource: ResourceConfig = {
+            name: "teams-tab",
+            type: "compound",
+            hostingResource: teamsTabInputs.hostingResource,
+          };
+          projectSettings.resources.push(teamsTabResource);
+          return ok(undefined);
+        },
       },
-      execute: async (
-        context: v2.Context,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        ensureSolutionSettings(context.projectSetting);
-        const projectConfig = context.projectSetting as ProjectConfig;
-        projectConfig.tab = {
-          language: tabInputs.language,
-          hostingResource: tabInputs.hostingResource,
-        };
-        if (
-          !context.projectSetting.solutionSettings?.activeResourcePlugins.includes(
-            tabInputs.hostingResource
-          )
-        )
-          context.projectSetting.solutionSettings?.activeResourcePlugins.push(
-            tabInputs.hostingResource
-          );
-        console.log(
-          `ensure entry '${tabInputs.hostingResource}' in projectSettings.solutionSettings.activeResourcePlugins`
-        );
-        return ok(undefined);
+      {
+        name: "call:tab-scaffold.generateCode",
+        type: "call",
+        required: false,
+        targetAction: "tab-scaffold.generateCode",
       },
-    };
+      {
+        name: `call:${teamsTabInputs.hostingResource}.generateBicep`,
+        type: "call",
+        required: false,
+        targetAction: `${teamsTabInputs.hostingResource}.generateBicep`,
+      },
+      {
+        name: "call:teams-manifest.addCapability",
+        type: "call",
+        required: true,
+        targetAction: "teams-manifest.addCapability",
+        inputs: {
+          "teams-manifest": {
+            capabilities: [{ name: "staticTab" }],
+          },
+        },
+      },
+    ];
     const group: GroupAction = {
       type: "group",
-      name: "teams-tab.addInstance",
-      actions: [
-        register,
-        {
-          type: "call",
-          required: true,
-          targetAction: "teams-manifest.addCapability",
-          inputs: {
-            capabilities: ["Tab"],
-          },
-        },
-      ],
+      name: "teams-tab.add",
+      mode: "parallel",
+      actions: actions,
     };
     return ok(group);
-  }
-  generateCode(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: CallAction = {
-      name: "teams-tab.generateCode",
-      type: "call",
-      required: true,
-      targetAction: "tab-scaffold.generateCode",
-    };
-    return ok(action);
-  }
-  generateBicep(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const tabInputs = inputs as TeamsTabInputs;
-    return ok({
-      type: "call",
-      required: false,
-      targetAction: `${tabInputs.hostingResource}.generateBicep`,
-    });
-  }
-  build(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok({
-      type: "call",
-      targetAction: "tab-scaffold.build",
-      required: true,
-    });
-  }
-  deploy(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const tabConfig = (context.projectSetting as any).tab;
-    const hostResource = tabConfig.hostingResource;
-    const action: GroupAction = {
-      type: "group",
-      name: "teams-tab.deploy",
-      actions: [
-        {
-          type: "call",
-          targetAction: "teams-tab.build",
-          required: false,
-        },
-        {
-          type: "call",
-          targetAction: `${hostResource}.deploy`,
-          required: false,
-          inputs: {
-            path: "tab",
-            type: "folder",
-          },
-        },
-      ],
-    };
-    return ok(action);
   }
 }

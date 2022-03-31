@@ -4,39 +4,13 @@
 import { FxError, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { Action, AddInstanceAction, DeployAction, MaybePromise, ResourcePlugin } from "./interface";
+import { Action, AzureResource, DeployAction, MaybePromise } from "./interface";
 
 @Service("spfx")
-export class SpfxResource implements ResourcePlugin {
+export class SpfxResource implements AzureResource {
   name = "spfx";
-  addInstance(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const addInstance: AddInstanceAction = {
-      name: "spfx.addInstance",
-      type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
-        ]);
-      },
-      execute: async (
-        context: v2.Context,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
-        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
-          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
-        return ok(undefined);
-      },
-    };
-    return ok(addInstance);
-  }
   deploy(
-    context: v2.Context,
+    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: DeployAction = {
@@ -46,13 +20,13 @@ export class SpfxResource implements ResourcePlugin {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ) => {
-        return ok([`deploy spfx with path: ${inputs.path}, type: ${inputs.type}`]);
+        return ok([`deploy spfx with path: ${inputs["spfx"].path}, type: ${inputs["spfx"].type}`]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log(`deploy spfx with path: ${inputs.path}, type: ${inputs.type}`);
+        console.log(`deploy spfx with path: ${inputs["spfx"].path}, type: ${inputs["spfx"].type}`);
         return ok(undefined);
       },
     };

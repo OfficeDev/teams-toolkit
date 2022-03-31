@@ -38,7 +38,7 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { DEFAULT_PERMISSION_REQUEST } from "../../plugins/solution/fx-solution/constants";
-
+import crypto from "crypto";
 export class MockAzureAccountProvider implements AzureAccountProvider {
   getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     throw new Error("getAccountCredentialAsync Method not implemented.");
@@ -387,4 +387,8 @@ export class MockLogProvider implements LogProvider {
   async log({}: LogLevel, {}: string): Promise<boolean> {
     return true;
   }
+}
+
+export function randomId(): string {
+  return crypto.randomBytes(6).toString("hex");
 }

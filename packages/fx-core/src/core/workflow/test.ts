@@ -8,7 +8,6 @@ import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../common";
 import {
-  BotOptionItem,
   NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
@@ -21,14 +20,16 @@ import "./azureSql";
 import "./azureStorage";
 import "./azureWebApp";
 import "./botScaffold";
-import { executeAction, getAction, planAction, resolveAction } from "./core";
-import { Action, ProjectConfig } from "./interface";
+import { Action, ProjectSettingsV3 } from "./interface";
+import "./spfx";
 import "./tabScaffold";
 import "./teamsBot";
 import "./teamsManifest";
 import "./teamsTab";
-import "./spfx";
+import "./core";
 import { MockTools } from "./utils";
+import { executeAction, getAction, planAction, resolveAction } from "./workflow";
+import { resolve } from "@apidevtools/swagger-parser";
 
 async function provision() {
   setTools(new MockTools());
@@ -48,8 +49,8 @@ async function provision() {
   const action = await getAction("fx.provision", context, inputs);
   if (action) {
     await fs.writeFile("provision.json", JSON.stringify(action, undefined, 4));
-    await planAction(context, inputs, action);
-    await executeAction(context, inputs, action);
+    await planAction(action, context, inputs);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -80,9 +81,9 @@ async function addSql() {
   if (action) {
     const resolved = await resolveAction(action, context, inputs);
     await fs.writeFile("addSql.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -113,9 +114,9 @@ async function addTeamsTab() {
   if (action) {
     const resolved = await resolveAction(action, context, inputs);
     await fs.writeFile("addTeamsTab.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -145,9 +146,9 @@ async function addTeamsBot() {
   if (action) {
     const resolved = await resolveAction(action, context, inputs);
     await fs.writeFile("addTeamsBot.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -157,21 +158,23 @@ async function addTeamsBot() {
 
 async function generateDeployScript() {
   setTools(new MockTools());
-  const projectSetting: ProjectConfig = {
+  const projectSetting: ProjectSettingsV3 = {
     projectId: "12",
     appName: "huajie0316",
     solutionSettings: {
       name: "fx",
       activeResourcePlugins: ["azure-storage", "azure-web-app", "azure-bot"],
     },
-    tab: {
-      language: "typescript",
-      hostingResource: "azure-storage",
-    },
-    bot: {
-      language: "csharp",
-      hostingResource: "azure-web-app",
-    },
+    resources: [
+      {
+        name: "teams-tab",
+        type: "compound",
+      },
+      {
+        name: "teams-bot",
+        type: "compound",
+      },
+    ],
   };
   const context = createV2Context(projectSetting);
   const inputs: v2.InputsWithProjectPath = {
@@ -187,21 +190,23 @@ async function generateDeployScript() {
 
 async function deployFromScript() {
   setTools(new MockTools());
-  const projectSetting: ProjectConfig = {
+  const projectSetting: ProjectSettingsV3 = {
     projectId: "12",
     appName: "huajie0316",
     solutionSettings: {
       name: "fx",
       activeResourcePlugins: ["azure-storage", "azure-web-app", "azure-bot"],
     },
-    tab: {
-      language: "typescript",
-      hostingResource: "azure-storage",
-    },
-    bot: {
-      language: "csharp",
-      hostingResource: "azure-web-app",
-    },
+    resources: [
+      {
+        name: "teams-tab",
+        type: "compound",
+      },
+      {
+        name: "teams-bot",
+        type: "compound",
+      },
+    ],
   };
   const context = createV2Context(projectSetting);
   const inputs: v2.InputsWithProjectPath = {
@@ -210,13 +215,13 @@ async function deployFromScript() {
   };
   const action = (await fs.readJson("deploy.json")) as Action;
   if (action) {
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
 }
 
-async function createTab() {
+async function genCreateTab() {
   setTools(new MockTools());
   const context = createV2Context({} as ProjectSettings);
   const inputs: v2.InputsWithProjectPath = {
@@ -224,20 +229,41 @@ async function createTab() {
     platform: Platform.VSCode,
     language: "typescript",
     capabilities: [TabOptionItem.id],
+    "teams-tab": {
+      hostingResource: "azure-storage",
+      framework: "react",
+    },
+    "programming-language": "typescript",
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
-    await planAction(context, inputs, action);
-    inputs.step = 1;
-    await executeAction(context, inputs, action);
+    const resolved = await resolveAction(action, context, inputs);
+    await fs.writeFile("createTab.json", JSON.stringify(resolved, undefined, 4));
   }
-  console.log("inputs:");
-  console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
 }
 
-async function createTabBot() {
+async function execCreateTab() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    capabilities: [TabOptionItem.id],
+    "teams-tab": {
+      hostingResource: "azure-storage",
+      framework: "react",
+    },
+    "programming-language": "typescript",
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    await planAction(action, context, inputs);
+    inputs.step = 1;
+    await executeAction(action, context, inputs);
+  }
+}
+async function genCreateTabBot() {
   setTools(new MockTools());
   const context = createV2Context({} as ProjectSettings);
   const inputs: v2.InputsWithProjectPath = {
@@ -245,20 +271,43 @@ async function createTabBot() {
     platform: Platform.VSCode,
     language: "typescript",
     capabilities: [TabOptionItem.id, NotificationOptionItem.id],
-    tab: {
+    "teams-tab": {
       hostingResource: "azure-storage",
+      framework: "react",
     },
-    bot: {
-      hostingResource: "azure-function",
+    "teams-bot": {
+      hostingResource: "azure-web-app",
     },
+    "programming-language": "typescript",
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
-    // const resolved = await resolveAction(action, context, inputs);
-    // await fs.writeFile("createTabBot.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(context, inputs, action);
+    fs.writeFileSync("createTabBot.json", JSON.stringify(action, undefined, 4));
+  }
+}
+
+async function execCreateTabBot() {
+  setTools(new MockTools());
+  const context = createV2Context({} as ProjectSettings);
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+    language: "typescript",
+    capabilities: [TabOptionItem.id, NotificationOptionItem.id],
+    "teams-tab": {
+      hostingResource: "azure-storage",
+      framework: "react",
+    },
+    "teams-bot": {
+      hostingResource: "azure-web-app",
+    },
+    "programming-language": "typescript",
+  };
+  const action = await getAction("fx.create", context, inputs);
+  if (action) {
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -280,9 +329,9 @@ async function createNotificationBot() {
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -302,9 +351,9 @@ async function createSPFx() {
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
-    await planAction(context, inputs, action);
+    await planAction(action, context, inputs);
     inputs.step = 1;
-    await executeAction(context, inputs, action);
+    await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
@@ -320,14 +369,15 @@ if (arg === "tab") {
   addTeamsBot();
 } else if (arg === "sql") {
   addSql();
-} else if (arg === "deploy-gen") {
-  generateDeployScript();
 } else if (arg === "deploy") {
+  generateDeployScript();
   deployFromScript();
 } else if (arg === "create-tab") {
-  createTab();
+  genCreateTab();
+  execCreateTab();
 } else if (arg === "create-tab-bot") {
-  createTabBot();
+  genCreateTabBot();
+  execCreateTabBot();
 } else if (arg === "create-notification-bot") {
   createNotificationBot();
 } else if (arg === "create-spfx") {

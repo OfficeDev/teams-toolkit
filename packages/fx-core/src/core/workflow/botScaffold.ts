@@ -6,39 +6,50 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import {
   Action,
-  AddInstanceAction,
+  ContextV3,
   GroupAction,
   MaybePromise,
-  ResourcePlugin,
+  ProjectSettingsV3,
+  ScaffoldResource,
   TeamsBotInputs,
 } from "./interface";
 import * as path from "path";
+import { getResource } from "./workflow";
 
 /**
  * bot scaffold plugin
  */
 @Service("bot-scaffold")
-export class BotScaffoldResource implements ResourcePlugin {
+export class BotScaffoldResource implements ScaffoldResource {
   name = "bot-scaffold";
   generateCode(
-    context: v2.Context,
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const botInputs = inputs as TeamsBotInputs;
-    const action: AddInstanceAction = {
+    const action: Action = {
       name: "bot-scaffold.generateCode",
       type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
         return ok([
-          `scaffold bot source code for language: ${botInputs.language}, scenario: ${botInputs.scenario}, hostingResource: ${botInputs.hostingResource}`,
+          "ensure resource 'bot-scaffold' in projectSettings",
+          `scaffold bot source code for language: ${inputs["programming-language"]}, scenario: ${teamsBotInputs.scenarios}, hostingResource: ${teamsBotInputs.hostingResource}`,
         ]);
       },
       execute: async (
-        context: v2.Context,
+        context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
+        const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+        projectSettings.resources.push({
+          name: "bot-scaffold",
+          type: "scaffold",
+          hostingResource: teamsBotInputs.hostingResource,
+        });
+        console.log("add resource 'bot-scaffold' in projectSettings");
         console.log(
-          `scaffold bot source code for language: ${botInputs.language}, scenario: ${botInputs.scenario}, hostingResource: ${botInputs.hostingResource}`
+          `scaffold bot source code for language: ${inputs["programming-language"]}, scenario: ${teamsBotInputs.scenarios}, hostingResource: ${teamsBotInputs.hostingResource}`
         );
         return ok(undefined);
       },
@@ -50,7 +61,7 @@ export class BotScaffoldResource implements ResourcePlugin {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const config = (context.projectSetting as any).bot;
-    const language = config.language;
+    const language = context.projectSetting.programmingLanguage;
     if (language === "typescript") {
       const group: GroupAction = {
         type: "group",

@@ -1,95 +1,84 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  Inputs,
-  ok,
-  Result,
-  TokenProvider,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
   Action,
-  AddInstanceAction,
-  ResourcePlugin,
+  AzureResource,
+  ContextV3,
   GenerateBicepAction,
   GroupAction,
   MaybePromise,
+  ProjectSettingsV3,
   ProvisionAction,
+  ResourceConfig,
 } from "./interface";
+import { getResource } from "./workflow";
 
 @Service("azure-sql")
-export class AzureSqlResource implements ResourcePlugin {
+export class AzureSqlResource implements AzureResource {
   name = "azure-sql";
-  addInstance(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const addInstance: AddInstanceAction = {
-      name: "azure-sql.addInstance",
-      type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
-        ]);
-      },
-      execute: async (
-        context: v2.Context,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `add an entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
-        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
-          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
-        return ok(undefined);
-      },
-    };
-    return ok(addInstance);
-  }
   generateBicep(
-    context: v2.Context,
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
     const genSqlBicep: GenerateBicepAction = {
       name: "azure-sql.generateBicep",
       type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["generate azure sql bicep"]);
+      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        const resource = getResource(context.projectSetting as ProjectSettingsV3, "azure-sql");
+        if (!resource) {
+          return ok([
+            "ensure resource 'azure-sql' in projectSettings",
+            "generate bicep of azure-sql",
+          ]);
+        }
+        return ok([]);
       },
       execute: async (
         context: v2.Context,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log("generate azure sql bicep");
-        inputs.bicep[this.name] = "azure sql bicep";
+        const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const resource = getResource(projectSettings, "azure-sql");
+        if (!resource) {
+          const resource: ResourceConfig = {
+            name: "azure-sql",
+            type: "cloud",
+          };
+          projectSettings.resources.push(resource);
+          inputs.bicep[this.name] = "azure-sql bicep";
+          console.log("ensure resource azure-sql in projectSettings");
+          console.log("generate bicep of azure-sql");
+        }
         return ok(undefined);
       },
     };
-    const actions: Action[] = [];
-    const solutionSetting = context.projectSetting.solutionSettings as AzureSolutionSettings;
-    if (solutionSetting.activeResourcePlugins.includes("azure-web-app")) {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: "azure-web-app.updateBicep",
-        inputs: { resource: "azure-sql" },
-      });
-    }
-    if (solutionSetting.activeResourcePlugins.includes("azure-function")) {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: "azure-function.updateBicep",
-        inputs: { resource: "azure-sql" },
-      });
-    }
-    if (actions.length > 0) {
+    const webApp = getResource(projectSettings, "azure-web-app");
+    const azureFunction = getResource(projectSettings, "azure-function");
+    if (webApp || azureFunction) {
+      const actions: Action[] = [genSqlBicep];
+      if (webApp) {
+        actions.push({
+          type: "call",
+          name: "call:azure-web-app.updateBicep",
+          required: false,
+          targetAction: "azure-web-app.updateBicep",
+          inputs: { resource: "azure-sql" },
+        });
+      }
+      if (azureFunction) {
+        actions.push({
+          type: "call",
+          name: "call:azure-function.updateBicep",
+          required: false,
+          targetAction: "azure-function.updateBicep",
+          inputs: { resource: "azure-sql" },
+        });
+      }
       const group: GroupAction = {
         type: "group",
         actions: actions,
@@ -100,20 +89,23 @@ export class AzureSqlResource implements ResourcePlugin {
     }
   }
   configure(
-    context: v2.Context,
+    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const configure: ProvisionAction = {
       name: "azure-sql.configure",
       type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["configure azure sql"]);
+      plan: (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: Inputs
+      ) => {
+        return ok(["configure azure-sql"]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: Inputs
       ): Promise<Result<undefined, FxError>> => {
-        console.log("configure azure sql");
+        console.log("configure azure-sql");
         return ok(undefined);
       },
     };

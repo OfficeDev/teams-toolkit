@@ -1,0 +1,72 @@
+{
+    "name": "fx.create",
+    "type": "group",
+    "inputs": {
+        "bicep": {}
+    },
+    "actions": [
+        {
+            "type": "group",
+            "name": "fx.init",
+            "actions": [
+                {
+                    "type": "function",
+                    "name": "fx.initConfig"
+                },
+                {
+                    "type": "call",
+                    "targetAction": "teams-manifest.init",
+                    "required": true
+                }
+            ]
+        },
+        {
+            "type": "group",
+            "name": "teams-tab.add",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "name": "teams-tab.add",
+                    "type": "function"
+                },
+                {
+                    "name": "call:tab-scaffold.generateCode",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "tab-scaffold.generateCode"
+                },
+                {
+                    "name": "call:azure-storage.generateBicep",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "azure-storage.generateBicep"
+                },
+                {
+                    "name": "call:teams-manifest.addCapability",
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "teams-manifest.addCapability",
+                    "inputs": {
+                        "teams-manifest": {
+                            "capabilities": [
+                                {
+                                    "name": "staticTab"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "inputs": {
+                "teams-tab": {
+                    "framework": "react"
+                }
+            }
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "fx.persistBicep"
+        }
+    ]
+}

@@ -6,72 +6,69 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import {
   Action,
-  AddInstanceAction,
   DeployAction,
   GenerateBicepAction,
   MaybePromise,
   ProvisionAction,
-  ResourcePlugin,
+  AzureResource,
+  ProjectSettingsV3,
+  ContextV3,
+  ResourceConfig,
 } from "./interface";
+import { getResource } from "./workflow";
 
 @Service("azure-storage")
-export class AzureStorageResource implements ResourcePlugin {
+export class AzureStorageResource implements AzureResource {
   name = "azure-storage";
-  addInstance(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const addInstance: AddInstanceAction = {
-      name: "azure-storage.addInstance",
-      type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`,
-        ]);
-      },
-      execute: async (
-        context: v2.Context,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `ensure entry ${this.name} in projectSettings.solutionSettings.activeResourcePlugins`
-        );
-        if (!context.projectSetting.solutionSettings?.activeResourcePlugins.includes(this.name))
-          context.projectSetting.solutionSettings?.activeResourcePlugins.push(this.name);
-        return ok(undefined);
-      },
-    };
-    return ok(addInstance);
-  }
   generateBicep(
-    context: v2.Context,
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const generateBicep: GenerateBicepAction = {
       name: "azure-storage.generateBicep",
       type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["generate azure storage bicep"]);
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const resource = getResource(context.projectSetting as ProjectSettingsV3, "azure-function");
+        if (!resource) {
+          return ok([
+            "ensure resource 'azure-storage' in projectSettings",
+            "generate bicep of 'azure-storage'",
+          ]);
+        }
+        return ok([]);
       },
       execute: async (
-        context: v2.Context,
+        context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log("generate azure storage bicep");
-        inputs.bicep[this.name] = "azure storage bicep";
+        const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const resource = getResource(projectSettings, "azure-storage");
+        if (!resource) {
+          const resource: ResourceConfig = {
+            name: "azure-storage",
+            type: "cloud",
+          };
+          projectSettings.resources.push(resource);
+          inputs.bicep["azure-storage"] = `azure-storage bicep`;
+          console.log("ensure resource 'azure-storage' in projectSettings");
+          console.log("generate bicep of 'azure-storage'");
+        }
         return ok(undefined);
       },
     };
     return ok(generateBicep);
   }
   configure(
-    context: v2.Context,
+    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const configure: ProvisionAction = {
       name: "azure-storage.configure",
       type: "function",
-      plan: (context: v2.Context, inputs: Inputs) => {
+      plan: (
+        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+        inputs: Inputs
+      ) => {
         return ok(["configure azure storage (enable static web site)"]);
       },
       execute: async (
@@ -85,7 +82,7 @@ export class AzureStorageResource implements ResourcePlugin {
     return ok(configure);
   }
   deploy(
-    context: v2.Context,
+    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: DeployAction = {
@@ -95,13 +92,17 @@ export class AzureStorageResource implements ResourcePlugin {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ) => {
-        return ok([`deploy azure storage with path: ${inputs.path}, type: ${inputs.type}`]);
+        return ok([
+          `deploy azure storage with path: ${inputs["azure-storage"].path}, type: ${inputs["azure-storage"].type}`,
+        ]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log(`deploy azure storage with path: ${inputs.path}, type: ${inputs.type}`);
+        console.log(
+          `deploy azure storage with path: ${inputs["azure-storage"].path}, type: ${inputs["azure-storage"].type}`
+        );
         return ok(undefined);
       },
     };

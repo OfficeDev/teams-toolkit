@@ -1,115 +1,41 @@
 {
     "name": "fx.create",
     "type": "group",
+    "inputs": {
+        "bicep": {}
+    },
     "actions": [
         {
-            "type": "group",
-            "name": "fx.init",
-            "actions": [
-                {
-                    "type": "function",
-                    "name": "fx.initConfig"
-                },
-                {
-                    "type": "call",
-                    "targetAction": "teams-manifest.init",
-                    "required": true
-                }
-            ]
+            "type": "call",
+            "required": false,
+            "targetAction": "fx.init"
         },
         {
-            "name": "fx.add",
-            "type": "group",
-            "actions": [
-                {
-                    "type": "group",
-                    "name": "teams-tab.addInstance",
-                    "actions": [
-                        {
-                            "name": "teams-tab.register",
-                            "type": "function"
-                        },
-                        {
-                            "type": "call",
-                            "required": true,
-                            "targetAction": "teams-manifest.addCapability",
-                            "inputs": {
-                                "capabilities": [
-                                    "Tab"
-                                ]
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "teams-tab.generateCode",
-                    "type": "call",
-                    "required": true,
-                    "targetAction": "tab-scaffold.generateCode"
-                },
-                {
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "azure-storage.generateBicep"
-                },
-                {
-                    "type": "call",
-                    "required": true,
-                    "targetAction": "fx.persistBicep"
-                }
-            ],
+            "type": "call",
+            "required": false,
+            "targetAction": "teams-tab.add",
             "inputs": {
-                "resource": "teams-tab",
-                "framework": "react",
-                "hostingResource": "azure-storage"
+                "teams-tab": {
+                    "framework": "react"
+                }
             }
         },
         {
-            "name": "fx.add",
-            "type": "group",
-            "actions": [
-                {
-                    "type": "group",
-                    "name": "teams-bot.addInstance",
-                    "actions": [
-                        {
-                            "name": "teams-bot.addInstance",
-                            "type": "function"
-                        },
-                        {
-                            "type": "call",
-                            "required": true,
-                            "targetAction": "teams-manifest.addCapability",
-                            "inputs": {
-                                "capabilities": [
-                                    "Bot"
-                                ]
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "teams-bot.generateCode",
-                    "type": "call",
-                    "required": true,
-                    "targetAction": "bot-scaffold.generateCode"
-                },
-                {
-                    "type": "call",
-                    "required": true,
-                    "targetAction": "azure-function.generateBicep"
-                },
-                {
-                    "type": "call",
-                    "required": true,
-                    "targetAction": "fx.persistBicep"
-                }
-            ],
+            "type": "call",
+            "required": false,
+            "targetAction": "teams-bot.add",
             "inputs": {
-                "resource": "teams-bot",
-                "scenario": "notification",
-                "hostingResource": "azure-function"
+                "teams-bot": {
+                    "scenarios": [
+                        "notification"
+                    ]
+                }
             }
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "fx.persistBicep"
         }
     ]
 }

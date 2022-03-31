@@ -24,9 +24,9 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\workflow\\test.js",
+      "program": "${workspaceFolder}\\build\\core\\workflow\\testProvision.js",
       "args": [
-        "create-tab-bot"
+        "create-tab"
       ],
       "outFiles": [
           "${workspaceFolder}/**/*.js"

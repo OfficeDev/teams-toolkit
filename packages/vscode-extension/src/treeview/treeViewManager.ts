@@ -161,7 +161,7 @@ class TreeViewManager {
     this.registerAccount(disposables);
     this.registerEnvironment(disposables);
 
-    const isNonSPFx = (workspacePath && !(await isSPFxProject(workspacePath))) as boolean;
+    const isNonSPFx = (workspacePath && !isSPFxProject(workspacePath)) as boolean;
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
     this.registerDevelopment(developmentCommands, disposables);
@@ -209,19 +209,6 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
     ];
-    if (isInitAppEnabled()) {
-      // insert the init tree view command after the create project command
-      developmentCommand.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.initProjectDescription"),
-          "fx-extension.init",
-          initProjectHandler,
-          "initProject",
-          { name: "new-folder", custom: false }
-        )
-      );
-    }
     developmentCommand.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),

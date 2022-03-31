@@ -74,7 +74,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       for (const item of envNames) {
         showEnvList.push(item);
         const envInfo = await getCurrentEnvInfo(workspacePath, item);
-        const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+        const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
 
         environmentTreeProvider.add([
           {
@@ -265,7 +265,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
   }
 
   // Check Azure account status
-  const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+  const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
   if (!isSpfxProject) {
     if (AzureAccountManager.getAccountInfo() !== undefined) {
       const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

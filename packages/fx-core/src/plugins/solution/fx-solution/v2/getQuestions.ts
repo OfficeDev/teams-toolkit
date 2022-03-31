@@ -46,17 +46,19 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
-import { isV3 } from "../../../..";
+import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { NoCapabilityFoundError } from "../../../../core";
+import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { handleSelectionConflict } from "../../../../core/question";
-import { isAadManifestEnabled } from "../../../../common";
-import { isBotNotificationEnabled } from "../../../../common";
-import { ProgrammingLanguageQuestion } from "../../../../core/question";
+import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import {
+  ProgrammingLanguageQuestion,
+  onChangeSelectionForCapabilities,
+  validateCapabilities,
+} from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function getQuestionsForScaffolding(
@@ -398,33 +400,6 @@ export async function getQuestionsForUserTask(
   return ok(undefined);
 }
 
-async function validateAddCapability(input: string[]): Promise<string | undefined> {
-  if (
-    input.includes(NotificationOptionItem.id) &&
-    input.includes(CommandAndResponseOptionItem.id)
-  ) {
-    return getLocalizedString("core.addCapabilityQuestion.notificationCommandAndResponseConflict");
-  }
-
-  // undefined for success
-  return undefined;
-}
-
-async function onDidChangeSelectionForAddCapability(
-  currentSelectedIds: Set<string>,
-  previousSelectedIds: Set<string>
-): Promise<Set<string>> {
-  return handleSelectionConflict(
-    [
-      new Set([BotOptionItem.id, MessageExtensionItem.id]),
-      new Set([NotificationOptionItem.id]),
-      new Set([CommandAndResponseOptionItem.id]),
-    ],
-    previousSelectedIds,
-    currentSelectedIds
-  );
-}
-
 export async function getQuestionsForAddCapability(
   ctx: v2.Context,
   inputs: Inputs,
@@ -440,9 +415,9 @@ export async function getQuestionsForAddCapability(
     staticOptions: [],
     default: [],
     validation: {
-      validFunc: validateAddCapability,
+      validFunc: validateCapabilities,
     },
-    onDidChangeSelection: onDidChangeSelectionForAddCapability,
+    onDidChangeSelection: onChangeSelectionForCapabilities,
   };
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
@@ -453,6 +428,7 @@ export async function getQuestionsForAddCapability(
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      TabSPFxItem,
     ];
     return ok(new QTreeNode(addCapQuestion));
   }
@@ -512,8 +488,26 @@ export async function getQuestionsForAddCapability(
     }
   }
   if (isMEAddable) options.push(MessageExtensionItem);
+
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
+
+  // mini app can add SPFx tab
+  if (!settings) {
+    options.push(TabSPFxItem);
+    const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+    if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
+      const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (result.isErr()) {
+        return result;
+      }
+      const spfxQuestionNode = result.value;
+      if (spfxQuestionNode) {
+        spfxQuestionNode.condition = { contains: TabSPFxItem.id };
+        addCapNode.addChild(spfxQuestionNode);
+      }
+    }
+  }
 
   if (isBotNotificationEnabled()) {
     // Hardcoded to call bot plugin to get notification trigger questions.

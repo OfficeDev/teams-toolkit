@@ -43,7 +43,6 @@ import {
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -198,7 +197,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
   appStudioToken?: Record<string, unknown>,
-  envInfo?: EnvInfoV2
+  envInfo?: v2.EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {

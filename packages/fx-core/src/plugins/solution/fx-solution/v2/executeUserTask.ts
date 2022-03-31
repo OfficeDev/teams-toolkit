@@ -34,8 +34,8 @@ import {
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { OperationNotPermittedError } from "../../../../core/error";
-import { CoreQuestionNames } from "../../../../core/question";
+import { InvalidInputError, OperationNotPermittedError } from "../../../../core/error";
+import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -59,11 +59,13 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
   SsoItem,
   TabNonSsoItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -248,6 +250,7 @@ export async function addCapability(
 
   // 1. checking addable
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let isMiniApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -265,6 +268,7 @@ export async function addCapability(
         spaces: 4,
       });
     }
+    isMiniApp = true;
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: Inputs = {
@@ -288,6 +292,15 @@ export async function addCapability(
     });
     return ok({});
   }
+  const validateRes = validateCapabilities(capabilitiesAnswer);
+  if (validateRes) {
+    return err(InvalidInputError(validateRes));
+  }
+  // add spfx tab is not permitted for non-mini app
+  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id)) {
+    return err(InvalidInputError(getLocalizedString("core.capability.validation.spfx")));
+  }
+
   // normalize capability answer
   const scenarios: BotScenario[] = [];
   const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
@@ -313,7 +326,7 @@ export async function addCapability(
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-
+  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxItem.id);
   if (isAadManifestEnabled()) {
     if (alreadyHasSso && toAddTabNonSso) {
       const e = new SystemError(
@@ -391,105 +404,115 @@ export async function addCapability(
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   const vsProject = isVSProject(ctx.projectSetting);
-  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
-    pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
-  }
-  if (
-    !isAadManifestEnabled() &&
-    !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
-  ) {
-    pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
-  }
 
-  // 4. check Tab
-  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasTab) {
-        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    } else {
-      if (!alreadyHasTab) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    }
+  // check SPFx
+  if (toAddSpfx) {
+    pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
     capabilitiesToAddManifest.push({ name: "staticTab" });
-    newCapabilitySet.add(TabOptionItem.id);
-  }
-  // 5. check Bot
-  if (capabilitiesAnswer.includes(BotOptionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    } else {
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
+    capabilitiesToAddManifest.push({ name: "configurableTab" });
+    newCapabilitySet.add(TabSPFxItem.id);
+    solutionSettings.hostType = HostTypeOptionSPFx.id;
+  } else {
+    if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
+      pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
     }
-    capabilitiesToAddManifest.push({ name: "Bot" });
-    newCapabilitySet.add(BotOptionItem.id);
-  }
-  // 6. check MessageExtension
-  if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    } else {
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
+    if (
+      !isAadManifestEnabled() &&
+      !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+    ) {
+      pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
     }
-    capabilitiesToAddManifest.push({ name: "MessageExtension" });
-    newCapabilitySet.add(MessageExtensionItem.id);
+
+    // 4. check Tab
+    if (toAddTab) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasTab) {
+          pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, true, false, true);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      } else {
+        if (!alreadyHasTab) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, true, false);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      }
+      capabilitiesToAddManifest.push({ name: "staticTab" });
+      newCapabilitySet.add(TabOptionItem.id);
+    }
+    // 5. check Bot
+    if (toAddBot) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      } else {
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      }
+      capabilitiesToAddManifest.push({ name: "Bot" });
+      newCapabilitySet.add(BotOptionItem.id);
+    }
+    // 6. check MessageExtension
+    if (toAddME) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      } else {
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+
+          if (isAadManifestEnabled() && alreadyHasSso) {
+            const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
+            if (createAuthFilesRes.isErr()) {
+              return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
+            }
+          }
+        }
+      }
+      capabilitiesToAddManifest.push({ name: "MessageExtension" });
+      newCapabilitySet.add(MessageExtensionItem.id);
+    }
   }
 
   // 7. update solution settings
@@ -497,6 +520,7 @@ export async function addCapability(
   setActivatedResourcePluginsV2(ctx.projectSetting);
 
   if (
+    !toAddSpfx &&
     !isAadManifestEnabled() &&
     !solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
   ) {
@@ -530,7 +554,7 @@ export async function addCapability(
     }
   }
   // 4. update manifest
-  if (capabilitiesToAddManifest.length > 0 || pluginsToScaffold.length > 0) {
+  if (capabilitiesToAddManifest.length > 0) {
     await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
@@ -568,9 +592,10 @@ async function scaffoldCodeAndResourceTemplate(
   inputs: Inputs,
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
-  pluginsToDoArm?: v2.ResourcePlugin[]
+  pluginsToDoArm?: v2.ResourcePlugin[],
+  concurrent = true
 ): Promise<Result<unknown, FxError>> {
-  const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
+  const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold, concurrent);
   if (result.isErr()) {
     return result;
   }

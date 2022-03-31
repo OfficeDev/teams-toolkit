@@ -62,7 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
-    "onCommand:fx-extension.addApiConnector",
+    "onCommand:fx-extension.connectExistingApi",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
@@ -87,10 +87,6 @@
       {
         "view": "teamsfx-empty-project",
         "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-and-init",
-        "contents": "To start Teams app development experience, create a new Teams app or initialize your application with Teams Toolkit.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Initialize an existing application](command:fx-extension.init?%5B%22SideBar%22%5D)\nYou can also explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -142,11 +138,6 @@
           "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
         },
         {
-          "id": "teamsfx-empty-project-and-init",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isInitAppEnabled"
-        },
-        {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.default && fx-extension.canUpgradeToArmAndMultiEnv"
@@ -167,6 +158,11 @@
         },
         {
           "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.createAccount",
           "when": "view == teamsfx-accounts",
           "group": "navigation@1"
         },
@@ -446,11 +442,6 @@
         "enablement": "fx-extension.isM365AppEnabled"
       },
       {
-        "command": "fx-extension.init",
-        "title": "Teams: Initialize your application with Teams Toolkit",
-        "enablement": "fx-extension.isInitAppEnabled"
-      },
-      {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
         "enablement": "!fx-extension.isSPFx"
@@ -470,7 +461,8 @@
       },
       {
         "command": "fx-extension.connectExistingApi",
-        "title": "%teamstoolkit.commands.connectExistingApi.title%"
+        "title": "%teamstoolkit.commands.connectExistingApi.title%",
+        "enablement": "fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -625,6 +617,11 @@
         "command": "fx-extension.openAccountLink",
         "title": "%teamstoolkit.commands.accountsLink.title%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.createAccount",
+        "title": "%teamstoolkit.commands.createAccount.title%",
+        "icon": "$(add)"
       },
       {
         "command": "fx-extension.openEnvLink",
@@ -902,11 +899,6 @@
             "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
             "default": false
           },
-          "fx-extension.enableInitApp": {
-            "type": "boolean",
-            "description": "Support to initialize a TeamsFx application. (requires reload of VS Code)",
-            "default": false
-          },
           "fx-extension.enableNotification / CommandAndResponseBot": {
             "type": "boolean",
             "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
@@ -938,7 +930,7 @@
     "walkthroughs": [
       {
         "id": "teamsToolkitQuickStart",
-        "title": "Get started with Teams toolkit",
+        "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {
@@ -957,6 +949,14 @@
             "media": {
               "svg": "media/Create.svg",
               "altText": "Build your first Teams app"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateFreeAccount",
+            "title": "Create a M365 testing tenant for free",
+            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "media": {
+              "markdown": "media/itp/itp.md"
             }
           },
           {

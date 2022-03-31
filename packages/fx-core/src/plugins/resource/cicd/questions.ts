@@ -41,9 +41,30 @@ export const provisionOption: OptionItem = {
 
 export const publishOption: OptionItem = {
   id: "publish",
-  label: "Publish",
+  label: "Publish to Teams",
   detail: getLocalizedString("plugins.cicd.publishOption.detail"),
 };
+
+const templateIdLabelMap = new Map<string, string>([
+  [ciOption.id, ciOption.label],
+  [cdOption.id, cdOption.label],
+  [provisionOption.id, provisionOption.label],
+  [publishOption.id, publishOption.label],
+]);
+
+const providerIdLabelMap = new Map<string, string>([
+  [githubOption.id, githubOption.label],
+  [azdoOption.id, azdoOption.label],
+  [jenkinsOption.id, jenkinsOption.label],
+]);
+
+export function templateIdToLabel(templateId: string): string {
+  return templateIdLabelMap.get(templateId) ?? templateId;
+}
+
+export function providerIdToLabel(providerId: string): string {
+  return providerIdLabelMap.get(providerId) ?? providerId;
+}
 
 export enum questionNames {
   Provider = "provider",

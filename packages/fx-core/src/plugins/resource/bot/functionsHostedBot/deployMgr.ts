@@ -40,11 +40,17 @@ export class FuncHostedDeployMgr {
     }
   }
 
-  public async needsToRedeploy(ignoreRules: string[]): Promise<boolean> {
+  public async needsToRedeploy(): Promise<boolean> {
     try {
       const lastDeployTime = await this.getLastDeployTime();
       // Always ignore node_modules folder and bin folder and the file ignored both by git and func.
-      const ignore = await FuncHostedDeployMgr.prepareIgnore(ignoreRules);
+      const defaultIgnore = await FuncHostedDeployMgr.prepareIgnore([FolderNames.NODE_MODULES]);
+      const funcIgnoreRules = await this.getIgnoreRules(
+        FuncHostedBotDeployConfigs.FUNC_IGNORE_FILE
+      );
+      const funcIgnore = await FuncHostedDeployMgr.prepareIgnore(funcIgnoreRules);
+      const gitIgnoreRules = await this.getIgnoreRules(FuncHostedBotDeployConfigs.GIT_IGNORE_FILE);
+      const gitIgnore = await FuncHostedDeployMgr.prepareIgnore(gitIgnoreRules);
 
       let changed = false;
       await forEachFileAndDir(
@@ -53,7 +59,12 @@ export class FuncHostedDeployMgr {
           // Don't check the modification time of .deployment folder.
           const relativePath = path.relative(this.workingDir, itemPath);
 
-          if (relativePath && !ignore.test(relativePath).ignored && lastDeployTime < stats.mtime) {
+          if (
+            relativePath &&
+            !defaultIgnore.test(relativePath).ignored &&
+            !(funcIgnore.test(relativePath).ignored && gitIgnore.test(relativePath).ignored) &&
+            lastDeployTime < stats.mtime
+          ) {
             changed = true;
             // Return true to stop walking.
             return true;
@@ -113,8 +124,6 @@ export class FuncHostedDeployMgr {
     const normalizeTime = (t: number) => Math.floor(t / CommonConstants.zipTimeMSGranularity);
 
     const zip = (await this.loadLastDeploymentZipCache()) || new AdmZip();
-
-    // TODO: update .funcignore in template
     const ig = await FuncHostedDeployMgr.prepareIgnore(rules);
     const tasks: Promise<void>[] = [];
     const zipFiles = new Set<string>();

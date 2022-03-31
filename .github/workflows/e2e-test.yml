@@ -54,6 +54,7 @@ jobs:
         id: list-jobs
         working-directory: packages/sdk
         run: |
+          ls -alh
           lists=""
 
           total_node=`cat test-results.node.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`

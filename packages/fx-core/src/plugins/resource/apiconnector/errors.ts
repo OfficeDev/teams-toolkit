@@ -63,10 +63,9 @@ export class ErrorMessage {
 
   public static readonly generateApiConFilesError = {
     name: "ScaffoldApiFilesError",
-    message: (pathName: string, reason: string) =>
+    message: (reason: string) =>
       getLocalizedString(
         `error.apiConnector.${ErrorMessage.generateApiConFilesError.name}`,
-        pathName,
         reason
       ),
   };

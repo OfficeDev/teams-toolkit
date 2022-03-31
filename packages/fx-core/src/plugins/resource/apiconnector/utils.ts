@@ -30,13 +30,8 @@ export enum AuthType {
 
 export function generateTempFolder(): string {
   const timestamp = Date.now();
-  const backupFolderName = "backup-" + timestamp;
+  const backupFolderName = "ApiConnectorBackup-" + timestamp;
   return backupFolderName;
-}
-
-export function getSampleCodeFileName(ApiName: string, languageType: string): string {
-  const fileEx = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
-  return ApiName + "." + fileEx;
 }
 
 export async function copyFileIfExist(srcFile: string, targetFile: string) {

@@ -399,7 +399,7 @@
   "error.dotnet.FetchConfigError": "Failed to find %s from configuration",
   "error.dotnet.NoProjectSettingError": "Failed to load project setting",
   "error.dotnet.UnhandledError": "Unhandled error.",
-  "error.apiConnector.SampleCodeCreateFailError": "Failed to generate sample code in component %s. Reason: %s",
+  "error.apiConnector.SampleCodeCreateFailError": "Failed to scaffold API connection samples. Reason: %s",
   "error.apiConnector.ScaffoldApiFilesError": "Failed to scaffold connect API files %s, Reason: %s",
   "error.apiConnector.ApiConnectorInputError": "Api connector input empty",
   "error.apiConnector.ApiConnectorPathNotExistError": "Path %s not exists. Select a valid folder.",

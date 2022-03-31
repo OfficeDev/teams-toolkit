@@ -5,12 +5,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import {
-  ApiConnectorConfiguration,
-  generateTempFolder,
-  getSampleCodeFileName,
-  copyFileIfExist,
-} from "./utils";
+import { ApiConnectorConfiguration, generateTempFolder, copyFileIfExist } from "./utils";
 import { Constants } from "./constants";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { EnvHandler } from "./envHandler";
@@ -41,8 +36,34 @@ export class ApiConnectorImpl {
     const projectPath = inputs.projectPath;
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
-    for (const componentItem of config.ComponentPath) {
-      await this.scaffoldInComponent(projectPath, componentItem, config, languageType);
+    // backup relative files.
+    const backupFolderName = generateTempFolder();
+    const componentFolders: string[] = [];
+    config.ComponentPath.forEach((item) => componentFolders.push(path.join(projectPath, item)));
+    componentFolders.forEach(async (componentPath) => {
+      await this.backupExistingFiles(componentPath, backupFolderName);
+    });
+
+    try {
+      config.ComponentPath.forEach(async (componentItem) => {
+        await this.scaffoldInComponent(projectPath, componentItem, config, languageType);
+      });
+    } catch (err) {
+      componentFolders.forEach(async (componentPath) => {
+        await fs.move(path.join(componentPath, backupFolderName), componentPath, {
+          overwrite: true,
+        });
+      });
+      throw ResultFactory.SystemError(
+        ErrorMessage.generateApiConFilesError.name,
+        ErrorMessage.generateApiConFilesError.message(err.message)
+      );
+    } finally {
+      componentFolders.forEach(async (componentPath) => {
+        if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
+          await fs.remove(path.join(path.join(componentPath, backupFolderName)));
+        }
+      });
     }
     return ResultFactory.Success();
   }
@@ -52,40 +73,17 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ): Promise<ApiConnectorResult> {
-    const componentPath = path.join(projectPath, componentItem);
-    const backupFolderName = generateTempFolder();
-    const sampleFileName = getSampleCodeFileName(config.APIName, languageType);
-    await this.backupExistingFiles(componentPath, sampleFileName, backupFolderName);
-    try {
-      await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-      await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-      // await this.addSDKDependency(ComponentPath);
-    } catch (err) {
-      await fs.move(path.join(componentPath, backupFolderName), componentPath, {
-        overwrite: true,
-      });
-      throw ResultFactory.SystemError(
-        ErrorMessage.generateApiConFilesError.name,
-        ErrorMessage.generateApiConFilesError.message(componentPath, err.message)
-      );
-    } finally {
-      if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
-        await fs.remove(path.join(componentPath, backupFolderName));
-      }
-    }
-    return ResultFactory.Success();
+  ) {
+    await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
+    await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
+    // await this.addSDKDependency(ComponentPath);
   }
 
-  private async backupExistingFiles(folderPath: string, sampleFile: string, backupFolder: string) {
+  private async backupExistingFiles(folderPath: string, backupFolder: string) {
     await fs.ensureDir(path.join(folderPath, backupFolder));
     await copyFileIfExist(
       path.join(folderPath, Constants.envFileName),
       path.join(folderPath, backupFolder, Constants.envFileName)
-    );
-    await copyFileIfExist(
-      path.join(folderPath, sampleFile),
-      path.join(folderPath, backupFolder, sampleFile)
     );
     await copyFileIfExist(
       path.join(folderPath, Constants.pkgJsonFile),

@@ -167,7 +167,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           },
           parent: "fx-extension.signinM365",
           contextValue: "checkSideloading",
-          icon: "warning",
+          icon: "error",
           tooltip: {
             isMarkdown: false,
             value: localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),

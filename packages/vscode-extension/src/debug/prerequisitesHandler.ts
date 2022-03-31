@@ -739,12 +739,10 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        `${failures.length}/${results.length}`,
         "[output panel](command:fx-extension.showOutputChannel)"
       );
       const displayMessage = util.format(
         localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        `${failures.length}/${results.length}`,
         "[output panel](command:fx-extension.showOutputChannel)"
       );
       const errorOptions: UserErrorOptions = {

@@ -45,4 +45,4 @@ export {
 } from "./conversation/notification.browser";
 
 export { ConversationBot, ConversationOptions } from "./conversation/conversation.browser";
-export { MessageBuilder } from "./conversation/messageBuilder";
+// export { MessageBuilder } from "./conversation/messageBuilder";

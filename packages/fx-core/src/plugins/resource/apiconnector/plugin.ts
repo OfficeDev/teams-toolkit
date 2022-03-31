@@ -38,22 +38,20 @@ export class ApiConnectorImpl {
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
     // backup relative files.
     const backupFolderName = generateTempFolder();
-    config.ComponentPath.forEach(async (compoenent) => {
-      await this.backupExistingFiles(path.join(projectPath, compoenent), backupFolderName);
+    config.ComponentPath.forEach(async (component) => {
+      await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
     });
 
     try {
-      config.ComponentPath.forEach(async (componentItem) => {
-        await this.scaffoldInComponent(projectPath, componentItem, config, languageType);
+      config.ComponentPath.forEach(async (component) => {
+        await this.scaffoldInComponent(projectPath, component, config, languageType);
       });
     } catch (err) {
       config.ComponentPath.forEach(async (component) => {
         await fs.move(
           path.join(projectPath, component, backupFolderName),
           path.join(projectPath, component),
-          {
-            overwrite: true,
-          }
+          { overwrite: true }
         );
       });
       throw ResultFactory.SystemError(

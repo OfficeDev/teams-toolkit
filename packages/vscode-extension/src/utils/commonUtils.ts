@@ -220,10 +220,6 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
-
-  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
-    ConfigurationKey.BotNotificationCommandAndResponseEnabled
-  ).toString();
 }
 
 export class FeatureFlags {

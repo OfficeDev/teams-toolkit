@@ -1081,6 +1081,7 @@ export async function createAuthFiles(
         await unzip(sampleZip, botFolder);
       }
     } catch (error) {
+      // TODO: remove added code
       const e = new SystemError(
         SolutionError.FailedToCreateAuthFiles,
         getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),

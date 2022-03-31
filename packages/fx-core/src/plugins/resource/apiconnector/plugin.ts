@@ -5,7 +5,13 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { ApiConnectorConfiguration, generateTempFolder, copyFileIfExist } from "./utils";
+import {
+  ApiConnectorConfiguration,
+  generateTempFolder,
+  copyFileIfExist,
+  removeFileIfExist,
+  getSampleFileName,
+} from "./utils";
 import { Constants } from "./constants";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { EnvHandler } from "./envHandler";
@@ -38,32 +44,44 @@ export class ApiConnectorImpl {
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
     // backup relative files.
     const backupFolderName = generateTempFolder();
-    config.ComponentPath.forEach(async (component) => {
-      await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
-    });
+    await Promise.all(
+      config.ComponentPath.map(async (component) => {
+        await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
+      })
+    );
 
     try {
-      config.ComponentPath.forEach(async (component) => {
-        await this.scaffoldInComponent(projectPath, component, config, languageType);
-      });
+      await Promise.all(
+        config.ComponentPath.map(async (component) => {
+          await this.scaffoldInComponent(projectPath, component, config, languageType);
+        })
+      );
     } catch (err) {
-      config.ComponentPath.forEach(async (component) => {
-        await fs.move(
-          path.join(projectPath, component, backupFolderName),
-          path.join(projectPath, component),
-          { overwrite: true }
-        );
-      });
+      await Promise.all(
+        config.ComponentPath.map(async (component) => {
+          await fs.copy(
+            path.join(projectPath, component, backupFolderName),
+            path.join(projectPath, component),
+            { overwrite: true }
+          );
+          await this.removeSampleFilesWhenRestore(
+            projectPath,
+            component,
+            config.APIName,
+            languageType
+          );
+        })
+      );
       throw ResultFactory.SystemError(
         ErrorMessage.generateApiConFilesError.name,
         ErrorMessage.generateApiConFilesError.message(err.message)
       );
     } finally {
-      config.ComponentPath.forEach(async (component) => {
-        if (await fs.pathExists(path.join(projectPath, component, backupFolderName))) {
-          await fs.remove(path.join(path.join(projectPath, component, backupFolderName)));
-        }
-      });
+      await Promise.all(
+        config.ComponentPath.map(async (component) => {
+          await removeFileIfExist(path.join(projectPath, component, backupFolderName));
+        })
+      );
     }
     return ResultFactory.Success();
   }
@@ -93,6 +111,17 @@ export class ApiConnectorImpl {
       path.join(folderPath, Constants.pkgLockFile),
       path.join(folderPath, backupFolder, Constants.pkgLockFile)
     );
+  }
+
+  private async removeSampleFilesWhenRestore(
+    projectPath: string,
+    component: string,
+    apiName: string,
+    languageType: string
+  ) {
+    const apiFileName = getSampleFileName(apiName, languageType);
+    const sampleFilePath = path.join(projectPath, component, apiFileName);
+    await removeFileIfExist(sampleFilePath);
   }
 
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {

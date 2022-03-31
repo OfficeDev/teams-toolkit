@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { Constants } from "./constants";
 export class ErrorMessage {
   public static readonly InvalidProjectError = {
     name: "InvalidProjectError",

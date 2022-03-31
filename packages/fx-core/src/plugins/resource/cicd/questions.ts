@@ -46,15 +46,24 @@ export const publishOption: OptionItem = {
 };
 
 export function templateIdToLabel(templateId: string): string {
-  const templateOptions = [ciOption, cdOption, provisionOption, publishOption];
-  const findResult = templateOptions.find((option) => option.id === templateId);
-  return findResult ? findResult.label : templateId;
+  const templateIdLabelMap = new Map<string, string>([
+    [ciOption.id, ciOption.label],
+    [cdOption.id, cdOption.label],
+    [provisionOption.id, provisionOption.label],
+    [publishOption.id, publishOption.label],
+  ]);
+
+  return templateIdLabelMap.get(templateId) ?? templateId;
 }
 
 export function providerIdToLabel(providerId: string): string {
-  const providerOptions = [githubOption, azdoOption, jenkinsOption];
-  const findResult = providerOptions.find((option) => option.id === providerId);
-  return findResult ? findResult.label : providerId;
+  const providerIdLabelMap = new Map<string, string>([
+    [githubOption.id, githubOption.label],
+    [azdoOption.id, azdoOption.label],
+    [jenkinsOption.id, jenkinsOption.label],
+  ]);
+
+  return providerIdLabelMap.get(providerId) ?? providerId;
 }
 
 export enum questionNames {

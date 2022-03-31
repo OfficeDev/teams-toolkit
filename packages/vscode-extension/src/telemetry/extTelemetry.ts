@@ -13,7 +13,8 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser } from "../utils/commonUtils";
+import { getIsExistingUser, isSPFxProject } from "../utils/commonUtils";
+import { ext } from "../extensionVariables";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -84,6 +85,9 @@ export namespace ExtTelemetry {
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
+    const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+    properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
@@ -124,6 +128,9 @@ export namespace ExtTelemetry {
       error.stack ? "\nstack:\n" + error.stack : ""
     }`;
 
+    const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+    properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
@@ -149,6 +156,9 @@ export namespace ExtTelemetry {
 
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+
+    const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+    properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();

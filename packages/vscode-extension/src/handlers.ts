@@ -1419,7 +1419,7 @@ export async function openReadMeHandler(args: any[]) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isSPFxProject(workspacePath)) {
+    if (isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
     } else if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
@@ -1832,7 +1832,7 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
 
       let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
       let helpUrl = AzureAssignRoleHelpUrl;
-      if (await isSPFxProject(ext.workspaceUri.fsPath)) {
+      if (isSPFxProject(ext.workspaceUri.fsPath)) {
         warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
         helpUrl = SpfxManageSiteAdminUrl;
       }

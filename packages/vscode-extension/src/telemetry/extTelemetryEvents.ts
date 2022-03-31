@@ -215,6 +215,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsSpfx = "is-spfx",
   IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",

@@ -161,7 +161,7 @@ class TreeViewManager {
     this.registerAccount(disposables);
     this.registerEnvironment(disposables);
 
-    const isNonSPFx = (workspacePath && !(await isSPFxProject(workspacePath))) as boolean;
+    const isNonSPFx = (workspacePath && !isSPFxProject(workspacePath)) as boolean;
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
     this.registerDevelopment(developmentCommands, disposables);

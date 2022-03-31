@@ -41,6 +41,7 @@ export class TelemetryKey {
   static readonly Success = "success";
   static readonly ErrorType = "error-type";
   static readonly ErrorMessage = "error-message";
+  static readonly ErrorCode = "error-code";
 }
 
 export class TelemetryValue {

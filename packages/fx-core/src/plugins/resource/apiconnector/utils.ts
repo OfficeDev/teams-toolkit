@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-
+import { LanguageType, FileType } from "./constants";
 export interface ApiConnectorConfiguration extends Record<any, any> {
   ComponentPath: string[];
   APIName: string;
@@ -25,4 +25,15 @@ export enum AuthType {
   AAD = "Azure Active Directory",
   CERT = "certificate",
   OTHERS = "Others",
+}
+
+export function generateTempFolder(): string {
+  const timestamp = Date.now();
+  const backupFolderName = "backup-" + timestamp;
+  return backupFolderName;
+}
+
+export function getSampleCodeFileName(ApiName: string, languageType: string): string {
+  const fileEx = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
+  return ApiName + "." + fileEx;
 }

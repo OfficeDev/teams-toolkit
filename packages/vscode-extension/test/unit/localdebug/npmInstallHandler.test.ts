@@ -14,6 +14,7 @@ import * as extension from "../../../src/extension";
 import { ext } from "../../../src/extensionVariables";
 import * as teamsfxTaskHandler from "../../../src/debug/teamsfxTaskHandler";
 import { automaticNpmInstallHandler } from "../../../src/debug/npmInstallHandler";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 
 suite("npmInstallHandler", () => {
   suite("automaticNpmInstallHandler", () => {
@@ -45,12 +46,15 @@ suite("npmInstallHandler", () => {
     let showMessageCalledCount: number;
 
     setup(() => {
+      sinon.restore();
       sinon.stub(vscode.workspace, "workspaceFolders").value([workspaceFolder]);
       globalStateGetStub = sinon.stub(globalState, "globalStateGet").callsFake(async () => state);
       globalStateUpdateStub = sinon
         .stub(globalState, "globalStateUpdate")
         .callsFake(async (key, value) => (state = value));
       sinon.stub(commonUtils, "getConfiguration").returns(true);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       solutionSettings.hostType = "Azure";
       solutionSettings.capabilities = [];
       solutionSettings.azureResources = [];

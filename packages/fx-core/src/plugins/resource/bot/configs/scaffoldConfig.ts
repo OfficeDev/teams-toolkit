@@ -3,17 +3,20 @@
 import * as utils from "../utils/common";
 import { Inputs, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import {
+  BotCapabilities,
+  BotCapability,
   CommonStrings,
   HostType,
   HostTypes,
   NotificationTrigger,
-  NotificationTriggers,
   PluginBot,
+  QuestionBotScenarioToBotCapability,
 } from "../resources/strings";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
 import { QuestionNames } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -23,6 +26,8 @@ export class ScaffoldConfig {
   public workingDir?: string;
   public hostType?: HostType;
   public triggers: NotificationTrigger[] = [];
+  // empty array for legacy bot
+  public botCapabilities: BotCapability[] = [];
 
   public botAADCreated(): boolean {
     if (this.botId && this.botPassword) {
@@ -31,7 +36,10 @@ export class ScaffoldConfig {
     return false;
   }
 
-  public async restoreConfigFromContext(context: PluginContext): Promise<void> {
+  public async restoreConfigFromContext(
+    context: PluginContext,
+    isScaffold: boolean
+  ): Promise<void> {
     this.workingDir = path.join(context.root, CommonStrings.BOT_WORKING_DIR_NAME);
     this.botId = context.config.get(PluginBot.BOT_ID) as string;
     this.botPassword = context.config.get(PluginBot.BOT_PASSWORD) as string;
@@ -46,6 +54,8 @@ export class ScaffoldConfig {
     ) {
       this.programmingLanguage = rawProgrammingLanguage;
     }
+
+    this.botCapabilities = ScaffoldConfig.getBotCapabilities(context, isScaffold);
 
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
 
@@ -66,17 +76,18 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
     utils.checkAndSavePluginSetting(context, PluginBot.HOST_TYPE, this.hostType);
+    utils.checkAndSavePluginSetting(context, PluginBot.BOT_CAPABILITIES, this.botCapabilities);
   }
 
   /**
    * Get bot host type from plugin context.
-   * For stages like scaffolding, the host type is from user inputs of question model (i.e. context.answers).
+   * For stages like scaffolding (including create new and add capability),
+   *    the host type is from user inputs of question model (i.e. context.answers).
    * For later stages, the host type is persisted in projectSettings.json.
+   * @param isScaffold true for the `scaffold` lifecycle, false otherwise.
    */
-  public static getBotHostType(context: PluginContext): HostType | undefined {
-    // TODO: support other stages (maybe addCapability)
-    const fromInputs = context.answers?.stage === Stage.create;
-    if (fromInputs) {
+  public static getBotHostType(context: PluginContext, isScaffold: boolean): HostType | undefined {
+    if (isScaffold) {
       return context.answers
         ? this.getHostTypeFromHostTypeTriggerQuestion(context.answers)
         : undefined;
@@ -103,5 +114,34 @@ export class ScaffoldConfig {
       PluginBot.HOST_TYPE
     ] as string;
     return utils.convertToConstValues(rawHostType, HostTypes);
+  }
+
+  private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {
+    if (isScaffold) {
+      // For scaffolding and addCapability, the bot capabilities are from user input (context.answers)
+      const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
+      if (Array.isArray(scenarios)) {
+        return scenarios
+          .map((item) => QuestionBotScenarioToBotCapability.get(item))
+          .filter((item): item is BotCapability => item !== undefined);
+      } else {
+        // for legacy bot
+        return [];
+      }
+    } else {
+      // For other lifecycles, from pluginSettings.json
+      const rawBotCapabilities =
+        context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+          PluginBot.BOT_CAPABILITIES
+        ];
+      if (Array.isArray(rawBotCapabilities)) {
+        return rawBotCapabilities
+          .map((botCapability) => utils.convertToConstValues(botCapability, BotCapabilities))
+          .filter((item): item is BotCapability => item != undefined);
+      } else {
+        // for legacy bot
+        return [];
+      }
+    }
   }
 }

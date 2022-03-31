@@ -22,12 +22,12 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { isUndefined } from "lodash";
+import { isUndefined, snakeCase } from "lodash";
 import { Container } from "typedi";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -95,9 +95,9 @@ export async function provisionResources(
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
+        "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`
       )
     );
   }
@@ -303,9 +303,9 @@ export async function checkAzureSubscription(
     } else {
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.SubscriptionNotFound,
-          "Failed to select subscription",
-          SolutionSource
+          "Failed to select subscription"
         )
       );
     }
@@ -320,6 +320,7 @@ export async function checkAzureSubscription(
   if (!targetSubInfo) {
     return err(
       new UserError(
+        SolutionSource,
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionIdInConfig}'(${
           envInfo.state.solution.subscriptionName
@@ -328,8 +329,7 @@ export async function checkAzureSubscription(
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
-        )}' file.`,
-        SolutionSource
+        )}' file.`
       )
     );
   }
@@ -366,9 +366,9 @@ export async function fillInAzureConfigs(
   if (azureToken === undefined) {
     return err(
       new UserError(
+        SolutionSource,
         SolutionError.NotLoginToAzure,
-        "Login to Azure using the Azure Account extension",
-        SolutionSource
+        "Login to Azure using the Azure Account extension"
       )
     );
   }
@@ -391,7 +391,7 @@ export async function fillInAzureConfigs(
   const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
   const resourceGroupLocationFromState = envInfo.state.solution.location;
   const appName = ctx.projectSetting.appName;
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}${"-" + envInfo.envName}-rg`;
+  const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   const telemetryProperties: { [key: string]: string } = {};
   if (inputs.env) {
@@ -417,9 +417,9 @@ export async function fillInAzureConfigs(
         // Currently we do not support creating resource group from command line arguments
         return err(
           new UserError(
+            SolutionSource,
             SolutionError.ResourceGroupNotFound,
-            `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`,
-            SolutionSource
+            `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`
           )
         );
       }
@@ -436,9 +436,9 @@ export async function fillInAzureConfigs(
       const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.ResourceGroupNotFound,
-          `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`,
-          SolutionSource
+          `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
         )
       );
     }
@@ -530,7 +530,7 @@ export async function askForProvisionConsent(
     if (confirm === "Pricing calculator") {
       ctx.userInteraction.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
     }
-    return err(new UserError("CancelProvision", "CancelProvision", SolutionSource));
+    return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
   }
   return ok(Void);
 }
@@ -546,9 +546,10 @@ export async function getM365TenantId(
   if (appstudioTokenJson === undefined) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoAppStudioToken,
-        "Graph token json is undefined",
-        SolutionSource
+        getDefaultString("error.NoAppStudioToken"),
+        getLocalizedString("error.NoAppStudioToken")
       )
     );
   }
@@ -556,9 +557,10 @@ export async function getM365TenantId(
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId,
-        "Cannot find Teams app tenant id",
-        SolutionSource
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
       )
     );
   }

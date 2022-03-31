@@ -14,6 +14,12 @@ import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
 import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../src/plugins/solution/fx-solution/question";
+import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
+import { BotHostTypes } from "../../../../src/common";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;
@@ -291,6 +297,112 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+
+      it(`happy path: app service hosted command and response bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+          pluginSettings: {
+            [PluginBot.PLUGIN_NAME]: {
+              [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
+              [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.COMMAND_AND_RESPONSE],
+            },
+          },
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+    });
+    const parameters99: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 7,
+        numLocalEnvs: 12,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+    ];
+    parameters99.forEach((parameter) => {
+      it(`happy path: func hosted bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+          pluginSettings: {
+            [PluginBot.PLUGIN_NAME]: {
+              [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
+              [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
+            },
+          },
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        // settings is the same as function projects
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.isTrue(
+          Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
+        );
+        chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
+        chai.assert.equal(Object.keys(settings).length, 4);
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
@@ -616,7 +728,7 @@ describe("solution.debug.scaffolding", () => {
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
       const compounds: [] = launch["compounds"];
-      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(configurations.length, 4);
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json

@@ -104,7 +104,7 @@ export class SimpleAuthPlugin implements Plugin {
           stage,
           UnhandledError.name,
           Telemetry.systemError,
-          UnhandledError.message(e?.message)
+          UnhandledError.message(e?.message)[0]
         );
         return err(
           ResultFactory.SystemError(UnhandledError.name, UnhandledError.message(e?.message), e)

@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogProvider, PluginContext, Result } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  BuildFolderName,
+  FxError,
+  LogProvider,
+  PluginContext,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckGrantPermissionConfig,
@@ -23,6 +30,10 @@ import {
   UnknownPermissionScope,
   GetConfigError,
   ConfigErrorMessages,
+  AadManifestMissingObjectId,
+  AadManifestMissingReplyUrlsWithType,
+  AadManifestMissingIdentifierUris,
+  AadManifestMissingName,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -42,7 +53,7 @@ import {
   RequiredResourceAccess,
   ResourceAccess,
 } from "./interfaces/IAADDefinition";
-import { validate as uuidValidate } from "uuid";
+import { validate as uuidValidate, v4 as uuidv4 } from "uuid";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -50,11 +61,17 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
-import { isConfigUnifyEnabled } from "../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
+import { AadAppManifestManager } from "./aadAppManifestManager";
+import { AADManifest } from "./interfaces/AADManifest";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      return await this.provisionUsingManifest(ctx, isLocalDebug);
+    }
+
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -136,6 +153,79 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
+  public async provisionUsingManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.StartProvision,
+      Messages.StartLocalDebug,
+      isLocalDebug
+    );
+
+    const telemetryMessage = isLocalDebug
+      ? Messages.EndLocalDebug.telemetry
+      : Messages.EndProvision.telemetry;
+
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+
+    // Move objectId etc. from input to output.
+    const skip = Utils.skipAADProvision(ctx, false);
+    DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
+
+    let config: ProvisionConfig = new ProvisionConfig(false);
+    await config.restoreConfigFromContext(ctx);
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
+
+    await DialogUtils.progress?.start(ProgressDetail.Starting);
+    if (manifest.id) {
+      if (!skip) {
+        await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
+        config = await AadAppClient.getAadAppUsingManifest(
+          telemetryMessage,
+          manifest.id,
+          config.password,
+          ctx.graphTokenProvider,
+          ctx.envInfo.envName
+        );
+        ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
+      }
+    } else {
+      await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
+      if (!manifest.name) {
+        throw ResultFactory.UserError(
+          AadManifestMissingName.name,
+          AadManifestMissingName.message()
+        );
+      }
+      await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
+      config.password = undefined;
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
+    }
+
+    if (!config.password) {
+      await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
+      await AadAppClient.createAadAppSecret(telemetryMessage, config);
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
+    }
+
+    await DialogUtils.progress?.end(true);
+    config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
+
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.EndProvision,
+      Messages.EndLocalDebug,
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+    );
+    return ResultFactory.Success();
+  }
+
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
@@ -155,6 +245,9 @@ export class AadAppForTeamsImpl {
   }
 
   public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      return await this.postProvisionUsingManifest(ctx, isLocalDebug);
+    }
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -208,6 +301,52 @@ export class AadAppForTeamsImpl {
       isLocalDebug,
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
+    return ResultFactory.Success();
+  }
+
+  public async postProvisionUsingManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<AadResult> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.StartPostProvision,
+      Messages.StartPostLocalDebug,
+      isLocalDebug
+    );
+
+    const skip = Utils.skipAADProvision(ctx, false);
+    DialogUtils.init(
+      ctx.ui,
+      ProgressTitle.PostProvisionUsingManifest,
+      ProgressTitle.PostProvisionUsingManifestSteps
+    );
+
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+
+    await DialogUtils.progress?.start(ProgressDetail.Starting);
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+
+    await AadAppClient.updateAadAppUsingManifest(
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
+      manifest,
+      skip
+    );
+
+    await this.writeManifestFileToBuildFolder(manifest, ctx);
+
+    await DialogUtils.progress?.end(true);
+
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.EndPostProvision,
+      Messages.EndPostLocalDebug,
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+    );
+
     return ResultFactory.Success();
   }
 
@@ -318,9 +457,7 @@ export class AadAppForTeamsImpl {
     if (!objectId) {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(
-          ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-        )
+        ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
       );
     }
 
@@ -586,5 +723,88 @@ export class AadAppForTeamsImpl {
     });
 
     return requiredResourceAccessList;
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<AadResult> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      TelemetryUtils.init(ctx);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartScaffold);
+
+      const templatesFolder = getTemplatesFolder();
+      const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
+      const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
+      await fs.ensureDir(appDir);
+      await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
+
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
+    }
+    return ResultFactory.Success();
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+      TelemetryUtils.init(ctx);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
+
+      const skip = Utils.skipAADProvision(ctx, false);
+      DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
+
+      await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+
+      await DialogUtils.progress?.start(ProgressDetail.Starting);
+
+      const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+
+      this.validateDeployManifest(manifest);
+
+      await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
+
+      await this.writeManifestFileToBuildFolder(manifest, ctx);
+      await DialogUtils.progress?.end(true);
+
+      Utils.addLogAndTelemetry(
+        ctx.logProvider,
+        Messages.EndDeploy,
+        skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+      );
+    }
+    return ResultFactory.Success();
+  }
+
+  private async writeManifestFileToBuildFolder(
+    manifest: AADManifest,
+    ctx: PluginContext
+  ): Promise<void> {
+    const aadManifestPath = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/aad.${ctx.envInfo.envName}.json`;
+    const manifestString = JSON.stringify(manifest, null, 4);
+    await fs.ensureDir(path.dirname(aadManifestPath));
+    await fs.writeFile(aadManifestPath, manifestString, "utf8");
+  }
+
+  private validateDeployManifest(manifest: AADManifest): void {
+    if (manifest.name === "") {
+      throw ResultFactory.UserError(AadManifestMissingName.name, AadManifestMissingName.message());
+    }
+
+    if (!manifest.id) {
+      throw ResultFactory.UserError(
+        AadManifestMissingObjectId.name,
+        AadManifestMissingObjectId.message()
+      );
+    }
+
+    if (!manifest.replyUrlsWithType || manifest.replyUrlsWithType.length === 0) {
+      throw ResultFactory.UserError(
+        AadManifestMissingReplyUrlsWithType.name,
+        AadManifestMissingReplyUrlsWithType.message()
+      );
+    }
+
+    if (!manifest.identifierUris || manifest.identifierUris.length === 0) {
+      throw ResultFactory.UserError(
+        AadManifestMissingIdentifierUris.name,
+        AadManifestMissingIdentifierUris.message()
+      );
+    }
   }
 }

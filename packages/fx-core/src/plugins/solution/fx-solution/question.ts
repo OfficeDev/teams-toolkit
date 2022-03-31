@@ -35,6 +35,14 @@ export const NotificationOptionItem: OptionItem = {
   detail: getLocalizedString("core.NotificationOption.detail"),
 };
 
+export const CommandAndResponseOptionItem: OptionItem = {
+  id: "CommandAndResponse",
+  label: "Command and Response",
+  cliName: "command-and-response",
+  description: getLocalizedString("core.CommandAndResponseOption.description"),
+  detail: getLocalizedString("core.CommandAndResponseOption.detail"),
+};
+
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",
@@ -56,7 +64,15 @@ export const SsoItem: OptionItem = {
   label: "SSO",
   cliName: "sso",
   description: getLocalizedString("core.Sso.description"),
-  detail: getLocalizedString("core.TabSPFxOption.detail"),
+  detail: getLocalizedString("core.Sso.detail"),
+};
+
+export const TabNonSsoItem: OptionItem = {
+  id: "TabNonSso",
+  label: "Tab(Non-SSO)",
+  cliName: "tab-non-sso",
+  description: getLocalizedString("core.TabNonSso.description"),
+  detail: getLocalizedString("core.TabNonSso.detail"),
 };
 
 export const M365LaunchPageOptionItem: OptionItem = {
@@ -85,7 +101,7 @@ export enum AzureSolutionQuestionNames {
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
-  Scenario = "scenario",
+  Scenarios = "scenarios",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -125,7 +141,7 @@ export const AzureResourceKeyVault: OptionItem = {
 
 export enum BotScenario {
   NotificationBot = "notificationBot",
-  CommandBot = "commandBot",
+  CommandAndResponseBot = "commandAndResponseBot",
 }
 
 export const BotNotificationTriggers = {
@@ -192,6 +208,8 @@ export function addCapabilityQuestion(
   if (!alreadyHaveBot) {
     options.push(BotOptionItem);
     options.push(MessageExtensionItem);
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,

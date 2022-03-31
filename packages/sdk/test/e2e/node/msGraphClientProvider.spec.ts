@@ -6,12 +6,14 @@ import "isomorphic-fetch";
 import * as chaiPromises from "chai-as-promised";
 import { createMicrosoftGraphClient, TeamsFx, IdentityType } from "../../../src";
 import {
+  extractIntegrationEnvVariables,
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
 } from "../helper";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 let restore: () => void;
 
 describe("createMicrosoftGraphClient Tests - Node", () => {

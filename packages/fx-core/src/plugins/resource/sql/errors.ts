@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "./constants";
 
 export class ErrorMessage {
@@ -9,112 +9,169 @@ export class ErrorMessage {
 
   public static readonly SqlInputError = {
     name: "SqlInputError",
-    message: () =>
+    message: (): [string, string] => [
+      getDefaultString(`plugins.sql.errorMessage.${ErrorMessage.SqlInputError.name}`),
       getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlInputError.name}`),
+    ],
   };
 
   public static readonly SqlAskInputError = {
     name: "SqlAskInputError",
-    message: () =>
+    message: (): [string, string] => [
+      getDefaultString(`plugins.sql.errorMessage.${ErrorMessage.SqlAskInputError.name}`),
       getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlAskInputError.name}`),
+    ],
   };
 
   public static readonly SqlEndpointError = {
     name: "SqlEndpointError",
-    message: (sqlName: string) =>
+    message: (sqlName: string): [string, string] => [
+      getDefaultString(`plugins.sql.errorMessage.${ErrorMessage.SqlEndpointError.name}`, sqlName),
       getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlEndpointError.name}`, sqlName),
+    ],
   };
 
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (database: string, user: string) =>
+    message: (database: string, user: string): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.DatabaseUserCreateError.name}`,
+        user,
+        database
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.DatabaseUserCreateError.name}`,
         user,
         database
       ),
+    ],
   };
 
   public static readonly SqlAddAdminError = {
     name: "SqlAddAdminError",
-    message: (account: string, detail = "") =>
+    message: (account: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlAddAdminError.name}`,
+        account,
+        detail
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlAddAdminError.name}`,
         account,
         detail
       ),
+    ],
   };
 
   public static readonly SqlLocalFirwallError = {
     name: "SqlLocalFirwallError",
-    message: (sqlName: string, detail = "") =>
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlLocalFirwallError.name}`,
+        sqlName,
+        detail
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlLocalFirwallError.name}`,
         sqlName,
         detail
       ),
+    ],
   };
 
   public static readonly SqlDeleteLocalFirwallError = {
     name: "SqlDeleteLocalFirwallError",
-    message: (sqlName: string, detail = "") =>
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlDeleteLocalFirwallError.name}`,
+        sqlName,
+        Constants.firewall.localRule,
+        detail
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlDeleteLocalFirwallError.name}`,
         sqlName,
         Constants.firewall.localRule,
         detail
       ),
+    ],
   };
 
   public static readonly SqlUserInfoError = {
     name: "SqlUserInfoError",
-    message: () =>
+    message: (): [string, string] => [
+      getDefaultString(`plugins.sql.errorMessage.${ErrorMessage.SqlUserInfoError.name}`),
       getLocalizedString(`plugins.sql.errorMessage.${ErrorMessage.SqlUserInfoError.name}`),
+    ],
   };
 
   public static readonly SqlGetConfigError = {
     name: "SqlGetConfigError",
-    message: (pluginId: string, configKey: string) =>
+    message: (pluginId: string, configKey: string): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlGetConfigError.name}`,
+        configKey,
+        pluginId
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlGetConfigError.name}`,
         configKey,
         pluginId
       ),
+    ],
   };
 
   public static readonly SqlInvalidConfigError = {
     name: "SqlInvalidConfigError",
-    message: (configKey: string, reason: string) =>
+    message: (configKey: string, reason: string): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlInvalidConfigError.name}`,
+        configKey,
+        reason
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlInvalidConfigError.name}`,
         configKey,
         reason
       ),
+    ],
   };
 
   public static readonly SqlCheckError = {
     name: "SqlCheckError",
-    message: (sqlName: string, detail = "") =>
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlCheckError.name}`,
+        sqlName,
+        detail
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlCheckError.name}`,
         sqlName,
         detail
       ),
+    ],
   };
 
   public static readonly SqlCheckAdminError = {
     name: "SqlCheckAdminError",
-    message: (identity: string, detail = "") =>
+    message: (identity: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `plugins.sql.errorMessage.${ErrorMessage.SqlCheckAdminError.name}`,
+        identity,
+        detail
+      ),
       getLocalizedString(
         `plugins.sql.errorMessage.${ErrorMessage.SqlCheckAdminError.name}`,
         identity,
         detail
       ),
+    ],
   };
 
   public static readonly UnhandledError = {
     name: "UnhandledError",
-    message: () => "Unhandled Error",
+    message: (): [string, string] => ["Unhandled Error", "Unhandled Error"],
   };
 
   public static readonly IdentityCredentialUndefine = (user: string, databaseName: string) =>

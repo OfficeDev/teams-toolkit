@@ -16,8 +16,8 @@ import {
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  returnSystemError,
   StatesFolderName,
+  SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { serializeDict, isSPFxProject } from "../../common/tools";
@@ -793,7 +793,7 @@ async function backup(projectPath: string, backupFolder: string): Promise<void> 
 }
 
 // append folder path to .gitignore under the project root.
-async function addPathToGitignore(
+export async function addPathToGitignore(
   projectPath: string,
   ignoredPath: string,
   log: LogProvider
@@ -875,7 +875,7 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
   }
 }
 
-async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
+export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;
@@ -1040,10 +1040,10 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   );
   if (!(await fs.pathExists(path.join(fxConfig, parameterEnvFileName)))) {
     throw err(
-      returnSystemError(
-        new Error(`Failed to generate ${parameterEnvFileName} on migration`),
+      new SystemError(
         CoreSource,
-        "GenerateArmTemplateFailed"
+        "GenerateArmTemplateFailed",
+        `Failed to generate ${parameterEnvFileName} on migration`
       )
     );
   }

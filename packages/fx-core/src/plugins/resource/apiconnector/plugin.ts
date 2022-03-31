@@ -38,10 +38,8 @@ export class ApiConnectorImpl {
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
     // backup relative files.
     const backupFolderName = generateTempFolder();
-    const componentFolders: string[] = [];
-    config.ComponentPath.forEach((item) => componentFolders.push(path.join(projectPath, item)));
-    componentFolders.forEach(async (componentPath) => {
-      await this.backupExistingFiles(componentPath, backupFolderName);
+    config.ComponentPath.forEach(async (compoenent) => {
+      await this.backupExistingFiles(path.join(projectPath, compoenent), backupFolderName);
     });
 
     try {
@@ -49,19 +47,23 @@ export class ApiConnectorImpl {
         await this.scaffoldInComponent(projectPath, componentItem, config, languageType);
       });
     } catch (err) {
-      componentFolders.forEach(async (componentPath) => {
-        await fs.move(path.join(componentPath, backupFolderName), componentPath, {
-          overwrite: true,
-        });
+      config.ComponentPath.forEach(async (component) => {
+        await fs.move(
+          path.join(projectPath, component, backupFolderName),
+          path.join(projectPath, component),
+          {
+            overwrite: true,
+          }
+        );
       });
       throw ResultFactory.SystemError(
         ErrorMessage.generateApiConFilesError.name,
         ErrorMessage.generateApiConFilesError.message(err.message)
       );
     } finally {
-      componentFolders.forEach(async (componentPath) => {
-        if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
-          await fs.remove(path.join(path.join(componentPath, backupFolderName)));
+      config.ComponentPath.forEach(async (component) => {
+        if (await fs.pathExists(path.join(projectPath, component, backupFolderName))) {
+          await fs.remove(path.join(path.join(projectPath, component, backupFolderName)));
         }
       });
     }

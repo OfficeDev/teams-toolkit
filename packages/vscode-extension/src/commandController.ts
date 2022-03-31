@@ -2,22 +2,15 @@
 // Licensed under the MIT license.
 
 import { Mutex } from "async-mutex";
-// eslint-disable-next-line import/no-unresolved
-// import * as vscode from "vscode";
-import { Result, FxError } from "@microsoft/teamsfx-api";
 
-// import { TreeCategory } from "@microsoft/teamsfx-api";
-// import { isInitAppEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 
-// import { AdaptiveCardCodeLensProvider } from "./codeLensProvider";
 import { VS_CODE_UI } from "./extension";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
-import { getTriggerFromProperty, isSPFxProject } from "./utils/commonUtils";
-import { localize } from "./utils/localizeUtils";
 import treeViewManager from "./treeview/treeViewManager";
-// import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-// import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { getTriggerFromProperty } from "./utils/commonUtils";
+import { localize } from "./utils/localizeUtils";
 
 type CommandHandler = (args?: unknown[]) => Promise<Result<unknown, FxError>>;
 
@@ -106,13 +99,14 @@ class CommandController {
 
   private async runBlockingCommand(commandName: string, ...args: unknown[]) {
     this.runningCommand = commandName;
-    await treeViewManager.setRunningCommand(commandName);
     const command = this.commandMap.get(commandName);
+    const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
+    await treeViewManager.setRunningCommand(commandName, blockedCommands, command?.blockTooltip);
     if (command) {
       await command.callback(args);
     }
     this.runningCommand = undefined;
-    await treeViewManager.restoreRunningCommand(commandName);
+    await treeViewManager.restoreRunningCommand(blockedCommands);
   }
 
   public dispose() {}

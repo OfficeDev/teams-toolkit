@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { TextInputQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import { TextInputQuestion, OptionItem, Inputs } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
@@ -9,6 +10,13 @@ export const apiNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.apiName,
   title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
   type: "text",
+  validation: {
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const apiNames = previousInputs![Constants.questionKey.componentsSelect] as string[];
+      apiNames.forEach(async (item) => {});
+      return res;
+    },
+  },
 };
 
 export const apiEndpointQuestion: TextInputQuestion = {

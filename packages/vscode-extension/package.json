@@ -159,6 +159,11 @@
         {
           "command": "fx-extension.openAccountLink",
           "when": "view == teamsfx-accounts",
+          "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.createAccount",
+          "when": "view == teamsfx-accounts",
           "group": "navigation@1"
         },
         {
@@ -614,6 +619,11 @@
         "icon": "$(info)"
       },
       {
+        "command": "fx-extension.createAccount",
+        "title": "%teamstoolkit.commands.createAccount.title%",
+        "icon": "$(add)"
+      },
+      {
         "command": "fx-extension.openEnvLink",
         "title": "%teamstoolkit.commands.environmentsLink.title%",
         "icon": "$(info)"
@@ -888,6 +898,11 @@
             "type": "boolean",
             "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
             "default": false
+          },
+          "fx-extension.enableNotification / CommandAndResponseBot": {
+            "type": "boolean",
+            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
+            "default": false
           }
         }
       }
@@ -929,6 +944,14 @@
             "media": {
               "svg": "media/Create.svg",
               "altText": "Build your first Teams app"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateFreeAccount",
+            "title": "Create a M365 testing tenant for free",
+            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "media": {
+              "markdown": "media/itp/itp.md"
             }
           },
           {

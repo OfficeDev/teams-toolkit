@@ -4,6 +4,7 @@
 import {
   err,
   Func,
+  FunctionRouter,
   FxError,
   Inputs,
   InputTextConfig,
@@ -27,6 +28,7 @@ import {
 import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { cipher } from "node-forge";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -532,4 +534,33 @@ describe("Core basic APIs", () => {
       }
     }
   });
+
+  // it("init + add spfx tab", async () => {
+  //   const appName = randomAppName();
+  //   projectPath = path.join(os.tmpdir(), appName);
+  //   const inputs: Inputs = {
+  //     platform: Platform.VSCode,
+  //     folder: projectPath,
+  //     "app-name": appName,
+  //   };
+  //   const core = new FxCore(tools);
+  //   const initRes = await core.init(inputs);
+  //   assert.isTrue(initRes.isOk());
+  //   if (initRes.isOk()) {
+  //     const addInputs: Inputs = {
+  //       platform: Platform.VSCode,
+  //       projectPath: projectPath,
+  //       capabilities: [TabSPFxItem.id],
+  //       "spfx-framework-type": "react",
+  //       "spfx-webpart-name": "helloworld",
+  //       "spfx-webpart-desp": "helloworld",
+  //     };
+  //     const func: Func = {
+  //       namespace: "fx-solution-azure",
+  //       method: "addCapability",
+  //     };
+  //     const addRes = await core.executeUserTaskV2(func, addInputs);
+  //     assert(addRes.isOk());
+  //   }
+  // });
 });

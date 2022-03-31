@@ -9,9 +9,6 @@ import {
   ListPublishingCredentialsError,
   ZipDeployError,
   MessageEndpointUpdatingError,
-  MissingSubscriptionRegistrationError,
-  InvalidBotDataError,
-  isErrorWithCode,
   RestartWebAppError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
@@ -19,39 +16,6 @@ import * as utils from "./utils/common";
 import { default as axios } from "axios";
 
 export class AzureOperations {
-  public static async CreateBotChannelRegistration(
-    botClient: AzureBotService,
-    resourceGroup: string,
-    botChannelRegistrationName: string,
-    msaAppId: string,
-    displayName?: string
-  ): Promise<void> {
-    let botResponse = undefined;
-    try {
-      botResponse = await botClient.bots.create(resourceGroup, botChannelRegistrationName, {
-        location: "global",
-        kind: "bot",
-        properties: {
-          displayName: displayName ?? botChannelRegistrationName,
-          endpoint: "",
-          msaAppId: msaAppId,
-        },
-      });
-    } catch (e) {
-      if (isErrorWithCode(e) && e.code === "MissingSubscriptionRegistration") {
-        throw new MissingSubscriptionRegistrationError();
-      } else if (isErrorWithCode(e) && e.code === "InvalidBotData") {
-        throw new InvalidBotDataError(e);
-      } else {
-        throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
-      }
-    }
-
-    if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-      throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION);
-    }
-  }
-
   public static async UpdateBotChannelRegistration(
     botClient: AzureBotService,
     resourceGroup: string,

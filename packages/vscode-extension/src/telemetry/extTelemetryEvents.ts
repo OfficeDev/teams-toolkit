@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  CreateAccountStart = "create-account-start",
+  CreateAccount = "create-account",
+
   QuickStart = "quick-start",
 
   Samples = "samples",
@@ -215,6 +218,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsSpfx = "is-spfx",
   IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",

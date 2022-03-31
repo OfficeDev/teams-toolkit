@@ -212,6 +212,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openAccountLinkCmd);
 
+  const createAccountCmd = vscode.commands.registerCommand(
+    "fx-extension.createAccount",
+    (...args) => Correlator.run(handlers.createAccountHandler, args)
+  );
+  context.subscriptions.push(createAccountCmd);
+
   const openEnvLinkCmd = vscode.commands.registerCommand("fx-extension.openEnvLink", (...args) =>
     Correlator.run(handlers.openEnvLinkHandler, args)
   );
@@ -385,7 +391,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isSPFx",
-    workspacePath && (await isSPFxProject(workspacePath))
+    workspacePath && isSPFxProject(workspacePath)
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());

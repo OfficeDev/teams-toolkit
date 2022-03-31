@@ -49,6 +49,7 @@ import {
   VsCodeEnv,
   IProgressHandler,
   ProjectSettingsFileName,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -1331,6 +1332,46 @@ export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
 }
 
+export async function createAccountHandler(args: any[]): Promise<void> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccountStart, getTriggerFromProperty(args));
+  const m365Option: OptionItem = {
+    id: "createAccountM365",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`,
+    description: localize("teamstoolkit.commands.createAccount.free"),
+  };
+  const azureOption: OptionItem = {
+    id: "createAccountAzure",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.azure")}`,
+    description: localize("teamstoolkit.commands.createAccount.free"),
+  };
+  const option: SingleSelectConfig = {
+    name: "CreateAccounts",
+    title: localize("teamstoolkit.commands.createAccount.title"),
+    options: [m365Option, azureOption],
+  };
+  const result = await VS_CODE_UI.selectOption(option);
+  if (result.isOk()) {
+    if (result.value.result === m365Option.id) {
+      await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
+        [TelemetryProperty.AccountType]: AccountType.M365,
+        ...getTriggerFromProperty(args),
+      });
+    } else if (result.value.result === azureOption.id) {
+      await VS_CODE_UI.openUrl("https://azure.microsoft.com/en-us/free/");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        ...getTriggerFromProperty(args),
+      });
+    }
+  } else {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateAccount, result.error, {
+      ...getTriggerFromProperty(args),
+    });
+  }
+  return;
+}
+
 export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
@@ -1419,7 +1460,7 @@ export async function openReadMeHandler(args: any[]) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (await isSPFxProject(workspacePath)) {
+    if (isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
     } else if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
@@ -1832,7 +1873,7 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
 
       let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
       let helpUrl = AzureAssignRoleHelpUrl;
-      if (await isSPFxProject(ext.workspaceUri.fsPath)) {
+      if (isSPFxProject(ext.workspaceUri.fsPath)) {
         warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
         helpUrl = SpfxManageSiteAdminUrl;
       }
@@ -2079,6 +2120,14 @@ export async function cmpAccountsHandler() {
       }),
   };
 
+  const createAccountsOption: VscQuickPickItem = {
+    id: "createAccounts",
+    label: `$(add) ${localize("teamstoolkit.commands.createAccount.title")}`,
+    function: async () => {
+      Correlator.run(() => createAccountHandler([]));
+    },
+  };
+
   //TODO: hide subscription list until core or api expose the get subscription list API
   // let selectSubscriptionOption: VscQuickPickItem = {
   //   id: "selectSubscription",
@@ -2120,6 +2169,7 @@ export async function cmpAccountsHandler() {
     }
   }
 
+  quickItemOptionArray.push(createAccountsOption);
   quickPick.items = quickItemOptionArray;
   quickPick.onDidChangeSelection((selection) => {
     if (selection[0]) {

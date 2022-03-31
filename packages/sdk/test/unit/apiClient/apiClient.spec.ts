@@ -2,9 +2,8 @@
 // Licensed under the MIT license.
 
 import { assert } from "chai";
-import * as sinon from "sinon";
 import { MockAuthProvider } from "./mockAuthProvider";
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 import { createApiClient } from "../../../src";
 import MockAdapter from "axios-mock-adapter";
 
@@ -13,14 +12,6 @@ describe("ApiClient Tests - Node", () => {
     // Arrange
     const apiBaseUrl = "https://fake-api-endpoint";
     const mockAuthProvider = new MockAuthProvider();
-    sinon
-      .stub(mockAuthProvider, "AddAuthenticationInfo")
-      .callsFake(async (config: AxiosRequestConfig): Promise<AxiosRequestConfig> => {
-        config.headers = {
-          Authorization: "fake-token",
-        };
-        return config;
-      });
     const axiosMockAdapter = new MockAdapter(axios);
     axiosMockAdapter.onGet("/foo").replyOnce(200);
 

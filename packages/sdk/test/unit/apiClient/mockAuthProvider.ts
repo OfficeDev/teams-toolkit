@@ -16,6 +16,9 @@ export class MockAuthProvider implements AuthProvider {
    * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+    config.headers = {
+      Authorization: "fake-token",
+    };
     return config;
   }
 }

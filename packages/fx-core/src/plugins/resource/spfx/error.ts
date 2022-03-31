@@ -113,8 +113,8 @@ export function NpmInstallError(error: Error): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,
     "NpmInstallFailed",
-    getDefaultString("plugins.spfx.error.npmInstallFailed"),
-    getLocalizedString("plugins.spfx.error.npmInstallFailed")
+    getDefaultString("plugins.spfx.error.npmInstallFailed", error.message),
+    getLocalizedString("plugins.spfx.error.npmInstallFailed", error.message)
   );
 }
 
@@ -122,8 +122,8 @@ export function DependencyValidateError(dependency: string): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,
     "InvalidDependency",
-    getDefaultString("plugins.spfx.error.invalidDependency"),
-    getLocalizedString("plugins.spfx.error.invalidDependency")
+    getDefaultString("plugins.spfx.error.invalidDependency", dependency),
+    getLocalizedString("plugins.spfx.error.invalidDependency", dependency)
   );
 }
 
@@ -131,7 +131,7 @@ export function DependencyInstallError(dependency: string): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,
     "DependencyInstallFailed",
-    getDefaultString("plugins.spfx.error.installDependency"),
-    getLocalizedString("plugins.spfx.error.installDependency")
+    getDefaultString("plugins.spfx.error.installDependency", dependency),
+    getLocalizedString("plugins.spfx.error.installDependency", dependency)
   );
 }

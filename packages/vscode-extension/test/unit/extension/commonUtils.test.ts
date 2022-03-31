@@ -76,7 +76,7 @@ suite("CommonUtils", () => {
         return false;
       });
 
-      chai.expect(await commonUtils.isSPFxProject("./invalidPath")).equals(false);
+      chai.expect(commonUtils.isSPFxProject("./invalidPath")).equals(false);
 
       sinon.restore();
     });
@@ -84,7 +84,7 @@ suite("CommonUtils", () => {
     test("return true for spfx project", async () => {
       const testPath = "./testProject";
 
-      sinon.stub(fs, "pathExists").callsFake((path: string) => {
+      sinon.stub(fs, "pathExistsSync").callsFake((path: string) => {
         if (path === `${testPath}/SPFx`) {
           return true;
         }
@@ -92,7 +92,7 @@ suite("CommonUtils", () => {
         return false;
       });
 
-      chai.expect(await commonUtils.isSPFxProject(testPath)).equals(true);
+      chai.expect(commonUtils.isSPFxProject(testPath)).equals(true);
 
       sinon.restore();
     });

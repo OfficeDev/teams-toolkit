@@ -46,6 +46,9 @@ export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Void, FxError>> {
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
   if (inputs.projectPath === undefined) {
     return err(
       new SystemError("Solution", SolutionError.InternelError, "projectPath is undefined")
@@ -102,7 +105,7 @@ export async function scaffoldSourceCode(
         [SolutionTelemetryProperty.Capabilities]: (solutionSettings?.capabilities || []).join(";"),
         [SolutionTelemetryProperty.ProgrammingLanguage]:
           ctx.projectSetting?.programmingLanguage ?? "",
-        "host-type": "azure",
+        [SolutionTelemetryProperty.HostType]: "azure",
       });
     } else {
       //For SPFx plugin, execute it alone lastly
@@ -119,7 +122,7 @@ export async function scaffoldSourceCode(
           ),
           [SolutionTelemetryProperty.ProgrammingLanguage]:
             ctx.projectSetting?.programmingLanguage ?? "",
-          "host-type": "spfx",
+          [SolutionTelemetryProperty.HostType]: "spfx",
         });
       }
     }
@@ -130,6 +133,13 @@ export async function scaffoldSourceCode(
     );
     return ok(Void);
   } else {
+    ctx.telemetryReporter?.sendTelemetryErrorEvent(SolutionTelemetryEvent.Create, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.No,
+      [SolutionTelemetryProperty.ErrorCode]: result.error.name,
+      [SolutionTelemetryProperty.ErrorMessage]: result.error.message,
+      [SolutionTelemetryProperty.HostType]: isAzureProject(solutionSettings) ? "azure" : "spfx",
+    });
     return err(result.error);
   }
 }

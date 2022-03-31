@@ -5,7 +5,12 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { ApiConnectorConfiguration, generateTempFolder, getSampleCodeFileName } from "./utils";
+import {
+  ApiConnectorConfiguration,
+  generateTempFolder,
+  getSampleCodeFileName,
+  copyFileIfExist,
+} from "./utils";
 import { Constants } from "./constants";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { EnvHandler } from "./envHandler";
@@ -37,58 +42,59 @@ export class ApiConnectorImpl {
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
     for (const componentItem of config.ComponentPath) {
-      const componentPath = path.join(projectPath, componentItem);
-      const backupFolderName = generateTempFolder();
-      const sampleFileName = getSampleCodeFileName(config.APIName, languageType);
-      await this.backupExistingFiles(componentPath, sampleFileName, backupFolderName);
-      try {
-        await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-        await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-        // await this.addSDKDependency(ComponentPath);
-      } catch (err) {
-        await fs.move(path.join(componentPath, backupFolderName), componentPath, {
-          overwrite: true,
-        });
-        throw ResultFactory.SystemError(
-          ErrorMessage.generateApiConFilesError.name,
-          ErrorMessage.generateApiConFilesError.message(componentPath, err.message)
-        );
-      } finally {
-        if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
-          await fs.remove(path.join(componentPath, backupFolderName));
-        }
+      await this.scaffoldInComponent(projectPath, componentItem, config, languageType);
+    }
+    return ResultFactory.Success();
+  }
+
+  private async scaffoldInComponent(
+    projectPath: string,
+    componentItem: string,
+    config: ApiConnectorConfiguration,
+    languageType: string
+  ): Promise<ApiConnectorResult> {
+    const componentPath = path.join(projectPath, componentItem);
+    const backupFolderName = generateTempFolder();
+    const sampleFileName = getSampleCodeFileName(config.APIName, languageType);
+    await this.backupExistingFiles(componentPath, sampleFileName, backupFolderName);
+    try {
+      await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
+      await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
+      // await this.addSDKDependency(ComponentPath);
+    } catch (err) {
+      await fs.move(path.join(componentPath, backupFolderName), componentPath, {
+        overwrite: true,
+      });
+      throw ResultFactory.SystemError(
+        ErrorMessage.generateApiConFilesError.name,
+        ErrorMessage.generateApiConFilesError.message(componentPath, err.message)
+      );
+    } finally {
+      if (await fs.pathExists(path.join(componentPath, backupFolderName))) {
+        await fs.remove(path.join(componentPath, backupFolderName));
       }
     }
-
     return ResultFactory.Success();
   }
 
   private async backupExistingFiles(folderPath: string, sampleFile: string, backupFolder: string) {
     await fs.ensureDir(path.join(folderPath, backupFolder));
-    if (await fs.pathExists(path.join(folderPath, Constants.envFileName))) {
-      await fs.copyFile(
-        path.join(folderPath, Constants.envFileName),
-        path.join(folderPath, backupFolder, Constants.envFileName)
-      );
-    }
-    if (await fs.pathExists(path.join(folderPath, sampleFile))) {
-      await fs.copyFile(
-        path.join(folderPath, sampleFile),
-        path.join(folderPath, backupFolder, sampleFile)
-      );
-    }
-    if (await fs.pathExists(path.join(folderPath, Constants.pkgJsonFile))) {
-      await fs.copyFile(
-        path.join(folderPath, Constants.pkgJsonFile),
-        path.join(folderPath, backupFolder, Constants.pkgJsonFile)
-      );
-    }
-    if (await fs.pathExists(path.join(folderPath, Constants.pkgLockFile))) {
-      await fs.copyFile(
-        path.join(folderPath, Constants.pkgLockFile),
-        path.join(folderPath, backupFolder, Constants.pkgLockFile)
-      );
-    }
+    await copyFileIfExist(
+      path.join(folderPath, Constants.envFileName),
+      path.join(folderPath, backupFolder, Constants.envFileName)
+    );
+    await copyFileIfExist(
+      path.join(folderPath, sampleFile),
+      path.join(folderPath, backupFolder, sampleFile)
+    );
+    await copyFileIfExist(
+      path.join(folderPath, Constants.pkgJsonFile),
+      path.join(folderPath, backupFolder, Constants.pkgJsonFile)
+    );
+    await copyFileIfExist(
+      path.join(folderPath, Constants.pkgLockFile),
+      path.join(folderPath, backupFolder, Constants.pkgLockFile)
+    );
   }
 
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {

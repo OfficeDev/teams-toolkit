@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
+import * as fs from "fs-extra";
 import { LanguageType, FileType } from "./constants";
 export interface ApiConnectorConfiguration extends Record<any, any> {
   ComponentPath: string[];
@@ -36,4 +37,10 @@ export function generateTempFolder(): string {
 export function getSampleCodeFileName(ApiName: string, languageType: string): string {
   const fileEx = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
   return ApiName + "." + fileEx;
+}
+
+export async function copyFileIfExist(srcFile: string, targetFile: string) {
+  if (await fs.pathExists(srcFile)) {
+    await fs.copyFile(srcFile, targetFile);
+  }
 }

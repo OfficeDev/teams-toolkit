@@ -171,7 +171,11 @@ export default class Preview extends YargsCommand {
       const previewType = args.remote ? "remote" : "local";
       this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
 
-      const hub = args["m365-host"] as constants.Hub;
+      let hub = args["m365-host"] as constants.Hub;
+      // TODO: remove this when TEAMSFX_M365_APP retires
+      if (hub === undefined) {
+        hub = constants.Hub.teams;
+      }
       this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
 
       const browser = args.browser as constants.Browser;

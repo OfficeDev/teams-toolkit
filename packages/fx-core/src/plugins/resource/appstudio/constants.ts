@@ -7,7 +7,6 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
-  public static readonly SKIP_MANIFEST = "skip-manifest";
   public static readonly READ_MORE = "Read more";
   public static readonly LEARN_MORE = "Learn more";
   public static readonly ADMIN_PORTAL = "Admin portal";

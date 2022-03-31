@@ -330,7 +330,7 @@ export class TeamsfxCore {
     }
     const manifestInputs: any = {};
     if (teamsTab) manifestInputs.tabEndpoint = "{{teams-tab.endpoint}}";
-    if (teamsBot) manifestInputs.tabEndpoint = "{{azure-bot.botId}}";
+    if (teamsBot) manifestInputs.botId = "{{azure-bot.botId}}";
     provisionSequences.push({
       type: "call",
       required: true,

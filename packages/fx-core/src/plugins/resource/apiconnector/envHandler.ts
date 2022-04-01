@@ -9,6 +9,7 @@ import { ApiConnectorConfiguration } from "./utils";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { ComponentType } from "./constants";
 import { ErrorMessage } from "./errors";
+import { Constants } from "./constants";
 
 declare type ApiConnectors = Record<string, Record<string, string>>;
 export class ApiDataManager {
@@ -45,7 +46,6 @@ export class ApiDataManager {
   }
 }
 export class EnvHandler {
-  public static readonly LocalEnvFileName: string = ".env.teamsfx.local";
   private readonly projectRoot: string;
   private readonly componentType: string;
   private apiDataManager: ApiDataManager;
@@ -61,15 +61,10 @@ export class EnvHandler {
   }
 
   public async saveLocalEnvFile(): Promise<ApiConnectorResult> {
-    // backup .env.teamsfx.local file with timestamp
-    const timestamp = Date.now();
-    const backupFileName: string = EnvHandler.LocalEnvFileName + "." + timestamp;
-    const srcFile = path.join(this.projectRoot, this.componentType, EnvHandler.LocalEnvFileName);
-    const tmpFile = path.join(this.projectRoot, this.componentType, backupFileName);
+    const srcFile = path.join(this.projectRoot, this.componentType, Constants.envFileName);
     if (!(await fs.pathExists(srcFile))) {
       await fs.createFile(srcFile);
     }
-    await fs.move(srcFile, tmpFile);
     // update localEnvs
     try {
       const provider: LocalEnvProvider = new LocalEnvProvider(this.projectRoot);
@@ -83,13 +78,10 @@ export class EnvHandler {
         await provider.saveLocalEnvs(undefined, localEnvsBE, undefined);
       }
     } catch (err) {
-      await fs.move(tmpFile, srcFile);
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorFileCreateFailError.name,
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)
       );
-    } finally {
-      await fs.remove(tmpFile);
     }
     return ResultFactory.Success();
   }

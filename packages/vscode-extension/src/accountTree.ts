@@ -29,6 +29,7 @@ import * as util from "util";
 import { registerEnvTreeHandler } from "./envTree";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { localize } from "./utils/localizeUtils";
+import { getTriggerFromProperty } from "./utils/commonUtils";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -166,7 +167,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           },
           parent: "fx-extension.signinM365",
           contextValue: "checkSideloading",
-          icon: "warning",
+          icon: "error",
           tooltip: {
             isMarkdown: false,
             value: localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),
@@ -214,15 +215,15 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    const triggerFrom = getTriggerFromProperty(args);
     if (args && args.length > 1) {
       const command: TreeViewCommand = args[1];
       if (command && command.contextValue === "signedinM365") return ok(null);
     }
 
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-      [TelemetryProperty.TriggerFrom]:
-        args && args.length > 0 ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
       [TelemetryProperty.AccountType]: AccountType.M365,
+      ...triggerFrom,
     });
 
     const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
@@ -503,11 +504,10 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
 
 function showSideloadingWarning() {
   VS_CODE_UI.showMessage(
-    "warn",
+    "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
-    localize("teamstoolkit.accountTree.sideloadingJoinM365"),
-    localize("teamstoolkit.common.readMore")
+    localize("teamstoolkit.accountTree.sideloadingJoinM365")
   )
     .then(async (result) => {
       if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {

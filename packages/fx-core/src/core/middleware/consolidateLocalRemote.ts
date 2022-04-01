@@ -98,7 +98,7 @@ export const ProjectConsolidateMW: Middleware = async (
 };
 
 // check if config.local.json and manifest.template.json exist
-async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
+export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   if (!isConfigUnifyEnabled()) {
     return false;
   }

@@ -4,16 +4,20 @@
 import "mocha";
 import * as chai from "chai";
 import * as path from "path";
+import os from "os";
+import sinon from "sinon";
 import fs from "fs-extra";
 import { expect } from "chai";
+import { ConstantString } from "../util";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
 import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/utils";
-import { ConstantString } from "../util";
 
 describe("Api Connector scaffold sample code", async () => {
+  const sandbox = sinon.createSandbox();
   const testpath = path.join(__dirname, "api-connect-generate");
   const botPath = path.join(testpath, "bot");
   const apiPath = path.join(testpath, "api");
+
   beforeEach(async () => {
     await fs.ensureDir(testpath);
     await fs.ensureDir(botPath);
@@ -22,6 +26,7 @@ describe("Api Connector scaffold sample code", async () => {
 
   afterEach(async () => {
     await fs.remove(testpath);
+    sandbox.restore();
   });
 
   it("generate js sample code file", async () => {
@@ -45,7 +50,10 @@ describe("Api Connector scaffold sample code", async () => {
       path.join(__dirname, "expectedFiles", "sample.js"),
       ConstantString.UTF8Encoding
     );
-    chai.assert.strictEqual(actualFile, expectedContent);
+    chai.assert.strictEqual(
+      actualFile.replace(/\r?\n/g, os.EOL),
+      expectedContent.replace(/\r?\n/g, os.EOL)
+    );
   });
 
   it("generate ts sample code file", async () => {
@@ -69,6 +77,9 @@ describe("Api Connector scaffold sample code", async () => {
       path.join(__dirname, "expectedFiles", "sample.ts"),
       ConstantString.UTF8Encoding
     );
-    chai.assert.strictEqual(actualFile, expectedContent);
+    chai.assert.strictEqual(
+      actualFile.replace(/\r?\n/g, os.EOL),
+      expectedContent.replace(/\r?\n/g, os.EOL)
+    );
   });
 });

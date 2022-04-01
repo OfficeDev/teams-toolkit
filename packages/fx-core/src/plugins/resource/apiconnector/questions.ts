@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 import * as fs from "fs-extra";
+import path from "path";
 import { TextInputQuestion, OptionItem, Inputs } from "@microsoft/teamsfx-api";
-import { Constants } from "./constants";
+import { Constants, FileType } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const apiNameQuestion: TextInputQuestion = {
@@ -12,9 +13,22 @@ export const apiNameQuestion: TextInputQuestion = {
   type: "text",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const apiNames = previousInputs![Constants.questionKey.componentsSelect] as string[];
-      apiNames.forEach(async (item) => {});
-      return res;
+      const apiNames: string[] = previousInputs![
+        Constants.questionKey.componentsSelect
+      ] as string[];
+      const projectPath: string = previousInputs?.projectPath as string;
+      for (const apiName of apiNames) {
+        const componentPath = path.join(projectPath, apiName);
+        const JsFileName = input + "." + FileType.JS;
+        const TsFileName = input + "." + FileType.TS;
+        if (
+          (await fs.pathExists(path.join(componentPath, JsFileName))) ||
+          (await fs.pathExists(path.join(componentPath, TsFileName)))
+        ) {
+          return getLocalizedString("plugins.apiConnector.QuestionAppName.validation.ApiNameExist");
+        }
+      }
+      return undefined;
     },
   },
 };

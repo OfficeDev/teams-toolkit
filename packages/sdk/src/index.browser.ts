@@ -34,6 +34,7 @@ export {
   NotificationTarget,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
+  NotificationOptions,
 } from "./conversation/interface";
 
 export {
@@ -44,5 +45,5 @@ export {
   TeamsBotInstallation,
 } from "./conversation/notification.browser";
 
-export { ConversationBot, ConversationOptions } from "./conversation/conversation.browser";
-// export { MessageBuilder } from "./conversation/messageBuilder";
+export { NotificationBot } from "./conversation/notification.browser";
+export { CommandBot } from "./conversation/command.browser";

@@ -13,15 +13,17 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
+import { NotificationMiddleware } from "../../../../src/conversation/middleware";
 import {
   Channel,
   Member,
+  NotificationBot,
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
 } from "../../../../src/conversation/notification";
 import * as utils from "../../../../src/conversation/utils";
-import { TestTarget } from "./testUtils";
+import { TestStorage, TestTarget } from "./testUtils";
 
 chaiUse(chaiPromises);
 
@@ -286,6 +288,128 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(installation.type, "Channel");
       const members = await installation.members();
       assert.strictEqual(members.length, 2);
+    });
+  });
+});
+
+describe("Notification Bot Tests - Node", () => {
+  const sandbox = sinon.createSandbox();
+  let adapter: BotFrameworkAdapter;
+  let storage: TestStorage;
+  let middlewares: any[];
+
+  beforeEach(() => {
+    middlewares = [];
+    const stubContext = sandbox.createStubInstance(TurnContext);
+    const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
+    stubAdapter.use.callsFake((args) => {
+      middlewares.push(args);
+      return stubAdapter;
+    });
+    (
+      stubAdapter.continueConversation as unknown as sinon.SinonStub<
+        [Partial<ConversationReference>, (context: TurnContext) => Promise<void>],
+        Promise<void>
+      >
+    ).callsFake(async (ref, logic) => {
+      await logic(stubContext);
+    });
+    adapter = stubAdapter;
+    storage = new TestStorage();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("initialize notification should create correct middleware", () => {
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    assert.strictEqual(middlewares.length, 1);
+    assert.isTrue(middlewares[0] instanceof NotificationMiddleware);
+  });
+
+  it("installations should return correct targets", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+      _a_2: {
+        channelId: "2",
+        conversation: {
+          id: "2",
+          tenantId: "a",
+        },
+      },
+    };
+    const installations = await notificationBot.installations();
+    assert.strictEqual(installations.length, 2);
+    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+    assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
+  });
+
+  it("installations should remove invalid target", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      throw {
+        name: "test",
+        message: "test",
+        code: "BotNotInConversationRoster",
+      };
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const installations = await notificationBot.installations();
+    assert.strictEqual(installations.length, 0);
+    assert.deepStrictEqual(storage.items, {});
+  });
+
+  it("installations should keep valid target", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      throw {
+        name: "test",
+        message: "test",
+        code: "Throttled",
+      };
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const installations = await notificationBot.installations();
+    assert.strictEqual(installations.length, 1);
+    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+    assert.deepStrictEqual(storage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
     });
   });
 });

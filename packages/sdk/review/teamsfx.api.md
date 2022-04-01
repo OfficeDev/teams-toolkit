@@ -57,17 +57,12 @@ export class Channel implements NotificationTarget {
 }
 
 // @beta
-export class ConversationBot {
-    static initialize(adapter: BotFrameworkAdapter, options?: ConversationOptions): void;
-    static installations(): Promise<TeamsBotInstallation[]>;
-}
-
-// @beta
-export interface ConversationOptions {
-    commandHandlers?: TeamsFxBotCommandHandler[];
-    enableNotification?: boolean;
-    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
-    storage?: NotificationTargetStorage;
+export class CommandBot {
+    constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]);
+    // (undocumented)
+    readonly adapter: BotFrameworkAdapter;
+    registerCommand(command: TeamsFxBotCommandHandler): void;
+    registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 }
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
@@ -164,6 +159,19 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
 }
+
+// @beta
+export class NotificationBot {
+    constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
+    installations(): Promise<TeamsBotInstallation[]>;
+}
+
+// @beta
+interface NotificationOptions_2 {
+    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
+    storage?: NotificationTargetStorage;
+}
+export { NotificationOptions_2 as NotificationOptions }
 
 // @beta
 export interface NotificationTarget {

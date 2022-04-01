@@ -1,0 +1,24 @@
+{
+    "name": "fx.add",
+    "type": "group",
+    "inputs": {
+        "bicep": {}
+    },
+    "actions": [
+        {
+            "type": "call",
+            "required": false,
+            "targetAction": "azure-function.generateCode"
+        },
+        {
+            "type": "call",
+            "required": false,
+            "targetAction": "azure-function.generateBicep"
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "fx.persistBicep"
+        }
+    ]
+}

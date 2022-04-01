@@ -279,25 +279,3 @@ export interface ScaffoldResourceConfig extends ResourceConfig {
 export interface ProjectSettingsV3 extends ProjectSettings {
   resources: ResourceConfig[];
 }
-
-const settings: ProjectSettingsV3 = {
-  appName: "aa",
-  projectId: "abc",
-  resources: [
-    {
-      type: "compound",
-      name: "teams-tab",
-      hostingResource: "azure-storage",
-    },
-    {
-      type: "cloud",
-      name: "azure-storage",
-    },
-    {
-      type: "scaffold",
-      name: "tab-scaffold",
-      folder: "tab",
-      hostingResource: "azure-storage",
-    },
-  ],
-};

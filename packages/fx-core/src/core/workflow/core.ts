@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, Json, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
-import { assign } from "lodash";
+import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
-import { ConfigKeysOfOtherPlugin } from "../../plugins/resource/aad/constants";
+import { Container, Service } from "typedi";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,
@@ -14,7 +12,6 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../../plugins/solution/fx-solution/question";
-import { ensureSolutionSettings } from "../../plugins/solution/fx-solution/utils/solutionSettingsHelper";
 import "./aad";
 import "./azureBot";
 import "./azureFunction";
@@ -22,12 +19,14 @@ import "./azureStorage";
 import "./azureWebApp";
 import {
   Action,
+  AzureResource,
   ConfigureAction,
   ContextV3,
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
   ResourceConfig,
+  ScaffoldResource,
 } from "./interface";
 import "./teamsBot";
 import "./teamsManifest";
@@ -161,7 +160,12 @@ export class TeamsfxCore {
       {
         type: "call",
         required: false,
-        targetAction: `${resource}.add`,
+        targetAction: `${resource}.generateCode`,
+      },
+      {
+        type: "call",
+        required: false,
+        targetAction: `${resource}.generateBicep`,
       },
       {
         type: "call",
@@ -345,10 +349,6 @@ export class TeamsfxCore {
               };
             }
           }
-          // const manifestInputs: any = {};
-          // if (teamsTab) manifestInputs.tabEndpoint = inputs[teamsTab.hostingResource].endpoint;
-          // if (teamsBot) manifestInputs.botId = inputs["azure-bot"].botId;
-          // inputs["teams-manifest"] = manifestInputs;
           console.log("set inputs for configuration");
           return ok(undefined);
         },
@@ -420,21 +420,26 @@ export class TeamsfxCore {
         required: false,
       },
     ];
-    for (const resource of projectSettings.resources.filter(
-      (r) => r.type === "scaffold" || r.type === "compound"
-    )) {
+    const set = new Set<string>();
+    projectSettings.resources
+      .filter((r) => r.type === "scaffold" || r.type === "compound")
+      .forEach((r) => {
+        if (r.hostingResource) {
+          set.add(r.hostingResource);
+        }
+      });
+    set.forEach((r) => {
       actions.push({
         type: "call",
-        targetAction: `${resource.hostingResource}.deploy`,
-        required: true,
+        targetAction: `${r}.deploy`,
+        required: false,
         inputs: {
-          [resource.hostingResource]: {
-            path: resource.folder,
+          [r]: {
             type: "zip",
           },
         },
       });
-    }
+    });
     const action: GroupAction = {
       type: "group",
       name: "fx.deploy",

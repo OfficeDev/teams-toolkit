@@ -24,10 +24,7 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\workflow\\workflow.js",
-      "args": [
-        "create-tab"
-      ],
+      "program": "${workspaceFolder}\\build\\core\\workflow\\deploy.js",
       "outFiles": [
           "${workspaceFolder}/**/*.js"
       ]

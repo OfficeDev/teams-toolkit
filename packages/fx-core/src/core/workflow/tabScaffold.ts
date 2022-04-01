@@ -59,8 +59,8 @@ export class TabScaffoldResource implements ScaffoldResource {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const config = (context.projectSetting as any).tab;
-    const language = config.language;
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const language = projectSettings.programmingLanguage;
     if (language === "typescript") {
       const group: GroupAction = {
         type: "group",

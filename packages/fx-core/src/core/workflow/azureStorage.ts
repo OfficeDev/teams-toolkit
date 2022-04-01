@@ -92,16 +92,18 @@ export class AzureStorageResource implements AzureResource {
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ) => {
+        const deployInputs = inputs["azure-storage"];
         return ok([
-          `deploy azure storage with path: ${inputs["azure-storage"].path}, type: ${inputs["azure-storage"].type}`,
+          `deploy azure storage with path: ${deployInputs.path}, type: ${deployInputs.type}`,
         ]);
       },
       execute: async (
         context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
+        const deployInputs = inputs["azure-storage"];
         console.log(
-          `deploy azure storage with path: ${inputs["azure-storage"].path}, type: ${inputs["azure-storage"].type}`
+          `deploy azure storage with path: ${deployInputs.path}, type: ${deployInputs.type}`
         );
         return ok(undefined);
       },

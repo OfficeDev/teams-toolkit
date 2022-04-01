@@ -1,0 +1,19 @@
+{
+    "name": "fx.add",
+    "type": "group",
+    "inputs": {
+        "bicep": {}
+    },
+    "actions": [
+        {
+            "type": "call",
+            "required": false,
+            "targetAction": "azure-sql.add"
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "fx.persistBicep"
+        }
+    ]
+}

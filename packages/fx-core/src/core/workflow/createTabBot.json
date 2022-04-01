@@ -6,14 +6,57 @@
     },
     "actions": [
         {
-            "type": "call",
-            "required": false,
-            "targetAction": "fx.init"
+            "type": "group",
+            "name": "fx.init",
+            "actions": [
+                {
+                    "type": "function",
+                    "name": "fx.initConfig"
+                },
+                {
+                    "type": "call",
+                    "targetAction": "teams-manifest.init",
+                    "required": true
+                }
+            ]
         },
         {
-            "type": "call",
-            "required": false,
-            "targetAction": "teams-tab.add",
+            "type": "group",
+            "name": "teams-tab.add",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "name": "teams-tab.add",
+                    "type": "function"
+                },
+                {
+                    "name": "call:tab-scaffold.generateCode",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "tab-scaffold.generateCode"
+                },
+                {
+                    "name": "call:azure-storage.generateBicep",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "azure-storage.generateBicep"
+                },
+                {
+                    "name": "call:teams-manifest.addCapability",
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "teams-manifest.addCapability",
+                    "inputs": {
+                        "teams-manifest": {
+                            "capabilities": [
+                                {
+                                    "name": "staticTab"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
             "inputs": {
                 "teams-tab": {
                     "framework": "react"
@@ -21,9 +64,42 @@
             }
         },
         {
-            "type": "call",
-            "required": false,
-            "targetAction": "teams-bot.add",
+            "type": "group",
+            "name": "teams-tab.add",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "name": "teams-bot.add",
+                    "type": "function"
+                },
+                {
+                    "name": "call:bot-scaffold.generateCode",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "bot-scaffold.generateCode"
+                },
+                {
+                    "name": "call:azure-web-app.generateBicep",
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "azure-web-app.generateBicep"
+                },
+                {
+                    "name": "call:teams-manifest.addCapability",
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "teams-manifest.addCapability",
+                    "inputs": {
+                        "teams-manifest": {
+                            "capabilities": [
+                                {
+                                    "name": "Bot"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
             "inputs": {
                 "teams-bot": {
                     "scenarios": [

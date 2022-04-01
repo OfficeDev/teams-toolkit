@@ -25,7 +25,7 @@ import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -36,6 +36,7 @@ import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityQuestion,
+  ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   M365AppTypeSelectQuestion,
   M365CapabilitiesFuncQuestion,
@@ -484,9 +485,19 @@ export async function getQuestionsForCreateProjectV2(
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = { minItems: 1 };
-  createNew.addChild(programmingLanguage);
+  programmingLanguage.condition = {
+    minItems: 1,
+    excludes: ExistingTabOptionItem.id,
+  };
+  capNode.addChild(programmingLanguage);
   createNewM365.addChild(programmingLanguage);
+
+  // existing tab endpoint
+  const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+  existingTabEndpoint.condition = {
+    contains: ExistingTabOptionItem.id,
+  };
+  capNode.addChild(existingTabEndpoint);
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {

@@ -3,35 +3,74 @@
 "use strict";
 import * as fs from "fs-extra";
 import path from "path";
-import { TextInputQuestion, OptionItem, Inputs } from "@microsoft/teamsfx-api";
-import { Constants, FileType } from "./constants";
+import {
+  Inputs,
+  LogProvider,
+  OptionItem,
+  PluginContext,
+  TelemetryReporter,
+  Question,
+  ValidationSchema,
+  TextInputQuestion,
+} from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { Constants, LanguageType, FileType } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
-export const apiNameQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiName,
-  title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
-  type: "text",
-  validation: {
-    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const apiNames: string[] = previousInputs![
-        Constants.questionKey.componentsSelect
-      ] as string[];
-      const projectPath: string = previousInputs?.projectPath as string;
-      for (const apiName of apiNames) {
-        const componentPath = path.join(projectPath, apiName);
-        const JsFileName = input + "." + FileType.JS;
-        const TsFileName = input + "." + FileType.TS;
-        if (
-          (await fs.pathExists(path.join(componentPath, JsFileName))) ||
-          (await fs.pathExists(path.join(componentPath, TsFileName)))
-        ) {
-          return getLocalizedString("plugins.apiConnector.QuestionAppName.validation.ApiNameExist");
-        }
-      }
-      return undefined;
-    },
-  },
-};
+export interface IQuestionService {
+  // Control whether the question is displayed to the user.
+  condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
+
+  // Generate the question
+  getQuestion(ctx: PluginContext): Question;
+}
+
+export class BaseQuestionService {
+  protected readonly logger: LogProvider | undefined;
+  protected readonly telemetryReporter: TelemetryReporter | undefined;
+
+  constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+    this.telemetryReporter = telemetryReporter;
+    this.logger = logger;
+  }
+}
+export class ApiNameQuestion extends BaseQuestionService implements IQuestionService {
+  protected readonly ctx: Context | undefined;
+  constructor(ctx?: Context, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+    super(telemetryReporter, logger);
+    this.ctx = ctx;
+  }
+
+  public getQuestion(): TextInputQuestion {
+    return {
+      type: "text",
+      name: Constants.questionKey.apiName,
+      title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
+      validation: {
+        validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+          const fileEx =
+            this.ctx?.projectSetting.programmingLanguage === LanguageType.JS
+              ? FileType.JS
+              : FileType.TS;
+          const projectPath: string = previousInputs?.projectPath as string;
+          const fileName: string = input + "." + fileEx;
+          const apiNames: string[] = previousInputs![
+            Constants.questionKey.componentsSelect
+          ] as string[];
+          for (const apiName of apiNames) {
+            const componentPath = path.join(projectPath, apiName);
+            if (await fs.pathExists(path.join(componentPath, fileName))) {
+              return getLocalizedString(
+                "plugins.apiConnector.QuestionAppName.validation.ApiNameExist"
+              );
+            }
+          }
+          return undefined;
+        },
+      },
+    };
+  }
+}
 
 export const apiEndpointQuestion: TextInputQuestion = {
   name: Constants.questionKey.endpoint,

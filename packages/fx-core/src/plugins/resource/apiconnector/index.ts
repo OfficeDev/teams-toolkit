@@ -40,15 +40,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<ApiConnectorResult> {
-    const activeResourcePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    if (!activeResourcePlugins) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoActivePluginsExistError.name,
-        ErrorMessage.NoActivePluginsExistError.message()
-      );
-    }
-    const res: QTreeNode = this.apiConnectorImpl.generateQuestion(activeResourcePlugins);
+    const res: QTreeNode = this.apiConnectorImpl.generateQuestion(ctx);
     return ok(res);
   }
 

@@ -3,8 +3,14 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { Inputs, QTreeNode, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
+import {
+  AzureSolutionSettings,
+  Inputs,
+  QTreeNode,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
+import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import {
   ApiConnectorConfiguration,
   generateTempFolder,
@@ -18,7 +24,7 @@ import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
 import {
-  apiNameQuestion,
+  ApiNameQuestion,
   apiLoginUserNameQuestion,
   botOption,
   functionOption,
@@ -161,7 +167,15 @@ export class ApiConnectorImpl {
     return ResultFactory.Success();
   }
 
-  public generateQuestion(activePlugins: string[]): QTreeNode {
+  public generateQuestion(ctx: Context): QTreeNode {
+    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    if (!activePlugins) {
+      throw ResultFactory.UserError(
+        ErrorMessage.NoActivePluginsExistError.name,
+        ErrorMessage.NoActivePluginsExistError.message()
+      );
+    }
     const options = [];
     if (activePlugins.includes(ResourcePlugins.Bot)) {
       options.push(botOption);
@@ -207,8 +221,9 @@ export class ApiConnectorImpl {
     const question = new QTreeNode({
       type: "group",
     });
+    const apiNameQuestion = new ApiNameQuestion(ctx);
     question.addChild(whichComponent);
-    question.addChild(new QTreeNode(apiNameQuestion));
+    question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
     question.addChild(whichAuthType);
     question.addChild(new QTreeNode(apiEndpointQuestion));
     question.addChild(new QTreeNode(apiLoginUserNameQuestion));

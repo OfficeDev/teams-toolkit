@@ -187,6 +187,7 @@ export class ApiConnectorImpl {
           return undefined;
         },
       },
+      placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
@@ -199,14 +200,15 @@ export class ApiConnectorImpl {
         ImplementMyselfOption,
       ],
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
+      placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
     });
     const question = new QTreeNode({
       type: "group",
     });
+    question.addChild(new QTreeNode(apiEndpointQuestion));
     question.addChild(whichComponent);
     question.addChild(new QTreeNode(apiNameQuestion));
     question.addChild(whichAuthType);
-    question.addChild(new QTreeNode(apiEndpointQuestion));
     question.addChild(new QTreeNode(apiLoginUserNameQuestion));
 
     return question;

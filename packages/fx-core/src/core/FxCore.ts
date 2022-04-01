@@ -20,6 +20,7 @@ import {
   ProjectConfig,
   ProjectConfigV3,
   ProjectSettings,
+  ProjectSettingsFileName,
   QTreeNode,
   Result,
   Stage,
@@ -49,6 +50,7 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import {
   createV2Context,
   getRootDirectory,
+  isAadManifestEnabled,
   isConfigUnifyEnabled,
   mapToJson,
   undefinedName,
@@ -57,8 +59,10 @@ import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
+  CommandAndResponseOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
+  SsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -70,6 +74,7 @@ import { downloadSample } from "./downloadSample";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
+  InitializedFileAlreadyExistError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
@@ -125,6 +130,7 @@ import {
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
+import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { getTemplatesFolder } from "../folder";
 import { getLocalizedString } from "../common/localizeUtils";
 
@@ -356,7 +362,10 @@ export class FxCore implements v3.ICore {
       if (!inputs.existingAppConfig?.isCreatedFromExistingApp) {
         // addFeature
         const features: string[] = [];
-        if (!capabilities.includes(TabSPFxItem.id)) {
+        if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
+          features.push(BuiltInFeaturePluginNames.aad);
+        }
+        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {
@@ -370,7 +379,8 @@ export class FxCore implements v3.ICore {
           if (
             capabilities.includes(BotOptionItem.id) ||
             capabilities.includes(MessageExtensionItem.id) ||
-            capabilities.includes(NotificationOptionItem.id)
+            capabilities.includes(NotificationOptionItem.id) ||
+            capabilities.includes(CommandAndResponseOptionItem.id)
           ) {
             features.push(BuiltInFeaturePluginNames.bot);
           }
@@ -408,6 +418,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -441,6 +452,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
+    AadManifestMigrationMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -512,6 +524,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -553,6 +566,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -585,6 +599,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -654,6 +669,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -687,6 +703,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -727,6 +744,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -826,6 +844,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
@@ -932,6 +951,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -992,6 +1012,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1018,6 +1039,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -1052,6 +1074,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1078,6 +1101,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1111,6 +1135,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1137,6 +1162,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1322,6 +1348,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,
@@ -1375,7 +1402,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const isValid = await isValidProject(projectPath);
+    const isValid = isValidProject(projectPath);
     if (isValid) {
       return err(
         new OperationNotPermittedError("initialize a project in existing teamsfx project")
@@ -1403,6 +1430,12 @@ export class FxCore implements v3.ICore {
 
     const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
 
+    // pre-check before initialize
+    const preCheckResult = await this.preCheck(appStudioV3, projectPath);
+    if (preCheckResult.isErr()) {
+      return err(preCheckResult.error);
+    }
+
     // init manifest
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
@@ -1429,6 +1462,57 @@ export class FxCore implements v3.ICore {
       await fs.copy(sourceReadmePath, targetReadmePath);
     }
     return ok(inputs.projectPath!);
+  }
+
+  // pre-check before initialize
+  async preCheck(
+    appStudioV3: AppStudioPluginV3,
+    projectPath: string
+  ): Promise<Result<Void, FxError>> {
+    const existFiles = new Array<string>();
+    // 0. check if projectSettings.json exists
+    const settingsFile = path.resolve(
+      projectPath,
+      `.${ConfigFolderName}`,
+      "configs",
+      ProjectSettingsFileName
+    );
+    if (await fs.pathExists(settingsFile)) {
+      existFiles.push(settingsFile);
+    }
+
+    // 1. check if manifest templates exist
+    const manifestPreCheckResult = await appStudioV3.preCheck(projectPath);
+    existFiles.push(...manifestPreCheckResult);
+
+    // 2. check if env config file exists
+    const defaultEnvPath = environmentManager.getEnvConfigPath(
+      environmentManager.getDefaultEnvName(),
+      projectPath
+    );
+    if (await fs.pathExists(defaultEnvPath)) {
+      existFiles.push(defaultEnvPath);
+    }
+
+    const localEnvPath = environmentManager.getEnvConfigPath(
+      environmentManager.getLocalEnvName(),
+      projectPath
+    );
+    if (await fs.pathExists(localEnvPath)) {
+      existFiles.push(localEnvPath);
+    }
+
+    // 3. check if README.md exists
+    const readmePath = path.join(projectPath, AutoGeneratedReadme);
+    if (await fs.pathExists(readmePath)) {
+      existFiles.push(readmePath);
+    }
+
+    if (existFiles.length > 0) {
+      return err(new InitializedFileAlreadyExistError(existFiles.join(", ")));
+    }
+
+    return ok(Void);
   }
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])

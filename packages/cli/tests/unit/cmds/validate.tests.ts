@@ -12,6 +12,7 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
+import Manifest from "../../../src/cmds/manifest";
 import { ManifestValidate } from "../../../src/cmds/validate";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";

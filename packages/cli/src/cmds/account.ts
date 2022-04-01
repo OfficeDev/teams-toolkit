@@ -267,11 +267,11 @@ export class AzureLogin extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     if ((args["service-principal"] as any) === true) {
       if (!args.username || !args.password || !args.tenant) {
-        throw new UserError(usageError, servicePrincipalLoginFormat, loginComponent);
+        throw new UserError(loginComponent, usageError, servicePrincipalLoginFormat);
       }
     } else {
       if (args.username || args.password || args.tenant) {
-        throw new UserError(usageError, codeFlowLoginFormat, loginComponent);
+        throw new UserError(loginComponent, usageError, codeFlowLoginFormat);
       }
     }
     await AzureTokenProvider.signout();

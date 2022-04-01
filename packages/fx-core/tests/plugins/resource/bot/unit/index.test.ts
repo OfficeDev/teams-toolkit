@@ -52,6 +52,7 @@ import * as os from "os";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
+import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {
@@ -312,23 +313,9 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
-
-      const fakeBotClient = factory.createAzureBotServiceClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(fakeBotClient.bots, "create").resolves({
-        status: 200,
-      });
-      sinon.stub(fakeBotClient.channels, "create").resolves({
-        status: 200,
-      });
-
-      sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 
       // Act
@@ -368,11 +355,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
       // Act
@@ -433,11 +415,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
 
@@ -524,6 +501,55 @@ describe("Teams Bot Resource Plugin", () => {
       // Act
       const result = await botPlugin.deploy(pluginContext);
 
+      // Assert
+      chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("Test func hosted bot deploy", () => {
+    let botPlugin: TeamsBot;
+    let botPluginImpl: TeamsBotImpl;
+    let rootDir: string;
+
+    beforeEach(() => {
+      botPlugin = new TeamsBot();
+      botPluginImpl = new FunctionsHostedBotImpl();
+      botPlugin.teamsBotImpl = botPluginImpl;
+      botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
+      rootDir = path.join(__dirname, utils.genUUID());
+
+      sinon.stub(LanguageStrategy, "localBuild").resolves();
+      sinon.stub(FuncHostedDeployMgr.prototype, "needsToRedeploy").resolves(true);
+      sinon.stub(FuncHostedDeployMgr.prototype, "zipAFolder").resolves(new AdmZip().toBuffer());
+      sinon.stub(FuncHostedDeployMgr.prototype, "getIgnoreRules").resolves([]);
+      sinon.stub(FuncHostedDeployMgr.prototype, "saveDeploymentInfo").resolves();
+      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+        publishingUserName: "test-username",
+        publishingPassword: "test-password",
+      });
+      sinon.stub(AzureOperations, "RestartWebApp").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+    });
+
+    afterEach(async () => {
+      sinon.restore();
+      await fs.remove(rootDir);
+    });
+
+    it("Happy Path", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+      pluginContext.root = rootDir;
+      sinon
+        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
+        .resolves(testUtils.generateFakeTokenCredentialsBase());
+      pluginContext.config.set(
+        "botWebAppResourceId",
+        "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
+      );
+
+      // Act
+      const result = await botPlugin.deploy(pluginContext);
       // Assert
       chai.assert.isTrue(result.isOk());
     });

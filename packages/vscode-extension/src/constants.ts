@@ -5,6 +5,9 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
   UnifyConfigs = "unifyConfigs",
   EnableInitApp = "enableInitApp",
+  BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
+  YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
+  generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

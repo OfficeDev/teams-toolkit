@@ -1,5 +1,5 @@
 import { BotFrameworkAdapter, TurnContext } from "botbuilder";
-import { BotConversation } from "../sdk/conversation";
+import { ConversationBot } from "@microsoft/teamsfx";
 import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -29,4 +29,6 @@ adapter.onTurnError = async (context: TurnContext, error: Error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-BotConversation.InitCommandResponse(adapter, [new HelloWorldCommandHandler()]);
+ConversationBot.initialize(adapter, {
+  commandHandlers: [new HelloWorldCommandHandler()],
+});

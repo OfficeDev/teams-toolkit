@@ -1,9 +1,8 @@
 import { PersonCard } from "@microsoft/mgt-react";
-import { useContext } from "react";
-import { TeamsFxContext } from "../Context";
+import { useTeamsFx } from "./lib/useTeamsFx";
 
 export function PersonCardGraphToolkit(props) {
-  const { themeString } = useContext(TeamsFxContext);
+  const { themeString } = useTeamsFx();
 
   return (
     <div className="section-margin">

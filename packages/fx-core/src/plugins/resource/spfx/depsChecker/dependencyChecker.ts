@@ -8,3 +8,8 @@ export interface DependencyChecker {
   isInstalled(): Promise<boolean>;
   install(): Promise<void>;
 }
+
+export interface DependencyInfo {
+  supportedVersion: string;
+  displayName: string;
+}

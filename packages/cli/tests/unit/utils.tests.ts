@@ -678,11 +678,4 @@ describe("Utils Tests", function () {
   it("getVersion", async () => {
     getVersion();
   });
-
-  describe("toLocaleLowerCase", () => {
-    it("should work for input of type string and array of string", () => {
-      expect(toLocaleLowerCase("AB")).equals("ab");
-      expect(toLocaleLowerCase(["Ab", "BB"])).deep.equals(["ab", "bb"]);
-    });
-  });
 });

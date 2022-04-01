@@ -15,7 +15,7 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { DependencyChecker } from "./dependencyChecker";
+import { DependencyChecker, DependencyInfo } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError, NpmNotFoundError } from "../error";
@@ -24,7 +24,7 @@ import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 const name = "yo";
 const supportedVersion = "4.3.0";
 const displayName = `${name}@${supportedVersion}`;
-const timeout = 5 * 60 * 1000;
+const timeout = 6 * 60 * 1000;
 
 export class YoChecker implements DependencyChecker {
   private readonly _logger: LogProvider;
@@ -33,11 +33,15 @@ export class YoChecker implements DependencyChecker {
     this._logger = logger;
   }
 
+  public static getDependencyInfo(): DependencyInfo {
+    return { supportedVersion: supportedVersion, displayName: displayName };
+  }
+
   public async ensureDependency(ctx: PluginContext): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureYoStart);
     try {
       if (!(await this.isInstalled())) {
-        this._logger.info(`Installing ${displayName}...`);
+        this._logger.info(`${displayName} not found, installing...`);
         await this.install();
         this._logger.info(`Successfully installed ${displayName}`);
       }
@@ -70,14 +74,17 @@ export class YoChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
+    this._logger.info("Checking npm...");
     if (!(await this.hasNPM())) {
-      this._logger.error("Failed to install yo since npm is not found");
+      this._logger.error("Failed to find npm!");
       throw NpmNotFoundError();
     }
 
+    this._logger.info("Start installing...");
     await this.cleanup();
     await this.installYo();
 
+    this._logger.info("Validating package...");
     if (!(await this.validate())) {
       this._logger.debug("Failed to validate yo, cleaning up...");
       await this.cleanup();
@@ -151,7 +158,7 @@ export class YoChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error("Failed to npm install yo");
+      this._logger.error("Failed to execute npm install yo");
       throw NpmInstallError(error as Error);
     }
   }

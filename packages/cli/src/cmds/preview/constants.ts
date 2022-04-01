@@ -11,9 +11,24 @@ export enum Browser {
   default = "default",
 }
 
-export const sideloadingUrl =
-  "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+export enum Hub {
+  teams = "teams",
+  outlook = "outlook",
+  office = "office",
+}
+
+export class LaunchUrl {
+  public static readonly teams: string =
+    "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+  public static readonly outlookTab: string =
+    "https://outlook.office.com/host/${teamsAppInternalId}?${account-hint}";
+  public static readonly outlookBot: string = "https://outlook.office.com/mail?${account-hint}";
+  public static readonly officeTab: string =
+    "https://www.office.com/m365apps/${teamsAppInternalId}?auth=2&${account-hint}";
+}
+
 export const teamsAppIdPlaceholder = "${teamsAppId}";
+export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
 export const serviceLogHintMessage = "The log of this task can be found in:";
@@ -98,4 +113,24 @@ export const doctorResult = {
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
+};
+
+export const installApp = {
+  detection:
+    "We detected that you have not yet installed the app in Teams first, please make sure the app is installed.",
+  description:
+    "To continue debug your application in Outlook, you need to install the app via Teams first.",
+  installInTeams: "Install in Teams",
+  installInTeamsDescription: "Pop up Teams Web Client for you to instapp app.",
+  continue: "Continue",
+  continueDescription: "Continue to preview in Outlook or Office.",
+  cancel: "Cancel",
+  cancelDescription: "Stop preview.",
+  installAppTitle: "Install app in Teams or continue to Outlook or Office",
+  nonInteractive: {
+    notInstalled:
+      'We detected that you have not yet installed the app in Teams first, please run "teamsfx preview %s --m365-host teams" to install app.',
+    manifestChanges:
+      'If you changed the manifest file, please run "teamsfx preview %s --m365-host teams" to install app again.',
+  },
 };

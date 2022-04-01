@@ -5,8 +5,7 @@ import { GraphErrorCodes } from "../aad/errorCodes";
 import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
-import { FxBotPluginResultFactory } from "./result";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export const ErrorType = {
   USER: "User",
@@ -77,7 +76,7 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
 
 export class PluginError extends Error {
   public name: string;
-  public details: string;
+  public details: [string, string];
   public suggestions: string[];
   public errorType: ErrorType;
   public innerError?: InnerError;
@@ -86,12 +85,12 @@ export class PluginError extends Error {
   constructor(
     type: ErrorType,
     name: string,
-    details: string,
+    details: [string, string],
     suggestions: string[],
     innerError?: InnerError,
     helpLink?: string
   ) {
-    super(details);
+    super(details[0]);
     this.name = name;
     this.details = details;
     this.suggestions = suggestions;
@@ -102,7 +101,14 @@ export class PluginError extends Error {
   }
 
   genMessage(): string {
-    let msg = `${this.message} `;
+    let msg = `${this.details[0]} `;
+    if (this.suggestions.length > 0) {
+      msg += getDefaultString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
+    }
+    return msg;
+  }
+  genDisplayMessage(): string {
+    let msg = `${this.details[1]} `;
     if (this.suggestions.length > 0) {
       msg += getLocalizedString("plugins.bot.ErrorSuggestions", this.suggestions.join(" "));
     }
@@ -111,7 +117,7 @@ export class PluginError extends Error {
 }
 
 export class PreconditionError extends PluginError {
-  constructor(message: string, suggestions: string[]) {
+  constructor(message: [string, string], suggestions: string[]) {
     super(ErrorType.USER, ErrorNames.PRECONDITION_ERROR, message, suggestions);
   }
 }
@@ -129,23 +135,12 @@ export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefi
   return value;
 }
 
-export class UserInputsError extends PluginError {
-  constructor(input: string, value: string) {
-    super(
-      ErrorType.USER,
-      ErrorNames.USER_INPUTS_ERROR,
-      Messages.SomethingIsInvalidWithValue(input, value),
-      [Messages.InputValidValueForSomething(input)]
-    );
-  }
-}
-
 export class AADAppCheckingError extends PluginError {
   constructor(innerError?: InnerError) {
     super(
       ErrorType.USER,
       ErrorNames.CALL_APPSTUDIO_API_ERROR,
-      Messages.FailToCallAppStudioForCheckingAADApp,
+      Messages.FailToCallAppStudioForCheckingAADApp as [string, string],
       [Messages.RetryTheCurrentStep],
       innerError
     );
@@ -171,20 +166,11 @@ export class TemplateZipFallbackError extends PluginError {
     super(
       ErrorType.USER,
       "TemplateZipFallbackError",
-      "Failed to download zip package and open local zip package.",
+      [
+        getDefaultString("plugins.bot.TemplateZipFallbackError"),
+        getLocalizedString("plugins.bot.TemplateZipFallbackError"),
+      ],
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
-    );
-  }
-}
-
-export class ClientCreationError extends PluginError {
-  constructor(clientName: string, innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.CLIENT_CREATION_ERROR,
-      Messages.FailToCreateSomeClient(clientName),
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
     );
   }
 }
@@ -201,26 +187,18 @@ export class ProvisionError extends PluginError {
   }
 }
 
-export class MissingSubscriptionRegistrationError extends PluginError {
-  constructor() {
-    super(
-      ErrorType.USER,
-      ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
-      Messages.TheSubsNotRegisterToUseBotService,
-      [Messages.RegisterYouSubsToUseBot, Messages.ClickHelpButtonForDetails],
-      undefined,
-      FxBotPluginResultFactory.defaultHelpLink
-    );
-  }
-}
-
 export class UnzipError extends PluginError {
   constructor(path?: string) {
-    super(ErrorType.USER, "UnzipError", "Failed to unzip templates and write to disk.", [
-      Messages.CheckOutputLogAndTryToFix,
-      Messages.ReopenWorkingDir(path),
-      Messages.RetryTheCurrentStep,
-    ]);
+    super(
+      ErrorType.USER,
+      "UnzipError",
+      [getDefaultString("plugins.bot.UnzipError"), getLocalizedString("plugins.bot.UnzipError")],
+      [
+        Messages.CheckOutputLogAndTryToFix,
+        Messages.ReopenWorkingDir(path),
+        Messages.RetryTheCurrentStep,
+      ]
+    );
   }
 }
 
@@ -242,7 +220,7 @@ export class ConfigValidationError extends PluginError {
       ErrorType.USER,
       ErrorNames.CONFIG_VALIDATION_ERROR,
       Messages.SomethingIsInvalidWithValue(name, value),
-      [Messages.RecoverConfig, Messages.RecreateTheProject]
+      [Messages.RecoverConfig, Messages.RecreateTheProject[1]]
     );
   }
 }
@@ -253,7 +231,7 @@ export class PackDirExistenceError extends PluginError {
       ErrorType.USER,
       ErrorNames.PACK_DIR_EXISTENCE_ERROR,
       Messages.SomethingIsNotExisting("pack directory"),
-      [Messages.RecreateTheProject]
+      [Messages.RecreateTheProject[1]]
     );
   }
 }
@@ -282,6 +260,19 @@ export class ZipDeployError extends PluginError {
   }
 }
 
+// TODO: merge and update message
+export class RestartWebAppError extends PluginError {
+  constructor(innerError?: InnerError) {
+    super(
+      ErrorType.USER,
+      ErrorNames.RESTART_WEBAPP_ERROR,
+      Messages.FailToRestartWebApp,
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
+      innerError
+    );
+  }
+}
+
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: InnerError) {
     super(
@@ -290,29 +281,6 @@ export class MessageEndpointUpdatingError extends PluginError {
       Messages.FailToUpdateMessageEndpoint(endpoint),
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
-    );
-  }
-}
-
-export class DownloadError extends PluginError {
-  constructor(url: string, innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.DOWNLOAD_ERROR,
-      Messages.FailToDownloadFrom(url),
-      ["Please check your network status and retry."],
-      innerError
-    );
-  }
-}
-
-export class TemplateProjectNotFoundError extends PluginError {
-  constructor() {
-    super(
-      ErrorType.USER,
-      ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
-      Messages.SomethingIsNotFound("Template project for scaffold"),
-      [Messages.RetryTheCurrentStep]
     );
   }
 }
@@ -329,24 +297,15 @@ export class CommandExecutionError extends PluginError {
   }
 }
 
-export class InvalidBotDataError extends PluginError {
-  constructor(innerError: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.INVALID_BOT_DATA_ERROR,
-      isErrorWithMessage(innerError) ? innerError.message : "",
-      [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
-      innerError
-    );
-  }
-}
-
 export class RegisterResourceProviderError extends PluginError {
   constructor(innerError?: InnerError) {
     super(
       ErrorType.USER,
       "RegisterResourceProviderError",
-      "Failed to register required resource provider for your app.",
+      [
+        getDefaultString("plugins.bot.RegisterResourceProviderError"),
+        getLocalizedString("plugins.bot.RegisterResourceProviderError"),
+      ],
       [
         Messages.RegisterRequiredRP(AzureConstants.requiredResourceProviders),
         Messages.CheckOutputLogAndTryToFix,

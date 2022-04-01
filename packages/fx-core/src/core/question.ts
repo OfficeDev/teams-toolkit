@@ -18,7 +18,12 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory, isBotNotificationEnabled, isM365AppEnabled } from "../common/tools";
+import {
+  getRootDirectory,
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isM365AppEnabled,
+} from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -29,6 +34,7 @@ import {
   M365LaunchPageOptionItem,
   M365MessagingExtensionOptionItem,
   CommandAndResponseOptionItem,
+  TabNonSsoItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -169,7 +175,7 @@ function setUnion<T>(...sets: Set<T>[]): Set<T> {
   return new Set(([] as T[]).concat(...sets.map((set) => [...set])));
 }
 
-// Each set is mutally exclusive. Handle conflict by removing items conflicting with the newly added items.
+// Each set is mutually exclusive. Handle conflict by removing items conflicting with the newly added items.
 // Assuming intersection of all sets are empty sets and no conflicts in newly added items.
 //
 // For example: sets = [[1, 2], [3, 4]], previous = [1, 2, 5], current = [1, 2, 4, 5].
@@ -193,6 +199,26 @@ export function handleSelectionConflict<T>(
   return current;
 }
 
+export function validateConflict<T>(sets: Set<T>[], current: Set<T>): string | undefined {
+  const all = setUnion(...sets);
+  const currentIntersectAll = setIntersect(all, current);
+  for (const set of sets) {
+    if (setIntersect(set, current).size > 0) {
+      const currentIntersectSet = setIntersect(set, current);
+      if (currentIntersectSet.size < currentIntersectAll.size) {
+        return getLocalizedString(
+          "core.capability.validation",
+          `[${Array.from(current).join(", ")}]`,
+          Array.from(sets)
+            .map((set) => `[${Array.from(set).join(", ")}]`)
+            .join(", ")
+        );
+      }
+    }
+  }
+  return undefined;
+}
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   return {
     name: CoreQuestionNames.Capabilities,
@@ -202,88 +228,85 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...[TabOptionItem, BotOptionItem],
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...[MessageExtensionItem, TabSPFxItem],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return getLocalizedString("core.createCapabilityQuestion.placeholder");
-        }
-
-        if (name.length > 1 && hasCapability(name, TabSPFxItem)) {
-          return getLocalizedString("core.createCapabilityQuestion.validation1");
-        }
-
-        // Bot, Messaging Extension, Notification, Command and Response are mutally exclusive (except that Bot and ME do not conflict).
-        // So nCr(4, 2) - 1 = 5 cases
-        if (hasCapability(name, BotOptionItem) && hasCapability(name, NotificationOptionItem)) {
-          return getLocalizedString("core.createCapabilityQuestion.botNotificationConflict");
-        }
-        if (
-          hasCapability(name, BotOptionItem) &&
-          hasCapability(name, CommandAndResponseOptionItem)
-        ) {
-          return getLocalizedString("core.createCapabilityQuestion.botCommandAndResponseConflict");
-        }
-
-        if (
-          hasCapability(name, NotificationOptionItem) &&
-          hasCapability(name, CommandAndResponseOptionItem)
-        ) {
-          return getLocalizedString(
-            "core.createCapabilityQuestion.notificationCommandAndResponseConflict"
-          );
-        }
-
-        if (
-          hasCapability(name, MessageExtensionItem) &&
-          hasCapability(name, NotificationOptionItem)
-        ) {
-          return getLocalizedString("core.createCapabilityQuestion.meNotificationConflict");
-        }
-
-        if (
-          hasCapability(name, MessageExtensionItem) &&
-          hasCapability(name, CommandAndResponseOptionItem)
-        ) {
-          return getLocalizedString("core.createCapabilityQuestion.meCommandAndResponseConflict");
-        }
-
-        return undefined;
-      },
+      validFunc: validateCapabilities,
     },
-    onDidChangeSelection: async function (
-      currentSelectedIds: Set<string>,
-      previousSelectedIds: Set<string>
-    ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
-        if (previousSelectedIds.has(TabSPFxItem.id)) {
-          currentSelectedIds.delete(TabSPFxItem.id);
-        } else {
-          currentSelectedIds.clear();
-          currentSelectedIds.add(TabSPFxItem.id);
-        }
-      }
-
-      if (isBotNotificationEnabled()) {
-        currentSelectedIds = handleSelectionConflict(
-          [
-            new Set([BotOptionItem.id, MessageExtensionItem.id]),
-            new Set([NotificationOptionItem.id]),
-            new Set([CommandAndResponseOptionItem.id]),
-          ],
-          previousSelectedIds,
-          currentSelectedIds
-        );
-      }
-
-      return currentSelectedIds;
-    },
+    onDidChangeSelection: onChangeSelectionForCapabilities,
   };
 }
+export function validateCapabilities(inputs: string[]): string | undefined {
+  if (inputs.length === 0) {
+    return getLocalizedString("core.createCapabilityQuestion.placeholder");
+  }
+  const set = new Set<string>();
+  inputs.forEach((i) => set.add(i));
+  let result = validateConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    set
+  );
+  if (result) return result;
+  result = validateConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+      ]),
+      new Set([TabSPFxItem.id]),
+    ],
+    set
+  );
+  if (result) return result;
+  result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  return result;
+}
 
+export async function onChangeSelectionForCapabilities(
+  currentSelectedIds: Set<string>,
+  previousSelectedIds: Set<string>
+): Promise<Set<string>> {
+  let result = handleSelectionConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    previousSelectedIds,
+    currentSelectedIds
+  );
+  result = handleSelectionConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+      ]),
+      new Set([TabSPFxItem.id]),
+    ],
+    previousSelectedIds,
+    result
+  );
+  result = handleSelectionConflict(
+    [new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])],
+    previousSelectedIds,
+    result
+  );
+  return result;
+}
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetEnvName,

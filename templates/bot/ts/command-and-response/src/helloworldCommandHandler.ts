@@ -1,10 +1,10 @@
 import { Activity, TurnContext } from "botbuilder";
-import { TeamsFxBotCommandHandler } from "./sdk/interface";
+import { TeamsFxBotCommandHandler } from "@microsoft/teamsfx";
 import helloWorldCard from "./adaptiveCards/helloworldCommand.json";
-import { MessageBuilder } from "./sdk/messageBuilder";
+import { MessageBuilder } from "@microsoft/teamsfx";
 
 export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
-  commandNameOrPattern: string | RegExp = "helloWorld"; // command?
+  commandNameOrPattern: string | RegExp = "helloWorld";
 
   async handleCommandReceived(
     context: TurnContext,

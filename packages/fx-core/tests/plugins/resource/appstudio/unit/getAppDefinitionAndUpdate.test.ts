@@ -14,6 +14,7 @@ import {
   LOCAL_BOT_ID,
   BOT_ID,
   Constants,
+  FRONTEND_INDEX_PATH,
 } from "./../../../../../src/plugins/resource/appstudio/constants";
 import {
   LOCAL_DEBUG_TAB_ENDPOINT,
@@ -121,6 +122,7 @@ describe("Get AppDefinition and Update", () => {
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+    FE_ConfigMap.set(FRONTEND_INDEX_PATH, "frontend indexPath");
 
     APPST_ConfigMap = new ConfigMap();
     APPST_ConfigMap.set(Constants.TEAMS_APP_ID, "my app");
@@ -255,7 +257,6 @@ describe("Get AppDefinition and Update", () => {
   it("should work for bot only project local debug", async () => {
     localSettings.frontend = undefined;
     localSettings.teamsApp = undefined;
-    configOfOtherPlugins.get(PluginNames.AAD)!.delete(REMOTE_AAD_ID);
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),

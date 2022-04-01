@@ -504,8 +504,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -558,8 +556,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 

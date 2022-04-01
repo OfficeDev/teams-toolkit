@@ -13,6 +13,7 @@ import {
   FRONTEND_DOMAIN,
   LOCAL_BOT_ID,
   BOT_ID,
+  FRONTEND_INDEX_PATH,
 } from "./../../../../../src/plugins/resource/appstudio/constants";
 import {
   LOCAL_DEBUG_TAB_ENDPOINT,
@@ -49,6 +50,7 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot } from "../helper";
+import { ResourcePlugins } from "../../../../../src/common/constants";
 
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
@@ -143,6 +145,7 @@ describe("Post Local Debug", () => {
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+    FE_ConfigMap.set(FRONTEND_INDEX_PATH, "fronend indexPath");
 
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
@@ -255,6 +258,7 @@ describe("Post Local Debug", () => {
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
+    ctx.envInfo.state.set(ResourcePlugins.AppStudio, new Map());
     ctx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),

@@ -42,7 +42,7 @@ export class AADResource implements AzureResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: this.name,
-            type: "cloud",
+            provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep[this.name] = "aad bicep";

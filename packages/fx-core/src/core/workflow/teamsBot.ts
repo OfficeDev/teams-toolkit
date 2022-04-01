@@ -38,9 +38,9 @@ export class TeamsBotFeature {
           const projectSettings = context.projectSetting as ProjectSettingsV3;
           projectSettings.resources.push({
             name: "teams-bot",
-            type: "compound",
             hostingResource: teamsBotInputs.hostingResource,
           });
+          inputs.bicep = {};
           return ok(undefined);
         },
       },

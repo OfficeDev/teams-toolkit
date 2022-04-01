@@ -47,7 +47,7 @@ export class AzureSqlResource implements AzureResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: "azure-sql",
-            type: "cloud",
+            provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep[this.name] = "azure-sql bicep";

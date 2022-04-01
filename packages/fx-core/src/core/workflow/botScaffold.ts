@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
+import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
@@ -13,8 +14,6 @@ import {
   ScaffoldResource,
   TeamsBotInputs,
 } from "./interface";
-import * as path from "path";
-import { getResource } from "./workflow";
 
 /**
  * bot scaffold plugin
@@ -44,7 +43,9 @@ export class BotScaffoldResource implements ScaffoldResource {
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
         projectSettings.resources.push({
           name: "bot-scaffold",
-          type: "scaffold",
+          build: true,
+          deployType: "zip",
+          folder: "bot",
           hostingResource: teamsBotInputs.hostingResource,
         });
         console.log("add resource 'bot-scaffold' in projectSettings");
@@ -60,7 +61,6 @@ export class BotScaffoldResource implements ScaffoldResource {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const config = (context.projectSetting as any).bot;
     const language = context.projectSetting.programmingLanguage;
     if (language === "typescript") {
       const group: GroupAction = {
@@ -70,13 +70,13 @@ export class BotScaffoldResource implements ScaffoldResource {
           {
             type: "shell",
             command: "npm install",
-            description: "npm install",
+            description: `npm install (${path.resolve(inputs.projectPath, "bot")})`,
             cwd: path.resolve(inputs.projectPath, "bot"),
           },
           {
             type: "shell",
             command: "npm run build",
-            description: "npm run build",
+            description: `npm run build (${path.resolve(inputs.projectPath, "bot")})`,
             cwd: path.resolve(inputs.projectPath, "bot"),
           },
         ],
@@ -87,7 +87,7 @@ export class BotScaffoldResource implements ScaffoldResource {
         type: "shell",
         name: "bot-scaffold.build",
         command: "MsBuild",
-        description: "MsBuild for bot",
+        description: `MsBuild (${path.resolve(inputs.projectPath, "bot")})`,
         cwd: path.resolve(inputs.projectPath, "bot"),
       });
     } else return ok(undefined);

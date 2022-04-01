@@ -46,8 +46,9 @@ export class AzureFunctionResource implements AzureResource, ScaffoldResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: "azure-function",
-            type: "compound",
+            build: true,
             hostingResource: "azure-function",
+            provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep[this.name] = "azure-function bicep";

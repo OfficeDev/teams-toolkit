@@ -54,6 +54,7 @@ export class TeamsfxCore {
             name: "fx",
             activeResourcePlugins: [],
           },
+          programmingLanguage: inputs["programming-language"],
         };
         (context.projectSetting as any)["resources"] = [];
         return ok(undefined);
@@ -232,9 +233,7 @@ export class TeamsfxCore {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const projectSettings = context.ctx.projectSetting as ProjectSettingsV3;
-    const resourcesToProvision = projectSettings.resources.filter(
-      (r) => r.type === "cloud" || r.type === "compound"
-    );
+    const resourcesToProvision = projectSettings.resources.filter((r) => r.provision);
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {
         type: "call",
@@ -311,18 +310,18 @@ export class TeamsfxCore {
             aadOutputs = inputs["aad"] || {};
             if (teamsTab && teamsBot) {
               aadOutputs.m365ApplicationIdUri = `api://${
-                inputs[teamsTab.hostingResource].endpoint
+                inputs[teamsTab.hostingResource!].endpoint
               }/botid-${inputs["azure-bot"].botId}`;
             } else if (teamsTab) {
               aadOutputs.m365ApplicationIdUri = `api://${
-                inputs[teamsTab.hostingResource].endpoint
+                inputs[teamsTab.hostingResource!].endpoint
               }`;
             } else {
               aadOutputs.m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
             }
             inputs["aad"] = aadOutputs;
             if (teamsTab) {
-              inputs[teamsTab.hostingResource].appSettings = {
+              inputs[teamsTab.hostingResource!].appSettings = {
                 M365_AUTHORITY_HOST: aadOutputs.authAuthorityHost, // AAD authority host
                 M365_CLIENT_ID: aadOutputs.clientId, // Client id of AAD application
                 M365_CLIENT_SECRET: aadOutputs.clientSecret, // Client secret of AAD application
@@ -331,7 +330,7 @@ export class TeamsfxCore {
               };
             }
             if (teamsBot) {
-              inputs[teamsBot.hostingResource].appSettings = {
+              inputs[teamsBot.hostingResource!].appSettings = {
                 BOT_ID: inputs["azure-bot"].botId,
                 BOT_PASSWORD: inputs["azure-bot"].botPassword,
                 M365_AUTHORITY_HOST: aadOutputs.authAuthorityHost, // AAD authority host
@@ -343,7 +342,7 @@ export class TeamsfxCore {
             }
           } else {
             if (teamsBot) {
-              inputs[teamsBot.hostingResource].appSettings = {
+              inputs[teamsBot.hostingResource!].appSettings = {
                 BOT_ID: inputs["azure-bot"].botId,
                 BOT_PASSWORD: inputs["azure-bot"].botPassword,
               };
@@ -385,18 +384,13 @@ export class TeamsfxCore {
   ): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const actions: Action[] = projectSettings.resources
-      .filter((r) => r.type === "scaffold" || r.type === "compound")
-      .map((r) => {
+      .filter((resource) => resource.build)
+      .map((resource) => {
         return {
-          name: `call:${r.name}.build`,
+          name: `call:${resource.name}.build`,
           type: "call",
-          targetAction: `${r.name}.build`,
+          targetAction: `${resource.name}.build`,
           required: false,
-          inputs: {
-            [r.name]: {
-              folder: r.folder,
-            },
-          },
         };
       });
     const group: Action = {
@@ -420,26 +414,21 @@ export class TeamsfxCore {
         required: false,
       },
     ];
-    const set = new Set<string>();
     projectSettings.resources
-      .filter((r) => r.type === "scaffold" || r.type === "compound")
-      .forEach((r) => {
-        if (r.hostingResource) {
-          set.add(r.hostingResource);
-        }
-      });
-    set.forEach((r) => {
-      actions.push({
-        type: "call",
-        targetAction: `${r}.deploy`,
-        required: false,
-        inputs: {
-          [r]: {
-            type: "zip",
+      .filter((resource) => resource.build && resource.hostingResource)
+      .forEach((resource) => {
+        actions.push({
+          type: "call",
+          targetAction: `${resource.hostingResource}.deploy`,
+          required: false,
+          inputs: {
+            [resource.hostingResource!]: {
+              folder: resource.folder,
+              type: resource.deployType,
+            },
           },
-        },
+        });
       });
-    });
     const action: GroupAction = {
       type: "group",
       name: "fx.deploy",

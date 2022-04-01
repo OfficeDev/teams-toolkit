@@ -1,0 +1,38 @@
+{
+    "type": "group",
+    "name": "teams-tab.add",
+    "mode": "parallel",
+    "actions": [
+        {
+            "name": "teams-bot.add",
+            "type": "function"
+        },
+        {
+            "name": "call:bot-scaffold.generateCode",
+            "type": "call",
+            "required": false,
+            "targetAction": "bot-scaffold.generateCode"
+        },
+        {
+            "name": "call:azure-web-app.generateBicep",
+            "type": "call",
+            "required": false,
+            "targetAction": "azure-web-app.generateBicep"
+        },
+        {
+            "name": "call:teams-manifest.addCapability",
+            "type": "call",
+            "required": true,
+            "targetAction": "teams-manifest.addCapability",
+            "inputs": {
+                "teams-manifest": {
+                    "capabilities": [
+                        {
+                            "name": "Bot"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

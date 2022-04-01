@@ -45,9 +45,12 @@ export class TabScaffoldResource implements ScaffoldResource {
         console.log(
           `scaffold tab source code for language: ${inputs["programming-language"]}, framework: ${tabInputs.framework}, hostingResource: ${tabInputs.hostingResource}`
         );
+        const folder = tabInputs.hostingResource === "spfx" ? "spfx" : "tab";
         projectSettings.resources.push({
           name: "tab-scaffold",
-          type: "scaffold",
+          build: true,
+          deployType: "zip",
+          folder: folder,
           hostingResource: tabInputs.hostingResource,
         });
         return ok(undefined);
@@ -69,13 +72,13 @@ export class TabScaffoldResource implements ScaffoldResource {
           {
             type: "shell",
             command: "npm install",
-            description: "npm install",
+            description: `npm install (${path.resolve(inputs.projectPath, "tab")})`,
             cwd: path.resolve(inputs.projectPath, "tab"),
           },
           {
             type: "shell",
             command: "npm run build",
-            description: "npm run build",
+            description: `npm run build (${path.resolve(inputs.projectPath, "tab")})`,
             cwd: path.resolve(inputs.projectPath, "tab"),
           },
         ],
@@ -86,7 +89,7 @@ export class TabScaffoldResource implements ScaffoldResource {
         type: "shell",
         name: "tab-scaffold.build",
         command: "MsBuild",
-        description: "MsBuild for tab",
+        description: `MsBuild (${path.resolve(inputs.projectPath, "tab")})`,
         cwd: path.resolve(inputs.projectPath, "tab"),
       });
     } else return ok(undefined);

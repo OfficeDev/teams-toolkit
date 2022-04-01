@@ -40,10 +40,10 @@ export class TeamsTabFeature {
           const projectSettings = context.projectSetting as ProjectSettingsV3;
           const teamsTabResource: ResourceConfig = {
             name: "teams-tab",
-            type: "compound",
             hostingResource: teamsTabInputs.hostingResource,
           };
           projectSettings.resources.push(teamsTabResource);
+          inputs.bicep = {};
           return ok(undefined);
         },
       },

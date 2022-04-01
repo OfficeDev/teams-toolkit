@@ -7,40 +7,40 @@
             "mode": "parallel",
             "actions": [
                 {
-                    "name": "call:teams-tab.build",
-                    "type": "call",
-                    "targetAction": "teams-tab.build",
-                    "required": false,
-                    "inputs": {
-                        "teams-tab": {}
-                    }
+                    "type": "group",
+                    "name": "tab-scaffold.build",
+                    "actions": [
+                        {
+                            "type": "shell",
+                            "command": "npm install",
+                            "description": "npm install (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab)",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
+                        },
+                        {
+                            "type": "shell",
+                            "command": "npm run build",
+                            "description": "npm run build (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab)",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
+                        }
+                    ]
                 },
                 {
-                    "name": "call:tab-scaffold.build",
-                    "type": "call",
-                    "targetAction": "tab-scaffold.build",
-                    "required": false,
-                    "inputs": {
-                        "tab-scaffold": {}
-                    }
-                },
-                {
-                    "name": "call:teams-bot.build",
-                    "type": "call",
-                    "targetAction": "teams-bot.build",
-                    "required": false,
-                    "inputs": {
-                        "teams-bot": {}
-                    }
-                },
-                {
-                    "name": "call:bot-scaffold.build",
-                    "type": "call",
-                    "targetAction": "bot-scaffold.build",
-                    "required": false,
-                    "inputs": {
-                        "bot-scaffold": {}
-                    }
+                    "type": "group",
+                    "name": "bot-scaffold.build",
+                    "actions": [
+                        {
+                            "type": "shell",
+                            "command": "npm install",
+                            "description": "npm install (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\bot)",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\bot"
+                        },
+                        {
+                            "type": "shell",
+                            "command": "npm run build",
+                            "description": "npm run build (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\bot)",
+                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\bot"
+                        }
+                    ]
                 }
             ]
         },
@@ -50,6 +50,7 @@
             "required": false,
             "inputs": {
                 "azure-storage": {
+                    "folder": "tab",
                     "type": "zip"
                 }
             }
@@ -60,6 +61,7 @@
             "required": false,
             "inputs": {
                 "azure-web-app": {
+                    "folder": "bot",
                     "type": "zip"
                 }
             }

@@ -13,17 +13,7 @@
                 {
                     "type": "call",
                     "required": false,
-                    "targetAction": "teams-tab.provision"
-                },
-                {
-                    "type": "call",
-                    "required": false,
                     "targetAction": "azure-storage.provision"
-                },
-                {
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "teams-bot.provision"
                 },
                 {
                     "type": "call",
@@ -59,17 +49,7 @@
                 {
                     "type": "call",
                     "required": false,
-                    "targetAction": "teams-tab.configure"
-                },
-                {
-                    "type": "call",
-                    "required": false,
                     "targetAction": "azure-storage.configure"
-                },
-                {
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "teams-bot.configure"
                 },
                 {
                     "type": "call",

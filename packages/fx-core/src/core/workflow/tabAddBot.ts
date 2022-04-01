@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, v2 } from "@microsoft/teamsfx-api";
+import { Platform, ProjectSettings, v2 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../common";
+import { NotificationOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import { setTools } from "../globalVars";
 import "./aad";
 import "./azureBot";
@@ -16,27 +16,25 @@ import "./azureSql";
 import "./azureStorage";
 import "./azureWebApp";
 import "./botScaffold";
-import "./core";
-import { ProjectSettingsV3 } from "./interface";
 import "./spfx";
 import "./tabScaffold";
 import "./teamsBot";
 import "./teamsManifest";
 import "./teamsTab";
+import "./core";
 import { MockTools } from "./utils";
 import { executeAction, getAction, planAction, resolveAction } from "./workflow";
+import { ProjectSettingsV3 } from "./interface";
 
-async function deploy() {
+async function tabAddBot() {
   setTools(new MockTools());
   const projectSetting: ProjectSettingsV3 = {
     projectId: "123",
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
+    programmingLanguage: "typescript",
     resources: [
-      {
-        name: "teams-tab",
-        hostingResource: "azure-storage",
-      },
+      { name: "teams-tab", hostingResource: "azure-storage" },
       {
         name: "tab-scaffold",
         build: true,
@@ -45,37 +43,28 @@ async function deploy() {
         hostingResource: "azure-storage",
       },
       { name: "azure-storage", provision: true },
-      {
-        name: "teams-bot",
-        hostingResource: "azure-web-app",
-      },
-      {
-        name: "bot-scaffold",
-        build: true,
-        deployType: "zip",
-        folder: "bot",
-        hostingResource: "azure-web-app",
-      },
-      { name: "azure-web-app", provision: true },
     ],
-    programmingLanguage: "typescript",
   };
   const context = createV2Context(projectSetting);
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
+    "teams-bot": {
+      hostingResource: "azure-web-app",
+    },
   };
-  const action = await getAction("fx.deploy", context, inputs);
+  const action = await getAction("teams-bot.add", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("deploy.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
+    const resolved = await resolveAction(action, context, inputs);
+    await fs.writeFile("tabAddBot.json", JSON.stringify(resolved, undefined, 4));
+    await planAction(action, context, inputs);
+    inputs.step = 1;
     await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
   console.log("projectSetting:");
-  console.log(context.projectSetting);
+  console.log(projectSetting);
 }
 
-deploy();
+tabAddBot();

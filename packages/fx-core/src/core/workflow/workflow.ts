@@ -3,11 +3,11 @@
 
 import { Json, ResourceConfig } from "@microsoft/teamsfx-api";
 import * as Handlebars from "handlebars";
-import { assign, merge } from "lodash";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { Action, ProjectSettingsV3 } from "./interface";
 import toposort from "toposort";
+import { merge } from "lodash";
 
 export async function getAction(
   name: string,
@@ -180,7 +180,7 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
       inputs.step++;
     }
   } else if (action.type === "shell") {
-    console.log(`---- plan[${inputs.step++}]: shell command: ${action.command}`);
+    console.log(`---- plan[${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);

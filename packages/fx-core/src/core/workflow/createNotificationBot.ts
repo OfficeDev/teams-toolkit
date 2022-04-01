@@ -8,7 +8,7 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../common";
-import { TabOptionItem } from "../../plugins/solution/fx-solution/question";
+import { NotificationOptionItem } from "../../plugins/solution/fx-solution/question";
 import { setTools } from "../globalVars";
 import "./aad";
 import "./azureBot";
@@ -26,23 +26,23 @@ import "./teamsTab";
 import { MockTools } from "./utils";
 import { executeAction, getAction, planAction, resolveAction } from "./workflow";
 
-async function createTab() {
+async function createNotificationBot() {
   setTools(new MockTools());
-  const context = createV2Context({} as ProjectSettings);
+  const context = createV2Context({} as ProjectSettings) as v2.Context;
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
-    capabilities: [TabOptionItem.id],
-    "teams-tab": {
-      hostingResource: "azure-storage",
-      framework: "react",
+    language: "typescript",
+    capabilities: [NotificationOptionItem.id],
+    "teams-bot": {
+      hostingResource: "azure-function",
     },
     "programming-language": "typescript",
   };
   const action = await getAction("fx.create", context, inputs);
   if (action) {
     const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("createTab.json", JSON.stringify(resolved, undefined, 4));
+    fs.writeFileSync("createNotificationBot.json", JSON.stringify(resolved, undefined, 4));
     await planAction(action, context, cloneDeep(inputs));
     await executeAction(action, context, inputs);
   }
@@ -51,4 +51,5 @@ async function createTab() {
   console.log("projectSetting:");
   console.log(context.projectSetting);
 }
-createTab();
+
+createNotificationBot();

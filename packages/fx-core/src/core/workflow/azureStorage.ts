@@ -46,7 +46,7 @@ export class AzureStorageResource implements AzureResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: "azure-storage",
-            type: "cloud",
+            provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep["azure-storage"] = `azure-storage bicep`;
@@ -94,7 +94,7 @@ export class AzureStorageResource implements AzureResource {
       ) => {
         const deployInputs = inputs["azure-storage"];
         return ok([
-          `deploy azure storage with path: ${deployInputs.path}, type: ${deployInputs.type}`,
+          `deploy azure storage with path: ${deployInputs.folder}, type: ${deployInputs.type}`,
         ]);
       },
       execute: async (
@@ -103,7 +103,7 @@ export class AzureStorageResource implements AzureResource {
       ): Promise<Result<undefined, FxError>> => {
         const deployInputs = inputs["azure-storage"];
         console.log(
-          `deploy azure storage with path: ${deployInputs.path}, type: ${deployInputs.type}`
+          `deploy azure storage with path: ${deployInputs.folder}, type: ${deployInputs.type}`
         );
         return ok(undefined);
       },

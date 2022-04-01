@@ -45,7 +45,7 @@ export class AzureWebAppResource implements AzureResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: "azure-web-app",
-            type: "cloud",
+            provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep[this.name] = `azure-web-app bicep`;
@@ -117,7 +117,7 @@ export class AzureWebAppResource implements AzureResource {
         inputs: v2.InputsWithProjectPath
       ) => {
         return ok([
-          `deploy azure web app with path: ${inputs["azure-web-app"].path}, type: ${inputs["azure-web-app"].type}`,
+          `deploy azure web app with path: ${inputs["azure-web-app"].folder}, type: ${inputs["azure-web-app"].type}`,
         ]);
       },
       execute: async (
@@ -125,7 +125,7 @@ export class AzureWebAppResource implements AzureResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         console.log(
-          `deploy azure web app with path: ${inputs["azure-web-app"].path}, type: ${inputs["azure-web-app"].type}`
+          `deploy azure web app with path: ${inputs["azure-web-app"].folder}, type: ${inputs["azure-web-app"].type}`
         );
         return ok(undefined);
       },

@@ -259,21 +259,23 @@ export interface TeamsTabInputs extends v2.InputsWithProjectPath {
   };
 }
 
-export interface DeployInputs extends v2.InputsWithProjectPath {
-  path: string;
-  type: "zip" | "folder";
-}
-
 export interface ResourceConfig extends Json {
   name: string;
-  type: "scaffold" | "cloud" | "compound";
-}
-
-export interface ScaffoldResourceConfig extends ResourceConfig {
-  type: "scaffold";
-  folder: string;
-  hostingResource: string;
+  /**
+   * support build operation, deployable
+   */
+  build?: boolean;
+  /**
+   * resource support provision
+   */
+  provision?: boolean;
+  /**
+   * for deployable resource, which cloud resource can host it
+   */
+  hostingResource?: string;
+  deployType?: "folder" | "zip";
   language?: "csharp" | "javascript" | "typescript";
+  folder?: string;
 }
 
 export interface ProjectSettingsV3 extends ProjectSettings {

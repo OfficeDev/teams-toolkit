@@ -34,22 +34,33 @@ async function provision() {
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
     resources: [
-      { name: "teams-tab", type: "compound", hostingResource: "azure-storage" },
       {
-        name: "tab-scaffold",
-        type: "scaffold",
+        name: "teams-tab",
         hostingResource: "azure-storage",
       },
-      { name: "azure-storage", type: "cloud" },
-      { name: "teams-bot", type: "compound", hostingResource: "azure-web-app" },
       {
-        name: "bot-scaffold",
-        type: "scaffold",
+        name: "tab-scaffold",
+        build: true,
+        deployType: "zip",
+        folder: "tab",
+        hostingResource: "azure-storage",
+      },
+      { name: "azure-storage", provision: true },
+      {
+        name: "teams-bot",
         hostingResource: "azure-web-app",
       },
-      { name: "azure-web-app", type: "cloud" },
-      { name: "aad", type: "cloud" },
+      {
+        name: "bot-scaffold",
+        build: true,
+        deployType: "zip",
+        folder: "bot",
+        hostingResource: "azure-web-app",
+      },
+      { name: "azure-web-app", provision: true },
+      { name: "aad", provision: true },
     ],
+    programmingLanguage: "typescript",
   };
   const envInfo: v3.EnvInfoV3 = {
     envName: "dev",

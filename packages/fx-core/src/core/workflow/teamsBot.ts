@@ -10,6 +10,7 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
+  Resource,
   TeamsBotInputs,
 } from "./interface";
 
@@ -17,7 +18,7 @@ import {
  * teams bot - feature level action
  */
 @Service("teams-bot")
-export class TeamsBotFeature {
+export class TeamsBotFeature implements Resource {
   name = "teams-bot";
   add(
     context: ContextV3,

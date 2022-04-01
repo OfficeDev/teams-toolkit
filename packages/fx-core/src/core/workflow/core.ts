@@ -155,34 +155,33 @@ export class TeamsfxCore {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const addInputs = inputs[this.name];
-    const resource = addInputs.resource;
-    if (!resource) throw new Error("fx.add: resource is empty");
-    const actions: Action[] = [
-      {
-        type: "call",
-        required: false,
-        targetAction: `${resource}.generateCode`,
-      },
-      {
-        type: "call",
-        required: false,
-        targetAction: `${resource}.generateBicep`,
-      },
-      {
-        type: "call",
-        required: true,
-        targetAction: "fx.persistBicep",
-      },
-    ];
-    const action: GroupAction = {
-      name: "fx.add",
-      type: "group",
-      inputs: {
-        bicep: {},
-      },
-      actions: actions,
-    };
-    return ok(action);
+    const resourceName = addInputs.resource;
+    if (!resourceName) throw new Error("fx.add: resource is empty");
+    const addResourceActionRes = addResource(resourceName, context, inputs);
+    if (addResourceActionRes.isOk() && addResourceActionRes.value) {
+      const resource = Container.get(resourceName) as ScaffoldResource | AzureResource;
+      if (resource.type === "azure") {
+        const group: GroupAction = {
+          name: "fx.add",
+          type: "group",
+          inputs: {
+            bicep: {},
+          },
+          actions: [
+            addResourceActionRes.value,
+            {
+              type: "call",
+              required: true,
+              targetAction: "fx.persistBicep",
+            },
+          ],
+        };
+        return ok(group);
+      } else {
+        return addResourceActionRes;
+      }
+    }
+    return ok(undefined);
   }
   persistBicep(
     context: v2.Context,
@@ -433,6 +432,46 @@ export class TeamsfxCore {
       type: "group",
       name: "fx.deploy",
       actions: actions,
+    };
+    return ok(action);
+  }
+}
+
+export function addResource(
+  name: string,
+  context: ContextV3,
+  inputs: v2.InputsWithProjectPath
+): Result<Action | undefined, FxError> {
+  const resource = Container.get(name) as ScaffoldResource | AzureResource;
+  const fxInputs = inputs["fx"];
+  if (resource.type === "azure") {
+    const action: Action = {
+      type: "call",
+      required: true,
+      targetAction: `${name}.generateBicep`,
+      inputs: {
+        [name]: fxInputs,
+      },
+    };
+    return ok(action);
+  } else if (resource.type === "scaffold") {
+    const action: Action = {
+      type: "call",
+      required: true,
+      targetAction: `${resource}.generateCode`,
+      inputs: {
+        [name]: fxInputs,
+      },
+    };
+    return ok(action);
+  } else {
+    const action: Action = {
+      type: "call",
+      required: true,
+      targetAction: `${resource}.add`,
+      inputs: {
+        [name]: fxInputs,
+      },
     };
     return ok(action);
   }

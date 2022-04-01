@@ -4,6 +4,7 @@
 import {
   FxError,
   Json,
+  ok,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -12,6 +13,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { AppManifestProvider } from "../../../../api/build/v3";
+import { addResource } from "../../plugins/solution/fx-solution/v2/executeUserTask";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -117,6 +119,7 @@ export interface ContextV3 extends v2.Context {
 
 export interface AzureResource {
   readonly name: string;
+  readonly type: "azure";
   readonly description?: string;
   generateBicep?: (
     context: ContextV3,
@@ -142,13 +145,27 @@ export interface AzureResource {
 
 export interface ScaffoldResource {
   readonly name: string;
+  readonly type: "scaffold";
   readonly description?: string;
-  generateCode?: (
+  generateCode: (
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
   build?: (
     context: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ) => MaybePromise<Result<Action | undefined, FxError>>;
+}
+
+export interface Resource {
+  readonly name: string;
+  readonly description?: string;
+  add: (
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ) => MaybePromise<Result<Action | undefined, FxError>>;
+  update?: (
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
 }

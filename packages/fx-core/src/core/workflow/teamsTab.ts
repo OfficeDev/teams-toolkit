@@ -10,6 +10,7 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
+  Resource,
   ResourceConfig,
   TeamsTabInputs,
 } from "./interface";
@@ -18,7 +19,7 @@ import {
  * teams tab - feature level action
  */
 @Service("teams-tab")
-export class TeamsTabFeature {
+export class TeamsTabFeature implements Resource {
   name = "teams-tab";
   add(
     context: ContextV3,

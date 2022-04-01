@@ -20,6 +20,6 @@ export interface ConversationOptions
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [commandHandlers?](./teamsfx.conversationoptions.commandhandlers.md) | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | <b><i>(BETA)</i></b> <i>(Optional)</i> The command handlers to register with the underlying conversation bot that can process a command and return a response. |
-|  [enableNotification?](./teamsfx.conversationoptions.enablenotification.md) | boolean | <b><i>(BETA)</i></b> <i>(Optional)</i> A boolean, controlling whether to whether to include the notification feature. |
+|  [enableNotification?](./teamsfx.conversationoptions.enablenotification.md) | boolean | <b><i>(BETA)</i></b> <i>(Optional)</i> A boolean, controlling whether to include the notification feature. |
 |  [storage?](./teamsfx.conversationoptions.storage.md) | NotificationTargetStorage | <b><i>(BETA)</i></b> <i>(Optional)</i> An optional storage to persist bot notification connections. |
 

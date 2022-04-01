@@ -17,5 +17,5 @@ commandHandlers?: TeamsFxBotCommandHandler[];
 
 ## Remarks
 
-If provided, the corresponding handler will be involked if the bot received a message that matches the command pattern (`string` or `RegExp`<!-- -->) defined in the handler.
+If provided, the corresponding handler will be invoked if the bot received a message that matches the command pattern (`string` or `RegExp`<!-- -->) defined in the handler.
 

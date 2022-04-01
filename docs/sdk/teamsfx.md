@@ -52,7 +52,7 @@
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | <b><i>(BETA)</i></b> Represent a notification target. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |
-|  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | <b><i>(BETA)</i></b> Interface for a command handler thar can process command to a TeamsFx bot and return a response. |
+|  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | <b><i>(BETA)</i></b> Interface for a command handler that can process command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | <b><i>(BETA)</i></b> UserInfo with user displayName, objectId and preferredUserName. |
 
 ## Type Aliases

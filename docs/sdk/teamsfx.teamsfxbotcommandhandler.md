@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Interface for a command handler thar can process command to a TeamsFx bot and return a response.
+Interface for a command handler that can process command to a TeamsFx bot and return a response.
 
 <b>Signature:</b>
 

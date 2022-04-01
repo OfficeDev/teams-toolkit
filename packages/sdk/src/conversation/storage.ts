@@ -73,7 +73,7 @@ export class LocalFileStorage implements NotificationTargetStorage {
     });
   }
 
-  private readFromFile(): Promise<unknown> {
+  private readFromFile(): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         fs.readFile(this.filePath, { encoding: "utf-8" }, (err, rawData) => {

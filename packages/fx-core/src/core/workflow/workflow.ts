@@ -29,36 +29,6 @@ export async function getAction(
   return undefined;
 }
 
-function _templateReplace(schema: Json, context: Json, rootContext: Json) {
-  let change = false;
-  for (const key of Object.keys(schema)) {
-    const subSchema = schema[key];
-    let subContext = context[key];
-    console.log(`subSchema: ${subSchema}, subContext: ${subContext}`);
-    if (typeof subSchema === "string") {
-      const subContextStr = subContext as string;
-      const template = Handlebars.compile(subSchema);
-      const newValue = template(rootContext);
-      if (newValue !== subSchema) {
-        change = true;
-      }
-      schema[key] = newValue;
-      context[key] = newValue;
-    } else if (typeof subSchema === "object") {
-      if (!subContext) {
-        subContext = {};
-        assign(subContext, subSchema);
-        context[key] = subContext;
-      } else {
-        merge(subContext, subSchema);
-      }
-      const valueIsChange = _templateReplace(subSchema, subContext, rootContext);
-      if (valueIsChange) change = true;
-    }
-  }
-  return change;
-}
-
 function _resolveVariables(schema: Json) {
   const variables = new Set<string>();
   extractVariables(schema, variables);

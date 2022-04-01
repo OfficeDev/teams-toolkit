@@ -9,6 +9,7 @@ import {
   QTreeNode,
   SystemError,
   UserError,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -19,7 +20,7 @@ import {
   getSampleFileName,
 } from "./utils";
 import { Constants } from "./constants";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -167,7 +168,7 @@ export class ApiConnectorImpl {
     return ResultFactory.Success();
   }
 
-  public generateQuestion(ctx: Context): QTreeNode {
+  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
     const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     if (!activePlugins) {
@@ -228,6 +229,6 @@ export class ApiConnectorImpl {
     question.addChild(new QTreeNode(apiEndpointQuestion));
     question.addChild(new QTreeNode(apiLoginUserNameQuestion));
 
-    return question;
+    return ok(question);
   }
 }

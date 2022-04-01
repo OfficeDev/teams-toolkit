@@ -40,8 +40,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<ApiConnectorResult> {
-    const res: QTreeNode = this.apiConnectorImpl.generateQuestion(ctx);
-    return ok(res);
+    return await this.apiConnectorImpl.generateQuestion(ctx);
   }
 
   async executeUserTask(

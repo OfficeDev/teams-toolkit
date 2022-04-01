@@ -14,9 +14,9 @@ import {
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { Constants, LanguageType, FileType } from "./constants";
+import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-
+import { checkApiNameExist } from "./checker";
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
@@ -48,25 +48,16 @@ export class ApiNameQuestion extends BaseQuestionService implements IQuestionSer
       title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
       validation: {
         validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-          const fileEx =
-            this.ctx?.projectSetting.programmingLanguage === LanguageType.JS
-              ? FileType.JS
-              : FileType.TS;
-          const projectPath: string = previousInputs?.projectPath as string;
-          const apiFileName: string = input + "." + fileEx;
+          const languageType: string = this.ctx?.projectSetting.programmingLanguage as string;
           const components: string[] = previousInputs![
             Constants.questionKey.componentsSelect
           ] as string[];
-          for (const component of components) {
-            const componentPath = path.join(projectPath, component);
-            if (await fs.pathExists(path.join(componentPath, apiFileName))) {
-              return getLocalizedString(
-                "plugins.apiConnector.QuestionAppName.validation.ApiNameExist",
-                apiFileName
-              );
-            }
-          }
-          return undefined;
+          return await checkApiNameExist(
+            input,
+            previousInputs?.projectPath as string,
+            components,
+            languageType
+          );
         },
       },
     };

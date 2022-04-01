@@ -260,7 +260,7 @@
   "plugins.apiConnector.APIKeyOption.detail": "Take API Key as the way to authentication",
   "plugins.apiConnector.ImplementMyselfOption.detail": "Define the authentication by yourself",
   "plugins.apiConnector.questionComponentSelect.emptySelection": "You have to select at least one component.",
-  "plugins.apiConnector.QuestionAppName.validation.ApiNameExist": "Exists a file with the same name, please rename it",
+  "plugins.apiConnector.QuestionAppName.validation.ApiNameExist": "Please rename a different API name to avoid conflicts with existing file %s",
   "error.ProjectFolderExistError": "Path %s already exists. Select a different folder.",
   "error.PathNotExistError": "Path does not exist: %s",
   "error.ProjectFolderInvalidError": "Path %s is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \\${homeDir} ).",

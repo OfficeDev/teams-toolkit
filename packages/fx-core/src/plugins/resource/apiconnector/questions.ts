@@ -53,15 +53,16 @@ export class ApiNameQuestion extends BaseQuestionService implements IQuestionSer
               ? FileType.JS
               : FileType.TS;
           const projectPath: string = previousInputs?.projectPath as string;
-          const fileName: string = input + "." + fileEx;
-          const apiNames: string[] = previousInputs![
+          const apiFileName: string = input + "." + fileEx;
+          const components: string[] = previousInputs![
             Constants.questionKey.componentsSelect
           ] as string[];
-          for (const apiName of apiNames) {
-            const componentPath = path.join(projectPath, apiName);
-            if (await fs.pathExists(path.join(componentPath, fileName))) {
+          for (const component of components) {
+            const componentPath = path.join(projectPath, component);
+            if (await fs.pathExists(path.join(componentPath, apiFileName))) {
               return getLocalizedString(
-                "plugins.apiConnector.QuestionAppName.validation.ApiNameExist"
+                "plugins.apiConnector.QuestionAppName.validation.ApiNameExist",
+                apiFileName
               );
             }
           }

@@ -93,7 +93,9 @@ export class YoChecker implements DependencyChecker {
   }
 
   public getBinFolder(): string {
-    return this.getDefaultInstallPath();
+    return this.isWindows()
+      ? this.getDefaultInstallPath()
+      : path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
   }
 
   private async validate(): Promise<boolean> {

@@ -113,9 +113,6 @@ export class SPFxPluginImpl {
         yoEnv.PATH = isYoCheckerEnabled()
           ? `${yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
           : process.env.PATH;
-        const generator = isGeneratorCheckerEnabled()
-          ? spGeneratorChecker.getSpGeneratorPath()
-          : "@microsoft/sharepoint";
         await cpUtils.executeCommand(
           ctx.root,
           ctx.logProvider,
@@ -124,7 +121,7 @@ export class SPFxPluginImpl {
             env: yoEnv,
           },
           "yo",
-          generator,
+          "@microsoft/sharepoint",
           "--skip-install",
           "true",
           "--component-type",

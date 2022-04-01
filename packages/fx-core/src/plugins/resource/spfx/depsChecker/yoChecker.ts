@@ -101,7 +101,11 @@ export class YoChecker implements DependencyChecker {
   }
 
   private getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "yo");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
+  }
+
+  private getPackagePath(): string {
+    return path.join(this.getDefaultInstallPath(), "node_modules", "yo");
   }
 
   private getSentinelPath(): string {
@@ -133,12 +137,10 @@ export class YoChecker implements DependencyChecker {
 
   private async cleanup(): Promise<void> {
     try {
-      await fs.emptyDir(this.getDefaultInstallPath());
+      await fs.emptyDir(this.getPackagePath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      await this._logger.error(
-        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
-      );
+      await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
     }
   }
 

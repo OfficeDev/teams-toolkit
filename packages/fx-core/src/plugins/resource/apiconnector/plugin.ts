@@ -3,7 +3,7 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, QTreeNode, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   ApiConnectorConfiguration,
@@ -72,10 +72,14 @@ export class ApiConnectorImpl {
           );
         })
       );
-      throw ResultFactory.SystemError(
-        ErrorMessage.generateApiConFilesError.name,
-        ErrorMessage.generateApiConFilesError.message(err.message)
-      );
+      if (err instanceof SystemError || err instanceof UserError) {
+        throw err;
+      } else {
+        throw ResultFactory.SystemError(
+          ErrorMessage.generateApiConFilesError.name,
+          ErrorMessage.generateApiConFilesError.message(err.message)
+        );
+      }
     } finally {
       await Promise.all(
         config.ComponentPath.map(async (component) => {

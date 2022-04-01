@@ -82,7 +82,6 @@ describe("Middleware - aadManifestMigration.test", () => {
     const appName = randomAppName();
     const projectSettings: ProjectSettings = MockProjectSettings(appName);
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-    sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "move").resolves();
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (path: string) => {

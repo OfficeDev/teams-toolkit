@@ -22,6 +22,7 @@ import {
   getRootDirectory,
   isAadManifestEnabled,
   isBotNotificationEnabled,
+  isInitAppEnabled,
   isM365AppEnabled,
 } from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -35,6 +36,7 @@ import {
   M365MessagingExtensionOptionItem,
   CommandAndResponseOptionItem,
   TabNonSsoItem,
+  ExistingTabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -58,6 +60,7 @@ export enum CoreQuestionNames {
   M365CreateFromScratch = "m365-scratch",
   M365AppType = "app-type",
   M365Capabilities = "m365-capabilities",
+  ExistingTabEndpoint = "existing-tab-endpoint",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -229,6 +232,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...[MessageExtensionItem, TabSPFxItem],
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      ...(isInitAppEnabled() ? [ExistingTabOptionItem] : []),
     ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
@@ -296,6 +300,7 @@ export async function onChangeSelectionForCapabilities(
         CommandAndResponseOptionItem.id,
       ]),
       new Set([TabSPFxItem.id]),
+      new Set([ExistingTabOptionItem.id]),
     ],
     previousSelectedIds,
     result
@@ -513,5 +518,23 @@ export const M365CapabilitiesFuncQuestion: FuncQuestion = {
     } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
       inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
     }
+  },
+};
+
+export const ExistingTabEndpointQuestion: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.ExistingTabEndpoint,
+  title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
+  default: "https://localhost:3000",
+  placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
+  validation: {
+    validFunc: async (endpoint: string): Promise<string | undefined> => {
+      const match = endpoint.match(/^https:\/\/[\S]+$/i);
+      if (!match) {
+        return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
+      }
+
+      return undefined;
+    },
   },
 };

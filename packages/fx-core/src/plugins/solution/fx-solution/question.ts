@@ -43,6 +43,14 @@ export const CommandAndResponseOptionItem: OptionItem = {
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };
 
+export const ExistingTabOptionItem: OptionItem = {
+  id: "ExistingTab",
+  label: "Existing Tab",
+  cliName: "existing-tab",
+  description: getLocalizedString("core.ExistingTabOption.description"),
+  detail: getLocalizedString("core.ExistingTabOption.detail"),
+};
+
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",

@@ -60,6 +60,7 @@ import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,
+  ExistingTabOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
   SsoItem,
@@ -182,6 +183,14 @@ export class FxCore implements v3.ICore {
         throw new ProjectFolderInvalidError(folder);
       }
     }
+
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      inputs.folder = path.join(folder, appName);
+      return await this._init(inputs, ctx);
+    }
+
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
@@ -1290,13 +1299,14 @@ export class FxCore implements v3.ICore {
   async createEnvWithName(
     targetEnvName: string,
     projectSettings: ProjectSettings,
-    inputs: Inputs
+    inputs: Inputs,
+    existingTabEndpoint?: string
   ): Promise<Result<Void, FxError>> {
     let appName = projectSettings.appName;
     if (targetEnvName === environmentManager.getLocalEnvName()) {
       appName = getLocalAppName(appName);
     }
-    const newEnvConfig = environmentManager.newEnvConfigData(appName);
+    const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,
@@ -1440,10 +1450,13 @@ export class FxCore implements v3.ICore {
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
+    // create env config with existing tab's endpoint
+    const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
     const createEnvResult = await this.createEnvWithName(
       environmentManager.getDefaultEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      endpoint
     );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
@@ -1451,7 +1464,8 @@ export class FxCore implements v3.ICore {
     const createLocalEnvResult = await this.createEnvWithName(
       environmentManager.getLocalEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      endpoint
     );
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);

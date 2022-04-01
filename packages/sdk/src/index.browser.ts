@@ -34,7 +34,7 @@ export {
   NotificationTarget,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
-} from "./conversation/interface.browser";
+} from "./conversation/interface";
 
 export {
   Channel,

@@ -10,17 +10,17 @@ import {
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
 
-  read(key: string): Promise<{ [key: string]: any } | undefined> {
+  read(key: string): Promise<{ [key: string]: unknown } | undefined> {
     return new Promise((resolve) => resolve(this.items[key]));
   }
 
-  list(): Promise<{ [key: string]: any }[]> {
+  list(): Promise<{ [key: string]: unknown }[]> {
     return new Promise((resolve) =>
-      resolve(Object.entries(this.items).map((entry) => entry[1] as { [key: string]: any }))
+      resolve(Object.entries(this.items).map((entry) => entry[1] as { [key: string]: unknown }))
     );
   }
 
-  write(key: string, object: { [key: string]: any }): Promise<void> {
+  write(key: string, object: { [key: string]: unknown }): Promise<void> {
     return new Promise((resolve) => {
       this.items[key] = object;
       resolve();

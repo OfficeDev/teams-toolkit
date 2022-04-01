@@ -17,7 +17,7 @@ export class LocalFileStorage implements NotificationTargetStorage {
     this.filePath = path.resolve(fileDir, this.localFileName);
   }
 
-  async read(key: string): Promise<{ [key: string]: any } | undefined> {
+  async read(key: string): Promise<{ [key: string]: unknown } | undefined> {
     if (!(await this.storeFileExists())) {
       return undefined;
     }
@@ -27,17 +27,17 @@ export class LocalFileStorage implements NotificationTargetStorage {
     return data[key];
   }
 
-  async list(): Promise<{ [key: string]: any }[]> {
+  async list(): Promise<{ [key: string]: unknown }[]> {
     if (!(await this.storeFileExists())) {
       return [];
     }
 
     const data = await this.readFromFile();
 
-    return Object.entries(data).map((entry) => entry[1] as { [key: string]: any });
+    return Object.entries(data).map((entry) => entry[1] as { [key: string]: unknown });
   }
 
-  async write(key: string, object: { [key: string]: any }): Promise<void> {
+  async write(key: string, object: { [key: string]: unknown }): Promise<void> {
     if (!(await this.storeFileExists())) {
       await this.writeToFile({ [key]: object });
       return;
@@ -73,7 +73,7 @@ export class LocalFileStorage implements NotificationTargetStorage {
     });
   }
 
-  private readFromFile(): Promise<any> {
+  private readFromFile(): Promise<unknown> {
     return new Promise((resolve, reject) => {
       try {
         fs.readFile(this.filePath, { encoding: "utf-8" }, (err, rawData) => {
@@ -89,7 +89,7 @@ export class LocalFileStorage implements NotificationTargetStorage {
     });
   }
 
-  private async writeToFile(data: any): Promise<void> {
+  private async writeToFile(data: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const rawData = JSON.stringify(data, undefined, 2);

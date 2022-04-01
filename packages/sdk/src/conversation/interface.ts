@@ -62,7 +62,7 @@ export interface NotificationTargetStorage {
    *
    * @beta
    */
-  read(key: string): Promise<{ [key: string]: any } | undefined>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  read(key: string): Promise<{ [key: string]: unknown } | undefined>;
 
   /**
    * List all stored notification targets.
@@ -71,7 +71,7 @@ export interface NotificationTargetStorage {
    *
    * @beta
    */
-  list(): Promise<{ [key: string]: any }[]>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  list(): Promise<{ [key: string]: unknown }[]>;
 
   /**
    * Write one notification target by its key.
@@ -81,10 +81,10 @@ export interface NotificationTargetStorage {
    *
    * @beta
    */
-  write(key: string, object: { [key: string]: any }): Promise<void>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  write(key: string, object: { [key: string]: unknown }): Promise<void>;
 
   /**
-   * Deleta one notificaton target by its key.
+   * Delete one notificaton target by its key.
    *
    * @param key - the key of a notification target.
    *
@@ -94,7 +94,7 @@ export interface NotificationTargetStorage {
 }
 
 /**
- * Interface for a command handler thar can process command to a TeamsFx bot and return a response.
+ * Interface for a command handler that can process command to a TeamsFx bot and return a response.
  *
  * @beta
  */

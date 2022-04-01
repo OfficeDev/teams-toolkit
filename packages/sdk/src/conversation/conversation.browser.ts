@@ -18,7 +18,7 @@ import { formatString } from "../util/utils";
  */
 export interface ConversationOptions {
   /**
-   * A boolean, controlling whether to whether to include the notification feature.
+   * A boolean, controlling whether to include the notification feature.
    *
    * (default: `false`).
    */
@@ -44,7 +44,7 @@ export interface ConversationOptions {
    * can process a command and return a response.
    *
    * @remarks
-   * If provided, the corresponding handler will be involked if the bot received a message
+   * If provided, the corresponding handler will be invoked if the bot received a message
    * that matches the command pattern (`string` or `RegExp`) defined in the handler.
    */
   commandHandlers?: TeamsFxBotCommandHandler[];

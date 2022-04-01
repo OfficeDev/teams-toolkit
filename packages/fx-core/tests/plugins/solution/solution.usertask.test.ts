@@ -995,6 +995,9 @@ describe("V2 implementation", () => {
           SsoItem.id
         )
       ).to.be.true;
+      const readmePath = path.join(testFolder, "auth", "tab", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
     });
 
     it("happy path: bot", async () => {

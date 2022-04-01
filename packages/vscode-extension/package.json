@@ -903,6 +903,11 @@
             "type": "boolean",
             "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
             "default": false
+          },
+          "fx-extension.enableM365App": {
+            "type": "boolean",
+            "title": "Enable Microsoft 365 App",
+            "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
           }
         }
       }

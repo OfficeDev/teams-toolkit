@@ -263,6 +263,7 @@
     "teamstoolkit.preview.progressTitle": "Preview Teams app",
     "teamstoolkit.progressHandler.prepareTask": " Prepare task.",
     "teamstoolkit.progressHandler.reloadNotice": "%s%s%s (Notice: You can reload the window and retry if task spends too long time.)",
+    "teamstoolkit.progressHandler.showOutputLink": "Check [output window](%s) for details",
     "teamstoolkit.progressHandler.teamsToolkitComponent": "[Teams Toolkit]",
     "teamstoolkit.qm.emptySelection": "select option is empty",
     "teamstoolkit.qm.multiSelectKeyboard": " (Space key to check/uncheck)",

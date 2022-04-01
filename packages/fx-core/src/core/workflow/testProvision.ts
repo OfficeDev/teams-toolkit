@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, ProjectSettings, v2, v3 } from "@microsoft/teamsfx-api";
+import { Platform, v2, v3 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import "reflect-metadata";
 import { createV2Context } from "../../common";
@@ -68,9 +68,9 @@ async function provision() {
   };
   const action = await getAction("fx.provision", context, inputs);
   if (action) {
-    // const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    // fs.writeFileSync("provision.json", JSON.stringify(resolved, undefined, 4));
-    // await planAction(action, context, cloneDeep(inputs));
+    const resolved = await resolveAction(action, context, cloneDeep(inputs));
+    fs.writeFileSync("provision.json", JSON.stringify(resolved, undefined, 4));
+    await planAction(action, context, cloneDeep(inputs));
     await executeAction(action, context, inputs);
   }
   console.log("inputs:");

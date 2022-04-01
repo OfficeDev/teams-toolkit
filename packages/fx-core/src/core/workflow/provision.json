@@ -89,8 +89,8 @@
             "targetAction": "teams-manifest.provision",
             "inputs": {
                 "teams-manifest": {
-                    "tabEndpoint": "",
-                    "botId": ""
+                    "tabEndpoint": "{{azure-storage.endpoint}}",
+                    "botId": "{{azure-bot.botId}}"
                 }
             }
         }

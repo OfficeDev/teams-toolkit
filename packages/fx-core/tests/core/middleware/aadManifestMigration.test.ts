@@ -22,6 +22,7 @@ describe("Middleware - aadManifestMigration.test", () => {
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     sandbox.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sandbox.stub<any, any>(fs, "writeJSON").resolves();
+    sandbox.stub<any, any>(fs, "enSureDir").resolves();
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith(".fx")) {
         return true;

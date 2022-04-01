@@ -724,6 +724,8 @@ export interface Inputs extends Json {
     // (undocumented)
     projectPath?: string;
     // (undocumented)
+    skipAadDeploy?: string;
+    // (undocumented)
     sourceEnvName?: string;
     // (undocumented)
     stage?: Stage;

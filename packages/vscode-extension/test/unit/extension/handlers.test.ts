@@ -14,7 +14,6 @@ import {
   Void,
   Result,
   FxError,
-  TelemetryEvent,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -546,5 +545,17 @@ suite("handlers", () => {
 
     inputs.stage = Stage.create;
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
+  });
+
+  test("deployAadAppManifest", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+    await handlers.deployAadAppManifest();
+
+    sinon.assert.calledOnce(deployArtifacts);
+    chai.assert.equal(deployArtifacts.getCall(0).args[0].skipAadDeploy, "no");
+    sinon.restore();
   });
 });

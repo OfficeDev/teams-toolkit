@@ -223,6 +223,9 @@ export enum SolutionTelemetryEvent {
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
+
+  DeployStart = "deploy-start",
+  Deploy = "deploy",
 }
 
 export enum SolutionTelemetryProperty {
@@ -237,6 +240,7 @@ export enum SolutionTelemetryProperty {
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
+  SkipAadDeploy = "skip-aad-deploy",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   HostType = "host-type",

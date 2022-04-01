@@ -201,6 +201,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(checkUpgradeCmd);
 
+  const deployAadAppManifest = vscode.commands.registerCommand(
+    "fx-extension.deployAadAppManifest",
+    () => Correlator.run(handlers.deployAadAppManifest)
+  );
+  context.subscriptions.push(deployAadAppManifest);
+
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
   );

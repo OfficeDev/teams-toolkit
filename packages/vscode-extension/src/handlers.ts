@@ -1038,6 +1038,10 @@ async function processResult(
     createProperty[TelemetryProperty.IsM365] = "true";
   }
 
+  if (eventName === TelemetryEvent.Deploy && inputs?.skipAadDeploy === "no") {
+    eventName = TelemetryEvent.DeployAadManifest;
+  }
+
   if (result.isErr()) {
     if (eventName) {
       ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
@@ -2774,4 +2778,12 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
 
   const result = await runUserTask(func, TelemetryEvent.AddSso, true);
   return result;
+}
+
+export async function deployAadAppManifest(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
+  const inputs = getSystemInputs();
+  inputs.skipAadDeploy = "no";
+
+  return await runCommand(Stage.deploy, inputs);
 }

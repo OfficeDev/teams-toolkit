@@ -287,6 +287,7 @@ export class TeamsfxCore {
     if (configureActions.length > 0) {
       const setInputsForConfig: ConfigureAction = {
         type: "function",
+        name: "prepare inputs for configuration stage",
         plan: (
           context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
           inputs: v2.InputsWithProjectPath
@@ -344,6 +345,10 @@ export class TeamsfxCore {
               };
             }
           }
+          // const manifestInputs: any = {};
+          // if (teamsTab) manifestInputs.tabEndpoint = inputs[teamsTab.hostingResource].endpoint;
+          // if (teamsBot) manifestInputs.botId = inputs["azure-bot"].botId;
+          // inputs["teams-manifest"] = manifestInputs;
           console.log("set inputs for configuration");
           return ok(undefined);
         },
@@ -356,7 +361,7 @@ export class TeamsfxCore {
       });
     }
     const manifestInputs: any = {};
-    if (teamsTab) manifestInputs.tabEndpoint = "{{teams-tab.endpoint}}";
+    if (teamsTab) manifestInputs.tabEndpoint = `{{${teamsTab.hostingResource}.endpoint}}`;
     if (teamsBot) manifestInputs.botId = "{{azure-bot.botId}}";
     provisionSequences.push({
       type: "call",

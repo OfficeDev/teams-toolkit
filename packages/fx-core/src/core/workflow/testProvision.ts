@@ -21,7 +21,7 @@ import "./teamsBot";
 import "./teamsManifest";
 import "./teamsTab";
 import { MockTools } from "./utils";
-import { executeAction, getAction, planAction } from "./workflow";
+import { executeAction, getAction, planAction, resolveAction } from "./workflow";
 import * as os from "os";
 import * as path from "path";
 import { cloneDeep } from "lodash";
@@ -68,7 +68,9 @@ async function provision() {
   };
   const action = await getAction("fx.provision", context, inputs);
   if (action) {
-    await planAction(action, context, cloneDeep(inputs));
+    // const resolved = await resolveAction(action, context, cloneDeep(inputs));
+    // fs.writeFileSync("provision.json", JSON.stringify(resolved, undefined, 4));
+    // await planAction(action, context, cloneDeep(inputs));
     await executeAction(action, context, inputs);
   }
   console.log("inputs:");

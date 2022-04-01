@@ -32,6 +32,8 @@ function _templateReplace(schema: Json, context: Json, rootContext: Json) {
   let change = false;
   for (const key of Object.keys(schema)) {
     const subSchema = schema[key];
+    let subContext = context[key];
+    console.log(`subSchema: ${subSchema}, subContext: ${subContext}`);
     if (typeof subSchema === "string") {
       const template = Handlebars.compile(subSchema);
       const newValue = template(rootContext);
@@ -41,7 +43,6 @@ function _templateReplace(schema: Json, context: Json, rootContext: Json) {
       schema[key] = newValue;
       context[key] = newValue;
     } else if (typeof subSchema === "object") {
-      let subContext = context[key];
       if (!subContext) {
         subContext = {};
         assign(subContext, subSchema);
@@ -55,6 +56,18 @@ function _templateReplace(schema: Json, context: Json, rootContext: Json) {
   }
   return change;
 }
+const schema = {
+  a: "{{b.input}}",
+  b: {
+    input: "{{c.input}}",
+  },
+  c: { input: "d.input" },
+};
+const context = {
+  d: { input: "abc" },
+};
+_templateReplace(schema, context, context);
+console.log(schema);
 
 function templateReplace(schema: Json, params: Json) {
   let change;

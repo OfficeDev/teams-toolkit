@@ -8,6 +8,7 @@ export enum ConfigurationKey {
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
   YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
+  enableM365App = "enableM365App",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

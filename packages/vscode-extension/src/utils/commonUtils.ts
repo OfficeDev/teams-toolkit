@@ -224,6 +224,8 @@ export function syncFeatureFlags() {
   process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
     ConfigurationKey.BotNotificationCommandAndResponseEnabled
   ).toString();
+
+  process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
 }
 
 export class FeatureFlags {

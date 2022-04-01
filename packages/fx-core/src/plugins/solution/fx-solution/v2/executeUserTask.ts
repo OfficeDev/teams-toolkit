@@ -1075,7 +1075,37 @@ export async function createAuthFiles(
       await fs.ensureDir(tabFolder);
     }
 
-    // TODO: Add necessary files here for tab
+    try {
+      const templateFolder = getTemplatesFolder();
+      const tabTemplateFolder = path.join(
+        templateFolder,
+        AddSsoParameters.filePath,
+        AddSsoParameters.Tab
+      );
+      if (isVsProject) {
+        // TODO: add steps for VS
+      } else {
+        // README.md
+        const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.Readme);
+        const readmeTargetPath = path.join(tabFolder, AddSsoParameters.Readme);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(tabTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, tabFolder);
+      }
+    } catch (error) {
+      // TODO: remove added code
+      const e = new SystemError(
+        SolutionError.FailedToCreateAuthFiles,
+        getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
+        SolutionSource
+      );
+      return err(e);
+    }
   }
 
   if (needBot) {

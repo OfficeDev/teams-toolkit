@@ -20,7 +20,6 @@ import { checkApiNameExist } from "./checker";
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
-
   // Generate the question
   getQuestion(ctx: PluginContext): Question;
 }
@@ -68,6 +67,7 @@ export const apiEndpointQuestion: TextInputQuestion = {
   name: Constants.questionKey.endpoint,
   title: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.title"),
   type: "text",
+  placeholder: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.placeholder"), // Use the placeholder to display some description
 };
 
 export const apiTypeQuestion: TextInputQuestion = {
@@ -78,48 +78,51 @@ export const apiTypeQuestion: TextInputQuestion = {
 
 export const apiLoginUserNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.apiUserName,
-  title: getLocalizedString("plugins.apiConnector.getQuestionApiUserName.title"),
+  title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.userName.title"),
   type: "text",
+  placeholder: getLocalizedString(
+    "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
+  ), // Use the placeholder to display some description
 };
 
 export const botOption: OptionItem = {
   id: "bot",
-  label: "bot",
-  detail: getLocalizedString("plugins.apiConnector.botOption.detail"),
+  label: getLocalizedString("plugins.apiConnector.botOption.title"),
+  detail: "./bot",
 };
 
 export const functionOption: OptionItem = {
   id: "api",
-  label: "api",
-  detail: getLocalizedString("plugins.apiConnector.functionOption.detail"),
+  label: getLocalizedString("plugins.apiConnector.functionOption.title"),
+  detail: "./api",
 };
 
 export const BasicAuthOption: OptionItem = {
   id: "basic",
-  label: "Basic Authentication",
+  label: "Basic",
   detail: getLocalizedString("plugins.apiConnector.BasicAuthOption.detail"),
 };
 
 export const CertAuthOption: OptionItem = {
   id: "cert",
-  label: "Certification Authentication",
+  label: "Certification",
   detail: getLocalizedString("plugins.apiConnector.CertAuthOption.detail"),
 };
 
 export const AADAuthOption: OptionItem = {
   id: "aad",
-  label: "Azure Active Directory Authentication",
+  label: "Azure Active Directory",
   detail: getLocalizedString("plugins.apiConnector.AADAuthOption.detail"),
 };
 
 export const APIKeyAuthOption: OptionItem = {
   id: "APIkey",
-  label: "API Key Authentication",
+  label: "API Key",
   detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
 };
 
 export const ImplementMyselfOption: OptionItem = {
   id: "ImplementMyself",
-  label: "Implement authentication by myself",
+  label: "Custom Auth Implementation",
   detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
 };

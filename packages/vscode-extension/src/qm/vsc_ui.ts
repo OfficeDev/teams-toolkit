@@ -443,7 +443,11 @@ export class VsCodeUI implements UserInteraction {
         /// set items
         quickPick.items = [
           {
-            label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
+            label:
+              config.prompt ||
+              localize(
+                type === "folder" ? "teamstoolkit.qm.selectFolder" : "teamstoolkit.qm.selectFile"
+              ),
             detail: defaultValue,
           },
         ];
@@ -463,7 +467,7 @@ export class VsCodeUI implements UserInteraction {
               const resultString = results.join(";");
               quickPick.items = [
                 {
-                  label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
+                  label: config.prompt || localize("teamstoolkit.qm.selectFile"),
                   detail: resultString,
                 },
               ];
@@ -472,7 +476,13 @@ export class VsCodeUI implements UserInteraction {
               const result = uriList[0].fsPath;
               quickPick.items = [
                 {
-                  label: config.prompt || localize("teamstoolkit.qm.selectFileOrFolder"),
+                  label:
+                    config.prompt ||
+                    localize(
+                      type === "folder"
+                        ? "teamstoolkit.qm.selectFolder"
+                        : "teamstoolkit.qm.selectFile"
+                    ),
                   detail: result,
                 },
               ];

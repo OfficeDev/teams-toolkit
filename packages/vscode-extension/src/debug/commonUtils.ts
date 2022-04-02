@@ -19,6 +19,7 @@ import {
   isConfigUnifyEnabled,
   environmentManager,
   ProjectSettingsHelper,
+  PluginNames,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -219,8 +220,19 @@ export async function getPortsInUse(): Promise<number[]> {
 export async function getTeamsAppTenantId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return localSettings?.teamsApp?.tenantId as string;
+    if (isConfigUnifyEnabled()) {
+      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
+        projectId: projectSettings.projectId,
+      });
+      if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.AAD]) {
+        return localEnvInfo["state"][PluginNames.APPST].tenantId as string;
+      }
+      return undefined;
+    } else {
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.teamsApp?.tenantId as string;
+    }
   } catch {
     // in case structure changes
     return undefined;
@@ -230,8 +242,19 @@ export async function getTeamsAppTenantId(): Promise<string | undefined> {
 export async function getLocalTeamsAppId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return localSettings?.teamsApp?.teamsAppId as string;
+    if (isConfigUnifyEnabled()) {
+      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
+        projectId: projectSettings.projectId,
+      });
+      if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.APPST]) {
+        return localEnvInfo["state"][PluginNames.APPST].teamsAppId as string;
+      }
+      return undefined;
+    } else {
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.teamsApp?.teamsAppId as string;
+    }
   } catch {
     // in case structure changes
     return undefined;

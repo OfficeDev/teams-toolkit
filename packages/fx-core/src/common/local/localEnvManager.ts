@@ -121,7 +121,7 @@ export class LocalEnvManager {
 
   public async getLocalEnvInfo(
     projectPath: string,
-    cryptoOption?: { projectId: string }
+    cryptoOption: { projectId: string }
   ): Promise<v2.EnvInfoV2 | undefined> {
     const localStateProvider = new LocalStateProvider(projectPath);
     const crypto = cryptoOption === undefined ? undefined : new LocalCrypto(cryptoOption.projectId);

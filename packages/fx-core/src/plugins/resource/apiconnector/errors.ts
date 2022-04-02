@@ -79,4 +79,13 @@ export class ErrorMessage {
         targetVersion
       ),
   };
+
+  public static readonly localPkgFileNotExistError = {
+    name: "pkgFileNotExistError",
+    message: (component: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.localPkgFileNotExistError.name}`,
+        component
+      ),
+  };
 }

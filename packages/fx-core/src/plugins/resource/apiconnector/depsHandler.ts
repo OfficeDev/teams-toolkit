@@ -32,6 +32,12 @@ export class DepsHandler {
 
   public async updateLocalPkgSdkVersion(pkgConfig: Json): Promise<ApiConnectorResult> {
     const localPkgPath = path.join(this.projectRoot, this.componentType, Constants.pkgJsonFile);
+    if (!(await fs.pathExists(localPkgPath))) {
+      throw ResultFactory.UserError(
+        ErrorMessage.localPkgFileNotExistError.name,
+        ErrorMessage.localPkgFileNotExistError.message(this.componentType)
+      );
+    }
     const pkgContent = await fs.readJson(localPkgPath);
     const needUpdate: boolean = this.sdkVersionCheck(
       pkgContent.dependencies,

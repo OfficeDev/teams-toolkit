@@ -1190,7 +1190,8 @@ export async function installAppInTeams(): Promise<string | undefined> {
         "Debug config not found"
       );
     }
-    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
+    const botId = await commonUtils.getLocalBotId();
+    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId, botId);
   } catch (error: any) {
     showError(error);
   }

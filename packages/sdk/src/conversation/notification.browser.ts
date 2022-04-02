@@ -412,12 +412,11 @@ export class TeamsBotInstallation implements NotificationTarget {
  * @beta
  */
 export class NotificationBot {
-  private static readonly conversationReferenceStoreKey = "teamfx-notification-targets";
-  private static conversationReferenceStore: ConversationReferenceStore;
-  private static adapter: BotFrameworkAdapter;
+  private readonly conversationReferenceStore: ConversationReferenceStore;
+  private readonly adapter: BotFrameworkAdapter;
 
   /**
-   * Initialize bot notification.
+   * constructor of the notification bot.
    *
    * @remarks
    * Only work on server side.
@@ -429,7 +428,7 @@ export class NotificationBot {
    *
    * @beta
    */
-  public static initialize(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
+  public constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
       ErrorCode.RuntimeNotSupported

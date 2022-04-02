@@ -20,5 +20,5 @@ constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[])
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
-|  commands | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | The commands to registered with the command bot. Each command should inplement the interface [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) so that it can be correctly handled by this command bot. |
+|  commands | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | The commands to registered with the command bot. Each command should implement the interface [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) so that it can be correctly handled by this command bot. |
 

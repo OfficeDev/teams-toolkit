@@ -17,7 +17,7 @@ export declare class CommandBot
 
 ## Remarks
 
-Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you regiter the same command more than once.
+Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
 
 ## Example
 
@@ -48,5 +48,5 @@ commandBot.registerCommand(new HelpCommandHandler());
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [registerCommand(command)](./teamsfx.commandbot.registercommand.md) |  | <b><i>(BETA)</i></b> Registers a command into the command bot. |
-|  [registerCommands(commands)](./teamsfx.commandbot.registercommands.md) |  | <b><i>(BETA)</i></b> Registers a command into the command bot. |
+|  [registerCommands(commands)](./teamsfx.commandbot.registercommands.md) |  | <b><i>(BETA)</i></b> Registers commands into the command bot. |
 

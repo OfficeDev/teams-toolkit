@@ -9,7 +9,7 @@ import { CommandResponseMiddleware } from "./middleware";
  * A command bot for receiving commands and sending responses in Teams.
  *
  * @remarks
- * Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you regiter the same command more than once.
+ * Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
  *
  * @example
  * You can register your commands  through the constructor of the {@link CommandBot}, or use the `registerCommand` and `registerCommands` API to add commands after creating the `CommandBot` instance.
@@ -32,7 +32,7 @@ export class CommandBot {
    * Creates a new instance of the `CommandBot`.
    *
    * @param adapter The bound `BotFrameworkAdapter`.
-   * @param commands The commands to registered with the command bot. Each command should inplement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
+   * @param commands The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
    *
    * @beta
    */
@@ -55,7 +55,7 @@ export class CommandBot {
   }
 
   /**
-   * Registers a command into the command bot.
+   * Registers commands into the command bot.
    *
    * @param commands The command to registered.
    *

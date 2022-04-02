@@ -23,7 +23,7 @@ export class CommandBot {
    * Creates a new instance of the `CommandBot`.
    *
    * @param adapter The bound `BotFrameworkAdapter`.
-   * @param commands The commands to registered with the command bot. Each command should inplement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
+   * @param commands The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
    *
    * @beta
    */
@@ -52,7 +52,7 @@ export class CommandBot {
   }
 
   /**
-   * Registers a command into the command bot.
+   * Registers commands into the command bot.
    *
    * @param commands The command to registered.
    *

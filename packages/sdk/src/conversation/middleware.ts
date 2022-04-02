@@ -89,7 +89,7 @@ export class NotificationMiddleware implements Middleware {
 }
 
 export class CommandResponseMiddleware implements Middleware {
-  public commandHandlers: TeamsFxBotCommandHandler[] = [];
+  public readonly commandHandlers: TeamsFxBotCommandHandler[] = [];
 
   constructor(handlers?: TeamsFxBotCommandHandler[]) {
     if (handlers && handlers.length > 0) {

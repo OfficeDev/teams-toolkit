@@ -383,7 +383,7 @@ export interface Core {
     // (undocumented)
     createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
+    createProject: (inputs: Inputs) => Promise<Result<CreateProjectResult, FxError>>;
     // (undocumented)
     decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
     // (undocumented)
@@ -418,6 +418,22 @@ export enum CoreCallbackEvent {
 
 // @public (undocumented)
 export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+
+// @public (undocumented)
+export interface CreateProjectResult {
+    // (undocumented)
+    projectPath: string;
+    // (undocumented)
+    projectType: CreateProjectType;
+}
+
+// @public (undocumented)
+export enum CreateProjectType {
+    // (undocumented)
+    ExistingTab = 0,
+    // (undocumented)
+    Others = 1
+}
 
 // @public
 export interface CryptoProvider {

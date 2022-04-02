@@ -9,10 +9,18 @@ import { Inputs, Void } from "./types";
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+export interface CreateProjectResult {
+  projectPath: string;
+  projectType: CreateProjectType;
+}
 
+export enum CreateProjectType {
+  ExistingTab,
+  Others,
+}
 export interface Core {
   version?: string;
-  createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
+  createProject: (inputs: Inputs) => Promise<Result<CreateProjectResult, FxError>>;
   provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;

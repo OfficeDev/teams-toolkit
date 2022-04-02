@@ -50,6 +50,8 @@ import {
   IProgressHandler,
   ProjectSettingsFileName,
   OptionItem,
+  CreateProjectResult,
+  CreateProjectType,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -386,7 +388,13 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    await openFolder(result.value, true, args);
+    const uri = Uri.file(result.value.projectPath);
+    if (result.value.CreateProjectType === CreateProjectType.Others) {
+      await openFolder(uri, true, false, args);
+    } else {
+      // ignore Local Debug for existing tab app
+      await openFolder(uri, false, true, args);
+    }
   }
   return result;
 }
@@ -400,7 +408,7 @@ export async function createNewM365ProjectHandler(args?: any[]): Promise<Result<
   inputs.isM365 = true;
   const result = await runCommand(Stage.create, inputs);
   if (result.isOk()) {
-    await openFolder(result.value, true, args);
+    await openFolder(result.value, true, false, args);
   }
   return result;
 }
@@ -409,13 +417,18 @@ export async function initProjectHandler(args?: any[]): Promise<Result<any, FxEr
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.init);
   if (result.isOk()) {
-    await openFolder(result.value, false, args);
+    await openFolder(result.value, false, false, args);
   }
   return result;
 }
 
-async function openFolder(folderPath: string, showLocalDebugMessage: boolean, args?: any[]) {
-  await updateAutoOpenGlobalKey(showLocalDebugMessage, args);
+async function openFolder(
+  folderPath: Uri,
+  showLocalDebugMessage: boolean,
+  showLocalPreviewMessage: boolean,
+  args?: any[]
+) {
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, args);
   await ExtTelemetry.dispose();
   // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
   // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
@@ -426,6 +439,7 @@ async function openFolder(folderPath: string, showLocalDebugMessage: boolean, ar
 
 export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
+  showLocalPreviewMessage: boolean,
   args?: any[]
 ): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
@@ -438,6 +452,10 @@ export async function updateAutoOpenGlobalKey(
 
   if (showLocalDebugMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
+  }
+
+  if (showLocalPreviewMessage) {
+    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, true);
   }
 }
 
@@ -801,8 +819,7 @@ export async function runCommand(
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          result = ok(uri);
+          result = tmpResult;
         }
         break;
       }
@@ -879,7 +896,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
-      const uri = Uri.file(tmpResult.value);
+      const uri = Uri.file(tmpResult.value.projectPath);
       result = ok(uri);
     }
   } catch (e) {
@@ -1415,16 +1432,19 @@ async function autoOpenProjectHandler(): Promise<void> {
   const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
     showLocalDebugMessage();
+    showLocalPreviewMessage();
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
   if (isOpenReadMe) {
     showLocalDebugMessage();
+    showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
     await globalStateUpdate(GlobalKey.OpenReadMe, false);
   }
   if (isOpenSampleReadMe) {
     showLocalDebugMessage();
+    showLocalPreviewMessage();
     await openSampleReadmeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
@@ -1629,6 +1649,50 @@ async function showLocalDebugMessage() {
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+        selection.run();
+      } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
+        selection.run();
+      }
+    });
+}
+
+async function showLocalPreviewMessage() {
+  const isShowLocalPreviewMessage = await globalStateGet(GlobalKey.ShowLocalPreviewMessage, false);
+
+  if (!isShowLocalPreviewMessage) {
+    return;
+  } else {
+    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, false);
+  }
+
+  const localPreview = {
+    title: localize("teamstoolkit.handlers.localPreviewTitle"),
+    run: async (): Promise<void> => {
+      treeViewPreviewHandler(environmentManager.getLocalEnvName());
+    },
+  };
+
+  const config = {
+    title: localize("teamstoolkit.handlers.configTitle"),
+    run: async (): Promise<void> => {
+      commands.executeCommand(
+        "workbench.action.openSettings",
+        "fx-extension.defaultProjectRootDirectory"
+      );
+    },
+  };
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
+  vscode.window
+    .showInformationMessage(
+      util.format(localize("teamstoolkit.handlers.localPreviewDescription"), getWorkspacePath()),
+      config,
+      localPreview
+    )
+    .then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
         selection.run();
       } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);

@@ -11,6 +11,8 @@ import {
   Void,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  CreateProjectResult,
+  CreateProjectType,
 } from "@microsoft/teamsfx-api";
 
 export class MockCore implements Core {
@@ -20,8 +22,8 @@ export class MockCore implements Core {
     return;
   }
 
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    return ok("");
+  async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
+    return ok({ projectPath: "", projectType: CreateProjectType.Others });
   }
 
   async provisionResources(inputs: Inputs): Promise<Result<string, FxError>> {

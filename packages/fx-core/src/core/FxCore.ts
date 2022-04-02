@@ -9,6 +9,8 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  CreateProjectResult,
+  CreateProjectType,
   err,
   Func,
   FunctionRouter,
@@ -154,9 +156,17 @@ export class FxCore implements v3.ICore {
     return CallbackRegistry.set(event, callback);
   }
 
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     if (isV3()) {
-      return this.createProjectV3(inputs);
+      const createProjectResult = await this.createProjectV3(inputs);
+      if (createProjectResult.isErr()) {
+        return err(createProjectResult.error);
+      }
+
+      return ok({
+        projectPath: createProjectResult.value,
+        projectType: CreateProjectType.Others,
+      });
     } else {
       return this.createProjectV2(inputs);
     }
@@ -168,7 +178,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
   ])
-  async createProjectV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectV2(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<CreateProjectResult, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -188,7 +201,15 @@ export class FxCore implements v3.ICore {
     if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       inputs.folder = path.join(folder, appName);
-      return await this._init(inputs, ctx, true);
+      const projectPathResult = await this._init(inputs, ctx, true);
+      if (projectPathResult.isErr()) {
+        return err(projectPathResult.error);
+      }
+
+      return ok({
+        projectPath: projectPathResult.value,
+        projectType: CreateProjectType.ExistingTab,
+      });
     }
 
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
@@ -298,7 +319,7 @@ export class FxCore implements v3.ICore {
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
-    return ok(projectPath);
+    return ok({ projectPath, projectType: CreateProjectType.Others });
   }
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {

@@ -63,7 +63,7 @@ describe("Core basic APIs - create from sample", () => {
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk() && res.value === projectPath);
+    assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
   });
 
   it("downloadSample", async () => {

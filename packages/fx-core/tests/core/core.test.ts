@@ -95,7 +95,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.createProject(inputs);
       projectPath = path.resolve(os.tmpdir(), appName);
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
     });
 
     it("VSCode without customized default root directory", async () => {
@@ -112,7 +112,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.createProject(inputs);
       projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
       if (projectSettingsResult.isOk()) {
@@ -142,7 +142,7 @@ describe("Core basic APIs", () => {
         newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
         appName
       );
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
       mockedEnvRestore();
     });
     it("create from new (VSC, SPFx) and telemetry is sent", async () => {
@@ -219,7 +219,7 @@ describe("Core basic APIs", () => {
       newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
       appName
     );
-    assert.isTrue(createRes.isOk() && createRes.value === projectPath);
+    assert.isTrue(createRes.isOk() && createRes.value.projectPath === projectPath);
 
     let res = await core.provisionResources(inputs);
     assert.isTrue(res.isOk());

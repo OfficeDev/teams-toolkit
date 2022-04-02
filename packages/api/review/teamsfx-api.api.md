@@ -431,6 +431,9 @@ type DeepReadonly<T> = {
 };
 
 // @public (undocumented)
+export const DefaultReadme = "README.md";
+
+// @public (undocumented)
 type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 // @public

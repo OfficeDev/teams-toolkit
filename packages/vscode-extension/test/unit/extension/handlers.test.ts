@@ -14,7 +14,6 @@ import {
   Void,
   Result,
   FxError,
-  TelemetryEvent,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -39,10 +38,11 @@ suite("handlers", () => {
 
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
+    let setStatusChangeMap: any;
 
     this.beforeAll(() => {
       sandbox.stub(accountTree, "registerAccountTreeHandler");
-      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
+      setStatusChangeMap = sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
@@ -56,6 +56,12 @@ suite("handlers", () => {
     test("No globalState error", async () => {
       const result = await handlers.activate();
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+    });
+
+    test("Don't listen to Azure account notify for non-Teamsfx project", async () => {
+      await handlers.activate();
+
+      chai.assert.isTrue(setStatusChangeMap.notCalled);
     });
   });
 
@@ -364,7 +370,7 @@ suite("handlers", () => {
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const decrypt = sinon.stub(handlers.core, "decrypt");
-      decrypt.returns(Promise.resolve(err(new UserError("fake error", "", ""))));
+      decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
       const editBuilder = sinon.spy();
@@ -395,6 +401,7 @@ suite("handlers", () => {
       sinon.restore();
     });
     test("grant permission", async () => {
+      sinon.restore();
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -545,5 +552,17 @@ suite("handlers", () => {
 
     inputs.stage = Stage.create;
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
+  });
+
+  test("deployAadAppManifest", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+    await handlers.deployAadAppManifest();
+
+    sinon.assert.calledOnce(deployArtifacts);
+    chai.assert.equal(deployArtifacts.getCall(0).args[0].skipAadDeploy, "no");
+    sinon.restore();
   });
 });

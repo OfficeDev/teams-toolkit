@@ -29,3 +29,21 @@ export {
 
 export { TeamsFx } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
+
+export {
+  NotificationTarget,
+  NotificationTargetType,
+  TeamsFxBotCommandHandler,
+  NotificationOptions,
+} from "./conversation/interface";
+
+export {
+  Channel,
+  Member,
+  sendAdaptiveCard,
+  sendMessage,
+  TeamsBotInstallation,
+} from "./conversation/notification.browser";
+
+export { NotificationBot } from "./conversation/notification.browser";
+export { CommandBot } from "./conversation/command.browser";

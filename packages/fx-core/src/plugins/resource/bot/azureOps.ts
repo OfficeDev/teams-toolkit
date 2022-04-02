@@ -9,48 +9,13 @@ import {
   ListPublishingCredentialsError,
   ZipDeployError,
   MessageEndpointUpdatingError,
-  MissingSubscriptionRegistrationError,
-  InvalidBotDataError,
-  isErrorWithCode,
+  RestartWebAppError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
 
 export class AzureOperations {
-  public static async CreateBotChannelRegistration(
-    botClient: AzureBotService,
-    resourceGroup: string,
-    botChannelRegistrationName: string,
-    msaAppId: string,
-    displayName?: string
-  ): Promise<void> {
-    let botResponse = undefined;
-    try {
-      botResponse = await botClient.bots.create(resourceGroup, botChannelRegistrationName, {
-        location: "global",
-        kind: "bot",
-        properties: {
-          displayName: displayName ?? botChannelRegistrationName,
-          endpoint: "",
-          msaAppId: msaAppId,
-        },
-      });
-    } catch (e) {
-      if (isErrorWithCode(e) && e.code === "MissingSubscriptionRegistration") {
-        throw new MissingSubscriptionRegistrationError();
-      } else if (isErrorWithCode(e) && e.code === "InvalidBotData") {
-        throw new InvalidBotDataError(e);
-      } else {
-        throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
-      }
-    }
-
-    if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-      throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION);
-    }
-  }
-
   public static async UpdateBotChannelRegistration(
     botClient: AzureBotService,
     resourceGroup: string,
@@ -177,6 +142,23 @@ export class AzureOperations {
 
     if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
       throw new ZipDeployError();
+    }
+  }
+
+  public static async RestartWebApp(
+    webSiteMgmtClient: appService.WebSiteManagementClient,
+    resourceGroup: string,
+    siteName: string
+  ): Promise<void> {
+    let res = undefined;
+    try {
+      res = await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);
+    } catch (e) {
+      throw new RestartWebAppError(e);
+    }
+
+    if (!res || !utils.isHttpCodeOkOrCreated(res?._response.status)) {
+      throw new RestartWebAppError();
     }
   }
 }

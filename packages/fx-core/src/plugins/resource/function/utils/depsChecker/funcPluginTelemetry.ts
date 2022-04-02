@@ -57,7 +57,7 @@ export class FuncPluginTelemetry implements DepsTelemetry {
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, this._source);
+    const error = new UserError(this._source, eventName, errorMessage);
     TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 
@@ -67,11 +67,11 @@ export class FuncPluginTelemetry implements DepsTelemetry {
     errorStack: string
   ): void {
     const error = new SystemError(
-      eventName,
-      `errorMsg=${errorMessage},errorStack=${errorStack}`,
       this._source,
-      errorStack
+      eventName,
+      `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
+    error.stack = errorStack;
     TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 }

@@ -14,6 +14,7 @@ import {
   ProjectSettings,
   SingleSelectQuestion,
   Platform,
+  Stage,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -37,6 +38,8 @@ import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { isPureExistingApp } from "../../../common";
+import { NoCapabilityFoundError } from "../../../core/error";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -65,6 +68,11 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
+    // add CI CD workflows for minimal app is not supported.
+    if (inputs.platform !== Platform.CLI_HELP && isPureExistingApp(ctx.projectSetting)) {
+      throw new NoCapabilityFoundError(Stage.addCiCdFlow);
+    }
+
     const cicdWorkflowQuestions = new QTreeNode({
       type: "group",
     });
@@ -94,7 +102,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
         throw new InternalError(
-          getLocalizedString("error.cicd.FailedToListMultiEnv"),
+          ["Failed to list multi env.", "Failed to list multi env."],
           envProfilesResult.error
         );
       }
@@ -172,8 +180,17 @@ export class CICDPluginV2 implements ResourcePlugin {
       if (e instanceof PluginError) {
         const result =
           e.errorType === ErrorType.System
-            ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-            : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+            ? ResultFactory.SystemError(
+                e.name,
+                [e.genDefaultMessage(), e.genMessage()],
+                e.innerError
+              )
+            : ResultFactory.UserError(
+                e.name,
+                [e.genDefaultMessage(), e.genMessage()],
+                e.showHelpLink,
+                e.innerError
+              );
         sendTelemetry &&
           telemetryHelper.sendResultEvent(
             context,
@@ -193,7 +210,7 @@ export class CICDPluginV2 implements ResourcePlugin {
             name,
             ResultFactory.SystemError(
               UnhandledErrorCode,
-              getLocalizedString("plugins.bot.UnhandledError", e.message),
+              [`Got an unhandled error: ${e.message}`, `Got an unhandled error: ${e.message}`],
               e.innerError
             ),
             this.cicdImpl.commonProperties

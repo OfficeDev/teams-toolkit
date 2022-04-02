@@ -14,6 +14,7 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
+  Stage,
   Tools,
   traverse,
   UserCancelError,
@@ -55,6 +56,12 @@ export type CreateEnvCopyInput = {
 
 export function EnvInfoLoaderMW(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
+    // if the feature flag TEAMSFX_CONFIG_UNIFY is enabled,
+    // don't skip the middleware for local debug.
+    if (ctx.method === "localDebug" || ctx.method === "localDebugV2") {
+      skip = !isConfigUnifyEnabled();
+    }
+
     if (shouldIgnored(ctx)) {
       await next();
       return;
@@ -108,25 +115,7 @@ export async function getTargetEnvName(
   if (!skip && !inputs.ignoreEnvInfo) {
     // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
     if (inputs.env) {
-      let result = await useUserSetEnv(inputs.projectPath!, inputs.env);
-      if (
-        result.isErr() &&
-        isConfigUnifyEnabled() &&
-        inputs.env == environmentManager.getLocalEnvName() &&
-        result.error.name === "ProjectEnvNotExistError"
-      ) {
-        const appName = getLocalAppName(ctx.projectSettings!.appName);
-        const newEnvConfig = environmentManager.newEnvConfigData(appName);
-        const writeEnvResult = await environmentManager.writeEnvConfig(
-          inputs.projectPath!,
-          newEnvConfig,
-          environmentManager.getLocalEnvName()
-        );
-        if (writeEnvResult.isErr()) {
-          return err(writeEnvResult.error);
-        }
-        result = await useUserSetEnv(inputs.projectPath!, inputs.env);
-      }
+      const result = await useUserSetEnv(inputs.projectPath!, inputs.env);
       if (result.isErr()) {
         ctx.result = result;
         return err(result.error);

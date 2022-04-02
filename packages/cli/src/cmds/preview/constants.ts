@@ -11,9 +11,24 @@ export enum Browser {
   default = "default",
 }
 
-export const sideloadingUrl =
-  "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+export enum Hub {
+  teams = "teams",
+  outlook = "outlook",
+  office = "office",
+}
+
+export class LaunchUrl {
+  public static readonly teams: string =
+    "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+  public static readonly outlookTab: string =
+    "https://outlook.office.com/host/${teamsAppInternalId}?${account-hint}";
+  public static readonly outlookBot: string = "https://outlook.office.com/mail?${account-hint}";
+  public static readonly officeTab: string =
+    "https://www.office.com/m365apps/${teamsAppInternalId}?auth=2&${account-hint}";
+}
+
 export const teamsAppIdPlaceholder = "${teamsAppId}";
+export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
 export const serviceLogHintMessage = "The log of this task can be found in:";
@@ -35,10 +50,18 @@ export const remoteTeamsAppIdConfigKey = "teamsAppId";
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
-export const backendWatchPattern = /.*/g;
+// From vscode $tsc-watch problem matcher: https://github.com/microsoft/vscode/blob/5a0ab56492d0c99f08028ca62ac3d59edb37f30f/extensions/typescript-language-features/package.json#L1085
+export const tscWatchPattern =
+  /^\s*(?:message TS6042:|\[?\D*\d{1,2}[:.]\d{1,2}[:.]\d{1,2}\D*(├\D*\d{1,2}\D+┤)?(?:\]| -)) (?:Compilation complete\.|Found \d+ errors?\.) Watching for file changes\./g;
+// make a copy to prevent accidental change
+export const backendWatchPattern = new RegExp(tscWatchPattern);
+export const funcHostedBotWatchPattern = new RegExp(tscWatchPattern);
 export const authStartPattern = /.*/g;
 export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
+export const funcHostedBotStartPattern =
+  /Worker process started and initialized|Host lock lease acquired by instance ID/g;
+export const funcHostedBotAzuritePattern = /successfully listening/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
 export const spfxInstallStartMessage = `executing 'npm install' under ${FolderName.SPFx} folder.`;
@@ -60,6 +83,8 @@ export const backendWatchStartMessageNext = `executing 'npm run watch:teamsfx' u
 export const botInstallStartMessage = `executing 'npm install' under ${FolderName.Bot} folder.`;
 export const botStartStartMessage = "starting bot.";
 export const botStartStartMessageNext = `executing 'npm run dev:teamsfx' under ${FolderName.Bot} folder.`;
+export const botWatchStartMessage = `executing 'npm run watch:teamsfx' under ${FolderName.Bot} folder.`;
+export const botAzuriteStartMessage = `executing 'npm run prepare-storage:teamsfx' under ${FolderName.Bot} folder.`;
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
 
 export const previewTitle = "preview";
@@ -88,4 +113,24 @@ export const doctorResult = {
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
+};
+
+export const installApp = {
+  detection:
+    "We detected that you have not yet installed the app in Teams first, please make sure the app is installed.",
+  description:
+    "To continue debug your application in Outlook, you need to install the app via Teams first.",
+  installInTeams: "Install in Teams",
+  installInTeamsDescription: "Pop up Teams Web Client for you to instapp app.",
+  continue: "Continue",
+  continueDescription: "Continue to preview in Outlook or Office.",
+  cancel: "Cancel",
+  cancelDescription: "Stop preview.",
+  installAppTitle: "Install app in Teams or continue to Outlook or Office",
+  nonInteractive: {
+    notInstalled:
+      'We detected that you have not yet installed the app in Teams first, please run "teamsfx preview %s --m365-host teams" to install app.',
+    manifestChanges:
+      'If you changed the manifest file, please run "teamsfx preview %s --m365-host teams" to install app again.',
+  },
 };

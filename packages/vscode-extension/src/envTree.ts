@@ -31,6 +31,7 @@ import {
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   isSPFxProject,
+  isExistingTabApp,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
@@ -74,7 +75,7 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
       for (const item of envNames) {
         showEnvList.push(item);
         const envInfo = await getCurrentEnvInfo(workspacePath, item);
-        const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+        const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
 
         environmentTreeProvider.add([
           {
@@ -85,7 +86,10 @@ export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
             contextValue: envInfo,
             icon: envInfo === EnvInfo.ProvisionedRemoteEnv ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: envInfo === EnvInfo.Local || isSpfxProject ? undefined : true,
+            expanded:
+              envInfo === EnvInfo.Local || envInfo === EnvInfo.LocalForExistingApp || isSpfxProject
+                ? undefined
+                : true,
           },
         ]);
       }
@@ -101,28 +105,11 @@ async function getCurrentEnvInfo(workspacePath: string, envName: string): Promis
   const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
 
   if (envName === LocalEnvironmentName) {
-    return (await isExistingApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+    return (await isExistingTabApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
   } else if (provisionSucceeded) {
     return EnvInfo.ProvisionedRemoteEnv;
   } else {
     return EnvInfo.RemoteEnv;
-  }
-}
-
-async function isExistingApp(workspacePath: string): Promise<boolean> {
-  // Check if solution settings is empty.
-  const projectSettingsPath = path.resolve(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
-
-  if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = await fs.readJson(projectSettingsPath);
-    return !projectSettings.solutionSettings;
-  } else {
-    return false;
   }
 }
 
@@ -262,7 +249,7 @@ async function checkAccountForEnvironment(env: string): Promise<accountStatus | 
   }
 
   // Check Azure account status
-  const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+  const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
   if (!isSpfxProject) {
     if (AzureAccountManager.getAccountInfo() !== undefined) {
       const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

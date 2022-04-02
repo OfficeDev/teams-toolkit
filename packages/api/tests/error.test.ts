@@ -19,8 +19,6 @@ import {
   PathAlreadyExistsError,
   PathNotExistError,
   ReadFileError,
-  returnSystemError,
-  returnUserError,
   SystemError,
   UndefinedError,
   UnknownError,
@@ -35,175 +33,109 @@ const myMessage2 = "message2";
 const mySource = "source1";
 const myHelpLink = "helplink1";
 const myIssueLink = "issuelink";
-const myInnerError = "innerError1";
 
 describe("error", function () {
   describe("UserError", function () {
-    it("constructor with name,message,source,...", () => {
+    it("constructor with source,name,message", () => {
       {
-        const error = new UserError(myName, myMessage, mySource, undefined, myHelpLink);
+        const error = new UserError(mySource, myName, myMessage, myMessage2);
         chai.assert.equal(error.name, myName);
         chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.helpLink, myHelpLink);
+        chai.assert.equal(error.displayMessage, myMessage2);
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isDefined(error.timestamp);
         chai.assert.isTrue(error instanceof UserError);
       }
       {
-        const innerError = new RangeError(myMessage2);
-        const error = new UserError(myName, myMessage, mySource, undefined, myHelpLink, innerError);
+        const error = new UserError(mySource, myName, myMessage);
         chai.assert.equal(error.name, myName);
         chai.assert.isTrue(error.message.includes(myMessage));
-        chai.assert.isTrue(error.message.includes(myMessage2));
         chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.helpLink, myHelpLink);
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isDefined(error.timestamp);
         chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(error.innerError, innerError);
       }
     }),
-      it("constructor with Error,source,name,...", () => {
+      it("constructor with UserErrorOptions object", () => {
         {
-          const innerError = new RangeError(myMessage);
-          const error = new UserError(innerError, mySource);
-          chai.assert.equal(error.name, "RangeError");
-          chai.assert.equal(error.message, myMessage);
-          chai.assert.equal(error.source, mySource);
-          chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-          chai.assert.isTrue(error instanceof UserError);
-          chai.assert.equal(error.innerError, innerError);
-        }
-        {
-          const error = new UserError(new RangeError(myMessage), mySource, myName, myHelpLink);
+          const error = new UserError({
+            error: new RangeError(myMessage2),
+            source: mySource,
+            message: myMessage,
+            displayMessage: myMessage2,
+            name: myName,
+            helpLink: myHelpLink,
+          });
           chai.assert.equal(error.name, myName);
           chai.assert.equal(error.message, myMessage);
+          chai.assert.equal(error.displayMessage, myMessage2);
           chai.assert.equal(error.source, mySource);
           chai.assert.equal(error.helpLink, myHelpLink);
           chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
           chai.assert.isTrue(error instanceof UserError);
         }
         {
-          const error = new UserError(new RangeError(myMessage));
+          const error = new UserError({
+            error: new RangeError(myMessage),
+            source: mySource,
+            helpLink: myHelpLink,
+          });
           chai.assert.equal(error.name, "RangeError");
-          chai.assert.equal(error.message, myMessage);
+          chai.assert.isTrue(error.message && error.message.includes(myMessage));
+          chai.assert.equal(error.source, mySource);
+          chai.assert.equal(error.helpLink, myHelpLink);
+          chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
+          chai.assert.isTrue(error instanceof UserError);
+        }
+        {
+          const error = new UserError({});
+          chai.assert.equal(error.name, "UserError");
+          chai.assert.equal(error.message, "");
           chai.assert.equal(error.source, "unknown");
           chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
           chai.assert.isTrue(error instanceof UserError);
         }
       });
-    it("constructor with UserErrorOptions object", () => {
-      {
-        const error = new UserError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          message: myMessage2,
-          name: myName,
-          helpLink: myHelpLink,
-        });
-        chai.assert.equal(error.name, myName);
-        chai.assert.isTrue(error.message && error.message.includes(myMessage));
-        chai.assert.isTrue(error.message && error.message.includes(myMessage2));
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.helpLink, myHelpLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof UserError);
-      }
-      {
-        const error = new UserError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          message: myMessage2,
-          helpLink: myHelpLink,
-        });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.isTrue(error.message && error.message.includes(myMessage));
-        chai.assert.isTrue(error.message && error.message.includes(myMessage2));
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.helpLink, myHelpLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof UserError);
-      }
-      {
-        const error = new UserError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          helpLink: myHelpLink,
-        });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.helpLink, myHelpLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof UserError);
-      }
-      {
-        const error = new UserError({ error: new RangeError(myMessage) });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.source, "unknown");
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof UserError);
-      }
-      {
-        const error = new UserError({});
-        chai.assert.equal(error.name, "UserError");
-        chai.assert.equal(error.message, "");
-        chai.assert.equal(error.source, "unknown");
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof UserError);
-      }
-    });
   });
 
   describe("SystemError", function () {
-    it("constructor name,message,source,...", () => {
+    it("constructor with source,name,message", () => {
       {
-        const error = new SystemError(myName, myMessage, mySource, undefined, myIssueLink);
+        const error = new SystemError(mySource, myName, myMessage, myMessage2);
         chai.assert.equal(error.name, myName);
         chai.assert.equal(error.message, myMessage);
+        chai.assert.equal(error.displayMessage, myMessage2);
         chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.issueLink, myIssueLink);
         chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
         chai.assert.isDefined(error.timestamp);
         chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        const innerError = new RangeError(myMessage2);
-        const error = new SystemError(
-          myName,
-          myMessage,
-          mySource,
-          undefined,
-          myIssueLink,
-          innerError
-        );
-        chai.assert.equal(error.name, myName);
-        chai.assert.isTrue(error.message.includes(myMessage));
-        chai.assert.isTrue(error.message.includes(myMessage2));
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.issueLink, myIssueLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isDefined(error.timestamp);
-        chai.assert.isTrue(error instanceof SystemError);
-        chai.assert.equal(error.innerError, innerError);
       }
     }),
-      it("constructor with Error,source,name,...", () => {
+      it("constructor with SystemErrorOptions object", () => {
         {
-          const innerError = new RangeError(myMessage);
-          const error = new SystemError(innerError, mySource);
-          chai.assert.equal(error.name, "RangeError");
+          const error = new SystemError({
+            error: new RangeError(myMessage2),
+            source: mySource,
+            message: myMessage,
+            displayMessage: myMessage2,
+            name: myName,
+            issueLink: myIssueLink,
+          });
+          chai.assert.equal(error.name, myName);
           chai.assert.equal(error.message, myMessage);
+          chai.assert.equal(error.displayMessage, myMessage2);
           chai.assert.equal(error.source, mySource);
+          chai.assert.equal(error.issueLink, myIssueLink);
           chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
           chai.assert.isTrue(error instanceof SystemError);
-          chai.assert.equal(error.innerError, innerError);
         }
         {
-          const error = new SystemError(new RangeError(myMessage), mySource, myName, myIssueLink);
-          chai.assert.equal(error.name, myName);
+          const error = new SystemError({
+            error: new RangeError(myMessage),
+            source: mySource,
+            issueLink: myIssueLink,
+          });
+          chai.assert.equal(error.name, "RangeError");
           chai.assert.equal(error.message, myMessage);
           chai.assert.equal(error.source, mySource);
           chai.assert.equal(error.issueLink, myIssueLink);
@@ -211,9 +143,9 @@ describe("error", function () {
           chai.assert.isTrue(error instanceof SystemError);
         }
         {
-          const error = new SystemError(new RangeError(myMessage));
-          chai.assert.equal(error.name, "RangeError");
-          chai.assert.equal(error.message, myMessage);
+          const error = new SystemError({});
+          chai.assert.equal(error.name, "SystemError");
+          chai.assert.equal(error.message, "");
           chai.assert.equal(error.source, "unknown");
           chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
           chai.assert.isTrue(error instanceof SystemError);
@@ -223,100 +155,18 @@ describe("error", function () {
             fs.readFileSync("12345" + new Date().getTime());
             chai.assert.fail("Should not reach here");
           } catch (e) {
-            const fxError = new SystemError(e, mySource, "ReadFileError");
+            const fxError = new SystemError({
+              error: e,
+              source: mySource,
+              name: "ReadFileError",
+            });
             chai.assert.isTrue(fxError instanceof SystemError);
-            chai.assert.isTrue(
-              fxError.message && fxError.message.includes("ENOENT: no such file or directory")
-            );
+            chai.assert.isTrue(fxError.message === e.message);
             chai.assert.isTrue(fxError.name === "ReadFileError");
             chai.assert.isTrue(fxError.source === mySource);
-            chai.assert.isTrue(fxError.stack === e.stack);
           }
         }
       });
-    it("constructor with SystemErrorOptions object", () => {
-      {
-        const error = new SystemError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          message: myMessage2,
-          name: myName,
-          issueLink: myIssueLink,
-        });
-        chai.assert.equal(error.name, myName);
-        chai.assert.isTrue(error.message && error.message.includes(myMessage));
-        chai.assert.isTrue(error.message && error.message.includes(myMessage2));
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.issueLink, myIssueLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        const error = new SystemError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          message: myMessage2,
-          issueLink: myIssueLink,
-        });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.isTrue(error.message && error.message.includes(myMessage));
-        chai.assert.isTrue(error.message && error.message.includes(myMessage2));
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.issueLink, myIssueLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        const error = new SystemError({
-          error: new RangeError(myMessage),
-          source: mySource,
-          issueLink: myIssueLink,
-        });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.source, mySource);
-        chai.assert.equal(error.issueLink, myIssueLink);
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        const error = new SystemError({ error: new RangeError(myMessage) });
-        chai.assert.equal(error.name, "RangeError");
-        chai.assert.equal(error.message, myMessage);
-        chai.assert.equal(error.source, "unknown");
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        const error = new SystemError({});
-        chai.assert.equal(error.name, "SystemError");
-        chai.assert.equal(error.message, "");
-        chai.assert.equal(error.source, "unknown");
-        chai.assert.isTrue(error.stack && error.stack.includes("error.test.ts"));
-        chai.assert.isTrue(error instanceof SystemError);
-      }
-      {
-        try {
-          fs.readFileSync("12345" + new Date().getTime());
-          chai.assert.fail("Should not reach here");
-        } catch (e) {
-          const fxError = new SystemError({
-            error: e,
-            source: mySource,
-            name: "ReadFileError",
-            message: myMessage,
-          });
-          chai.assert.isTrue(fxError instanceof SystemError);
-          chai.assert.isTrue(
-            fxError.message &&
-              fxError.message.includes("ENOENT: no such file or directory") &&
-              fxError.message.includes(myMessage)
-          );
-          chai.assert.isTrue(fxError.name === "ReadFileError");
-          chai.assert.isTrue(fxError.source === mySource);
-        }
-      }
-    });
   });
   describe("assembleError", function () {
     it("error is string", () => {
@@ -480,37 +330,5 @@ describe("error", function () {
         chai.assert.isTrue(error instanceof InvalidOperationError);
       }
     });
-  });
-
-  describe("returnSystemError", function () {
-    it("happy path", () => {
-      const temp = returnSystemError(new Error(myMessage), mySource, myName);
-      chai.assert.equal(temp.name, myName);
-      chai.assert.equal(temp.message, myMessage);
-      chai.assert.equal(temp.source, mySource);
-    }),
-      it("happy path with more info", () => {
-        const temp = returnSystemError(new Error(myMessage), mySource, myName, myIssueLink);
-        chai.assert.equal(temp.name, myName);
-        chai.assert.equal(temp.message, myMessage);
-        chai.assert.equal(temp.source, mySource);
-        chai.assert.equal(temp.issueLink, myIssueLink);
-      });
-  });
-
-  describe("returnUserError", function () {
-    it("happy path", () => {
-      const temp = returnUserError(new Error(myMessage), mySource, myName);
-      chai.assert.equal(temp.name, myName);
-      chai.assert.equal(temp.message, myMessage);
-      chai.assert.equal(temp.source, mySource);
-    }),
-      it("happy path with more info", () => {
-        const temp = returnUserError(new Error(myMessage), mySource, myName, myHelpLink);
-        chai.assert.equal(temp.name, myName);
-        chai.assert.equal(temp.message, myMessage);
-        chai.assert.equal(temp.source, mySource);
-        chai.assert.equal(temp.helpLink, myHelpLink);
-      });
   });
 });

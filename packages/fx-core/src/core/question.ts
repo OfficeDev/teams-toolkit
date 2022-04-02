@@ -18,7 +18,13 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import { getRootDirectory, isBotNotificationEnabled } from "../common/tools";
+import {
+  getRootDirectory,
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isInitAppEnabled,
+  isM365AppEnabled,
+} from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -28,6 +34,9 @@ import {
   TabSPFxItem,
   M365LaunchPageOptionItem,
   M365MessagingExtensionOptionItem,
+  CommandAndResponseOptionItem,
+  TabNonSsoItem,
+  ExistingTabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -49,8 +58,9 @@ export enum CoreQuestionNames {
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
   M365CreateFromScratch = "m365-scratch",
-  M365AppType = "m365-app-type",
-  M365Capability = "m365-capability",
+  M365AppType = "app-type",
+  M365Capabilities = "m365-capabilities",
+  ExistingTabEndpoint = "existing-tab-endpoint",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -156,102 +166,152 @@ function hasCapability(items: string[], optionItem: OptionItem): boolean {
   return items.includes(optionItem.id) || items.includes(optionItem.label);
 }
 
-// Items in set1 and set2 are mutally exclusive. Handle conflict by removing conflicting items with the newly added items.
-// Assuming intersection of set1 and set2 are empty sets and no conflicts in newly added items.
+function setIntersect<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  return new Set([...set1].filter((item) => set2.has(item)));
+}
+
+function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
+  return new Set([...set1].filter((item) => !set2.has(item)));
+}
+
+function setUnion<T>(...sets: Set<T>[]): Set<T> {
+  return new Set(([] as T[]).concat(...sets.map((set) => [...set])));
+}
+
+// Each set is mutually exclusive. Handle conflict by removing items conflicting with the newly added items.
+// Assuming intersection of all sets are empty sets and no conflicts in newly added items.
+//
+// For example: sets = [[1, 2], [3, 4]], previous = [1, 2, 5], current = [1, 2, 4, 5].
+// So the newly added one is [4]. Remove all items from `current` that conflict with [4].
+// Result = [4, 5].
 export function handleSelectionConflict<T>(
-  set1: Set<T>,
-  set2: Set<T>,
+  sets: Set<T>[],
   previous: Set<T>,
   current: Set<T>
 ): Set<T> {
-  const addedItems = [...current].filter((item) => !previous.has(item));
+  const allSets = setUnion(...sets);
+  const addedItems = setDiff(current, previous);
 
-  let conflicts: Set<T> | undefined = undefined;
-  for (const addedItem of addedItems) {
-    if (set1.has(addedItem)) {
-      conflicts = set2;
-      break;
-    }
-    if (set2.has(addedItem)) {
-      conflicts = set1;
-      break;
+  for (const set of sets) {
+    if (setIntersect(set, addedItems).size > 0) {
+      return setUnion(setIntersect(set, current), setDiff(current, allSets));
     }
   }
 
-  const result = new Set<T>();
-  for (const item of current) {
-    if (!conflicts || !conflicts.has(item)) {
-      result.add(item);
+  // If newly added items are not in any sets, do nothing.
+  return current;
+}
+
+export function validateConflict<T>(sets: Set<T>[], current: Set<T>): string | undefined {
+  const all = setUnion(...sets);
+  const currentIntersectAll = setIntersect(all, current);
+  for (const set of sets) {
+    if (setIntersect(set, current).size > 0) {
+      const currentIntersectSet = setIntersect(set, current);
+      if (currentIntersectSet.size < currentIntersectAll.size) {
+        return getLocalizedString(
+          "core.capability.validation",
+          `[${Array.from(current).join(", ")}]`,
+          Array.from(sets)
+            .map((set) => `[${Array.from(set).join(", ")}]`)
+            .join(", ")
+        );
+      }
     }
   }
-  return result;
+  return undefined;
 }
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
-  const staticOptions = [
-    ...[TabOptionItem, BotOptionItem],
-    ...(isBotNotificationEnabled() ? [NotificationOptionItem] : []),
-    ...[MessageExtensionItem, TabSPFxItem],
-  ];
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
-    staticOptions: staticOptions,
+    staticOptions: [
+      ...[TabOptionItem, BotOptionItem],
+      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
+      ...[MessageExtensionItem, TabSPFxItem],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      ...(isInitAppEnabled() ? [ExistingTabOptionItem] : []),
+    ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return getLocalizedString("core.createCapabilityQuestion.placeholder");
-        }
-
-        if (name.length > 1 && hasCapability(name, TabSPFxItem)) {
-          return getLocalizedString("core.createCapabilityQuestion.validation1");
-        }
-
-        if (hasCapability(name, BotOptionItem) && hasCapability(name, NotificationOptionItem)) {
-          return getLocalizedString("core.createCapabilityQuestion.validation2");
-        }
-
-        if (
-          hasCapability(name, MessageExtensionItem) &&
-          hasCapability(name, NotificationOptionItem)
-        ) {
-          return getLocalizedString("core.createCapabilityQuestion.validation3");
-        }
-
-        return undefined;
-      },
+      validFunc: validateCapabilities,
     },
-    onDidChangeSelection: async function (
-      currentSelectedIds: Set<string>,
-      previousSelectedIds: Set<string>
-    ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
-        if (previousSelectedIds.has(TabSPFxItem.id)) {
-          currentSelectedIds.delete(TabSPFxItem.id);
-        } else {
-          currentSelectedIds.clear();
-          currentSelectedIds.add(TabSPFxItem.id);
-        }
-      }
-
-      if (isBotNotificationEnabled()) {
-        currentSelectedIds = handleSelectionConflict(
-          new Set([BotOptionItem.id, MessageExtensionItem.id]),
-          new Set([NotificationOptionItem.id]),
-          previousSelectedIds,
-          currentSelectedIds
-        );
-      }
-
-      return currentSelectedIds;
-    },
+    onDidChangeSelection: onChangeSelectionForCapabilities,
   };
 }
+export function validateCapabilities(inputs: string[]): string | undefined {
+  if (inputs.length === 0) {
+    return getLocalizedString("core.createCapabilityQuestion.placeholder");
+  }
+  const set = new Set<string>();
+  inputs.forEach((i) => set.add(i));
+  let result = validateConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    set
+  );
+  if (result) return result;
+  result = validateConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+      ]),
+      new Set([TabSPFxItem.id]),
+    ],
+    set
+  );
+  if (result) return result;
+  result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  return result;
+}
 
+export async function onChangeSelectionForCapabilities(
+  currentSelectedIds: Set<string>,
+  previousSelectedIds: Set<string>
+): Promise<Set<string>> {
+  let result = handleSelectionConflict(
+    [
+      new Set([BotOptionItem.id, MessageExtensionItem.id]),
+      new Set([NotificationOptionItem.id]),
+      new Set([CommandAndResponseOptionItem.id]),
+    ],
+    previousSelectedIds,
+    currentSelectedIds
+  );
+  result = handleSelectionConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+      ]),
+      new Set([TabSPFxItem.id]),
+      new Set([ExistingTabOptionItem.id]),
+    ],
+    previousSelectedIds,
+    result
+  );
+  result = handleSelectionConflict(
+    [new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])],
+    previousSelectedIds,
+    result
+  );
+  return result;
+}
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.TargetEnvName,
@@ -362,6 +422,12 @@ export const ScratchOptionYesVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
 };
 
+export const ScratchOptionYesM365VSC: OptionItem = {
+  id: "yes-m365",
+  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesM365VSC.label")}`,
+  detail: getLocalizedString("core.ScratchOptionYesM365VSC.detail"),
+};
+
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
@@ -374,6 +440,12 @@ export const ScratchOptionYes: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYes.detail"),
 };
 
+export const ScratchOptionYesM365: OptionItem = {
+  id: "yes-m365",
+  label: getLocalizedString("core.ScratchOptionYesM365.label"),
+  detail: getLocalizedString("core.ScratchOptionYesM365.detail"),
+};
+
 export const ScratchOptionNo: OptionItem = {
   id: "no",
   label: getLocalizedString("core.ScratchOptionNo.label"),
@@ -381,14 +453,25 @@ export const ScratchOptionNo: OptionItem = {
 };
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
+  const staticOptions: OptionItem[] = [];
+  if (platform === Platform.VSCode) {
+    staticOptions.push(ScratchOptionYesVSC);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365VSC);
+    }
+    staticOptions.push(ScratchOptionNoVSC);
+  } else {
+    staticOptions.push(ScratchOptionYes);
+    if (isM365AppEnabled()) {
+      staticOptions.push(ScratchOptionYesM365);
+    }
+    staticOptions.push(ScratchOptionNo);
+  }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
-    staticOptions:
-      platform === Platform.VSCode
-        ? [ScratchOptionYesVSC, ScratchOptionNoVSC]
-        : [ScratchOptionYes, ScratchOptionNo],
+    staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
@@ -410,12 +493,12 @@ export const SampleSelect: SingleSelectQuestion = {
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
 };
 
-export const M365CreateFromScratchFuncQuestion: FuncQuestion = {
-  type: "func",
-  name: CoreQuestionNames.M365CreateFromScratch,
-  func: (inputs: Inputs) => {
-    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYes.id;
-  },
+export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.CreateFromScratch,
+  title: "",
+  staticOptions: [ScratchOptionYesM365],
+  skipSingleOption: true,
 };
 
 export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
@@ -426,14 +509,32 @@ export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
   placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
 };
 
-export const M365CapabilityFuncQuestion: FuncQuestion = {
+export const M365CapabilitiesFuncQuestion: FuncQuestion = {
   type: "func",
-  name: CoreQuestionNames.M365Capability,
+  name: CoreQuestionNames.M365Capabilities,
   func: (inputs: Inputs) => {
     if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
       inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
     } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
       inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
     }
+  },
+};
+
+export const ExistingTabEndpointQuestion: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.ExistingTabEndpoint,
+  title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
+  default: "https://localhost:3000",
+  placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
+  validation: {
+    validFunc: async (endpoint: string): Promise<string | undefined> => {
+      const match = endpoint.match(/^https:\/\/[\S]+$/i);
+      if (!match) {
+        return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
+      }
+
+      return undefined;
+    },
   },
 };

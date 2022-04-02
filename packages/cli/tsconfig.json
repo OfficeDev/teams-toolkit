@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "experimentalDecorators": true,
     "outDir": "lib",
     "lib": ["es6"],
     "module": "commonjs",

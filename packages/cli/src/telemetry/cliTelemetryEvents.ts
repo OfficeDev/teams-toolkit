@@ -31,6 +31,9 @@ export enum TelemetryEvent {
   BuildStart = "build-start",
   Build = "build",
 
+  AddCICDStart = "add-cicd-start",
+  AddCICD = "add-cicd",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 
@@ -94,6 +97,7 @@ export enum TelemetryProperty {
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
   PreviewBrowser = "preview-browser",
+  PreviewHub = "preview-hub",
   PreviewNpmInstallName = "preview-npm-install-name",
   PreviewGulpCertName = "preview-gulp-cert-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
@@ -109,6 +113,7 @@ export enum TelemetryProperty {
   Env = "env",
   SettingsVersion = "settings-version",
   NewProjectId = "new-project-id",
+  IsM365 = "is-m365",
 }
 
 export enum TelemetrySuccess {

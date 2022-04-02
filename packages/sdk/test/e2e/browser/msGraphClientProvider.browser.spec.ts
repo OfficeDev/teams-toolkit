@@ -5,11 +5,17 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { createMicrosoftGraphClient, TeamsFx, IdentityType } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
-import { getGraphToken, getSSOToken, SSOToken } from "../helper.browser";
+import {
+  extractIntegrationEnvVariables,
+  getGraphToken,
+  getSSOToken,
+  SSOToken,
+} from "../helper.browser";
 import * as sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 
 chaiUse(chaiPromises);
+extractIntegrationEnvVariables();
 const env = (window as any).__env__;
 
 describe("MsGraphClientProvider Tests - Browser", () => {

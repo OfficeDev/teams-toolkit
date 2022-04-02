@@ -47,10 +47,11 @@ export class TemplateProjectsConstants {
 
 export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
-  NOTIFICATION_SCENARIO_NAME = "notification",
+  NOTIFICATION_RESTIFY_SCENARIO_NAME = "notification-restify",
   NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME = "notification-function-base",
   NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME = "notification-trigger-http",
   NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME = "notification-trigger-timer",
+  COMMAND_AND_RESPONSE_SCENARIO_NAME = "command-and-response",
 }
 
 export const TriggerTemplateScenarioMappings = {
@@ -70,7 +71,6 @@ export class ProgressBarConstants {
 
   public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
-  public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_TITLE = "Scaffolding notification bot";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_START =
     "Scaffolding notification bot.";
   public static readonly SCAFFOLD_FUNCTIONS_NOTIFICATION_STEP_FETCH_PROJECT_TEMPLATE =
@@ -148,26 +148,18 @@ export class Retry {
 export class ErrorNames {
   // System Exceptions
   public static readonly PRECONDITION_ERROR = "PreconditionError";
-  public static readonly CLIENT_CREATION_ERROR = "ClientCreationError";
   public static readonly PROVISION_ERROR = "ProvisionError";
   public static readonly CONFIG_UPDATING_ERROR = "ConfigUpdatingError";
   public static readonly CONFIG_VALIDATION_ERROR = "ConfigValidationError";
   public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
   public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
+  public static readonly RESTART_WEBAPP_ERROR = "RestartWebappError";
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
-  public static readonly DOWNLOAD_ERROR = "DownloadError";
-  public static readonly MANIFEST_FORMAT_ERROR = "TemplateManifestFormatError";
-  public static readonly TEMPLATE_PROJECT_NOT_FOUND_ERROR = "TemplateProjectNotFoundError";
-  public static readonly LANGUAGE_STRATEGY_NOT_FOUND_ERROR = "LanguageStrategyNotFoundError";
   public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
   public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";
 
   // User Exceptions
-  public static readonly USER_INPUTS_ERROR = "UserInputsError";
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
-  public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR =
-    "MissingSubscriptionRegistrationError";
-  public static readonly INVALID_BOT_DATA_ERROR = "InvalidBotDataError";
 }
 
 export class Links {
@@ -271,6 +263,7 @@ export class TelemetryKeys {
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";
+  public static readonly BotCapabilities = "bot-capabilities";
 }
 
 export class TelemetryValues {
@@ -292,6 +285,8 @@ export class PathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "botProvision.template.bicep";
+  public static readonly FuncHostedProvisionModuleTemplateFileName =
+    "funcHostedBotProvision.template.bicep";
   public static readonly ConfigurationModuleTemplateFileName = "botConfiguration.template.bicep";
 }
 

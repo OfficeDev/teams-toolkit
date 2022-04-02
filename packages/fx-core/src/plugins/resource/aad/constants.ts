@@ -26,6 +26,10 @@ export class Constants {
     type: "M365",
   };
 
+  static appPackageFolder = "templates/appPackage";
+  static aadManifestTemplateFolder = "plugins/resource/aad/manifest";
+  static aadManifestTemplateName = "aad.template.json";
+
   static createOwnerDuplicatedMessage =
     "One or more added object references already exist for the following modified properties: 'owners'.";
 
@@ -158,6 +162,26 @@ export class Messages {
     telemetry: Messages.getEventName("post-provision"),
   };
 
+  static readonly StartDeploy: Messages = {
+    log: Messages.getLog("Start to deploy resources"),
+    telemetry: Messages.getEventName("deploy-start"),
+  };
+
+  static readonly EndDeploy: Messages = {
+    log: Messages.getLog("Successfully deploy resources"),
+    telemetry: Messages.getEventName("deploy"),
+  };
+
+  static readonly StartScaffold: Messages = {
+    log: Messages.getLog("Start to scaffold resources"),
+    telemetry: Messages.getEventName("scaffold-start"),
+  };
+
+  static readonly EndScaffold: Messages = {
+    log: Messages.getLog("Successfully scaffold resources"),
+    telemetry: Messages.getEventName("scaffold"),
+  };
+
   static readonly StartGenerateArmTemplates: Messages = {
     log: Messages.getLog("Start to generate arm templates"),
     telemetry: Messages.getEventName("generate-arm-templates-start"),
@@ -244,6 +268,9 @@ export class Messages {
     getLocalizedString("plugins.aad.UpdateAppIdUriHelpMessage", appIdUri);
   static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
     getLocalizedString("plugins.aad.UpdateRedirectUriHelpMessage", redirectUri);
+
+  static readonly UpdateAadHelpMessage = () =>
+    getLocalizedString("plugins.aad.UpdateAadHelpMessage");
 }
 
 export class ProgressTitle {
@@ -253,6 +280,12 @@ export class ProgressTitle {
   static readonly PostProvisionSteps = 2;
   static readonly UpdatePermission = "Updating permission for Azure AD app";
   static readonly UpdatePermissionSteps = 1;
+
+  static readonly Deploy = "Deploying Azure AD app";
+  static readonly DeploySteps = 1;
+
+  static readonly PostProvisionUsingManifest = "Configuring Azure AD app using manifest";
+  static readonly PostProvisionUsingManifestSteps = 1;
 }
 
 export class ProgressDetail {
@@ -262,6 +295,7 @@ export class ProgressDetail {
   static readonly CreateAadAppSecret = "Create secret for Azure AD app";
   static readonly GetAadApp = "Get Azure AD app";
 
+  static readonly UpdateAadApp = "Update AD app";
   static readonly UpdateRedirectUri = "Update redirect uri for Azure AD app";
   static readonly UpdateAppIdUri = "Update application id uri for Azure AD app";
 

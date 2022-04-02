@@ -7,12 +7,12 @@ import {
   Result,
   FxError,
   ok,
-  returnSystemError,
   err,
   SolutionConfig,
   SolutionSettings,
   Err,
   Json,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2/types";
 import axios from "axios";
@@ -50,10 +50,10 @@ export class CollaborationUtil {
 
     if (!user) {
       return err(
-        returnSystemError(
-          new Error("Failed to retrieve current user info from graph token."),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToRetrieveUserInfo
+          SolutionError.FailedToRetrieveUserInfo,
+          "Failed to retrieve current user info from graph token."
         )
       );
     }

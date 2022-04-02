@@ -456,24 +456,29 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
       EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
-  const userdataContent = await fs.readFile(
-    path.join(projectPath, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`),
-    "utf8"
+  const userDataFile = path.join(
+    projectPath,
+    `.${ConfigFolderName}`,
+    StatesFolderName,
+    `${env}.userdata`
   );
-  const userdata = dotenv.parse(userdataContent);
-
-  const regex = /\{\{([^{}]+)\}\}/;
-  for (const component in context) {
-    for (const key in context[component]) {
-      const matchResult = regex.exec(context[component][key]);
-      if (matchResult) {
-        const userdataKey = matchResult[1];
-        if (userdataKey in userdata) {
-          context[component][key] = userdata[userdataKey];
+  if (await fs.pathExists(userDataFile)) {
+    const userdataContent = await fs.readFile(userDataFile, "utf8");
+    const userdata = dotenv.parse(userdataContent);
+    const regex = /\{\{([^{}]+)\}\}/;
+    for (const component in context) {
+      for (const key in context[component]) {
+        const matchResult = regex.exec(context[component][key]);
+        if (matchResult) {
+          const userdataKey = matchResult[1];
+          if (userdataKey in userdata) {
+            context[component][key] = userdata[userdataKey];
+          }
         }
       }
     }
   }
+
   return ok(context);
 }
 

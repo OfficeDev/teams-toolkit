@@ -4,6 +4,7 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
+import path from "path";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -152,6 +153,12 @@ export enum SolutionError {
   FailedToExecuteTasks = "FailedToExecuteTasks",
   FailedToGetEnvName = "FailedToGetEnvName",
   TeamsAppTenantIdNotRight = "TeamsAppTenantIdNotRight",
+  AddSsoNotSupported = "AddSsoNotSupported",
+  NeedEnableFeatureFlag = "NeedEnableFeatureFlag",
+  SsoEnabled = "SsoEnabled",
+  InvalidSsoProject = "InvalidSsoProject",
+  InvalidProjectPath = "InvalidProjectPath",
+  FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -185,7 +192,7 @@ export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",
   "Solution"
 );
-export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
+export const CancelError = new UserError("Solution", "UserCancel", "UserCancel");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
@@ -213,6 +220,12 @@ export enum SolutionTelemetryEvent {
 
   ArmDeploymentStart = "deploy-armtemplate-start",
   ArmDeployment = "deploy-armtemplate",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
+
+  DeployStart = "deploy-start",
+  Deploy = "deploy",
 }
 
 export enum SolutionTelemetryProperty {
@@ -227,6 +240,10 @@ export enum SolutionTelemetryProperty {
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
+  SkipAadDeploy = "skip-aad-deploy",
+  ErrorCode = "error-code",
+  ErrorMessage = "error-message",
+  HostType = "host-type",
 }
 
 export enum SolutionTelemetrySuccess {
@@ -242,9 +259,9 @@ export class UnauthorizedToCheckResourceGroupError extends UserError {
     const subscriptionInfoString =
       subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
     super(
+      SolutionSource,
       new.target.name,
-      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`,
-      SolutionSource
+      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
     );
   }
 }
@@ -270,17 +287,29 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
         message: error.message,
       });
 
-      super(new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+      super(SolutionSource, new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
       // Reuse the original error object to prevent losing the stack info
       error.message = `${baseErrorMessage}, error: '${error.message}'`;
-      super(error, SolutionSource, new.target.name);
+      super({ error, source: SolutionSource });
     } else {
       super(
+        SolutionSource,
         new.target.name,
-        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`,
-        SolutionSource
+        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`
       );
     }
   }
+}
+
+export enum Language {
+  JavaScript = "javascript",
+  TypeScript = "typescript",
+}
+
+export class AddSsoParameters {
+  static readonly filePath = path.join("plugins", "resource", "aad", "auth");
+  static readonly Bot = "bot";
+  static readonly Tab = "tab";
+  static readonly Readme = "README.md";
 }

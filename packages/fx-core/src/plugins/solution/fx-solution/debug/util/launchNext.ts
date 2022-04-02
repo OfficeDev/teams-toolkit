@@ -3,7 +3,7 @@
 "use strict";
 
 import * as os from "os";
-import { HubName, LaunchBrowser } from "../constants";
+import { HubName, LaunchBrowser, LaunchUrl } from "../constants";
 
 export function generateConfigurations(
   includeFrontend: boolean,
@@ -23,11 +23,15 @@ export function generateConfigurations(
   ];
 
   if (includeFrontend) {
-    launchConfigurations.push(attachToFrontend(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontend(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      attachToFrontend(LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      attachToFrontend(LaunchBrowser.chrome, "Chrome", includeBackend, includeBot)
+    );
   } else if (includeBot) {
-    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge", includeBackend));
+    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome", includeBackend));
   }
 
   if (includeBot) {
@@ -68,19 +72,55 @@ export function generateM365Configurations(
   const launchConfigurations: Record<string, unknown>[] = [];
 
   if (includeFrontend) {
-    launchConfigurations.push(attachToFrontendM365(HubName.teams, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontendM365(HubName.teams, LaunchBrowser.chrome, "Chrome"));
-    launchConfigurations.push(attachToFrontendM365(HubName.outlook, LaunchBrowser.edge, "Edge"));
     launchConfigurations.push(
-      attachToFrontendM365(HubName.outlook, LaunchBrowser.chrome, "Chrome")
+      attachToFrontendM365(HubName.teams, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
     );
-    launchConfigurations.push(attachToFrontendM365(HubName.office, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontendM365(HubName.office, LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      attachToFrontendM365(
+        HubName.teams,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(HubName.outlook, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(
+        HubName.outlook,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(HubName.office, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(
+        HubName.office,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
+    );
   } else if (includeBot) {
-    launchConfigurations.push(launchBotM365(HubName.teams, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBotM365(HubName.teams, LaunchBrowser.chrome, "Chrome"));
-    launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      launchBotM365(HubName.teams, LaunchBrowser.edge, "Edge", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.teams, LaunchBrowser.chrome, "Chrome", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.outlook, LaunchBrowser.edge, "Edge", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.outlook, LaunchBrowser.chrome, "Chrome", includeBackend)
+    );
   }
 
   if (includeBot) {
@@ -108,39 +148,23 @@ export function generateM365Compounds(
   }
 
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Chrome", chromeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Chrome", chromeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, 2, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(
-      includeFrontend,
-      includeBackend,
-      includeBot,
-      HubName.outlook,
-      2,
-      "Chrome",
-      chromeOrder
-    )
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Chrome", chromeOrder)
   );
   if (includeFrontend) {
     launchCompounds.push(
-      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, 3, "Edge", edgeOrder)
+      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Edge", edgeOrder)
     );
     launchCompounds.push(
-      debugM365(
-        includeFrontend,
-        includeBackend,
-        includeBot,
-        HubName.office,
-        3,
-        "Chrome",
-        chromeOrder
-      )
+      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Chrome", chromeOrder)
     );
   }
 
@@ -156,7 +180,7 @@ function launchRemote(
     name: `Launch Remote (${browserName})`,
     type: browserType,
     request: "launch",
-    url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    url: LaunchUrl.teamsRemote,
     presentation: {
       group: "remote",
       order: order,
@@ -164,12 +188,28 @@ function launchRemote(
   };
 }
 
-function attachToFrontend(browserType: string, browserName: string): Record<string, unknown> {
+function attachToFrontend(
+  browserType: string,
+  browserName: string,
+  includeBackend: boolean,
+  includeBot: boolean
+): Record<string, unknown> {
+  // NOTE: if no cascadeTerminateToConfigurations, closing browser will not stop
+  // "Attach to Backend" and "Attach to Bot" even though stopAll in compound is true
+  const cascadeTerminateToConfigurations = [];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
+  if (includeBot) {
+    cascadeTerminateToConfigurations.push("Attach to Bot");
+  }
   return {
     name: `Attach to Frontend (${browserName})`,
     type: browserType,
     request: "launch",
-    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    url: LaunchUrl.teamsLocal,
+    cascadeTerminateToConfigurations:
+      cascadeTerminateToConfigurations.length > 0 ? cascadeTerminateToConfigurations : undefined,
     presentation: {
       group: "all",
       hidden: true,
@@ -180,13 +220,24 @@ function attachToFrontend(browserType: string, browserName: string): Record<stri
 function attachToFrontendM365(
   hubName: string,
   browserType: string,
-  browserName: string
+  browserName: string,
+  includeBackend: boolean,
+  includeBot: boolean
 ): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = [];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
+  if (includeBot) {
+    cascadeTerminateToConfigurations.push("Attach to Bot");
+  }
   return {
     name: `Attach to Frontend in ${hubName} (${browserName})`,
     type: browserType,
     request: "launch",
-    url: getFrontendLaunchUrl(hubName),
+    url: getFrontendLaunchUrl(true, hubName),
+    cascadeTerminateToConfigurations:
+      cascadeTerminateToConfigurations.length > 0 ? cascadeTerminateToConfigurations : undefined,
     presentation: {
       group: "all",
       hidden: true,
@@ -223,12 +274,21 @@ function attachToBackend(): Record<string, unknown> {
   };
 }
 
-function launchBot(browserType: string, browserName: string): Record<string, unknown> {
+function launchBot(
+  browserType: string,
+  browserName: string,
+  includeBackend: boolean
+): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = ["Attach to Bot"];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
   return {
     name: `Launch Bot (${browserName})`,
     type: browserType,
     request: "launch",
-    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    url: LaunchUrl.teamsLocal,
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,
@@ -239,13 +299,19 @@ function launchBot(browserType: string, browserName: string): Record<string, unk
 function launchBotM365(
   hubName: string,
   browserType: string,
-  browserName: string
+  browserName: string,
+  includeBackend: boolean
 ): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = ["Attach to Bot"];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
   return {
     name: `Launch Bot in ${hubName} (${browserName})`,
     type: browserType,
     request: "launch",
-    url: getBotLaunchUrl(hubName),
+    url: getBotLaunchUrl(true, hubName),
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,
@@ -289,7 +355,6 @@ function debugM365(
   includeBackend: boolean,
   includeBot: boolean,
   hubName: string,
-  hubOrder: number,
   browserName: string,
   order: number
 ): Record<string, unknown> {
@@ -313,29 +378,29 @@ function debugM365(
         ? "Pre Debug Check & Start All"
         : "Pre Debug Check & Start All & Install App",
     presentation: {
-      group: `group ${hubOrder}: ${hubName}`,
+      group: `all`,
       order: order,
     },
     stopAll: true,
   };
 }
 
-function getFrontendLaunchUrl(hubName: string) {
+function getFrontendLaunchUrl(isLocal: boolean, hubName: string) {
   if (hubName === HubName.teams) {
-    return "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+    return isLocal ? LaunchUrl.teamsLocal : LaunchUrl.teamsRemote;
   } else if (hubName === HubName.outlook) {
-    return "https://outlook-sdf.office.com/host/${localTeamsAppInternalId}/index?${account-hint}";
+    return isLocal ? LaunchUrl.outlookLocalTab : LaunchUrl.outlookRemoteTab;
   } else if (hubName === HubName.office) {
-    return "https://www.office.com/m365apps/${localTeamsAppInternalId}?auth=2&${account-hint}";
+    return isLocal ? LaunchUrl.officeLocalTab : LaunchUrl.officeRemoteTab;
   }
   return "";
 }
 
-function getBotLaunchUrl(hubName: string): string {
+function getBotLaunchUrl(isLocal: boolean, hubName: string): string {
   if (hubName === HubName.teams) {
-    return "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+    return isLocal ? LaunchUrl.teamsLocal : LaunchUrl.teamsRemote;
   } else if (hubName === HubName.outlook) {
-    return "https://outlook-sdf.office.com/mail";
+    return isLocal ? LaunchUrl.outlookLocalBot : LaunchUrl.outlookRemoteBot;
   }
   return "";
 }

@@ -16,7 +16,8 @@ import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConsta
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import { LocalStateSimpleAuthKeys } from "../../../common/localStateConstants";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -25,10 +26,16 @@ export class SimpleAuthPluginImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-    ctx.localSettings?.auth?.set(
-      LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
-      simpleAuthFilePath
-    );
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(Constants.SimpleAuthPlugin.id)
+        ?.set(LocalSettingsSimpleAuthKeys.SimpleAuthFilePath, simpleAuthFilePath);
+    } else {
+      ctx.localSettings?.auth?.set(
+        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
+        simpleAuthFilePath
+      );
+    }
 
     await Utils.downloadZip(simpleAuthFilePath);
 
@@ -40,17 +47,28 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostLocalDebug);
 
-    const configs = Utils.getWebAppConfig(ctx, true);
+    let configs: any;
+    if (isConfigUnifyEnabled()) {
+      configs = Utils.getWebAppConfig(ctx, false);
+    } else {
+      configs = Utils.getWebAppConfig(ctx, true);
+    }
 
     const configArray = [];
     for (const [key, value] of Object.entries(configs)) {
       configArray.push(`${key}="${value}"`);
     }
 
-    ctx.localSettings?.auth?.set(
-      LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
-      configArray.join(" ")
-    );
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(Constants.SimpleAuthPlugin.id)
+        ?.set(LocalStateSimpleAuthKeys.EnvironmentVariableParams, configArray.join(" "));
+    } else {
+      ctx.localSettings?.auth?.set(
+        LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
+        configArray.join(" ")
+      );
+    }
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostLocalDebug);
     return ResultFactory.Success();

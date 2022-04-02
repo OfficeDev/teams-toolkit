@@ -105,7 +105,7 @@ class EnvironmentManager {
       });
   }
 
-  public newEnvConfigData(appName: string): EnvConfig {
+  public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       description: this.envConfigDescription,
@@ -116,6 +116,12 @@ class EnvironmentManager {
         },
       },
     };
+
+    if (existingTabEndpoint) {
+      // Settings to build a static Tab app from existing app.
+      envConfig.manifest[ManifestVariables.TabContentUrl] = existingTabEndpoint;
+      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = existingTabEndpoint;
+    }
 
     return envConfig;
   }
@@ -172,8 +178,13 @@ class EnvironmentManager {
     this.encrypt(secrets, cryptoProvider);
 
     try {
-      await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
-      await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
+      if (!this.isEmptyRecord(data)) {
+        await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
+      }
+
+      if (!this.isEmptyRecord(secrets)) {
+        await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
+      }
     } catch (error) {
       return err(WriteFileError(error));
     }
@@ -410,6 +421,10 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
+  }
+
+  private isEmptyRecord(data: Record<any, any>): boolean {
+    return Object.keys(data).length === 0;
   }
 
   public getDefaultEnvName() {

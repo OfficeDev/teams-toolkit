@@ -1,19 +1,37 @@
 {
-    "name": "fx.add",
     "type": "group",
+    "name": "resource.add+fx.persistBicep",
     "inputs": {
         "bicep": {}
     },
     "actions": [
         {
-            "type": "call",
-            "required": false,
-            "targetAction": "azure-function.generateCode"
-        },
-        {
-            "type": "call",
-            "required": false,
-            "targetAction": "azure-function.generateBicep"
+            "type": "group",
+            "name": "call:resource.add",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "azure-function.generateBicep",
+                    "inputs": {
+                        "azure-function": {
+                            "name": "azure-function"
+                        }
+                    }
+                },
+                {
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "function-scaffold.generateCode",
+                    "inputs": {
+                        "function-scaffold": {
+                            "name": "function-scaffold",
+                            "folder": "myapi"
+                        }
+                    }
+                }
+            ]
         },
         {
             "type": "call",

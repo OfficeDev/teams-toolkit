@@ -10,19 +10,20 @@ import {
   DeployAction,
   MaybePromise,
   ProjectSettingsV3,
+  Resource,
   ResourceConfig,
 } from "./interface";
 import { getResource } from "./workflow";
 
 @Service("spfx")
-export class SpfxResource implements AzureResource {
-  name = "spfx";
-  generateBicep(
+export class SpfxResource implements Resource {
+  readonly name = "spfx";
+  add(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "azure-web-app.generateBicep",
+      name: "spfx.add",
       type: "function",
       plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
         const resource = getResource(context.projectSetting as ProjectSettingsV3, "spfx");

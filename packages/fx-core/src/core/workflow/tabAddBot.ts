@@ -34,12 +34,19 @@ async function tabAddBot() {
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
     programmingLanguage: "typescript",
     resources: [
-      { name: "teams-tab", hostingResource: "azure-storage" },
+      {
+        name: "teams-tab",
+        hostingResource: "azure-storage",
+        framework: "react",
+        folder: "myApp",
+      },
       {
         name: "tab-scaffold",
         build: true,
         deployType: "zip",
-        folder: "tab",
+        folder: "myApp",
+        language: "typescript",
+        framework: "react",
         hostingResource: "azure-storage",
       },
       { name: "azure-storage", provision: true },
@@ -49,11 +56,18 @@ async function tabAddBot() {
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
-    "teams-bot": {
-      hostingResource: "azure-web-app",
+    fx: {
+      resources: [
+        {
+          name: "teams-bot",
+          scenarios: ["default"],
+          folder: "bot",
+          hostingResource: "azure-web-app",
+        },
+      ],
     },
   };
-  const action = await getAction("teams-bot.add", context, inputs);
+  const action = await getAction("fx.add", context, inputs);
   if (action) {
     const resolved = await resolveAction(action, context, inputs);
     await fs.writeFile("tabAddBot.json", JSON.stringify(resolved, undefined, 4));

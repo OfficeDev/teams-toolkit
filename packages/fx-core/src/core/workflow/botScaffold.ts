@@ -11,6 +11,7 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
+  ResourceConfig,
   ScaffoldResource,
   TeamsBotInputs,
 } from "./interface";
@@ -20,6 +21,7 @@ import {
  */
 @Service("bot-scaffold")
 export class BotScaffoldResource implements ScaffoldResource {
+  readonly type = "scaffold";
   name = "bot-scaffold";
   generateCode(
     context: ContextV3,
@@ -30,9 +32,12 @@ export class BotScaffoldResource implements ScaffoldResource {
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+        const language = teamsBotInputs.language || context.projectSetting.programmingLanguage;
+        const scenarios = teamsBotInputs.scenarios;
+        const folder = teamsBotInputs.folder || "bot";
         return ok([
-          "ensure resource 'bot-scaffold' in projectSettings",
-          `scaffold bot source code for language: ${inputs["programming-language"]}, scenario: ${teamsBotInputs.scenarios}, hostingResource: ${teamsBotInputs.hostingResource}`,
+          "add resource 'bot-scaffold' in projectSettings",
+          `scaffold bot source code for language: ${language}, scenario: ${scenarios}, hostingResource: ${teamsBotInputs.hostingResource}, folder: ${folder}`,
         ]);
       },
       execute: async (
@@ -41,17 +46,23 @@ export class BotScaffoldResource implements ScaffoldResource {
       ): Promise<Result<undefined, FxError>> => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
-        projectSettings.resources.push({
+        const language = (teamsBotInputs.language || context.projectSetting.programmingLanguage) as
+          | "csharp"
+          | "javascript"
+          | "typescript";
+        const folder = teamsBotInputs.folder || "bot";
+        const resourceConfig: ResourceConfig = {
           name: "bot-scaffold",
           build: true,
           deployType: "zip",
-          folder: "bot",
+          folder: folder,
+          language: language,
+          scenarios: teamsBotInputs.scenarios,
           hostingResource: teamsBotInputs.hostingResource,
-        });
+        };
+        projectSettings.resources.push(resourceConfig);
         console.log("add resource 'bot-scaffold' in projectSettings");
-        console.log(
-          `scaffold bot source code for language: ${inputs["programming-language"]}, scenario: ${teamsBotInputs.scenarios}, hostingResource: ${teamsBotInputs.hostingResource}`
-        );
+        console.log(`scaffold bot source code: ${JSON.stringify(resourceConfig)}`);
         return ok(undefined);
       },
     };

@@ -18,7 +18,8 @@ import { getResource } from "./workflow";
 
 @Service("azure-web-app")
 export class AzureWebAppResource implements AzureResource {
-  name = "azure-web-app";
+  readonly type = "azure";
+  readonly name = "azure-web-app";
   generateBicep(
     context: v2.Context,
     inputs: v2.InputsWithProjectPath

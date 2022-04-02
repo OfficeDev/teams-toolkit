@@ -3,7 +3,7 @@
 
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import {
   Action,
   ContextV3,
@@ -13,6 +13,7 @@ import {
   Resource,
   ResourceConfig,
   TeamsTabInputs,
+  AzureResource,
 } from "./interface";
 
 /**
@@ -26,39 +27,51 @@ export class TeamsTabFeature implements Resource {
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+    const hostingResource = teamsTabInputs.hostingResource;
+    const hostingResourcePlugin = Container.get(hostingResource) as Resource | AzureResource;
+    const addHostingResourceMethod =
+      (hostingResourcePlugin as AzureResource).type === "azure" ? "generateBicep" : "add";
     const actions: Action[] = [
       {
         name: "teams-tab.add",
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          const addInput = (inputs as TeamsTabInputs)["teams-tab"];
-          return ok([`add resources: 'teams-tab' in projectSettings: ${addInput}`]);
+          const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+          return ok([
+            `add resources: 'teams-tab' in projectSettings: ${JSON.stringify(teamsTabInputs)}`,
+          ]);
         },
         execute: async (
           context: ContextV3,
           inputs: v2.InputsWithProjectPath
         ): Promise<Result<undefined, FxError>> => {
+          const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
           const projectSettings = context.projectSetting as ProjectSettingsV3;
           const teamsTabResource: ResourceConfig = {
             name: "teams-tab",
-            hostingResource: teamsTabInputs.hostingResource,
+            ...teamsTabInputs,
           };
           projectSettings.resources.push(teamsTabResource);
-          inputs.bicep = {};
+          console.log(
+            `add resources: 'teams-tab' in projectSettings: ${JSON.stringify(teamsTabResource)}`
+          );
           return ok(undefined);
         },
       },
       {
         name: "call:tab-scaffold.generateCode",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "tab-scaffold.generateCode",
+        inputs: {
+          "tab-scaffold": teamsTabInputs,
+        },
       },
       {
-        name: `call:${teamsTabInputs.hostingResource}.generateBicep`,
+        name: `call:${teamsTabInputs.hostingResource}.${addHostingResourceMethod}`,
         type: "call",
-        required: false,
-        targetAction: `${teamsTabInputs.hostingResource}.generateBicep`,
+        required: true,
+        targetAction: `${teamsTabInputs.hostingResource}.${addHostingResourceMethod}`,
       },
       {
         name: "call:teams-manifest.addCapability",

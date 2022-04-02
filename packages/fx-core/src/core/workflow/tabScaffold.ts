@@ -11,6 +11,7 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
+  ResourceConfig,
   ScaffoldResource,
   TeamsTabInputs,
 } from "./interface";
@@ -20,7 +21,8 @@ import {
  */
 @Service("tab-scaffold")
 export class TabScaffoldResource implements ScaffoldResource {
-  name = "tab-scaffold";
+  readonly type = "scaffold";
+  readonly name = "tab-scaffold";
   generateCode(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
@@ -28,31 +30,40 @@ export class TabScaffoldResource implements ScaffoldResource {
     const action: Action = {
       name: "tab-scaffold.generateCode",
       type: "function",
-      plan: (context: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        const tabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+        const language = teamsTabInputs.language || context.projectSetting.programmingLanguage;
+        const framework = teamsTabInputs.framework || "none";
+        const folder = teamsTabInputs.folder || "tab";
         return ok([
           "add resource 'tab-scaffold' in projectSettings",
-          `scaffold tab source code for language: ${inputs["programming-language"]}, scenario: ${tabInputs.framework}, hostingResource: ${tabInputs.hostingResource}`,
+          `scaffold tab source code for language: ${language}, framework: ${framework}, hostingResource: ${teamsTabInputs.hostingResource}, folder: ${folder}`,
         ]);
       },
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        const tabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+        const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+        const language = (teamsTabInputs.language || context.projectSetting.programmingLanguage) as
+          | "csharp"
+          | "javascript"
+          | "typescript";
+        const framework = teamsTabInputs.framework || "none";
         const projectSettings = context.projectSetting as ProjectSettingsV3;
-        console.log("add resource 'tab-scaffold' in projectSettings");
-        console.log(
-          `scaffold tab source code for language: ${inputs["programming-language"]}, framework: ${tabInputs.framework}, hostingResource: ${tabInputs.hostingResource}`
-        );
-        const folder = tabInputs.hostingResource === "spfx" ? "spfx" : "tab";
-        projectSettings.resources.push({
+        const folder = teamsTabInputs.folder;
+        const resourceConfig: ResourceConfig = {
           name: "tab-scaffold",
           build: true,
           deployType: "zip",
           folder: folder,
-          hostingResource: tabInputs.hostingResource,
-        });
+          language: language,
+          framework: framework,
+          hostingResource: teamsTabInputs.hostingResource,
+        };
+        projectSettings.resources.push(resourceConfig);
+        console.log("add resource 'tab-scaffold' in projectSettings");
+        console.log(`scaffold tab source code for: ${JSON.stringify(resourceConfig)}`);
         return ok(undefined);
       },
     };

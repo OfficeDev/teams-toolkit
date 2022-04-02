@@ -19,6 +19,7 @@ import "./azureStorage";
 import "./azureWebApp";
 import {
   Action,
+  AddResourceInputs,
   AzureResource,
   ConfigureAction,
   ContextV3,
@@ -55,8 +56,8 @@ export class TeamsfxCore {
             activeResourcePlugins: [],
           },
           programmingLanguage: inputs["programming-language"],
+          resources: [],
         };
-        (context.projectSetting as any)["resources"] = [];
         return ok(undefined);
       },
     };
@@ -76,76 +77,23 @@ export class TeamsfxCore {
   }
   create(
     context: ContextV3,
-    inputs: v2.InputsWithProjectPath & { capabilities: string[] }
+    inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const actions: Action[] = [
       {
         type: "call",
-        required: false,
+        required: true,
         targetAction: "fx.init",
       },
+      {
+        type: "call",
+        required: true,
+        targetAction: "fx.add",
+      },
     ];
-    if (inputs.capabilities.includes(TabOptionItem.id)) {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: "teams-tab.add",
-        inputs: {
-          "teams-tab": {
-            framework: "react",
-          },
-        },
-      });
-    }
-    if (inputs.capabilities.includes(TabSPFxItem.id)) {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: "teams-tab.add",
-        inputs: {
-          "teams-tab": {
-            framework: "spfx",
-            hostingResource: "spfx",
-          },
-        },
-      });
-    }
-    const scenarios = [];
-    if (inputs.capabilities.includes(BotOptionItem.id)) {
-      scenarios.push("default");
-    }
-    if (inputs.capabilities.includes(NotificationOptionItem.id)) {
-      scenarios.push("notification");
-    }
-    if (inputs.capabilities.includes(CommandAndResponseOptionItem.id)) {
-      scenarios.push("commandAndResponse");
-    }
-    if (inputs.capabilities.includes(MessageExtensionItem.id)) {
-      scenarios.push("messageExtension");
-    }
-    if (scenarios.length > 0) {
-      actions.push({
-        type: "call",
-        required: false,
-        targetAction: "teams-bot.add",
-        inputs: {
-          "teams-bot": {
-            scenarios: scenarios,
-          },
-        },
-      });
-    }
-    actions.push({
-      type: "call",
-      required: true,
-      targetAction: "fx.persistBicep",
-    });
     const action: GroupAction = {
       name: "fx.create",
       type: "group",
-      inputs: {
-        bicep: {},
-      },
       actions: actions,
     };
     return ok(action);
@@ -154,34 +102,36 @@ export class TeamsfxCore {
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const addInputs = inputs[this.name];
-    const resourceName = addInputs.resource;
-    if (!resourceName) throw new Error("fx.add: resource is empty");
-    const addResourceActionRes = addResource(resourceName, context, inputs);
-    if (addResourceActionRes.isOk() && addResourceActionRes.value) {
-      const resource = Container.get(resourceName) as ScaffoldResource | AzureResource;
-      if (resource.type === "azure") {
-        const group: GroupAction = {
-          name: "fx.add",
-          type: "group",
-          inputs: {
-            bicep: {},
-          },
-          actions: [
-            addResourceActionRes.value,
-            {
-              type: "call",
-              required: true,
-              targetAction: "fx.persistBicep",
-            },
-          ],
-        };
-        return ok(group);
-      } else {
-        return addResourceActionRes;
+    const addInputs = (inputs as AddResourceInputs).fx;
+    const actions: Action[] = [];
+    addInputs.resources.forEach((r) => {
+      const addResourceActionRes = addResource(r, context, inputs);
+      if (addResourceActionRes.isOk() && addResourceActionRes.value) {
+        actions.push(addResourceActionRes.value);
       }
-    }
-    return ok(undefined);
+    });
+    const callResourceAddAction: GroupAction = {
+      type: "group",
+      name: "call:resource.add",
+      mode: "parallel",
+      actions: actions,
+    };
+    const callResourceAddAndPersistBicep: GroupAction = {
+      type: "group",
+      name: "resource.add+fx.persistBicep",
+      inputs: {
+        bicep: {},
+      },
+      actions: [
+        callResourceAddAction,
+        {
+          type: "call",
+          required: true,
+          targetAction: "fx.persistBicep",
+        },
+      ],
+    };
+    return ok(callResourceAddAndPersistBicep);
   }
   persistBicep(
     context: v2.Context,
@@ -438,29 +388,28 @@ export class TeamsfxCore {
 }
 
 export function addResource(
-  name: string,
+  resource: ResourceConfig,
   context: ContextV3,
   inputs: v2.InputsWithProjectPath
 ): Result<Action | undefined, FxError> {
-  const resource = Container.get(name) as ScaffoldResource | AzureResource;
-  const fxInputs = inputs["fx"];
-  if (resource.type === "azure") {
+  const resourcePlugin = Container.get(resource.name) as ScaffoldResource | AzureResource;
+  if (resourcePlugin.type === "azure") {
     const action: Action = {
       type: "call",
       required: true,
-      targetAction: `${name}.generateBicep`,
+      targetAction: `${resource.name}.generateBicep`,
       inputs: {
-        [name]: fxInputs,
+        [resource.name]: resource,
       },
     };
     return ok(action);
-  } else if (resource.type === "scaffold") {
+  } else if (resourcePlugin.type === "scaffold") {
     const action: Action = {
       type: "call",
       required: true,
-      targetAction: `${resource}.generateCode`,
+      targetAction: `${resource.name}.generateCode`,
       inputs: {
-        [name]: fxInputs,
+        [resource.name]: resource,
       },
     };
     return ok(action);
@@ -468,9 +417,9 @@ export function addResource(
     const action: Action = {
       type: "call",
       required: true,
-      targetAction: `${resource}.add`,
+      targetAction: `${resource.name}.add`,
       inputs: {
-        [name]: fxInputs,
+        [resource.name]: resource,
       },
     };
     return ok(action);

@@ -11,6 +11,7 @@ import {
   MaybePromise,
   ProjectSettingsV3,
   Resource,
+  ResourceConfig,
   TeamsBotInputs,
 } from "./interface";
 
@@ -30,18 +31,25 @@ export class TeamsBotFeature implements Resource {
         name: "teams-bot.add",
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          return ok(["add resource 'teams-bot' in projectSettings"]);
+          const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+          return ok([
+            `add resources: 'teams-bot' in projectSettings: ${JSON.stringify(teamsBotInputs)}`,
+          ]);
         },
         execute: async (
           context: ContextV3,
           inputs: v2.InputsWithProjectPath
         ): Promise<Result<undefined, FxError>> => {
-          const projectSettings = context.projectSetting as ProjectSettingsV3;
-          projectSettings.resources.push({
+          const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+          const projectSettings = context.projectSetting;
+          const resourceConfig: ResourceConfig = {
             name: "teams-bot",
-            hostingResource: teamsBotInputs.hostingResource,
-          });
-          inputs.bicep = {};
+            ...teamsBotInputs,
+          };
+          projectSettings.resources.push(resourceConfig);
+          console.log(
+            `add resources: 'teams-bot' in projectSettings: ${JSON.stringify(resourceConfig)}`
+          );
           return ok(undefined);
         },
       },
@@ -50,6 +58,9 @@ export class TeamsBotFeature implements Resource {
         type: "call",
         required: false,
         targetAction: "bot-scaffold.generateCode",
+        inputs: {
+          "bot-scaffold": teamsBotInputs,
+        },
       },
       {
         name: `call:${teamsBotInputs.hostingResource}.generateBicep`,

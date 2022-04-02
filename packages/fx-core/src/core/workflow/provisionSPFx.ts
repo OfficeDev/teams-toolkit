@@ -27,37 +27,6 @@ import { executeAction, getAction, planAction, resolveAction } from "./workflow"
 import { cloneDeep } from "lodash";
 import { ProjectSettingsV3 } from "./interface";
 
-async function createSPFx() {
-  setTools(new MockTools());
-  const context = createV2Context({} as ProjectSettings);
-  const inputs: v2.InputsWithProjectPath = {
-    projectPath: path.join(os.tmpdir(), "myapp"),
-    platform: Platform.VSCode,
-    fx: {
-      resources: [
-        {
-          name: "teams-tab",
-          framework: "spfx",
-          hostingResource: "spfx",
-          folder: "SPFx",
-        },
-      ],
-    },
-    "programming-language": "typescript",
-  };
-  const action = await getAction("fx.create", context, inputs);
-  if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("createSPFx.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
-    await executeAction(action, context, inputs);
-  }
-  console.log("inputs:");
-  console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
-}
-
 async function provisionSPFx() {
   const tools = new MockTools();
   setTools(tools);
@@ -114,4 +83,4 @@ async function provisionSPFx() {
   console.log(projectSetting);
 }
 
-createSPFx();
+provisionSPFx();

@@ -50,7 +50,7 @@
             "required": false,
             "inputs": {
                 "azure-storage": {
-                    "folder": "tab",
+                    "folder": "myApp",
                     "type": "zip"
                 }
             }

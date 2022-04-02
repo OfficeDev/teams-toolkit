@@ -18,6 +18,7 @@ import "./azureStorage";
 import "./azureWebApp";
 import "./botScaffold";
 import "./core";
+import { AddResourceInputs } from "./interface";
 import "./spfx";
 import "./tabScaffold";
 import "./teamsBot";
@@ -29,13 +30,21 @@ import { executeAction, getAction, planAction, resolveAction } from "./workflow"
 async function createTab() {
   setTools(new MockTools());
   const context = createV2Context({} as ProjectSettings);
-  const inputs: v2.InputsWithProjectPath = {
+  const inputs: AddResourceInputs = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
-    capabilities: [TabOptionItem.id],
-    "teams-tab": {
-      hostingResource: "azure-storage",
-      framework: "react",
+    fx: {
+      resources: [
+        {
+          name: "teams-tab",
+          hostingResource: "azure-storage",
+          framework: "react",
+          folder: "myApp",
+        },
+        {
+          name: "aad",
+        },
+      ],
     },
     "programming-language": "typescript",
   };

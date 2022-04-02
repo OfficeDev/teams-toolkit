@@ -1,0 +1,51 @@
+{
+    "name": "fx.provision",
+    "type": "group",
+    "actions": [
+        {
+            "type": "function",
+            "name": "fx.commonConfig"
+        },
+        {
+            "type": "group",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "spfx.provision"
+                }
+            ]
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "fx.deployBicep"
+        },
+        {
+            "type": "function",
+            "name": "prepare inputs for configuration stage"
+        },
+        {
+            "type": "group",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "required": false,
+                    "targetAction": "spfx.configure"
+                }
+            ]
+        },
+        {
+            "type": "call",
+            "required": true,
+            "targetAction": "teams-manifest.provision",
+            "inputs": {
+                "teams-manifest": {
+                    "tabEndpoint": "{{spfx.endpoint}}"
+                }
+            }
+        }
+    ]
+}

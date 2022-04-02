@@ -24,7 +24,7 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\workflow\\deploy.js",
+      "program": "${workspaceFolder}\\build\\core\\workflow\\createSPFx.js",
       "outFiles": [
           "${workspaceFolder}/**/*.js"
       ]

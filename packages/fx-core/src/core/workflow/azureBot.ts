@@ -8,7 +8,8 @@ import { Action, MaybePromise, ProvisionAction, AzureResource } from "./interfac
 
 @Service("azure-bot")
 export class AzureBotResource implements AzureResource {
-  name = "azure-bot";
+  readonly type = "azure";
+  readonly name = "azure-bot";
   provision(
     context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
     inputs: v2.InputsWithProjectPath

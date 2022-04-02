@@ -32,21 +32,28 @@ async function deploy() {
     projectId: "123",
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
+    programmingLanguage: "typescript",
     resources: [
       {
         name: "teams-tab",
         hostingResource: "azure-storage",
+        framework: "react",
+        folder: "myApp",
       },
       {
         name: "tab-scaffold",
         build: true,
         deployType: "zip",
-        folder: "tab",
+        folder: "myApp",
+        language: "typescript",
+        framework: "react",
         hostingResource: "azure-storage",
       },
       { name: "azure-storage", provision: true },
       {
         name: "teams-bot",
+        scenarios: ["default"],
+        folder: "bot",
         hostingResource: "azure-web-app",
       },
       {
@@ -54,11 +61,12 @@ async function deploy() {
         build: true,
         deployType: "zip",
         folder: "bot",
+        language: "typescript",
+        scenarios: ["default"],
         hostingResource: "azure-web-app",
       },
       { name: "azure-web-app", provision: true },
     ],
-    programmingLanguage: "typescript",
   };
   const context = createV2Context(projectSetting);
   const inputs: v2.InputsWithProjectPath = {

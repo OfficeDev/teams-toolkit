@@ -19,7 +19,8 @@ import { getResource } from "./workflow";
 
 @Service("azure-sql")
 export class AzureSqlResource implements AzureResource {
-  name = "azure-sql";
+  readonly type = "azure";
+  readonly name = "azure-sql";
   generateBicep(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

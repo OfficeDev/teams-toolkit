@@ -22,30 +22,52 @@ import "./teamsBot";
 import "./teamsManifest";
 import "./teamsTab";
 import "./core";
+import "./functionScaffold";
 import { MockTools } from "./utils";
 import { executeAction, getAction, planAction, resolveAction } from "./workflow";
 import { cloneDeep } from "lodash";
 
-/**
- * azure-sql.generateBicep will trigger azure-function.updateBicep and azure-web-app.updateBicep if they exists in current project settings
- */
-async function addSql() {
+async function addFunction() {
   setTools(new MockTools());
   const projectSetting: ProjectSettingsV3 = {
-    projectId: "12",
-    appName: "huajie0316",
-    solutionSettings: {
-      name: "fx",
-      activeResourcePlugins: [],
-    },
-    resources: [],
+    projectId: "123",
+    appName: "test",
+    solutionSettings: { name: "fx", activeResourcePlugins: [] },
+    programmingLanguage: "typescript",
+    resources: [
+      {
+        name: "teams-tab",
+        hostingResource: "azure-storage",
+        framework: "react",
+        folder: "myApp",
+      },
+      {
+        name: "tab-scaffold",
+        build: true,
+        deployType: "zip",
+        folder: "myApp",
+        language: "typescript",
+        framework: "react",
+        hostingResource: "azure-storage",
+      },
+      { name: "azure-storage", provision: true },
+      { name: "aad", provision: true },
+    ],
   };
   const context = createV2Context(projectSetting);
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
     fx: {
-      resource: "azure-function",
+      resources: [
+        {
+          name: "azure-function",
+        },
+        {
+          name: "function-scaffold",
+          folder: "myapi",
+        },
+      ],
     },
   };
   const action = await getAction("fx.add", context, inputs);
@@ -61,4 +83,4 @@ async function addSql() {
   console.log(context.projectSetting);
 }
 
-addSql();
+addFunction();

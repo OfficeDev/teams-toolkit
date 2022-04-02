@@ -19,7 +19,8 @@ import { getResource } from "./workflow";
 
 @Service("azure-storage")
 export class AzureStorageResource implements AzureResource {
-  name = "azure-storage";
+  readonly type = "azure";
+  readonly name = "azure-storage";
   generateBicep(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

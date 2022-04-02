@@ -1,9 +1,6 @@
 {
     "name": "fx.create",
     "type": "group",
-    "inputs": {
-        "bicep": {}
-    },
     "actions": [
         {
             "type": "group",
@@ -22,52 +19,78 @@
         },
         {
             "type": "group",
-            "name": "teams-tab.add",
-            "mode": "parallel",
+            "name": "resource.add+fx.persistBicep",
+            "inputs": {
+                "bicep": {}
+            },
             "actions": [
                 {
-                    "name": "teams-tab.add",
-                    "type": "function"
+                    "type": "group",
+                    "name": "call:resource.add",
+                    "mode": "parallel",
+                    "actions": [
+                        {
+                            "type": "group",
+                            "name": "teams-tab.add",
+                            "mode": "parallel",
+                            "actions": [
+                                {
+                                    "name": "teams-tab.add",
+                                    "type": "function"
+                                },
+                                {
+                                    "name": "call:tab-scaffold.generateCode",
+                                    "type": "call",
+                                    "required": false,
+                                    "targetAction": "tab-scaffold.generateCode",
+                                    "inputs": {
+                                        "tab-scaffold": {
+                                            "name": "teams-tab",
+                                            "framework": "spfx",
+                                            "hostingResource": "spfx",
+                                            "folder": "SPFx"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "call:spfx.add",
+                                    "type": "call",
+                                    "required": false,
+                                    "targetAction": "spfx.add"
+                                },
+                                {
+                                    "name": "call:teams-manifest.addCapability",
+                                    "type": "call",
+                                    "required": true,
+                                    "targetAction": "teams-manifest.addCapability",
+                                    "inputs": {
+                                        "teams-manifest": {
+                                            "capabilities": [
+                                                {
+                                                    "name": "staticTab"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "inputs": {
+                                "teams-tab": {
+                                    "name": "teams-tab",
+                                    "framework": "spfx",
+                                    "hostingResource": "spfx",
+                                    "folder": "SPFx"
+                                }
+                            }
+                        }
+                    ]
                 },
                 {
-                    "name": "call:tab-scaffold.generateCode",
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "tab-scaffold.generateCode"
-                },
-                {
-                    "name": "call:spfx.generateBicep",
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "spfx.generateBicep"
-                },
-                {
-                    "name": "call:teams-manifest.addCapability",
                     "type": "call",
                     "required": true,
-                    "targetAction": "teams-manifest.addCapability",
-                    "inputs": {
-                        "teams-manifest": {
-                            "capabilities": [
-                                {
-                                    "name": "staticTab"
-                                }
-                            ]
-                        }
-                    }
+                    "targetAction": "fx.persistBicep"
                 }
-            ],
-            "inputs": {
-                "teams-tab": {
-                    "framework": "spfx",
-                    "hostingResource": "spfx"
-                }
-            }
-        },
-        {
-            "type": "call",
-            "required": true,
-            "targetAction": "fx.persistBicep"
+            ]
         }
     ]
 }

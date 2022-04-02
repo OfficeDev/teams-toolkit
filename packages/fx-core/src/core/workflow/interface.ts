@@ -115,6 +115,7 @@ export interface FunctionAction {
 
 export interface ContextV3 extends v2.Context {
   manifestProvider: AppManifestProvider;
+  projectSetting: ProjectSettingsV3;
 }
 
 export interface AzureResource {
@@ -262,17 +263,27 @@ export interface DeployAction extends FunctionAction {
 
 export interface TeamsBotInputs extends v2.InputsWithProjectPath {
   "teams-bot": {
-    language: "csharp" | "javascript" | "typescript";
     scenarios: ("notification" | "commandAndResponse" | "messageExtension" | "default")[];
     hostingResource: "azure-web-app" | "azure-function";
+    folder?: string;
+    deployType?: "folder" | "zip";
+    language?: "csharp" | "javascript" | "typescript";
   };
 }
 
 export interface TeamsTabInputs extends v2.InputsWithProjectPath {
   "teams-tab": {
-    language?: "csharp" | "javascript" | "typescript";
     framework?: "react" | "vue" | "angular" | "none" | "spfx";
     hostingResource: "azure-web-app" | "azure-function" | "azure-storage" | "spfx";
+    folder?: string;
+    deployType?: "folder" | "zip";
+    language?: "csharp" | "javascript" | "typescript";
+  };
+}
+
+export interface AddResourceInputs extends v2.InputsWithProjectPath {
+  fx: {
+    resources: ResourceConfig[];
   };
 }
 

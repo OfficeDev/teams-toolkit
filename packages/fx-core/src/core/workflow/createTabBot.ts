@@ -32,14 +32,21 @@ async function createTabBot() {
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
-    language: "typescript",
-    capabilities: [TabOptionItem.id, NotificationOptionItem.id],
-    "teams-tab": {
-      hostingResource: "azure-storage",
-      framework: "react",
-    },
-    "teams-bot": {
-      hostingResource: "azure-web-app",
+    fx: {
+      resources: [
+        {
+          name: "teams-tab",
+          hostingResource: "azure-storage",
+          framework: "react",
+          folder: "tab",
+        },
+        {
+          name: "teams-bot",
+          hostingResource: "azure-web-app",
+          folder: "bot",
+          scenarios: ["default"],
+        },
+      ],
     },
     "programming-language": "typescript",
   };
@@ -53,7 +60,7 @@ async function createTabBot() {
   console.log("inputs:");
   console.log(inputs);
   console.log("projectSetting:");
-  console.log(context.projectSetting);
+  console.log(JSON.stringify(context.projectSetting, undefined, 4));
 }
 
 createTabBot();

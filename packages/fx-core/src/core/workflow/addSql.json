@@ -1,19 +1,26 @@
 {
-    "name": "fx.add",
     "type": "group",
+    "name": "resource.add+fx.persistBicep",
     "inputs": {
         "bicep": {}
     },
     "actions": [
         {
-            "type": "call",
-            "required": false,
-            "targetAction": "azure-sql.generateCode"
-        },
-        {
-            "type": "call",
-            "required": false,
-            "targetAction": "azure-sql.generateBicep"
+            "type": "group",
+            "name": "call:resource.add",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "required": true,
+                    "targetAction": "azure-sql.generateBicep",
+                    "inputs": {
+                        "azure-sql": {
+                            "name": "azure-sql"
+                        }
+                    }
+                }
+            ]
         },
         {
             "type": "call",

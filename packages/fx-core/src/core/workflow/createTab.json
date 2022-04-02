@@ -1,9 +1,6 @@
 {
     "name": "fx.create",
     "type": "group",
-    "inputs": {
-        "bicep": {}
-    },
     "actions": [
         {
             "type": "group",
@@ -22,51 +19,88 @@
         },
         {
             "type": "group",
-            "name": "teams-tab.add",
-            "mode": "parallel",
+            "name": "resource.add+fx.persistBicep",
+            "inputs": {
+                "bicep": {}
+            },
             "actions": [
                 {
-                    "name": "teams-tab.add",
-                    "type": "function"
+                    "type": "group",
+                    "name": "call:resource.add",
+                    "mode": "parallel",
+                    "actions": [
+                        {
+                            "type": "group",
+                            "name": "teams-tab.add",
+                            "mode": "parallel",
+                            "actions": [
+                                {
+                                    "name": "teams-tab.add",
+                                    "type": "function"
+                                },
+                                {
+                                    "name": "call:tab-scaffold.generateCode",
+                                    "type": "call",
+                                    "required": false,
+                                    "targetAction": "tab-scaffold.generateCode",
+                                    "inputs": {
+                                        "tab-scaffold": {
+                                            "name": "teams-tab",
+                                            "hostingResource": "azure-storage",
+                                            "framework": "react",
+                                            "folder": "myApp"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "call:azure-storage.generateBicep",
+                                    "type": "call",
+                                    "required": false,
+                                    "targetAction": "azure-storage.generateBicep"
+                                },
+                                {
+                                    "name": "call:teams-manifest.addCapability",
+                                    "type": "call",
+                                    "required": true,
+                                    "targetAction": "teams-manifest.addCapability",
+                                    "inputs": {
+                                        "teams-manifest": {
+                                            "capabilities": [
+                                                {
+                                                    "name": "staticTab"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "inputs": {
+                                "teams-tab": {
+                                    "name": "teams-tab",
+                                    "hostingResource": "azure-storage",
+                                    "framework": "react",
+                                    "folder": "myApp"
+                                }
+                            }
+                        },
+                        {
+                            "type": "call",
+                            "required": true,
+                            "targetAction": "aad.generateBicep",
+                            "inputs": {
+                                "aad": {
+                                    "name": "aad"
+                                }
+                            }
+                        }
+                    ]
                 },
                 {
-                    "name": "call:tab-scaffold.generateCode",
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "tab-scaffold.generateCode"
-                },
-                {
-                    "name": "call:azure-storage.generateBicep",
-                    "type": "call",
-                    "required": false,
-                    "targetAction": "azure-storage.generateBicep"
-                },
-                {
-                    "name": "call:teams-manifest.addCapability",
                     "type": "call",
                     "required": true,
-                    "targetAction": "teams-manifest.addCapability",
-                    "inputs": {
-                        "teams-manifest": {
-                            "capabilities": [
-                                {
-                                    "name": "staticTab"
-                                }
-                            ]
-                        }
-                    }
+                    "targetAction": "fx.persistBicep"
                 }
-            ],
-            "inputs": {
-                "teams-tab": {
-                    "framework": "react"
-                }
-            }
-        },
-        {
-            "type": "call",
-            "required": true,
-            "targetAction": "fx.persistBicep"
+            ]
         }
     ]
 }

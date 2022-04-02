@@ -33,21 +33,28 @@ async function provision() {
     projectId: "123",
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
+    programmingLanguage: "typescript",
     resources: [
       {
         name: "teams-tab",
         hostingResource: "azure-storage",
+        framework: "react",
+        folder: "myApp",
       },
       {
         name: "tab-scaffold",
         build: true,
         deployType: "zip",
-        folder: "tab",
+        folder: "myApp",
+        language: "typescript",
+        framework: "react",
         hostingResource: "azure-storage",
       },
       { name: "azure-storage", provision: true },
       {
         name: "teams-bot",
+        scenarios: ["default"],
+        folder: "bot",
         hostingResource: "azure-web-app",
       },
       {
@@ -55,12 +62,13 @@ async function provision() {
         build: true,
         deployType: "zip",
         folder: "bot",
+        language: "typescript",
+        scenarios: ["default"],
         hostingResource: "azure-web-app",
       },
       { name: "azure-web-app", provision: true },
       { name: "aad", provision: true },
     ],
-    programmingLanguage: "typescript",
   };
   const envInfo: v3.EnvInfoV3 = {
     envName: "dev",

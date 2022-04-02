@@ -18,7 +18,8 @@ import { getResource } from "./workflow";
 
 @Service("aad")
 export class AADResource implements AzureResource {
-  name = "aad";
+  readonly type = "azure";
+  readonly name = "aad";
   generateBicep(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

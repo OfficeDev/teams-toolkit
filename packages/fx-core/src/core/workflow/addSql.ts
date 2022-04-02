@@ -26,28 +26,31 @@ import { MockTools } from "./utils";
 import { executeAction, getAction, planAction, resolveAction } from "./workflow";
 import { cloneDeep } from "lodash";
 
-/**
- * azure-sql.generateBicep will trigger azure-function.updateBicep and azure-web-app.updateBicep if they exists in current project settings
- */
 async function addSql() {
   setTools(new MockTools());
   const projectSetting: ProjectSettingsV3 = {
-    projectId: "12",
-    appName: "huajie0316",
-    solutionSettings: {
-      name: "fx",
-      activeResourcePlugins: [],
-    },
+    projectId: "123",
+    appName: "test",
+    solutionSettings: { name: "fx", activeResourcePlugins: [] },
+    programmingLanguage: "typescript",
     resources: [
       {
-        type: "compound",
-        name: "azure-function",
-        hostingResource: "azure-function",
+        name: "teams-tab",
+        hostingResource: "azure-storage",
+        framework: "react",
+        folder: "myApp",
       },
       {
-        type: "cloud",
-        name: "azure-web-app",
+        name: "tab-scaffold",
+        build: true,
+        deployType: "zip",
+        folder: "myApp",
+        language: "typescript",
+        framework: "react",
+        hostingResource: "azure-storage",
       },
+      { name: "azure-storage", provision: true },
+      { name: "aad", provision: true },
     ],
   };
   const context = createV2Context(projectSetting);
@@ -55,7 +58,7 @@ async function addSql() {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
     fx: {
-      resource: "azure-sql",
+      resources: [{ name: "azure-sql" }],
     },
   };
   const action = await getAction("fx.add", context, inputs);

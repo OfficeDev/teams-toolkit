@@ -13,26 +13,26 @@ import {
   ProjectSettingsV3,
   ProvisionAction,
   ResourceConfig,
-  ScaffoldResource,
 } from "./interface";
 import { getResource } from "./workflow";
 
 @Service("azure-function")
-export class AzureFunctionResource implements AzureResource, ScaffoldResource {
-  name = "azure-function";
-  generateCode(
+export class AzureFunctionResource implements AzureResource {
+  readonly type = "azure";
+  readonly name = "azure-function";
+  generateBicep(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-function.generateCode",
+    const generateBicep: GenerateBicepAction = {
+      name: "azure-function.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         const resource = getResource(context.projectSetting as ProjectSettingsV3, "azure-function");
         if (!resource) {
           return ok([
-            `ensure resource azure-function in projectSettings`,
-            `generate code of azure-function`,
+            `ensure resource 'azure-function' in projectSettings`,
+            `generate bicep of azure-function`,
           ]);
         }
         return ok([]);
@@ -46,36 +46,13 @@ export class AzureFunctionResource implements AzureResource, ScaffoldResource {
         if (!resource) {
           const resource: ResourceConfig = {
             name: "azure-function",
-            build: true,
-            hostingResource: "azure-function",
             provision: true,
           };
           projectSettings.resources.push(resource);
           inputs.bicep[this.name] = "azure-function bicep";
-          console.log("add resource azure-function in projectSettings");
+          console.log("add resource 'azure-function' in projectSettings");
           console.log("generate bicep of azure-function");
         }
-        return ok(undefined);
-      },
-    };
-    return ok(action);
-  }
-  generateBicep(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const generateBicep: GenerateBicepAction = {
-      name: "azure-function.generateBicep",
-      type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok([`generate bicep of ${this.name}`]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(`generate bicep of ${this.name}`);
-        inputs.bicep[this.name] = `bicep of ${this.name}`;
         return ok(undefined);
       },
     };

@@ -32,10 +32,15 @@ async function createNotificationBot() {
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
-    language: "typescript",
-    capabilities: [NotificationOptionItem.id],
-    "teams-bot": {
-      hostingResource: "azure-function",
+    fx: {
+      resources: [
+        {
+          name: "teams-bot",
+          hostingResource: "azure-function",
+          folder: "bot",
+          scenarios: ["notification"],
+        },
+      ],
     },
     "programming-language": "typescript",
   };

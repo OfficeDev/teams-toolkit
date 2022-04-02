@@ -442,6 +442,7 @@
   "error.apiConnector.NoBotOrFunctionExistError": "Please create bot or function resource first.",
   "error.apiConnector.InvalidProjectError": "Please select a valid TeamsFx project",
   "error.apiConnector.ApiConnectorFunctionRouteError": "Failed to route function call: %s",
+  "error.apiConnector.SDKVersionImcompatibleError":"In %s project, @microsoft/teamsfx version %s is not compatible with the version %s we support",
   "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
   "core.ProgrammingLanguageQuestion.title": "Programming Language",

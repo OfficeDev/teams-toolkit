@@ -64,7 +64,11 @@ export class DepsHandler {
     } else {
       throw ResultFactory.UserError(
         ErrorMessage.sdkVersionImcompatibleError.name,
-        ErrorMessage.sdkVersionImcompatibleError.message(deps[sdkName], sdkVersion)
+        ErrorMessage.sdkVersionImcompatibleError.message(
+          this.componentType,
+          deps[sdkName],
+          sdkVersion
+        )
       );
     }
   }

@@ -71,9 +71,10 @@ export class ErrorMessage {
 
   public static readonly sdkVersionImcompatibleError = {
     name: "SDKVersionImcompatibleError",
-    message: (localVersion: string, targetVersion: string) =>
+    message: (component: string, localVersion: string, targetVersion: string) =>
       getLocalizedString(
         `error.apiConnector.${ErrorMessage.sdkVersionImcompatibleError.name}`,
+        component,
         localVersion,
         targetVersion
       ),

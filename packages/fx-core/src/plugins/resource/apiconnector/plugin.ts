@@ -3,8 +3,15 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
+import {
+  AzureSolutionSettings,
+  Inputs,
+  QTreeNode,
+  SystemError,
+  UserError,
+  ok,
+} from "@microsoft/teamsfx-api";
+import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import {
   ApiConnectorConfiguration,
   generateTempFolder,
@@ -13,12 +20,12 @@ import {
   getSampleFileName,
 } from "./utils";
 import { Constants } from "./constants";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
 import {
-  apiNameQuestion,
+  ApiNameQuestion,
   apiLoginUserNameQuestion,
   botOption,
   functionOption,
@@ -72,10 +79,14 @@ export class ApiConnectorImpl {
           );
         })
       );
-      throw ResultFactory.SystemError(
-        ErrorMessage.generateApiConFilesError.name,
-        ErrorMessage.generateApiConFilesError.message(err.message)
-      );
+      if (err instanceof SystemError || err instanceof UserError) {
+        throw err;
+      } else {
+        throw ResultFactory.SystemError(
+          ErrorMessage.generateApiConFilesError.name,
+          ErrorMessage.generateApiConFilesError.message(err.message)
+        );
+      }
     } finally {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -157,7 +168,15 @@ export class ApiConnectorImpl {
     return ResultFactory.Success();
   }
 
-  public generateQuestion(activePlugins: string[]): QTreeNode {
+  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
+    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    if (!activePlugins) {
+      throw ResultFactory.UserError(
+        ErrorMessage.NoActivePluginsExistError.name,
+        ErrorMessage.NoActivePluginsExistError.message()
+      );
+    }
     const options = [];
     if (activePlugins.includes(ResourcePlugins.Bot)) {
       options.push(botOption);
@@ -205,12 +224,13 @@ export class ApiConnectorImpl {
     const question = new QTreeNode({
       type: "group",
     });
+    const apiNameQuestion = new ApiNameQuestion(ctx);
     question.addChild(new QTreeNode(apiEndpointQuestion));
     question.addChild(whichComponent);
-    question.addChild(new QTreeNode(apiNameQuestion));
+    question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
     question.addChild(whichAuthType);
     question.addChild(new QTreeNode(apiLoginUserNameQuestion));
 
-    return question;
+    return ok(question);
   }
 }

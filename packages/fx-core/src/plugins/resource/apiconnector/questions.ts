@@ -1,16 +1,67 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { TextInputQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import path from "path";
+import {
+  Inputs,
+  LogProvider,
+  OptionItem,
+  PluginContext,
+  TelemetryReporter,
+  Question,
+  ValidationSchema,
+  TextInputQuestion,
+} from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { checkApiNameExist } from "./checker";
+export interface IQuestionService {
+  // Control whether the question is displayed to the user.
+  condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
+  // Generate the question
+  getQuestion(ctx: PluginContext): Question;
+}
 
-export const apiNameQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiName,
-  title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
-  type: "text",
-  placeholder: getLocalizedString("plugins.apiConnector.getQuestionApiName.placeholder"), // Use the placeholder to display some description
-};
+export class BaseQuestionService {
+  protected readonly logger: LogProvider | undefined;
+  protected readonly telemetryReporter: TelemetryReporter | undefined;
+
+  constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+    this.telemetryReporter = telemetryReporter;
+    this.logger = logger;
+  }
+}
+export class ApiNameQuestion extends BaseQuestionService implements IQuestionService {
+  protected readonly ctx: Context | undefined;
+  constructor(ctx?: Context, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+    super(telemetryReporter, logger);
+    this.ctx = ctx;
+  }
+
+  public getQuestion(): TextInputQuestion {
+    return {
+      type: "text",
+      name: Constants.questionKey.apiName,
+      title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
+      validation: {
+        validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+          const languageType: string = this.ctx?.projectSetting.programmingLanguage as string;
+          const components: string[] = previousInputs![
+            Constants.questionKey.componentsSelect
+          ] as string[];
+          return await checkApiNameExist(
+            input,
+            previousInputs?.projectPath as string,
+            components,
+            languageType
+          );
+        },
+      },
+    };
+  }
+}
 
 export const apiEndpointQuestion: TextInputQuestion = {
   name: Constants.questionKey.endpoint,

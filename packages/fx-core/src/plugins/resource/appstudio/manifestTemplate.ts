@@ -37,6 +37,9 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 
@@ -66,9 +69,9 @@ export async function init(
     if (existingApp) {
       manifest.developer = {
         name: "Teams App, Inc.",
-        websiteUrl: "{{{config.manifest.developerWebsiteUrl}}}",
-        privacyUrl: "{{{config.manifest.developerPrivacyUrl}}}",
-        termsOfUseUrl: "{{{config.manifest.developerTermsOfUseUrl}}}",
+        websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
+        privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
+        termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
       };
     }
     await saveManifest(projectRoot, manifest);

@@ -145,6 +145,13 @@
       ]
     },
     "menus": {
+      "explorer/context": [
+        {
+          "command": "fx-extension.deployAadAppManifest",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "group": "deploy@0"
+        }
+      ],
       "view/title": [
         {
           "command": "fx-extension.addEnvironment",
@@ -382,6 +389,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "fx-extension.deployAadAppManifest",
+        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
       {
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",

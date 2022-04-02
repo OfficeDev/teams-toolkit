@@ -78,6 +78,7 @@
     "teamstoolkit.commands.reportIssue.title": "Teams: Report issues on GitHub",
     "teamstoolkit.commands.signInGuideline.title": "Learn more about Teams development accounts",
     "teamstoolkit.commands.signOut.title": "Sign Out",
+    "teamstoolkit.commands.deployAadAppManifest.title": "Teams: Deploy AAD App Manifest",
     "teamstoolkit.commands.specifySubscription.title": "Specify subscription",
     "teamstoolkit.commands.survey.title": "Teams: Survey",
     "teamstoolkit.commands.updateManifest.title": "Teams: Update manifest to Teams platform",

@@ -96,7 +96,7 @@ jobs:
               emails="$emails;$email"
             fi
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$suite</td> <td style=\\\"text-align: left;\\\">$case</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$suite</td> <td style=\\\"text-align: left;\\\">$name</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration sec</td> </tr>"
 
             if [[ -z "$failure" ]]; then
               lists="$lists $row"
@@ -107,7 +107,7 @@ jobs:
           done
 
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr>  <th>Suite</th> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/github.run_id</a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr>  <th>Suite</th> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}</a>"
 
           subject="SDK E2E Test Report ($passed/$total Passed)"
           if [ $failed -gt 0 ]; then
@@ -122,7 +122,7 @@ jobs:
 
       - name: Report result
         uses: satak/webrequest-action@master
-        if: ${{ always() }}
+        if: ${{ always() && github.event_name == 'schedule' }}
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
           method: POST

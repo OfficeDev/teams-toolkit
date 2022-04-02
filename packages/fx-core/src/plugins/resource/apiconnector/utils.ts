@@ -2,13 +2,27 @@
 // Licensed under the MIT license.
 "use strict";
 import * as fs from "fs-extra";
-import { LanguageType, FileType } from "./constants";
+import { LanguageType, FileType, AuthType } from "./constants";
 export interface ApiConnectorConfiguration extends Record<any, any> {
   ComponentPath: string[];
   APIName: string;
-  ApiAuthType?: string;
   EndPoint: string;
   ApiUserName?: string;
+  AuthConfig: AuthConfig;
+}
+
+export interface AuthConfig {
+  AuthType: AuthType;
+}
+
+export interface BasicAuthConfig extends AuthConfig {
+  UserName: string;
+  Password: string;
+}
+export interface AADAuthConfig extends AuthConfig {
+  ReuseTeamsApp: boolean;
+  TenantId?: string;
+  AppId?: string;
 }
 
 export type ApiConnectorItem = Record<ApiConfigName, string>;
@@ -18,14 +32,6 @@ export enum ApiConfigName {
   AUTHENTICATION_TYPE = "_AUTHENTICATION_TYPE",
   USERNAME = "_USERNAME",
   PASSWORD = "_PASSWORD",
-}
-
-export enum AuthType {
-  BASIC = "Basic Auth",
-  APIKEY = "Api Key",
-  AAD = "Azure Active Directory",
-  CERT = "certificate",
-  OTHERS = "Others",
 }
 
 export function generateTempFolder(): string {

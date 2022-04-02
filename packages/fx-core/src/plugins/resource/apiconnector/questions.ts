@@ -14,7 +14,7 @@ import {
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { Constants } from "./constants";
+import { AuthType, Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { checkApiNameExist } from "./checker";
 export interface IQuestionService {
@@ -76,13 +76,45 @@ export const apiTypeQuestion: TextInputQuestion = {
   type: "text",
 };
 
-export const apiLoginUserNameQuestion: TextInputQuestion = {
+export const basicAuthUsernameQuestion: TextInputQuestion = {
   name: Constants.questionKey.apiUserName,
   title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.userName.title"),
   type: "text",
   placeholder: getLocalizedString(
     "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
   ), // Use the placeholder to display some description
+};
+
+export const basicAuthPassword: TextInputQuestion = {
+  name: Constants.questionKey.apiPassword,
+  title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.password.title"),
+  type: "text",
+  password: true,
+  placeholder: getLocalizedString(
+    "plugins.apiConnector.getQuestion.basicAuth.password.placeholder"
+  ), // Use the placeholder to display some description
+};
+
+export const appTenantIdQuestion: TextInputQuestion = {
+  name: Constants.questionKey.apiAppTenentId,
+  title: getLocalizedString("plugins.apiConnector.appTenantId.title"),
+  type: "text",
+};
+
+export const appIdQuestion: TextInputQuestion = {
+  name: Constants.questionKey.apiAppId,
+  title: getLocalizedString("plugins.apiConnector.appId.title"),
+  type: "text",
+};
+
+export const reuseAppOption: OptionItem = {
+  id: "reuseApp",
+  label: getLocalizedString("plugins.apiConnector.reuseAppOption.title"),
+};
+
+export const anotherAppOption: OptionItem = {
+  id: "anotherApp",
+  label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
 };
 
 export const botOption: OptionItem = {
@@ -98,31 +130,31 @@ export const functionOption: OptionItem = {
 };
 
 export const BasicAuthOption: OptionItem = {
-  id: "basic",
+  id: AuthType.BASIC,
   label: "Basic",
   detail: getLocalizedString("plugins.apiConnector.BasicAuthOption.detail"),
 };
 
 export const CertAuthOption: OptionItem = {
-  id: "cert",
+  id: AuthType.CERT,
   label: "Certification",
   detail: getLocalizedString("plugins.apiConnector.CertAuthOption.detail"),
 };
 
 export const AADAuthOption: OptionItem = {
-  id: "aad",
+  id: AuthType.AAD,
   label: "Azure Active Directory",
   detail: getLocalizedString("plugins.apiConnector.AADAuthOption.detail"),
 };
 
 export const APIKeyAuthOption: OptionItem = {
-  id: "APIkey",
+  id: AuthType.APIKEY,
   label: "API Key",
   detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
 };
 
 export const ImplementMyselfOption: OptionItem = {
-  id: "ImplementMyself",
+  id: AuthType.ImplementMyself,
   label: "Custom Auth Implementation",
   detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
 };

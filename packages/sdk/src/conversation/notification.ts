@@ -12,7 +12,10 @@ import {
   TurnContext,
 } from "botbuilder";
 import { ConnectorClient } from "botframework-connector";
-import { NotificationTarget, NotificationTargetType } from "./interface";
+import * as path from "path";
+import { NotificationTarget, NotificationTargetType, NotificationOptions } from "./interface";
+import { NotificationMiddleware } from "./middleware";
+import { ConversationReferenceStore, LocalFileStorage } from "./storage";
 import * as utils from "./utils";
 
 /**
@@ -379,5 +382,103 @@ export class TeamsBotInstallation implements NotificationTarget {
     }
 
     return members;
+  }
+}
+
+/**
+ * Provide static utilities for bot conversation, including
+ * - send notification to varies targets (e.g., member, channel, incoming wehbook)
+ * - handle command and response.
+ *
+ * @example
+ * Here's an example on how to send notification via Teams Bot.
+ * ```typescript
+ * // initialize (it's recommended to be called before handling any bot message)
+ * const notificationBot = new NotificationBot(adapter);
+ *
+ * // get all bot installations and send message
+ * for (const target of await notificationBot.installations()) {
+ *   await target.sendMessage("Hello Notification");
+ * }
+ *
+ * // alternative - send message to all members
+ * for (const target of await notificationBot.installations()) {
+ *   for (const member of await target.members()) {
+ *     await member.sendMessage("Hello Notification");
+ *   }
+ * }
+ * ```
+ *
+ * @beta
+ */
+export class NotificationBot {
+  private readonly conversationReferenceStore: ConversationReferenceStore;
+  private readonly adapter: BotFrameworkAdapter;
+
+  /**
+   * constructor of the notification bot.
+   *
+   * @remarks
+   * To ensure accuracy, it's recommended to initialize before handling any message.
+   *
+   * @param adapter - the bound `BotFrameworkAdapter`
+   * @param options - initialize options
+   *
+   * @beta
+   */
+  public constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
+    const storage =
+      options?.storage ??
+      new LocalFileStorage(
+        path.resolve(process.env.RUNNING_ON_AZURE === "1" ? process.env.TEMP ?? "./" : "./")
+      );
+
+    this.conversationReferenceStore = new ConversationReferenceStore(storage);
+    this.adapter = adapter.use(
+      new NotificationMiddleware({
+        conversationReferenceStore: this.conversationReferenceStore,
+      })
+    );
+  }
+
+  /**
+   * Get all targets where the bot is installed.
+   *
+   * @remarks
+   * The result is retrieving from the persisted storage.
+   *
+   * @returns - an array of {@link TeamsBotInstallation}.
+   *
+   * @beta
+   */
+  public async installations(): Promise<TeamsBotInstallation[]> {
+    if (this.conversationReferenceStore === undefined || this.adapter === undefined) {
+      throw new Error("NotificationBot has not been initialized.");
+    }
+
+    const references = (await this.conversationReferenceStore.getAll()).values();
+    const targets: TeamsBotInstallation[] = [];
+    for (const reference of references) {
+      // validate connection
+      let valid = true;
+      this.adapter.continueConversation(reference, async (context) => {
+        try {
+          // try get member to see if the installation is still valid
+          await TeamsInfo.getPagedMembers(context, 1);
+        } catch (error: any) {
+          if ((error.code as string) === "BotNotInConversationRoster") {
+            valid = false;
+          }
+        }
+      });
+
+      if (valid) {
+        targets.push(new TeamsBotInstallation(this.adapter, reference));
+      } else {
+        this.conversationReferenceStore.delete(reference);
+      }
+    }
+
+    return targets;
   }
 }

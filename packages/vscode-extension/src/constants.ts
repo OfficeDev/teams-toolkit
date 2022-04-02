@@ -30,4 +30,5 @@ export enum GlobalKey {
   OpenReadMe = "fx-extension.openReadMe",
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
+  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }

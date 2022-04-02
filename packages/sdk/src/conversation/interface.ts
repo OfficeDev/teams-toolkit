@@ -94,6 +94,28 @@ export interface NotificationTargetStorage {
 }
 
 /**
+ * Options to initialize {@link NotificationBot}.
+ *
+ * @beta
+ */
+export interface NotificationOptions {
+  /**
+   * An optional storage to persist bot notification connections.
+   *
+   * @remarks
+   * If `storage` is not provided, a default local file storage will be used,
+   * which stores notification connections into:
+   *   - ".notification.localstore.json" if running locally
+   *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
+   *
+   * It's recommended to use your own shared storage for production environment.
+   *
+   * @beta
+   */
+  storage?: NotificationTargetStorage;
+}
+
+/**
  * Interface for a command handler that can process command to a TeamsFx bot and return a response.
  *
  * @beta

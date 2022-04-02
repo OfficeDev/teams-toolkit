@@ -31,6 +31,7 @@ import {
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   isSPFxProject,
+  isExistingTabApp,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
@@ -104,28 +105,11 @@ async function getCurrentEnvInfo(workspacePath: string, envName: string): Promis
   const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
 
   if (envName === LocalEnvironmentName) {
-    return (await isExistingApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+    return (await isExistingTabApp(workspacePath)) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
   } else if (provisionSucceeded) {
     return EnvInfo.ProvisionedRemoteEnv;
   } else {
     return EnvInfo.RemoteEnv;
-  }
-}
-
-async function isExistingApp(workspacePath: string): Promise<boolean> {
-  // Check if solution settings is empty.
-  const projectSettingsPath = path.resolve(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
-
-  if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = await fs.readJson(projectSettingsPath);
-    return !projectSettings.solutionSettings;
-  } else {
-    return false;
   }
 }
 

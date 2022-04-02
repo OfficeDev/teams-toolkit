@@ -31,6 +31,7 @@ import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import * as envTree from "../../../src/envTree";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
+import * as uuid from "uuid";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -139,7 +140,21 @@ suite("handlers", () => {
     this.afterEach(() => {
       sinon.restore();
     });
-    test("create", async () => {
+    test("create sample with projectid", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(vscode.commands, "executeCommand");
+      const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
+
+      await handlers.runCommand(Stage.create, inputs);
+
+      sinon.assert.calledOnce(createProject);
+      chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
+    });
+
+    test("create from scratch without projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -150,6 +165,7 @@ suite("handlers", () => {
 
       sinon.restore();
       sinon.assert.calledOnce(createProject);
+      chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
     });
 
     test("provisionResources", async () => {

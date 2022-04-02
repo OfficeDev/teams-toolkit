@@ -53,7 +53,7 @@ jobs:
           total_node=`cat test-results.node.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`
           #total_browser=`cat test-results.browser.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`
           #total=$((total_node+total_browser))
-          total=total_node
+          total=$total_node
 
           error_node=`cat test-results.node.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
           #error_browser=`cat test-results.browser.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
@@ -85,11 +85,11 @@ jobs:
 
             author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
 
-            lable=""
-            if [[ -z "$failure" ]]; then
+            label=""
+            if [ "$failure" == "null" ]; then
               label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">PASSED</span>"
             else
-              label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
+              label="<span style=\\\"background-color:#dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$failure" ]]; then

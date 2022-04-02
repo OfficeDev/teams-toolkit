@@ -188,7 +188,7 @@ export class FxCore implements v3.ICore {
     if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       inputs.folder = path.join(folder, appName);
-      return await this._init(inputs, ctx);
+      return await this._init(inputs, ctx, true);
     }
 
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
@@ -1396,7 +1396,11 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async _init(
+    inputs: Inputs,
+    ctx?: CoreHookContext,
+    isInitExistingApp = false
+  ): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -1408,16 +1412,26 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+
     const projectPath = inputs.folder;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const isValid = isValidProject(projectPath);
-    if (isValid) {
-      return err(
-        new OperationNotPermittedError("initialize a project in existing teamsfx project")
-      );
+
+    if (isInitExistingApp) {
+      const folderExist = await fs.pathExists(projectPath);
+      if (folderExist) {
+        return err(new ProjectFolderExistError(projectPath));
+      }
+    } else {
+      const isValid = isValidProject(projectPath);
+      if (isValid) {
+        return err(
+          new OperationNotPermittedError("initialize a project in existing teamsfx project")
+        );
+      }
     }
+
     await fs.ensureDir(projectPath);
     inputs.projectPath = projectPath;
 
@@ -1456,7 +1470,7 @@ export class FxCore implements v3.ICore {
       environmentManager.getDefaultEnvName(),
       projectSettings,
       inputs,
-      endpoint
+      isInitExistingApp ? endpoint : undefined
     );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
@@ -1465,7 +1479,7 @@ export class FxCore implements v3.ICore {
       environmentManager.getLocalEnvName(),
       projectSettings,
       inputs,
-      endpoint
+      isInitExistingApp ? endpoint : undefined
     );
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);

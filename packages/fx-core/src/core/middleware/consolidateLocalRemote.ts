@@ -53,6 +53,7 @@ import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 const upgradeButton = "Upgrade";
 let userCancelFlag = false;
 const backupFolder = ".backup";
+const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -62,10 +63,14 @@ export const ProjectConsolidateMW: Middleware = async (
     next();
   } else if ((await needConsolidateLocalRemote(ctx)) && checkMethod(ctx)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+    let showModal = true;
+    if (ctx.method && methods.has(ctx.method)) {
+      showModal = false;
+    }
     const res = await TOOLS?.ui.showMessage(
       "warn",
       getLocalizedString("core.consolidateLocalRemote.Message"),
-      true,
+      showModal,
       upgradeButton
     );
     const answer = res?.isOk() ? res.value : undefined;
@@ -145,6 +150,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgradeStart);
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const fileList: Array<string> = [];
+  const removeMap = new Map<string, string>();
   const loadRes = await loadProjectSettings(inputs, true);
   if (loadRes.isErr()) {
     ctx.result = err(loadRes.error);
@@ -171,8 +177,6 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
     // add consolidate manifest
     let manifest: TeamsAppManifest | undefined;
-    const templatesFolder = getTemplatesFolder();
-    const appDir = `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`;
     const remoteManifestFile = path.join(
       inputs.projectPath as string,
       "templates",
@@ -220,65 +224,77 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     fileList.push(
       path.join(inputs.projectPath as string, "templates", "appPackage", "template.manifest.json")
     );
+
+    // copy and remove old configs
+    const backupPath = path.join(inputs.projectPath as string, backupFolder);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfigStart);
+    const localSettingsFile = path.join(
+      inputs.projectPath as string,
+      ".fx",
+      "configs",
+      "localSettings.json"
+    );
+    if (await fs.pathExists(localSettingsFile)) {
+      await fs.copy(
+        localSettingsFile,
+        path.join(backupPath, ".fx", "configs", "localSettings.json"),
+        { overwrite: true }
+      );
+      await fs.remove(localSettingsFile);
+      removeMap.set(
+        path.join(backupPath, ".fx", "configs", "localSettings.json"),
+        localSettingsFile
+      );
+    }
+    const localManifestFile = path.join(
+      inputs.projectPath as string,
+      "templates",
+      "appPackage",
+      "manifest.local.template.json"
+    );
+    if (await fs.pathExists(localManifestFile)) {
+      await fs.copy(
+        localManifestFile,
+        path.join(backupPath, "templates", "appPackage", "manifest.local.template.json"),
+        { overwrite: true }
+      );
+      await fs.remove(localManifestFile);
+      removeMap.set(
+        path.join(backupPath, "templates", "appPackage", "manifest.local.template.json"),
+        localManifestFile
+      );
+    }
+    if (await fs.pathExists(remoteManifestFile)) {
+      await fs.copy(
+        remoteManifestFile,
+        path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json"),
+        { overwrite: true }
+      );
+      await fs.remove(remoteManifestFile);
+      removeMap.set(
+        path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json"),
+        remoteManifestFile
+      );
+    }
+
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade);
+
+    postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder);
   } catch (e) {
+    for (const item of removeMap.entries()) {
+      await fs.copy(item[0], item[1]);
+    }
     for (const item of fileList) {
       await fs.remove(item);
     }
+    await fs.remove(path.join(inputs.projectPath as string, backupFolder));
     throw e;
   }
-
-  // move old configs
-  const backupPath = path.join(inputs.projectPath as string, backupFolder);
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfigStart);
-  const localSettingsFile = path.join(
-    inputs.projectPath as string,
-    ".fx",
-    "configs",
-    "localSettings.json"
-  );
-  if (await fs.pathExists(localSettingsFile)) {
-    await fs.move(
-      localSettingsFile,
-      path.join(backupPath, ".fx", "configs", "localSettings.json"),
-      { overwrite: true }
-    );
-  }
-  const localManifestFile = path.join(
-    inputs.projectPath as string,
-    "templates",
-    "appPackage",
-    "manifest.local.template.json"
-  );
-  if (await fs.pathExists(localManifestFile)) {
-    await fs.move(
-      localManifestFile,
-      path.join(backupPath, "templates", "appPackage", "manifest.local.template.json"),
-      { overwrite: true }
-    );
-  }
-  const remoteManifestFile = path.join(
-    inputs.projectPath as string,
-    "templates",
-    "appPackage",
-    "manifest.remote.template.json"
-  );
-  if (await fs.pathExists(remoteManifestFile)) {
-    await fs.move(
-      remoteManifestFile,
-      path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json"),
-      { overwrite: true }
-    );
-  }
-
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig);
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade);
-
-  postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder);
   return true;
 }
 
 function checkMethod(ctx: CoreHookContext): boolean {
-  const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
   if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
   userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;

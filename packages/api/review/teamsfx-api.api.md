@@ -1490,6 +1490,7 @@ export interface StringArrayValidation extends StaticValidation {
     containsAny?: string[];
     enum?: string[];
     equals?: string[];
+    excludes?: string;
     maxItems?: number;
     minItems?: number;
     uniqueItems?: boolean;

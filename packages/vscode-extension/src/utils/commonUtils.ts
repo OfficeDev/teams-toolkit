@@ -115,6 +115,23 @@ export function getProjectId(): string | undefined {
   }
 }
 
+export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
+  // Check if solution settings is empty.
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return !projectSettings.solutionSettings;
+  } else {
+    return false;
+  }
+}
+
 export function isSPFxProject(workspacePath: string): boolean {
   if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;

@@ -7,6 +7,14 @@ export enum ComponentType {
   BOT = "bot",
 }
 
+export enum AuthType {
+  BASIC = "basic",
+  APIKEY = "apiKey",
+  AAD = "aad",
+  CERT = "cert",
+  CUSTOM = "custom",
+}
+
 export enum LanguageType {
   JS = "javascript",
   TS = "typescript",
@@ -31,5 +39,8 @@ export class Constants {
     apiType: "api-connector-auth-type",
     apiUserName: "api-connector-user-name",
     apiPassword: "api-connector-password",
+    apiAppType: "api-connector-app-type",
+    apiAppTenentId: "api-connector-app-tenant-id",
+    apiAppId: "api-connector-app-id",
   };
 }

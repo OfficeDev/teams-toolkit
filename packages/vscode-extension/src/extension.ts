@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
         if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(true, args);
+          await handlers.updateAutoOpenGlobalKey(true, false, args);
           await ExtTelemetry.dispose();
           await delay(2000);
           return { openFolder: targetUri.value };
@@ -200,6 +200,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkUpgrade, args)
   );
   context.subscriptions.push(checkUpgradeCmd);
+
+  const deployAadAppManifest = vscode.commands.registerCommand(
+    "fx-extension.deployAadAppManifest",
+    () => Correlator.run(handlers.deployAadAppManifest)
+  );
+  context.subscriptions.push(deployAadAppManifest);
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)

@@ -39,10 +39,11 @@ suite("handlers", () => {
 
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
+    let setStatusChangeMap: any;
 
     this.beforeAll(() => {
       sandbox.stub(accountTree, "registerAccountTreeHandler");
-      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
+      setStatusChangeMap = sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
@@ -56,6 +57,12 @@ suite("handlers", () => {
     test("No globalState error", async () => {
       const result = await handlers.activate();
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+    });
+
+    test("Don't listen to Azure account notify for non-Teamsfx project", async () => {
+      await handlers.activate();
+
+      chai.assert.isTrue(setStatusChangeMap.notCalled);
     });
   });
 

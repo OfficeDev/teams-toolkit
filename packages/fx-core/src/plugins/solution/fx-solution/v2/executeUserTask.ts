@@ -1098,7 +1098,7 @@ export async function createAuthFiles(
         await unzip(sampleZip, tabFolder);
       }
     } catch (error) {
-      // TODO: remove added code
+      await fs.remove(tabFolder);
       const e = new SystemError(
         SolutionError.FailedToCreateAuthFiles,
         getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
@@ -1138,7 +1138,7 @@ export async function createAuthFiles(
         await unzip(sampleZip, botFolder);
       }
     } catch (error) {
-      // TODO: remove added code
+      await fs.remove(botFolder);
       const e = new SystemError(
         SolutionError.FailedToCreateAuthFiles,
         getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),

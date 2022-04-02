@@ -10,6 +10,7 @@ import {
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
 import { NotificationTarget, NotificationTargetType } from "./interface";
+import { ConversationReferenceStore } from "./storage";
 
 /**
  * Send a plain text message to a notification target.
@@ -378,6 +379,77 @@ export class TeamsBotInstallation implements NotificationTarget {
   public async members(): Promise<Member[]> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+}
+
+/**
+ * Provide static utilities for bot notification.
+ *
+ * @remarks
+ * Only work on server side.
+ *
+ * @example
+ * Here's an example on how to send notification via Teams Bot.
+ * ```typescript
+ * // initialize (it's recommended to be called before handling any bot message)
+ * const notificationBot = new NotificationBot(adapter);
+ *
+ * // get all bot installations and send message
+ * for (const target of await notificationBot.installations()) {
+ *   await target.sendMessage("Hello Notification");
+ * }
+ *
+ * // alternative - send message to all members
+ * for (const target of await notificationBot.installations()) {
+ *   for (const member of await target.members()) {
+ *     await member.sendMessage("Hello Notification");
+ *   }
+ * }
+ * ```
+ *
+ * @beta
+ */
+export class NotificationBot {
+  private readonly conversationReferenceStore: ConversationReferenceStore;
+  private readonly adapter: BotFrameworkAdapter;
+
+  /**
+   * constructor of the notification bot.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * To ensure accuracy, it's recommended to initialize before handling any message.
+   *
+   * @param adapter - the bound `BotFrameworkAdapter`
+   * @param options - initialize options
+   *
+   * @beta
+   */
+  public constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Get all targets where the bot is installed.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * The result is retrieving from the persisted storage.
+   *
+   * @returns - an array of {@link TeamsBotInstallation}.
+   *
+   * @beta
+   */
+  public static async installations(): Promise<TeamsBotInstallation[]> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
       ErrorCode.RuntimeNotSupported
     );
   }

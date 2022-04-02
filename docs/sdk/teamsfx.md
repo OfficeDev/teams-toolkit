@@ -10,11 +10,12 @@
 |  --- | --- |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
-|  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide static utilities for bot conversation, including - send notification to varies targets (e.g., member, channel, incoming wehbook) - handle command and response. |
+|  [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> A command bot for receiving commands and sending responses in Teams. |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
+|  [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> Provide static utilities for bot conversation, including - send notification to varies targets (e.g., member, channel, incoming wehbook) - handle command and response. |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
 |  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | <b><i>(BETA)</i></b> Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
@@ -47,8 +48,8 @@
 |  Interface | Description |
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
-|  [ConversationOptions](./teamsfx.conversationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [ConversationBot](./teamsfx.conversationbot.md)<!-- -->. |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
+|  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | <b><i>(BETA)</i></b> Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | <b><i>(BETA)</i></b> Represent a notification target. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |

@@ -9,10 +9,10 @@ export enum ComponentType {
 
 export enum AuthType {
   BASIC = "basic",
-  APIKEY = "APIkey",
+  APIKEY = "apiKey",
   AAD = "aad",
   CERT = "cert",
-  ImplementMyself = "ImplementMyself",
+  CUSTOM = "custom",
 }
 
 export enum LanguageType {

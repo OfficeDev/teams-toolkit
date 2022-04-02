@@ -85,26 +85,18 @@ export const basicAuthUsernameQuestion: TextInputQuestion = {
   ), // Use the placeholder to display some description
 };
 
-export const basicAuthPassword: TextInputQuestion = {
-  name: Constants.questionKey.apiPassword,
-  title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.password.title"),
-  type: "text",
-  password: true,
-  placeholder: getLocalizedString(
-    "plugins.apiConnector.getQuestion.basicAuth.password.placeholder"
-  ), // Use the placeholder to display some description
-};
-
 export const appTenantIdQuestion: TextInputQuestion = {
   name: Constants.questionKey.apiAppTenentId,
   title: getLocalizedString("plugins.apiConnector.appTenantId.title"),
   type: "text",
+  placeholder: getLocalizedString("plugins.apiConnector.appTenantId.placeholder"), // Use the placeholder to display some description
 };
 
 export const appIdQuestion: TextInputQuestion = {
   name: Constants.questionKey.apiAppId,
   title: getLocalizedString("plugins.apiConnector.appId.title"),
   type: "text",
+  placeholder: getLocalizedString("plugins.apiConnector.appId.placeholder"), // Use the placeholder to display some description
 };
 
 export const reuseAppOption: OptionItem = {
@@ -154,7 +146,7 @@ export const APIKeyAuthOption: OptionItem = {
 };
 
 export const ImplementMyselfOption: OptionItem = {
-  id: AuthType.ImplementMyself,
+  id: AuthType.CUSTOM,
   label: "Custom Auth Implementation",
   detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
 };

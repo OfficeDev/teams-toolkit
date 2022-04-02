@@ -8,7 +8,7 @@ import { getTemplatesFolder } from "../../../folder";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { compileHandlebarsTemplateString } from "../../../common";
 import { ConstantString } from "../../../common/constants";
-import { ApiConnectorConfiguration } from "./utils";
+import { ApiConnectorConfiguration } from "./config";
 import { ErrorMessage } from "./errors";
 export class SampleHandler {
   private readonly projectRoot: string;

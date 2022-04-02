@@ -12,16 +12,8 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-import {
-  ApiConnectorConfiguration,
-  generateTempFolder,
-  copyFileIfExist,
-  removeFileIfExist,
-  getSampleFileName,
-  AuthConfig,
-  BasicAuthConfig,
-  AADAuthConfig,
-} from "./utils";
+import { generateTempFolder, copyFileIfExist, removeFileIfExist, getSampleFileName } from "./utils";
+import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
 import { AuthType, Constants } from "./constants";
 import { EnvHandler } from "./envHandler";
@@ -38,7 +30,6 @@ import {
   AADAuthOption,
   APIKeyAuthOption,
   ImplementMyselfOption,
-  basicAuthPassword,
   reuseAppOption,
   anotherAppOption,
   appTenantIdQuestion,
@@ -151,7 +142,6 @@ export class ApiConnectorImpl {
       config = {
         AuthType: AuthType.BASIC,
         UserName: inputs[Constants.questionKey.apiUserName],
-        Password: inputs[Constants.questionKey.apiPassword],
       } as BasicAuthConfig;
     } else if (inputs[Constants.questionKey.apiType] === AuthType.AAD) {
       const AADConfig = {
@@ -166,7 +156,7 @@ export class ApiConnectorImpl {
       }
       config = AADConfig;
     } else {
-      throw new Error("todo");
+      throw ResultFactory.SystemError("todo", "todo");
     }
     return config;
   }
@@ -178,7 +168,6 @@ export class ApiConnectorImpl {
       APIName: inputs[Constants.questionKey.apiName],
       AuthConfig: authConfig,
       EndPoint: inputs[Constants.questionKey.endpoint],
-      ApiUserName: inputs[Constants.questionKey.apiUserName],
     };
     return config;
   }
@@ -280,7 +269,6 @@ export class ApiConnectorImpl {
   public buildBasicAuthQuestion(): QTreeNode {
     const node = new QTreeNode(basicAuthUsernameQuestion);
     node.condition = { equals: BasicAuthOption.id };
-    node.addChild(new QTreeNode(basicAuthPassword));
     return node;
   }
 

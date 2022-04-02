@@ -15,7 +15,7 @@ import {
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -29,7 +29,6 @@ import {
   SolutionTelemetryComponentName,
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
@@ -60,7 +59,7 @@ export async function deploy(
         new UserError(
           SolutionSource,
           SolutionError.CannotDeployBeforeProvision,
-          getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName),
+          getDefaultString("core.NotProvisionedNotice", ctx.projectSetting.appName),
           getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
         ),
         ctx.telemetryReporter
@@ -83,7 +82,8 @@ export async function deploy(
           new SystemError(
             SolutionSource,
             SolutionError.NoAppStudioToken,
-            "App Studio json is undefined"
+            getDefaultString("core.AppStudioJsonUndefined"),
+            getLocalizedString("core.AppStudioJsonUndefined")
           ),
           ctx.telemetryReporter
         )
@@ -114,7 +114,8 @@ export async function deploy(
           new UserError(
             SolutionSource,
             SolutionError.NoResourcePluginSelected,
-            "No plugin selected"
+            getDefaultString("core.NoPluginSelected"),
+            getLocalizedString("core.NoPluginSelected")
           ),
           ctx.telemetryReporter
         )
@@ -154,7 +155,8 @@ export async function deploy(
         new UserError(
           SolutionSource,
           SolutionError.NoResourcePluginSelected,
-          `invalid options: [${optionsToDeploy.join(", ")}]`
+          getDefaultString("core.InvalidOption", optionsToDeploy.join(", ")),
+          getLocalizedString("core.InvalidOption", optionsToDeploy.join(", "))
         ),
         ctx.telemetryReporter
       )

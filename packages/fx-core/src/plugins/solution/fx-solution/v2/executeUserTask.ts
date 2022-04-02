@@ -1063,19 +1063,20 @@ export async function createAuthFiles(
   }
 
   const authFolder = path.join(projectPath!, "auth");
-  const authFolderExists = await fs.pathExists(authFolder);
-  if (!authFolderExists) {
-    await fs.ensureDir(authFolder);
-  }
-
-  if (needTab) {
-    const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
-    const tabFolderExists = await fs.pathExists(tabFolder);
-    if (!tabFolderExists) {
-      await fs.ensureDir(tabFolder);
+  const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
+  const botFolder = path.join(authFolder, AddSsoParameters.Bot);
+  try {
+    const authFolderExists = await fs.pathExists(authFolder);
+    if (!authFolderExists) {
+      await fs.ensureDir(authFolder);
     }
 
-    try {
+    if (needTab) {
+      const tabFolderExists = await fs.pathExists(tabFolder);
+      if (!tabFolderExists) {
+        await fs.ensureDir(tabFolder);
+      }
+
       const templateFolder = getTemplatesFolder();
       const tabTemplateFolder = path.join(
         templateFolder,
@@ -1097,25 +1098,14 @@ export async function createAuthFiles(
         sampleZip.addLocalFolder(sampleSourceFolder);
         await unzip(sampleZip, tabFolder);
       }
-    } catch (error) {
-      // TODO: remove added code
-      const e = new SystemError(
-        SolutionError.FailedToCreateAuthFiles,
-        getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
-        SolutionSource
-      );
-      return err(e);
-    }
-  }
-
-  if (needBot) {
-    const botFolder = path.join(authFolder, AddSsoParameters.Bot);
-    const botFolderExists = await fs.pathExists(botFolder);
-    if (!botFolderExists) {
-      await fs.ensureDir(botFolder);
     }
 
-    try {
+    if (needBot) {
+      const botFolderExists = await fs.pathExists(botFolder);
+      if (!botFolderExists) {
+        await fs.ensureDir(botFolder);
+      }
+
       const templateFolder = getTemplatesFolder();
       const botTemplateFolder = path.join(
         templateFolder,
@@ -1137,15 +1127,20 @@ export async function createAuthFiles(
         sampleZip.addLocalFolder(sampleSourceFolder);
         await unzip(sampleZip, botFolder);
       }
-    } catch (error) {
-      // TODO: remove added code
-      const e = new SystemError(
-        SolutionError.FailedToCreateAuthFiles,
-        getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
-        SolutionSource
-      );
-      return err(e);
     }
+  } catch (error) {
+    if (needTab && (await fs.pathExists(tabFolder))) {
+      await fs.remove(tabFolder);
+    }
+    if (needBot && (await fs.pathExists(botFolder))) {
+      await fs.remove(botFolder);
+    }
+    const e = new SystemError(
+      SolutionError.FailedToCreateAuthFiles,
+      getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
+      SolutionSource
+    );
+    return err(e);
   }
 
   return ok(undefined);

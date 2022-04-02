@@ -68,4 +68,14 @@ export class ErrorMessage {
         reason
       ),
   };
+
+  public static readonly sdkVersionImcompatibleError = {
+    name: "SDKVersionImcompatibleError",
+    message: (localVersion: string, targetVersion: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.sdkVersionImcompatibleError.name}`,
+        localVersion,
+        targetVersion
+      ),
+  };
 }

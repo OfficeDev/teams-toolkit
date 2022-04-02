@@ -31,6 +31,7 @@ export class Constants {
   public static readonly envFileName = ".env.teamsfx.local";
   public static readonly pkgJsonFile = "package.json";
   public static readonly pkgLockFile = "package-lock.json";
+  public static readonly sdkConfigFile = "sdkConfig.json";
 
   public static readonly questionKey = {
     componentsSelect: "ComponentSelect",

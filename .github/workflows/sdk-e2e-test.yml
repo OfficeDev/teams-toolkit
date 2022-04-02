@@ -62,7 +62,7 @@ jobs:
 
           passed=$((total-failed))
 
-          emails="haolong@microsoft.com"
+          emails="vsciotadt@microsoft.com"
 
           case_node=`cat test-results.node.xml | xq '.testsuite | .testcase'`
           #case_browser=`cat test-results.browser.xml | xq '.testsuite | .testcase'`

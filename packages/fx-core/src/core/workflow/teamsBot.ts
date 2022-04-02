@@ -28,7 +28,7 @@ export class TeamsBotFeature implements Resource {
     const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
     const actions: Action[] = [
       {
-        name: "teams-bot.add",
+        name: "teams-bot.addResource",
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];

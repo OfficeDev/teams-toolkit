@@ -33,7 +33,7 @@ export class TeamsTabFeature implements Resource {
       (hostingResourcePlugin as AzureResource).type === "azure" ? "generateBicep" : "add";
     const actions: Action[] = [
       {
-        name: "teams-tab.add",
+        name: "teams-tab.addResource",
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];

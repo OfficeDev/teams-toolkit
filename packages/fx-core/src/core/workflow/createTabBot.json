@@ -35,13 +35,13 @@
                             "mode": "parallel",
                             "actions": [
                                 {
-                                    "name": "teams-tab.add",
+                                    "name": "teams-tab.addResource",
                                     "type": "function"
                                 },
                                 {
                                     "name": "call:tab-scaffold.generateCode",
                                     "type": "call",
-                                    "required": false,
+                                    "required": true,
                                     "targetAction": "tab-scaffold.generateCode",
                                     "inputs": {
                                         "tab-scaffold": {
@@ -55,7 +55,7 @@
                                 {
                                     "name": "call:azure-storage.generateBicep",
                                     "type": "call",
-                                    "required": false,
+                                    "required": true,
                                     "targetAction": "azure-storage.generateBicep"
                                 },
                                 {
@@ -89,7 +89,7 @@
                             "mode": "parallel",
                             "actions": [
                                 {
-                                    "name": "teams-bot.add",
+                                    "name": "teams-bot.addResource",
                                     "type": "function"
                                 },
                                 {
@@ -103,7 +103,7 @@
                                             "hostingResource": "azure-web-app",
                                             "folder": "bot",
                                             "scenarios": [
-                                                "notification"
+                                                "default"
                                             ]
                                         }
                                     }
@@ -136,7 +136,7 @@
                                     "hostingResource": "azure-web-app",
                                     "folder": "bot",
                                     "scenarios": [
-                                        "notification"
+                                        "default"
                                     ]
                                 }
                             }

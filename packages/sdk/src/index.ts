@@ -33,3 +33,22 @@ export { BearerTokenAuthProvider } from "./apiClient/bearerTokenAuthProvider";
 
 export { TeamsFx } from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";
+
+export {
+  NotificationTarget,
+  NotificationTargetType,
+  TeamsFxBotCommandHandler,
+  NotificationOptions,
+} from "./conversation/interface";
+
+export {
+  Channel,
+  Member,
+  sendAdaptiveCard,
+  sendMessage,
+  TeamsBotInstallation,
+} from "./conversation/notification";
+
+export { NotificationBot } from "./conversation/notification";
+export { CommandBot } from "./conversation/command";
+export { MessageBuilder } from "./conversation/messageBuilder";

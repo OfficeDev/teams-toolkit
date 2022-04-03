@@ -5,7 +5,6 @@ import { GraphErrorCodes } from "../aad/errorCodes";
 import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
-import { FxBotPluginResultFactory } from "./result";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export const ErrorType = {
@@ -136,17 +135,6 @@ export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefi
   return value;
 }
 
-export class UserInputsError extends PluginError {
-  constructor(input: string, value: string) {
-    super(
-      ErrorType.USER,
-      ErrorNames.USER_INPUTS_ERROR,
-      Messages.SomethingIsInvalidWithValue(input, value),
-      [Messages.InputValidValueForSomething(input)]
-    );
-  }
-}
-
 export class AADAppCheckingError extends PluginError {
   constructor(innerError?: InnerError) {
     super(
@@ -187,18 +175,6 @@ export class TemplateZipFallbackError extends PluginError {
   }
 }
 
-export class ClientCreationError extends PluginError {
-  constructor(clientName: string, innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.CLIENT_CREATION_ERROR,
-      Messages.FailToCreateSomeClient(clientName),
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
 export class ProvisionError extends PluginError {
   constructor(resource: string, innerError?: InnerError) {
     super(
@@ -207,19 +183,6 @@ export class ProvisionError extends PluginError {
       Messages.FailToProvisionSomeResource(resource),
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
-    );
-  }
-}
-
-export class MissingSubscriptionRegistrationError extends PluginError {
-  constructor() {
-    super(
-      ErrorType.USER,
-      ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
-      Messages.TheSubsNotRegisterToUseBotService as [string, string],
-      [Messages.RegisterYouSubsToUseBot, Messages.ClickHelpButtonForDetails],
-      undefined,
-      FxBotPluginResultFactory.defaultHelpLink
     );
   }
 }
@@ -322,29 +285,6 @@ export class MessageEndpointUpdatingError extends PluginError {
   }
 }
 
-export class DownloadError extends PluginError {
-  constructor(url: string, innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.DOWNLOAD_ERROR,
-      Messages.FailToDownloadFrom(url),
-      ["Please check your network status and retry."],
-      innerError
-    );
-  }
-}
-
-export class TemplateProjectNotFoundError extends PluginError {
-  constructor() {
-    super(
-      ErrorType.USER,
-      ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
-      Messages.SomethingIsNotFound("Template project for scaffold"),
-      [Messages.RetryTheCurrentStep]
-    );
-  }
-}
-
 export class CommandExecutionError extends PluginError {
   constructor(cmd: string, innerError?: InnerError) {
     super(
@@ -352,18 +292,6 @@ export class CommandExecutionError extends PluginError {
       ErrorNames.COMMAND_EXECUTION_ERROR,
       Messages.CommandExecutionFailed(cmd),
       [Messages.CheckCommandOutputAndTryToFixIt, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-export class InvalidBotDataError extends PluginError {
-  constructor(innerError: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.INVALID_BOT_DATA_ERROR,
-      isErrorWithMessage(innerError) ? [innerError.message, innerError.message] : ["", ""],
-      [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
       innerError
     );
   }

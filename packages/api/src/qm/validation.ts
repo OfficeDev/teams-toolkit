@@ -89,6 +89,11 @@ export interface StringArrayValidation extends StaticValidation {
   enum?: string[];
 
   /**
+   * An array instance is valid against "excludes" if it doesn't contains the value of `excludes`
+   */
+  excludes?: string;
+
+  /**
    * An array instance is valid against "contains" if it contains the value of `contains`
    */
   contains?: string;
@@ -234,6 +239,11 @@ export async function validate<T extends string | string[] | OptionItem | Option
           if (!stringArrayValidation.enum.includes(item)) {
             return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
           }
+        }
+      }
+      if (stringArrayValidation.excludes) {
+        if (arrayToValidate.includes(stringArrayValidation.excludes)) {
+          return `'${arrayToValidate}' does not meet with excludes:'${stringArrayValidation.excludes}'`;
         }
       }
       if (stringArrayValidation.contains) {

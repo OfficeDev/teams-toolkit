@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  CreateAccountStart = "create-account-start",
+  CreateAccount = "create-account",
+
   QuickStart = "quick-start",
 
   Samples = "samples",
@@ -55,6 +58,9 @@ export enum TelemetryEvent {
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+
+  DeployAadManifestStart = "deploy-aad-manifest-start",
+  DeployAadManifest = "deploy-aad-manifest",
 
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
@@ -146,7 +152,9 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
+  ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickLocalPreview = "click-local-preview",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 

@@ -995,6 +995,52 @@ describe("V2 implementation", () => {
           SsoItem.id
         )
       ).to.be.true;
+      const readmePath = path.join(testFolder, "auth", "tab", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
+    });
+
+    it("happy path: bot", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name],
+          capabilities: [BotOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          SsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "auth", "bot", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
     });
 
     it("should return error when sso is enabled", async () => {
@@ -1117,6 +1163,40 @@ describe("V2 implementation", () => {
         mockedProvider
       );
       expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
+    });
+
+    it("delete added files when failed", async () => {
+      mocker.stub<any, any>(fs, "writeFile").rejects(new Error());
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name],
+          capabilities: [TabOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.false;
+      const readmePath = path.join(testFolder, "auth", "tab", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.false;
     });
   });
 });

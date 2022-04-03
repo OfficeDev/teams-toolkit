@@ -122,7 +122,6 @@ export class CommandsTreeViewProvider
         tooltip,
         treeItem.commandId,
         undefined,
-        undefined,
         treeItem.icon
           ? {
               name: treeItem.icon,
@@ -183,7 +182,6 @@ export class CommandsTreeViewProvider
               subTreeItem.label,
               tooltip,
               subTreeItem.commandId,
-              undefined,
               undefined,
               subTreeItem.icon
                 ? {

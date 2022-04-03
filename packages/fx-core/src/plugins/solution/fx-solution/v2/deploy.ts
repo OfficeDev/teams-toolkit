@@ -10,10 +10,12 @@ import {
   Void,
   SystemError,
   UserError,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
+import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -21,8 +23,13 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetryComponentName,
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
@@ -37,17 +44,25 @@ export async function deploy(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.DeployStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    [SolutionTelemetryProperty.SkipAadDeploy]: inputs.skipAadDeploy ?? "yes",
+  });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
-      new UserError(
-        SolutionSource,
-        SolutionError.CannotDeployBeforeProvision,
-        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName),
-        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.Deploy,
+        new UserError(
+          SolutionSource,
+          SolutionError.CannotDeployBeforeProvision,
+          getDefaultString("core.NotProvisionedNotice", ctx.projectSetting.appName),
+          getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
+        ),
+        ctx.telemetryReporter
       )
     );
   }
@@ -62,10 +77,15 @@ export async function deploy(
       }
     } else {
       return err(
-        new SystemError(
-          SolutionSource,
-          SolutionError.NoAppStudioToken,
-          "App Studio json is undefined"
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.Deploy,
+          new SystemError(
+            SolutionSource,
+            SolutionError.NoAppStudioToken,
+            getDefaultString("core.AppStudioJsonUndefined"),
+            getLocalizedString("core.AppStudioJsonUndefined")
+          ),
+          ctx.telemetryReporter
         )
       );
     }
@@ -84,9 +104,21 @@ export async function deploy(
   let optionsToDeploy: string[] = [];
   if (!isVsProject) {
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
+    if (inputs.skipAadDeploy === "no" && inputs.platform === Platform.VSCode) {
+      optionsToDeploy = [PluginNames.AAD];
+    }
     if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
       return err(
-        new UserError(SolutionSource, SolutionError.NoResourcePluginSelected, "No plugin selected")
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.Deploy,
+          new UserError(
+            SolutionSource,
+            SolutionError.NoResourcePluginSelected,
+            getDefaultString("core.NoPluginSelected"),
+            getLocalizedString("core.NoPluginSelected")
+          ),
+          ctx.telemetryReporter
+        )
       );
     }
   }
@@ -118,10 +150,15 @@ export async function deploy(
 
   if (thunks.length === 0) {
     return err(
-      new UserError(
-        SolutionSource,
-        SolutionError.NoResourcePluginSelected,
-        `invalid options: [${optionsToDeploy.join(", ")}]`
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.Deploy,
+        new UserError(
+          SolutionSource,
+          SolutionError.NoResourcePluginSelected,
+          getDefaultString("core.InvalidOption", optionsToDeploy.join(", ")),
+          getLocalizedString("core.InvalidOption", optionsToDeploy.join(", "))
+        ),
+        ctx.telemetryReporter
       )
     );
   }
@@ -145,6 +182,12 @@ export async function deploy(
   } else {
     const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
     ctx.logProvider.info(msg);
-    return err(result.error);
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.Deploy,
+        result.error,
+        ctx.telemetryReporter
+      )
+    );
   }
 }

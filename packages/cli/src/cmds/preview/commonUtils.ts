@@ -19,7 +19,7 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
@@ -188,7 +188,19 @@ export async function getLocalEnv(
   const localSettings = await localEnvManager.getLocalSettings(workspaceFolder, {
     projectId: projectSettings.projectId,
   });
-  return await localEnvManager.getLocalDebugEnvs(workspaceFolder, projectSettings, localSettings);
+  if (isConfigUnifyEnabled()) {
+    const localEnvInfo = await localEnvManager.getLocalEnvInfo(workspaceFolder, {
+      projectId: projectSettings.projectId,
+    });
+    return await localEnvManager.getLocalDebugEnvs(
+      workspaceFolder,
+      projectSettings,
+      localSettings,
+      localEnvInfo
+    );
+  } else {
+    return await localEnvManager.getLocalDebugEnvs(workspaceFolder, projectSettings, localSettings);
+  }
 }
 
 function getLocalEnvWithPrefix(

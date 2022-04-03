@@ -71,34 +71,6 @@ export function generateM365Configurations(
 ): Record<string, unknown>[] {
   const launchConfigurations: Record<string, unknown>[] = [];
 
-  // remote
-  let edgeOrder = 2,
-    chromeOrder = 1;
-  if (os.type() === "Windows_NT") {
-    edgeOrder = 1;
-    chromeOrder = 2;
-  }
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.teams, LaunchBrowser.edge, "Edge", edgeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.teams, LaunchBrowser.chrome, "Chrome", chromeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.outlook, LaunchBrowser.edge, "Edge", edgeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.outlook, LaunchBrowser.chrome, "Chrome", chromeOrder)
-  );
-  if (includeFrontend) {
-    launchConfigurations.push(
-      launchRemoteM365(includeFrontend, HubName.office, LaunchBrowser.edge, "Edge", edgeOrder)
-    );
-    launchConfigurations.push(
-      launchRemoteM365(includeFrontend, HubName.office, LaunchBrowser.chrome, "Chrome", chromeOrder)
-    );
-  }
-
   if (includeFrontend) {
     launchConfigurations.push(
       attachToFrontendM365(HubName.teams, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
@@ -209,25 +181,6 @@ function launchRemote(
     type: browserType,
     request: "launch",
     url: LaunchUrl.teamsRemote,
-    presentation: {
-      group: "remote",
-      order: order,
-    },
-  };
-}
-
-function launchRemoteM365(
-  includeFrontend: boolean,
-  hubName: string,
-  browserType: string,
-  browserName: string,
-  order: number
-): Record<string, unknown> {
-  return {
-    name: `Launch Remote in ${hubName} (${browserName})`,
-    type: browserType,
-    request: "launch",
-    url: includeFrontend ? getFrontendLaunchUrl(false, hubName) : getBotLaunchUrl(false, hubName),
     presentation: {
       group: "remote",
       order: order,

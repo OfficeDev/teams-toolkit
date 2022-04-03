@@ -1,0 +1,1 @@
+For how to display existing web apps in Teams, please refer to [this document](https://aka.ms/teamsfx-existing-tab)

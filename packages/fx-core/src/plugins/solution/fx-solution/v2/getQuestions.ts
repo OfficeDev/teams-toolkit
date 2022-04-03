@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   Stage,
@@ -287,13 +288,14 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter(
-      (plugin) =>
-        !!plugin.deploy &&
-        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
-    );
+    plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
+    }
+
+    // trigger from Deploy AAD App manifest command in VSCode
+    if (inputs.platform === Platform.VSCode && inputs.skipAadDeploy === "no") {
+      return ok(node);
     }
 
     // On VS, users are not expected to select plugins to deploy.

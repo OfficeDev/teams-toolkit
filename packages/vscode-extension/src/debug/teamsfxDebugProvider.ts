@@ -5,7 +5,7 @@ import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
-import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./teamsAppInstallation";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 import { showError } from "../handlers";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
@@ -56,19 +56,18 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         const teamsAppIdPlaceholder = "${teamsAppId}";
         const isSideloadingConfiguration: boolean = url.includes(teamsAppIdPlaceholder);
         const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalId}";
-        const isLocalM365SideloadingConfiguration: boolean = url.includes(
-          localTeamsAppInternalIdPlaceholder
-        );
-        const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
-        const isM365SideloadingConfiguration: boolean = url.includes(teamsAppInternalIdPlaceholder);
+        // NOTE: 1. there is no app id in M365 messaging extension launch url
+        //       2. there are no launch remote configurations for M365 app
+        const m365Hosts = ["outlook.office.com", "office.com"];
+        const isLocalM365SideloadingConfiguration: boolean =
+          url.includes(localTeamsAppInternalIdPlaceholder) || m365Hosts.includes(new URL(url).host);
         const isLocalSideloading: boolean =
           isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
 
         if (
           !isLocalSideloadingConfiguration &&
           !isSideloadingConfiguration &&
-          !isLocalM365SideloadingConfiguration &&
-          !isM365SideloadingConfiguration
+          !isLocalM365SideloadingConfiguration
         ) {
           return debugConfiguration;
         }
@@ -92,13 +91,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           return undefined;
         }
 
-        if (isM365SideloadingConfiguration) {
-          const shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
-          if (!shouldContinue) {
-            return undefined;
-          }
-        }
-
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
         debugConfiguration.teamsfxEnv = debugConfig.env;
         debugConfiguration.teamsfxAppId = debugConfig.appId;
@@ -109,12 +101,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           const internalId = await getTeamsAppInternalId(debugConfig.appId);
           if (internalId !== undefined) {
             url = url.replace(localTeamsAppInternalIdPlaceholder, internalId);
-          }
-        }
-        if (isM365SideloadingConfiguration) {
-          const internalId = await getTeamsAppInternalId(debugConfig.appId);
-          if (internalId !== undefined) {
-            url = url.replace(teamsAppInternalIdPlaceholder, internalId);
           }
         }
 

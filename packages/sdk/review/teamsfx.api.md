@@ -60,8 +60,6 @@ export class BearerTokenAuthProvider implements AuthProvider {
 }
 
 // @beta
-export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
-
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
@@ -79,6 +77,9 @@ export class CommandBot {
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 }
+
+// @beta
+export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //

@@ -3,7 +3,6 @@
 
 import { assert } from "chai";
 import { MockAuthProvider } from "./mockAuthProvider";
-import axios from "axios";
 import { createApiClient } from "../../../src";
 import MockAdapter from "axios-mock-adapter";
 
@@ -12,11 +11,11 @@ describe("ApiClient Tests - Node", () => {
     // Arrange
     const apiBaseUrl = "https://fake-api-endpoint";
     const mockAuthProvider = new MockAuthProvider();
-    const axiosMockAdapter = new MockAdapter(axios);
-    axiosMockAdapter.onGet("/foo").replyOnce(200);
 
     // Act
     const apiClient = createApiClient(apiBaseUrl, mockAuthProvider);
+    const axiosMockAdapter = new MockAdapter(apiClient);
+    axiosMockAdapter.onGet("/foo").replyOnce(200);
     const res = await apiClient.get("/foo");
 
     // Assert

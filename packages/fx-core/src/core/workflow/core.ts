@@ -186,6 +186,7 @@ export class TeamsfxCore {
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {
         type: "call",
+        name: `call:${r.name}.provision`,
         required: false,
         targetAction: `${r.name}.provision`,
       };
@@ -193,6 +194,7 @@ export class TeamsfxCore {
     const configureActions: Action[] = resourcesToProvision.map((r) => {
       return {
         type: "call",
+        name: `call:${r.name}.configure`,
         required: false,
         targetAction: `${r.name}.configure`,
       };
@@ -216,11 +218,13 @@ export class TeamsfxCore {
       },
       {
         type: "group",
+        name: "resources.provision",
         mode: "parallel",
         actions: provisionActions,
       },
       {
         type: "call",
+        name: "call:fx.deployBicep",
         required: true,
         targetAction: "fx.deployBicep",
       },
@@ -304,6 +308,7 @@ export class TeamsfxCore {
       provisionSequences.push(setInputsForConfig);
       provisionSequences.push({
         type: "group",
+        name: "resources.configure",
         mode: "parallel",
         actions: configureActions,
       });
@@ -313,6 +318,7 @@ export class TeamsfxCore {
     if (teamsBot) manifestInputs.botId = "{{azure-bot.botId}}";
     provisionSequences.push({
       type: "call",
+      name: "call:teams-manifest.provision",
       required: true,
       targetAction: "teams-manifest.provision",
       inputs: {

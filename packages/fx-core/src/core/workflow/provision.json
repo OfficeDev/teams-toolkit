@@ -8,20 +8,24 @@
         },
         {
             "type": "group",
+            "name": "resources.provision",
             "mode": "parallel",
             "actions": [
                 {
                     "type": "call",
+                    "name": "call:azure-storage.provision",
                     "required": false,
                     "targetAction": "azure-storage.provision"
                 },
                 {
                     "type": "call",
+                    "name": "call:azure-web-app.provision",
                     "required": false,
                     "targetAction": "azure-web-app.provision"
                 },
                 {
                     "type": "call",
+                    "name": "call:aad.provision",
                     "required": false,
                     "targetAction": "aad.provision"
                 }
@@ -29,6 +33,7 @@
         },
         {
             "type": "call",
+            "name": "call:fx.deployBicep",
             "required": true,
             "targetAction": "fx.deployBicep"
         },
@@ -44,20 +49,24 @@
         },
         {
             "type": "group",
+            "name": "resources.configure",
             "mode": "parallel",
             "actions": [
                 {
                     "type": "call",
+                    "name": "call:azure-storage.configure",
                     "required": false,
                     "targetAction": "azure-storage.configure"
                 },
                 {
                     "type": "call",
+                    "name": "call:azure-web-app.configure",
                     "required": false,
                     "targetAction": "azure-web-app.configure"
                 },
                 {
                     "type": "call",
+                    "name": "call:aad.configure",
                     "required": false,
                     "targetAction": "aad.configure"
                 }
@@ -65,6 +74,7 @@
         },
         {
             "type": "call",
+            "name": "call:teams-manifest.provision",
             "required": true,
             "targetAction": "teams-manifest.provision",
             "inputs": {

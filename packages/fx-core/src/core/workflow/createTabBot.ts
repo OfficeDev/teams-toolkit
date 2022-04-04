@@ -46,6 +46,9 @@ async function createTabBot() {
           folder: "bot",
           scenarios: ["default"],
         },
+        {
+          name: "aad",
+        },
       ],
     },
     "programming-language": "typescript",

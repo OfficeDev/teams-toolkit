@@ -140,6 +140,16 @@
                                     ]
                                 }
                             }
+                        },
+                        {
+                            "type": "call",
+                            "required": true,
+                            "targetAction": "aad.generateBicep",
+                            "inputs": {
+                                "aad": {
+                                    "name": "aad"
+                                }
+                            }
                         }
                     ]
                 },

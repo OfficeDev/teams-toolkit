@@ -401,6 +401,14 @@ export class SPFxPluginImpl {
           `Teams Toolkit recommends using ${yoInfo.displayName} ${genInfo.displayName}`
         );
       }
+      if (
+        (error as any).message &&
+        (error as any).message.includes("'yo' is not recognized as an internal or external command")
+      ) {
+        ctx.logProvider?.error(
+          "NPM v6.x is recommended for spfx scaffolding and later development. You can use correct version and try again."
+        );
+      }
       await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }

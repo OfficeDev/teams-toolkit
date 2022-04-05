@@ -406,7 +406,7 @@ export class SPFxPluginImpl {
         (error as any).message.includes("'yo' is not recognized as an internal or external command")
       ) {
         ctx.logProvider?.error(
-          "NPM v6.x is recommended for spfx scaffolding and later development. You can use correct version and try again."
+          "NPM v6.x with Node.js v12.13.0+ (Erbium) or Node.js v14.15.0+ (Fermium) is recommended for spfx scaffolding and later development. You can use correct version and try again."
         );
       }
       await progressHandler?.end(false);

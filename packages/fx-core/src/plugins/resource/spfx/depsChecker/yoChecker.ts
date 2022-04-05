@@ -92,10 +92,17 @@ export class YoChecker implements DependencyChecker {
     }
   }
 
-  public getBinFolder(): string {
-    return this.isWindows()
-      ? this.getDefaultInstallPath()
-      : path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
+  public async getBinFolder(): Promise<string> {
+    if (this.isWindows()) {
+      const npmVersion = await this.getNPMMajorVersion();
+      if (npmVersion && parseInt(npmVersion) > 6) {
+        return path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
+      } else {
+        return this.getDefaultInstallPath();
+      }
+    } else {
+      return path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
+    }
   }
 
   private async validate(): Promise<boolean> {
@@ -137,6 +144,28 @@ export class YoChecker implements DependencyChecker {
     }
   }
 
+  private async getNPMMajorVersion(): Promise<string | undefined> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: true },
+        "npm",
+        "--version"
+      );
+
+      const regex = /(?<majorVersion>\d+)(\.\d+\.\d+)/;
+      const match = regex.exec(output.toString());
+      if (match && match.groups) {
+        return match.groups.majorVersion;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      return undefined;
+    }
+  }
+
   private async cleanup(): Promise<void> {
     try {
       await fs.emptyDir(this.getPackagePath());
@@ -157,7 +186,8 @@ export class YoChecker implements DependencyChecker {
         `${name}@${supportedVersion}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
-        "--no-audit"
+        "--no-audit",
+        "--global-style"
       );
 
       await fs.ensureFile(this.getSentinelPath());

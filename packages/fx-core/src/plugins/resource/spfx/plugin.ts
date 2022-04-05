@@ -111,7 +111,7 @@ export class SPFxPluginImpl {
 
         const yoEnv: NodeJS.ProcessEnv = process.env;
         yoEnv.PATH = isYoCheckerEnabled()
-          ? `${yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
+          ? `${await yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
           : process.env.PATH;
         await cpUtils.executeCommand(
           ctx.root,

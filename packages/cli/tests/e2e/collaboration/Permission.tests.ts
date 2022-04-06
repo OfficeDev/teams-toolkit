@@ -7,6 +7,7 @@
 
 import { expect } from "chai";
 import path from "path";
+import * as fs from "fs-extra";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   cleanUp,
@@ -22,9 +23,9 @@ import { it } from "../../commonlib/it";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
+  let appName = getUniqueAppName();
   const subscription = getSubscriptionId();
-  const projectPath = path.resolve(testFolder, appName);
+  let projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
 
@@ -32,6 +33,11 @@ describe("Collaboration", function () {
     "Collaboration: CLI with permission status and permission grant",
     { testPlanCaseId: 10753319 },
     async function () {
+      while (await fs.pathExists(projectPath)) {
+        appName = getUniqueAppName();
+        projectPath = path.resolve(testFolder, appName);
+      }
+
       // new a project
       await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
         cwd: testFolder,

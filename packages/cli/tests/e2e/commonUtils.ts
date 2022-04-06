@@ -89,7 +89,7 @@ export function getAppNamePrefix() {
 }
 
 export function getUniqueAppName() {
-  return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 2);
+  return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 5);
 }
 
 export function getSubscriptionId() {

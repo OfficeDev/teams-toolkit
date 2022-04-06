@@ -12,7 +12,13 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-import { generateTempFolder, copyFileIfExist, removeFileIfExist, getSampleFileName } from "./utils";
+import {
+  generateTempFolder,
+  copyFileIfExist,
+  removeFileIfExist,
+  getSampleFileName,
+  checkInputEmpty,
+} from "./utils";
 import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
 import { AuthType, Constants } from "./constants";
@@ -140,6 +146,7 @@ export class ApiConnectorImpl {
   private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
     let config: AuthConfig;
     if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
+      checkInputEmpty(inputs, Constants.questionKey.apiUserName);
       config = {
         AuthType: AuthType.BASIC,
         UserName: inputs[Constants.questionKey.apiUserName],
@@ -152,17 +159,31 @@ export class ApiConnectorImpl {
         AADConfig.ReuseTeamsApp = true;
       } else {
         AADConfig.ReuseTeamsApp = false;
+        checkInputEmpty(
+          inputs,
+          Constants.questionKey.apiAppTenentId,
+          Constants.questionKey.apiAppTenentId
+        );
         AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
         AADConfig.AppId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
     } else {
-      throw ResultFactory.SystemError("todo", "todo");
+      throw ResultFactory.SystemError(
+        ErrorMessage.ApiConnectorInputError.name,
+        ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
+      );
     }
     return config;
   }
 
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {
+    checkInputEmpty(
+      inputs,
+      Constants.questionKey.componentsSelect,
+      Constants.questionKey.apiName,
+      Constants.questionKey.endpoint
+    );
     const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
       ComponentPath: inputs[Constants.questionKey.componentsSelect],

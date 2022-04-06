@@ -10,8 +10,8 @@ export class ErrorMessage {
   };
   public static readonly ApiConnectorInputError = {
     name: "ApiConnectorInputError",
-    message: () =>
-      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`),
+    message: (key: string) =>
+      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`, key),
   };
 
   public static readonly ApiConnectorPathError = {

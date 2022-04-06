@@ -25,6 +25,10 @@ export class ApiDataManager {
   }
 
   public addApiEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    if (!this.apiConnector[apiName]) {
+      this.apiConnector[apiName] = {};
+    }
     if (config.AuthConfig.AuthType === AuthType.BASIC) {
       this.addBasicEnvs(config);
     }
@@ -32,24 +36,16 @@ export class ApiDataManager {
 
   public addBasicEnvs(config: ApiConnectorConfiguration) {
     const apiName: string = config.APIName.toUpperCase();
-    if (!this.apiConnector[apiName]) {
-      this.apiConnector[apiName] = {};
-    }
+    const apiConfig = this.apiConnector[apiName];
     const endPoint = "API_" + apiName + "_ENDPOINT";
     const authName = "API_" + apiName + "_AUTHENTICATION_TYPE";
     const userName = "API_" + apiName + "_USERNAME";
     const passWd = "API_" + apiName + "_PASSWORD";
     const authConfig = config.AuthConfig as BasicAuthConfig;
-    if (authConfig.UserName) {
-      this.apiConnector[apiName][userName] = authConfig.UserName;
-    }
-    if (authConfig.AuthType) {
-      this.apiConnector[apiName][authName] = authConfig.AuthType;
-    }
-    if (config.EndPoint) {
-      this.apiConnector[apiName][endPoint] = config.EndPoint;
-    }
-    this.apiConnector[apiName][passWd] = "";
+    apiConfig[userName] = authConfig.UserName;
+    apiConfig[authName] = authConfig.AuthType;
+    apiConfig[endPoint] = config.EndPoint;
+    apiConfig[passWd] = "";
   }
 }
 export class EnvHandler {

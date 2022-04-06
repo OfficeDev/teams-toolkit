@@ -372,14 +372,17 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @beta
    */
   public async members(): Promise<Member[]> {
-    let teamsMembers: TeamsChannelAccount[] = [];
-    await this.adapter.continueConversation(this.conversationReference, async (context) => {
-      teamsMembers = await TeamsInfo.getMembers(context);
-    });
     const members: Member[] = [];
-    for (const member of teamsMembers) {
-      members.push(new Member(this, member));
-    }
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      let continuationToken: string | undefined;
+      do {
+        const pagedMembers = await TeamsInfo.getPagedMembers(context, undefined, continuationToken);
+        continuationToken = pagedMembers.continuationToken;
+        for (const member of pagedMembers.members) {
+          members.push(new Member(this, member));
+        }
+      } while (continuationToken !== undefined);
+    });
 
     return members;
   }

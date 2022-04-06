@@ -9,6 +9,7 @@
 |  Class | Description |
 |  --- | --- |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
+|  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, channel, incoming wehbook). |
@@ -35,6 +36,7 @@
 
 |  Function | Description |
 |  --- | --- |
+|  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | <b><i>(BETA)</i></b> Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
@@ -49,6 +51,7 @@
 |  Interface | Description |
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
+|  [AuthProvider](./teamsfx.authprovider.md) | <b><i>(BETA)</i></b> Defines method that injects authentication info to http requests |
 |  [CommandOptions](./teamsfx.commandoptions.md) | <b><i>(BETA)</i></b> Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |

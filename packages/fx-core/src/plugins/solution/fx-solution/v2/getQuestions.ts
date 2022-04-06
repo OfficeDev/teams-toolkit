@@ -36,7 +36,8 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -478,7 +479,13 @@ export async function getQuestionsForAddCapability(
     if (!isAadManifestEnabled()) {
       options.push(TabOptionItem);
     } else {
-      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, TabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
+        );
+      }
     }
   }
   if (isBotAddable) {

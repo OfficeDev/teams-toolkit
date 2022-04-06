@@ -168,7 +168,8 @@ export class GeneratorChecker implements DependencyChecker {
         `${name}@${supportedVersion}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
-        "--no-audit"
+        "--no-audit",
+        "--global-style"
       );
 
       await fs.ensureFile(this.getSentinelPath());

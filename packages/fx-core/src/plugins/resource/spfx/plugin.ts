@@ -111,7 +111,7 @@ export class SPFxPluginImpl {
 
         const yoEnv: NodeJS.ProcessEnv = process.env;
         yoEnv.PATH = isYoCheckerEnabled()
-          ? `${yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
+          ? `${await yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
           : process.env.PATH;
         await cpUtils.executeCommand(
           ctx.root,
@@ -399,6 +399,14 @@ export class SPFxPluginImpl {
         );
         ctx.logProvider?.error(
           `Teams Toolkit recommends using ${yoInfo.displayName} ${genInfo.displayName}`
+        );
+      }
+      if (
+        (error as any).message &&
+        (error as any).message.includes("'yo' is not recognized as an internal or external command")
+      ) {
+        ctx.logProvider?.error(
+          "NPM v6.x with Node.js v12.13.0+ (Erbium) or Node.js v14.15.0+ (Fermium) is recommended for spfx scaffolding and later development. You can use correct version and try again."
         );
       }
       await progressHandler?.end(false);

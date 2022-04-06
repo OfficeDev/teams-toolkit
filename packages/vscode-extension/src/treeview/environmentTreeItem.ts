@@ -65,8 +65,7 @@ export class EnvironmentNode extends DynamicNode {
 
   public async getTreeItem(): Promise<vscode.TreeItem> {
     const envInfo = await this.getCurrentEnvInfo(this.identifier);
-    // ext.workspaceUri is guaranteed in provider
-    const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
+    const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
 
     this.iconPath = envInfo === EnvInfo.ProvisionedRemoteEnv ? provisionedIcon : nonProvisionedIcon;
     this.collapsibleState =
@@ -98,7 +97,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     // Check Azure account status
-    const isSpfxProject = isSPFxProject(ext.workspaceUri.fsPath);
+    const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
     if (!isSpfxProject) {
       if (AzureAccountManager.getAccountInfo() !== undefined) {
         const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
@@ -134,7 +133,7 @@ export class EnvironmentNode extends DynamicNode {
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
     if (envName === LocalEnvironmentName) {
-      return (await isExistingTabApp(ext.workspaceUri.fsPath))
+      return (ext.workspaceUri ? await isExistingTabApp(ext.workspaceUri.fsPath) : false)
         ? EnvInfo.LocalForExistingApp
         : EnvInfo.Local;
     } else {

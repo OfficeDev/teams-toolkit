@@ -116,6 +116,26 @@ export interface NotificationOptions {
 }
 
 /**
+ * The trigger pattern used to trigger a {@link TeamsFxBotCommandHandler} instance.
+ */
+export type TriggerPatterns = string | RegExp | (string | RegExp)[];
+
+/**
+ * Interface for a command messagge that can handled in a command handler.
+ */
+export interface CommandMessage {
+  /**
+   * Text of the message sent by the user.
+   */
+  text: string;
+
+  /**
+   * The capture groups that matched to the {@link triggerPatterns} in a {@link TeamsFxBotCommandHandler} instance.
+   */
+  matches?: RegExpMatchArray;
+}
+
+/**
  * Interface for a command handler that can process command to a TeamsFx bot and return a response.
  *
  * @beta
@@ -124,17 +144,17 @@ export interface TeamsFxBotCommandHandler {
   /**
    * The command name or RegExp pattern that can trigger this handler.
    */
-  commandNameOrPattern: string | RegExp;
+  triggerPatterns: TriggerPatterns;
 
   /**
    * Handles a bot command received activity.
    *
    * @param context The bot context.
-   * @param receivedText The command text the user types from Teams.
+   * @param message The command message the user types from Teams.
    * @returns A `Promise` representing an activity or text to send as the command response.
    */
   handleCommandReceived(
     context: TurnContext,
-    receivedText: string
+    message: CommandMessage
   ): Promise<string | Partial<Activity>>;
 }

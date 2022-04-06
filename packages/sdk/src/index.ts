@@ -38,8 +38,10 @@ export {
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
-  TeamsFxBotCommandHandler,
   NotificationOptions,
+  CommandMessage,
+  TriggerPatterns,
+  TeamsFxBotCommandHandler,
 } from "./conversation/interface";
 
 export {

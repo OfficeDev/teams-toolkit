@@ -78,6 +78,12 @@ export class CommandBot {
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 }
 
+// @public
+export interface CommandMessage {
+    matches?: RegExpMatchArray;
+    text: string;
+}
+
 // @beta
 export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
@@ -281,8 +287,8 @@ export class TeamsFx implements TeamsFxConfiguration {
 
 // @beta
 export interface TeamsFxBotCommandHandler {
-    commandNameOrPattern: string | RegExp;
-    handleCommandReceived(context: TurnContext, receivedText: string): Promise<string | Partial<Activity>>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
+    triggerPatterns: TriggerPatterns;
 }
 
 // @beta
@@ -292,6 +298,9 @@ export class TeamsUserCredential implements TokenCredential {
     getUserInfo(): Promise<UserInfo>;
     login(scopes: string | string[]): Promise<void>;
 }
+
+// @public
+export type TriggerPatterns = string | RegExp | (string | RegExp)[];
 
 // @beta
 export interface UserInfo {

@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Activity, Middleware, TurnContext } from "botbuilder";
+import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
+import { CommandMessage, TriggerPatterns } from "./interface";
 import { TeamsFxBotCommandHandler } from "./interface";
 import { ConversationReferenceStore } from "./storage";
 
@@ -14,7 +15,6 @@ enum ActivityType {
   CurrentBotUninstalled,
   TeamDeleted,
   TeamRestored,
-  CommandReceived,
   Unknown,
 }
 
@@ -99,18 +99,30 @@ export class CommandResponseMiddleware implements Middleware {
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
     const type = this.classifyActivity(context.activity);
-    let handlers: TeamsFxBotCommandHandler[] = [];
 
     switch (type) {
-      case ActivityType.CommandReceived:
+      case ActivityType.CurrentBotMessaged:
         // Invoke corresponding command handler for the command response
         const commandText = this.getActivityText(context.activity);
-        handlers = this.filterCommandHandler(commandText, this.commandHandlers);
 
-        if (handlers.length > 0) {
-          const response = await handlers[0].handleCommandReceived(context, commandText);
-          await context.sendActivity(response);
+        const message: CommandMessage = {
+          text: commandText,
+        };
+
+        for (const handler of this.commandHandlers) {
+          const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
+
+          // It is important to note that the command bot will stop processing handlers
+          // when the first command handler is matched.
+          if (!!matchResult) {
+            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+
+            const response = await handler.handleCommandReceived(context, message);
+            await context.sendActivity(response);
+            break;
+          }
         }
+
         break;
       default:
         break;
@@ -120,33 +132,44 @@ export class CommandResponseMiddleware implements Middleware {
   }
 
   private classifyActivity(activity: Activity): ActivityType {
-    if (this.isCommandReceived(activity)) {
-      return ActivityType.CommandReceived;
+    if (activity.type === ActivityTypes.Message) {
+      return ActivityType.CurrentBotMessaged;
     }
 
     return ActivityType.Unknown;
   }
 
-  private isCommandReceived(activity: Activity): boolean {
-    if (this.commandHandlers) {
-      const commandText = this.getActivityText(activity);
-      const handlers = this.filterCommandHandler(commandText, this.commandHandlers);
-      return handlers.length > 0;
+  private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {
+    const normalizedText = text?.trim().toLocaleLowerCase();
+
+    if (typeof pattern === "string") {
+      const test = new RegExp(pattern as string, "i");
+      if (normalizedText && normalizedText.match(test)) {
+        return true;
+      }
+    } else if (pattern instanceof RegExp) {
+      const test = pattern as RegExp;
+      if (normalizedText && normalizedText.match(test)) {
+        const matches = normalizedText.match(test);
+        return matches ?? true;
+      }
     } else {
       return false;
     }
+
+    return false;
   }
 
-  private filterCommandHandler(commandText: string, commandHandlers: TeamsFxBotCommandHandler[]) {
-    const handlers = commandHandlers.filter((handler) => {
-      if (typeof handler.commandNameOrPattern === "string") {
-        return handler.commandNameOrPattern.toLocaleLowerCase() === commandText;
-      } else {
-        return handler.commandNameOrPattern?.test(commandText);
-      }
-    });
+  private shouldTrigger(patterns: TriggerPatterns, text: string): RegExpMatchArray | boolean {
+    const normalizedText = text?.trim().toLocaleLowerCase();
+    const expressions = Array.isArray(patterns) ? patterns : [patterns];
 
-    return handlers;
+    for (const ex of expressions) {
+      const arg = this.matchPattern(ex, normalizedText);
+      if (arg) return arg;
+    }
+
+    return false;
   }
 
   private getActivityText(activity: Activity): string {

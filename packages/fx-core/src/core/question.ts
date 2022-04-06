@@ -22,7 +22,7 @@ import {
   getRootDirectory,
   isAadManifestEnabled,
   isBotNotificationEnabled,
-  isInitAppEnabled,
+  isExistingTabAppEnabled,
   isM365AppEnabled,
 } from "../common/tools";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -232,7 +232,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...[MessageExtensionItem, TabSPFxItem],
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...(isInitAppEnabled() ? [ExistingTabOptionItem] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
     ],
     default: [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),

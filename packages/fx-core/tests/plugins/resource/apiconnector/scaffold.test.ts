@@ -32,6 +32,14 @@ describe("Api Connector scaffold sample code", async () => {
     await fs.ensureDir(testpath);
     await fs.ensureDir(botPath);
     await fs.ensureDir(apiPath);
+    await fs.copyFile(
+      path.join(__dirname, "sampleFiles", "package.json"),
+      path.join(botPath, "package.json")
+    );
+    await fs.copyFile(
+      path.join(__dirname, "sampleFiles", "package.json"),
+      path.join(apiPath, "package.json")
+    );
   });
 
   afterEach(async () => {

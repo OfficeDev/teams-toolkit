@@ -221,6 +221,15 @@ export async function activate(): Promise<Result<Void, FxError>> {
     registerCoreEvents();
     await registerAccountTreeHandler();
     await envTreeProviderInstance.reloadEnvironments();
+    if (workspacePath) {
+      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+        "**/unify-config-change-logs.md"
+      );
+
+      unifyConfigWatcher.onDidCreate(async (event) => {
+        await openUnifyConfigMd(workspacePath, event.fsPath);
+      });
+    }
     await autoOpenProjectHandler();
     automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
@@ -309,6 +318,21 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   if (needRefresh) {
     await envTreeProviderInstance.reloadEnvironments();
   }
+}
+
+async function openUnifyConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const unifyConfigMD = "unify-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  if (changeLogsPath !== filePath) {
+    return;
+  }
+  const uri = Uri.file(changeLogsPath);
+
+  workspace.openTextDocument(uri).then(() => {
+    const PreviewMarkdownCommand = "markdown.showPreview";
+    commands.executeCommand(PreviewMarkdownCommand, uri);
+  });
 }
 
 async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {

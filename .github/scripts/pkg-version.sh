@@ -44,6 +44,10 @@ elif [ $1 == 'template-adaptive-card' ]; then
     fi
     git add ../../templates
 elif [ $1 == 'template-sync' ]; then
-    node ../.github/scripts/sync-templates.js
+    node ../.github/scripts/sync-version.js 
+    git add .
+elif [ $1 == 'api-connector-sync' ]; then
+    echo "sync up api connector config version with sdk"
+    node ../../.github/scripts/sync-version.js packages/fx-core/templates/plugins/resource/apiconnector
     git add .
 fi

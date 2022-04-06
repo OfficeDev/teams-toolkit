@@ -32,6 +32,7 @@ export { IdentityType } from "./models/identityType";
 
 export {
   NotificationTarget,
+  NotificationTargetStorage,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
   NotificationOptions,

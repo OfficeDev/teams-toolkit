@@ -3,13 +3,14 @@
 
 import { Func, Inputs, ok, Platform, v2, Void } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { FxCore, setTools } from "../../src";
+import { FxCore, setTools } from "../../src/core";
 import { TabOptionItem } from "../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
@@ -53,11 +54,17 @@ describe("Core API for mini app", () => {
         namespace: "fx-solution-azure",
         method: "addCapability",
       };
+      const stateFile = path.join(projectPath, ".fx", "states", "state.dev.json");
+      const envState = { solution: { provisionSucceeded: true } };
+      fs.ensureDirSync(path.join(projectPath, ".fx", "states"));
+      fs.writeJsonSync(stateFile, envState);
       const addRes = await core.executeUserTaskV2(func, addInputs);
       if (addRes.isErr()) {
         console.log(addRes.error);
       }
       assert.isTrue(addRes.isOk());
+      const envState2 = fs.readJsonSync(stateFile, { encoding: "utf-8" });
+      assert.isTrue(envState2.solution.provisionSucceeded === false);
     }
   });
 });

@@ -39,6 +39,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
+import { DepsHandler } from "./depsHandler";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -106,7 +107,7 @@ export class ApiConnectorImpl {
   ) {
     await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
     await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    // await this.addSDKDependency(ComponentPath);
+    await this.addSDKDependency(projectPath, componentItem);
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -192,6 +193,14 @@ export class ApiConnectorImpl {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
     await sampleHandler.generateSampleCode(config);
     return ResultFactory.Success();
+  }
+
+  private async addSDKDependency(
+    projectPath: string,
+    component: string
+  ): Promise<ApiConnectorResult> {
+    const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
+    return await depsHandler.addPkgDeps();
   }
 
   public async generateQuestion(ctx: Context): Promise<QesutionResult> {

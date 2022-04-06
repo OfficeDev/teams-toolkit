@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Unhandled error: %s",
   "error.sa.EndpointInvalidError": "Failed to verify endpoint: %s. Reason: %s",
   "error.sa.ZipDownloadError": "Failed to download Simple Auth bits: %s",
-  "error.sa.VersionFileNotExist": "`Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Failed to register required resource provider for Simple Auth. Reason: %s. Register required resource provider %s manually.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again.",
   "core.getUserEmailQuestion.validation3": "Email address is not valid",

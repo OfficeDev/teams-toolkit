@@ -11,7 +11,12 @@ describe("ApiClient Tests - Node", () => {
   const apiBaseUrl = `http://${host}:${port}`;
   const server = http.createServer((req, res) => {
     res.writeHead(200);
-    res.end("Successfully create http server for ApiClient E2E test.");
+
+    const data = {
+      requestHeader: req.headers,
+      url: req.url,
+    };
+    res.end(JSON.stringify(data));
   });
 
   before(() => {
@@ -35,8 +40,7 @@ describe("ApiClient Tests - Node", () => {
     const res = await apiClient.get("/foo");
 
     // Assert
-    assert.equal(res.config.baseURL, apiBaseUrl);
-    assert.equal(res.config.url, "/foo");
-    assert.equal(res.config.headers!["Authorization"], "Bearer test-bearer-token");
+    assert.equal(res.data.url, "/foo");
+    assert.equal(res.data.requestHeader!["authorization"], "Bearer test-bearer-token");
   });
 });

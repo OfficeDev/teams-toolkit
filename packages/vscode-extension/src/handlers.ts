@@ -222,6 +222,15 @@ export async function activate(): Promise<Result<Void, FxError>> {
     registerCoreEvents();
     await registerAccountTreeHandler();
     await envTree.registerEnvTreeHandler();
+    if (workspacePath) {
+      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+        "**/unify-config-change-logs.md"
+      );
+
+      unifyConfigWatcher.onDidCreate(async (event) => {
+        await openUnifyConfigMd(workspacePath, event.fsPath);
+      });
+    }
     await autoOpenProjectHandler();
     automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
@@ -310,6 +319,21 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   if (needRefresh) {
     await envTree.registerEnvTreeHandler();
   }
+}
+
+async function openUnifyConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const unifyConfigMD = "unify-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  if (changeLogsPath !== filePath) {
+    return;
+  }
+  const uri = Uri.file(changeLogsPath);
+
+  workspace.openTextDocument(uri).then(() => {
+    const PreviewMarkdownCommand = "markdown.showPreview";
+    commands.executeCommand(PreviewMarkdownCommand, uri);
+  });
 }
 
 async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {
@@ -1058,6 +1082,10 @@ async function processResult(
     createProperty[TelemetryProperty.IsM365] = "true";
   }
 
+  if (eventName === TelemetryEvent.Deploy && inputs?.skipAadDeploy === "no") {
+    eventName = TelemetryEvent.DeployAadManifest;
+  }
+
   if (result.isErr()) {
     if (eventName) {
       ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
@@ -1210,7 +1238,8 @@ export async function installAppInTeams(): Promise<string | undefined> {
         "Debug config not found"
       );
     }
-    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId);
+    const botId = await commonUtils.getLocalBotId();
+    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId, botId);
   } catch (error: any) {
     showError(error);
   }
@@ -2841,4 +2870,12 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
 
   const result = await runUserTask(func, TelemetryEvent.AddSso, true);
   return result;
+}
+
+export async function deployAadAppManifest(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
+  const inputs = getSystemInputs();
+  inputs.skipAadDeploy = "no";
+
+  return await runCommand(Stage.deploy, inputs);
 }

@@ -19,6 +19,7 @@ import {
   isConfigUnifyEnabled,
   environmentManager,
   ProjectSettingsHelper,
+  PluginNames,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -234,6 +235,25 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
     return localSettings?.teamsApp?.teamsAppId as string;
   } catch {
     // in case structure changes
+    return undefined;
+  }
+}
+
+export async function getLocalBotId(): Promise<string | undefined> {
+  try {
+    if (isConfigUnifyEnabled()) {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
+    } else {
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.bot?.botId as string;
+    }
+  } catch {
     return undefined;
   }
 }

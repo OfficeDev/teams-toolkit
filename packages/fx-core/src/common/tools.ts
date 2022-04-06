@@ -383,8 +383,8 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
-export function isInitAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+export function isExistingTabAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
 }
 
 export function isAadManifestEnabled(): boolean {

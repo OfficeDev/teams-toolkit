@@ -135,7 +135,7 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -145,6 +145,13 @@
       ]
     },
     "menus": {
+      "explorer/context": [
+        {
+          "command": "fx-extension.deployAadAppManifest",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "group": "deploy@0"
+        }
+      ],
       "view/title": [
         {
           "command": "fx-extension.addEnvironment",
@@ -382,6 +389,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "fx-extension.deployAadAppManifest",
+        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
       {
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
@@ -908,6 +920,11 @@
             "type": "boolean",
             "title": "Enable Microsoft 365 App",
             "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
+          },
+          "fx-extension.enableExistingApp": {
+            "type": "boolean",
+            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "default": false
           }
         }
       }

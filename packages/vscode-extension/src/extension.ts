@@ -25,7 +25,7 @@ import {
 import {
   Correlator,
   isConfigUnifyEnabled,
-  isInitAppEnabled,
+  isExistingTabAppEnabled,
   isM365AppEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
@@ -200,6 +200,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkUpgrade, args)
   );
   context.subscriptions.push(checkUpgradeCmd);
+
+  const deployAadAppManifest = vscode.commands.registerCommand(
+    "fx-extension.deployAadAppManifest",
+    () => Correlator.run(handlers.deployAadAppManifest)
+  );
+  context.subscriptions.push(deployAadAppManifest);
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
@@ -393,8 +399,6 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.isSPFx",
     workspacePath && isSPFxProject(workspacePath)
   );
-
-  vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
   vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
 

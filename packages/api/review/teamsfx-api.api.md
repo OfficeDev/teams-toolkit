@@ -431,6 +431,9 @@ type DeepReadonly<T> = {
 };
 
 // @public (undocumented)
+export const DefaultReadme = "README.md";
+
+// @public (undocumented)
 type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 // @public
@@ -723,6 +726,8 @@ export interface Inputs extends Json {
     projectId?: string;
     // (undocumented)
     projectPath?: string;
+    // (undocumented)
+    skipAadDeploy?: string;
     // (undocumented)
     sourceEnvName?: string;
     // (undocumented)

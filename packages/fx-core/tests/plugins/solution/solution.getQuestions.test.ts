@@ -152,6 +152,7 @@ describe("getQuestionsForScaffolding()", async () => {
       );
     }
 
+    // Not show AAD plugin
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     const result3 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     chai.assert.isTrue(result3.isOk());
@@ -159,8 +160,8 @@ describe("getQuestionsForScaffolding()", async () => {
       const node = result3.value as any;
       assert.isTrue(
         node !== undefined &&
-          node.children[0].data.default.length === 2 &&
-          node.children[0].data.default.includes("fx-resource-aad-app-for-teams")
+          node.children[0].data.default.length === 1 &&
+          node.children[0].data.default.includes("fx-resource-frontend-hosting")
       );
     }
   });

@@ -10,7 +10,11 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { ConstantString } from "../util";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
-import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/utils";
+import {
+  ApiConnectorConfiguration,
+  BasicAuthConfig,
+} from "../../../../src/plugins/resource/apiconnector/config";
+import { AuthType } from "../../../../src/plugins/resource/apiconnector/constants";
 
 describe("Api Connector scaffold sample code", async () => {
   const sandbox = sinon.createSandbox();
@@ -36,9 +40,11 @@ describe("Api Connector scaffold sample code", async () => {
     const fakeConfig: ApiConnectorConfiguration = {
       ComponentPath: ["bot"],
       APIName: "fake",
-      ApiAuthType: "fake_basic_type",
       EndPoint: "fake_endpoint",
-      ApiUserName: "fake_api_user_name",
+      AuthConfig: {
+        AuthType: AuthType.BASIC,
+        UserName: "fake_api_user_name",
+      } as BasicAuthConfig,
     };
     await sampleHandler.generateSampleCode(fakeConfig);
     expect(await fs.pathExists(path.join(botPath, "fake.js"))).to.be.true;
@@ -63,9 +69,11 @@ describe("Api Connector scaffold sample code", async () => {
     const fakeConfig: ApiConnectorConfiguration = {
       ComponentPath: ["bot"],
       APIName: "fake",
-      ApiAuthType: "fake_basic_type",
       EndPoint: "fake_endpoint",
-      ApiUserName: "fake_api_user_name",
+      AuthConfig: {
+        AuthType: AuthType.BASIC,
+        UserName: "fake_api_user_name",
+      } as BasicAuthConfig,
     };
     await sampleHandler.generateSampleCode(fakeConfig);
     expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.true;

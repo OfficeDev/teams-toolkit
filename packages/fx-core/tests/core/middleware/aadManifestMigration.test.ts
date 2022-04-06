@@ -22,6 +22,7 @@ describe("Middleware - aadManifestMigration.test", () => {
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     sandbox.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sandbox.stub<any, any>(fs, "writeJSON").resolves();
+    sandbox.stub<any, any>(fs, "ensureDir").resolves();
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith(".fx")) {
         return true;
@@ -81,7 +82,6 @@ describe("Middleware - aadManifestMigration.test", () => {
     const appName = randomAppName();
     const projectSettings: ProjectSettings = MockProjectSettings(appName);
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-    sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "move").resolves();
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (path: string) => {

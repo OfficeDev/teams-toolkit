@@ -9,6 +9,7 @@
 |  Class | Description |
 |  --- | --- |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
+|  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> A command bot for receiving commands and sending responses in Teams. |

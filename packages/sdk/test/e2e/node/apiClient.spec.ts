@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert } from "chai";
-import { BearerTokenAuthProvider, createApiClient } from "../../../src";
+import { BasicAuthProvider, BearerTokenAuthProvider, createApiClient } from "../../../src";
 import * as http from "http";
 
 describe("ApiClient Tests - Node", () => {
@@ -42,5 +42,26 @@ describe("ApiClient Tests - Node", () => {
     // Assert
     assert.equal(res.data.url, "/foo");
     assert.equal(res.data.requestHeader!["authorization"], "Bearer test-bearer-token");
+  });
+
+  it("can connect to existing API using bearer basic auth provider", async function () {
+    // Arrange
+    const username = "test-username";
+    const password = "test-password";
+    const basicAuthProvider = new BasicAuthProvider(username, password);
+    const apiClient = createApiClient(apiBaseUrl, basicAuthProvider);
+
+    // Act
+    const res = await apiClient.get("/foo");
+
+    // Assert
+    assert.equal(res.data.url, "/foo");
+    const token = res.data.requestHeader!["authorization"].split(/\s+/).pop() || "";
+    const auth = Buffer.from(token, "base64").toString();
+    const parts = auth.split(/:/);
+    const serverUsername = parts.shift();
+    const serverPassword = parts.join(":");
+    assert.equal(serverUsername, username);
+    assert.equal(serverPassword, password);
   });
 });

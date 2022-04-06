@@ -54,6 +54,12 @@ export interface AuthProvider {
 }
 
 // @beta
+export class BasicAuthProvider implements AuthProvider {
+    constructor(userName: string, password: string);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
 export class BearerTokenAuthProvider implements AuthProvider {
     constructor(getToken: () => Promise<string>);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;

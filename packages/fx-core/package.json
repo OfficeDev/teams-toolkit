@@ -49,7 +49,7 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
-    "version2": "bash ../../.github/scripts/pkg-version.sh api-connector-sync"
+    "version": "bash ../../.github/scripts/pkg-version.sh api-connector-sync"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

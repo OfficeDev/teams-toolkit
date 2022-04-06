@@ -9,6 +9,8 @@ import { Activity } from 'botbuilder-core';
 import { Activity as Activity_2 } from 'botbuilder';
 import { Attachment } from 'botbuilder';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
+import { AxiosInstance } from 'axios';
+import { AxiosRequestConfig } from 'axios';
 import { BotFrameworkAdapter } from 'botbuilder';
 import { CardAction } from 'botbuilder';
 import { CardImage } from 'botbuilder';
@@ -47,6 +49,17 @@ export interface AuthenticationConfiguration {
 }
 
 // @beta
+export interface AuthProvider {
+    AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
+}
+
+// @beta
+export class BearerTokenAuthProvider implements AuthProvider {
+    constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
@@ -64,6 +77,9 @@ export class CommandBot {
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 }
+
+// @beta
+export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //

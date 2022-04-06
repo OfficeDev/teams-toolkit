@@ -1,4 +1,4 @@
-# Congratulations! You have successfully upgraded your Teams to support config unify
+# Congratulations! You have successfully upgraded your TeamsFx project to support config unify
 
 We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features. Now you can continue your work.
 

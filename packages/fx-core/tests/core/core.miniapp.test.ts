@@ -10,7 +10,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { FxCore, setTools } from "../../src";
-import { TabSPFxItem } from "../../src/plugins/solution/fx-solution/question";
+import { TabOptionItem } from "../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 describe("Core API for mini app", () => {
@@ -27,7 +27,7 @@ describe("Core API for mini app", () => {
     deleteFolder(projectPath);
     mockedEnvRestore();
   });
-  it("init + add spfx tab", async () => {
+  it("init + add tab", async () => {
     const appName = randomAppName();
     projectPath = path.join(os.tmpdir(), appName);
     const inputs: Inputs = {
@@ -44,10 +44,10 @@ describe("Core API for mini app", () => {
       const addInputs: Inputs = {
         platform: Platform.CLI,
         projectPath: projectPath,
-        capabilities: [TabSPFxItem.id],
-        "spfx-framework-type": "react",
-        "spfx-webpart-name": "helloworld",
-        "spfx-webpart-desp": "helloworld",
+        capabilities: [TabOptionItem.id],
+        // "spfx-framework-type": "react",
+        // "spfx-webpart-name": "helloworld",
+        // "spfx-webpart-desp": "helloworld",
       };
       const func: Func = {
         namespace: "fx-solution-azure",

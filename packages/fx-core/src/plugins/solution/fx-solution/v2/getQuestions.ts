@@ -430,7 +430,6 @@ export async function getQuestionsForAddCapability(
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      TabSPFxItem,
     ];
     return ok(new QTreeNode(addCapQuestion));
   }
@@ -494,22 +493,22 @@ export async function getQuestionsForAddCapability(
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
 
-  // mini app can add SPFx tab
-  if (!settings) {
-    options.push(TabSPFxItem);
-    const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
-    if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
-      const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (result.isErr()) {
-        return result;
-      }
-      const spfxQuestionNode = result.value;
-      if (spfxQuestionNode) {
-        spfxQuestionNode.condition = { contains: TabSPFxItem.id };
-        addCapNode.addChild(spfxQuestionNode);
-      }
-    }
-  }
+  // // mini app can add SPFx tab
+  // if (!settings) {
+  //   options.push(TabSPFxItem);
+  //   const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+  //   if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
+  //     const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //     const spfxQuestionNode = result.value;
+  //     if (spfxQuestionNode) {
+  //       spfxQuestionNode.condition = { contains: TabSPFxItem.id };
+  //       addCapNode.addChild(spfxQuestionNode);
+  //     }
+  //   }
+  // }
 
   if (isBotNotificationEnabled()) {
     // Hardcoded to call bot plugin to get notification trigger questions.

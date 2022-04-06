@@ -107,23 +107,15 @@ describe("Provision", function () {
       timeout: 0,
     });
 
-    {
-      /// TODO: add check for validate
-    }
-
     // package
     await execAsyncWithRetry(`teamsfx package`, {
       cwd: projectPath,
       env: env,
       timeout: 0,
     });
-
-    {
-      /// TODO: add check for package
-    }
   });
 
-  after(async () => {
+  this.afterEach(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug

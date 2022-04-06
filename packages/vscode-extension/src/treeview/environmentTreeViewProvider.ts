@@ -5,7 +5,7 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { err, FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isValidProject } from "@microsoft/teamsfx-core";
 
 import { ext } from "../extensionVariables";
 import { DynamicNode } from "./dynamicNode";
@@ -31,7 +31,7 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (!ext.workspaceUri) {
+    if (!ext.workspaceUri || !isValidProject(ext.workspaceUri.fsPath)) {
       return ok(Void);
     }
     const workspacePath: string = ext.workspaceUri.fsPath;

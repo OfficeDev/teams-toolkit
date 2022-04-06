@@ -1,18 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
 
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  LocalEnvironmentName,
-  ProjectSettingsFileName,
-  SubscriptionInfo,
-} from "@microsoft/teamsfx-api";
+import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { AppStudioLogin } from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
@@ -23,6 +15,7 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
+  isExistingTabApp,
   isSPFxProject,
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
@@ -81,6 +74,9 @@ export class EnvironmentNode extends DynamicNode {
         : vscode.TreeItemCollapsibleState.Expanded;
     this.description = envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "";
     this.contextValue = envInfo;
+    if (this.identifier !== LocalEnvironmentName) {
+      await ext.activated;
+    }
     return this;
   }
 
@@ -140,27 +136,12 @@ export class EnvironmentNode extends DynamicNode {
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
     if (envName === LocalEnvironmentName) {
-      return (await this.isExistingApp()) ? EnvInfo.LocalForExistingApp : EnvInfo.Local;
+      return (await isExistingTabApp(ext.workspaceUri.fsPath))
+        ? EnvInfo.LocalForExistingApp
+        : EnvInfo.Local;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
       return provisionSucceeded ? EnvInfo.ProvisionedRemoteEnv : EnvInfo.RemoteEnv;
-    }
-  }
-
-  private async isExistingApp(): Promise<boolean> {
-    // Check if solution settings is empty.
-    const projectSettingsPath = path.resolve(
-      ext.workspaceUri.fsPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
-
-    if (await fs.pathExists(projectSettingsPath)) {
-      const projectSettings = await fs.readJson(projectSettingsPath);
-      return !projectSettings.solutionSettings;
-    } else {
-      return false;
     }
   }
 }

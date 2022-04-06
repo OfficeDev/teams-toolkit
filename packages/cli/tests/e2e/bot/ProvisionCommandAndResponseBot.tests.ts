@@ -16,10 +16,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setBotSkuNameToB1,
   cleanUp,
-  readContext,
-  setBotSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
@@ -37,6 +34,7 @@ describe("Provision", function () {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CONFIG_UNIFY"] = "true";
   env["BOT_NOTIFICATION_ENABLED"] = "true";
+  env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
 
   it("Provision Resource: command and response", async function () {
     await execAsync(

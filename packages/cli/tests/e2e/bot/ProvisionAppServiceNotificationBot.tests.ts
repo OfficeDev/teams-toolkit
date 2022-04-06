@@ -16,10 +16,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setBotSkuNameToB1,
   cleanUp,
-  readContext,
-  setBotSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";

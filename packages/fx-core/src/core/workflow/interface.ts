@@ -12,8 +12,6 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { AppManifestProvider } from "../../../../api/build/v3";
-import { addResource } from "../../plugins/solution/fx-solution/v2/executeUserTask";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -114,7 +112,7 @@ export interface FunctionAction {
 }
 
 export interface ContextV3 extends v2.Context {
-  manifestProvider: AppManifestProvider;
+  manifestProvider: v3.AppManifestProvider;
   projectSetting: ProjectSettingsV3;
 }
 

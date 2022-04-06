@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  Inputs,
+  ok,
+  QTreeNode,
+  Result,
+  TokenProvider,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import {
@@ -46,6 +55,15 @@ export class TeamsfxCore {
       plan: (context: ContextV3, inputs: Inputs) => {
         return ok(["init teamsfx project settings"]);
       },
+      // question: async (context: any, inputs: any) => {
+      //   return ok(
+      //     new QTreeNode({
+      //       type: "text",
+      //       name: "m365ClientId",
+      //       title: "M365 Client Id",
+      //     })
+      //   );
+      // },
       execute: async (context: ContextV3, inputs: Inputs) => {
         console.log("init teamsfx project settings");
         context.projectSetting = {

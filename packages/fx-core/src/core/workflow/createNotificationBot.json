@@ -35,7 +35,7 @@
                             "mode": "parallel",
                             "actions": [
                                 {
-                                    "name": "teams-bot.add",
+                                    "name": "teams-bot.addResource",
                                     "type": "function"
                                 },
                                 {

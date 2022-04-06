@@ -58,6 +58,7 @@ describe("Core API for mini app", () => {
       };
       const stateFile = path.join(projectPath, ".fx", "states", "config.dev.json");
       const envState = { solution: { provisionSucceeded: true } };
+      fs.ensureDirSync(path.join(projectPath, ".fx", "states"));
       fs.writeJsonSync(stateFile, envState);
       const addRes = await core.executeUserTaskV2(func, addInputs);
       if (addRes.isErr()) {

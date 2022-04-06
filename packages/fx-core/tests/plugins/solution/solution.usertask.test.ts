@@ -610,7 +610,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -638,7 +638,7 @@ describe("V2 implementation", () => {
         name: "test",
         version: "1.0",
         activeResourcePlugins: [frontendPluginV2.name],
-        capabilities: [TabNonSsoItem.id],
+        capabilities: [TabOptionItem.id],
         azureResources: [],
       },
     };
@@ -677,7 +677,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -733,7 +733,7 @@ describe("V2 implementation", () => {
     expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
   });
 
-  it("should return err when adding tab to bot when aad manifest enabled", async () => {
+  it("should success when adding tab to bot when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
@@ -744,7 +744,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -797,7 +797,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
+    expect(result.isOk()).to.be.true;
   });
 
   it("should success when adding non sso tab to bot when aad manifest enabled", async () => {
@@ -811,7 +811,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -1104,11 +1104,6 @@ describe("V2 implementation", () => {
         (
           mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
         ).activeResourcePlugins.includes(aadPluginV2.name)
-      ).to.be.true;
-      expect(
-        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
-          TabSsoItem.id
-        )
       ).to.be.true;
     });
 

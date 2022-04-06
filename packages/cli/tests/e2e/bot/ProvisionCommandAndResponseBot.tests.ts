@@ -33,22 +33,26 @@ describe("Provision", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const envName = environmentManager.getDefaultEnvName();
-  // const env =
 
-  it("Provision Resource: project with new bot", { testPlanCaseId: 10306848 }, async function () {
-    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+  const env = Object.assign({}, process.env);
+  env["TEAMSFX_CONFIG_UNIFY"] = "true";
+  env["BOT_NOTIFICATION_ENABLED"] = "true";
+
+  it("Provision Resource: command and response", async function () {
+    await execAsync(
+      `teamsfx new --interactive false --app-name ${appName} --capabilities command-and-response --programming-language typescript`,
+      {
+        cwd: testFolder,
+        env: env,
+        timeout: 0,
+      }
+    );
     console.log(`[Successfully] scaffold to ${projectPath}`);
-
-    await setBotSkuNameToB1Bicep(projectPath, envName);
 
     // set subscription
     await execAsync(`teamsfx account set --subscription ${subscription}`, {
       cwd: projectPath,
-      env: process.env,
+      env: env,
       timeout: 0,
     });
 
@@ -57,7 +61,7 @@ describe("Provision", function () {
     // provision
     await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
-      env: process.env,
+      env: env,
       timeout: 0,
     });
 
@@ -80,7 +84,7 @@ describe("Provision", function () {
     // deploy
     await execAsyncWithRetry(`teamsfx deploy bot`, {
       cwd: projectPath,
-      env: process.env,
+      env: env,
       timeout: 0,
     });
     console.log(`[Successfully] deploy for ${projectPath}`);
@@ -99,7 +103,7 @@ describe("Provision", function () {
     // test (validate)
     await execAsyncWithRetry(`teamsfx validate`, {
       cwd: projectPath,
-      env: process.env,
+      env: env,
       timeout: 0,
     });
 
@@ -110,7 +114,7 @@ describe("Provision", function () {
     // package
     await execAsyncWithRetry(`teamsfx package`, {
       cwd: projectPath,
-      env: process.env,
+      env: env,
       timeout: 0,
     });
 

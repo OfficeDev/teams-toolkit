@@ -3,6 +3,7 @@
 
 import {
   AppPackageFolderName,
+  AzureSolutionSettings,
   BuildFolderName,
   FxError,
   LogProvider,
@@ -53,9 +54,10 @@ import {
   RequiredResourceAccess,
   ResourceAccess,
 } from "./interfaces/IAADDefinition";
-import { validate as uuidValidate, v4 as uuidv4 } from "uuid";
+import { validate as uuidValidate } from "uuid";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as os from "os";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
@@ -64,7 +66,7 @@ import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
-import { AADManifest } from "./interfaces/AADManifest";
+import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -734,7 +736,40 @@ export class AadAppForTeamsImpl {
       const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
       const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
       await fs.ensureDir(appDir);
-      await fs.copy(aadManifestTemplate, `${appDir}/${Constants.aadManifestTemplateName}`);
+
+      const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+
+      const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
+
+      let aadJson;
+
+      if (await fs.pathExists(aadManifestPath)) {
+        aadJson = await fs.readJSON(aadManifestPath);
+      } else {
+        aadJson = await fs.readJSON(aadManifestTemplate);
+      }
+
+      if (azureSolutionSettings.capabilities.includes("Bot")) {
+        const botRedirectUrl = "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html";
+        if (!aadJson.replyUrlsWithType) {
+          aadJson.replyUrlsWithType = [];
+        }
+        const botRedirectUrlItem = aadJson.replyUrlsWithType.filter(
+          (item: ReplyUrlsWithType) => item.url === botRedirectUrl && item.type === "Web"
+        );
+
+        if (botRedirectUrlItem.length === 0) {
+          aadJson.replyUrlsWithType.push({
+            url: botRedirectUrl,
+            type: "Web",
+          });
+        }
+      }
+
+      await fs.writeJSON(`${appDir}/${Constants.aadManifestTemplateName}`, aadJson, {
+        spaces: 4,
+        EOL: os.EOL,
+      });
 
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
     }

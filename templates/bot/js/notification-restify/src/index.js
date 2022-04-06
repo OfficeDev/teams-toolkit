@@ -9,14 +9,12 @@ const { notificationBot } = require("./internal/initialize");
 server.post("/api/notification", async (req, res) => {
   for (const target of await notificationBot.installations()) {
     await target.sendAdaptiveCard(
-      AdaptiveCards.declare <
-        CardData >
-        notificationTemplate.render({
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://www.adaptivecards.io/",
-        })
+      AdaptiveCards.declare(notificationTemplate).render({
+        title: "New Event Occurred!",
+        appName: "Contoso App Notification",
+        description: `This is a sample http-triggered notification to ${target.type}`,
+        notificationUrl: "https://www.adaptivecards.io/",
+      })
     );
   }
 

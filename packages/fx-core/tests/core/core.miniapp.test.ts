@@ -46,9 +46,7 @@ describe("Core API for mini app", () => {
         platform: Platform.CLI,
         projectPath: projectPath,
         capabilities: [TabOptionItem.id],
-        // "spfx-framework-type": "react",
-        // "spfx-webpart-name": "helloworld",
-        // "spfx-webpart-desp": "helloworld",
+        "programming-language": "typescript",
       };
       const func: Func = {
         namespace: "fx-solution-azure",

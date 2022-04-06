@@ -56,7 +56,7 @@ describe("Core API for mini app", () => {
         namespace: "fx-solution-azure",
         method: "addCapability",
       };
-      const stateFile = path.join(projectPath, ".fx", "states", "config.dev.json");
+      const stateFile = path.join(projectPath, ".fx", "states", "state.dev.json");
       const envState = { solution: { provisionSucceeded: true } };
       fs.ensureDirSync(path.join(projectPath, ".fx", "states"));
       fs.writeJsonSync(stateFile, envState);

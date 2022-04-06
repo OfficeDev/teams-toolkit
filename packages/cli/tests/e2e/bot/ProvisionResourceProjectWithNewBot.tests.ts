@@ -32,7 +32,7 @@ describe("Provision", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const env = environmentManager.getDefaultEnvName();
 
   it("Provision Resource: project with new bot", { testPlanCaseId: 10306848 }, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
@@ -42,7 +42,7 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setBotSkuNameToB1Bicep(projectPath, envName);
+    await setBotSkuNameToB1Bicep(projectPath, env);
 
     // set subscription
     await execAsync(`teamsfx account set --subscription ${subscription}`, {
@@ -65,14 +65,14 @@ describe("Provision", function () {
     {
       // Validate provision
       // Get context
-      const context = await readContextMultiEnv(projectPath, envName);
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
       // Validate Bot Provision
-      const bot = new BotValidator(context, projectPath, envName);
+      const bot = new BotValidator(context, projectPath, env);
       await bot.validateProvision();
     }
 
@@ -91,7 +91,7 @@ describe("Provision", function () {
       const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
       // Validate Bot Deploy
-      const bot = new BotValidator(context, projectPath, envName);
+      const bot = new BotValidator(context, projectPath, env);
       await bot.validateDeploy();
     }
 

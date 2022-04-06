@@ -41,6 +41,8 @@ describe("Deploy Manager", () => {
     beforeEach(async () => {
       testDir = path.join(__dirname, utils.genUUID());
       await fs.ensureDir(testDir);
+      await fs.writeFile(path.join(testDir, ".gitignore"), ".env\n.funcignore\n.git*");
+      await fs.writeFile(path.join(testDir, ".funcignore"), "*.ts\n.env\n.funcignore\n.git*");
     });
 
     afterEach(async () => {
@@ -50,28 +52,56 @@ describe("Deploy Manager", () => {
     it("Happy Path", async () => {
       // Arrange
       const deployMgr = new FuncHostedDeployMgr(testDir, "ut");
-      await fs.writeFile(path.join(testDir, "index.js"), "anything");
+      await fs.writeFile(path.join(testDir, "index.ts"), "anything");
       await deployMgr.saveDeploymentInfo(new AdmZip().toBuffer(), new Date(genTomorrow()));
 
       // Act
-      const needsRedeploy = await deployMgr.needsToRedeploy([]);
+      const needsRedeploy = await deployMgr.needsToRedeploy();
 
       // Assert
       chai.assert.isFalse(needsRedeploy);
     });
 
-    it("needsToRedeploy True", async () => {
+    it("changed code file in .funcignore", async () => {
       // Arrange
       const deployMgr = new FuncHostedDeployMgr(testDir, "ut");
 
-      await fs.writeFile(path.join(testDir, "index.js"), "anything");
+      await fs.writeFile(path.join(testDir, "index.ts"), "anything");
       await deployMgr.saveDeploymentInfo(new AdmZip().toBuffer(), new Date(genYesterday()));
 
       // Act
-      const needsRedeploy = await deployMgr.needsToRedeploy([]);
+      const needsRedeploy = await deployMgr.needsToRedeploy();
 
       // Assert
       chai.assert.isTrue(needsRedeploy);
+    });
+
+    it("changed code file not in .funcignore", async () => {
+      // Arrange
+      const deployMgr = new FuncHostedDeployMgr(testDir, "ut");
+
+      await fs.writeFile(path.join(testDir, "test.json"), "anything");
+      await deployMgr.saveDeploymentInfo(new AdmZip().toBuffer(), new Date(genYesterday()));
+
+      // Act
+      const needsRedeploy = await deployMgr.needsToRedeploy();
+
+      // Assert
+      chai.assert.isTrue(needsRedeploy);
+    });
+
+    it("changed code file no need to update", async () => {
+      // Arrange
+      const deployMgr = new FuncHostedDeployMgr(testDir, "ut");
+
+      await fs.writeFile(path.join(testDir, ".env"), "anything");
+      await deployMgr.saveDeploymentInfo(new AdmZip().toBuffer(), new Date(genYesterday()));
+
+      // Act
+      const needsRedeploy = await deployMgr.needsToRedeploy();
+
+      // Assert
+      chai.assert.isFalse(needsRedeploy);
     });
   });
 

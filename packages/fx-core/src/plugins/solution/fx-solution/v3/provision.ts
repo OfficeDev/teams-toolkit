@@ -22,7 +22,7 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { isUndefined } from "lodash";
+import { isUndefined, snakeCase } from "lodash";
 import { Container } from "typedi";
 import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
@@ -391,7 +391,7 @@ export async function fillInAzureConfigs(
   const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
   const resourceGroupLocationFromState = envInfo.state.solution.location;
   const appName = ctx.projectSetting.appName;
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}${"-" + envInfo.envName}-rg`;
+  const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   const telemetryProperties: { [key: string]: string } = {};
   if (inputs.env) {

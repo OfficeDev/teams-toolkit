@@ -1,5 +1,3 @@
-// the same as .initialize
-
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { TeamsActivityHandler } from "botbuilder";
 import { adapter } from "./initialize";

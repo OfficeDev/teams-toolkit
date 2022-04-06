@@ -2,37 +2,29 @@
 // Licensed under the MIT license.
 "use strict";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { Constants } from "./constants";
 export class ErrorMessage {
   public static readonly InvalidProjectError = {
     name: "InvalidProjectError",
     message: () =>
-      getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.InvalidProjectError.name}`
-      ),
+      getLocalizedString(`error.apiConnector.${ErrorMessage.InvalidProjectError.name}`),
   };
   public static readonly ApiConnectorInputError = {
     name: "ApiConnectorInputError",
     message: () =>
-      getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.ApiConnectorInputError.name}`
-      ),
+      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`),
   };
 
   public static readonly ApiConnectorPathError = {
     name: "ApiConnectorPathNotExistError",
     message: (pathName: string) =>
-      getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.ApiConnectorPathError.name}`,
-        pathName
-      ),
+      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorPathError.name}`, pathName),
   };
 
   public static readonly ApiConnectorFileCreateFailError = {
     name: "ApiConnectorCreateFileFail",
     message: (pathName: string) =>
       getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.ApiConnectorFileCreateFailError.name}`,
+        `error.apiConnector.${ErrorMessage.ApiConnectorFileCreateFailError.name}`,
         pathName
       ),
   };
@@ -41,24 +33,39 @@ export class ErrorMessage {
     name: "ApiConnectorFunctionRouteError",
     message: (funcName: string) =>
       getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.ApiConnectorRouteError.name}`,
+        `error.apiConnector.${ErrorMessage.ApiConnectorRouteError.name}`,
         funcName
+      ),
+  };
+
+  public static readonly SampleCodeCreateFailError = {
+    name: "SampleCodeCreateFailError",
+    message: (pathName: string, reason: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.SampleCodeCreateFailError.name}`,
+        pathName,
+        reason
       ),
   };
 
   public static readonly NoValidCompoentExistError = {
     name: "NoValidCompoentExistError",
     message: () =>
-      getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.NoValidCompoentExistError.name}`
-      ),
+      getLocalizedString(`error.apiConnector.${ErrorMessage.NoValidCompoentExistError.name}`),
   };
 
   public static readonly NoActivePluginsExistError = {
     name: "NoActivePluginsExistError",
     message: () =>
+      getLocalizedString(`error.apiConnector.${ErrorMessage.NoActivePluginsExistError.name}`),
+  };
+
+  public static readonly generateApiConFilesError = {
+    name: "ScaffoldApiFilesError",
+    message: (reason: string) =>
       getLocalizedString(
-        `plugins.apiConnector.errorMessage.${ErrorMessage.NoActivePluginsExistError.name}`
+        `error.apiConnector.${ErrorMessage.generateApiConFilesError.name}`,
+        reason
       ),
   };
 }

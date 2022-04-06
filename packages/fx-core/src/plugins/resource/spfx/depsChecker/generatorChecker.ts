@@ -24,7 +24,7 @@ import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 const name = "@microsoft/generator-sharepoint";
 const supportedVersion = "1.14.0";
 const displayName = `${name}@${supportedVersion}`;
-const timeout = 5 * 60 * 1000;
+const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
   private readonly _logger: LogProvider;

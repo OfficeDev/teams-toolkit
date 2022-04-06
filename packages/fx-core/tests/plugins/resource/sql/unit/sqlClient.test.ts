@@ -57,10 +57,7 @@ describe("sqlClient", () => {
       await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
-      chai.assert.include(
-        error.displayMessage,
-        getLocalizedString("plugins.sql.errorMessage.GetDetail")
-      );
+      chai.assert.include(error.displayMessage, getLocalizedString("error.sql.GetDetail"));
     }
   });
 
@@ -145,10 +142,7 @@ describe("sqlClient", () => {
       await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(
-        error.displayMessage,
-        getLocalizedString("plugins.sql.errorMessage.GetDetail")
-      );
+      chai.assert.include(error.displayMessage, getLocalizedString("error.sql.GetDetail"));
     }
   });
 

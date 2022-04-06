@@ -135,7 +135,7 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -145,6 +145,13 @@
       ]
     },
     "menus": {
+      "explorer/context": [
+        {
+          "command": "fx-extension.deployAadAppManifest",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "group": "deploy@0"
+        }
+      ],
       "view/title": [
         {
           "command": "fx-extension.addEnvironment",
@@ -158,6 +165,11 @@
         },
         {
           "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.createAccount",
           "when": "view == teamsfx-accounts",
           "group": "navigation@1"
         },
@@ -377,6 +389,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "fx-extension.deployAadAppManifest",
+        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
       {
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
@@ -612,6 +629,11 @@
         "command": "fx-extension.openAccountLink",
         "title": "%teamstoolkit.commands.accountsLink.title%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.createAccount",
+        "title": "%teamstoolkit.commands.createAccount.title%",
+        "icon": "$(add)"
       },
       {
         "command": "fx-extension.openEnvLink",
@@ -888,6 +910,21 @@
             "type": "boolean",
             "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
             "default": false
+          },
+          "fx-extension.enableNotification / CommandAndResponseBot": {
+            "type": "boolean",
+            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
+            "default": false
+          },
+          "fx-extension.enableM365App": {
+            "type": "boolean",
+            "title": "Enable Microsoft 365 App",
+            "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
+          },
+          "fx-extension.enableExistingApp": {
+            "type": "boolean",
+            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "default": false
           }
         }
       }
@@ -910,7 +947,7 @@
     "walkthroughs": [
       {
         "id": "teamsToolkitQuickStart",
-        "title": "Get started with Teams toolkit",
+        "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {
@@ -929,6 +966,14 @@
             "media": {
               "svg": "media/Create.svg",
               "altText": "Build your first Teams app"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateFreeAccount",
+            "title": "Create a M365 testing tenant for free",
+            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "media": {
+              "markdown": "media/itp/itp.md"
             }
           },
           {

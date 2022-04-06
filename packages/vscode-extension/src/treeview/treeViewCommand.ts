@@ -4,7 +4,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Result, FxError, TreeCategory } from "@microsoft/teamsfx-api";
+import { TreeCategory } from "@microsoft/teamsfx-api";
 
 import { ext } from "../extensionVariables";
 import { localize } from "../utils/localizeUtils";
@@ -26,7 +26,6 @@ export class TreeViewCommand extends vscode.TreeItem {
     private readyLabel: string,
     private readyTooltip: string | vscode.MarkdownString,
     public commandId?: string,
-    public callback?: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
     public runningLabelKey?: string,
     public image?: { name: string; custom: boolean },
     public category?: TreeCategory

@@ -5,7 +5,7 @@ import { Inputs, v2, Platform } from "@microsoft/teamsfx-api";
 import { FxCICDPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
-import { questionNames } from "./questions";
+import { providerIdToLabel, questionNames, templateIdToLabel } from "./questions";
 import { InternalError, NoProjectOpenedError } from "./errors";
 import { Logger } from "./logger";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
@@ -67,9 +67,9 @@ export class CICDImpl {
       context
     );
     if (scaffolded.isOk() && !scaffolded.value) {
-      created.push(templateNames[0]);
+      created.push(templateIdToLabel(templateNames[0]));
     } else {
-      skipped.push(templateNames[0]);
+      skipped.push(templateIdToLabel(templateNames[0]));
     }
 
     //  3.2 Call the next scaffold.
@@ -79,33 +79,38 @@ export class CICDImpl {
       );
       scaffolded = await providerInstance.scaffold(projectPath, templateName, envName, context);
       if (scaffolded.isOk() && !scaffolded.value) {
-        created.push(templateName);
+        created.push(templateIdToLabel(templateName));
       } else {
-        skipped.push(templateName);
+        skipped.push(templateIdToLabel(templateName));
       }
     }
 
     await progressBar.end(true);
 
     // 4. Send notification messages.
-    let message = "";
+    const messages = [];
     if (created.length > 0) {
-      message += getLocalizedString(
-        "plugins.cicd.result.scaffold.created",
-        created.join(","),
-        providerName,
-        envName
+      messages.push(
+        getLocalizedString(
+          "plugins.cicd.result.scaffold.created",
+          created.join(", "),
+          providerIdToLabel(providerName),
+          envName
+        )
       );
     }
     if (skipped.length > 0) {
-      message += getLocalizedString(
-        "plugins.cicd.result.scaffold.skipped",
-        skipped.join(","),
-        providerName,
-        envName
+      messages.push(
+        getLocalizedString(
+          "plugins.cicd.result.scaffold.skipped",
+          skipped.join(", "),
+          providerIdToLabel(providerName),
+          envName
+        )
       );
     }
 
+    const message = messages.join(" ");
     context.userInteraction.showMessage("info", message, false);
     Logger.info(message);
 

@@ -55,40 +55,48 @@ export const ProjectConsolidateMW: Middleware = async (
     if (ctx.method && methods.has(ctx.method)) {
       showModal = false;
     }
-    const res = await TOOLS?.ui.showMessage(
-      "warn",
-      getLocalizedString("core.consolidateLocalRemote.Message"),
-      showModal,
-      upgradeButton
-    );
-    const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != upgradeButton) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
-        [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
-      });
-      ctx.result = err(ConsolidateCanceledError());
-      outputCancelMessage(ctx);
-      return;
-    }
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
-      [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
-    });
-
-    try {
-      await consolidateLocalRemote(ctx);
-      await next();
-    } catch (error) {
-      sendTelemetryErrorEvent(
-        Component.core,
-        TelemetryEvent.ProjectConsolidateError,
-        assembleError(error, CoreSource)
-      );
-      throw error;
+    if (showModal) {
+      await upgrade(ctx, next, true);
+    } else {
+      upgrade(ctx, next, false);
     }
   } else {
     await next();
   }
 };
+
+async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.consolidateLocalRemote.Message"),
+    showModal,
+    upgradeButton
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (!answer || answer != upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+    });
+    ctx.result = err(ConsolidateCanceledError());
+    outputCancelMessage(ctx);
+    return;
+  }
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
+    [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+  });
+
+  try {
+    await consolidateLocalRemote(ctx);
+    await next();
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectConsolidateError,
+      assembleError(error, CoreSource)
+    );
+    throw error;
+  }
+}
 
 // check if config.local.json and manifest.template.json exist
 export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {

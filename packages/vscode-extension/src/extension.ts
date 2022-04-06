@@ -341,7 +341,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
     (node) => {
-      Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+      Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );
   context.subscriptions.push(previewWithIcon);
@@ -349,7 +349,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     (node) => {
-      const envName = node.commandId.split(".").pop();
+      const envName = node.identifier;
       Correlator.run(handlers.openSubscriptionInPortal, envName);
     }
   );
@@ -358,7 +358,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const openResourceGroupInPortal = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
     (node) => {
-      const envName = node.commandId.split(".").pop();
+      const envName = node.identifier;
       Correlator.run(handlers.openResourceGroupInPortal, envName);
     }
   );
@@ -367,7 +367,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {
-      const envName = node.commandId.split(".").pop();
+      const envName = node.identifier;
       Correlator.run(handlers.grantPermission, envName);
     }
   );
@@ -376,7 +376,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const listCollaborator = vscode.commands.registerCommand(
     "fx-extension.listCollaborator",
     (node) => {
-      const envName = node.commandId.split(".").pop();
+      const envName = node.identifier;
       Correlator.run(handlers.listCollaborator, envName);
     }
   );

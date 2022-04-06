@@ -21,8 +21,8 @@ import { it } from "../../commonlib/it";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
+  let appName = getUniqueAppName();
+  let projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
@@ -31,6 +31,11 @@ describe("Collaboration", function () {
     "Collaboration: CLI with permission status and permission grant - spfx",
     { testPlanCaseId: 12782618 },
     async function () {
+      while (await fs.pathExists(projectPath)) {
+        appName = getUniqueAppName();
+        projectPath = path.resolve(testFolder, appName);
+      }
+
       // new a project
       await execAsync(
         `teamsfx new --interactive false --capabilities tab-spfx --app-name ${appName}`,

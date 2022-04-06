@@ -415,7 +415,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
       }
       const localState = result.value;
       try {
-        return localState["fx-resource-appstudio"].teamsAppId;
+        return localState[PluginNames.APPST].teamsAppId;
       } catch (error) {
         return undefined;
       }

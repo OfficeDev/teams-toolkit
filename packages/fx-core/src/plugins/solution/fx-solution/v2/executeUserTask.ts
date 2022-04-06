@@ -331,7 +331,7 @@ export async function addCapability(
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxItem.id);
+  const toAddSpfx = false; //capabilitiesAnswer.includes(TabSPFxItem.id);
   if (isAadManifestEnabled()) {
     if (alreadyHasSso && toAddTabNonSso) {
       const e = new SystemError(

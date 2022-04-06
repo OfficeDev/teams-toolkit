@@ -25,7 +25,7 @@ import {
 import {
   Correlator,
   isConfigUnifyEnabled,
-  isInitAppEnabled,
+  isExistingTabAppEnabled,
   isM365AppEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
@@ -399,8 +399,6 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.isSPFx",
     workspacePath && isSPFxProject(workspacePath)
   );
-
-  vscode.commands.executeCommand("setContext", "fx-extension.isInitAppEnabled", isInitAppEnabled());
 
   vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
 

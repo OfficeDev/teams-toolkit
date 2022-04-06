@@ -68,4 +68,24 @@ export class ErrorMessage {
         reason
       ),
   };
+
+  public static readonly sdkVersionImcompatibleError = {
+    name: "SDKVersionImcompatibleError",
+    message: (component: string, localVersion: string, targetVersion: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.sdkVersionImcompatibleError.name}`,
+        component,
+        localVersion,
+        targetVersion
+      ),
+  };
+
+  public static readonly localPkgFileNotExistError = {
+    name: "pkgFileNotExistError",
+    message: (component: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.localPkgFileNotExistError.name}`,
+        component
+      ),
+  };
 }

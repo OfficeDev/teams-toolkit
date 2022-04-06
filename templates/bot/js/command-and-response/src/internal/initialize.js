@@ -1,5 +1,5 @@
 const { BotFrameworkAdapter } = require("botbuilder");
-const { ConversationBot } = require("@microsoft/teamsfx");
+const { CommandBot } = require("@microsoft/teamsfx");
 const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -29,10 +29,9 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-ConversationBot.initialize(adapter, {
-  commandHandlers: [new HelloWorldCommandHandler()],
-});
+const commandBot = new CommandBot(adapter, [new HelloWorldCommandHandler()]);
 
 module.exports = {
   adapter,
+  commandBot,
 };

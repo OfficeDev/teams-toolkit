@@ -135,7 +135,7 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -920,6 +920,11 @@
             "type": "boolean",
             "title": "Enable Microsoft 365 App",
             "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
+          },
+          "fx-extension.enableExistingApp": {
+            "type": "boolean",
+            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "default": false
           }
         }
       }

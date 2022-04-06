@@ -1,5 +1,5 @@
 // Create adapter.
-import { ConversationBot } from "@microsoft/teamsfx";
+import { NotificationBot } from "@microsoft/teamsfx";
 import { BotFrameworkAdapter, TurnContext } from "botbuilder";
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -29,4 +29,4 @@ adapter.onTurnError = async (context: TurnContext, error: Error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-ConversationBot.initialize(adapter, { enableNotification: true });
+export const notificationBot = new NotificationBot(adapter);

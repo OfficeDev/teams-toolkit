@@ -203,14 +203,6 @@ class SubscriptionNode extends DynamicNode {
   }
 
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {
-    // const resourceGroupName = await getResourceGroupNameFromEnv(this.identifier);
-    // if (resourceGroupName) {
-    //   const rgNode = new ResourceGroupNode(resourceGroupName);
-    //   this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-    //   return [rgNode];
-    // }
-    // this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-    // return null;
     if (this.resourceGroupNode) {
       return [this.resourceGroupNode];
     }
@@ -235,7 +227,7 @@ class SubscriptionNode extends DynamicNode {
 
     const resourceGroupName = await getResourceGroupNameFromEnv(this.identifier);
     if (resourceGroupName) {
-      this.resourceGroupNode = new ResourceGroupNode(resourceGroupName);
+      this.resourceGroupNode = new ResourceGroupNode(this.identifier, resourceGroupName);
       this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     } else {
       this.resourceGroupNode = undefined;
@@ -247,8 +239,8 @@ class SubscriptionNode extends DynamicNode {
 }
 
 class ResourceGroupNode extends DynamicNode {
-  constructor(public identifier: string) {
-    super(identifier, vscode.TreeItemCollapsibleState.None);
+  constructor(public identifier: string, private resourceGroup: string) {
+    super(resourceGroup, vscode.TreeItemCollapsibleState.None);
     this.contextValue = "openResourceGroupInPortal";
     this.iconPath = resourceGroupIcon;
   }

@@ -3,18 +3,14 @@
 
 import {
   assembleError,
-  AzureSolutionSettings,
   ConfigFolderName,
   err,
-  IConfigurableTab,
   InputConfigsFolderName,
   Inputs,
-  IStaticTab,
   LogProvider,
   Platform,
   StatesFolderName,
   TeamsAppManifest,
-  v3,
 } from "@microsoft/teamsfx-api";
 import { isSPFxProject, isAADEnabled, isConfigUnifyEnabled } from "../../common/tools";
 import { environmentManager } from "../environment";
@@ -22,16 +18,9 @@ import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../../plugins/solution/fx-solution/question";
-import { APP_PACKAGE_FOLDER_FOR_MULTI_ENV } from "../../plugins/resource/appstudio/constants";
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 import {
   Component,
-  ProjectMigratorGuideStatus,
   ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
@@ -41,12 +30,10 @@ import {
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
-import { getTemplatesFolder } from "../../folder";
+import { getResourceFolder, getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
-import { DefaultManifestProvider } from "../../plugins/solution/fx-solution/v3/addFeature";
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
@@ -54,6 +41,7 @@ const upgradeButton = "Upgrade";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+const upgradeReportName = "unify-config-change-logs.md";
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -291,6 +279,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     await fs.remove(path.join(inputs.projectPath as string, backupFolder));
     throw e;
   }
+
+  generateUpgradeReport(path.join(inputs.projectPath as string, backupFolder));
   return true;
 }
 
@@ -313,14 +303,7 @@ async function postConsolidate(
     `[core] Upgrade success! Old localSettings.json, manifest.local.template.json and manifest.remote.template.json have been backed up to the .backup folder and you can delete it.`
   );
 
-  if (inputs.platform === Platform.VSCode) {
-    await TOOLS?.ui.showMessage(
-      "info",
-      getLocalizedString("core.consolidateLocalRemote.outputMsg"),
-      false,
-      "OK"
-    );
-  } else {
+  if (inputs.platform !== Platform.VSCode) {
     TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));
   }
 }
@@ -346,5 +329,15 @@ async function updateGitIgnore(
 
   if (backupFolder) {
     await addPathToGitignore(projectPath, backupFolder, log);
+  }
+}
+
+async function generateUpgradeReport(backupFolder: string) {
+  try {
+    const target = path.join(backupFolder, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
+  } catch (error) {
+    // do nothing
   }
 }

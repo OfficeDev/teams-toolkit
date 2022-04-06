@@ -7,18 +7,19 @@ import * as path from "path";
 import { LocalEnvProvider, LocalEnvs } from "../../../common/local/localEnvProvider";
 import { ApiConnectorConfiguration, BasicAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory } from "./result";
-import { AuthType, ComponentType } from "./constants";
+import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
-import { Constants } from "./constants";
 
-declare type ApiConnectors = Record<string, Record<string, string>>;
+declare type ApiConnectors = Record<string, Map<string, string>>;
 export class ApiDataManager {
   private apiConnector: ApiConnectors = {};
   public updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {
-    let customEnvs = localEnvs.customizedLocalEnvs;
+    const customEnvs = localEnvs.customizedLocalEnvs;
     for (const item in this.apiConnector) {
       const apis = this.apiConnector[item];
-      customEnvs = { ...customEnvs, ...apis };
+      for (const [key, value] of Array.from(apis)) {
+        customEnvs[key] = value;
+      }
     }
     localEnvs.customizedLocalEnvs = customEnvs;
     return localEnvs;
@@ -27,7 +28,7 @@ export class ApiDataManager {
   public addApiEnvs(config: ApiConnectorConfiguration) {
     const apiName: string = config.APIName.toUpperCase();
     if (!this.apiConnector[apiName]) {
-      this.apiConnector[apiName] = {};
+      this.apiConnector[apiName] = new Map();
     }
     if (config.AuthConfig.AuthType === AuthType.BASIC) {
       this.addBasicEnvs(config);
@@ -42,10 +43,10 @@ export class ApiDataManager {
     const userName = "API_" + apiName + "_USERNAME";
     const passWd = "API_" + apiName + "_PASSWORD";
     const authConfig = config.AuthConfig as BasicAuthConfig;
-    apiConfig[userName] = authConfig.UserName;
-    apiConfig[authName] = authConfig.AuthType;
-    apiConfig[endPoint] = config.EndPoint;
-    apiConfig[passWd] = "";
+    apiConfig.set(userName, authConfig.UserName);
+    apiConfig.set(authName, authConfig.AuthType);
+    apiConfig.set(endPoint, config.EndPoint);
+    apiConfig.set(passWd, "");
   }
 }
 export class EnvHandler {

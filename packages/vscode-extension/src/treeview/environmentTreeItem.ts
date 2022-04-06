@@ -74,9 +74,6 @@ export class EnvironmentNode extends DynamicNode {
         : vscode.TreeItemCollapsibleState.Expanded;
     this.description = envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "";
     this.contextValue = envInfo;
-    if (this.identifier !== LocalEnvironmentName) {
-      await ext.activated;
-    }
     return this;
   }
 

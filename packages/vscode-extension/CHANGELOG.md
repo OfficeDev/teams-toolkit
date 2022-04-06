@@ -4,7 +4,7 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
-- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "create account" option in `Teams: Account` Command and improved Get Started page.
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
 
 Enhancement:
 - Improved SPFx Project scaffolding experience by using Yeoman Generator. 

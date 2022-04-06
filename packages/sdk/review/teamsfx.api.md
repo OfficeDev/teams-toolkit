@@ -58,11 +58,35 @@ export class Channel implements NotificationTarget {
 
 // @beta
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]);
-    // (undocumented)
-    readonly adapter: BotFrameworkAdapter;
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
+}
+
+// @beta
+export interface CommandOptions {
+    commands?: TeamsFxBotCommandHandler[];
+}
+
+// @beta
+export class ConversationBot {
+    constructor(options: ConversationOptions);
+    readonly adapter: BotFrameworkAdapter;
+    readonly command?: CommandBot;
+    readonly notification?: NotificationBot;
+}
+
+// @beta
+export interface ConversationOptions {
+    adapter?: BotFrameworkAdapter;
+    command: {
+        enable: boolean;
+        options: CommandOptions;
+    };
+    notification: {
+        enable: boolean;
+        options: NotificationOptions_2;
+    };
 }
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
@@ -168,7 +192,6 @@ export class NotificationBot {
 
 // @beta
 interface NotificationOptions_2 {
-    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
     storage?: NotificationTargetStorage;
 }
 export { NotificationOptions_2 as NotificationOptions }
@@ -178,6 +201,20 @@ export interface NotificationTarget {
     sendAdaptiveCard(card: unknown): Promise<void>;
     sendMessage(text: string): Promise<void>;
     readonly type?: NotificationTargetType;
+}
+
+// @beta
+export interface NotificationTargetStorage {
+    delete(key: string): Promise<void>;
+    list(): Promise<{
+        [key: string]: unknown;
+    }[]>;
+    read(key: string): Promise<{
+        [key: string]: unknown;
+    } | undefined>;
+    write(key: string, object: {
+        [key: string]: unknown;
+    }): Promise<void>;
 }
 
 // @beta

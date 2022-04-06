@@ -7,33 +7,12 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Provide static utilities for bot conversation, including - send notification to varies targets (e.g., member, channel, incoming wehbook) - handle command and response.
+Provide utilities to send notification to varies targets (e.g., member, channel, incoming wehbook).
 
 <b>Signature:</b>
 
 ```typescript
 export declare class NotificationBot 
-```
-
-## Example
-
-Here's an example on how to send notification via Teams Bot.
-
-```typescript
-// initialize (it's recommended to be called before handling any bot message)
-const notificationBot = new NotificationBot(adapter);
-
-// get all bot installations and send message
-for (const target of await notificationBot.installations()) {
-  await target.sendMessage("Hello Notification");
-}
-
-// alternative - send message to all members
-for (const target of await notificationBot.installations()) {
-  for (const member of await target.members()) {
-    await member.sendMessage("Hello Notification");
-  }
-}
 ```
 
 ## Constructors

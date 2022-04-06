@@ -386,28 +386,7 @@ export class TeamsBotInstallation implements NotificationTarget {
 }
 
 /**
- * Provide static utilities for bot conversation, including
- * - send notification to varies targets (e.g., member, channel, incoming wehbook)
- * - handle command and response.
- *
- * @example
- * Here's an example on how to send notification via Teams Bot.
- * ```typescript
- * // initialize (it's recommended to be called before handling any bot message)
- * const notificationBot = new NotificationBot(adapter);
- *
- * // get all bot installations and send message
- * for (const target of await notificationBot.installations()) {
- *   await target.sendMessage("Hello Notification");
- * }
- *
- * // alternative - send message to all members
- * for (const target of await notificationBot.installations()) {
- *   for (const member of await target.members()) {
- *     await member.sendMessage("Hello Notification");
- *   }
- * }
- * ```
+ * Provide utilities to send notification to varies targets (e.g., member, channel, incoming wehbook).
  *
  * @beta
  */

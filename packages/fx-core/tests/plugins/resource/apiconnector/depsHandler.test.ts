@@ -29,8 +29,8 @@ describe("DepsHandler in Api Connector", () => {
   });
   it("success to add sdk deps when no sdk", async () => {
     sandbox
-      .stub(DepsHandler.prototype, "getSkdConfig")
-      .resolves({ name: "@microsoft/teamsfx", version: "1.0.0" });
+      .stub(DepsHandler.prototype, "getDepsConfig")
+      .resolves({ "@microsoft/teamsfx": "1.0.0", "@microsoft/teams-js": "^1.9.0" });
     await fs.copyFile(path.join(__dirname, "sampleFiles", pkgFile), path.join(botPath, pkgFile));
     let pkg = await fs.readJson(path.join(botPath, pkgFile));
     expect(pkg.dependencies[sdkName]).to.be.undefined;
@@ -42,8 +42,8 @@ describe("DepsHandler in Api Connector", () => {
   });
   it("succes to skip sdk deps when exist", async () => {
     sandbox
-      .stub(DepsHandler.prototype, "getSkdConfig")
-      .resolves({ name: "@microsoft/teamsfx", version: "1.0.0" });
+      .stub(DepsHandler.prototype, "getDepsConfig")
+      .resolves({ "@microsoft/teamsfx": "1.0.0", "@microsoft/teams-js": "^1.9.0" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^2.0.0";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
@@ -53,23 +53,10 @@ describe("DepsHandler in Api Connector", () => {
     expect(pkg.dependencies[sdkName]).to.be.exist;
     chai.assert.strictEqual(pkg.dependencies[sdkName], "^2.0.0");
   });
-  it("success to update sdk when meets prerelease", async () => {
-    sandbox
-      .stub(DepsHandler.prototype, "getSkdConfig")
-      .resolves({ name: "@microsoft/teamsfx", version: "0.1.0-alpha" });
-    const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
-    pkgContent.dependencies[sdkName] = "^2.0.0";
-    await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
-    const depsHandler: DepsHandler = new DepsHandler(fakeProjectPath, "bot");
-    await depsHandler.addPkgDeps();
-    const pkg = await fs.readJson(path.join(botPath, pkgFile));
-    expect(pkg.dependencies[sdkName]).to.be.exist;
-    chai.assert.strictEqual(pkg.dependencies[sdkName], "0.1.0-alpha");
-  });
   it("success to skip sdk when local sdk version intersect with config", async () => {
     sandbox
-      .stub(DepsHandler.prototype, "getSkdConfig")
-      .resolves({ name: "@microsoft/teamsfx", version: "^0.6.3" });
+      .stub(DepsHandler.prototype, "getDepsConfig")
+      .resolves({ "@microsoft/teamsfx": "^0.6.3", "@microsoft/teams-js": "^1.9.0" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^0.6.5";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
@@ -81,8 +68,8 @@ describe("DepsHandler in Api Connector", () => {
   });
   it("fail to update sdk when local version lower than config", async () => {
     sandbox
-      .stub(DepsHandler.prototype, "getSkdConfig")
-      .resolves({ name: "@microsoft/teamsfx", version: "0.2.0" });
+      .stub(DepsHandler.prototype, "getDepsConfig")
+      .resolves({ "@microsoft/teamsfx": "0.2.0", "@microsoft/teams-js": "^1.9.0" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^0.1.0";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));

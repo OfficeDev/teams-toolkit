@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { Json, ok } from "@microsoft/teamsfx-api";
+import { Json } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import semver from "semver";
@@ -19,18 +19,18 @@ export class DepsHandler {
   }
 
   public async addPkgDeps(): Promise<ApiConnectorResult> {
-    const sdkConfig: Json = await this.getSkdConfig();
-    return await this.updateLocalPkgSdkVersion(sdkConfig);
+    const depsConfig: Json = await this.getDepsConfig();
+    return await this.updateLocalPkgDepsVersion(depsConfig);
   }
 
-  public async getSkdConfig(): Promise<Json> {
+  public async getDepsConfig(): Promise<Json> {
     const configPath = path.join(getTemplatesFolder(), "plugins", "resource", "apiconnector");
-    const sdkConfigPath = path.join(configPath, Constants.sdkConfigFile);
+    const sdkConfigPath = path.join(configPath, Constants.pkgJsonFile);
     const sdkContent: Json = await fs.readJson(sdkConfigPath);
-    return sdkContent;
+    return sdkContent.dependencies;
   }
 
-  public async updateLocalPkgSdkVersion(pkgConfig: Json): Promise<ApiConnectorResult> {
+  public async updateLocalPkgDepsVersion(pkgConfig: Json): Promise<ApiConnectorResult> {
     const localPkgPath = path.join(this.projectRoot, this.componentType, Constants.pkgJsonFile);
     if (!(await fs.pathExists(localPkgPath))) {
       throw ResultFactory.UserError(
@@ -39,25 +39,22 @@ export class DepsHandler {
       );
     }
     const pkgContent = await fs.readJson(localPkgPath);
-    const needUpdate: boolean = this.sdkVersionCheck(
-      pkgContent.dependencies,
-      pkgConfig.name,
-      pkgConfig.version
-    );
+    let needUpdate = false;
+    for (const pkgItem in pkgConfig) {
+      if (this.sdkVersionCheck(pkgContent.dependencies, pkgItem, pkgConfig[pkgItem])) {
+        pkgContent.dependencies[pkgItem] = pkgConfig[pkgItem];
+        needUpdate = true;
+      }
+    }
     if (needUpdate) {
-      pkgContent.dependencies[pkgConfig.name] = pkgConfig.version;
       await fs.writeFile(localPkgPath, JSON.stringify(pkgContent, null, 4));
     }
     return ResultFactory.Success();
   }
 
   private sdkVersionCheck(deps: Json, sdkName: string, sdkVersion: string): boolean {
-    // always sync up with alpha version. only happens on alpha/RC version.
-    if (semver.prerelease(sdkVersion)) {
-      return true;
-    }
     // sdk not in dependencies.
-    else if (!deps[sdkName]) {
+    if (!deps[sdkName]) {
       return true;
     }
     // local sdk version intersect with sdk version in config.

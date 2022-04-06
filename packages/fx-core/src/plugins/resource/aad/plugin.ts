@@ -749,16 +749,45 @@ export class AadAppForTeamsImpl {
         aadJson = await fs.readJSON(aadManifestTemplate);
       }
 
+      if (!aadJson.replyUrlsWithType) {
+        aadJson.replyUrlsWithType = [];
+      }
+
+      if (azureSolutionSettings.capabilities.includes("Tab")) {
+        const tabRedirectUrl1 = "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html";
+
+        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
+          aadJson.replyUrlsWithType.push({
+            url: tabRedirectUrl1,
+            type: "Web",
+          });
+        }
+
+        const tabRedirectUrl2 =
+          "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
+
+        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
+          aadJson.replyUrlsWithType.push({
+            url: tabRedirectUrl2,
+            type: "Spa",
+          });
+        }
+
+        const tabRedirectUrl3 =
+          "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html";
+
+        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
+          aadJson.replyUrlsWithType.push({
+            url: tabRedirectUrl3,
+            type: "Spa",
+          });
+        }
+      }
+
       if (azureSolutionSettings.capabilities.includes("Bot")) {
         const botRedirectUrl = "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html";
-        if (!aadJson.replyUrlsWithType) {
-          aadJson.replyUrlsWithType = [];
-        }
-        const botRedirectUrlItem = aadJson.replyUrlsWithType.filter(
-          (item: ReplyUrlsWithType) => item.url === botRedirectUrl && item.type === "Web"
-        );
 
-        if (botRedirectUrlItem.length === 0) {
+        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
           aadJson.replyUrlsWithType.push({
             url: botRedirectUrl,
             type: "Web",
@@ -774,6 +803,13 @@ export class AadAppForTeamsImpl {
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
     }
     return ResultFactory.Success();
+  }
+
+  private isRedirectUrlExist(replyUrls: ReplyUrlsWithType[], url: string, type: string) {
+    return (
+      replyUrls.filter((item: ReplyUrlsWithType) => item.url === url && item.type === type).length >
+      0
+    );
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {

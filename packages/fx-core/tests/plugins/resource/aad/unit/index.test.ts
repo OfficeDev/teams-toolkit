@@ -334,7 +334,16 @@ describe("AadAppForTeamsPlugin: CI", () => {
     };
     sinon.stub(fs, "readJSON").resolves(fakeManifest);
     sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
-      chai.assert.deepEqual(data, fakeManifest);
+      chai.assert.equal(data.replyUrlsWithType.length, 3);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
+      chai.assert.equal(
+        data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html"
+      );
     });
     const result = await plugin.scaffold(context);
     chai.assert.equal(result.isOk(), true);
@@ -361,11 +370,20 @@ describe("AadAppForTeamsPlugin: CI", () => {
     };
     sinon.stub(fs, "readJSON").resolves(fakeManifest);
     sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 4);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
       chai.assert.equal(
         data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[3].url,
         "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html"
       );
-      chai.assert.equal(data.replyUrlsWithType[1].type, "Web");
     });
     const result = await plugin.scaffold(context);
 

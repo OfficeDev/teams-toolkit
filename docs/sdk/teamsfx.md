@@ -51,6 +51,7 @@
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | <b><i>(BETA)</i></b> Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | <b><i>(BETA)</i></b> Represent a notification target. |
+|  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | <b><i>(BETA)</i></b> Interface for a storage provider that stores and retrieves notification target references. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | <b><i>(BETA)</i></b> Interface for a command handler that can process command to a TeamsFx bot and return a response. |

@@ -142,7 +142,7 @@ suite("handlers", () => {
     });
     test("create sample with projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
@@ -152,11 +152,12 @@ suite("handlers", () => {
 
       sinon.assert.calledOnce(createProject);
       chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
+      chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
     });
 
     test("create from scratch without projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
@@ -166,6 +167,7 @@ suite("handlers", () => {
       sinon.restore();
       sinon.assert.calledOnce(createProject);
       chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
+      chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
     });
 
     test("provisionResources", async () => {

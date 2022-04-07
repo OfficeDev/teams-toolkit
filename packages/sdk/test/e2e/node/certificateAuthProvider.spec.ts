@@ -99,7 +99,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
 
   it("can support certs without setting CA", async function () {
     const mockedEnvRestore = mockedEnv({
-      NODE_TLS_REJECT_UNAUTHORIZED: "0",
+      NODE_TLS_REJECT_UNAUTHORIZED: "0", // We're using self signed certificate for test, so needs to set this flag to bypass CA check
     });
     try {
       const certProvider = new CertificateAuthProvider(

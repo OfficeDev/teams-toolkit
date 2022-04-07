@@ -11,13 +11,14 @@ import {
   UserError,
   ok,
 } from "@microsoft/teamsfx-api";
-import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   generateTempFolder,
   copyFileIfExist,
   removeFileIfExist,
   getSampleFileName,
   checkInputEmpty,
+  Notification,
 } from "./utils";
 import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
@@ -71,6 +72,15 @@ export class ApiConnectorImpl {
           await this.scaffoldInComponent(projectPath, component, config, languageType);
         })
       );
+      const msg: string = this.getNotificationMsg(config, languageType);
+      ctx.userInteraction
+        ?.showMessage("info", msg, false, "OK", Constants.READ_MORE)
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === Constants.READ_MORE) {
+            ctx.userInteraction?.openUrl(Constants.READ_MORE_URL);
+          }
+        });
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -222,6 +232,39 @@ export class ApiConnectorImpl {
   ): Promise<ApiConnectorResult> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
+  }
+
+  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
+    const authType: AuthType = config.AuthConfig.AuthType;
+    const apiName: string = config.APIName;
+    let retMsg: string = Notification.GetBasiString(apiName, config.ComponentPath, languageType);
+    switch (authType) {
+      case AuthType.BASIC: {
+        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.APIKEY: {
+        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.AAD: {
+        if (config.ReuseTeamsApp) {
+          retMsg += Notification.GetReuseAADAuthString(apiName);
+        } else {
+          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
+        }
+        break;
+      }
+      case AuthType.CERT: {
+        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.CUSTOM: {
+        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
+        break;
+      }
+    }
+    return retMsg;
   }
 
   public async generateQuestion(ctx: Context): Promise<QesutionResult> {

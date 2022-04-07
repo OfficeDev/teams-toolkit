@@ -9,7 +9,7 @@ import { it } from "../../commonlib/it";
 import { describe } from "mocha";
 import path from "path";
 import { FrontendValidator } from "../../commonlib";
-import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
+import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { M365AppType } from "../../commonlib/constants";
 import { M365Validator } from "../../commonlib/m365Validator";
@@ -26,13 +26,13 @@ describe("Create M365 Launch Page", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    await cleanUpLocalProject(projectPath);
   });
 
   it("happy path", async () => {
     await CliHelper.createM365ProjectWithAppType(appName, testFolder, M365AppType.LaunchPage);
-    await M365Validator.validateProjectSettings(testFolder);
-    await M365Validator.validateManifest(testFolder);
-    await FrontendValidator.validateScaffold(testFolder, "javascript");
+    await M365Validator.validateProjectSettings(projectPath);
+    await M365Validator.validateManifest(projectPath);
+    await FrontendValidator.validateScaffold(projectPath, "javascript");
   });
 });

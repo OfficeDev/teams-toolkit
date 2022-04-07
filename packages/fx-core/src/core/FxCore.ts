@@ -9,6 +9,7 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  DefaultReadme,
   err,
   Func,
   FunctionRouter,
@@ -60,9 +61,11 @@ import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,
+  ExistingTabOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -130,6 +133,7 @@ import {
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
+import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { getTemplatesFolder } from "../folder";
 import { getLocalizedString } from "../common/localizeUtils";
 
@@ -181,6 +185,14 @@ export class FxCore implements v3.ICore {
         throw new ProjectFolderInvalidError(folder);
       }
     }
+
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      inputs.folder = path.join(folder, appName);
+      return await this._init(inputs, ctx, true);
+    }
+
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
@@ -364,7 +376,10 @@ export class FxCore implements v3.ICore {
         if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
-        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
+        if (
+          isAadManifestEnabled() &&
+          (capabilities.includes(TabSsoItem.id) || capabilities.includes(BotSsoItem.id))
+        ) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {
@@ -417,6 +432,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -450,6 +466,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
+    AadManifestMigrationMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -521,6 +538,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -562,6 +580,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -594,6 +613,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -663,6 +683,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -696,6 +717,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -736,6 +758,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -835,6 +858,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
@@ -941,6 +965,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -1001,6 +1026,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1027,6 +1053,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -1061,6 +1088,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1087,6 +1115,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1120,6 +1149,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1146,6 +1176,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1273,13 +1304,14 @@ export class FxCore implements v3.ICore {
   async createEnvWithName(
     targetEnvName: string,
     projectSettings: ProjectSettings,
-    inputs: Inputs
+    inputs: Inputs,
+    existingTabEndpoint?: string
   ): Promise<Result<Void, FxError>> {
     let appName = projectSettings.appName;
     if (targetEnvName === environmentManager.getLocalEnvName()) {
       appName = getLocalAppName(appName);
     }
-    const newEnvConfig = environmentManager.newEnvConfigData(appName);
+    const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,
@@ -1331,6 +1363,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,
@@ -1368,7 +1401,11 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async _init(
+    inputs: Inputs,
+    ctx?: CoreHookContext,
+    isInitExistingApp = false
+  ): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -1380,16 +1417,26 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+
     const projectPath = inputs.folder;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const isValid = isValidProject(projectPath);
-    if (isValid) {
-      return err(
-        new OperationNotPermittedError("initialize a project in existing teamsfx project")
-      );
+
+    if (isInitExistingApp) {
+      const folderExist = await fs.pathExists(projectPath);
+      if (folderExist) {
+        return err(new ProjectFolderExistError(projectPath));
+      }
+    } else {
+      const isValid = isValidProject(projectPath);
+      if (isValid) {
+        return err(
+          new OperationNotPermittedError("initialize a project in existing teamsfx project")
+        );
+      }
     }
+
     await fs.ensureDir(projectPath);
     inputs.projectPath = projectPath;
 
@@ -1422,10 +1469,20 @@ export class FxCore implements v3.ICore {
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
+    const manifestAddcapRes = await appStudioV3.addCapabilities(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      [{ name: "staticTab", existingApp: true }]
+    );
+    if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
+
+    // create env config with existing tab's endpoint
+    const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
     const createEnvResult = await this.createEnvWithName(
       environmentManager.getDefaultEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      isInitExistingApp ? endpoint : undefined
     );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
@@ -1433,14 +1490,15 @@ export class FxCore implements v3.ICore {
     const createLocalEnvResult = await this.createEnvWithName(
       environmentManager.getLocalEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      isInitExistingApp ? endpoint : undefined
     );
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    const sourceReadmePath = path.join(getTemplatesFolder(), "core", AutoGeneratedReadme);
+    const sourceReadmePath = path.join(getTemplatesFolder(), "core", DefaultReadme);
     if (await fs.pathExists(sourceReadmePath)) {
-      const targetReadmePath = path.join(projectPath, AutoGeneratedReadme);
+      const targetReadmePath = path.join(projectPath, DefaultReadme);
       await fs.copy(sourceReadmePath, targetReadmePath);
     }
     return ok(inputs.projectPath!);

@@ -39,6 +39,7 @@ import { TelemetryUtils } from "./telemetry";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
+import { isAadManifestEnabled } from "../../../../common";
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(
@@ -326,7 +327,9 @@ export class ProvisionConfig {
       );
     }
 
-    this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
+    if (!isAadManifestEnabled()) {
+      this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
+    }
 
     const objectId: ConfigValue = ConfigUtils.getAadConfig(
       ctx,

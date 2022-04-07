@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   Stage,
@@ -35,7 +36,8 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -287,13 +289,14 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter(
-      (plugin) =>
-        !!plugin.deploy &&
-        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
-    );
+    plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
+    }
+
+    // trigger from Deploy AAD App manifest command in VSCode
+    if (inputs.platform === Platform.VSCode && inputs.skipAadDeploy === "no") {
+      return ok(node);
     }
 
     // On VS, users are not expected to select plugins to deploy.
@@ -424,11 +427,10 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [
       TabOptionItem,
-      BotOptionItem,
+      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      TabSPFxItem,
     ];
     return ok(new QTreeNode(addCapQuestion));
   }
@@ -477,14 +479,21 @@ export async function getQuestionsForAddCapability(
     if (!isAadManifestEnabled()) {
       options.push(TabOptionItem);
     } else {
-      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, TabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
+        );
+      }
     }
   }
   if (isBotAddable) {
-    options.push(BotOptionItem);
     if (isBotNotificationEnabled()) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
+    } else {
+      options.push(BotOptionItem);
     }
   }
   if (isMEAddable) options.push(MessageExtensionItem);
@@ -492,22 +501,22 @@ export async function getQuestionsForAddCapability(
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
 
-  // mini app can add SPFx tab
-  if (!settings) {
-    options.push(TabSPFxItem);
-    const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
-    if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
-      const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (result.isErr()) {
-        return result;
-      }
-      const spfxQuestionNode = result.value;
-      if (spfxQuestionNode) {
-        spfxQuestionNode.condition = { contains: TabSPFxItem.id };
-        addCapNode.addChild(spfxQuestionNode);
-      }
-    }
-  }
+  // // mini app can add SPFx tab
+  // if (!settings) {
+  //   options.push(TabSPFxItem);
+  //   const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+  //   if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
+  //     const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //     const spfxQuestionNode = result.value;
+  //     if (spfxQuestionNode) {
+  //       spfxQuestionNode.condition = { contains: TabSPFxItem.id };
+  //       addCapNode.addChild(spfxQuestionNode);
+  //     }
+  //   }
+  // }
 
   if (isBotNotificationEnabled()) {
     // Hardcoded to call bot plugin to get notification trigger questions.

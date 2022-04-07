@@ -27,6 +27,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   properties: {
     serverFarmId: serverfarms.id
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
+    httpsOnly: true
     siteConfig: {
       appSettings: [
         {
@@ -58,6 +59,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '~14' // Set NodeJS version to 14.x
         }
       ]
+      ftpsState: 'FtpsOnly'
     }
   }
   identity: {

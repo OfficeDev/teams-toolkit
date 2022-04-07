@@ -10,6 +10,8 @@ import {
   err,
   ok,
   SystemError,
+  Platform,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -268,12 +270,26 @@ export async function provisionResource(
       );
       if (url) {
         const title = "View Provisioned Resources";
-        ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === title) {
-            ctx.userInteraction.openUrl(url);
-          }
-        });
+        if (inputs.platform === Platform.CLI) {
+          ctx.userInteraction.showMessage(
+            "info",
+            [
+              {
+                color: Colors.BRIGHT_WHITE,
+                content: msg + " View provisioned resources in Azure Portal: ",
+              },
+              { color: Colors.BRIGHT_MAGENTA, content: url },
+            ],
+            false
+          );
+        } else {
+          ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.userInteraction.openUrl(url);
+            }
+          });
+        }
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }

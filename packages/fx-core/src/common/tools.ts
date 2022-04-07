@@ -46,7 +46,11 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+} from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
@@ -383,8 +387,8 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
-export function isInitAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+export function isExistingTabAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
 }
 
 export function isAadManifestEnabled(): boolean {
@@ -410,7 +414,8 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      solutionSettings.capabilities.includes(SsoItem.id)
+      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
+        solutionSettings.capabilities.includes(BotSsoItem.id))
     );
   } else {
     return (

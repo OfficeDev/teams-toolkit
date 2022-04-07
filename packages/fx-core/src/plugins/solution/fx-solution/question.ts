@@ -43,6 +43,14 @@ export const CommandAndResponseOptionItem: OptionItem = {
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };
 
+export const ExistingTabOptionItem: OptionItem = {
+  id: "ExistingTab",
+  label: "Existing Tab",
+  cliName: "existing-tab",
+  description: getLocalizedString("core.ExistingTabOption.description"),
+  detail: getLocalizedString("core.ExistingTabOption.detail"),
+};
+
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: "Messaging Extension",
@@ -59,12 +67,20 @@ export const TabSPFxItem: OptionItem = {
   detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
-export const SsoItem: OptionItem = {
-  id: "SSO",
-  label: "SSO",
-  cliName: "sso",
-  description: getLocalizedString("core.Sso.description"),
-  detail: getLocalizedString("core.Sso.detail"),
+export const TabSsoItem: OptionItem = {
+  id: "TabSSO",
+  label: "TabSSO",
+  cliName: "tab-sso",
+  description: getLocalizedString("core.TabSso.description"),
+  detail: getLocalizedString("core.TabSso.detail"),
+};
+
+export const BotSsoItem: OptionItem = {
+  id: "BotSSO",
+  label: "BotSSO",
+  cliName: "bot-sso",
+  description: getLocalizedString("core.BotSso.description"),
+  detail: getLocalizedString("core.BotSso.detail"),
 };
 
 export const TabNonSsoItem: OptionItem = {

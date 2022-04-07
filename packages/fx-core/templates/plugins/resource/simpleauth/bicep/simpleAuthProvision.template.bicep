@@ -25,6 +25,10 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   properties: {
     serverFarmId: serverFarms.id
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
+    httpsOnly: true
+    siteConfig:{
+      ftpsState: 'FtpsOnly'
+    }
   }
   identity: {
     type: 'UserAssigned'

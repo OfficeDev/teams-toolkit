@@ -140,32 +140,26 @@ export class CommandResponseMiddleware implements Middleware {
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {
-    const normalizedText = text?.trim().toLocaleLowerCase();
-
-    if (typeof pattern === "string") {
-      const test = new RegExp(pattern as string, "i");
-      if (normalizedText && normalizedText.match(test)) {
-        return true;
+    if (text) {
+      if (typeof pattern === "string") {
+        const regExp = new RegExp(pattern as string, "i");
+        return regExp.test(text);
       }
-    } else if (pattern instanceof RegExp) {
-      const test = pattern as RegExp;
-      if (normalizedText && normalizedText.match(test)) {
-        const matches = normalizedText.match(test);
+
+      if (pattern instanceof RegExp) {
+        const matches = text.match(pattern as RegExp);
         return matches ?? true;
       }
-    } else {
-      return false;
     }
 
     return false;
   }
 
   private shouldTrigger(patterns: TriggerPatterns, text: string): RegExpMatchArray | boolean {
-    const normalizedText = text?.trim().toLocaleLowerCase();
     const expressions = Array.isArray(patterns) ? patterns : [patterns];
 
     for (const ex of expressions) {
-      const arg = this.matchPattern(ex, normalizedText);
+      const arg = this.matchPattern(ex, text);
       if (arg) return arg;
     }
 

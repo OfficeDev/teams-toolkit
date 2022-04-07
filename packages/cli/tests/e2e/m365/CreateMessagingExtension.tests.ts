@@ -12,6 +12,7 @@ import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonU
 import { CliHelper } from "../../commonlib/cliHelper";
 import { M365AppType } from "../../commonlib/constants";
 import { M365Validator } from "../../commonlib/m365Validator";
+import { BotValidator } from "../../commonlib";
 
 describe("Create M365 Messaging Extension", function () {
   const testFolder = getTestFolder();
@@ -36,5 +37,6 @@ describe("Create M365 Messaging Extension", function () {
     );
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);
+    await BotValidator.validateScaffold(projectPath, "javascript");
   });
 });

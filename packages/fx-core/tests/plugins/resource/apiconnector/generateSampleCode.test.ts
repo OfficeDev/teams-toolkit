@@ -33,7 +33,7 @@ describe("Api Connector scaffold sample code", async () => {
     sandbox.restore();
   });
 
-  it("generate js sample code file", async () => {
+  it("generate js basic sample code file", async () => {
     const languageType = "javascript";
     const componet = "bot";
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
@@ -53,7 +53,7 @@ describe("Api Connector scaffold sample code", async () => {
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(
-      path.join(__dirname, "expectedFiles", "sample.js"),
+      path.join(__dirname, "expectedFiles", "js", "basic.js"),
       ConstantString.UTF8Encoding
     );
     chai.assert.strictEqual(
@@ -62,7 +62,7 @@ describe("Api Connector scaffold sample code", async () => {
     );
   });
 
-  it("generate ts sample code file", async () => {
+  it("generate ts basic sample code file", async () => {
     const languageType = "typescript";
     const componet = "bot";
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
@@ -82,7 +82,7 @@ describe("Api Connector scaffold sample code", async () => {
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(
-      path.join(__dirname, "expectedFiles", "sample.ts"),
+      path.join(__dirname, "expectedFiles", "ts", "basic.ts"),
       ConstantString.UTF8Encoding
     );
     chai.assert.strictEqual(

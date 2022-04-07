@@ -11,7 +11,7 @@ import {
   UserError,
   ok,
 } from "@microsoft/teamsfx-api";
-import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   generateTempFolder,
   copyFileIfExist,
@@ -165,7 +165,7 @@ export class ApiConnectorImpl {
           Constants.questionKey.apiAppTenentId
         );
         AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.AppId = inputs[Constants.questionKey.apiAppId];
+        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
     } else {

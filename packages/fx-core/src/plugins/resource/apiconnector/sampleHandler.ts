@@ -22,18 +22,21 @@ export class SampleHandler {
 
   public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
     const fileSuffix: string = this.languageExt;
-    const templateDirectory = path.join(
+    const baseDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
       "resource",
       "apiconnector",
-      "sample",
-      fileSuffix
+      "sample"
     );
-    const templateName: string = Constants.pluginNameShort + ".template";
+    const templateDirectory = path.join(baseDirectory, fileSuffix);
+    const commentTemplateFilePath = path.join(baseDirectory, Constants.commentTemplate);
+    const templateName: string = config.AuthConfig.AuthType + ".template";
     const templateFilePath = path.join(templateDirectory, templateName);
     try {
-      const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+      const commentString = await fs.readFile(commentTemplateFilePath, ConstantString.UTF8Encoding);
+      let templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+      templateString += commentString;
       const context = {
         config: config,
         capitalName: config.APIName.toUpperCase(),

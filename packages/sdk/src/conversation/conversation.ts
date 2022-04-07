@@ -139,9 +139,9 @@ export class ConversationBot {
   /**
    * The request handler to integrate with web request.
    *
-   * @param req An Express or Restify style request object.
-   * @param res An Express or Restify style response object.
-   * @param logic The additional function to handle bot context.
+   * @param req - an Express or Restify style request object.
+   * @param res - an Express or Restify style response object.
+   * @param logic - the additional function to handle bot context.
    *
    * @example
    * For example, to use with Restify:

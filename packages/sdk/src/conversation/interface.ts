@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { BotFrameworkAdapter } from "botbuilder";
 import { Activity, TurnContext } from "botbuilder-core";
 
 /**
@@ -116,25 +117,115 @@ export interface NotificationOptions {
 }
 
 /**
+ * The trigger pattern used to trigger a {@link TeamsFxBotCommandHandler} instance.
+ */
+export type TriggerPatterns = string | RegExp | (string | RegExp)[];
+
+/**
+ * Interface for a command messagge that can handled in a command handler.
+ */
+export interface CommandMessage {
+  /**
+   * Text of the message sent by the user.
+   */
+  text: string;
+
+  /**
+   * The capture groups that matched to the {@link triggerPatterns} in a {@link TeamsFxBotCommandHandler} instance.
+   */
+  matches?: RegExpMatchArray;
+}
+
+/**
  * Interface for a command handler that can process command to a TeamsFx bot and return a response.
  *
  * @beta
  */
 export interface TeamsFxBotCommandHandler {
   /**
-   * The command name or RegExp pattern that can trigger this handler.
+   * The string or regular expression patterns that can trigger this handler.
    */
-  commandNameOrPattern: string | RegExp;
+  triggerPatterns: TriggerPatterns;
 
   /**
    * Handles a bot command received activity.
    *
    * @param context The bot context.
-   * @param receivedText The command text the user types from Teams.
+   * @param message The command message the user types from Teams.
    * @returns A `Promise` representing an activity or text to send as the command response.
    */
   handleCommandReceived(
     context: TurnContext,
-    receivedText: string
+    message: CommandMessage
   ): Promise<string | Partial<Activity>>;
+}
+
+/**
+ * Options to initialize {@link CommandBot}.
+ *
+ * @beta
+ */
+export interface CommandOptions {
+  /**
+   * The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
+   *
+   * @beta
+   */
+  commands?: TeamsFxBotCommandHandler[];
+}
+
+/**
+ * Options to initialize {@link ConversationBot}
+ *
+ * @beta
+ */
+export interface ConversationOptions {
+  /**
+   * The bot adapter. If not provided, a default adapter will be created with BOT_ID and BOT_PASSWORD from environment variables.
+   *
+   * @beta
+   */
+  adapter?: BotFrameworkAdapter;
+
+  /**
+   * The command part.
+   *
+   * @beta
+   */
+  command: {
+    /**
+     * Whether to enable command or not.
+     *
+     * @beta
+     */
+    enabled: boolean;
+
+    /**
+     * The command options if command is enabled.
+     *
+     * @beta
+     */
+    options: CommandOptions;
+  };
+
+  /**
+   * The notification part.
+   *
+   * @beta
+   */
+  notification: {
+    /**
+     * Whether to enable notification or not.
+     *
+     * @beta
+     */
+    enabled: boolean;
+
+    /**
+     * The notification options if notification is enabled.
+     *
+     * @beta
+     */
+    options: NotificationOptions;
+  };
 }

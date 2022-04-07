@@ -19,11 +19,11 @@ export interface TeamsFxBotCommandHandler
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [commandNameOrPattern](./teamsfx.teamsfxbotcommandhandler.commandnameorpattern.md) | string \| RegExp | <b><i>(BETA)</i></b> The command name or RegExp pattern that can trigger this handler. |
+|  [triggerPatterns](./teamsfx.teamsfxbotcommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | <b><i>(BETA)</i></b> The string or regular expression patterns that can trigger this handler. |
 
 ## Methods
 
 |  Method | Description |
 |  --- | --- |
-|  [handleCommandReceived(context, receivedText)](./teamsfx.teamsfxbotcommandhandler.handlecommandreceived.md) | <b><i>(BETA)</i></b> Handles a bot command received activity. |
+|  [handleCommandReceived(context, message)](./teamsfx.teamsfxbotcommandhandler.handlecommandreceived.md) | <b><i>(BETA)</i></b> Handles a bot command received activity. |
 

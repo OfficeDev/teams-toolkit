@@ -5,7 +5,7 @@ import chai from "chai";
 import { it } from "mocha";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { SsoItem } from "../../../src/plugins/solution/fx-solution/question";
+import { TabSsoItem } from "../../../src/plugins/solution/fx-solution/question";
 import { fillInSolutionSettings } from "../../../src/plugins/solution/fx-solution/v2/utils";
 import { PluginNames } from "../../../src";
 import mockedEnv from "mocked-env";
@@ -48,7 +48,7 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
     const res = fillInSolutionSettings(projectSettings, mockInput);
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-    expect(solutionSettings?.capabilities?.includes(SsoItem.id)).to.be.true;
+    expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
     expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.true;
   });
 
@@ -61,7 +61,7 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
     const res = fillInSolutionSettings(projectSettings, mockInput);
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-    expect(solutionSettings?.capabilities?.includes(SsoItem.id)).to.be.false;
+    expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.false;
     expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.false;
   });
 });

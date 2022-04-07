@@ -148,7 +148,7 @@ export class CommandResponseMiddleware implements Middleware {
 
       if (pattern instanceof RegExp) {
         const matches = text.match(pattern as RegExp);
-        return matches ?? true;
+        return matches ?? false;
       }
     }
 

@@ -10,6 +10,7 @@ import {
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import * as chai from "chai";
 
 const m365ManifestSchema =
   "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";

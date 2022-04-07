@@ -12,8 +12,7 @@ The notification part.
 <b>Signature:</b>
 
 ```typescript
-notification?: {
+notification?: NotificationOptions & {
         enabled?: boolean;
-        options?: NotificationOptions;
     };
 ```

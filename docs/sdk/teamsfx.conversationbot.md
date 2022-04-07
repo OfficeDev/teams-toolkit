@@ -21,7 +21,7 @@ Set `adapter` in [ConversationOptions](./teamsfx.conversationoptions.md) to use 
 
 For command and response, ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
 
-For notification, set `notification.options.storage` in [ConversationOptions](./teamsfx.conversationoptions.md) to use your own storage implementation.
+For notification, set `notification.storage` in [ConversationOptions](./teamsfx.conversationoptions.md) to use your own storage implementation.
 
 ## Example
 
@@ -32,16 +32,14 @@ For command and response, you can register your commands through the constructor
 const conversationBot = new ConversationBot({
   command: {
     enabled: true,
-    options: {
-        commands: [ new HelloWorldCommandHandler() ],
-    },
+    commands: [ new HelloWorldCommandHandler() ],
   },
 });
 
 // register through `register*` API
 conversationBot.command.registerCommand(new HelpCommandHandler());
 ```
-For notification, you can enable notification at initialization, then send notificaations at any time.
+For notification, you can enable notification at initialization, then send notifications at any time.
 
 ```typescript
 // enable through constructor

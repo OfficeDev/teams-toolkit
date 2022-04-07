@@ -12,8 +12,7 @@ The command part.
 <b>Signature:</b>
 
 ```typescript
-command?: {
+command?: CommandOptions & {
         enabled?: boolean;
-        options?: CommandOptions;
     };
 ```

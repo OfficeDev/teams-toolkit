@@ -174,20 +174,13 @@ export interface ConversationOptions {
    *
    * @beta
    */
-  command?: {
+  command?: CommandOptions & {
     /**
      * Whether to enable command or not.
      *
      * @beta
      */
     enabled?: boolean;
-
-    /**
-     * The command options if command is enabled.
-     *
-     * @beta
-     */
-    options?: CommandOptions;
   };
 
   /**
@@ -195,19 +188,12 @@ export interface ConversationOptions {
    *
    * @beta
    */
-  notification?: {
+  notification?: NotificationOptions & {
     /**
      * Whether to enable notification or not.
      *
      * @beta
      */
     enabled?: boolean;
-
-    /**
-     * The notification options if notification is enabled.
-     *
-     * @beta
-     */
-    options?: NotificationOptions;
   };
 }

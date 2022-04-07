@@ -96,13 +96,11 @@ export class ConversationBot {
 // @beta
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
-    command?: {
+    command?: CommandOptions & {
         enabled?: boolean;
-        options?: CommandOptions;
     };
-    notification?: {
+    notification?: NotificationOptions_2 & {
         enabled?: boolean;
-        options?: NotificationOptions_2;
     };
 }
 

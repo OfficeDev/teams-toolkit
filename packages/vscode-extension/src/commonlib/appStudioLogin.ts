@@ -24,7 +24,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getAppStudioEndpoint } from "@microsoft/teamsfx-core";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
 const scopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
@@ -97,15 +97,18 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${localize(
+            [TelemetryProperty.ErrorCode]: `${getDefaultString(
               "teamstoolkit.codeFlowLogin.loginComponent"
             )}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
+            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
+              "teamstoolkit.common.userCancel"
+            )}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            localize("teamstoolkit.appStudioLogin.loginCancel"),
-            "Login"
+            getDefaultString("teamstoolkit.appStudioLogin.loginCancel"),
+            localize("teamstoolkit.appStudioLogin.loginCancel")
           );
         }
         AppStudioLogin.codeFlowInstance.status = loggingIn;
@@ -153,15 +156,16 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         [TelemetryProperty.UserId]: "",
         [TelemetryProperty.Internal]: "",
         [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-        [TelemetryProperty.ErrorCode]: `${localize("teamstoolkit.codeFlowLogin.loginComponent")}.${
-          ExtensionErrors.UserCancel
-        }`,
-        [TelemetryProperty.ErrorMessage]: `${localize("teamstoolkit.common.userCancel")}`,
+        [TelemetryProperty.ErrorCode]: `${getDefaultString(
+          "teamstoolkit.codeFlowLogin.loginComponent"
+        )}.${ExtensionErrors.UserCancel}`,
+        [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
       });
       throw new UserError(
+        "SignOut",
         ExtensionErrors.UserCancel,
-        localize("teamstoolkit.common.userCancel"),
-        "SignOut"
+        getDefaultString("teamstoolkit.common.userCancel"),
+        localize("teamstoolkit.common.userCancel")
       );
     }
     await AppStudioLogin.codeFlowInstance.logout();
@@ -177,21 +181,21 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   private async doesUserConfirmLogin(): Promise<boolean> {
     const message = localize("teamstoolkit.appStudioLogin.message");
     const signin = localize("teamstoolkit.common.signin");
-    const readMore = localize("teamstoolkit.common.readMore");
+    const createTestingTenant = localize("teamstoolkit.appStudioLogin.createM365TestingTenant");
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
         message,
         { modal: true },
         signin,
-        readMore
+        createTestingTenant
       );
-      if (userSelected === readMore) {
+      if (userSelected === createTestingTenant) {
         vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
         );
       }
-    } while (userSelected === readMore);
+    } while (userSelected === createTestingTenant);
     return Promise.resolve(userSelected === signin);
   }
 

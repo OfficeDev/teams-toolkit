@@ -41,6 +41,7 @@ export class TelemetryKey {
   static readonly Success = "success";
   static readonly ErrorType = "error-type";
   static readonly ErrorMessage = "error-message";
+  static readonly ErrorCode = "error-code";
 }
 
 export class TelemetryValue {
@@ -77,8 +78,10 @@ export class DeployProgressMessage {
 }
 
 export class ScaffoldProgressMessage {
-  static readonly ScaffoldProject = "Generate SPFx project using Yeoman CLI";
-  static readonly UpdateManifest = "Update webpart manifest";
+  static readonly DependencyCheck = getLocalizedString("plugins.spfx.scaffold.dependencyCheck");
+  static readonly DependencyInstall = getLocalizedString("plugins.spfx.scaffold.dependencyInstall");
+  static readonly ScaffoldProject = getLocalizedString("plugins.spfx.scaffold.scaffoldProject");
+  static readonly UpdateManifest = getLocalizedString("plugins.spfx.scaffold.updateManifest");
 }
 
 export class ManifestTemplate {

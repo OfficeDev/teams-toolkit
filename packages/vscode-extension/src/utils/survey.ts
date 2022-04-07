@@ -4,7 +4,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { ext } from "../extensionVariables";
-import { localize } from "./localizeUtils";
+import { getDefaultString, localize } from "./localizeUtils";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
@@ -55,7 +55,7 @@ export class ExtensionSurvey {
   public async activate(): Promise<void> {
     if (TreatmentVariableValue.isEmbeddedSurvey) {
       if (this.needToShow) {
-        if (!this.shouldShowBanner()) {
+        if (!(await this.shouldShowBanner())) {
           return;
         }
 
@@ -65,8 +65,8 @@ export class ExtensionSurvey {
       }
     } else {
       if (this.needToShow && !this.checkSurveyInterval) {
-        this.checkSurveyInterval = setInterval(() => {
-          if (!this.shouldShowBanner()) {
+        this.checkSurveyInterval = setInterval(async () => {
+          if (!(await this.shouldShowBanner())) {
             return;
           }
 
@@ -78,19 +78,22 @@ export class ExtensionSurvey {
     }
   }
 
-  private shouldShowBanner(): boolean {
-    const doNotShowAgain = globalStateGet(ExtensionSurveyStateKeys.DoNotShowAgain, false);
+  private async shouldShowBanner(): Promise<boolean> {
+    const doNotShowAgain = await globalStateGet(ExtensionSurveyStateKeys.DoNotShowAgain, false);
     if (doNotShowAgain) {
       return false;
     }
 
     const currentTime = Date.now();
-    const remindMeLaterTime = globalStateGet(ExtensionSurveyStateKeys.RemindMeLater, 0);
+    const remindMeLaterTime = await globalStateGet(ExtensionSurveyStateKeys.RemindMeLater, 0);
     if (remindMeLaterTime > currentTime) {
       return false;
     }
 
-    const disableSurveyForTime = globalStateGet(ExtensionSurveyStateKeys.DisableSurveyForTime, 0);
+    const disableSurveyForTime = await globalStateGet(
+      ExtensionSurveyStateKeys.DisableSurveyForTime,
+      0
+    );
     if (disableSurveyForTime > currentTime) {
       return false;
     }
@@ -113,7 +116,7 @@ export class ExtensionSurvey {
       title: localize("teamstoolkit.survey.takeSurvey.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: localize("teamstoolkit.survey.takeSurvey.message"),
+          message: getDefaultString("teamstoolkit.survey.takeSurvey.message"),
         });
 
         if (TreatmentVariableValue.isEmbeddedSurvey) {
@@ -141,7 +144,7 @@ export class ExtensionSurvey {
       title: localize("teamstoolkit.survey.remindMeLater.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: localize("teamstoolkit.survey.remindMeLater.message"),
+          message: getDefaultString("teamstoolkit.survey.remindMeLater.message"),
         });
         const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
         await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
@@ -152,7 +155,7 @@ export class ExtensionSurvey {
       title: localize("teamstoolkit.survey.dontShowAgain.title"),
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: localize("teamstoolkit.survey.dontShowAgain.message"),
+          message: getDefaultString("teamstoolkit.survey.dontShowAgain.message"),
         });
         await globalStateUpdate(ExtensionSurveyStateKeys.DoNotShowAgain, true);
       },
@@ -172,12 +175,12 @@ export class ExtensionSurvey {
 
     if (selection) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: localize("teamstoolkit.survey.banner.message"),
+        message: getDefaultString("teamstoolkit.survey.banner.message"),
       });
       await selection.run();
     } else {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: localize("teamstoolkit.survey.cancelMessage"),
+        message: getDefaultString("teamstoolkit.survey.cancelMessage"),
       });
       const disableSurveyForTime = Date.now() + this.timeToRemindMeLater;
       await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);

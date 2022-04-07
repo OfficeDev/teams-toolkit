@@ -7,6 +7,7 @@ import yargs, { Options } from "yargs";
 
 import { FxError, Inputs, LogLevel, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 import New from "../../../src/cmds/new";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -26,6 +27,7 @@ import {
 
 describe("New Command Tests", function () {
   const sandbox = sinon.createSandbox();
+  const isM365AppEnabledStub = sandbox.stub(commonTools, "isM365AppEnabled");
   let registeredCommands: string[] = [];
   let options: string[] = [];
   let positionals: string[] = [];
@@ -85,11 +87,24 @@ describe("New Command Tests", function () {
     logs = [];
   });
 
-  it("Builder Check", () => {
+  it("Builder Check (M365 Disabled)", () => {
+    isM365AppEnabledStub.returns(false);
     const cmd = new New();
     cmd.builder(yargs);
     expect(registeredCommands).deep.equals(
       ["template <template-name>", "list"],
+      JSON.stringify(registeredCommands)
+    );
+    expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
+    expect(positionals).deep.equals(["template-name"], JSON.stringify(positionals));
+  });
+
+  it("Builder Check (M365 Enabled)", () => {
+    isM365AppEnabledStub.returns(true);
+    const cmd = new New();
+    cmd.builder(yargs);
+    expect(registeredCommands).deep.equals(
+      ["template <template-name>", "list", "m365"],
       JSON.stringify(registeredCommands)
     );
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
@@ -105,12 +120,23 @@ describe("New Command Tests", function () {
     ]);
   });
 
+  it("New M365 Command Running Check", async () => {
+    const cmd = new New();
+    expect(cmd.subCommands.length).equals(2);
+    expect(cmd.subCommands[1].command).equals("m365");
+    await cmd.subCommands[1].handler({});
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.CreateProjectStart,
+      TelemetryEvent.CreateProject,
+    ]);
+  });
+
   describe("New Template Command Running Check", () => {
     const cmd = new New();
     const sampleAppName = "todo-list-SPFx";
 
     it("Sub Command Check", () => {
-      expect(cmd.subCommands.length).equals(1);
+      expect(cmd.subCommands.length).equals(2);
       expect(cmd.subCommands[0].command).equals("template <template-name>");
     });
 

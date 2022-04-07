@@ -1,16 +1,13 @@
 import "./Graph.css";
-import { useGraph } from "@microsoft/teamsfx-react";
+import { useGraph } from "./lib/useGraph";
 import { Providers, ProviderState } from '@microsoft/mgt-element';
 import { TeamsFxProvider } from '@microsoft/mgt-teamsfx-provider';
 import { Button } from "@fluentui/react-northstar";
 import { Design } from './Design';
 import { PersonCardFluentUI } from './PersonCardFluentUI';
 import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
-import { useContext } from "react";
-import { TeamsFxContext } from "../Context";
 
 export function Graph() {
-  const { teamsfx } = useContext(TeamsFxContext);
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
@@ -30,7 +27,7 @@ export function Graph() {
       }
       return { profile, photoUrl };
     },
-    { scope: ["User.Read"], teamsfx: teamsfx }
+    { scope: ["User.Read"] }
   );
 
   return (

@@ -105,7 +105,7 @@ class EnvironmentManager {
       });
   }
 
-  public newEnvConfigData(appName: string): EnvConfig {
+  public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       description: this.envConfigDescription,
@@ -116,6 +116,12 @@ class EnvironmentManager {
         },
       },
     };
+
+    if (existingTabEndpoint) {
+      // Settings to build a static Tab app from existing app.
+      envConfig.manifest[ManifestVariables.TabContentUrl] = existingTabEndpoint;
+      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = existingTabEndpoint;
+    }
 
     return envConfig;
   }

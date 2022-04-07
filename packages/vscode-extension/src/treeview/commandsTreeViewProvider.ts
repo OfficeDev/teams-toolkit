@@ -1,14 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
 import * as path from "path";
-import { ext } from "../extensionVariables";
-import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
+import * as vscode from "vscode";
+
+import {
+  FxError,
+  ok,
+  Result,
+  TreeCategory,
+  TreeItem,
+  Void,
+  TreeProvider,
+} from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { Void } from "@microsoft/teamsfx-api";
-export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
-  public static readonly TreeViewFlag = "TreeView";
+
+import { ext } from "../extensionVariables";
+import { TreeViewCommand } from "./treeViewCommand";
+
+export class CommandsTreeViewProvider
+  implements vscode.TreeDataProvider<TreeViewCommand>, TreeProvider
+{
   private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
     new vscode.EventEmitter<TreeViewCommand | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
@@ -109,22 +121,24 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         treeItem.label,
         tooltip,
         treeItem.commandId,
-        (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
-          ? vscode.TreeItemCollapsibleState.Expanded
-          : treeItem.expanded === false
-          ? vscode.TreeItemCollapsibleState.Collapsed
-          : undefined,
-        typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
-        [],
+        undefined,
         treeItem.icon
           ? {
               name: treeItem.icon,
               custom: treeItem.isCustom === undefined ? true : treeItem.isCustom,
             }
           : undefined,
-        treeItem.contextValue,
-        treeItem.description
+        typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined
       );
+      command.collapsibleState =
+        (treeItem.subTreeItems && treeItem.subTreeItems.length > 0) || treeItem.expanded
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : treeItem.expanded === false
+          ? vscode.TreeItemCollapsibleState.Collapsed
+          : undefined;
+      command.description = treeItem.description;
+      command.contextValue = treeItem.contextValue;
+      command.children = [];
 
       let parentCmd = undefined;
       if (typeof treeItem.parent === "number") {
@@ -168,23 +182,25 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
               subTreeItem.label,
               tooltip,
               subTreeItem.commandId,
-              (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
-              subTreeItem.expanded
-                ? vscode.TreeItemCollapsibleState.Expanded
-                : undefined,
-              typeof subTreeItem.parent === "number"
-                ? (subTreeItem.parent as TreeCategory)
-                : undefined,
-              [],
+              undefined,
               subTreeItem.icon
                 ? {
                     name: subTreeItem.icon,
                     custom: subTreeItem.isCustom === undefined ? true : subTreeItem.isCustom,
                   }
                 : undefined,
-              subTreeItem.contextValue,
-              subTreeItem.description
+              typeof subTreeItem.parent === "number"
+                ? (subTreeItem.parent as TreeCategory)
+                : undefined
             );
+            command.collapsibleState =
+              (subTreeItem.subTreeItems && subTreeItem.subTreeItems.length > 0) ||
+              subTreeItem.expanded
+                ? vscode.TreeItemCollapsibleState.Expanded
+                : undefined;
+            command.description = treeItem.description;
+            command.contextValue = treeItem.contextValue;
+            command.children = [];
 
             if (command.children === undefined) {
               command.children = [];
@@ -285,42 +301,5 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     this.disposableMap.forEach((value) => {
       value.dispose();
     });
-  }
-}
-
-export class TreeViewCommand extends vscode.TreeItem {
-  constructor(
-    public label: string,
-    public tooltip: string | vscode.MarkdownString,
-    public commandId?: string,
-    public collapsibleState?: vscode.TreeItemCollapsibleState,
-    public category?: TreeCategory,
-    public children?: TreeViewCommand[],
-    public image?: { name: string; custom: boolean },
-    public contextValue?: string,
-    public description?: string
-  ) {
-    super(label, collapsibleState ? collapsibleState : vscode.TreeItemCollapsibleState.None);
-    this.description = description === undefined ? "" : description;
-    this.contextValue = contextValue;
-
-    if (image !== undefined) {
-      if (!image.custom) {
-        this.iconPath = new vscode.ThemeIcon(this.image!.name);
-      } else {
-        this.iconPath = {
-          light: path.join(ext.context.extensionPath, "media", "light", `${this.image?.name}.svg`),
-          dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image?.name}.svg`),
-        };
-      }
-    }
-
-    if (commandId) {
-      this.command = {
-        title: label,
-        command: commandId,
-        arguments: [CommandsTreeViewProvider.TreeViewFlag, this],
-      };
-    }
   }
 }

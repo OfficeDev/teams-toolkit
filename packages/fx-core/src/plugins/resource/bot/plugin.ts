@@ -49,7 +49,6 @@ import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import {
-  BotHostTypes,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -63,14 +62,13 @@ import {
 } from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
-import { ScaffoldConfig } from "./configs/scaffoldConfig";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
   protected ctx?: PluginContext;
 
-  private async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
+  protected async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
       await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
@@ -81,7 +79,7 @@ export class TeamsBotImpl implements PluginImpl {
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     Logger.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(
@@ -187,7 +185,10 @@ export class TeamsBotImpl implements PluginImpl {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = {
+      plugins: plugins.map((obj) => obj.name),
+      enableAlwaysOn: isBotNotificationEnabled(),
+    };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDir, Bicep.ProvisionFileName),
@@ -310,13 +311,9 @@ export class TeamsBotImpl implements PluginImpl {
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
 
-    // TODO: remove it and implement the deploy in functionsHostedBot/plugin
-    const zipBuffer =
-      ScaffoldConfig.getBotHostType(context) === BotHostTypes.AzureFunctions
-        ? utils.zipAFolder(workingDir) // TODO: remove it and implement the deploy in functionsHostedBot/plugin
-        : utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
-            `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
-          ]);
+    const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
+      `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
+    ]);
 
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(

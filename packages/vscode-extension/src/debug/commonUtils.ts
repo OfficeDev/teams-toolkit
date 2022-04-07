@@ -19,6 +19,7 @@ import {
   isConfigUnifyEnabled,
   environmentManager,
   ProjectSettingsHelper,
+  PluginNames,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -123,11 +124,11 @@ export async function getDebugConfig(
       if (getConfigRes.isErr()) throw getConfigRes.error;
       const config = getConfigRes.value;
       if (!config)
-        throw new UserError("GetConfigError", "Failed to get project config", "extension");
+        throw new UserError("extension", "GetConfigError", "Failed to get project config");
       if (isLocalSideloadingConfiguration) {
         const envInfo = config.envInfos["local"];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", "Local Env config not exist", "extension");
+          throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
@@ -144,13 +145,13 @@ export async function getDebugConfig(
         }
         if (!env)
           throw new UserError(
+            "extension",
             "GetSelectedEnvError",
-            "Failed to get selected Env name",
-            "extension"
+            "Failed to get selected Env name"
           );
         const envInfo = config.envInfos[env];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", `Env '${env} ' config not exist`, "extension");
+          throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: env };
       }
@@ -234,6 +235,25 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
     return localSettings?.teamsApp?.teamsAppId as string;
   } catch {
     // in case structure changes
+    return undefined;
+  }
+}
+
+export async function getLocalBotId(): Promise<string | undefined> {
+  try {
+    if (isConfigUnifyEnabled()) {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
+    } else {
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.bot?.botId as string;
+    }
+  } catch {
     return undefined;
   }
 }

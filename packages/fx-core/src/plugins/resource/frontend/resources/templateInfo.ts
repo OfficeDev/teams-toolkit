@@ -8,6 +8,7 @@ import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../../folder";
 import { templatesVersion } from "../../../../common/template-utils/templates";
 import { isAadManifestEnabled } from "../../../../common";
+import { TabSsoItem } from "../../../solution/fx-solution/question";
 
 export type TemplateVariable = { [key: string]: string };
 
@@ -50,9 +51,12 @@ export class TemplateInfo {
       showFunction: isFunctionPlugin.toString(),
     };
 
+    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      ?.capabilities;
+
     this.scenario = ctx.projectSettings?.isM365
       ? Scenario.M365
-      : isAadManifestEnabled()
+      : isAadManifestEnabled() && !capabilities.includes(TabSsoItem.id)
       ? Scenario.NonSso
       : Scenario.Default;
 

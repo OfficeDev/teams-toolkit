@@ -15,12 +15,12 @@ import {
 
 describe(FunctionPluginInfo.pluginName, () => {
   describe("Result Factory Test", () => {
-    const errorMsg = "test error msg";
+    const errorMsg: [string, string] = ["test error msg", "test error msg"];
     const link = "test link";
 
     const checkErrorCommon = (err: FxError, name: string) => {
       chai.assert.equal(err.source, FunctionPluginInfo.alias);
-      chai.assert.equal(err.message, errorMsg);
+      chai.assert.equal(err.message, errorMsg[0]);
       chai.assert.equal(err.name, name);
     };
 

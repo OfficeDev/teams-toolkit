@@ -355,8 +355,11 @@ export class QTreeNode {
     if (this.data.type === "group") {
       if (!this.children || this.children.length === 0) return undefined;
       if (this.children.length === 1) {
-        this.children[0].condition = this.condition;
-        return this.children[0];
+        const child = this.children[0];
+        if (!(this.condition && child.condition)) {
+          child.condition ||= this.condition;
+          return child;
+        }
       }
     }
     return this;

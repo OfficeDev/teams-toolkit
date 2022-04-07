@@ -19,7 +19,12 @@ describe("Test Errors", () => {
       const details = "some error occurs";
       const suggestions: string[] = ["suggestions"];
       // Act
-      const pluginError = new PluginError(ErrorType.System, errorName, details, suggestions);
+      const pluginError = new PluginError(
+        ErrorType.System,
+        errorName,
+        [details, details],
+        suggestions
+      );
 
       // Assert
       chai.assert.isTrue(pluginError instanceof PluginError);
@@ -33,7 +38,7 @@ describe("Test Errors", () => {
     it("Happy Path", () => {
       // Arrange
       // Act
-      const myError = new InternalError("Some internal error");
+      const myError = new InternalError(["Some internal error", "Some internal error"]);
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
@@ -57,7 +62,7 @@ describe("Test Errors", () => {
     it("Happy Path", () => {
       // Arrange
       // Act
-      const myError = new FileSystemError("Some file system error");
+      const myError = new FileSystemError(["Some file system error", "Some file system error"]);
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  CreateAccountStart = "create-account-start",
+  CreateAccount = "create-account",
+
   QuickStart = "quick-start",
 
   Samples = "samples",
@@ -40,6 +43,9 @@ export enum TelemetryEvent {
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
 
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
+
   EditManifestTemplate = "edit-manifest-template",
 
   getManifestTemplatePath = "get-manifest-path",
@@ -52,6 +58,9 @@ export enum TelemetryEvent {
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+
+  DeployAadManifestStart = "deploy-aad-manifest-start",
+  DeployAadManifest = "deploy-aad-manifest",
 
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
@@ -143,7 +152,9 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
+  ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickLocalPreview = "click-local-preview",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
@@ -159,6 +170,15 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  ShowOutputChannel = "show-output-channel",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
+
+  // To track the effect of UX changes
+  // that prevents user performing concurrent operations.
+  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 }
 
 export enum TelemetryProperty {
@@ -203,10 +223,14 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsSpfx = "is-spfx",
   IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
+  // Used with TreeViewCommandConcurrentExecution
+  RunningCommand = "running-command",
+  BlockedCommand = "blocked-command",
 }
 
 export enum TelemetrySuccess {

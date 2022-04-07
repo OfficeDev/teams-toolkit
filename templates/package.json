@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -11,10 +11,16 @@
     "templates": [
         "blazor-base/csharp/default",
         "bot/csharp/default",
+        "bot/js/command-and-response",
         "bot/js/default",
+        "bot/js/notification-function-base",
+        "bot/js/notification-restify",
+        "bot/js/notification-trigger-http",
+        "bot/js/notification-trigger-timer",
+        "bot/ts/command-and-response",
         "bot/ts/default",
-        "bot/ts/notification",
         "bot/ts/notification-function-base",
+        "bot/ts/notification-restify",
         "bot/ts/notification-trigger-http",
         "bot/ts/notification-trigger-timer",
         "function-base/js/default",

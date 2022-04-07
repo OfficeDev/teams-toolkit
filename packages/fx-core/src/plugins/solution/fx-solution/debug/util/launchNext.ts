@@ -23,11 +23,15 @@ export function generateConfigurations(
   ];
 
   if (includeFrontend) {
-    launchConfigurations.push(attachToFrontend(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontend(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      attachToFrontend(LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      attachToFrontend(LaunchBrowser.chrome, "Chrome", includeBackend, includeBot)
+    );
   } else if (includeBot) {
-    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge", includeBackend));
+    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome", includeBackend));
   }
 
   if (includeBot) {
@@ -67,48 +71,56 @@ export function generateM365Configurations(
 ): Record<string, unknown>[] {
   const launchConfigurations: Record<string, unknown>[] = [];
 
-  // remote
-  let edgeOrder = 2,
-    chromeOrder = 1;
-  if (os.type() === "Windows_NT") {
-    edgeOrder = 1;
-    chromeOrder = 2;
-  }
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.teams, LaunchBrowser.edge, "Edge", edgeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.teams, LaunchBrowser.chrome, "Chrome", chromeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.outlook, LaunchBrowser.edge, "Edge", edgeOrder)
-  );
-  launchConfigurations.push(
-    launchRemoteM365(includeFrontend, HubName.outlook, LaunchBrowser.chrome, "Chrome", chromeOrder)
-  );
   if (includeFrontend) {
     launchConfigurations.push(
-      launchRemoteM365(includeFrontend, HubName.office, LaunchBrowser.edge, "Edge", edgeOrder)
+      attachToFrontendM365(HubName.teams, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
     );
     launchConfigurations.push(
-      launchRemoteM365(includeFrontend, HubName.office, LaunchBrowser.chrome, "Chrome", chromeOrder)
+      attachToFrontendM365(
+        HubName.teams,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
     );
-  }
-
-  if (includeFrontend) {
-    launchConfigurations.push(attachToFrontendM365(HubName.teams, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontendM365(HubName.teams, LaunchBrowser.chrome, "Chrome"));
-    launchConfigurations.push(attachToFrontendM365(HubName.outlook, LaunchBrowser.edge, "Edge"));
     launchConfigurations.push(
-      attachToFrontendM365(HubName.outlook, LaunchBrowser.chrome, "Chrome")
+      attachToFrontendM365(HubName.outlook, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
     );
-    launchConfigurations.push(attachToFrontendM365(HubName.office, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(attachToFrontendM365(HubName.office, LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      attachToFrontendM365(
+        HubName.outlook,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(HubName.office, LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      attachToFrontendM365(
+        HubName.office,
+        LaunchBrowser.chrome,
+        "Chrome",
+        includeBackend,
+        includeBot
+      )
+    );
   } else if (includeBot) {
-    launchConfigurations.push(launchBotM365(HubName.teams, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBotM365(HubName.teams, LaunchBrowser.chrome, "Chrome"));
-    launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBotM365(HubName.outlook, LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      launchBotM365(HubName.teams, LaunchBrowser.edge, "Edge", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.teams, LaunchBrowser.chrome, "Chrome", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.outlook, LaunchBrowser.edge, "Edge", includeBackend)
+    );
+    launchConfigurations.push(
+      launchBotM365(HubName.outlook, LaunchBrowser.chrome, "Chrome", includeBackend)
+    );
   }
 
   if (includeBot) {
@@ -176,31 +188,28 @@ function launchRemote(
   };
 }
 
-function launchRemoteM365(
-  includeFrontend: boolean,
-  hubName: string,
+function attachToFrontend(
   browserType: string,
   browserName: string,
-  order: number
+  includeBackend: boolean,
+  includeBot: boolean
 ): Record<string, unknown> {
-  return {
-    name: `Launch Remote in ${hubName} (${browserName})`,
-    type: browserType,
-    request: "launch",
-    url: includeFrontend ? getFrontendLaunchUrl(false, hubName) : getBotLaunchUrl(false, hubName),
-    presentation: {
-      group: "remote",
-      order: order,
-    },
-  };
-}
-
-function attachToFrontend(browserType: string, browserName: string): Record<string, unknown> {
+  // NOTE: if no cascadeTerminateToConfigurations, closing browser will not stop
+  // "Attach to Backend" and "Attach to Bot" even though stopAll in compound is true
+  const cascadeTerminateToConfigurations = [];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
+  if (includeBot) {
+    cascadeTerminateToConfigurations.push("Attach to Bot");
+  }
   return {
     name: `Attach to Frontend (${browserName})`,
     type: browserType,
     request: "launch",
     url: LaunchUrl.teamsLocal,
+    cascadeTerminateToConfigurations:
+      cascadeTerminateToConfigurations.length > 0 ? cascadeTerminateToConfigurations : undefined,
     presentation: {
       group: "all",
       hidden: true,
@@ -211,13 +220,24 @@ function attachToFrontend(browserType: string, browserName: string): Record<stri
 function attachToFrontendM365(
   hubName: string,
   browserType: string,
-  browserName: string
+  browserName: string,
+  includeBackend: boolean,
+  includeBot: boolean
 ): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = [];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
+  if (includeBot) {
+    cascadeTerminateToConfigurations.push("Attach to Bot");
+  }
   return {
     name: `Attach to Frontend in ${hubName} (${browserName})`,
     type: browserType,
     request: "launch",
     url: getFrontendLaunchUrl(true, hubName),
+    cascadeTerminateToConfigurations:
+      cascadeTerminateToConfigurations.length > 0 ? cascadeTerminateToConfigurations : undefined,
     presentation: {
       group: "all",
       hidden: true,
@@ -254,12 +274,21 @@ function attachToBackend(): Record<string, unknown> {
   };
 }
 
-function launchBot(browserType: string, browserName: string): Record<string, unknown> {
+function launchBot(
+  browserType: string,
+  browserName: string,
+  includeBackend: boolean
+): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = ["Attach to Bot"];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
   return {
     name: `Launch Bot (${browserName})`,
     type: browserType,
     request: "launch",
     url: LaunchUrl.teamsLocal,
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,
@@ -270,13 +299,19 @@ function launchBot(browserType: string, browserName: string): Record<string, unk
 function launchBotM365(
   hubName: string,
   browserType: string,
-  browserName: string
+  browserName: string,
+  includeBackend: boolean
 ): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = ["Attach to Bot"];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
   return {
     name: `Launch Bot in ${hubName} (${browserName})`,
     type: browserType,
     request: "launch",
     url: getBotLaunchUrl(true, hubName),
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,

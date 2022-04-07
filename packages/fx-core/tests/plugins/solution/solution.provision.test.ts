@@ -422,7 +422,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name],
       },
     };
     const result = await solution.provision(mockedCtx);

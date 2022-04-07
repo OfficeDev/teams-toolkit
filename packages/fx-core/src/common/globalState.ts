@@ -4,7 +4,10 @@
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import crypto from "crypto";
+import { ConfigFolderName, ProductName } from "@microsoft/teamsfx-api";
+import properLock from "proper-lockfile";
+import { waitSeconds } from "./tools";
 
 const GlobalStateFileName = "state.json";
 
@@ -14,16 +17,37 @@ const GlobalStateFileName = "state.json";
  * @param key A string.
  * @return The stored value or `undefined`.
  */
-export function globalStateGet(key: string, defaultValue?: any): any {
+export async function globalStateGet(key: string, defaultValue?: any): Promise<any> {
   const filePath = getGlobalStateFile();
   ensureGlobalStateFileExists(filePath);
 
-  const config = fs.readJSONSync(filePath);
-  let value = config[key];
-  if (value === undefined) {
-    value = defaultValue;
+  const lockFileDir = getLockFolder(filePath);
+  const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
+  await fs.ensureDir(lockFileDir);
+
+  const retryNum = 10;
+  for (let i = 0; i < retryNum; ++i) {
+    try {
+      await properLock.lock(filePath, { lockfilePath: lockfilePath });
+      let value: any = undefined;
+      try {
+        const config = await fs.readJSON(filePath);
+        value = config[key];
+        if (value === undefined) {
+          value = defaultValue;
+        }
+      } finally {
+        await properLock.unlock(filePath, { lockfilePath: lockfilePath });
+      }
+      return value;
+    } catch (e) {
+      if (e["code"] === "ELOCKED") {
+        await waitSeconds(1);
+        continue;
+      }
+      return undefined;
+    }
   }
-  return value;
 }
 
 /**
@@ -36,9 +60,30 @@ export async function globalStateUpdate(key: string, value: any): Promise<void> 
   const filePath = getGlobalStateFile();
   ensureGlobalStateFileExists(filePath);
 
-  const config = await fs.readJSON(filePath);
-  config[key] = value;
-  await fs.writeJson(filePath, config);
+  const lockFileDir = getLockFolder(filePath);
+  const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
+  await fs.ensureDir(lockFileDir);
+
+  const retryNum = 10;
+  for (let i = 0; i < retryNum; ++i) {
+    try {
+      await properLock.lock(filePath, { lockfilePath: lockfilePath });
+      try {
+        const config = await fs.readJSON(filePath);
+        config[key] = value;
+        await fs.writeJson(filePath, config);
+      } finally {
+        await properLock.unlock(filePath, { lockfilePath: lockfilePath });
+      }
+      break;
+    } catch (e) {
+      if (e["code"] === "ELOCKED") {
+        await waitSeconds(1);
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 function getGlobalStateFile(): string {
@@ -54,4 +99,11 @@ function ensureGlobalStateFileExists(filePath: string): void {
   if (!fs.existsSync(filePath)) {
     fs.writeJSONSync(filePath, {});
   }
+}
+
+function getLockFolder(projectPath: string): string {
+  return path.join(
+    os.tmpdir(),
+    `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
+  );
 }

@@ -46,7 +46,11 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+} from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
@@ -413,7 +417,8 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      solutionSettings.capabilities.includes(SsoItem.id)
+      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
+        solutionSettings.capabilities.includes(BotSsoItem.id))
     );
   } else {
     return (

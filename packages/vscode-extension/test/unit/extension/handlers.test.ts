@@ -28,7 +28,7 @@ import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
-import * as envTree from "../../../src/envTree";
+import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
@@ -109,7 +109,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
-      sinon.stub(envTree, "registerEnvTreeHandler");
+      sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
       await handlers.provisionHandler();
 
@@ -328,7 +328,7 @@ suite("handlers", () => {
   test("signOutM365", async () => {
     const signOut = sinon.stub(AppStudioTokenInstance, "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(envTree, "registerEnvTreeHandler");
+    sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
     await handlers.signOutM365(false);
 

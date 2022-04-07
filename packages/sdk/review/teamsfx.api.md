@@ -71,11 +71,35 @@ export class Channel implements NotificationTarget {
 
 // @beta
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]);
-    // (undocumented)
-    readonly adapter: BotFrameworkAdapter;
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
+}
+
+// @beta
+export interface CommandOptions {
+    commands?: TeamsFxBotCommandHandler[];
+}
+
+// @beta
+export class ConversationBot {
+    constructor(options: ConversationOptions);
+    readonly adapter: BotFrameworkAdapter;
+    readonly command?: CommandBot;
+    readonly notification?: NotificationBot;
+}
+
+// @beta
+export interface ConversationOptions {
+    adapter?: BotFrameworkAdapter;
+    command: {
+        enabled: boolean;
+        options: CommandOptions;
+    };
+    notification: {
+        enabled: boolean;
+        options: NotificationOptions_2;
+    };
 }
 
 // @beta

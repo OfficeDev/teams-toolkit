@@ -11,6 +11,7 @@ import { expect } from "chai";
 import { ConstantString } from "../util";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
 import {
+  AADAuthConfig,
   ApiConnectorConfiguration,
   BasicAuthConfig,
 } from "../../../../src/plugins/resource/apiconnector/config";
@@ -83,6 +84,64 @@ describe("Api Connector scaffold sample code", async () => {
     );
     const expectedContent = await fs.readFile(
       path.join(__dirname, "expectedFiles", "ts", "basic.ts"),
+      ConstantString.UTF8Encoding
+    );
+    chai.assert.strictEqual(
+      actualFile.replace(/\r?\n/g, os.EOL),
+      expectedContent.replace(/\r?\n/g, os.EOL)
+    );
+  });
+
+  it("generate js aad with reusing sample code file", async () => {
+    const languageType = "javascript";
+    const componet = "bot";
+    const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
+    const fakeConfig: ApiConnectorConfiguration = {
+      ComponentPath: ["bot"],
+      APIName: "fake",
+      EndPoint: "fake_endpoint",
+      AuthConfig: {
+        AuthType: AuthType.AAD,
+        ReuseTeamsApp: true,
+      } as AADAuthConfig,
+    };
+    await sampleHandler.generateSampleCode(fakeConfig);
+    expect(await fs.pathExists(path.join(botPath, "fake.js"))).to.be.true;
+    const actualFile = await fs.readFile(
+      path.join(botPath, "fake.js"),
+      ConstantString.UTF8Encoding
+    );
+    const expectedContent = await fs.readFile(
+      path.join(__dirname, "expectedFiles", "js", "aad.js"),
+      ConstantString.UTF8Encoding
+    );
+    chai.assert.strictEqual(
+      actualFile.replace(/\r?\n/g, os.EOL),
+      expectedContent.replace(/\r?\n/g, os.EOL)
+    );
+  });
+
+  it("generate ts aad with reusing sample code file", async () => {
+    const languageType = "typescript";
+    const componet = "bot";
+    const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
+    const fakeConfig: ApiConnectorConfiguration = {
+      ComponentPath: ["bot"],
+      APIName: "fake",
+      EndPoint: "fake_endpoint",
+      AuthConfig: {
+        AuthType: AuthType.AAD,
+        ReuseTeamsApp: true,
+      } as AADAuthConfig,
+    };
+    await sampleHandler.generateSampleCode(fakeConfig);
+    expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.true;
+    const actualFile = await fs.readFile(
+      path.join(botPath, "fake.ts"),
+      ConstantString.UTF8Encoding
+    );
+    const expectedContent = await fs.readFile(
+      path.join(__dirname, "expectedFiles", "ts", "aad.ts"),
       ConstantString.UTF8Encoding
     );
     chai.assert.strictEqual(

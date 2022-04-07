@@ -64,7 +64,7 @@ Handlebars.registerHelper("notContains", (value, array) => {
   return array.indexOf(value) == -1 ? this : "";
 });
 Handlebars.registerHelper("equals", (value, target) => {
-  return value == target ? this : "";
+  return value === target ? this : "";
 });
 
 export const Executor = {

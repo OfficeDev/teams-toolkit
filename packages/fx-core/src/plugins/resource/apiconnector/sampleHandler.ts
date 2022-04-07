@@ -31,7 +31,7 @@ export class SampleHandler {
     );
     const templateDirectory = path.join(baseDirectory, fileSuffix);
     const commentTemplateFilePath = path.join(baseDirectory, Constants.commentTemplate);
-    const templateName: string = config.AuthConfig.AuthType + ".template";
+    const templateName: string = config.AuthConfig.AuthType + Constants.templateEx;
     const templateFilePath = path.join(templateDirectory, templateName);
     try {
       const commentString = await fs.readFile(commentTemplateFilePath, ConstantString.UTF8Encoding);

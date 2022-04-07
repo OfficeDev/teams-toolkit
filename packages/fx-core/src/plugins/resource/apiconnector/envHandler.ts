@@ -54,9 +54,7 @@ export class ApiDataManager {
   public addAADEnvs(config: ApiConnectorConfiguration) {
     const apiName: string = config.APIName.toUpperCase();
     const apiConfig = this.apiConnector[apiName];
-    const reuseTeamsApp = Constants.envPrefix + apiName + "_REUSE_TEAMS_APP";
     const authConfig = config.AuthConfig as AADAuthConfig;
-    apiConfig.set(reuseTeamsApp, authConfig.ReuseTeamsApp.toString());
     if (!authConfig.ReuseTeamsApp) {
       const tenantId = Constants.envPrefix + apiName + "_TENANT_ID";
       const clientId = Constants.envPrefix + apiName + "_CLIENT_ID";

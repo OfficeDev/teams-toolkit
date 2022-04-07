@@ -28,6 +28,7 @@ export class Constants {
   public static readonly PLUGIN_NAME = "APIConnector";
   public static readonly pluginNameShort = "api-connector";
   public static readonly commentTemplate = "comment.template";
+  public static readonly templateEx = ".template";
   public static readonly envPrefix = "TEAMSFX_API_";
 
   public static readonly envFileName = ".env.teamsfx.local";

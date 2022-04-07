@@ -10,8 +10,7 @@ const teamsFx = new TeamsFx(IdentityType.App);
 // Initializes a new axios instance to call fake API
 const appCredential = teamsFx.getCredential();
 const authProvider = new BearerTokenAuthProvider(
-  // please replace ‘<your-api-scope>’ with actual api scope value.
-  // You can visit https://aka.ms/teamsfx-connect-api to understand how to call your API with TeamsFx SDK.
+  // Please replace '<your-api-scope>' with actual api scope value.
   async () => await appCredential.getToken("<your-api-scope>")?.token
 );
 const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);

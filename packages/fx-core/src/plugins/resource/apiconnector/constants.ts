@@ -33,6 +33,8 @@ export class Constants {
   public static readonly pkgLockFile = "package-lock.json";
   public static readonly sdkName = "@microsoft/teamsfx";
   public static readonly sdkJsName = "@microsft/teams-js";
+  public static readonly READ_MORE = "Read more";
+  public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
 
   public static readonly questionKey = {
     componentsSelect: "ComponentSelect",

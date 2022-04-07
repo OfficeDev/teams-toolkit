@@ -35,16 +35,16 @@ Suppose an existing AAD has been registered, you can reuse this AAD by configuri
 
 ## How can I trouble shoot issues when Teams Bot isn't responding on Azure?
  
-For general trouble shooting guidance for Bot, please refer to [Bot Framework Trouble Shooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4).
+For general trouble shooting guidance, please refer to [Bot Framework Trouble Shooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4).
 
-When Teams Bot isn't responding on Azure, you probably want to check the status of Teams Bot on Azure. There're two fundamental points you'd better check first:
-### Is the Teams Bot deployed successfully? Is the Teams Bot up and running and is the basic communication good?
-1. Log into Azure by [portal](https://portal.azure.com/) and find your Azure Bot's web app.
+When Teams Bot isn't responding, you probably want to check the its status on Azure. There're two fundamental points you'd better check first:
+### 1. Is the Teams Bot deployed successfully? Is the Teams Bot up and running? Is the basic communication good?
+1. Log into Azure by [portal](https://portal.azure.com/) and find your Azure Bot's app service.
 1. Check if the deployment artifacts are existing under the folder of `wwwroot` by Console in control panel:
 ![image](../images/fx-core/bot/check-console.png)
 or the scm website `<yourwebsite>.scm.azurewebsites.net/DebugConsole`:
 ![image](../images/fx-core/bot/check-scm.png)
-1. If you also host some static pages with the Bot, you can try to access the target url to see if it's available. 
+1. If you also host some static pages with the Bot, you can try to access the target urls to see if they're available. 
 ### Is there anything wrong in the server log or application log?
 1. As above, you have to log into Azure first.
 1. Turn on app service logs.

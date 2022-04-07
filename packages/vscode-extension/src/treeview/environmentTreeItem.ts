@@ -164,7 +164,7 @@ class WarningNode extends DynamicNode {
       this.label = `Sign in with your correct Azure / M365 account`;
     } else if (!accountStatus.isM365AccountLogin) {
       this.label = `Sign in with your correct M365 account`;
-    } else if (!accountStatus.isAzureAccountLogin === false) {
+    } else if (accountStatus.isAzureAccountLogin === false) {
       this.label = `Sign in with your correct Azure account`;
     }
 

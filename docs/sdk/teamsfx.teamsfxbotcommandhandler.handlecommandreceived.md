@@ -12,7 +12,7 @@ Handles a bot command received activity.
 <b>Signature:</b>
 
 ```typescript
-handleCommandReceived(context: TurnContext, receivedText: string): Promise<string | Partial<Activity>>;
+handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
 ```
 
 ## Parameters
@@ -20,7 +20,7 @@ handleCommandReceived(context: TurnContext, receivedText: string): Promise<strin
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  context | TurnContext | The bot context. |
-|  receivedText | string | The command text the user types from Teams. |
+|  message | [CommandMessage](./teamsfx.commandmessage.md) | The command message the user types from Teams. |
 
 <b>Returns:</b>
 

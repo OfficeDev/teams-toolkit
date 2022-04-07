@@ -65,6 +65,11 @@ export class FrontendDeployment {
         async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
       )) ?? [];
 
+    if (!("install:teamsfx" in scripts)) {
+      // * Track legacy projects
+      TelemetryHelper.sendGeneralEvent(TelemetryEvent.InstallScriptNotFound);
+    }
+
     await progressHandler?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new NpmInstallError(), async () => {
       await Utils.execute(
@@ -109,6 +114,11 @@ export class FrontendDeployment {
         (error) => new FileIOError(error.message),
         async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
       )) ?? [];
+
+    if (!("install:teamsfx" in scripts)) {
+      // * Track legacy projects
+      TelemetryHelper.sendGeneralEvent(TelemetryEvent.InstallScriptNotFound);
+    }
 
     await progress?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {

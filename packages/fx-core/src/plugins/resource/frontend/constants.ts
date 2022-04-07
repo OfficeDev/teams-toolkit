@@ -114,6 +114,7 @@ export class TelemetryEvent {
   static readonly Deploy = "deploy";
   static readonly SkipDeploy = "skip-deploy";
   static readonly DeploymentInfoNotFound = "deployment-info-not-found";
+  static readonly InstallScriptNotFound = "install-script-not-found";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";

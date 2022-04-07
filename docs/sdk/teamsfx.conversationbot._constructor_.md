@@ -21,3 +21,7 @@ constructor(options: ConversationOptions);
 |  --- | --- | --- |
 |  options | [ConversationOptions](./teamsfx.conversationoptions.md) | initialize options |
 
+## Remarks
+
+It's recommended to create your own adapter and storage for production environment instead of the default one.
+

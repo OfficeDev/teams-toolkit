@@ -78,3 +78,9 @@ for (const target of await conversationBot.notification.installations()) {
 |  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of command and response. |
 |  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of notification. |
 
+## Methods
+
+|  Method | Modifiers | Description |
+|  --- | --- | --- |
+|  [requestHandler(req, res, logic)](./teamsfx.conversationbot.requesthandler.md) |  | <b><i>(BETA)</i></b> The request handler to integrate with web request. |
+

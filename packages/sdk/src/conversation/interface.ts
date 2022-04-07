@@ -161,7 +161,9 @@ export interface CommandOptions {
  */
 export interface ConversationOptions {
   /**
-   * The bot adapter. If not provided, a default adapter will be created with BOT_ID and BOT_PASSWORD from environment variables.
+   * The bot adapter. If not provided, a default adapter will be created:
+   * - with BOT_ID and BOT_PASSWORD from environment variables.
+   * - with a default error handler that logs error to console, sends trace activity, and sends error message to user.
    *
    * @beta
    */
@@ -172,20 +174,20 @@ export interface ConversationOptions {
    *
    * @beta
    */
-  command: {
+  command?: {
     /**
      * Whether to enable command or not.
      *
      * @beta
      */
-    enabled: boolean;
+    enabled?: boolean;
 
     /**
      * The command options if command is enabled.
      *
      * @beta
      */
-    options: CommandOptions;
+    options?: CommandOptions;
   };
 
   /**
@@ -193,19 +195,19 @@ export interface ConversationOptions {
    *
    * @beta
    */
-  notification: {
+  notification?: {
     /**
      * Whether to enable notification or not.
      *
      * @beta
      */
-    enabled: boolean;
+    enabled?: boolean;
 
     /**
      * The notification options if notification is enabled.
      *
      * @beta
      */
-    options: NotificationOptions;
+    options?: NotificationOptions;
   };
 }

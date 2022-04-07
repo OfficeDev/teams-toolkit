@@ -30,6 +30,9 @@ import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder-core';
+import { TurnContext as TurnContext_2 } from 'botbuilder';
+import { WebRequest } from 'botbuilder';
+import { WebResponse } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -87,18 +90,19 @@ export class ConversationBot {
     readonly adapter: BotFrameworkAdapter;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
+    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
 }
 
 // @beta
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
-    command: {
-        enabled: boolean;
-        options: CommandOptions;
+    command?: {
+        enabled?: boolean;
+        options?: CommandOptions;
     };
-    notification: {
-        enabled: boolean;
-        options: NotificationOptions_2;
+    notification?: {
+        enabled?: boolean;
+        options?: NotificationOptions_2;
     };
 }
 

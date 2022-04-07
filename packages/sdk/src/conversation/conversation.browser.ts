@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { BotFrameworkAdapter } from "botbuilder";
+import { BotFrameworkAdapter, TurnContext, WebRequest, WebResponse } from "botbuilder";
 import { CommandBot } from "./command.browser";
 import { ConversationOptions } from "./interface";
 import { NotificationBot } from "./notification.browser";
@@ -60,6 +60,29 @@ export class ConversationBot {
    * @beta
    */
   public constructor(options: ConversationOptions) {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "ConversationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * The request handler to integrate with web request.
+   *
+   * @param req An Express or Restify style request object.
+   * @param res An Express or Restify style response object.
+   * @param logic The additional function to handle bot context.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * @beta
+   */
+  public async requestHandler(
+    req: WebRequest,
+    res: WebResponse,
+    logic?: (context: TurnContext) => Promise<any>
+  ): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "ConversationBot"),
       ErrorCode.RuntimeNotSupported

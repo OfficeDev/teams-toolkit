@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { TurnContext } from "botbuilder-core";
 import { Activity } from "botframework-schema";
 import {

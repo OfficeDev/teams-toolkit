@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { BotFrameworkAdapter } from "botbuilder";
+import { BotFrameworkAdapter, TurnContext, WebRequest, WebResponse } from "botbuilder";
 import { CommandBot } from "./command";
 import { ConversationOptions } from "./interface";
 import { NotificationBot } from "./notification";
@@ -86,6 +86,9 @@ export class ConversationBot {
   /**
    * Creates new instance of the `ConversationBot`.
    *
+   * @remarks
+   * It's recommended to create your own adapter and storage for production environment instead of the default one.
+   *
    * @param options - initialize options
    *
    * @beta
@@ -94,18 +97,78 @@ export class ConversationBot {
     if (options.adapter) {
       this.adapter = options.adapter;
     } else {
-      this.adapter = new BotFrameworkAdapter({
-        appId: process.env.BOT_ID,
-        appPassword: process.env.BOT_PASSWORD,
-      });
+      this.adapter = this.createDefaultAdapter(process.env.BOT_ID, process.env.BOT_PASSWORD);
     }
 
-    if (options.command.enabled) {
+    if (options.command?.enabled) {
       this.command = new CommandBot(this.adapter, options.command.options);
     }
 
-    if (options.notification.enabled) {
+    if (options.notification?.enabled) {
       this.notification = new NotificationBot(this.adapter, options.notification.options);
     }
+  }
+
+  private createDefaultAdapter(appId?: string, appPassword?: string): BotFrameworkAdapter {
+    const adapter = new BotFrameworkAdapter({
+      appId: appId,
+      appPassword: appPassword,
+    });
+
+    // the default error handler
+    adapter.onTurnError = async (context, error) => {
+      // This check writes out errors to console.
+      console.error(`[onTurnError] unhandled error: ${error}`);
+
+      // Send a trace activity, which will be displayed in Bot Framework Emulator
+      await context.sendTraceActivity(
+        "OnTurnError Trace",
+        `${error}`,
+        "https://www.botframework.com/schemas/error",
+        "TurnError"
+      );
+
+      // Send a message to the user
+      await context.sendActivity(`The bot encountered unhandled error: ${error.message}`);
+      await context.sendActivity("To continue to run this bot, please fix the bot source code.");
+    };
+
+    return adapter;
+  }
+
+  /**
+   * The request handler to integrate with web request.
+   *
+   * @param req An Express or Restify style request object.
+   * @param res An Express or Restify style response object.
+   * @param logic The additional function to handle bot context.
+   *
+   * @example
+   * For example, to use with Restify:
+   * ``` typescript
+   * // The default/empty behavior
+   * server.post("api/messages", conversationBot.requestHandler);
+   *
+   * // Or, add your own logic
+   * server.post("api/messages", async (req, res) => {
+   *   await conversationBot.requestHandler(req, res, async (context) => {
+   *     // your-own-context-logic
+   *   });
+   * });
+   * ```
+   *
+   * @beta
+   */
+  public async requestHandler(
+    req: WebRequest,
+    res: WebResponse,
+    logic?: (context: TurnContext) => Promise<any>
+  ): Promise<void> {
+    if (logic === undefined) {
+      // create empty logic
+      logic = async () => {};
+    }
+
+    await this.adapter.processActivity(req, res, logic);
   }
 }

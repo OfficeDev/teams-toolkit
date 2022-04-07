@@ -19,7 +19,7 @@ export interface ConversationOptions
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [adapter?](./teamsfx.conversationoptions.adapter.md) | BotFrameworkAdapter | <b><i>(BETA)</i></b> <i>(Optional)</i> The bot adapter. If not provided, a default adapter will be created with BOT\_ID and BOT\_PASSWORD from environment variables. |
-|  [command](./teamsfx.conversationoptions.command.md) | { enabled: boolean; options: [CommandOptions](./teamsfx.commandoptions.md)<!-- -->; } | <b><i>(BETA)</i></b> The command part. |
-|  [notification](./teamsfx.conversationoptions.notification.md) | { enabled: boolean; options: NotificationOptions; } | <b><i>(BETA)</i></b> The notification part. |
+|  [adapter?](./teamsfx.conversationoptions.adapter.md) | BotFrameworkAdapter | <b><i>(BETA)</i></b> <i>(Optional)</i> The bot adapter. If not provided, a default adapter will be created: - with BOT\_ID and BOT\_PASSWORD from environment variables. - with a default error handler that logs error to console, sends trace activity, and sends error message to user. |
+|  [command?](./teamsfx.conversationoptions.command.md) | { enabled?: boolean; options?: [CommandOptions](./teamsfx.commandoptions.md)<!-- -->; } | <b><i>(BETA)</i></b> <i>(Optional)</i> The command part. |
+|  [notification?](./teamsfx.conversationoptions.notification.md) | { enabled?: boolean; options?: NotificationOptions; } | <b><i>(BETA)</i></b> <i>(Optional)</i> The notification part. |
 

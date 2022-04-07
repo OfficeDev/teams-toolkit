@@ -214,8 +214,18 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 
     const projectSettingsJson = await fs.readJson(projectSettingsPath);
 
-    if (!projectSettingsJson.solutionSettings.capabilities.includes("SSO")) {
-      projectSettingsJson.solutionSettings.capabilities.push("SSO");
+    if (
+      projectSettingsJson.solutionSettings.capabilities.includes("Tab") &&
+      !projectSettingsJson.solutionSettings.capabilities.includes("TabSSO")
+    ) {
+      projectSettingsJson.solutionSettings.capabilities.push("TabSSO");
+    }
+
+    if (
+      projectSettingsJson.solutionSettings.capabilities.includes("Bot") &&
+      !projectSettingsJson.solutionSettings.capabilities.includes("BotSSO")
+    ) {
+      projectSettingsJson.solutionSettings.capabilities.push("BotSSO");
     }
 
     await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });

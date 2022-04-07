@@ -19,7 +19,7 @@ export interface TeamsFxBotCommandHandler
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [triggerPatterns](./teamsfx.teamsfxbotcommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | <b><i>(BETA)</i></b> The command name or RegExp pattern that can trigger this handler. |
+|  [triggerPatterns](./teamsfx.teamsfxbotcommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | <b><i>(BETA)</i></b> The string or regular expression patterns that can trigger this handler. |
 
 ## Methods
 

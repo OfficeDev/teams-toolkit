@@ -143,7 +143,7 @@ export interface CommandMessage {
  */
 export interface TeamsFxBotCommandHandler {
   /**
-   * The command name or RegExp pattern that can trigger this handler.
+   * The string or regular expression patterns that can trigger this handler.
    */
   triggerPatterns: TriggerPatterns;
 

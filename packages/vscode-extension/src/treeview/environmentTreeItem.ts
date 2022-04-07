@@ -161,11 +161,11 @@ class WarningNode extends DynamicNode {
   constructor(public identifier: string, accountStatus: accountStatus) {
     super(identifier, vscode.TreeItemCollapsibleState.None);
     if (accountStatus.isAzureAccountLogin === false && !accountStatus.isM365AccountLogin) {
-      this.label = `Sign in with your correct Azure / M365 account`;
+      this.label = localize("teamstoolkit.envTree.missingAzureAndM365Account");
     } else if (!accountStatus.isM365AccountLogin) {
-      this.label = `Sign in with your correct M365 account`;
+      this.label = localize("teamstoolkit.envTree.missingM365Account");
     } else if (accountStatus.isAzureAccountLogin === false) {
-      this.label = `Sign in with your correct Azure account`;
+      this.label = localize("teamstoolkit.envTree.missingAzureAccount");
     }
 
     this.iconPath = warningIcon;

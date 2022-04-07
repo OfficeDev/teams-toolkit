@@ -40,8 +40,9 @@ For general trouble shooting guidance for Bot, please refer to [Bot Framework Tr
 When Teams Bot isn't responding on Azure, you probably want to check the status of Teams Bot on Azure. There're two fundamental points you'd better check first:
 ### Is the Teams Bot deployed successfully? Is the Teams Bot up and running and is the basic communication good?
 1. Log into Azure by [portal](https://portal.azure.com/) and find your Azure Bot's web app.
-1. Check if the deployment artifacts are existing under the folder of `wwwroot` by Console in control panel or the scm website `<yourwebsite>.scm.azurewebsites.net/DebugConsole`.
+1. Check if the deployment artifacts are existing under the folder of `wwwroot` by Console in control panel:
 ![image](../images/fx-core/bot/check-console.png)
+or the scm website `<yourwebsite>.scm.azurewebsites.net/DebugConsole`:
 ![image](../images/fx-core/bot/check-scm.png)
 1. If you also host some static pages with the Bot, you can try to access the target url to see if it's available. 
 ### Is there anything wrong in the server log or application log?

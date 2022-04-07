@@ -33,6 +33,14 @@ describe("ConversationBot Tests - Node", () => {
     assert.isUndefined(conversationBot.notification);
   });
 
+  it("Create with customized adapterConfig", () => {
+    const conversationBot = new ConversationBot({ adapterConfig: { foo: "bar" } });
+    assert.isDefined(conversationBot.adapter);
+    assert.isDefined(conversationBot.adapter.onTurnError);
+    assert.isUndefined(conversationBot.command);
+    assert.isUndefined(conversationBot.notification);
+  });
+
   it("Create with all enabled", () => {
     const conversationBot = new ConversationBot({
       command: { enabled: true },

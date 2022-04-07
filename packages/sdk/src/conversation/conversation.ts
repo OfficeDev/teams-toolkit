@@ -95,7 +95,7 @@ export class ConversationBot {
     if (options.adapter) {
       this.adapter = options.adapter;
     } else {
-      this.adapter = this.createDefaultAdapter(process.env.BOT_ID, process.env.BOT_PASSWORD);
+      this.adapter = this.createDefaultAdapter(options.adapterConfig);
     }
 
     if (options.command?.enabled) {
@@ -107,11 +107,14 @@ export class ConversationBot {
     }
   }
 
-  private createDefaultAdapter(appId?: string, appPassword?: string): BotFrameworkAdapter {
-    const adapter = new BotFrameworkAdapter({
-      appId: appId,
-      appPassword: appPassword,
-    });
+  private createDefaultAdapter(adapterConfig?: { [key: string]: unknown }): BotFrameworkAdapter {
+    const adapter =
+      adapterConfig === undefined
+        ? new BotFrameworkAdapter({
+            appId: process.env.BOT_ID,
+            appPassword: process.env.BOT_PASSWORD,
+          })
+        : new BotFrameworkAdapter(adapterConfig);
 
     // the default error handler
     adapter.onTurnError = async (context, error) => {

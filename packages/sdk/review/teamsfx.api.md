@@ -102,6 +102,9 @@ export class ConversationBot {
 // @beta
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
+    adapterConfig?: {
+        [key: string]: unknown;
+    };
     command?: CommandOptions & {
         enabled?: boolean;
     };

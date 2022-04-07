@@ -31,7 +31,7 @@ For command and response, you can register your commands through the constructor
 // register through constructor
 const conversationBot = new ConversationBot({
   command: {
-    enable: true,
+    enabled: true,
     options: {
         commands: [ new HelloWorldCommandHandler() ],
     },
@@ -47,7 +47,7 @@ For notification, you can enable notification at initialization, then send notif
 // enable through constructor
 const conversationBot = new ConversationBot({
   notification: {
-    enable: true,
+    enabled: true,
   },
 });
 

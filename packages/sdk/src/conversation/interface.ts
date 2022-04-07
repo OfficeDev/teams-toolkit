@@ -178,7 +178,7 @@ export interface ConversationOptions {
      *
      * @beta
      */
-    enable: boolean;
+    enabled: boolean;
 
     /**
      * The command options if command is enabled.
@@ -199,7 +199,7 @@ export interface ConversationOptions {
      *
      * @beta
      */
-    enable: boolean;
+    enabled: boolean;
 
     /**
      * The notification options if notification is enabled.

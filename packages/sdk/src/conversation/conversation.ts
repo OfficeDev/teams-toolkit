@@ -18,7 +18,7 @@ import { NotificationBot } from "./notification";
  * // register through constructor
  * const conversationBot = new ConversationBot({
  *   command: {
- *     enable: true,
+ *     enabled: true,
  *     options: {
  *         commands: [ new HelloWorldCommandHandler() ],
  *     },
@@ -35,7 +35,7 @@ import { NotificationBot } from "./notification";
  * // enable through constructor
  * const conversationBot = new ConversationBot({
  *   notification: {
- *     enable: true,
+ *     enabled: true,
  *   },
  * });
  *
@@ -100,11 +100,11 @@ export class ConversationBot {
       });
     }
 
-    if (options.command.enable) {
+    if (options.command.enabled) {
       this.command = new CommandBot(this.adapter, options.command.options);
     }
 
-    if (options.notification.enable) {
+    if (options.notification.enabled) {
       this.notification = new NotificationBot(this.adapter, options.notification.options);
     }
   }

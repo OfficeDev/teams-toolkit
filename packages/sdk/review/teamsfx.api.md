@@ -93,11 +93,11 @@ export class ConversationBot {
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
     command: {
-        enable: boolean;
+        enabled: boolean;
         options: CommandOptions;
     };
     notification: {
-        enable: boolean;
+        enabled: boolean;
         options: NotificationOptions_2;
     };
 }

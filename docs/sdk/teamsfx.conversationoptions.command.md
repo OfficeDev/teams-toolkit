@@ -13,7 +13,7 @@ The command part.
 
 ```typescript
 command: {
-        enable: boolean;
+        enabled: boolean;
         options: CommandOptions;
     };
 ```

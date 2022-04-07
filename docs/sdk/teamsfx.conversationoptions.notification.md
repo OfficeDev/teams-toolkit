@@ -13,7 +13,7 @@ The notification part.
 
 ```typescript
 notification: {
-        enable: boolean;
+        enabled: boolean;
         options: NotificationOptions;
     };
 ```

@@ -9,6 +9,9 @@ After project upgrade, the new file strcure will consist:
 
 Your existing `localSettings.json`, `manifest.local.template.json` and `manifest.remote.template.json` files will be backed up in `.backup` folder.
 
+## Know what you need to do
+Since Teams Toolkit will use `manifest.remote.template.json` as single manifest template file after upgrade, if you have customized the `manifest.local.template.json` you will need to place your changes in `config.local.json` and pass it to the template. 
+
 ## Know about how to restore your project
 
 * Copy the .backup/.fx folder to your project root path.

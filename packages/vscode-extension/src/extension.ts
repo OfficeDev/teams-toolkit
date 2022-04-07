@@ -22,6 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
+import { ManifestTemplateCompletionItemProvider } from "./completionItemProvider";
 import {
   Correlator,
   isConfigUnifyEnabled,
@@ -490,6 +491,17 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
+    )
+  );
+
+  // Register completion item provider
+  const manifestTemplateCompletionItemProvider = new ManifestTemplateCompletionItemProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      manifestTemplateSelecctor,
+      manifestTemplateCompletionItemProvider,
+      '"',
+      ":"
     )
   );
 

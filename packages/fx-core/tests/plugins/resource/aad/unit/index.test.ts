@@ -313,14 +313,80 @@ describe("AadAppForTeamsPlugin: CI", () => {
     }
   });
 
-  it("scaffold", async function () {
+  it("scaffold without bot", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub(fs, "ensureDir").resolves();
-    sinon.stub(fs, "copy").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const fakeManifest = {
+      id: "{{state.fx-resource-aad-app-for-teams.objectId}}",
+      appId: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+      replyUrlsWithType: [
+        {
+          url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html",
+          type: "Web",
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(fakeManifest);
+    sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 3);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
+      chai.assert.equal(
+        data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html"
+      );
+    });
     const result = await plugin.scaffold(context);
+    chai.assert.equal(result.isOk(), true);
+  });
+
+  it("scaffold with bot", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    sinon.stub(fs, "ensureDir").resolves();
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    (context.projectSettings!.solutionSettings as any).capabilities.push("Bot");
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const fakeManifest = {
+      id: "{{state.fx-resource-aad-app-for-teams.objectId}}",
+      appId: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+      replyUrlsWithType: [
+        {
+          url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html",
+          type: "Web",
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(fakeManifest);
+    sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 4);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
+      chai.assert.equal(
+        data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[3].url,
+        "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html"
+      );
+    });
+    const result = await plugin.scaffold(context);
+
     chai.assert.equal(result.isOk(), true);
   });
 

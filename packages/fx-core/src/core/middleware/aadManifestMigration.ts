@@ -201,7 +201,34 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       "appPackage",
       "aad.template.json"
     );
+    const projectSettingsJson = await fs.readJson(projectSettingsPath);
+
+    if (projectSettingsJson.solutionSettings.capabilities.includes("Tab")) {
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html",
+        type: "Web",
+      });
+
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
+        type: "Spa",
+      });
+
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html",
+        type: "Spa",
+      });
+    }
+
+    if (projectSettingsJson.solutionSettings.capabilities.includes("Bot")) {
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html",
+        type: "Web",
+      });
+    }
+
     await fs.writeJSON(aadManifestPath, aadManifestJson, { spaces: 4, EOL: os.EOL });
+
     fileList.push(aadManifestPath);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
@@ -211,8 +238,6 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       Component.core,
       TelemetryEvent.ProjectAadManifestMigrationAddSSOCapabilityStart
     );
-
-    const projectSettingsJson = await fs.readJson(projectSettingsPath);
 
     if (
       projectSettingsJson.solutionSettings.capabilities.includes("Tab") &&

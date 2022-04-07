@@ -26,10 +26,10 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import axios from "axios";
 import * as util from "util";
-import { registerEnvTreeHandler } from "./envTree";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { localize } from "./utils/localizeUtils";
 import { getTriggerFromProperty } from "./utils/commonUtils";
+import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -240,7 +240,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return ok(null);
   };
 
@@ -284,7 +284,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       }
     }
 
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return ok(null);
   };
 
@@ -312,7 +312,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           treeItem.label += " ";
           tools.treeProvider?.refresh([treeItem]);
         }
-        await registerEnvTreeHandler();
+        await envTreeProviderInstance.reloadEnvironments();
       } else if (accountInfo !== undefined) {
         const treeItem = {
           commandId: "fx-extension.signinM365",
@@ -324,7 +324,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         };
         tools.treeProvider?.refresh([treeItem]);
       }
-      await registerEnvTreeHandler();
+      await envTreeProviderInstance.reloadEnvironments();
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([
         {
@@ -354,7 +354,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ]);
     }
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return Promise.resolve();
   };
 
@@ -380,7 +380,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ]);
           const subItem = await getSelectSubItem!(token);
           tools.treeProvider?.add([subItem[0]]);
-          await registerEnvTreeHandler();
+          await envTreeProviderInstance.reloadEnvironments();
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
@@ -410,7 +410,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure",
           },
         ]);
-        await registerEnvTreeHandler();
+        await envTreeProviderInstance.reloadEnvironments();
       }
 
       return Promise.resolve();

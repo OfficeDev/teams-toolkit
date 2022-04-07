@@ -52,6 +52,7 @@
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | <b><i>(BETA)</i></b> Defines method that injects authentication info to http requests |
+|  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command messagge that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | <b><i>(BETA)</i></b> Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
@@ -69,4 +70,5 @@
 |  --- | --- |
 |  [LogFunction](./teamsfx.logfunction.md) | <b><i>(BETA)</i></b> Log function for customized logging. |
 |  [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> The target type where the notification will be sent to. |
+|  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

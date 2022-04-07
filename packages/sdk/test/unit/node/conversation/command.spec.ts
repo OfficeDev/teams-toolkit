@@ -3,7 +3,7 @@ import { BotFrameworkAdapter, ConversationReference, TeamsInfo, TurnContext } fr
 import * as sinon from "sinon";
 import { CommandBot } from "../../../../src/conversation/command";
 import { CommandResponseMiddleware } from "../../../../src/conversation/middleware";
-import { TestCommandHandler, TestRegExpCommandHandler } from "./testUtils";
+import { TestCommandHandler } from "./testUtils";
 
 describe("CommandBot Tests - Node", () => {
   const sandbox = sinon.createSandbox();
@@ -40,7 +40,7 @@ describe("CommandBot Tests - Node", () => {
 
   it("command should be added through registerCommand API", () => {
     const commandBot = new CommandBot(adapter);
-    commandBot.registerCommand(new TestCommandHandler());
+    commandBot.registerCommand(new TestCommandHandler("test"));
 
     assert.isTrue(middlewares[0] instanceof CommandResponseMiddleware);
     const middleware = middlewares[0] as CommandResponseMiddleware;
@@ -52,14 +52,19 @@ describe("CommandBot Tests - Node", () => {
 
   it("commands should be added through registerCommands API", () => {
     const commandBot = new CommandBot(adapter);
-    commandBot.registerCommands([new TestCommandHandler(), new TestRegExpCommandHandler()]);
+    const stringPattern = "test";
+    const regExpPattern = /^test (.*?)$/i;
+    commandBot.registerCommands([
+      new TestCommandHandler(stringPattern),
+      new TestCommandHandler(regExpPattern),
+    ]);
 
     assert.isTrue(middlewares[0] instanceof CommandResponseMiddleware);
     const middleware = middlewares[0] as CommandResponseMiddleware;
 
     assert.isNotEmpty(middleware.commandHandlers);
     assert.isTrue(middleware.commandHandlers.length === 2);
-    assert.isTrue(middleware.commandHandlers[0] instanceof TestCommandHandler);
-    assert.isTrue(middleware.commandHandlers[1] instanceof TestRegExpCommandHandler);
+    assert.isTrue(typeof middleware.commandHandlers[0].triggerPatterns === "string");
+    assert.isTrue(middleware.commandHandlers[1].triggerPatterns instanceof RegExp);
   });
 });

@@ -43,6 +43,9 @@ export function checkInputEmpty(inputs: Inputs, ...keys: string[]) {
 }
 
 export class Notification {
+  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
+  public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
+
   public static GetBasiString(apiName: string, components: string[], languageType: string): string {
     const fileName = getSampleFileName(apiName, languageType);
     return getLocalizedString(

@@ -21,7 +21,7 @@ New Features:
 - Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include: <br>
 	a). an Add(+) button besides ACCOUNTS in sidebar <br>
 	![ITP in sidebar](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-sidebar.png) <br>
-	b). an new "create account" option in `Teams: Account` Command <br>
+	b). an new "Create an account" option in `Teams: Accounts` Command <br>
 	![ITP in command](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-command.png) <br>
 	c). improved Get Started page <br>
 	![ITP in get started page](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-getstart.png) <br>

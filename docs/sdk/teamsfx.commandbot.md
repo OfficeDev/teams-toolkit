@@ -19,29 +19,11 @@ export declare class CommandBot
 
 Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
 
-## Example
-
-You can register your commands through the constructor of the [CommandBot](./teamsfx.commandbot.md)<!-- -->, or use the `registerCommand` and `registerCommands` API to add commands after creating the `CommandBot` instance.
-
-```typescript
-// register through constructor
-const commandBot = new CommandBot(adapter, [ new HelloWorldCommandHandler() ]);
-
-// register through `register*` API
-commandBot.registerCommand(new HelpCommandHandler());
-```
-
 ## Constructors
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, commands)](./teamsfx.commandbot._constructor_.md) |  | <b><i>(BETA)</i></b> Creates a new instance of the <code>CommandBot</code>. |
-
-## Properties
-
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [adapter](./teamsfx.commandbot.adapter.md) |  | BotFrameworkAdapter | <b><i>(BETA)</i></b> |
+|  [(constructor)(adapter, options)](./teamsfx.commandbot._constructor_.md) |  | <b><i>(BETA)</i></b> Creates a new instance of the <code>CommandBot</code>. |
 
 ## Methods
 

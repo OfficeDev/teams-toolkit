@@ -8,7 +8,7 @@ import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../../folder";
 import { templatesVersion } from "../../../../common/template-utils/templates";
 import { isAadManifestEnabled } from "../../../../common";
-import { SsoItem } from "../../../solution/fx-solution/question";
+import { TabSsoItem } from "../../../solution/fx-solution/question";
 
 export type TemplateVariable = { [key: string]: string };
 
@@ -56,7 +56,7 @@ export class TemplateInfo {
 
     this.scenario = ctx.projectSettings?.isM365
       ? Scenario.M365
-      : isAadManifestEnabled() && !capabilities.includes(SsoItem.id)
+      : isAadManifestEnabled() && !capabilities.includes(TabSsoItem.id)
       ? Scenario.NonSso
       : Scenario.Default;
 

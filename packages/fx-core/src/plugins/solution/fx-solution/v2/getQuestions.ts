@@ -36,7 +36,8 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -426,7 +427,7 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [
       TabOptionItem,
-      BotOptionItem,
+      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       MessageExtensionItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
@@ -478,14 +479,21 @@ export async function getQuestionsForAddCapability(
     if (!isAadManifestEnabled()) {
       options.push(TabOptionItem);
     } else {
-      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, TabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
+        );
+      }
     }
   }
   if (isBotAddable) {
-    options.push(BotOptionItem);
     if (isBotNotificationEnabled()) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
+    } else {
+      options.push(BotOptionItem);
     }
   }
   if (isMEAddable) options.push(MessageExtensionItem);

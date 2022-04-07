@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { BotFrameworkAdapter } from "botbuilder";
 import { Activity, TurnContext } from "botbuilder-core";
 
 /**
@@ -157,4 +158,74 @@ export interface TeamsFxBotCommandHandler {
     context: TurnContext,
     message: CommandMessage
   ): Promise<string | Partial<Activity>>;
+}
+
+/**
+ * Options to initialize {@link CommandBot}.
+ *
+ * @beta
+ */
+export interface CommandOptions {
+  /**
+   * The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
+   *
+   * @beta
+   */
+  commands?: TeamsFxBotCommandHandler[];
+}
+
+/**
+ * Options to initialize {@link ConversationBot}
+ *
+ * @beta
+ */
+export interface ConversationOptions {
+  /**
+   * The bot adapter. If not provided, a default adapter will be created with BOT_ID and BOT_PASSWORD from environment variables.
+   *
+   * @beta
+   */
+  adapter?: BotFrameworkAdapter;
+
+  /**
+   * The command part.
+   *
+   * @beta
+   */
+  command: {
+    /**
+     * Whether to enable command or not.
+     *
+     * @beta
+     */
+    enabled: boolean;
+
+    /**
+     * The command options if command is enabled.
+     *
+     * @beta
+     */
+    options: CommandOptions;
+  };
+
+  /**
+   * The notification part.
+   *
+   * @beta
+   */
+  notification: {
+    /**
+     * Whether to enable notification or not.
+     *
+     * @beta
+     */
+    enabled: boolean;
+
+    /**
+     * The notification options if notification is enabled.
+     *
+     * @beta
+     */
+    options: NotificationOptions;
+  };
 }

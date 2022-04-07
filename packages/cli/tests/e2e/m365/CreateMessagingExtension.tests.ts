@@ -18,6 +18,7 @@ describe("Create M365 Messaging Extension", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const originalTemplatePrerelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE;
 
   before(() => {
     process.env.TEAMSFX_M365_APP = "true";
@@ -25,6 +26,8 @@ describe("Create M365 Messaging Extension", function () {
   });
 
   after(async () => {
+    process.env.TEAMSFX_M365_APP = "false";
+    process.env.TEAMSFX_TEMPLATE_PRERELEASE = originalTemplatePrerelease;
     // clean up
     await cleanUpLocalProject(projectPath);
   });

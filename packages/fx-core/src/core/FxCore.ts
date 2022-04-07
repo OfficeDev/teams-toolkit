@@ -64,7 +64,8 @@ import {
   ExistingTabOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -375,7 +376,10 @@ export class FxCore implements v3.ICore {
         if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
-        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
+        if (
+          isAadManifestEnabled() &&
+          (capabilities.includes(TabSsoItem.id) || capabilities.includes(BotSsoItem.id))
+        ) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {

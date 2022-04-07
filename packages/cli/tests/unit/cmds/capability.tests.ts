@@ -12,6 +12,8 @@ import Capability, {
   CapabilityAddTab,
   CapabilityAddBot,
   CapabilityAddMessageExtension,
+  CapabilityAddNotification,
+  CapabilityAddCommandAndResponse,
 } from "../../../src/cmds/capability";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
@@ -190,6 +192,70 @@ describe("Capability Command Tests", function () {
 
   it("Capability Add Messging-Extension Command Running Check with Error", async () => {
     const cmd = new CapabilityAddMessageExtension();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add Notification Command Running Check", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const cmd = new CapabilityAddNotification();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Capability Add Notification Command Running Check with Error", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const cmd = new CapabilityAddNotification();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add Command-And-Response Command Running Check", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const cmd = new CapabilityAddCommandAndResponse();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Capability Add Command-And-Response Command Running Check with Error", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const cmd = new CapabilityAddCommandAndResponse();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };

@@ -157,7 +157,7 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
     chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
@@ -403,7 +403,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
     chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);

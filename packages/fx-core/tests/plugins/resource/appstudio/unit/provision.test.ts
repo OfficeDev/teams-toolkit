@@ -87,8 +87,9 @@ describe("Provision Teams app with Azure", () => {
 
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: undefined,
+      tabEndpoint: "https://www.endpoint.com/",
       tabDomain: undefined,
+      tabIndexPath: "/index",
       aadId: uuid(),
       botDomain: "botDomain",
       botId: uuid(),

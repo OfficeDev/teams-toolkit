@@ -320,8 +320,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
     const parameters99: TestParameter[] = [
@@ -384,8 +382,6 @@ describe("solution.debug.scaffolding", () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
         chai.assert.equal(Object.keys(settings).length, 4);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 

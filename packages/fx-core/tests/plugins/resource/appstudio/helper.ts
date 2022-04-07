@@ -127,3 +127,7 @@ export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
 export function getAzureProjectRoot(): string {
   return "./tests/plugins/resource/appstudio/resources-multi-env";
 }
+
+export function getAzureProjectRootWithStaticTabs(): string {
+  return "./tests/plugins/resource/appstudio/resources-multi-env-with-static-tabs";
+}

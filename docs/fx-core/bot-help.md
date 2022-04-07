@@ -45,7 +45,7 @@ When Teams Bot isn't responding, you probably want to check the its status on Az
 or the scm website `<yourwebsite>.scm.azurewebsites.net/DebugConsole`:
 ![image](../images/fx-core/bot/check-scm.png)
 1. If you also host some static pages with the Bot, you can try to access the target urls to see if they're available. 
-### Is there anything wrong in the server log or application log?
+### 2. Is there anything wrong in the server log or application log?
 1. As above, you have to log into Azure first.
 1. Turn on app service logs.
 ![image](../images/fx-core/bot/app-service-logs.png)

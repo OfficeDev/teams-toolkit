@@ -32,3 +32,9 @@ Suppose an existing AAD has been registered, you can reuse this AAD by configuri
     }
 ```
 4. Provision the Bot, then it will reuse this AAD and won't create a new one.
+
+## How can I trouble shoot issues when Teams Bot on Azure isn't responding?
+ 
+For general trouble shooting guidance for Bot, please refer to [Bot Framework Trouble Shooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4.
+
+When you sensed that the Teams Bot wasn't responding and

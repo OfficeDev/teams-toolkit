@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, channel, incoming wehbook).
+Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel).
 
 <b>Signature:</b>
 

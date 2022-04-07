@@ -11,7 +11,7 @@ import { formatString } from "../util/utils";
 /**
  * Provide utilities for bot conversation, including:
  *   - handle command and response.
- *   - send notification to varies targets (e.g., member, channel, incoming wehbook).
+ *   - send notification to varies targets (e.g., member, group, channel).
  *
  * @remarks
  * Only work on server side.

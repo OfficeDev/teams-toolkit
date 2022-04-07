@@ -9,7 +9,7 @@ import { NotificationBot } from "./notification";
 /**
  * Provide utilities for bot conversation, including:
  *   - handle command and response.
- *   - send notification to varies targets (e.g., member, channel, incoming wehbook).
+ *   - send notification to varies targets (e.g., member, group, channel).
  *
  * @example
  * For command and response, you can register your commands through the constructor, or use the `registerCommand` and `registerCommands` API to add commands later.

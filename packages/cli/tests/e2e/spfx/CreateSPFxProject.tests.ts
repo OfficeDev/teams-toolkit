@@ -22,10 +22,15 @@ import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
-  const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
   let appId: string;
+  let appName: string;
+  let testFolder: string;
+  let projectPath: string;
+  beforeEach(async () => {
+    testFolder = getTestFolder();
+    appName = getUniqueAppName();
+    projectPath = path.resolve(testFolder, appName);
+  });
 
   it("Create, provision and run SPFx project with React framework", async function () {
     let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
@@ -117,7 +122,7 @@ describe("Start a new project", function () {
     }
   });
 
-  after(async () => {
+  afterEach(async () => {
     // clean up
     await cleanUpLocalProject(projectPath);
     await cleanupSharePointPackage(appId);

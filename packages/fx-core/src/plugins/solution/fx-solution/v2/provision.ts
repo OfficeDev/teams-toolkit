@@ -18,6 +18,7 @@ import {
   extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
+  hasAzureResourcesToProvision,
   isAzureProject,
 } from "./utils";
 import {
@@ -184,7 +185,11 @@ export async function provisionResource(
   solutionInputs.remoteTeamsAppId = teamsAppId;
 
   // call deployArmTemplates
-  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
+  if (
+    isAzureProject(azureSolutionSettings) &&
+    !inputs.isForUT &&
+    hasAzureResourcesToProvision(azureSolutionSettings)
+  ) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {

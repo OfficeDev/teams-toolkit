@@ -23,6 +23,7 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import {
   AzureResourceApim,
@@ -56,6 +57,23 @@ export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings
 
 export function isAzureProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
+}
+
+export function hasAzureResourcesToProvision(
+  azureSettings: AzureSolutionSettings | undefined
+): boolean {
+  if (
+    isAzureProject(azureSettings) &&
+    (azureSettings?.activeResourcePlugins.includes(PluginNames.FE) ||
+      azureSettings?.activeResourcePlugins.includes(PluginNames.BOT) ||
+      azureSettings?.activeResourcePlugins.includes(PluginNames.MSID) ||
+      azureSettings?.activeResourcePlugins.includes(PluginNames.FUNC) ||
+      azureSettings?.activeResourcePlugins.includes(PluginNames.APIM))
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {

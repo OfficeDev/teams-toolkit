@@ -35,6 +35,7 @@ import {
   AadManifestMissingReplyUrlsWithType,
   AadManifestMissingIdentifierUris,
   AadManifestMissingName,
+  CannotGenerateIdentifierUrisError,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -232,17 +233,37 @@ export class AadAppForTeamsImpl {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
+    const userSetFrontendDomain = ctx.envInfo.config.auth?.frontendDomain as string;
+    const userSetBotId = ctx.envInfo.config.auth?.botId as string;
+    const userSetBotEndpoint = ctx.envInfo.config.auth?.botEndpoint as string;
+
     if (!config.frontendDomain && !config.botId) {
-      throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
+      const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+      if (
+        azureSolutionSettings?.capabilities.includes("Tab") ||
+        azureSolutionSettings?.capabilities.includes("Bot")
+      ) {
+        throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
+      }
     }
 
-    let applicationIdUri = "api://";
-    applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
-    applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
-    config.applicationIdUri = applicationIdUri;
+    config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
+    config.botId = userSetBotId ?? config.botId;
+    config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
-    ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
-    config.saveConfigIntoContext(ctx);
+    if (config.frontendDomain || config.botId) {
+      let applicationIdUri = "api://";
+      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+      applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
+      config.applicationIdUri = applicationIdUri;
+      ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
+    } else {
+      throw ResultFactory.UserError(
+        CannotGenerateIdentifierUrisError.name,
+        CannotGenerateIdentifierUrisError.message()
+      );
+    }
+    config.saveConfigIntoContext(ctx, config.frontendDomain, config.botId, config.botEndpoint);
     return ResultFactory.Success();
   }
 
@@ -754,7 +775,8 @@ export class AadAppForTeamsImpl {
       }
 
       if (azureSolutionSettings.capabilities.includes("Tab")) {
-        const tabRedirectUrl1 = "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html";
+        const tabRedirectUrl1 =
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
           aadJson.replyUrlsWithType.push({
@@ -764,7 +786,7 @@ export class AadAppForTeamsImpl {
         }
 
         const tabRedirectUrl2 =
-          "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
           aadJson.replyUrlsWithType.push({
@@ -774,7 +796,7 @@ export class AadAppForTeamsImpl {
         }
 
         const tabRedirectUrl3 =
-          "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html";
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
           aadJson.replyUrlsWithType.push({
@@ -785,7 +807,7 @@ export class AadAppForTeamsImpl {
       }
 
       if (azureSolutionSettings.capabilities.includes("Bot")) {
-        const botRedirectUrl = "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html";
+        const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
           aadJson.replyUrlsWithType.push({

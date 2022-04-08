@@ -35,17 +35,17 @@
         },
         "frontendDomain": {
           "type": "string",
-          "description": "The frontend domain for redirect Url of existing AAD app for Teams app.",
+          "description": "The frontend domain for redirect URLs of existing AAD app for Teams app.",
           "minLength": 1
         },
         "botId": {
           "type": "string",
-          "description": "The bot id for identifier Uris of existing AAD app for Teams app.",
+          "description": "The bot id for identifier URIs of existing AAD app for Teams app.",
           "minLength": 1
         },
         "botEndpoint": {
           "type": "string",
-          "description": "The bot endpoint for redirect Url of existing AAD app for Teams app.",
+          "description": "The bot endpoint for redirect URLs of existing AAD app for Teams app.",
           "minLength": 1
         }
       },
@@ -53,7 +53,9 @@
         "clientId": ["clientSecret", "objectId", "accessAsUserScopeId"],
         "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
         "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
-        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"]
+        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"],
+        "botId": ["botEndpoint"],
+        "botEndpoint": ["botId"]
       }
     },
     "azure": {

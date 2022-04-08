@@ -88,13 +88,13 @@
             "suggested": false
         },
         {
-            "id": "in-meeting-app",
-            "title": "In-meeting App",
+            "id": "hello-world-in-meeting",
+            "title": "My First Meeting App",
             "shortDescription": "A template for apps using only in the context of a Teams meeting",
-            "fullDescription": "In-meeting app is a hello-world template which shows how to build an app in the context of a Teams meeting. This is a hello-world sample which does not provide any functional feature. This app contains a side panel and a Bot which only shows user profile and can only be added to a Teams meeting.",
+            "fullDescription": "My first meeting app is a simple template to show how to build a tab app that can be installed and used in a meeting, in all of meeting lifecycles: pre-meeting chat, in-meeting, post-meeting chat. This sample contains tab as side panel, meeting chat tab, or meeting details tab. The template also includes simple codes to fetch meeting info and user profile.",
             "tags": ["Meeting extension", "JS"],
-            "time": "4hr to run",
-            "configuration": "Manual configurations required",
+            "time": "30min to run",
+            "configuration": "Ready for local debug",
             "suggested": false
         },
         {

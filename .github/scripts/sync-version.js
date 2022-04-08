@@ -61,11 +61,11 @@ function updateFileDeps(file, deps) {
 
 function main() {
     const pathInput = process.argv[2];
-    console.log('=================', __dirname, " pathInput: ", pathInput);
+    console.log('=================', __filename, " pathInput: ", pathInput);
     if(pathInput){
         console.log('syncup ', pathInput);
         const content = getSdkDeps();
-        const configFilePath = path.join(repoRoot, pathInput, "package.json");
+        const configFilePath = path.join(pathInput, "package.json");
         updateFileDeps(configFilePath, content);
     } else {
         console.log('syncup templates')

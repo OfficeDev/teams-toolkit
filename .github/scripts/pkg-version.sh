@@ -53,7 +53,7 @@ elif [ $1 == 'template-adaptive-card' ]; then
         node ../../.github/scripts/sdk-sync-up-version.js adaptivecards-tools-sdk
     fi
     git add ../../templates
-else [ $1 == 'template-sync' ]; then
+elif [ $1 == 'template-sync' ]; then
     echo "sync up templates deps' version with all the lerna pkgs"
     node $SCRIPT_DIR/sync-version.js
     git add .

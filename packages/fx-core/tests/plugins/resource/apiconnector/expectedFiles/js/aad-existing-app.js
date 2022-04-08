@@ -2,6 +2,7 @@ const teamsfxSdk = require("@microsoft/teamsfx");
 
 // Loads current app's configuration
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
+  authorityHost: "https://login.microsoftonline.com",
   tenantId: process.env.TEAMSFX_API_FAKE_TENANT_ID,
   clientId: process.env.TEAMSFX_API_FAKE_CLIENT_ID,
   clientSecret: process.env.TEAMSFX_API_FAKE_CLIENT_SECRET,

@@ -68,6 +68,7 @@ import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tool
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
+import { format, Formats } from "./utils/format";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -233,9 +234,15 @@ export class AadAppForTeamsImpl {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
-    const userSetFrontendDomain = ctx.envInfo.config.auth?.frontendDomain as string;
-    const userSetBotId = ctx.envInfo.config.auth?.botId as string;
-    const userSetBotEndpoint = ctx.envInfo.config.auth?.botEndpoint as string;
+    const userSetFrontendDomain = format(
+      ctx.envInfo.config.auth?.frontendDomain as string,
+      Formats.Domain
+    );
+    const userSetBotId = format(ctx.envInfo.config.auth?.botId as string, Formats.UUID);
+    const userSetBotEndpoint = format(
+      ctx.envInfo.config.auth?.botEndpoint as string,
+      Formats.Endpoint
+    );
 
     if (!config.frontendDomain && !config.botId) {
       const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;

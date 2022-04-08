@@ -24,7 +24,14 @@ export class CertificateAuthProvider implements AuthProvider {
    * @beta
    */
   constructor(certOption: SecureContextOptions) {
-    this.certOption = certOption;
+    if (certOption && Object.keys(certOption).length !== 0) {
+      this.certOption = certOption;
+    } else {
+      throw new ErrorWithCode(
+        formatString(ErrorMessage.EmptyParameter, "certOption"),
+        ErrorCode.InvalidParameter
+      );
+    }
   }
 
   /**

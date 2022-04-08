@@ -14,7 +14,7 @@ import * as chaiPromises from "chai-as-promised";
 chaiUse(chaiPromises);
 
 describe("CertificateAuthProvider Tests - Node", () => {
-  it("AddAuthenticationInfo should add PEM cert to https agent", async function () {
+  it("should add PEM cert to https agent", async function () {
     const bearerTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
@@ -30,7 +30,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
     assert.equal(updatedConfig.httpsAgent.options.ca, "test ca");
   });
 
-  it("AddAuthenticationInfo should add pfx cert to https agent", async function () {
+  it("should add pfx cert to https agent", async function () {
     const bearerTokenAuthProvider = new CertificateAuthProvider({
       pfx: "test pfx",
       passphrase: "test passphrase",
@@ -42,7 +42,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
     assert.equal(updatedConfig.httpsAgent.options.passphrase, "test passphrase");
   });
 
-  it("AddAuthenticationInfo should update existing https agent", async function () {
+  it("should update existing https agent", async function () {
     const bearerTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
@@ -65,7 +65,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
     assert.equal(updatedConfig.httpsAgent.options.rejectUnauthorized, true);
   });
 
-  it("AddAuthenticationInfo should throw error if conflict with existing https agent options", async function () {
+  it("should throw error if conflict with existing https agent options", async function () {
     const bearerTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
@@ -85,6 +85,13 @@ describe("CertificateAuthProvider Tests - Node", () => {
 
     assert.equal(error.code, ErrorCode.InvalidParameter);
     assert.equal(error.message, "Axios HTTPS agent already defined value for property cert");
+  });
+
+  it("should throw error if pass empty parameter to constructor", async function () {
+    expect(() => new CertificateAuthProvider({}))
+      .to.throw("Parameter certOption is empty")
+      .that.has.property("code")
+      .that.equals(ErrorCode.InvalidParameter);
   });
 });
 

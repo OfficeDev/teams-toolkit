@@ -15,14 +15,14 @@ chaiUse(chaiPromises);
 
 describe("CertificateAuthProvider Tests - Node", () => {
   it("should add PEM cert to https agent", async function () {
-    const bearerTokenAuthProvider = new CertificateAuthProvider({
+    const certificateTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
       passphrase: "test passphrase",
       ca: "test ca",
     });
 
-    const updatedConfig = await bearerTokenAuthProvider.AddAuthenticationInfo({});
+    const updatedConfig = await certificateTokenAuthProvider.AddAuthenticationInfo({});
 
     assert.equal(updatedConfig.httpsAgent.options.cert, "test cert");
     assert.equal(updatedConfig.httpsAgent.options.key, "test key");
@@ -31,26 +31,26 @@ describe("CertificateAuthProvider Tests - Node", () => {
   });
 
   it("should add pfx cert to https agent", async function () {
-    const bearerTokenAuthProvider = new CertificateAuthProvider({
+    const certificateTokenAuthProvider = new CertificateAuthProvider({
       pfx: "test pfx",
       passphrase: "test passphrase",
     });
 
-    const updatedConfig = await bearerTokenAuthProvider.AddAuthenticationInfo({});
+    const updatedConfig = await certificateTokenAuthProvider.AddAuthenticationInfo({});
 
     assert.equal(updatedConfig.httpsAgent.options.pfx, "test pfx");
     assert.equal(updatedConfig.httpsAgent.options.passphrase, "test passphrase");
   });
 
   it("should update existing https agent", async function () {
-    const bearerTokenAuthProvider = new CertificateAuthProvider({
+    const certificateTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
       passphrase: "test passphrase",
       ca: "test ca",
     });
 
-    const updatedConfig = await bearerTokenAuthProvider.AddAuthenticationInfo({
+    const updatedConfig = await certificateTokenAuthProvider.AddAuthenticationInfo({
       httpsAgent: {
         options: {
           rejectUnauthorized: true,
@@ -66,7 +66,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
   });
 
   it("should throw error if conflict with existing https agent options", async function () {
-    const bearerTokenAuthProvider = new CertificateAuthProvider({
+    const certificateTokenAuthProvider = new CertificateAuthProvider({
       cert: "test cert",
       key: "test key",
       passphrase: "test passphrase",
@@ -74,7 +74,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
     });
 
     const error: ErrorWithCode = await expect(
-      bearerTokenAuthProvider.AddAuthenticationInfo({
+      certificateTokenAuthProvider.AddAuthenticationInfo({
         httpsAgent: {
           options: {
             cert: "existing cert",
@@ -118,26 +118,24 @@ describe("createPfxCertOption Tests - Node", () => {
 
 describe("createPemCertOption Tests - Node", () => {
   it("should initialize SecureContextOption with correct property", async function () {
-    it("should initialize SecureContextOption with correct property", async function () {
-      const pemWithNecessaryParameters = createPemCertOption("test cert", "test key");
-      assert.equal(Object.keys(pemWithNecessaryParameters).length, 4);
-      assert.equal(pemWithNecessaryParameters.cert, "test cert");
-      assert.equal(pemWithNecessaryParameters.key, "test key");
-      assert.equal(pemWithNecessaryParameters.passphrase, undefined);
-      assert.equal(pemWithNecessaryParameters.ca, undefined);
+    const pemWithNecessaryParameters = createPemCertOption("test cert", "test key");
+    assert.equal(Object.keys(pemWithNecessaryParameters).length, 4);
+    assert.equal(pemWithNecessaryParameters.cert, "test cert");
+    assert.equal(pemWithNecessaryParameters.key, "test key");
+    assert.equal(pemWithNecessaryParameters.passphrase, undefined);
+    assert.equal(pemWithNecessaryParameters.ca, undefined);
 
-      const pemWithAllParameters = createPemCertOption(
-        "test cert",
-        "test key",
-        "test passphrase",
-        "test ca"
-      );
-      assert.equal(Object.keys(pemWithAllParameters).length, 4);
-      assert.equal(pemWithNecessaryParameters.cert, "test cert");
-      assert.equal(pemWithNecessaryParameters.key, "test key");
-      assert.equal(pemWithNecessaryParameters.passphrase, "test passphrase");
-      assert.equal(pemWithNecessaryParameters.ca, "test ca");
-    });
+    const pemWithAllParameters = createPemCertOption(
+      "test cert",
+      "test key",
+      "test passphrase",
+      "test ca"
+    );
+    assert.equal(Object.keys(pemWithAllParameters).length, 4);
+    assert.equal(pemWithAllParameters.cert, "test cert");
+    assert.equal(pemWithAllParameters.key, "test key");
+    assert.equal(pemWithAllParameters.passphrase, "test passphrase");
+    assert.equal(pemWithAllParameters.ca, "test ca");
   });
 
   it("should throw error if user passes empty parameter", async function () {

@@ -166,7 +166,9 @@ export class LanguageStrategy {
     } else if (config.actRoles.includes(PluginActRoles.CommandAndResponse)) {
       return TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME;
     } else {
-      return TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
+      return config.isM365
+        ? TemplateProjectsScenarios.M365_SCENARIO_NAME
+        : TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
     }
   }
 }

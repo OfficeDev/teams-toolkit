@@ -22,6 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
+import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   Correlator,
   isConfigUnifyEnabled,
@@ -491,6 +492,12 @@ export async function activate(context: vscode.ExtensionContext) {
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
     )
+  );
+
+  // Register hover provider
+  const manifestTemplateHoverProvider = new ManifestTemplateHoverProvider();
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(manifestTemplateSelecctor, manifestTemplateHoverProvider)
   );
 
   // Register debug configuration provider

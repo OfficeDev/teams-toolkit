@@ -54,6 +54,7 @@ import {
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import _ from "lodash";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -742,4 +743,8 @@ export function undefinedName(objs: any[], names: string[]) {
     }
   }
   return undefined;
+}
+
+export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
+  return _.get(obj, path, defaultValue);
 }

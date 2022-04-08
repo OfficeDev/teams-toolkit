@@ -117,7 +117,6 @@ import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import * as exp from "./exp/index";
@@ -136,8 +135,8 @@ import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
-import { registerEnvTreeHandler } from "./envTree";
 import { localize, parseLocale } from "./utils/localizeUtils";
+import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -221,7 +220,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     core = new FxCore(tools);
     registerCoreEvents();
     await registerAccountTreeHandler();
-    await envTree.registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
         "**/unify-config-change-logs.md"
@@ -317,7 +316,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
-    await envTree.registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
   }
 }
 
@@ -346,7 +345,7 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
 
   // check if file is project config
   if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
-    await envTree.registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
   }
 }
 
@@ -415,7 +414,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   }
 
   const projectPath = result.value;
-  if (isExistingTabApp(projectPath)) {
+  if (await isExistingTabApp(projectPath)) {
     // show local preview button for existing tab app
     await openFolder(projectPath, false, true, args);
   } else {
@@ -633,7 +632,7 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
   }
 
   return result;
@@ -776,7 +775,7 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
     return result;
   } else {
     // refresh env tree except provision cancelled.
-    await envTree.registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return result;
   }
 }
@@ -1834,13 +1833,13 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await envTree.registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
   }
   return result;
 }
 
 export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  return await envTree.registerEnvTreeHandler();
+  return await envTreeProviderInstance.reloadEnvironments();
 }
 
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
@@ -2644,7 +2643,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  await envTree.registerEnvTreeHandler();
+  await envTreeProviderInstance.reloadEnvironments();
 }
 
 export async function signInAzure() {

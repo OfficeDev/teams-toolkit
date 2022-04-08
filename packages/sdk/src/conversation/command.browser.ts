@@ -16,7 +16,7 @@ import { CommandResponseMiddleware } from "./middleware";
  * @beta
  */
 export class CommandBot {
-  public readonly adapter: BotFrameworkAdapter;
+  private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;
 
   /**

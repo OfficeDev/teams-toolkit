@@ -372,42 +372,24 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @beta
    */
   public async members(): Promise<Member[]> {
-    let teamsMembers: TeamsChannelAccount[] = [];
-    await this.adapter.continueConversation(this.conversationReference, async (context) => {
-      teamsMembers = await TeamsInfo.getMembers(context);
-    });
     const members: Member[] = [];
-    for (const member of teamsMembers) {
-      members.push(new Member(this, member));
-    }
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      let continuationToken: string | undefined;
+      do {
+        const pagedMembers = await TeamsInfo.getPagedMembers(context, undefined, continuationToken);
+        continuationToken = pagedMembers.continuationToken;
+        for (const member of pagedMembers.members) {
+          members.push(new Member(this, member));
+        }
+      } while (continuationToken !== undefined);
+    });
 
     return members;
   }
 }
 
 /**
- * Provide static utilities for bot conversation, including
- * - send notification to varies targets (e.g., member, channel, incoming wehbook)
- * - handle command and response.
- *
- * @example
- * Here's an example on how to send notification via Teams Bot.
- * ```typescript
- * // initialize (it's recommended to be called before handling any bot message)
- * const notificationBot = new NotificationBot(adapter);
- *
- * // get all bot installations and send message
- * for (const target of await notificationBot.installations()) {
- *   await target.sendMessage("Hello Notification");
- * }
- *
- * // alternative - send message to all members
- * for (const target of await notificationBot.installations()) {
- *   for (const member of await target.members()) {
- *     await member.sendMessage("Hello Notification");
- *   }
- * }
- * ```
+ * Provide utilities to send notification to varies targets (e.g., member, group, channel).
  *
  * @beta
  */

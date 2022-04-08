@@ -17,6 +17,8 @@ import {
 import * as fs from "fs-extra";
 import path from "path";
 import AdmZip from "adm-zip";
+import { v4 } from "uuid";
+import isUUID from "validator/lib/isUUID";
 import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
 import { AppStudioResultFactory } from "../results";
@@ -222,6 +224,9 @@ export class AppStudioPluginImpl {
       return err(appDefinitionRes.error);
     }
     const manifest: TeamsAppManifest = appDefinitionRes.value[1];
+    if (!isUUID(manifest.id)) {
+      manifest.id = v4();
+    }
     // manifest.bots = undefined;
     // manifest.composeExtensions = undefined;
 

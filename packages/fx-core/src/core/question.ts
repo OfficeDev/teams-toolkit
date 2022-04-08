@@ -228,7 +228,8 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: [
-      ...[TabOptionItem, BotOptionItem],
+      ...[TabOptionItem],
+      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...[MessageExtensionItem, TabSPFxItem],
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),

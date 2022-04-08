@@ -27,10 +27,15 @@ export enum FileType {
 export class Constants {
   public static readonly PLUGIN_NAME = "APIConnector";
   public static readonly pluginNameShort = "api-connector";
+  public static readonly commentTemplate = "comment.template";
+  public static readonly templateEx = ".template";
+  public static readonly envPrefix = "TEAMSFX_API_";
 
   public static readonly envFileName = ".env.teamsfx.local";
   public static readonly pkgJsonFile = "package.json";
   public static readonly pkgLockFile = "package-lock.json";
+  public static readonly sdkName = "@microsoft/teamsfx";
+  public static readonly sdkJsName = "@microsft/teams-js";
 
   public static readonly questionKey = {
     componentsSelect: "ComponentSelect",

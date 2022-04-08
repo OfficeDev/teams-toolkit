@@ -11,7 +11,8 @@ import * as path from "path";
 import {
   BotOptionItem,
   MessageExtensionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -32,7 +33,8 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     BotOptionItem.id,
     MessageExtensionItem.id,
     TabSPFxItem.id,
-    ...(isAadManifestEnabled() ? [SsoItem.id] : []),
+    TabSsoItem.id,
+    BotSsoItem.id,
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;

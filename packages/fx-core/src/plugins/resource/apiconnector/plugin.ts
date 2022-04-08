@@ -11,8 +11,15 @@ import {
   UserError,
   ok,
 } from "@microsoft/teamsfx-api";
-import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-import { generateTempFolder, copyFileIfExist, removeFileIfExist, getSampleFileName } from "./utils";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
+import {
+  generateTempFolder,
+  copyFileIfExist,
+  removeFileIfExist,
+  getSampleFileName,
+  checkInputEmpty,
+  Notification,
+} from "./utils";
 import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
 import { AuthType, Constants } from "./constants";
@@ -39,6 +46,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
+import { DepsHandler } from "./depsHandler";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -64,6 +72,15 @@ export class ApiConnectorImpl {
           await this.scaffoldInComponent(projectPath, component, config, languageType);
         })
       );
+      const msg: string = this.getNotificationMsg(config, languageType);
+      ctx.userInteraction
+        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === Notification.READ_MORE) {
+            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
+          }
+        });
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -106,7 +123,7 @@ export class ApiConnectorImpl {
   ) {
     await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
     await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    // await this.addSDKDependency(ComponentPath);
+    await this.addSDKDependency(projectPath, componentItem);
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -139,6 +156,7 @@ export class ApiConnectorImpl {
   private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
     let config: AuthConfig;
     if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
+      checkInputEmpty(inputs, Constants.questionKey.apiUserName);
       config = {
         AuthType: AuthType.BASIC,
         UserName: inputs[Constants.questionKey.apiUserName],
@@ -151,17 +169,31 @@ export class ApiConnectorImpl {
         AADConfig.ReuseTeamsApp = true;
       } else {
         AADConfig.ReuseTeamsApp = false;
+        checkInputEmpty(
+          inputs,
+          Constants.questionKey.apiAppTenentId,
+          Constants.questionKey.apiAppTenentId
+        );
         AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.AppId = inputs[Constants.questionKey.apiAppId];
+        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
     } else {
-      throw ResultFactory.SystemError("todo", "todo");
+      throw ResultFactory.SystemError(
+        ErrorMessage.ApiConnectorInputError.name,
+        ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
+      );
     }
     return config;
   }
 
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {
+    checkInputEmpty(
+      inputs,
+      Constants.questionKey.componentsSelect,
+      Constants.questionKey.apiName,
+      Constants.questionKey.endpoint
+    );
     const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
       ComponentPath: inputs[Constants.questionKey.componentsSelect],
@@ -192,6 +224,47 @@ export class ApiConnectorImpl {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
     await sampleHandler.generateSampleCode(config);
     return ResultFactory.Success();
+  }
+
+  private async addSDKDependency(
+    projectPath: string,
+    component: string
+  ): Promise<ApiConnectorResult> {
+    const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
+    return await depsHandler.addPkgDeps();
+  }
+
+  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
+    const authType: AuthType = config.AuthConfig.AuthType;
+    const apiName: string = config.APIName;
+    let retMsg: string = Notification.GetBasiString(apiName, config.ComponentPath, languageType);
+    switch (authType) {
+      case AuthType.BASIC: {
+        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.APIKEY: {
+        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.AAD: {
+        if (config.ReuseTeamsApp) {
+          retMsg += Notification.GetReuseAADAuthString(apiName);
+        } else {
+          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
+        }
+        break;
+      }
+      case AuthType.CERT: {
+        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.CUSTOM: {
+        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
+        break;
+      }
+    }
+    return retMsg;
   }
 
   public async generateQuestion(ctx: Context): Promise<QesutionResult> {

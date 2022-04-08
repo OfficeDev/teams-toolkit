@@ -31,7 +31,9 @@ export default {
     }),
     nodeResolve(),
     cjs(),
-    typescript(),
+    typescript({
+      useTsconfigDeclarationDir: true,
+    }),
     json(),
   ],
 };

@@ -499,6 +499,14 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
+  if (isBotAddable) {
+    if (isBotNotificationEnabled()) {
+      options.push(CommandAndResponseOptionItem);
+      options.push(NotificationOptionItem);
+    } else {
+      options.push(BotOptionItem);
+    }
+  }
   if (isTabAddable) {
     if (!isAadManifestEnabled()) {
       options.push(TabOptionItem);
@@ -510,14 +518,6 @@ export async function getQuestionsForAddCapability(
           settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
         );
       }
-    }
-  }
-  if (isBotAddable) {
-    if (isBotNotificationEnabled()) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-    } else {
-      options.push(BotOptionItem);
     }
   }
   if (isMEAddable) options.push(MessageExtensionItem);

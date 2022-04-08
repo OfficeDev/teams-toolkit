@@ -55,7 +55,7 @@ import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
-export { isBotNotificationEnabled } from "./featureFlags";
+export { isFeatureFlagEnabled, isBotNotificationEnabled } from "./featureFlags";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];

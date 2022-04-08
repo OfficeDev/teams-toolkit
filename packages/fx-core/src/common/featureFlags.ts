@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as process from "process";
 import { FeatureFlagName } from "./constants";
 

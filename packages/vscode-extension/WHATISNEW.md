@@ -1,3 +1,4 @@
+- [3.7.0 - Apr 06 2022](#370---apr-06-2022)
 - [3.6.0 - Mar 21 2022](#360---mar-21-2022)
 - [3.5.0 - Mar 07 2022](#350---mar-07-2022)
 - [3.4.0 - Feb 21 2022](#340---feb-21-2022)
@@ -12,6 +13,21 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 3.7.0 - Apr 06, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include: <br>
+	a). an Add(+) button besides ACCOUNTS in sidebar <br>
+	![ITP in sidebar](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-sidebar.png) <br>
+	b). an new "Create an account" option in `Teams: Accounts` Command <br>
+	![ITP in command](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-command.png) <br>
+	c). improved Get Started page <br>
+	![ITP in get started page](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-getstart.png) <br>
+
+Enhancement:
+- Improved SPFx Project scaffolding experience by using Yeoman Generator. 
 
 ## 3.6.0 - Mar 21, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

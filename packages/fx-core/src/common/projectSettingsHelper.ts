@@ -33,7 +33,8 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     BotOptionItem.id,
     MessageExtensionItem.id,
     TabSPFxItem.id,
-    ...(isAadManifestEnabled() ? [TabSsoItem.id, BotSsoItem.id] : []),
+    TabSsoItem.id,
+    BotSsoItem.id,
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;

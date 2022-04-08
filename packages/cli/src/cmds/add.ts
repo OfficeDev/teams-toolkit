@@ -70,12 +70,51 @@ export class AddCICD extends YargsCommand {
   }
 }
 
+export class AddExistingApi extends YargsCommand {
+  public readonly commandHead = `api-connection`;
+  public readonly command = this.commandHead;
+  public readonly description = "Add Connection to an API";
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
+    return yargs.version(false).options(this.params);
+  }
+
+  public modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
+    return args;
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    const core = result.value;
+    let inputs: Inputs;
+    {
+      const func: Func = {
+        namespace: "fx-solution-azure/fx-resource-api-connector",
+        method: "connectExistingApi",
+      };
+
+      inputs = getSystemInputs(rootFolder, args.env as any);
+      const result = await core.executeUserTask!(func, inputs);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+    return ok(null);
+  }
+}
+
 export default class Add extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <feature>`;
   public readonly description = "Adds features to your Teams application.";
 
-  public readonly subCommands: YargsCommand[] = [new AddCICD()];
+  public readonly subCommands: YargsCommand[] = [new AddCICD(), new AddExistingApi()];
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {

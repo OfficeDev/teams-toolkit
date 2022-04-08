@@ -30,9 +30,9 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
-    const localSettingsPath = path.resolve(projectPath, ".fx", "configs", "localSettings.json");
-    const localSettings = await fs.readJSON(localSettingsPath);
-    chai.assert.isTrue(localSettings["backend"] != undefined);
-    chai.assert.hasAllKeys(localSettings["backend"], ["functionEndpoint", "functionName"]);
+    const localStatePath = path.resolve(projectPath, ".fx", "states", "state.local.json");
+    const localState = await fs.readJSON(localStatePath);
+    chai.assert.isTrue(localState["fx-resource-function"] != undefined);
+    chai.assert.hasAllKeys(localState["fx-resource-function"], ["functionEndpoint"]);
   });
 });

@@ -32,6 +32,21 @@
           "type": "string",
           "description": "The access_as_user scope id of existing AAD app for Teams app.",
           "minLength": 1
+        },
+        "frontendDomain": {
+          "type": "string",
+          "description": "The frontend domain for redirect Url of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "botId": {
+          "type": "string",
+          "description": "The bot id for identifierUris of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "botEndpoint": {
+          "type": "string",
+          "description": "The bot endpoint for redirect Url of existing AAD app for Teams app.",
+          "minLength": 1
         }
       },
       "dependencies": {

@@ -187,8 +187,8 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
-      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[0].commandLists);
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
+      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[1].commandLists);
     }
   });
 
@@ -219,9 +219,9 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
       chai.assert.equal(
-        loadedManifestTemplate.value.remote.bots?.[0].commandLists?.[0].commands?.[0].title,
+        loadedManifestTemplate.value.remote.bots?.[1].commandLists?.[0].commands?.[0].title,
         "helloWorld"
       );
     }

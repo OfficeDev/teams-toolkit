@@ -44,11 +44,17 @@ const subscriptionIcon = new vscode.ThemeIcon("key");
 const resourceGroupIcon = new vscode.ThemeIcon("symbol-method");
 
 export class EnvironmentNode extends DynamicNode {
+  private _children: DynamicNode[] | undefined;
+
   constructor(public identifier: string) {
     super(identifier, vscode.TreeItemCollapsibleState.None);
   }
 
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+    if (this._children !== undefined) {
+      return this._children;
+    }
+
     const children: DynamicNode[] = [];
     if (this.identifier !== LocalEnvironmentName) {
       // check account status
@@ -64,6 +70,8 @@ export class EnvironmentNode extends DynamicNode {
         children.push(subscriptionNode);
       }
     }
+
+    this._children = children;
     return children;
   }
 

@@ -3,6 +3,8 @@
 
 import { AxiosRequestConfig } from "axios";
 import { AuthProvider } from "./authProvider";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
+import { formatString } from "../util/utils";
 
 /**
  * Provider that handles Basic authentication
@@ -21,6 +23,18 @@ export class BasicAuthProvider implements AuthProvider {
    * @beta
    */
   constructor(userName: string, password: string) {
+    if (!userName) {
+      throw new ErrorWithCode(
+        formatString(ErrorMessage.ArgumentEmpty, "username"),
+        ErrorCode.InvalidParameter
+      );
+    }
+    if (!password) {
+      throw new ErrorWithCode(
+        formatString(ErrorMessage.ArgumentEmpty, "password"),
+        ErrorCode.InvalidParameter
+      );
+    }
     this.userName = userName;
     this.password = password;
   }
@@ -34,8 +48,17 @@ export class BasicAuthProvider implements AuthProvider {
    * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+    if (config.headers && config.headers["Authorization"]) {
+      throw new ErrorWithCode(
+        ErrorMessage.AuthorizationHeaderAlreadyExists,
+        ErrorCode.AuthorizationInfoError
+      );
+    }
     if (config.auth) {
-      throw new Error("Basic credential already exists!");
+      throw new ErrorWithCode(
+        ErrorMessage.BasicCredentialAlreadyExists,
+        ErrorCode.AuthorizationInfoError
+      );
     }
 
     config.auth = {

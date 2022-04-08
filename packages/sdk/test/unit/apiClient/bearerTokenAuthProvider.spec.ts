@@ -4,6 +4,7 @@
 import { assert, expect, use as chaiUse } from "chai";
 import { BearerTokenAuthProvider } from "../../../src";
 import * as chaiPromises from "chai-as-promised";
+import { ErrorMessage, ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 
 chaiUse(chaiPromises);
 
@@ -30,9 +31,10 @@ describe("BearerTokenAuthProvider Tests - Node", () => {
           Authorization: "preset-token",
         },
       })
-    ).to.eventually.be.rejectedWith(Error);
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
 
     // Assert
-    assert.equal(errorResult.message, "Authorization header already exists!");
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoError);
+    assert.equal(errorResult.message, ErrorMessage.AuthorizationHeaderAlreadyExists);
   });
 });

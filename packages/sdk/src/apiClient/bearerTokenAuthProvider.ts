@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { AxiosRequestConfig } from "axios";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { AuthProvider } from "./authProvider";
 
 /**
@@ -35,7 +36,10 @@ export class BearerTokenAuthProvider implements AuthProvider {
       config.headers = {};
     }
     if (config.headers["Authorization"]) {
-      throw new Error("Authorization header already exists!");
+      throw new ErrorWithCode(
+        ErrorMessage.AuthorizationHeaderAlreadyExists,
+        ErrorCode.AuthorizationInfoError
+      );
     }
 
     config.headers["Authorization"] = `Bearer ${token}`;

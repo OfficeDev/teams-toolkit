@@ -11,7 +11,6 @@ describe("ApiClient Tests - Node", () => {
   const apiBaseUrl = `http://${host}:${port}`;
   const server = http.createServer((req, res) => {
     res.writeHead(200);
-
     const data = {
       requestHeader: req.headers,
       url: req.url,
@@ -44,7 +43,7 @@ describe("ApiClient Tests - Node", () => {
     assert.equal(res.data.requestHeader!["authorization"], "Bearer test-bearer-token");
   });
 
-  it("can connect to existing API using bearer basic auth provider", async function () {
+  it("can connect to existing API using basic auth provider", async function () {
     // Arrange
     const username = "test-username";
     const password = "test-password";
@@ -56,7 +55,9 @@ describe("ApiClient Tests - Node", () => {
 
     // Assert
     assert.equal(res.data.url, "/foo");
-    const token = res.data.requestHeader!["authorization"].split(/\s+/).pop() || "";
+    const header = res.data.requestHeader!["authorization"] as string;
+    assert.isTrue(header.startsWith("Basic "));
+    const token = header.split(/\s+/).pop() || "";
     const auth = Buffer.from(token, "base64").toString();
     const parts = auth.split(/:/);
     const serverUsername = parts.shift();

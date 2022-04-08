@@ -94,6 +94,7 @@ export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes
 
 // @beta
 export enum ErrorCode {
+    AuthorizationInfoError = "AuthorizationInfoError",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",

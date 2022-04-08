@@ -4,6 +4,7 @@
 import { assert, expect, use as chaiUse } from "chai";
 import { BasicAuthProvider } from "../../../src";
 import * as chaiPromises from "chai-as-promised";
+import { ErrorMessage, ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 
 chaiUse(chaiPromises);
 
@@ -36,9 +37,46 @@ describe("BasicAuthProvider Tests - Node", () => {
           password: "preset-password",
         },
       })
-    ).to.eventually.be.rejectedWith(Error);
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
 
     // Assert
-    assert.equal(errorResult.message, "Basic credential already exists!");
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoError);
+    assert.equal(errorResult.message, ErrorMessage.BasicCredentialAlreadyExists);
+  });
+
+  it("AddAuthenticationInfo should throw error if axios header Authorization already exists", async function () {
+    // Arrange
+    const username = "test-username";
+    const password = "test-password";
+    const basicAuthProvider = new BasicAuthProvider(username, password);
+
+    // Act
+    const errorResult = await expect(
+      basicAuthProvider.AddAuthenticationInfo({
+        headers: {
+          Authorization: "preset-token",
+        },
+      })
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
+
+    // Assert
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoError);
+    assert.equal(errorResult.message, ErrorMessage.AuthorizationHeaderAlreadyExists);
+  });
+
+  it("Initialize BasicAuthProvider should throw error if username or password is empty", async function () {
+    // Test when username is empty
+    expect(() => {
+      new BasicAuthProvider("", "test-password");
+    })
+      .to.throw(ErrorWithCode, "Argument username is empty.")
+      .with.property("code", ErrorCode.InvalidParameter);
+
+    // Test when password is empty
+    expect(() => {
+      new BasicAuthProvider("test-username", "");
+    })
+      .to.throw(ErrorWithCode, "Argument password is empty.")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 });

@@ -70,12 +70,19 @@ export enum ErrorCode {
    * Identity type error.
    */
   IdentityTypeNotSupported = "IdentityTypeNotSupported",
+
+  /**
+   * Authentication info error.
+   */
+  AuthorizationInfoError = "AuthorizationInfoError",
 }
 
 /**
  * @internal
  */
 export class ErrorMessage {
+  static readonly ArgumentEmpty = "Argument {0} is empty.";
+
   // InvalidConfiguration Error
   static readonly InvalidConfiguration = "{0} in configuration is invalid: {1}.";
   static readonly ConfigurationNotExists = "Configuration does not exist. {0}";
@@ -98,6 +105,10 @@ export class ErrorMessage {
 
   // IdentityTypeNotSupported Error
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
+
+  // AuthorizationInfoError
+  static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";
+  static readonly BasicCredentialAlreadyExists = "Basic credential already exists!";
 }
 
 /**

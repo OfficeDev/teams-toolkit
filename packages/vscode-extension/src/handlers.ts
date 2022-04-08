@@ -413,13 +413,13 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     return err(result.error);
   }
 
-  const projectPath = result.value;
-  if (await isExistingTabApp(projectPath)) {
+  const projectPathUri = result.value as Uri;
+  if (await isExistingTabApp(projectPathUri.fsPath)) {
     // show local preview button for existing tab app
-    await openFolder(projectPath, false, true, args);
+    await openFolder(projectPathUri, false, true, args);
   } else {
     // show local debug button by default
-    await openFolder(projectPath, true, false, args);
+    await openFolder(projectPathUri, true, false, args);
   }
   return result;
 }

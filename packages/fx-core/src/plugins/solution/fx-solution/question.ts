@@ -35,14 +35,14 @@ export const BotOptionItem: OptionItem = {
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
   label: getLocalizedString("core.NotificationOption.label"),
-  cliName: "notification-bot",
+  cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
   id: "CommandBot",
   label: getLocalizedString("core.CommandAndResponseOption.label"),
-  cliName: "command-bot",
+  cliName: "command-and-response",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };
 

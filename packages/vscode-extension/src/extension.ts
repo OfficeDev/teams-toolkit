@@ -91,7 +91,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInDevelopment(context);
   registerTreeViewCommandsInDeployment(context);
   registerTreeViewCommandsInHelper(context);
-  registerWalkthroughCommands(context);
 
   const createM365Cmd = vscode.commands.registerCommand("fx-extension.create-M365", (...args) =>
     Correlator.run(handlers.createNewM365ProjectHandler, args)
@@ -164,6 +163,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
   );
   context.subscriptions.push(installAppInTeamsCmd);
+
+  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-getStarted-prerequisites",
+    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
+  );
+  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
   // Referenced by tasks.json
   const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
@@ -656,57 +661,18 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
   // Quick start
   registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
 
+  // Tutorials
+  registerInCommandController(
+    context,
+    "fx-extension.selectTutorials",
+    handlers.selectTutorialsHandler
+  );
+
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
 
   // Report issues on GitHub
   registerInCommandController(context, "fx-extension.openReportIssues", handlers.openReportIssues);
-}
-
-function registerWalkthroughCommands(context: vscode.ExtensionContext) {
-  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
-    "fx-extension.validate-getStarted-prerequisites",
-    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
-  );
-  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      if (!isSupportAutoOpenAPI()) {
-        Correlator.run(handlers.createNewProjectHandler, args);
-      } else {
-        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
-        if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(true, args);
-          await ExtTelemetry.dispose();
-          await delay(2000);
-          return { openFolder: targetUri.value };
-        }
-      }
-    })
-  );
-
-  const openDeploymentTreeview = vscode.commands.registerCommand(
-    "fx-extension.openDeploymentTreeview",
-    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
-  );
-  context.subscriptions.push(openDeploymentTreeview);
-
-  const openReadMeCmd = vscode.commands.registerCommand("fx-extension.openReadMe", (...args) =>
-    Correlator.run(handlers.openReadMeHandler, args)
-  );
-  context.subscriptions.push(openReadMeCmd);
-
-  const selectTutorials = vscode.commands.registerCommand(
-    "fx-extension.selectTutorials",
-    (...args) => Correlator.run(handlers.selectTutorialsHandler, args)
-  );
-  context.subscriptions.push(selectTutorials);
-
-  const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
-    Correlator.run(handlers.openTutorialHandler, args)
-  );
-  context.subscriptions.push(openTutorial);
 }
 
 function registerInCommandController(

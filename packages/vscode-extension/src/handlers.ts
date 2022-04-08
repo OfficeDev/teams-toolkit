@@ -2879,44 +2879,63 @@ export async function deployAadAppManifest(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.deploy, inputs);
 }
 
-export async function selectTutorialsHandler(args?: any[]) {
+export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: "Choose a tutorial",
-    options: ["Add Function", "Add SQL database"],
+    title: "Tutorials",
+    options: [
+      {
+        id: "embedWebPages",
+        label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
+        detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
+        data: "https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Display-Existing-Web-App-in-Teams-(Preview-feature)",
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
+        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        data: "https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Display-Existing-Web-App-in-Teams-(Preview-feature)",
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
+        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        data: "https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Display-Existing-Web-App-in-Teams-(Preview-feature)",
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
+        detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        data: "https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Display-Existing-Web-App-in-Teams-(Preview-feature)",
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
+        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        data: "https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Display-Existing-Web-App-in-Teams-(Preview-feature)",
+      },
+    ],
+    returnObject: true,
   };
   const selectedTutorial = await VS_CODE_UI.selectOption(config);
   if (selectedTutorial.isErr()) {
     return err(selectedTutorial.error);
   } else {
-    const tutorialName = selectedTutorial.value.result as string;
-    commands.executeCommand("fx-extension.openTutorial", TelemetryTiggerFrom.Auto, tutorialName);
+    const tutorial = selectedTutorial.value.result as OptionItem;
+    return openTutorialHandler([TelemetryTiggerFrom.Auto, tutorial]);
   }
 }
 
-export function openTutorialHandler(args?: any[]) {
+export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   if (!args || args.length !== 2) {
     // should never happen
-    return;
+    return Promise.resolve(ok(null));
   }
-  const tutorialName = args[1] as string;
+  const tutorial = args[1] as OptionItem;
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTutorial, {
     ...getTriggerFromProperty(args),
-    [TelemetryProperty.TutorialName]: tutorialName,
+    [TelemetryProperty.TutorialName]: tutorial.id,
   });
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const uri = Uri.file(`${workspacePath}/tabs/README.md`);
-    workspace.openTextDocument(uri).then(() => {
-      if (isTriggerFromWalkThrough(args)) {
-        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      } else {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      }
-    });
-  }
+  return VS_CODE_UI.openUrl(tutorial.data as string);
 }

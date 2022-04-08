@@ -22,6 +22,7 @@ import { Constants } from "./constants";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePluginsV2.ApiConnectorPlugin)
 export class ApiConnectorPluginV2 implements ResourcePlugin {
@@ -40,6 +41,19 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<ApiConnectorResult> {
+    const res = await ctx.userInteraction?.showMessage(
+      "warn",
+      getLocalizedString("plugins.apiconnector.ExecuteUserTask.Message"),
+      true,
+      "OK"
+    );
+    const answer = res?.isOk() ? res.value : undefined;
+    if (!answer || answer != "OK") {
+      throw ResultFactory.UserError(
+        ErrorMessage.UserCancelTaskError.name,
+        ErrorMessage.UserCancelTaskError.message()
+      );
+    }
     return await this.apiConnectorImpl.generateQuestion(ctx);
   }
 

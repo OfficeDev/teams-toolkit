@@ -88,4 +88,10 @@ export class ErrorMessage {
         component
       ),
   };
+
+  public static readonly UserCancelTaskError = {
+    name: "TaskCancelled",
+    message: () =>
+      getLocalizedString(`error.apiConnector.${ErrorMessage.UserCancelTaskError.name}`),
+  };
 }

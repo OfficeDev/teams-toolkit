@@ -4,7 +4,7 @@
 import { FxError, SystemError, UserError, Result, ok, QTreeNode } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 export type ApiConnectorResult = Result<any, FxError>;
-export type QesutionResult = Result<QTreeNode | undefined, FxError>;
+export type QuestionResult = Result<QTreeNode | undefined, FxError>;
 export class ResultFactory {
   static readonly source: string = Constants.pluginNameShort;
   public static UserError(

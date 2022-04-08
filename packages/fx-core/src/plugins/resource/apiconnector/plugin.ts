@@ -21,7 +21,7 @@ import {
   Notification,
 } from "./utils";
 import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
+import { ApiConnectorResult, ResultFactory, QuestionResult } from "./result";
 import { AuthType, Constants } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
@@ -267,7 +267,7 @@ export class ApiConnectorImpl {
     return retMsg;
   }
 
-  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
+  public async generateQuestion(ctx: Context): Promise<QuestionResult> {
     const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     if (!activePlugins) {

@@ -98,6 +98,11 @@ export class ErrorMessage {
 
   // IdentityTypeNotSupported Error
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
+
+  // InvalidParameter Error
+  static readonly EmptyParameter = "Parameter {0} is empty";
+  static readonly DuplicateHttpsOptionProperty =
+    "Axios HTTPS agent already defined value for property {0}";
 }
 
 /**

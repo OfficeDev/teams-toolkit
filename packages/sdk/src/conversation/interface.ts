@@ -131,7 +131,7 @@ export interface CommandMessage {
   text: string;
 
   /**
-   * The capture groups that matched to the {@link triggerPatterns} in a {@link TeamsFxBotCommandHandler} instance.
+   * The capture groups that matched to the {@link TriggerPatterns} in a {@link TeamsFxBotCommandHandler} instance.
    */
   matches?: RegExpMatchArray;
 }
@@ -181,31 +181,39 @@ export interface CommandOptions {
  */
 export interface ConversationOptions {
   /**
-   * The bot adapter. If not provided, a default adapter will be created with BOT_ID and BOT_PASSWORD from environment variables.
+   * The bot adapter. If not provided, a default adapter will be created:
+   * - with `adapterConfig` as constructor parameter.
+   * - with a default error handler that logs error to console, sends trace activity, and sends error message to user.
+   *
+   * @remarks
+   * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
    *
    * @beta
    */
   adapter?: BotFrameworkAdapter;
 
   /**
+   * If `adapter` is not provided, this `adapterConfig` will be passed to the new `BotFrameworkAdapter` when created internally.
+   *
+   * @remarks
+   * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
+   *
+   * @beta
+   */
+  adapterConfig?: { [key: string]: unknown };
+
+  /**
    * The command part.
    *
    * @beta
    */
-  command: {
+  command?: CommandOptions & {
     /**
      * Whether to enable command or not.
      *
      * @beta
      */
-    enabled: boolean;
-
-    /**
-     * The command options if command is enabled.
-     *
-     * @beta
-     */
-    options: CommandOptions;
+    enabled?: boolean;
   };
 
   /**
@@ -213,19 +221,12 @@ export interface ConversationOptions {
    *
    * @beta
    */
-  notification: {
+  notification?: NotificationOptions & {
     /**
      * Whether to enable notification or not.
      *
      * @beta
      */
-    enabled: boolean;
-
-    /**
-     * The notification options if notification is enabled.
-     *
-     * @beta
-     */
-    options: NotificationOptions;
+    enabled?: boolean;
   };
 }

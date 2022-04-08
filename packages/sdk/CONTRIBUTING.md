@@ -49,6 +49,48 @@ E2E tests need environment variables that are configured in GitHub Action.
 - test/e2e/browser/: end-to-end tests related to Azure resources for browser only.
 - test/e2e/node/: end-to-end tests related to Azure resources for NodeJS only.
 
+## Prepare values for required environment variables to run E2E test cases
+
+### SDK_INTEGRATION_TEST_API_CERTPROVIDER
+1. Execute following commands to generate self signed certificates for test. The command requires OpenSSL.
+    ```
+    # Generate certs to for test server that supports certificate auth
+    openssl req -x509 -newkey rsa:4096 -nodes -days 365 -keyout server_key.pem -out server_cert.pem  -subj "/CN=localhost"
+
+    # Generate client cert (both PEM and PFX) to test certificate auth support
+    openssl req -newkey rsa:4096 -keyout client_key.pem -out client_csr.pem -nodes -days 365 -subj "/CN=test client"
+
+    openssl x509 -req -in client_csr.pem -CA server_cert.pem -CAkey server_key.pem -out client_cert.pem -set_serial 01 -days 365
+
+    openssl pkcs12 -inkey client_key.pem -in client_cert.pem -certfile server_cert.pem -export -out client_pfx.pfx
+
+    # Create password protected private key file
+    openssl rsa -aes256 -in client_key.pem -out client_key_encrypted.pem
+
+    # Create password protected pfx file
+    openssl pkcs12 -inkey client_key.pem -in client_cert.pem -certfile server_cert.pem -export -out client_pfx_encrypted.pfx
+    ```
+
+2. In the directory that executes step 1's commands, execute following js script to generate values to be configured to the environment variable. You need to fill cert password you provided in step 1 before running the script.
+    ```
+    const fs = require('fs');
+
+    let certs = {};
+    certs.serverCert = fs.readFileSync('server_cert.pem','utf8');
+    certs.serverKey = fs.readFileSync('server_key.pem','utf8');
+    certs.clientCert = fs.readFileSync('client_cert.pem','utf8');
+    certs.clientKey = fs.readFileSync('client_key.pem','utf8');
+    certs.clientKeyEncrypted = fs.readFileSync('client_key_encrypted.pem','utf8');
+    certs.clientPfx = Buffer.from(fs.readFileSync('client_pfx.pfx')).toString("base64");
+    certs.clientPfxEncrypted = Buffer.from(fs.readFileSync('client_pfx_encrypted.pfx')).toString("base64");
+    certs.passphrase = '' // fill your password before executing the script
+    certs.clientCN = 'test client' // update the value if you specifies another CN when generating test certs
+
+    console.log(JSON.stringify(certs));
+    ```
+
+3. Set step 2's console output to environment variable `SDK_INTEGRATION_TEST_API_CERTPROVIDER`.
+
 # Style Guidelines
 
 This project use eslint and prettier to check format and code style.

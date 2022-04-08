@@ -2,18 +2,18 @@ import { TeamsFx, createApiClient, BasicAuthProvider } from "@microsoft/teamsfx"
 
 // Loads current app's configuration
 const teamsFx = new TeamsFx();
-// Initializes a new axios instance to call {{config.APIName}} API
+// Initializes a new axios instance to call fake API
 const authProvider = new BasicAuthProvider(
-  teamsFx.getConfig("API_{{capitalName}}_USERNAME"),
-  teamsFx.getConfig("API_{{capitalName}}_PASSWORD")
+  teamsFx.getConfig("API_FAKE_USERNAME"),
+  teamsFx.getConfig("API_FAKE_PASSWORD")
 );
-const {{config.APIName}}Client = createApiClient(teamsFx.getConfig("API_{{capitalName}}_ENDPOINT"), authProvider);
-export { {{config.APIName}}Client };
+const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+export { fakeClient };
 
 /* 
-You can now call {{config.APIName}} APIs without worrying about authentication. 
+You can now call fake APIs without worrying about authentication. 
 Here is an example for a GET request to "relative_path_of_target_api": 
-const result = await {{config.APIName}}Client.get("relative_path_of_target_api"); 
+const result = await fakeClient.get("relative_path_of_target_api"); 
 
 You can refer https://aka.ms/teamsfx-connect-api to learn more. 
 */
@@ -22,9 +22,9 @@ You can refer https://aka.ms/teamsfx-connect-api to learn more.
 Setting API configuration for cloud environment: 
 We have already set the configuration to .env.teamsfx.local based on your answers. 
 Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
-API_{{capitalName}}_ENDPOINT 
-API_{{capitalName}}_USERNAME 
-API_{{capitalName}}_PASSWORD 
+TEAMSFX_API_FAKE_ENDPOINT
+TEAMSFX_API_FAKE_USERNAME
+TEAMSFX_API_FAKE_PASSWORD
 
 You can refer https://aka.ms/teamsfx-connet-api to learn more. 
 */

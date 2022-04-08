@@ -33,6 +33,11 @@ export enum Capability {
   MessagingExtension = "messaging-extension",
 }
 
+export enum M365AppType {
+  LaunchPage = "launch-page",
+  MessagingExtension = "messaging-extension",
+}
+
 export enum Resource {
   AzureKeyVault = "azure-keyvault",
   AzureFunction = "azure-function",

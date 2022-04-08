@@ -1,11 +1,12 @@
 const teamsfxSdk = require("@microsoft/teamsfx");
 
 // Loads current app's configuration
-const teamsFx = new teamsfxSdk.TeamsFx();
+const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App);
 // Initializes a new axios instance to call fake API
-const authProvider = new teamsfxSdk.BasicAuthProvider(
-  teamsFx.getConfig("API_FAKE_USERNAME"),
-  teamsFx.getConfig("API_FAKE_PASSWORD")
+const appCredential = teamsFx.getCredential();
+const authProvider = new teamsfxSdk.BearerTokenAuthProvider(
+  // Please replace '<your-api-scope>' with actual api scope value.
+  async () => await appCredential.getToken("<your-api-scope>")?.token
 );
 const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };
@@ -22,9 +23,7 @@ You can refer https://aka.ms/teamsfx-connect-api to learn more.
 Setting API configuration for cloud environment: 
 We have already set the configuration to .env.teamsfx.local based on your answers. 
 Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
-API_FAKE_ENDPOINT 
-API_FAKE_USERNAME 
-API_FAKE_PASSWORD 
+TEAMSFX_API_FAKE_ENDPOINT
 
 You can refer https://aka.ms/teamsfx-connet-api to learn more. 
 */

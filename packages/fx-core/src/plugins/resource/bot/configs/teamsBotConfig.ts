@@ -29,11 +29,15 @@ export class TeamsBotConfig {
   public actRoles: PluginActRoles[] = [];
   public resourceNameSuffix = "";
 
+  public isM365: boolean | undefined = undefined;
+
   public async restoreConfigFromContext(context: PluginContext, isScaffold = false): Promise<void> {
     await this.scaffold.restoreConfigFromContext(context, isScaffold);
     await this.provision.restoreConfigFromContext(context);
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
+
+    this.isM365 = context.projectSettings?.isM365;
 
     this.teamsAppClientId = context.envInfo.state
       .get(PluginAAD.PLUGIN_NAME)

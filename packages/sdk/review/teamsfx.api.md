@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@azure/identity';
 import { Activity } from 'botbuilder-core';
 import { Activity as Activity_2 } from 'botbuilder';
@@ -25,11 +27,15 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
+import { SecureContextOptions } from 'tls';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder-core';
+import { TurnContext as TurnContext_2 } from 'botbuilder';
+import { WebRequest } from 'botbuilder';
+import { WebResponse } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -56,6 +62,12 @@ export interface AuthProvider {
 // @beta
 export class BearerTokenAuthProvider implements AuthProvider {
     constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
+export class CertificateAuthProvider implements AuthProvider {
+    constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
@@ -93,18 +105,20 @@ export class ConversationBot {
     readonly adapter: BotFrameworkAdapter;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
+    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
 }
 
 // @beta
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
-    command: {
-        enabled: boolean;
-        options: CommandOptions;
+    adapterConfig?: {
+        [key: string]: unknown;
     };
-    notification: {
-        enabled: boolean;
-        options: NotificationOptions_2;
+    command?: CommandOptions & {
+        enabled?: boolean;
+    };
+    notification?: NotificationOptions_2 & {
+        enabled?: boolean;
     };
 }
 
@@ -115,6 +129,12 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 //
 // @beta
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
+
+// @public
+export function createPemCertOption(cert: string | Buffer, key: string | Buffer, passphrase?: string, ca?: string | Buffer): SecureContextOptions;
+
+// @public
+export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): SecureContextOptions;
 
 // @beta
 export enum ErrorCode {

@@ -290,7 +290,7 @@ export async function getQuestions(
       plugins = getAllV2ResourcePlugins();
     }
     plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
-    if (plugins.length === 0) {
+    if (plugins.length === 0 && inputs.skipAadDeploy !== "no") {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }
 
@@ -432,7 +432,31 @@ export async function getQuestionsForAddCapability(
       MessageExtensionItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
-    return ok(new QTreeNode(addCapQuestion));
+    const addCapNode = new QTreeNode(addCapQuestion);
+    if (isBotNotificationEnabled()) {
+      // Hardcoded to call bot plugin to get notification trigger questions.
+      // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+      // V3 will not need this hardcoding.
+      const pluginMap = getAllV2ResourcePluginMap();
+      const plugin = pluginMap.get(PluginNames.BOT);
+      if (plugin && plugin.getQuestionsForUserTask) {
+        const result = await plugin.getQuestionsForUserTask(
+          ctx,
+          inputs,
+          func,
+          envInfo,
+          tokenProvider
+        );
+        if (result.isErr()) {
+          return result;
+        }
+        const botQuestionNode = result.value;
+        if (botQuestionNode) {
+          addCapNode.addChild(botQuestionNode);
+        }
+      }
+    }
+    return ok(addCapNode);
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
   if (canProceed.isErr()) {

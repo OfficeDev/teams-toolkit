@@ -124,6 +124,14 @@ export const AppIdUriInvalidError: AadError = {
   ],
 };
 
+export const CannotGenerateIdentifierUrisError: AadError = {
+  name: "CannotGenerateIdentifierUris",
+  message: () => [
+    getDefaultString("error.aad.CannotGenerateIdentifierUris"),
+    getLocalizedString("error.aad.CannotGenerateIdentifierUris"),
+  ],
+};
+
 export const InvalidSelectedPluginsError: AadError = {
   name: "InvalidSelectedPlugins",
   message: (message) => [

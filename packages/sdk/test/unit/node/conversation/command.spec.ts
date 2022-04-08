@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { assert } from "chai";
 import { BotFrameworkAdapter, ConversationReference, TeamsInfo, TurnContext } from "botbuilder";
 import * as sinon from "sinon";

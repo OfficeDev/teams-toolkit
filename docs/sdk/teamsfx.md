@@ -10,14 +10,15 @@
 |  --- | --- |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
+|  [CertificateAuthProvider](./teamsfx.certificateauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Certificate authentication |
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> A command bot for receiving commands and sending responses in Teams. |
-|  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, channel, incoming wehbook). |
+|  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
-|  [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> Provide utilities to send notification to varies targets (e.g., member, channel, incoming wehbook). |
+|  [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> Provide utilities to send notification to varies targets (e.g., member, group, channel). |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
 |  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | <b><i>(BETA)</i></b> Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
@@ -38,6 +39,8 @@
 |  --- | --- |
 |  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | <b><i>(BETA)</i></b> Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
+|  [createPemCertOption(cert, key, passphrase, ca)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
+|  [createPfxCertOption(pfx, passphrase)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | <b><i>(BETA)</i></b> Send an adaptive card message to a notification target. |

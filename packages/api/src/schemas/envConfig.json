@@ -40,7 +40,7 @@
         },
         "botId": {
           "type": "string",
-          "description": "The bot id for identifierUris of existing AAD app for Teams app.",
+          "description": "The bot id for identifier Uris of existing AAD app for Teams app.",
           "minLength": 1
         },
         "botEndpoint": {

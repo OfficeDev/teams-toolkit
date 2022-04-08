@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { ConversationReference, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";

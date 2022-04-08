@@ -5,7 +5,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { LocalEnvProvider, LocalEnvs } from "../../../common/local/localEnvProvider";
-import { ApiConnectorConfiguration, BasicAuthConfig } from "./config";
+import { AADAuthConfig, ApiConnectorConfiguration, BasicAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
@@ -30,23 +30,39 @@ export class ApiDataManager {
     if (!this.apiConnector[apiName]) {
       this.apiConnector[apiName] = new Map();
     }
+    const endPoint = Constants.envPrefix + apiName + "_ENDPOINT";
+    const authName = Constants.envPrefix + apiName + "_AUTHENTICATION_TYPE";
+    this.apiConnector[apiName].set(authName, config.AuthConfig.AuthType);
+    this.apiConnector[apiName].set(endPoint, config.EndPoint);
     if (config.AuthConfig.AuthType === AuthType.BASIC) {
       this.addBasicEnvs(config);
+    } else if (config.AuthConfig.AuthType === AuthType.AAD) {
+      this.addAADEnvs(config);
     }
   }
 
   public addBasicEnvs(config: ApiConnectorConfiguration) {
     const apiName: string = config.APIName.toUpperCase();
     const apiConfig = this.apiConnector[apiName];
-    const endPoint = "API_" + apiName + "_ENDPOINT";
-    const authName = "API_" + apiName + "_AUTHENTICATION_TYPE";
-    const userName = "API_" + apiName + "_USERNAME";
-    const passWd = "API_" + apiName + "_PASSWORD";
+    const userName = Constants.envPrefix + apiName + "_USERNAME";
+    const passWd = Constants.envPrefix + apiName + "_PASSWORD";
     const authConfig = config.AuthConfig as BasicAuthConfig;
     apiConfig.set(userName, authConfig.UserName);
-    apiConfig.set(authName, authConfig.AuthType);
-    apiConfig.set(endPoint, config.EndPoint);
     apiConfig.set(passWd, "");
+  }
+
+  public addAADEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const authConfig = config.AuthConfig as AADAuthConfig;
+    if (!authConfig.ReuseTeamsApp) {
+      const tenantId = Constants.envPrefix + apiName + "_TENANT_ID";
+      const clientId = Constants.envPrefix + apiName + "_CLIENT_ID";
+      const clientSecret = Constants.envPrefix + apiName + "_CLIENT_SECRET";
+      apiConfig.set(tenantId, authConfig.TenantId!);
+      apiConfig.set(clientId, authConfig.ClientId!);
+      apiConfig.set(clientSecret, "");
+    }
   }
 }
 export class EnvHandler {

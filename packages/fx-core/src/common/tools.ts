@@ -63,6 +63,9 @@ Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) == -1 ? this : "";
 });
+Handlebars.registerHelper("equals", (value, target) => {
+  return value === target ? this : "";
+});
 
 export const Executor = {
   async execCommandAsync(command: string, options?: ExecOptions) {

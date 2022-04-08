@@ -8,6 +8,7 @@ import fs, { PathLike } from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
+import "reflect-metadata";
 import { Container } from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -19,6 +20,12 @@ import {
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
+import { AppServiceOptionItem } from "../../../../../src/plugins/resource/bot/question";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
@@ -149,6 +156,74 @@ describe("Add capability", () => {
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs!.length, 2);
 
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs![1].entityId, "index1");
+    }
+  });
+
+  it("Add notification bot capability", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const fileContent: Map<string, any> = new Map();
+    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
+      fileContent.set(path.normalize(filePath.toString()), data);
+    });
+
+    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
+      const content = fileContent.get(path.normalize(filePath));
+      if (content) {
+        return JSON.parse(content);
+      } else {
+        return await fs.readJSON(path.normalize(filePath));
+      }
+    });
+
+    const capabilities = [{ name: "Bot" as const }];
+    inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+
+    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    chai.assert.isTrue(loadedManifestTemplate.isOk());
+
+    if (loadedManifestTemplate.isOk()) {
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[0].commandLists);
+    }
+  });
+
+  it("Add command and response bot capability", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const fileContent: Map<string, any> = new Map();
+    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
+      fileContent.set(path.normalize(filePath.toString()), data);
+    });
+
+    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
+      const content = fileContent.get(path.normalize(filePath));
+      if (content) {
+        return JSON.parse(content);
+      } else {
+        return await fs.readJSON(path.normalize(filePath));
+      }
+    });
+
+    const capabilities = [{ name: "Bot" as const }];
+    inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
+    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+
+    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    chai.assert.isTrue(loadedManifestTemplate.isOk());
+
+    if (loadedManifestTemplate.isOk()) {
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+      chai.assert.equal(
+        loadedManifestTemplate.value.remote.bots?.[0].commandLists?.[0].commands?.[0].title,
+        "helloWorld"
+      );
     }
   });
 });

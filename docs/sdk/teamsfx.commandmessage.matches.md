@@ -4,7 +4,7 @@
 
 ## CommandMessage.matches property
 
-The capture groups that matched to the  in a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance.
+The capture groups that matched to the [TriggerPatterns](./teamsfx.triggerpatterns.md) in a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance.
 
 <b>Signature:</b>
 

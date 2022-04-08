@@ -100,6 +100,8 @@ export const showNotificationTriggerCondition = {
     }
     return "Notification is not selected";
   },
+  // Workaround for CLI: it requires containsAny to be set, or it will crash.
+  containsAny: [NotificationOptionItem.id],
 };
 
 type HostTypeTriggerOptionItemWithoutText = Omit<

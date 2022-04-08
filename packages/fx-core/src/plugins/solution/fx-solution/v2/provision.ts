@@ -18,7 +18,6 @@ import {
   extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
-  hasAzureResourcesToProvision,
   isAzureProject,
 } from "./utils";
 import {
@@ -41,7 +40,11 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
-import { hasAAD, isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import {
+  hasAAD,
+  hasAzureResource,
+  isPureExistingApp,
+} from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function provisionResource(
@@ -188,7 +191,7 @@ export async function provisionResource(
   if (
     isAzureProject(azureSolutionSettings) &&
     !inputs.isForUT &&
-    hasAzureResourcesToProvision(azureSolutionSettings)
+    hasAzureResource(ctx.projectSetting)
   ) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);

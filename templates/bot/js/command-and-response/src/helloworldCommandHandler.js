@@ -2,12 +2,13 @@ const helloWorldCard = require("./adaptiveCards/helloworldCommand.json");
 const { MessageBuilder } = require("@microsoft/teamsfx");
 
 class HelloWorldCommandHandler {
-  commandNameOrPattern = "helloWorld";
+  triggerPatterns = "helloWorld";
 
-  async handleCommandReceived(context, receivedText) {
+  async handleCommandReceived(context, message) {
     // verify the command arguments which are received from the client if needed.
+    console.log(`Bot received message: ${message.text}`);
 
-    // do something to process your command and return an adaptive card or a text message.
+    // do something to process your command and return message activity as the response.
     return MessageBuilder.attachAdaptiveCardWithoutData(helloWorldCard);
   }
 }

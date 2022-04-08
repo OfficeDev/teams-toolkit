@@ -83,6 +83,7 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
+import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -277,7 +278,7 @@ export async function addCapability(
     isMiniApp = true;
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew: Inputs = {
+  const inputsNew: InputsWithProjectPath = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -524,7 +525,7 @@ export async function addCapability(
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
+    await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");

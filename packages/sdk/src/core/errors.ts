@@ -109,6 +109,10 @@ export class ErrorMessage {
   // AuthorizationInfoError
   static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";
   static readonly BasicCredentialAlreadyExists = "Basic credential already exists!";
+  // InvalidParameter Error
+  static readonly EmptyParameter = "Parameter {0} is empty";
+  static readonly DuplicateHttpsOptionProperty =
+    "Axios HTTPS agent already defined value for property {0}";
 }
 
 /**

@@ -33,11 +33,11 @@ Suppose an existing AAD has been registered, you can reuse this AAD by configuri
 ```
 4. Provision the Bot, then it will reuse this AAD and won't create a new one.
 
-## How can I trouble shoot issues when Teams Bot isn't responding on Azure?
+## How can I troubleshoot issues when Teams Bot isn't responding on Azure?
  
-For general trouble shooting guidance, please refer to [Bot Framework Trouble Shooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4).
+For general troubleshooting guidance, please refer to [Bot Framework Troubleshooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4).
 
-When Teams Bot isn't responding, you probably want to check the its status on Azure. There're two fundamental points you'd better check first:
+When Teams Bot isn't responding, you probably want to check its status on Azure. There're two fundamental points you'd better check first:
 ### 1. Is the Teams Bot deployed successfully? Is the Teams Bot up and running? Is the basic communication good?
 1. Log into Azure by [portal](https://portal.azure.com/) and find your Azure Bot's app service.
 1. Check if the deployment artifacts are existing under the folder of `wwwroot` by Console in control panel:

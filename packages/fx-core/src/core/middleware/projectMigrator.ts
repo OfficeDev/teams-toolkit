@@ -16,8 +16,8 @@ import {
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  returnSystemError,
   StatesFolderName,
+  SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { serializeDict, isSPFxProject } from "../../common/tools";
@@ -1040,10 +1040,10 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   );
   if (!(await fs.pathExists(path.join(fxConfig, parameterEnvFileName)))) {
     throw err(
-      returnSystemError(
-        new Error(`Failed to generate ${parameterEnvFileName} on migration`),
+      new SystemError(
         CoreSource,
-        "GenerateArmTemplateFailed"
+        "GenerateArmTemplateFailed",
+        `Failed to generate ${parameterEnvFileName} on migration`
       )
     );
   }

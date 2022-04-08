@@ -1,9 +1,9 @@
-import { Result, FxError, err, ok, returnUserError } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, UserError } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { ext } from "../extensionVariables";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as vscode from "vscode";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
@@ -11,10 +11,11 @@ export async function selectAndDebug(): Promise<Result<null, FxError>> {
     await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
     return ok(null);
   } else {
-    const error = returnUserError(
-      new Error(localize("teamstoolkit.handlers.invalidProject")),
+    const error = new UserError(
       ExtensionSource,
-      ExtensionErrors.InvalidProject
+      ExtensionErrors.InvalidProject,
+      getDefaultString("teamstoolkit.handlers.invalidProject"),
+      localize("teamstoolkit.handlers.invalidProject")
     );
 
     return err(error);

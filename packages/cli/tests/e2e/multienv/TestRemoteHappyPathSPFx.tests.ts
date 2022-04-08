@@ -42,7 +42,6 @@ describe("Multi Env Happy Path for SPFx", function () {
     // check specified files
     const files: string[] = [
       "config/config.json",
-      "config/copy-assets.json",
       "config/deploy-azure-storage.json",
       "config/package-solution.json",
       "config/serve.json",

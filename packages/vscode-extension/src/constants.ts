@@ -4,8 +4,11 @@ export enum ConfigurationKey {
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
   UnifyConfigs = "unifyConfigs",
-  EnableInitApp = "enableInitApp",
+  EnableExistingApp = "enableExistingApp",
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
+  YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
+  generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
+  enableM365App = "enableM365App",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -27,4 +30,5 @@ export enum GlobalKey {
   OpenReadMe = "fx-extension.openReadMe",
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
+  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }

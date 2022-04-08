@@ -8,34 +8,39 @@ import {
   Inputs,
   Json,
   ok,
+  TelemetryReporter,
+  Void,
   Platform,
   ProjectSettings,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionSettings,
   SystemError,
-  TelemetryReporter,
   TokenProvider,
   UserError,
   UserInteraction,
   v2,
   v3,
-  Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import path from "path";
 import { Container } from "typedi";
 import * as util from "util";
-import { isAADEnabled, isAadManifestEnabled } from "../../../../common";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import {
+  BotHostTypeName,
+  BotHostTypes,
+  isAADEnabled,
+  isAadManifestEnabled,
+} from "../../../../common";
+import { ResourcePlugins } from "../../../../common/constants";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { OperationNotPermittedError } from "../../../../core/error";
-import { CoreQuestionNames } from "../../../../core/question";
+import { InvalidInputError, OperationNotPermittedError } from "../../../../core/error";
+import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
+  AddSsoParameters,
   DEFAULT_PERMISSION_REQUEST,
+  Language,
   PluginNames,
   SolutionError,
   SolutionSource,
@@ -56,11 +61,14 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabNonSsoItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -69,6 +77,12 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldByPlugins } from "./scaffolding";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
+import { Certificate } from "crypto";
+import { getLocalAppName } from "../../../resource/appstudio/utils/utils";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { getTemplatesFolder } from "../../../../folder";
+import AdmZip from "adm-zip";
+import { unzip } from "../../../../common/template-utils/templatesUtils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -93,11 +107,7 @@ export async function executeUserTask(
     if (method === "registerTeamsAppAndAad") {
       // not implemented for now
       return err(
-        returnSystemError(
-          new Error("Not implemented"),
-          SolutionSource,
-          SolutionError.FeatureNotSupported
-        )
+        new SystemError(SolutionSource, SolutionError.FeatureNotSupported, "Not implemented")
       );
     } else if (method === "VSpublish") {
       // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
@@ -105,10 +115,11 @@ export async function executeUserTask(
       // Using executeUserTask here could bypass the fx project check.
       if (inputs.platform !== "vs") {
         return err(
-          returnSystemError(
-            new Error(`VS publish is not supposed to run on platform ${inputs.platform}`),
+          new SystemError(
             SolutionSource,
-            SolutionError.UnsupportedPlatform
+            SolutionError.UnsupportedPlatform,
+            getDefaultString("error.UnsupportedPlatformVS"),
+            getLocalizedString("error.UnsupportedPlatformVS")
           )
         );
       }
@@ -168,10 +179,11 @@ export async function executeUserTask(
   }
 
   return err(
-    returnUserError(
-      new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
+    new UserError(
       SolutionSource,
-      `executeUserTaskRouteFailed`
+      "executeUserTaskRouteFailed",
+      getDefaultString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
+      getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func))
     )
   );
 }
@@ -182,9 +194,10 @@ export function canAddCapability(
 ): Result<Void, FxError> {
   if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddCapabilityNotSupport,
-      getLocalizedString("core.addCapability.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addCapability.onlySupportAzure"),
+      getLocalizedString("core.addCapability.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, telemetryReporter)
@@ -200,9 +213,10 @@ export function canAddResource(
   const isVS = isVSProject(projectSetting);
   if (isVS) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.notSupportForVSProject"),
-      SolutionSource
+      getDefaultString("core.addResource.notSupportForVSProject"),
+      getLocalizedString("core.addResource.notSupportForVSProject")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -211,9 +225,10 @@ export function canAddResource(
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddResourceNotSupport,
-      getLocalizedString("core.addResource.onlySupportAzure"),
-      SolutionSource
+      getDefaultString("core.addResource.onlySupportAzure"),
+      getLocalizedString("core.addResource.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
@@ -241,6 +256,7 @@ export async function addCapability(
 
   // 1. checking addable
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let isMiniApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -258,6 +274,7 @@ export async function addCapability(
         spaces: 4,
       });
     }
+    isMiniApp = true;
   }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: Inputs = {
@@ -281,6 +298,15 @@ export async function addCapability(
     });
     return ok({});
   }
+  const validateRes = validateCapabilities(capabilitiesAnswer);
+  if (validateRes) {
+    return err(InvalidInputError(validateRes));
+  }
+  // add spfx tab is not permitted for non-mini app
+  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id)) {
+    return err(InvalidInputError(getLocalizedString("core.capability.validation.spfx")));
+  }
+
   // normalize capability answer
   const scenarios: BotScenario[] = [];
   const notificationIndex = capabilitiesAnswer.indexOf(NotificationOptionItem.id);
@@ -300,15 +326,15 @@ export async function addCapability(
   const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);
   const alreadyHasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
   const alreadyHasME = solutionSettings.capabilities.includes(MessageExtensionItem.id);
-  const alreadyHasSso =
-    isAadManifestEnabled() && solutionSettings.capabilities.includes(SsoItem.id);
+  const alreadyHasTabSso =
+    isAadManifestEnabled() && solutionSettings.capabilities.includes(TabSsoItem.id);
   const toAddTab = capabilitiesAnswer.includes(TabOptionItem.id);
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-
+  const toAddSpfx = false; //capabilitiesAnswer.includes(TabSPFxItem.id);
   if (isAadManifestEnabled()) {
-    if (alreadyHasSso && toAddTabNonSso) {
+    if (alreadyHasTabSso && toAddTabNonSso) {
       const e = new SystemError(
         SolutionError.InvalidInput,
         getLocalizedString("core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled"),
@@ -317,19 +343,13 @@ export async function addCapability(
       return err(e);
     }
 
-    if (!alreadyHasSso && toAddTab) {
+    if (alreadyHasTab && !alreadyHasTabSso && toAddTab) {
       const e = new SystemError(
         SolutionError.InvalidInput,
         getLocalizedString("core.addSsoFiles.canNotAddTabWhenSsoNotEnabled"),
         SolutionSource
       );
       return err(e);
-    }
-
-    if (toAddTabNonSso) {
-      const index = capabilitiesAnswer.indexOf(TabNonSsoItem.id);
-      capabilitiesAnswer.splice(index, 1);
-      capabilitiesAnswer.push(TabOptionItem.id);
     }
   }
 
@@ -362,11 +382,16 @@ export async function addCapability(
     return err(meExceedRes.error);
   }
   const isMEAddable = !meExceedRes.value;
-  if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
+  if (
+    ((toAddTab || toAddTabNonSso) && !isTabAddable) ||
+    (toAddBot && !isBotAddable) ||
+    (toAddME && !isMEAddable)
+  ) {
     const error = new UserError(
+      SolutionSource,
       SolutionError.FailedToAddCapability,
-      getLocalizedString("core.addCapability.exceedMaxLimit"),
-      SolutionSource
+      getDefaultString("core.addCapability.exceedMaxLimit"),
+      getLocalizedString("core.addCapability.exceedMaxLimit")
     );
     return err(
       sendErrorTelemetryThenReturnError(
@@ -383,105 +408,79 @@ export async function addCapability(
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   const vsProject = isVSProject(ctx.projectSetting);
-  if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
-    pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
-  }
-  if (
-    !isAadManifestEnabled() &&
-    !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
-  ) {
-    pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
-  }
 
-  // 4. check Tab
-  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasTab) {
-        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    } else {
-      if (!alreadyHasTab) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, true, false);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
-    }
+  // check SPFx
+  if (toAddSpfx) {
+    pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
     capabilitiesToAddManifest.push({ name: "staticTab" });
-    newCapabilitySet.add(TabOptionItem.id);
-  }
-  // 5. check Bot
-  if (capabilitiesAnswer.includes(BotOptionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+    capabilitiesToAddManifest.push({ name: "configurableTab" });
+    newCapabilitySet.add(TabSPFxItem.id);
+    solutionSettings.hostType = HostTypeOptionSPFx.id;
+  } else {
+    if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
+      pluginNamesToArm.add(ResourcePluginsV2.IdentityPlugin);
+    }
+    if (
+      !isAadManifestEnabled() &&
+      !originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
+    ) {
+      pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
+    }
 
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
+    // 4. check Tab
+    if (toAddTab || toAddTabNonSso) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasTab) {
+          pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+        }
+      } else {
+        if (!alreadyHasTab) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
         }
       }
-    } else {
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      capabilitiesToAddManifest.push({ name: "staticTab" });
+      newCapabilitySet.add(TabOptionItem.id);
 
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
+      if (toAddTab) {
+        newCapabilitySet.add(TabSsoItem.id);
       }
     }
-    capabilitiesToAddManifest.push({ name: "Bot" });
-    newCapabilitySet.add(BotOptionItem.id);
-  }
-  // 6. check MessageExtension
-  if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
-    if (vsProject) {
-      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
 
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
+    // 5. check Bot
+    if (toAddBot) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+        }
+      } else {
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
         }
       }
-    } else {
-      if (!alreadyHasBot && !alreadyHasME) {
-        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
-        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
-
-        if (isAadManifestEnabled() && alreadyHasSso) {
-          const createAuthFilesRes = await createAuthFiles(inputsNew, false, true);
-          if (createAuthFilesRes.isErr()) {
-            return addAuthFileError(createAuthFilesRes, ctx.telemetryReporter);
-          }
-        }
-      }
+      capabilitiesToAddManifest.push({ name: "Bot" });
+      newCapabilitySet.add(BotOptionItem.id);
     }
-    capabilitiesToAddManifest.push({ name: "MessageExtension" });
-    newCapabilitySet.add(MessageExtensionItem.id);
+
+    // 6. check MessageExtension
+    if (toAddME) {
+      if (vsProject) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+        }
+      } else {
+        if (!alreadyHasBot && !alreadyHasME) {
+          pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+          pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+        }
+      }
+      capabilitiesToAddManifest.push({ name: "MessageExtension" });
+      newCapabilitySet.add(MessageExtensionItem.id);
+    }
   }
 
   // 7. update solution settings
@@ -489,6 +488,7 @@ export async function addCapability(
   setActivatedResourcePluginsV2(ctx.projectSetting);
 
   if (
+    !toAddSpfx &&
     !isAadManifestEnabled() &&
     !solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)
   ) {
@@ -522,7 +522,7 @@ export async function addCapability(
     }
   }
   // 4. update manifest
-  if (capabilitiesToAddManifest.length > 0 || pluginsToScaffold.length > 0) {
+  if (capabilitiesToAddManifest.length > 0) {
     await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
@@ -560,9 +560,10 @@ async function scaffoldCodeAndResourceTemplate(
   inputs: Inputs,
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
-  pluginsToDoArm?: v2.ResourcePlugin[]
+  pluginsToDoArm?: v2.ResourcePlugin[],
+  concurrent = true
 ): Promise<Result<unknown, FxError>> {
-  const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
+  const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold, concurrent);
   if (result.isErr()) {
     return result;
   }
@@ -632,9 +633,9 @@ export async function addResource(
   // 3. check APIM and KeyVault addable
   if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
     const e = new UserError(
-      new Error("APIM/KeyVault is already added."),
       SolutionSource,
-      SolutionError.AddResourceNotSupport
+      SolutionError.AddResourceNotSupport,
+      "APIM/KeyVault is already added."
     );
     return err(
       sendErrorTelemetryThenReturnError(
@@ -661,7 +662,12 @@ export async function addResource(
         pluginsToScaffold.push(aadPlugin);
         pluginsToDoArm.push(aadPlugin);
 
-        solutionSettings.capabilities.push(SsoItem.id);
+        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+          solutionSettings.capabilities.push(TabSsoItem.id);
+        }
+        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+          solutionSettings.capabilities.push(BotSsoItem.id);
+        }
       } else {
         solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
       }
@@ -770,10 +776,10 @@ export function extractParamForRegisterTeamsAppAndAad(
 ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
   if (answers == undefined) {
     return err(
-      returnSystemError(
-        new Error("Input is undefined"),
+      new SystemError(
         SolutionSource,
-        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+        "Input is undefined"
       )
     );
   }
@@ -788,10 +794,10 @@ export function extractParamForRegisterTeamsAppAndAad(
     const value = answers[key];
     if (value == undefined) {
       return err(
-        returnSystemError(
-          new Error(`${key} not found`),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad
+          SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+          `${key} not found`
         )
       );
     }
@@ -810,7 +816,7 @@ export type ParamForRegisterTeamsAppAndAad = {
 
 // TODO: handle VS scenario
 export function canAddSso(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
   // Can not add sso if feature flag is not enabled
@@ -825,6 +831,7 @@ export function canAddSso(
     );
   }
 
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddSsoNotSupported,
@@ -836,27 +843,34 @@ export function canAddSso(
     );
   }
 
-  // Can only add sso when capability includes Tab, Bot, Messaging Extension, etc.
-  if (
-    !solutionSettings.capabilities.includes(TabOptionItem.id) &&
-    !solutionSettings.capabilities.includes(BotOptionItem.id) &&
-    !solutionSettings.capabilities.includes(MessageExtensionItem.id)
-  ) {
-    const e = new UserError(
-      SolutionError.AddSsoNotSupported,
-      getLocalizedString("core.addSso.needCapability"),
-      SolutionSource
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
+  // Will throw error if bot host type is Azure Function
+  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      const e = new UserError(
+        SolutionError.AddSsoNotSupported,
+        getLocalizedString("core.addSso.functionNotSupport"),
+        SolutionSource
+      );
+      return err(
+        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+      );
+    }
   }
 
   // Check whether SSO is enabled
   const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containSsoItem = solutionSettings.capabilities.includes(SsoItem.id);
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
-  if (containSsoItem && containAadPlugin) {
+  if (
+    ((containTab && containTabSsoItem && !containBot) ||
+      (containBot && containBotSsoItem && !containTab) ||
+      (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
+    containAadPlugin
+  ) {
     // Throw error if sso is already enabled
     const e = new UserError(
       SolutionError.SsoEnabled,
@@ -866,7 +880,11 @@ export function canAddSso(
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
-  } else if (containSsoItem || containAadPlugin) {
+  } else if (
+    (containTabSsoItem && !containTab) ||
+    (containBotSsoItem && !containBot) ||
+    (containTabSsoItem || containBotSsoItem) !== containAadPlugin
+  ) {
     // Throw error if the project is invalid
     const e = new UserError(
       SolutionError.InvalidSsoProject,
@@ -905,14 +923,25 @@ export async function addSso(
   }
 
   // Check whether can add sso
-  const canProceed = canAddSso(solutionSettings, ctx.telemetryReporter);
+  const canProceed = canAddSso(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
 
   // Update project settings
   solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
-  solutionSettings.capabilities.push(SsoItem.id);
+  if (
+    solutionSettings.capabilities.includes(TabOptionItem.id) &&
+    !solutionSettings.capabilities.includes(TabSsoItem.id)
+  ) {
+    solutionSettings.capabilities.push(TabSsoItem.id);
+  }
+  if (
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !solutionSettings.capabilities.includes(BotSsoItem.id)
+  ) {
+    solutionSettings.capabilities.push(BotSsoItem.id);
+  }
 
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew = {
@@ -928,6 +957,7 @@ export async function addSso(
     solutionSettings.capabilities.includes(MessageExtensionItem.id);
   const createAuthFilesRes = await createAuthFiles(
     inputsNew,
+    ctx,
     needsTab,
     needsBot,
     isVSProject(ctx.projectSetting)
@@ -947,8 +977,8 @@ export async function addSso(
     ctx,
     inputsNew,
     localSettings,
-    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)],
-    [Container.get<v2.ResourcePlugin>(PluginNames.AAD)]
+    [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)],
+    [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
   );
   if (scaffoldRes.isErr()) {
     ctx.projectSetting.solutionSettings = originalSettings;
@@ -973,6 +1003,7 @@ export async function addSso(
 // TODO: use 'isVsProject' for changes in VS
 export async function createAuthFiles(
   input: Inputs,
+  ctx: v2.Context,
   needTab: boolean,
   needBot: boolean,
   isVsProject = false
@@ -987,6 +1018,13 @@ export async function createAuthFiles(
     return err(e);
   }
 
+  const language = (ctx.projectSetting.programmingLanguage as string) ?? Language.JavaScript;
+  const languageFolderResult = validateAndParseLanguage(language);
+  if (languageFolderResult.isErr()) {
+    return err(languageFolderResult.error);
+  }
+  const languageFolderName = languageFolderResult.value;
+
   const projectFolderExists = await fs.pathExists(projectPath!);
   if (!projectFolderExists) {
     const e = new SystemError(
@@ -998,43 +1036,102 @@ export async function createAuthFiles(
   }
 
   const authFolder = path.join(projectPath!, "auth");
-  const authFolderExists = await fs.pathExists(authFolder);
-  if (!authFolderExists) {
-    await fs.ensureDir(authFolder);
-  }
-
-  if (needTab) {
-    const tabFolder = path.join(authFolder, "tab");
-    const tabFolderExists = await fs.pathExists(tabFolder);
-    if (!tabFolderExists) {
-      await fs.ensureDir(tabFolder);
+  const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
+  const botFolder = path.join(authFolder, AddSsoParameters.Bot);
+  try {
+    const authFolderExists = await fs.pathExists(authFolder);
+    if (!authFolderExists) {
+      await fs.ensureDir(authFolder);
     }
 
-    // TODO: Add necessary files here for tab
-  }
+    if (needTab) {
+      const tabFolderExists = await fs.pathExists(tabFolder);
+      if (!tabFolderExists) {
+        await fs.ensureDir(tabFolder);
+      }
 
-  if (needBot) {
-    const botFolder = path.join(authFolder, "bot");
-    const botFolderExists = await fs.pathExists(botFolder);
-    if (!botFolderExists) {
-      await fs.ensureDir(botFolder);
+      const templateFolder = getTemplatesFolder();
+      const tabTemplateFolder = path.join(
+        templateFolder,
+        AddSsoParameters.filePath,
+        AddSsoParameters.Tab
+      );
+      if (isVsProject) {
+        // TODO: add steps for VS
+      } else {
+        // README.md
+        const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.Readme);
+        const readmeTargetPath = path.join(tabFolder, AddSsoParameters.Readme);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(tabTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, tabFolder);
+      }
     }
 
-    // TODO: Add necessary files here for bot
+    if (needBot) {
+      const botFolderExists = await fs.pathExists(botFolder);
+      if (!botFolderExists) {
+        await fs.ensureDir(botFolder);
+      }
+
+      const templateFolder = getTemplatesFolder();
+      const botTemplateFolder = path.join(
+        templateFolder,
+        AddSsoParameters.filePath,
+        AddSsoParameters.Bot
+      );
+      if (isVsProject) {
+        // TODO: add steps for VS
+      } else {
+        // README.md
+        const readmeSourcePath = path.join(botTemplateFolder, AddSsoParameters.Readme);
+        const readmeTargetPath = path.join(botFolder, AddSsoParameters.Readme);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(botTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, botFolder);
+      }
+    }
+  } catch (error) {
+    if (needTab && (await fs.pathExists(tabFolder))) {
+      await fs.remove(tabFolder);
+    }
+    if (needBot && (await fs.pathExists(botFolder))) {
+      await fs.remove(botFolder);
+    }
+    const e = new SystemError(
+      SolutionError.FailedToCreateAuthFiles,
+      getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
+      SolutionSource
+    );
+    return err(e);
   }
 
   return ok(undefined);
 }
 
-const addAuthFileError = (
-  createAuthFilesRes: Err<unknown, FxError>,
-  telemetryReporter: TelemetryReporter
-): Err<any, FxError> => {
-  return err(
-    sendErrorTelemetryThenReturnError(
-      SolutionTelemetryEvent.AddCapability,
-      createAuthFilesRes.error,
-      telemetryReporter
-    )
+export function validateAndParseLanguage(language: string): Result<string, FxError> {
+  if (language.toLowerCase() == Language.TypeScript) {
+    return ok("ts");
+  }
+
+  if (language.toLowerCase() == Language.JavaScript) {
+    return ok("js");
+  }
+
+  const e = new SystemError(
+    SolutionError.InvalidInput,
+    getLocalizedString("core.addSsoFiles.invalidLanguage"),
+    SolutionSource
   );
-};
+  return err(e);
+}

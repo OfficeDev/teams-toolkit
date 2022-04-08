@@ -171,7 +171,11 @@ export default class Preview extends YargsCommand {
       const previewType = args.remote ? "remote" : "local";
       this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
 
-      const hub = args["m365-host"] as constants.Hub;
+      let hub = args["m365-host"] as constants.Hub;
+      // TODO: remove this when TEAMSFX_M365_APP retires
+      if (hub === undefined) {
+        hub = constants.Hub.teams;
+      }
       this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
 
       const browser = args.browser as constants.Browser;
@@ -270,7 +274,7 @@ export default class Preview extends YargsCommand {
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
 
-    if (hub !== constants.Hub.teams && projectSettings.isM365) {
+    if (hub !== constants.Hub.teams && !projectSettings.isM365) {
       throw NotM365Project();
     }
 
@@ -417,8 +421,9 @@ export default class Preview extends YargsCommand {
 
     /* === get local teams app id === */
     // re-load local settings
-    let tenantId = undefined,
-      localTeamsAppId = undefined;
+    let tenantId = undefined;
+    let localTeamsAppId = undefined;
+    let localBotId = undefined;
     if (isConfigUnifyEnabled()) {
       configResult = await core.getProjectConfig(inputs);
       if (configResult.isErr()) {
@@ -431,11 +436,15 @@ export default class Preview extends YargsCommand {
       localTeamsAppId = config?.config
         ?.get(constants.appstudioPluginName)
         ?.get(constants.remoteTeamsAppIdConfigKey);
+      localBotId = config?.config
+        ?.get(constants.botPluginName)
+        ?.get(constants.botIdConfigKey) as string;
     } else {
       localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
       tenantId = localSettings?.teamsApp?.tenantId as string;
       localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+      localBotId = localSettings?.bot?.botId as string;
     }
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
@@ -462,6 +471,7 @@ export default class Preview extends YargsCommand {
         false,
         tenantId,
         localTeamsAppId,
+        localBotId,
         browser,
         browserArguments
       );
@@ -713,7 +723,7 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
-    if (hub !== constants.Hub.teams && config?.settings?.isM365) {
+    if (hub !== constants.Hub.teams && !config?.settings?.isM365) {
       throw NotM365Project();
     }
 
@@ -767,6 +777,7 @@ export default class Preview extends YargsCommand {
         false,
         tenantId,
         remoteTeamsAppId,
+        undefined,
         browser,
         browserArguments
       );
@@ -1439,7 +1450,7 @@ export default class Preview extends YargsCommand {
       return new UnknownError(source, e as string);
     } else if (e instanceof Error) {
       const err = e as Error;
-      const fxError = new SystemError(err, source);
+      const fxError = new SystemError({ error: err, source });
       fxError.stack = err.stack;
       return fxError;
     } else {

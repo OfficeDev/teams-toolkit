@@ -23,6 +23,7 @@ import {
   mockCredential,
   MockTokenCredentials,
 } from "./mock";
+import { createCipheriv } from "crypto";
 
 dotenv.config();
 chai.use(chaiAsPromised);
@@ -71,16 +72,14 @@ describe("ApimService", () => {
     });
 
     it("not exist resource group", async () => {
-      await chai
-        .expect(
-          apimService!.getService(
-            DefaultTestInput.resourceGroup.new,
-            DefaultTestInput.apimServiceName.existing
-          )
-        )
-        .to.be.rejectedWith(
-          `Resource group '${DefaultTestInput.resourceGroup.new}' could not be found.`
+      try {
+        await apimService!.getService(
+          DefaultTestInput.resourceGroup.new,
+          DefaultTestInput.apimServiceName.existing
         );
+      } catch (e) {
+        chai.expect(e.name).to.equal("ApimOperationError");
+      }
       assert.calledOnce(apiManagementServiceStub!.get);
     });
   });

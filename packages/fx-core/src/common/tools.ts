@@ -11,14 +11,13 @@ import {
   ok,
   OptionItem,
   Result,
-  returnSystemError,
-  returnUserError,
   SubscriptionInfo,
   SystemError,
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
   v2,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -27,7 +26,6 @@ import * as Handlebars from "handlebars";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
-import { getResourceFolder } from "../folder";
 import {
   ConstantString,
   FeatureFlagName,
@@ -48,10 +46,14 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+} from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
-import { getLocalizedString } from "./localizeUtils";
+import { getDefaultString, getLocalizedString } from "./localizeUtils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -298,7 +300,12 @@ export async function askSubscription(
 
   if (subscriptions.length === 0) {
     return err(
-      returnUserError(new Error("Failed to find a subscription."), "Core", "NoSubscriptionFound")
+      new UserError(
+        "Core",
+        "NoSubscriptionFound",
+        getDefaultString("error.NoSubscriptionFound"),
+        getLocalizedString("error.NoSubscriptionFound")
+      )
     );
   }
   let resultSub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
@@ -330,7 +337,12 @@ export async function askSubscription(
     }
     if (selectedSub === undefined) {
       return err(
-        returnSystemError(new Error("Subscription not found"), "Core", "NoSubscriptionFound")
+        new SystemError(
+          "Core",
+          "NoSubscriptionFound",
+          getDefaultString("error.NoSubscriptionFound"),
+          getLocalizedString("error.NoSubscriptionFound")
+        )
       );
     }
     resultSub = selectedSub;
@@ -375,8 +387,8 @@ export function isConfigUnifyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
-export function isInitAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+export function isExistingTabAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
 }
 
 export function isAadManifestEnabled(): boolean {
@@ -385,6 +397,10 @@ export function isAadManifestEnabled(): boolean {
 
 export function isM365AppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
+}
+
+export function isApiConnectEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
 }
 
 // This method is for deciding whether AAD should be activated.
@@ -398,7 +414,8 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      solutionSettings.capabilities.includes(SsoItem.id)
+      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
+        solutionSettings.capabilities.includes(BotSsoItem.id))
     );
   } else {
     return (
@@ -423,6 +440,14 @@ export function getRootDirectory(): string {
   }
 }
 
+export function isYoCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+}
+
+export function isGeneratorCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any
@@ -432,10 +457,11 @@ export async function generateBicepFromFile(
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return updatedBicepFile;
   } catch (error) {
-    throw returnSystemError(
-      new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+    throw new SystemError(
       "Core",
-      "BicepGenerationError"
+      "BicepGenerationError",
+      getDefaultString("error.BicepGenerationError", templateFilePath, error.message),
+      getLocalizedString("error.BicepGenerationError", templateFilePath, error.message)
     );
   }
 }
@@ -676,9 +702,9 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
           Component.core,
           TelemetryEvent.CheckSideloading,
           new SystemError(
+            "M365Account",
             "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`,
-            "M365Account"
+            `AppStudio response code: ${response.status}, body: ${response.data}`
           )
         );
       }
@@ -688,7 +714,7 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
       sendTelemetryErrorEvent(
         Component.core,
         TelemetryEvent.CheckSideloading,
-        new SystemError(error as Error, "M365Account")
+        new SystemError({ error, source: "M365Account" })
       );
       await waitSeconds((retry + 1) * retryIntervalSeconds);
     }

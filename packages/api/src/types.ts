@@ -234,6 +234,7 @@ export interface Inputs extends Json {
   existingResources?: string[];
   locale?: string;
   isM365?: boolean;
+  skipAadDeploy?: string;
 }
 
 export interface ProjectConfig {

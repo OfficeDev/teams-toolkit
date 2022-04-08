@@ -5,7 +5,6 @@ import * as chai from "chai";
 
 import {
   PluginError,
-  UserInputsError,
   AADAppCheckingError,
   ConfigUpdatingError,
   ConfigValidationError,
@@ -25,28 +24,18 @@ describe("Test Errors", () => {
       const details = "some error occurs";
       const suggestions: string[] = ["suggestions"];
       // Act
-      const pluginError = new PluginError(ErrorType.SYSTEM, errorName, details, suggestions);
+      const pluginError = new PluginError(
+        ErrorType.SYSTEM,
+        errorName,
+        [details, details],
+        suggestions
+      );
 
       // Assert
       chai.assert.isTrue(pluginError instanceof PluginError);
       chai.assert.isTrue(
         pluginError.genMessage() === `${pluginError.message} Suggestions: ${suggestions.join(" ")}`
       );
-    });
-  });
-
-  describe("UserInputsError", () => {
-    it("Happy Path", () => {
-      // Arrange
-      const input = "Bot Id";
-      const value = "123";
-
-      // Act
-      const myError = new UserInputsError(input, value);
-
-      // Assert
-      chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 

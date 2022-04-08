@@ -3,13 +3,15 @@ import {
   FxError,
   UserError,
   TokenProvider,
-  returnSystemError,
   v2,
   v3,
   Result,
   Void,
   err,
   ok,
+  SystemError,
+  Platform,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -32,7 +34,7 @@ import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { deployArmTemplates } from "../arm";
-import Container from "typedi";
+import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
@@ -54,11 +56,7 @@ export async function provisionResource(
   // check projectPath
   if (inputs.projectPath === undefined) {
     return err(
-      returnSystemError(
-        new Error("projectPath is undefined"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
+      new SystemError(SolutionSource, SolutionError.InternelError, "projectPath is undefined")
     );
   }
   // Just to trigger M365 login before the concurrent execution of localDebug.
@@ -84,9 +82,9 @@ export async function provisionResource(
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
+        "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`
       )
     );
   }
@@ -272,12 +270,26 @@ export async function provisionResource(
       );
       if (url) {
         const title = "View Provisioned Resources";
-        ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === title) {
-            ctx.userInteraction.openUrl(url);
-          }
-        });
+        if (inputs.platform === Platform.CLI) {
+          ctx.userInteraction.showMessage(
+            "info",
+            [
+              {
+                color: Colors.BRIGHT_WHITE,
+                content: msg + " View provisioned resources in Azure Portal: ",
+              },
+              { color: Colors.BRIGHT_MAGENTA, content: url },
+            ],
+            false
+          );
+        } else {
+          ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.userInteraction.openUrl(url);
+            }
+          });
+        }
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }

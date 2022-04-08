@@ -14,6 +14,8 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ManifestUtil,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
@@ -102,7 +104,7 @@ import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -383,10 +385,6 @@ export class AppStudioPluginImpl {
     return ok(errors);
   }
 
-  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.updateManifest(ctx, false);
-  }
-
   public async updateManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
@@ -448,11 +446,14 @@ export class AppStudioPluginImpl {
         .get("solution")
         ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
       if (!isProvisionSucceeded) {
+        const msgs = AppStudioError.FileNotFoundError.message(manifestFileName);
         return err(
           AppStudioResultFactory.UserError(
             AppStudioError.FileNotFoundError.name,
-            AppStudioError.FileNotFoundError.message(manifestFileName) +
-              getLocalizedString("plugins.appstudio.provisionTip"),
+            [
+              msgs[0] + getDefaultString("plugins.appstudio.provisionTip"),
+              msgs[1] + getLocalizedString("plugins.appstudio.provisionTip"),
+            ],
             HelpLinks.WhyNeedProvision
           )
         );
@@ -642,7 +643,10 @@ export class AppStudioPluginImpl {
     let manifestString: string | undefined = undefined;
 
     if (!ctx.envInfo?.envName) {
-      throw new Error(getLocalizedString("error.appstudio.noEnvInfo"));
+      throw AppStudioResultFactory.SystemError("InvalidInputError", [
+        getDefaultString("error.appstudio.noEnvInfo"),
+        getLocalizedString("error.appstudio.noEnvInfo"),
+      ]);
     }
 
     const appDirectory = await getAppDirectory(ctx.root);
@@ -971,19 +975,17 @@ export class AppStudioPluginImpl {
 
     const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(
-          ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST)
-        )
+      const msgs = AppStudioError.GrantPermissionFailedError.message(
+        ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST)
       );
+      throw new UserError(PluginNames.APPST, "GetConfigError", msgs[0], msgs[1]);
     }
 
     try {
       await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
     } catch (error) {
-      throw new Error(
-        AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId)
-      );
+      const msgs = AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId);
+      throw new UserError(PluginNames.APPST, "GrantPermissionFailedError", msgs[0], msgs[1]);
     }
 
     const result: ResourcePermission[] = [
@@ -1378,10 +1380,10 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string, FxError>> {
     if (appStudioToken === undefined || appStudioToken.length === 0) {
       return err(
-        AppStudioResultFactory.SystemError(
-          SolutionError.NoAppStudioToken,
-          getLocalizedString("error.appstudio.noAppStudioToken")
-        )
+        AppStudioResultFactory.SystemError(SolutionError.NoAppStudioToken, [
+          getDefaultString("error.appstudio.noAppStudioToken"),
+          getLocalizedString("error.appstudio.noAppStudioToken"),
+        ])
       );
     }
 

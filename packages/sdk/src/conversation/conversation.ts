@@ -1,0 +1,175 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { BotFrameworkAdapter, TurnContext, WebRequest, WebResponse } from "botbuilder";
+import { CommandBot } from "./command";
+import { ConversationOptions } from "./interface";
+import { NotificationBot } from "./notification";
+
+/**
+ * Provide utilities for bot conversation, including:
+ *   - handle command and response.
+ *   - send notification to varies targets (e.g., member, group, channel).
+ *
+ * @example
+ * For command and response, you can register your commands through the constructor, or use the `registerCommand` and `registerCommands` API to add commands later.
+ *
+ * ```typescript
+ * // register through constructor
+ * const conversationBot = new ConversationBot({
+ *   command: {
+ *     enabled: true,
+ *     commands: [ new HelloWorldCommandHandler() ],
+ *   },
+ * });
+ *
+ * // register through `register*` API
+ * conversationBot.command.registerCommand(new HelpCommandHandler());
+ * ```
+ *
+ * For notification, you can enable notification at initialization, then send notifications at any time.
+ *
+ * ```typescript
+ * // enable through constructor
+ * const conversationBot = new ConversationBot({
+ *   notification: {
+ *     enabled: true,
+ *   },
+ * });
+ *
+ * // get all bot installations and send message
+ * for (const target of await conversationBot.notification.installations()) {
+ *   await target.sendMessage("Hello Notification");
+ * }
+ *
+ * // alternative - send message to all members
+ * for (const target of await conversationBot.notification.installations()) {
+ *   for (const member of await target.members()) {
+ *     await member.sendMessage("Hello Notification");
+ *   }
+ * }
+ * ```
+ *
+ * @remarks
+ * Set `adapter` in {@link ConversationOptions} to use your own bot adapter.
+ *
+ * For command and response, ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
+ *
+ * For notification, set `notification.storage` in {@link ConversationOptions} to use your own storage implementation.
+ *
+ * @beta
+ */
+export class ConversationBot {
+  /**
+   * The bot adapter.
+   *
+   * @beta
+   */
+  public readonly adapter: BotFrameworkAdapter;
+
+  /**
+   * The entrypoint of command and response.
+   *
+   * @beta
+   */
+  public readonly command?: CommandBot;
+
+  /**
+   * The entrypoint of notification.
+   *
+   * @beta
+   */
+  public readonly notification?: NotificationBot;
+
+  /**
+   * Creates new instance of the `ConversationBot`.
+   *
+   * @remarks
+   * It's recommended to create your own adapter and storage for production environment instead of the default one.
+   *
+   * @param options - initialize options
+   *
+   * @beta
+   */
+  public constructor(options: ConversationOptions) {
+    if (options.adapter) {
+      this.adapter = options.adapter;
+    } else {
+      this.adapter = this.createDefaultAdapter(options.adapterConfig);
+    }
+
+    if (options.command?.enabled) {
+      this.command = new CommandBot(this.adapter, options.command);
+    }
+
+    if (options.notification?.enabled) {
+      this.notification = new NotificationBot(this.adapter, options.notification);
+    }
+  }
+
+  private createDefaultAdapter(adapterConfig?: { [key: string]: unknown }): BotFrameworkAdapter {
+    const adapter =
+      adapterConfig === undefined
+        ? new BotFrameworkAdapter({
+            appId: process.env.BOT_ID,
+            appPassword: process.env.BOT_PASSWORD,
+          })
+        : new BotFrameworkAdapter(adapterConfig);
+
+    // the default error handler
+    adapter.onTurnError = async (context, error) => {
+      // This check writes out errors to console.
+      console.error(`[onTurnError] unhandled error: ${error}`);
+
+      // Send a trace activity, which will be displayed in Bot Framework Emulator
+      await context.sendTraceActivity(
+        "OnTurnError Trace",
+        `${error}`,
+        "https://www.botframework.com/schemas/error",
+        "TurnError"
+      );
+
+      // Send a message to the user
+      await context.sendActivity(`The bot encountered unhandled error: ${error.message}`);
+      await context.sendActivity("To continue to run this bot, please fix the bot source code.");
+    };
+
+    return adapter;
+  }
+
+  /**
+   * The request handler to integrate with web request.
+   *
+   * @param req - an Express or Restify style request object.
+   * @param res - an Express or Restify style response object.
+   * @param logic - the additional function to handle bot context.
+   *
+   * @example
+   * For example, to use with Restify:
+   * ``` typescript
+   * // The default/empty behavior
+   * server.post("api/messages", conversationBot.requestHandler);
+   *
+   * // Or, add your own logic
+   * server.post("api/messages", async (req, res) => {
+   *   await conversationBot.requestHandler(req, res, async (context) => {
+   *     // your-own-context-logic
+   *   });
+   * });
+   * ```
+   *
+   * @beta
+   */
+  public async requestHandler(
+    req: WebRequest,
+    res: WebResponse,
+    logic?: (context: TurnContext) => Promise<any>
+  ): Promise<void> {
+    if (logic === undefined) {
+      // create empty logic
+      logic = async () => {};
+    }
+
+    await this.adapter.processActivity(req, res, logic);
+  }
+}

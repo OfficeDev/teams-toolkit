@@ -3,11 +3,12 @@ import { Messages } from "../resources/messages";
 import { FxBotPluginResultFactory } from "../result";
 
 export class PreconditionError extends UserError {
-  constructor(message: string, suggestions: string[]) {
+  constructor(messages: [string, string], suggestions: string[]) {
     super(
+      FxBotPluginResultFactory.source,
       new.target.name,
-      `${message}. Suggestions: ${suggestions.join(" ")}`,
-      FxBotPluginResultFactory.source
+      `${messages[0]}. Suggestions: ${suggestions.join(" ")}`,
+      `${messages[1]}. Suggestions: ${suggestions.join(" ")}`
     );
   }
 }
@@ -15,12 +16,12 @@ export class PreconditionError extends UserError {
 export class TemplateZipFallbackError extends UserError {
   constructor() {
     super(
+      FxBotPluginResultFactory.source,
       new.target.name,
       `Failed to download zip package and open local zip package. Suggestions: ${[
         Messages.CheckOutputLogAndTryToFix,
         Messages.RetryTheCurrentStep,
-      ].join(" ")}`,
-      FxBotPluginResultFactory.source
+      ].join(" ")}`
     );
   }
 }
@@ -28,13 +29,13 @@ export class TemplateZipFallbackError extends UserError {
 export class UnzipError extends UserError {
   constructor(path?: string) {
     super(
+      FxBotPluginResultFactory.source,
       new.target.name,
       `Failed to unzip templates and write to disk. Suggestions: ${[
         Messages.CheckOutputLogAndTryToFix,
         Messages.ReopenWorkingDir(path),
         Messages.RetryTheCurrentStep,
-      ].join(" ")}`,
-      FxBotPluginResultFactory.source
+      ].join(" ")}`
     );
   }
 }
@@ -47,12 +48,12 @@ export function CheckThrowSomethingMissing(name: string, value: any): void {
 
 export class PackDirectoryExistenceError extends UserError {
   constructor() {
-    super(
-      new.target.name,
-      `${Messages.SomethingIsNotExisting("pack directory")} Suggestions: ${[
-        Messages.RecreateTheProject,
-      ].join(" ")}`,
-      FxBotPluginResultFactory.source
-    );
+    const msg0 = `${Messages.SomethingIsNotExisting("pack directory")[0]} Suggestions: ${[
+      Messages.RecreateTheProject[0],
+    ].join(" ")}`;
+    const msg1 = `${Messages.SomethingIsNotExisting("pack directory")[1]} Suggestions: ${[
+      Messages.RecreateTheProject[1],
+    ].join(" ")}`;
+    super(FxBotPluginResultFactory.source, new.target.name, msg0, msg1);
   }
 }

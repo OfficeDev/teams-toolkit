@@ -604,14 +604,14 @@ describe("solution.debug.scaffolding", () => {
     const parameters6: TestParameter[] = [
       {
         programmingLanguage: "javascript",
-        numConfigurations: 12,
+        numConfigurations: 6,
         numCompounds: 6,
         numTasks: 7,
         numLocalEnvs: 7,
       },
       {
         programmingLanguage: "typescript",
-        numConfigurations: 12,
+        numConfigurations: 6,
         numCompounds: 6,
         numTasks: 7,
         numLocalEnvs: 7,
@@ -659,14 +659,14 @@ describe("solution.debug.scaffolding", () => {
     const parameters7: TestParameter[] = [
       {
         programmingLanguage: "javascript",
-        numConfigurations: 9,
+        numConfigurations: 5,
         numCompounds: 4,
         numTasks: 8,
         numLocalEnvs: 12,
       },
       {
         programmingLanguage: "typescript",
-        numConfigurations: 9,
+        numConfigurations: 5,
         numCompounds: 4,
         numTasks: 8,
         numLocalEnvs: 12,
@@ -728,7 +728,7 @@ describe("solution.debug.scaffolding", () => {
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
       const compounds: [] = launch["compounds"];
-      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(configurations.length, 4);
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json

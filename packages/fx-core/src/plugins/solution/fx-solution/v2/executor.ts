@@ -3,12 +3,9 @@ import {
   LogProvider,
   Result,
   err,
-  returnSystemError,
   v2,
   SystemError,
-  returnUserError,
   UserError,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
@@ -32,11 +29,11 @@ export async function executeThunks<R>(
         }
         return err<R, FxError>(
           new SystemError(
+            SolutionSource,
             "UnknownError",
             `[SolutionV2.executeConcurrently] unknown error, plugin: ${
               namedThunk.pluginName
-            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
-            SolutionSource
+            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
           )
         );
       }
@@ -47,33 +44,59 @@ export async function executeThunks<R>(
 
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
-  logger: LogProvider
+  logger: LogProvider,
+  concurrent = true
 ): Promise<v2.FxResult<{ name: string; result: R }[], FxError>> {
-  const results = await Promise.all(
-    namedThunks.map(async (namedThunk) => {
+  let results;
+  if (concurrent) {
+    results = await Promise.all(
+      namedThunks.map(async (namedThunk) => {
+        logger.info(`Running ${namedThunk.pluginName} concurrently`);
+        try {
+          return namedThunk.thunk();
+        } catch (e) {
+          if (e instanceof UserError || e instanceof SystemError) {
+            return err(e);
+          }
+          return err(
+            new SystemError(
+              SolutionSource,
+              "UnknownError",
+              `[SolutionV2.executeConcurrently] unknown error, plugin: ${
+                namedThunk.pluginName
+              }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
+            )
+          );
+        }
+      })
+    );
+  } else {
+    results = [];
+    for (const namedThunk of namedThunks) {
       logger.info(`Running ${namedThunk.pluginName} concurrently`);
+      let res;
       try {
-        return namedThunk.thunk();
+        res = await namedThunk.thunk();
       } catch (e) {
         if (e instanceof UserError || e instanceof SystemError) {
-          return err(e);
+          res = err(e);
+        } else {
+          res = err(
+            new SystemError(
+              SolutionSource,
+              "UnknownError",
+              `[SolutionV2.executeConcurrently] unknown error, plugin: ${
+                namedThunk.pluginName
+              }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
+            )
+          );
         }
-        return err(
-          new SystemError(
-            "UnknownError",
-            `[SolutionV2.executeConcurrently] unknown error, plugin: ${
-              namedThunk.pluginName
-            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`,
-            SolutionSource
-          )
-        );
       }
-    })
-  );
-
-  if (logger) {
-    logger.info(`${`[${PluginDisplayName.Solution}] Execute Task summary`.padEnd(64, "-")}`);
+      results.push(res);
+    }
   }
+
+  logger?.info(`${`[${PluginDisplayName.Solution}] Execute Task summary`.padEnd(64, "-")}`);
 
   let failed = false;
   const ret: { name: string; result: R }[] = [];
@@ -120,14 +143,6 @@ function mergeFxErrors(errors: FxError[]): FxError {
     errMsgs.push(`${err.name}:${err.message}`);
   }
   return hasSystemError
-    ? returnSystemError(
-        new Error(errMsgs.join(";")),
-        SolutionSource,
-        SolutionError.FailedToExecuteTasks
-      )
-    : returnUserError(
-        new Error(errMsgs.join(";")),
-        SolutionSource,
-        SolutionError.FailedToExecuteTasks
-      );
+    ? new SystemError(SolutionSource, SolutionError.FailedToExecuteTasks, errMsgs.join(";"))
+    : new UserError(SolutionSource, SolutionError.FailedToExecuteTasks, errMsgs.join(";"));
 }

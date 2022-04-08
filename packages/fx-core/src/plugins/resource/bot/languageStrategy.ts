@@ -159,7 +159,7 @@ export class LanguageStrategy {
   ): TemplateProjectsScenarios {
     if (config.actRoles.includes(PluginActRoles.Notification)) {
       if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
-        return TemplateProjectsScenarios.NOTIFICATION_SCENARIO_NAME;
+        return TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME;
       } else {
         return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;
       }

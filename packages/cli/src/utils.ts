@@ -96,7 +96,6 @@ export function toYargsOptions(data: Question): Options {
       hidden: !!(data as any).hide,
       global: false,
       type: "string",
-      coerce: choices ? toLocaleLowerCase : undefined,
     };
   }
   return {
@@ -107,7 +106,6 @@ export function toYargsOptions(data: Question): Options {
     hidden: !!(data as any).hide,
     global: false,
     type: "string",
-    coerce: choices ? toLocaleLowerCase : undefined,
   };
 }
 

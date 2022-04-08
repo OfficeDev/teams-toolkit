@@ -17,32 +17,36 @@ export class FxBotPluginResultFactory {
 
   public static UserError(
     errorName: string,
-    errorMessage: string,
+    errorMessage: [string, string],
     innerError?: any,
     helpLink?: string
   ): FxResult {
     return err(
-      new UserError(
-        errorName,
-        errorMessage,
-        FxBotPluginResultFactory.source,
-        innerError?.stack,
+      new UserError({
+        name: errorName,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: FxBotPluginResultFactory.source,
+        error: innerError,
         helpLink,
-        innerError
-      )
+      })
     );
   }
 
-  public static SystemError(errorName: string, errorMessage: string, innerError?: any): FxResult {
+  public static SystemError(
+    errorName: string,
+    errorMessage: [string, string],
+    innerError?: any
+  ): FxResult {
     return err(
-      new SystemError(
-        errorName,
-        errorMessage,
-        FxBotPluginResultFactory.source,
-        innerError?.stack,
-        FxBotPluginResultFactory.defaultIssueLink,
-        innerError
-      )
+      new SystemError({
+        name: errorName,
+        message: errorMessage[0],
+        displayMessage: errorMessage[1],
+        source: FxBotPluginResultFactory.source,
+        error: innerError,
+        issueLink: FxBotPluginResultFactory.defaultIssueLink,
+      })
     );
   }
 

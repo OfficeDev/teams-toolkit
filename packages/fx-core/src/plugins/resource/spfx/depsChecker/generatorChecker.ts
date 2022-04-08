@@ -15,7 +15,7 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { DependencyChecker } from "./dependencyChecker";
+import { DependencyChecker, DependencyInfo } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError, NpmNotFoundError } from "../error";
@@ -24,7 +24,7 @@ import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 const name = "@microsoft/generator-sharepoint";
 const supportedVersion = "1.14.0";
 const displayName = `${name}@${supportedVersion}`;
-const timeout = 5 * 60 * 1000;
+const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
   private readonly _logger: LogProvider;
@@ -33,11 +33,15 @@ export class GeneratorChecker implements DependencyChecker {
     this._logger = logger;
   }
 
+  public static getDependencyInfo(): DependencyInfo {
+    return { supportedVersion: supportedVersion, displayName: displayName };
+  }
+
   public async ensureDependency(ctx: PluginContext): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGeneratorStart);
     try {
       if (!(await this.isInstalled())) {
-        this._logger.info(`Installing ${displayName}...`);
+        this._logger.info(`${displayName} not found, installing ...`);
         await this.install();
         this._logger.info(`Successfully installed ${displayName}`);
       }
@@ -73,14 +77,17 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
+    this._logger.info("Checking npm...");
     if (!(await this.hasNPM())) {
-      this._logger.error(`Failed to install ${name} since npm is not found`);
+      this._logger.error(`Failed to find npm!`);
       throw NpmNotFoundError();
     }
 
+    this._logger.info("Start installing...");
     await this.cleanup();
     await this.installGenerator();
 
+    this._logger.info("Validating package...");
     if (!(await this.validate())) {
       this._logger.debug(`Failed to validate ${name}, cleaning up...`);
       await this.cleanup();
@@ -106,7 +113,11 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   private getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spGenerator");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
+  }
+
+  private getPackagePath(): string {
+    return path.join(this.getDefaultInstallPath(), "node_modules", "@microsoft");
   }
 
   private getSentinelPath(): string {
@@ -139,12 +150,10 @@ export class GeneratorChecker implements DependencyChecker {
 
   private async cleanup(): Promise<void> {
     try {
-      await fs.emptyDir(this.getDefaultInstallPath());
+      await fs.emptyDir(this.getPackagePath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      await this._logger.error(
-        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
-      );
+      await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
     }
   }
 
@@ -159,12 +168,13 @@ export class GeneratorChecker implements DependencyChecker {
         `${name}@${supportedVersion}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
-        "--no-audit"
+        "--no-audit",
+        "--global-style"
       );
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error("Failed to npm install yo");
+      this._logger.error(`Failed to execute npm install ${displayName}`);
       throw NpmInstallError(error as Error);
     }
   }

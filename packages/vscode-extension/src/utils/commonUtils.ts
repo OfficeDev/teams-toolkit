@@ -115,8 +115,25 @@ export function getProjectId(): string | undefined {
   }
 }
 
-export async function isSPFxProject(workspacePath: string): Promise<boolean> {
-  if (await fs.pathExists(`${workspacePath}/SPFx`)) {
+export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
+  // Check if solution settings is empty.
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return !projectSettings.solutionSettings;
+  } else {
+    return false;
+  }
+}
+
+export function isSPFxProject(workspacePath: string): boolean {
+  if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;
   }
 
@@ -214,16 +231,26 @@ export function syncFeatureFlags() {
 
   process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
 
-  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableInitApp).toString();
+  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.YoEnvCheckerEnable
+  ).toString();
+  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.generatorEnvCheckerEnable
+  ).toString();
 
   process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
     ConfigurationKey.BotNotificationCommandAndResponseEnabled
   ).toString();
+
+  process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
+  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
+  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

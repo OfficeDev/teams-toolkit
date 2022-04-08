@@ -33,7 +33,7 @@ import "./v2";
 import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -63,20 +63,6 @@ export class AppStudioPlugin implements Plugin {
         });
         appStudioQuestions.addChild(buildOrPublish);
       }
-    }
-
-    if (
-      stage === Stage.deploy &&
-      (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
-    ) {
-      const node = new QTreeNode({
-        name: Constants.SKIP_MANIFEST,
-        type: "singleSelect",
-        staticOptions: ["yes", "no"],
-        title: "Whether to skip deploying manifest to AppStudio",
-        default: "no",
-      });
-      appStudioQuestions.addChild(node);
     }
 
     return ok(appStudioQuestions);
@@ -285,40 +271,6 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
-  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (
-      ctx.answers &&
-      ctx.answers[Constants.SKIP_MANIFEST] &&
-      ctx.answers[Constants.SKIP_MANIFEST] == "yes"
-    ) {
-      await ctx.logProvider?.info("skip appstudio deployment");
-      return ok(Void);
-    }
-
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.deploy);
-
-    const res = await this.appStudioPluginImpl.updateManifest(ctx, false);
-    if (res.isErr()) {
-      TelemetryUtils.sendErrorEvent(
-        TelemetryEventName.deploy,
-        res.error,
-        this.appStudioPluginImpl.commonProperties
-      );
-      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
-        return ok(Void);
-      } else {
-        return err(res.error);
-      }
-    } else {
-      TelemetryUtils.sendSuccessEvent(
-        TelemetryEventName.deploy,
-        this.appStudioPluginImpl.commonProperties
-      );
-      return ok(Void);
-    }
-  }
-
   /**
    * Publish the app to Teams App Catalog
    * @param {PluginContext} ctx
@@ -400,14 +352,12 @@ export class AppStudioPlugin implements Plugin {
         );
         return err(error);
       } else {
-        const publishFailed = new SystemError(
-          AppStudioError.TeamsAppPublishFailedError.name,
-          error.message,
-          Constants.PLUGIN_NAME,
-          undefined,
-          undefined,
-          error
-        );
+        const publishFailed = new SystemError({
+          name: AppStudioError.TeamsAppPublishFailedError.name,
+          message: error.message,
+          source: Constants.PLUGIN_NAME,
+          error: error,
+        });
         TelemetryUtils.sendErrorEvent(
           TelemetryEventName.publish,
           publishFailed,
@@ -546,13 +496,12 @@ export class AppStudioPlugin implements Plugin {
         );
       }
       return err(
-        new SystemError(
-          "InvalidParam",
-          `Invalid param:${JSON.stringify(func)}`,
-          Constants.PLUGIN_NAME,
-          undefined,
-          Links.ISSUE_LINK
-        )
+        new SystemError({
+          name: "InvalidParam",
+          message: `Invalid param:${JSON.stringify(func)}`,
+          source: Constants.PLUGIN_NAME,
+          issueLink: Links.ISSUE_LINK,
+        })
       );
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
@@ -562,12 +511,19 @@ export class AppStudioPlugin implements Plugin {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");
     }
     return err(
-      new SystemError(
-        Constants.PLUGIN_NAME,
-        "FunctionRouterError",
-        getLocalizedString("error.appstudio.executeUserTaskRouteFailed", JSON.stringify(func)),
-        Links.ISSUE_LINK
-      )
+      new SystemError({
+        name: "FunctionRouterError",
+        message: getDefaultString(
+          "error.appstudio.executeUserTaskRouteFailed",
+          JSON.stringify(func)
+        ),
+        displayMessage: getLocalizedString(
+          "error.appstudio.executeUserTaskRouteFailed",
+          JSON.stringify(func)
+        ),
+        source: Constants.PLUGIN_NAME,
+        issueLink: Links.ISSUE_LINK,
+      })
     );
   }
 }

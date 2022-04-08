@@ -243,14 +243,7 @@ connection.on("connect", (error) => {
 ### Use certificate-based authentication in Azure Function
 
 ```ts
-const authConfig = {
-  clientId: process.env.M365_CLIENT_ID,
-  certificateContent: "The content of a PEM-encoded public/private key certificate",
-  authorityHost: process.env.M365_AUTHORITY_HOST,
-  tenantId: process.env.M365_TENANT_ID,
-};
-const teamsfx = new TeamsFx(IdentityType.App);
-teamsfx.setCustomeConfig({
+const teamsfx = new TeamsFx(IdentityType.App, {
   certificateContent: "The content of a PEM-encoded public/private key certificate"
 });
 const token = teamsfx.getCredential().getToken();

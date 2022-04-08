@@ -10,6 +10,8 @@ import {
   err,
   ok,
   SystemError,
+  Platform,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -40,7 +42,11 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
-import { hasAAD, isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import {
+  hasAAD,
+  hasAzureResource,
+  isPureExistingApp,
+} from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function provisionResource(
@@ -184,7 +190,11 @@ export async function provisionResource(
   solutionInputs.remoteTeamsAppId = teamsAppId;
 
   // call deployArmTemplates
-  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
+  if (
+    isAzureProject(azureSolutionSettings) &&
+    !inputs.isForUT &&
+    hasAzureResource(ctx.projectSetting)
+  ) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
@@ -268,12 +278,26 @@ export async function provisionResource(
       );
       if (url) {
         const title = "View Provisioned Resources";
-        ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === title) {
-            ctx.userInteraction.openUrl(url);
-          }
-        });
+        if (inputs.platform === Platform.CLI) {
+          ctx.userInteraction.showMessage(
+            "info",
+            [
+              {
+                color: Colors.BRIGHT_WHITE,
+                content: msg + " View provisioned resources in Azure Portal: ",
+              },
+              { color: Colors.BRIGHT_MAGENTA, content: url },
+            ],
+            false
+          );
+        } else {
+          ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.userInteraction.openUrl(url);
+            }
+          });
+        }
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }

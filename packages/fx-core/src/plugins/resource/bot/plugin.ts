@@ -185,7 +185,10 @@ export class TeamsBotImpl implements PluginImpl {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = {
+      plugins: plugins.map((obj) => obj.name),
+      enableAlwaysOn: isBotNotificationEnabled(),
+    };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDir, Bicep.ProvisionFileName),

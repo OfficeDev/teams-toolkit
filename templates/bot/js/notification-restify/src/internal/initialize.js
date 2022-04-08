@@ -1,5 +1,5 @@
 // Create adapter.
-const { ConversationBot } = require("@microsoft/teamsfx");
+const { NotificationBot } = require("@microsoft/teamsfx");
 const { BotFrameworkAdapter } = require("botbuilder");
 
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -29,8 +29,9 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
-ConversationBot.initialize(adapter, { enableNotification: true });
+const notificationBot = new NotificationBot(adapter);
 
 module.exports = {
   adapter,
+  notificationBot,
 };

@@ -27,23 +27,36 @@ export {
   setLogFunction,
 } from "./util/logger";
 
+export { createApiClient } from "./apiClient/apiClient";
+export { AuthProvider } from "./apiClient/authProvider";
+export { BearerTokenAuthProvider } from "./apiClient/bearerTokenAuthProvider";
+export {
+  CertificateAuthProvider,
+  createPemCertOption,
+  createPfxCertOption,
+} from "./apiClient/certificateAuthProvider.browser";
+
 export { TeamsFx } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
 
 export {
-  NotificationTarget,
-  NotificationTargetType,
-  TeamsFxBotCommandHandler,
+  CommandOptions,
+  ConversationOptions,
   NotificationOptions,
+  NotificationTarget,
+  NotificationTargetStorage,
+  NotificationTargetType,
+  CommandMessage,
+  TriggerPatterns,
+  TeamsFxBotCommandHandler,
 } from "./conversation/interface";
-
+export { ConversationBot } from "./conversation/conversation.browser";
 export {
   Channel,
   Member,
+  NotificationBot,
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
 } from "./conversation/notification.browser";
-
-export { NotificationBot } from "./conversation/notification.browser";
 export { CommandBot } from "./conversation/command.browser";

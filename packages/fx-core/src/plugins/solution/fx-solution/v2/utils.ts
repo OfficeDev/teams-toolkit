@@ -23,6 +23,7 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import {
   AzureResourceApim,
@@ -36,10 +37,10 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
@@ -219,7 +220,7 @@ export function fillInSolutionSettings(
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (isAadManifestEnabled()) {
     if (capabilities.includes(TabOptionItem.id)) {
-      capabilities.push(SsoItem.id);
+      capabilities.push(TabSsoItem.id);
     } else if (capabilities.includes(TabNonSsoItem.id)) {
       const index = capabilities.indexOf(TabNonSsoItem.id);
       capabilities.splice(index, 1);

@@ -46,6 +46,7 @@ export const spfxPluginName = "fx-resource-spfx";
 
 export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "teamsAppId";
+export const botIdConfigKey = "botId";
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
@@ -119,7 +120,8 @@ export const installApp = {
   detection:
     "We detected that you have not yet installed the app in Teams first, please make sure the app is installed.",
   description:
-    "To continue debug your application in Outlook, you need to install the app via Teams first.",
+    "To continue debug your application in Outlook or Office, you need to install the app via Teams manually.",
+  finish: 'Once you have finished the below step, please come back and select "Continue".',
   installInTeams: "Install in Teams",
   installInTeamsDescription: "Pop up Teams Web Client for you to instapp app.",
   continue: "Continue",
@@ -132,5 +134,13 @@ export const installApp = {
       'We detected that you have not yet installed the app in Teams first, please run "teamsfx preview %s --m365-host teams" to install app.',
     manifestChanges:
       'If you changed the manifest file, please run "teamsfx preview %s --m365-host teams" to install app again.',
+  },
+  outlookChannel: {
+    description:
+      "To continue debug your application in Outlook, you need to install the app via Teams and connect your bot to Outlook channel manually.",
+    finish: 'Once you have finished the below 2 steps, please come back and select "Continue".',
+    connectToOutlookChannel: "Connect to Outlook channel",
+    connectToOutlookChannelDescription:
+      'Pop up Bot Framework Portal and click "Save" button to connect your bot to Outlook channel. Please sign in to the portal with your M365 account.',
   },
 };

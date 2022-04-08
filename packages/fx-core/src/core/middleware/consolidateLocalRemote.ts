@@ -3,18 +3,14 @@
 
 import {
   assembleError,
-  AzureSolutionSettings,
   ConfigFolderName,
   err,
-  IConfigurableTab,
   InputConfigsFolderName,
   Inputs,
-  IStaticTab,
   LogProvider,
   Platform,
   StatesFolderName,
   TeamsAppManifest,
-  v3,
 } from "@microsoft/teamsfx-api";
 import { isSPFxProject, isAADEnabled, isConfigUnifyEnabled } from "../../common/tools";
 import { environmentManager } from "../environment";
@@ -22,16 +18,9 @@ import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../../plugins/solution/fx-solution/question";
-import { APP_PACKAGE_FOLDER_FOR_MULTI_ENV } from "../../plugins/resource/appstudio/constants";
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 import {
   Component,
-  ProjectMigratorGuideStatus,
   ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
@@ -41,12 +30,10 @@ import {
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
-import { getTemplatesFolder } from "../../folder";
+import { getResourceFolder, getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
-import { DefaultManifestProvider } from "../../plugins/solution/fx-solution/v3/addFeature";
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
@@ -54,6 +41,7 @@ const upgradeButton = "Upgrade";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+const upgradeReportName = "unify-config-change-logs.md";
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -67,40 +55,48 @@ export const ProjectConsolidateMW: Middleware = async (
     if (ctx.method && methods.has(ctx.method)) {
       showModal = false;
     }
-    const res = await TOOLS?.ui.showMessage(
-      "warn",
-      getLocalizedString("core.consolidateLocalRemote.Message"),
-      showModal,
-      upgradeButton
-    );
-    const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != upgradeButton) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
-        [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
-      });
-      ctx.result = err(ConsolidateCanceledError());
-      outputCancelMessage(ctx);
-      return;
-    }
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
-      [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
-    });
-
-    try {
-      await consolidateLocalRemote(ctx);
-      await next();
-    } catch (error) {
-      sendTelemetryErrorEvent(
-        Component.core,
-        TelemetryEvent.ProjectConsolidateError,
-        assembleError(error, CoreSource)
-      );
-      throw error;
+    if (showModal) {
+      await upgrade(ctx, next, true);
+    } else {
+      upgrade(ctx, next, false);
     }
   } else {
     await next();
   }
 };
+
+async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.consolidateLocalRemote.Message"),
+    showModal,
+    upgradeButton
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (!answer || answer != upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+    });
+    ctx.result = err(ConsolidateCanceledError());
+    outputCancelMessage(ctx);
+    return;
+  }
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
+    [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+  });
+
+  try {
+    await consolidateLocalRemote(ctx);
+    await next();
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectConsolidateError,
+      assembleError(error, CoreSource)
+    );
+    throw error;
+  }
+}
 
 // check if config.local.json and manifest.template.json exist
 export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
@@ -291,6 +287,8 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     await fs.remove(path.join(inputs.projectPath as string, backupFolder));
     throw e;
   }
+
+  generateUpgradeReport(path.join(inputs.projectPath as string, backupFolder));
   return true;
 }
 
@@ -313,14 +311,7 @@ async function postConsolidate(
     `[core] Upgrade success! Old localSettings.json, manifest.local.template.json and manifest.remote.template.json have been backed up to the .backup folder and you can delete it.`
   );
 
-  if (inputs.platform === Platform.VSCode) {
-    await TOOLS?.ui.showMessage(
-      "info",
-      getLocalizedString("core.consolidateLocalRemote.outputMsg"),
-      false,
-      "OK"
-    );
-  } else {
+  if (inputs.platform !== Platform.VSCode) {
     TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));
   }
 }
@@ -333,18 +324,28 @@ async function updateGitIgnore(
   // add config.local.json to .gitignore
   await addPathToGitignore(
     projectPath,
-    `.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`,
+    `${projectPath}/.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`,
     log
   );
 
   // add state.local.json to .gitignore
   await addPathToGitignore(
     projectPath,
-    `.${ConfigFolderName}/${StatesFolderName}/state.local.json`,
+    `${projectPath}/.${ConfigFolderName}/${StatesFolderName}/state.local.json`,
     log
   );
 
   if (backupFolder) {
-    await addPathToGitignore(projectPath, backupFolder, log);
+    await addPathToGitignore(projectPath, `${projectPath}/${backupFolder}`, log);
+  }
+}
+
+async function generateUpgradeReport(backupFolder: string) {
+  try {
+    const target = path.join(backupFolder, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
+  } catch (error) {
+    // do nothing
   }
 }

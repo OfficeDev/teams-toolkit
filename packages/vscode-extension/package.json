@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -135,7 +135,7 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isInitAppEnabled"
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -920,6 +920,11 @@
             "type": "boolean",
             "title": "Enable Microsoft 365 App",
             "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
+          },
+          "fx-extension.enableExistingApp": {
+            "type": "boolean",
+            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "default": false
           }
         }
       }
@@ -1116,8 +1121,8 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.17.1",
-    "@microsoft/teamsfx-core": "^1.6.1",
+    "@microsoft/teamsfx-api": "^0.17.2",
+    "@microsoft/teamsfx-core": "^1.7.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "ajv": "^8.5.0",

@@ -261,6 +261,25 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
   }
 }
 
+export async function getLocalBotId(): Promise<string | undefined> {
+  try {
+    if (isConfigUnifyEnabled()) {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
+    } else {
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.bot?.botId as string;
+    }
+  } catch {
+    return undefined;
+  }
+}
+
 export async function loadPackageJson(path: string): Promise<any> {
   if (!(await fs.pathExists(path))) {
     VsCodeLogInstance.error(`Cannot load package.json from ${path}. File not found.`);

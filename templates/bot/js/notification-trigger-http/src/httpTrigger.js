@@ -1,20 +1,17 @@
-const { ConversationBot } = require("@microsoft/teamsfx");
-const { buildAdaptiveCard } = require("./adaptiveCard");
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { notificationBot } = require("./internal/initialize");
 
 // HTTP trigger to send notification.
 module.exports = async function (context, req) {
-  for (const target of await ConversationBot.installations()) {
+  for (const target of await notificationBot.installations()) {
     await target.sendAdaptiveCard(
-      buildAdaptiveCard(
-        {
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://www.adaptivecards.io/",
-        },
-        notificationTemplate
-      )
+      AdaptiveCards.declare(notificationTemplate).render({
+        title: "New Event Occurred!",
+        appName: "Contoso App Notification",
+        description: `This is a sample http-triggered notification to ${target.type}`,
+        notificationUrl: "https://www.adaptivecards.io/",
+      })
     );
   }
 

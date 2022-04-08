@@ -64,7 +64,8 @@ import {
   ExistingTabOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
@@ -375,7 +376,10 @@ export class FxCore implements v3.ICore {
         if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
-        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
+        if (
+          isAadManifestEnabled() &&
+          (capabilities.includes(TabSsoItem.id) || capabilities.includes(BotSsoItem.id))
+        ) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {
@@ -1464,6 +1468,13 @@ export class FxCore implements v3.ICore {
     // init manifest
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
+
+    const manifestAddcapRes = await appStudioV3.addCapabilities(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      [{ name: "staticTab", existingApp: true }]
+    );
+    if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
 
     // create env config with existing tab's endpoint
     const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;

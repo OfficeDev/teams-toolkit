@@ -21,5 +21,5 @@ export interface BasicAuthConfig extends AuthConfig {
 export interface AADAuthConfig extends AuthConfig {
   ReuseTeamsApp: boolean;
   TenantId?: string;
-  AppId?: string;
+  ClientId?: string;
 }

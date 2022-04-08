@@ -175,7 +175,7 @@ export class ApiConnectorImpl {
           Constants.questionKey.apiAppTenentId
         );
         AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.AppId = inputs[Constants.questionKey.apiAppId];
+        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
     } else {

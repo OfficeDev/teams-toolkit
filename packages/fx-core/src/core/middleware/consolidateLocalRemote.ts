@@ -324,19 +324,19 @@ async function updateGitIgnore(
   // add config.local.json to .gitignore
   await addPathToGitignore(
     projectPath,
-    `.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`,
+    `${projectPath}/.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`,
     log
   );
 
   // add state.local.json to .gitignore
   await addPathToGitignore(
     projectPath,
-    `.${ConfigFolderName}/${StatesFolderName}/state.local.json`,
+    `${projectPath}/.${ConfigFolderName}/${StatesFolderName}/state.local.json`,
     log
   );
 
   if (backupFolder) {
-    await addPathToGitignore(projectPath, backupFolder, log);
+    await addPathToGitignore(projectPath, `${projectPath}/${backupFolder}`, log);
   }
 }
 

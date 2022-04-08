@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ning Liu <nliu@microsoft.com>
+ * @author Huihui Wu <huihuiwu@microsoft.com>
  */
 
 import * as fs from "fs-extra";
@@ -26,7 +26,6 @@ describe("Start a new project", function () {
     // check specified files
     const files: string[] = [
       "config/config.json",
-      "config/copy-assets.json",
       "config/deploy-azure-storage.json",
       "config/package-solution.json",
       "config/serve.json",

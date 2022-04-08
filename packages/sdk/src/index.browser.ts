@@ -41,6 +41,8 @@ export {
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
+  CommandMessage,
+  TriggerPatterns,
   TeamsFxBotCommandHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation.browser";

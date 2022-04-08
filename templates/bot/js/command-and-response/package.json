@@ -9,7 +9,8 @@
     "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
     "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
     "start": "node ./src/index.js",
-    "watch": "nodemon ./src/index.js"
+    "watch": "nodemon ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",

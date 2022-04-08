@@ -22,9 +22,9 @@ You can refer https://aka.ms/teamsfx-connect-api to learn more.
 Setting API configuration for cloud environment: 
 We have already set the configuration to .env.teamsfx.local based on your answers. 
 Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
-API_FAKE_ENDPOINT 
-API_FAKE_USERNAME 
-API_FAKE_PASSWORD 
+TEAMSFX_API_FAKE_ENDPOINT
+TEAMSFX_API_FAKE_USERNAME
+TEAMSFX_API_FAKE_PASSWORD
 
 You can refer https://aka.ms/teamsfx-connet-api to learn more. 
 */

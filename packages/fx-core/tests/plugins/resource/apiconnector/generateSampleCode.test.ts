@@ -102,7 +102,9 @@ describe("Api Connector scaffold sample code", async () => {
       EndPoint: "fake_endpoint",
       AuthConfig: {
         AuthType: AuthType.AAD,
-        ReuseTeamsApp: true,
+        ReuseTeamsApp: false,
+        TenantId: "fake_tenant_id",
+        ClientId: "fake_client_id",
       } as AADAuthConfig,
     };
     await sampleHandler.generateSampleCode(fakeConfig);
@@ -112,7 +114,7 @@ describe("Api Connector scaffold sample code", async () => {
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(
-      path.join(__dirname, "expectedFiles", "js", "aad.js"),
+      path.join(__dirname, "expectedFiles", "js", "aad-existing-app.js"),
       ConstantString.UTF8Encoding
     );
     chai.assert.strictEqual(
@@ -131,7 +133,9 @@ describe("Api Connector scaffold sample code", async () => {
       EndPoint: "fake_endpoint",
       AuthConfig: {
         AuthType: AuthType.AAD,
-        ReuseTeamsApp: true,
+        ReuseTeamsApp: false,
+        TenantId: "fake_tenant_id",
+        ClientId: "fake_client_id",
       } as AADAuthConfig,
     };
     await sampleHandler.generateSampleCode(fakeConfig);
@@ -141,7 +145,7 @@ describe("Api Connector scaffold sample code", async () => {
       ConstantString.UTF8Encoding
     );
     const expectedContent = await fs.readFile(
-      path.join(__dirname, "expectedFiles", "ts", "aad.ts"),
+      path.join(__dirname, "expectedFiles", "ts", "aad-existing-app.ts"),
       ConstantString.UTF8Encoding
     );
     chai.assert.strictEqual(

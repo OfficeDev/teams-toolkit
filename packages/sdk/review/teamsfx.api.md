@@ -30,6 +30,9 @@ import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder-core';
+import { TurnContext as TurnContext_2 } from 'botbuilder';
+import { WebRequest } from 'botbuilder';
+import { WebResponse } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -77,11 +80,43 @@ export class Channel implements NotificationTarget {
 
 // @beta
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]);
-    // (undocumented)
-    readonly adapter: BotFrameworkAdapter;
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
+}
+
+// @public
+export interface CommandMessage {
+    matches?: RegExpMatchArray;
+    text: string;
+}
+
+// @beta
+export interface CommandOptions {
+    commands?: TeamsFxBotCommandHandler[];
+}
+
+// @beta
+export class ConversationBot {
+    constructor(options: ConversationOptions);
+    readonly adapter: BotFrameworkAdapter;
+    readonly command?: CommandBot;
+    readonly notification?: NotificationBot;
+    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
+}
+
+// @beta
+export interface ConversationOptions {
+    adapter?: BotFrameworkAdapter;
+    adapterConfig?: {
+        [key: string]: unknown;
+    };
+    command?: CommandOptions & {
+        enabled?: boolean;
+    };
+    notification?: NotificationOptions_2 & {
+        enabled?: boolean;
+    };
 }
 
 // @beta
@@ -288,8 +323,8 @@ export class TeamsFx implements TeamsFxConfiguration {
 
 // @beta
 export interface TeamsFxBotCommandHandler {
-    commandNameOrPattern: string | RegExp;
-    handleCommandReceived(context: TurnContext, receivedText: string): Promise<string | Partial<Activity>>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
+    triggerPatterns: TriggerPatterns;
 }
 
 // @beta
@@ -299,6 +334,9 @@ export class TeamsUserCredential implements TokenCredential {
     getUserInfo(): Promise<UserInfo>;
     login(scopes: string | string[]): Promise<void>;
 }
+
+// @public
+export type TriggerPatterns = string | RegExp | (string | RegExp)[];
 
 // @beta
 export interface UserInfo {

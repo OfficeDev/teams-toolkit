@@ -1,14 +1,3 @@
-import { TeamsFx, createApiClient, BasicAuthProvider } from "@microsoft/teamsfx";
-
-// Loads current app's configuration
-const teamsFx = new TeamsFx();
-// Initializes a new axios instance to call {{config.APIName}} API
-const authProvider = new BasicAuthProvider(
-  teamsFx.getConfig("API_{{capitalName}}_USERNAME"),
-  teamsFx.getConfig("API_{{capitalName}}_PASSWORD")
-);
-const {{config.APIName}}Client = createApiClient(teamsFx.getConfig("API_{{capitalName}}_ENDPOINT"), authProvider);
-export { {{config.APIName}}Client };
 
 /* 
 You can now call {{config.APIName}} APIs without worrying about authentication. 
@@ -23,8 +12,10 @@ Setting API configuration for cloud environment:
 We have already set the configuration to .env.teamsfx.local based on your answers. 
 Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
 API_{{capitalName}}_ENDPOINT 
+{{#if (equals config.AuthConfig.AuthType "basic")}}
 API_{{capitalName}}_USERNAME 
 API_{{capitalName}}_PASSWORD 
+{{/if}}
 
 You can refer https://aka.ms/teamsfx-connet-api to learn more. 
 */

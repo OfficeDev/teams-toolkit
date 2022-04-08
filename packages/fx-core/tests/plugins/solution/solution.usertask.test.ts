@@ -47,9 +47,10 @@ import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  SsoItem,
+  TabSsoItem,
   TabNonSsoItem,
   TabOptionItem,
+  BotSsoItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
 import "../../../src/plugins/resource/function/v2";
@@ -609,7 +610,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -637,7 +638,7 @@ describe("V2 implementation", () => {
         name: "test",
         version: "1.0",
         activeResourcePlugins: [frontendPluginV2.name],
-        capabilities: [TabNonSsoItem.id],
+        capabilities: [TabOptionItem.id],
         azureResources: [],
       },
     };
@@ -662,7 +663,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
+    expect(result.isErr() && result.error.name === SolutionError.InvalidInput).to.be.true;
   });
 
   it("should return err when adding non sso tab to tab when aad manifest enabled", async () => {
@@ -676,7 +677,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -704,7 +705,7 @@ describe("V2 implementation", () => {
         name: "test",
         version: "1.0",
         activeResourcePlugins: [frontendPluginV2.name, aadPluginV2.name],
-        capabilities: [TabNonSsoItem.id, SsoItem.id],
+        capabilities: [TabNonSsoItem.id, TabSsoItem.id],
         azureResources: [],
       },
     };
@@ -729,10 +730,10 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
+    expect(result.isErr() && result.error.name === SolutionError.InvalidInput).to.be.true;
   });
 
-  it("should return err when adding tab to bot when aad manifest enabled", async () => {
+  it("should success when adding tab to bot when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
@@ -743,7 +744,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -796,7 +797,7 @@ describe("V2 implementation", () => {
       mockedProvider
     );
 
-    expect(result.isErr() && result.error.source === SolutionError.InvalidInput).to.be.true;
+    expect(result.isOk()).to.be.true;
   });
 
   it("should success when adding non sso tab to bot when aad manifest enabled", async () => {
@@ -810,7 +811,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return ok(true);
+          return ok(false);
         }
       );
     mocker
@@ -992,7 +993,7 @@ describe("V2 implementation", () => {
       ).to.be.true;
       expect(
         (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
-          SsoItem.id
+          TabSsoItem.id
         )
       ).to.be.true;
       const readmePath = path.join(testFolder, "auth", "tab", "README.md");
@@ -1035,7 +1036,7 @@ describe("V2 implementation", () => {
       ).to.be.true;
       expect(
         (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
-          SsoItem.id
+          BotSsoItem.id
         )
       ).to.be.true;
       const readmePath = path.join(testFolder, "auth", "bot", "README.md");
@@ -1052,7 +1053,7 @@ describe("V2 implementation", () => {
           name: "test",
           version: "1.0",
           activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name, aadPluginV2.name],
-          capabilities: [TabOptionItem.id, SsoItem.id],
+          capabilities: [TabOptionItem.id, TabSsoItem.id],
           azureResources: [],
         },
       };
@@ -1069,10 +1070,10 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr() && result.error.source === SolutionError.SsoEnabled).to.be.true;
+      expect(result.isErr() && result.error.name === SolutionError.SsoEnabled).to.be.true;
     });
 
-    it("should return error when no capability", async () => {
+    it("should success when no capability", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1098,7 +1099,12 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
     });
 
     it("should return error when project setting is invalid", async () => {
@@ -1127,7 +1133,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr() && result.error.source === SolutionError.InvalidSsoProject).to.be.true;
+      expect(result.isErr() && result.error.name === SolutionError.InvalidSsoProject).to.be.true;
     });
 
     it("should return error when bot is host on Azure Function", async () => {
@@ -1162,7 +1168,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
-      expect(result.isErr() && result.error.source === SolutionError.AddSsoNotSupported).to.be.true;
+      expect(result.isErr() && result.error.name === SolutionError.AddSsoNotSupported).to.be.true;
     });
 
     it("delete added files when failed", async () => {

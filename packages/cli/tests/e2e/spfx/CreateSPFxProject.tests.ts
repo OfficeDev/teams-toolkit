@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ning Liu <nliu@microsoft.com>
+ * @author Huihui Wu <huihuiwu@microsoft.com>
  */
 
 import * as fs from "fs-extra";
@@ -22,10 +22,15 @@ import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
-  const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
   let appId: string;
+  let appName: string;
+  let testFolder: string;
+  let projectPath: string;
+  beforeEach(async () => {
+    testFolder = getTestFolder();
+    appName = getUniqueAppName();
+    projectPath = path.resolve(testFolder, appName);
+  });
 
   it("Create, provision and run SPFx project with React framework", async function () {
     let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
@@ -38,7 +43,6 @@ describe("Start a new project", function () {
     // check specified files
     const files: string[] = [
       "config/config.json",
-      "config/copy-assets.json",
       "config/deploy-azure-storage.json",
       "config/package-solution.json",
       "config/serve.json",
@@ -47,11 +51,15 @@ describe("Start a new project", function () {
       "src/webparts/helloworld/HelloworldWebPart.ts",
       "src/webparts/helloworld/loc/en-us.js",
       "src/webparts/helloworld/loc/mystrings.d.ts",
+      "src/webparts/helloworld/assets/welcome-dark.png",
+      "src/webparts/helloworld/assets/welcome-light.png",
       "src/webparts/helloworld/components/Helloworld.module.scss",
       "src/webparts/helloworld/components/Helloworld.tsx",
       "src/webparts/helloworld/components/IHelloworldProps.ts",
       "src/index.ts",
       ".gitignore",
+      ".npmignore",
+      ".yo-rc.json",
       "gulpfile.js",
       "package.json",
       "README.md",
@@ -117,7 +125,7 @@ describe("Start a new project", function () {
     }
   });
 
-  after(async () => {
+  afterEach(async () => {
     // clean up
     await cleanUpLocalProject(projectPath);
     await cleanupSharePointPackage(appId);

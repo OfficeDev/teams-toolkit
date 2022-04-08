@@ -414,7 +414,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   }
 
   const projectPath = result.value;
-  if (await isExistingTabApp(projectPath)) {
+  if (isExistingTabApp(projectPath)) {
     // show local preview button for existing tab app
     await openFolder(projectPath, false, true, args);
   } else {

@@ -68,7 +68,7 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
   onViewGithub = () => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.baseUrl + this.props.sampleAppFolder,
+      data: this.props.url + this.props.sampleAppFolder,
     });
   };
 }

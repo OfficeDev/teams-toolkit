@@ -26,7 +26,7 @@ type SampleListProps = {
 };
 
 type SampleDetailProps = {
-  baseUrl: string;
+  url: string;
   image: any;
   tags: string[];
   time: string;

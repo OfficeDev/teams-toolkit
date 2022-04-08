@@ -88,7 +88,7 @@ export default class SampleGallery extends React.Component<any, any> {
         )}
         {this.state.highlightSample != "" && (
           <SampleDetailPage
-            baseUrl={hightSample.url}
+            url={hightSample.url}
             image={imageMapping[hightSample.id]}
             tags={hightSample.tags}
             time={hightSample.time}
@@ -136,7 +136,7 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
       return samples.map((sample, index) => {
         return (
           <SampleCard
-            baseUrl={sample.url}
+            url={sample.url}
             image={imageMapping[sample.id]}
             tags={sample.tags}
             time={sample.time}

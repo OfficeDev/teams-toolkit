@@ -12,12 +12,12 @@
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
 |  [Channel](./teamsfx.channel.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> A command bot for receiving commands and sending responses in Teams. |
-|  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, channel, incoming wehbook). |
+|  [ConversationBot](./teamsfx.conversationbot.md) | <b><i>(BETA)</i></b> Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [Member](./teamsfx.member.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider for Teams Framework |
-|  [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> Provide utilities to send notification to varies targets (e.g., member, channel, incoming wehbook). |
+|  [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> Provide utilities to send notification to varies targets (e.g., member, group, channel). |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
 |  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | <b><i>(BETA)</i></b> Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
@@ -52,6 +52,7 @@
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | <b><i>(BETA)</i></b> Defines method that injects authentication info to http requests |
+|  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command messagge that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | <b><i>(BETA)</i></b> Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
@@ -69,4 +70,5 @@
 |  --- | --- |
 |  [LogFunction](./teamsfx.logfunction.md) | <b><i>(BETA)</i></b> Log function for customized logging. |
 |  [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> The target type where the notification will be sent to. |
+|  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

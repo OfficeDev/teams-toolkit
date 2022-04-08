@@ -389,7 +389,7 @@ export class TeamsBotInstallation implements NotificationTarget {
 }
 
 /**
- * Provide utilities to send notification to varies targets (e.g., member, channel, incoming wehbook).
+ * Provide utilities to send notification to varies targets (e.g., member, group, channel).
  *
  * @beta
  */

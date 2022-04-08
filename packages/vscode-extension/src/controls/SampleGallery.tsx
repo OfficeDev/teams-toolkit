@@ -19,6 +19,7 @@ import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
 import NoneSSOTab from "../../media/hello-world-tab-without-sso.gif";
+import SendProactiveMsg from "../../media/send-proactive-messages.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -34,13 +35,13 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-bot": HelloWorldBot,
   "bot-sso": BOTSSO,
   "hello-world-tab-without-sso": NoneSSOTab,
+  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
 };
 
 export default class SampleGallery extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
     this.state = {
-      baseUrl: "",
       samples: [],
       highlightSample: "",
     };
@@ -80,7 +81,6 @@ export default class SampleGallery extends React.Component<any, any> {
             <div className="sample-stack">
               <SampleAppCardList
                 samples={this.state.samples}
-                baseUrl={this.state.baseUrl}
                 highlightSample={this.highlightSample}
               />
             </div>
@@ -88,7 +88,7 @@ export default class SampleGallery extends React.Component<any, any> {
         )}
         {this.state.highlightSample != "" && (
           <SampleDetailPage
-            baseUrl={this.state.baseUrl}
+            url={hightSample.url}
             image={imageMapping[hightSample.id]}
             tags={hightSample.tags}
             time={hightSample.time}
@@ -110,7 +110,6 @@ export default class SampleGallery extends React.Component<any, any> {
       case EventMessages.LoadSampleCollection:
         const sampleCollection = event.data.data as SampleCollection;
         this.setState({
-          baseUrl: sampleCollection.baseUrl,
           samples: sampleCollection.samples,
         });
         break;
@@ -134,11 +133,10 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
   render() {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
-      const baseUrl = this.props.baseUrl;
       return samples.map((sample, index) => {
         return (
           <SampleCard
-            baseUrl={baseUrl}
+            url={sample.url}
             image={imageMapping[sample.id]}
             tags={sample.tags}
             time={sample.time}

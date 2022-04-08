@@ -1,10 +1,15 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { TurnContext } from "botbuilder-core";
 import { Activity } from "botframework-schema";
 import {
+  CommandMessage,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
+  TriggerPatterns,
 } from "../../../../src/conversation/interface";
 
 export class TestStorage implements NotificationTargetStorage {
@@ -53,27 +58,21 @@ export class TestTarget implements NotificationTarget {
 }
 
 export class TestCommandHandler implements TeamsFxBotCommandHandler {
-  commandNameOrPattern: string | RegExp = "test";
-  public isInvoked: boolean = false;
+  public readonly triggerPatterns: TriggerPatterns;
 
-  async handleCommandReceived(
-    context: TurnContext,
-    receivedText: string
-  ): Promise<string | Partial<Activity>> {
-    this.isInvoked = true;
-    return "Sample command response";
+  public isInvoked: boolean = false;
+  public lastReceivedMessage: CommandMessage | undefined;
+
+  constructor(patterns: TriggerPatterns) {
+    this.triggerPatterns = patterns;
   }
-}
-
-export class TestRegExpCommandHandler implements TeamsFxBotCommandHandler {
-  commandNameOrPattern: string | RegExp = /test*/;
-  public isInvoked: boolean = false;
 
   async handleCommandReceived(
     context: TurnContext,
-    receivedText: string
+    message: CommandMessage
   ): Promise<string | Partial<Activity>> {
     this.isInvoked = true;
+    this.lastReceivedMessage = message;
     return "Sample command response";
   }
 }

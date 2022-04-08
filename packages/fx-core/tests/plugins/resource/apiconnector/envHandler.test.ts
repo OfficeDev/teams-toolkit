@@ -8,7 +8,11 @@ import fs from "fs-extra";
 import * as dotenv from "dotenv";
 import { expect } from "chai";
 import { EnvHandler } from "../../../../src/plugins/resource/apiconnector/envHandler";
-import { AuthType, ComponentType } from "../../../../src/plugins/resource/apiconnector/constants";
+import {
+  AuthType,
+  ComponentType,
+  Constants,
+} from "../../../../src/plugins/resource/apiconnector/constants";
 import {
   ApiConnectorConfiguration,
   BasicAuthConfig,
@@ -58,10 +62,10 @@ describe("EnvHandler", () => {
     expect(await fs.pathExists(path.join(botPath, localEnvFileName))).to.be.false;
     await envHandler.saveLocalEnvFile();
     const envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
-    chai.assert.strictEqual(envs["API_FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs["API_FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
-    chai.assert.strictEqual(envs["API_FAKE_USERNAME"], "fake_api_user_name");
-    chai.assert.exists(envs["API_FAKE_PASSWORD"]);
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
+    chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
   });
 
   it("env update in .env.teamsfx.local", async () => {
@@ -80,10 +84,10 @@ describe("EnvHandler", () => {
     expect(await fs.pathExists(path.join(botPath, localEnvFileName))).to.be.false;
     await envHandler.saveLocalEnvFile();
     let envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
-    chai.assert.strictEqual(envs["API_FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs["API_FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
-    chai.assert.strictEqual(envs["API_FAKE_USERNAME"], "fake_api_user_name");
-    chai.assert.exists(envs["API_FAKE_PASSWORD"]);
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
+    chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
 
     const fakeConfig2: ApiConnectorConfiguration = {
       ComponentPath: ["bot"],
@@ -97,8 +101,8 @@ describe("EnvHandler", () => {
     envHandler.updateEnvs(fakeConfig2);
     await envHandler.saveLocalEnvFile();
     envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
-    chai.assert.strictEqual(envs["API_FAKE_ENDPOINT"], "fake_endpoint2");
-    chai.assert.strictEqual(envs["API_FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
-    chai.assert.strictEqual(envs["API_FAKE_USERNAME"], "fake_api_user_name2");
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint2");
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
+    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name2");
   });
 });

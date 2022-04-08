@@ -74,11 +74,11 @@ export class ApiConnectorImpl {
       );
       const msg: string = this.getNotificationMsg(config, languageType);
       ctx.userInteraction
-        ?.showMessage("info", msg, false, "OK", Constants.READ_MORE)
+        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
         .then((result) => {
           const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === Constants.READ_MORE) {
-            ctx.userInteraction?.openUrl(Constants.READ_MORE_URL);
+          if (userSelected === Notification.READ_MORE) {
+            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
           }
         });
     } catch (err) {
@@ -175,7 +175,7 @@ export class ApiConnectorImpl {
           Constants.questionKey.apiAppTenentId
         );
         AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.AppId = inputs[Constants.questionKey.apiAppId];
+        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
     } else {

@@ -29,7 +29,11 @@ enum EnvInfo {
 }
 
 interface accountStatus {
-  isOk: boolean;
+  isM365AccountLogin: boolean;
+
+  // azure account is optional for SPFx and existing tab app
+  isAzureAccountLogin?: boolean;
+
   warnings: string[];
 }
 
@@ -49,8 +53,8 @@ export class EnvironmentNode extends DynamicNode {
     if (this.identifier !== LocalEnvironmentName) {
       // check account status
       const accountStatus = await this.checkAccountForEnvironment(this.identifier);
-      if (!accountStatus.isOk) {
-        const warningNode = new WarningNode(this.identifier, accountStatus.warnings);
+      if (!accountStatus.isM365AccountLogin || accountStatus.isAzureAccountLogin === false) {
+        const warningNode = new WarningNode(this.identifier, accountStatus);
         children.push(warningNode);
       }
       // show subscription
@@ -78,7 +82,7 @@ export class EnvironmentNode extends DynamicNode {
   }
 
   private async checkAccountForEnvironment(env: string): Promise<accountStatus> {
-    let checkResult = true;
+    let isM365AccountLogin = true;
     const warnings: string[] = [];
 
     // Check M365 account status
@@ -87,46 +91,56 @@ export class EnvironmentNode extends DynamicNode {
       // Signed account doesn't match
       const m365TenantId = await getM365TenantFromEnv(env);
       if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
-        checkResult = false;
+        isM365AccountLogin = false;
         warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch"));
       }
     } else {
       // Not signed in
-      checkResult = false;
+      isM365AccountLogin = false;
       warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn"));
     }
 
     // Check Azure account status
     const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
-    if (!isSpfxProject) {
-      if (AzureAccountManager.getAccountInfo() !== undefined) {
-        const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-        const provisionedSubId = subscriptionInfo?.subscriptionId;
+    const isExistingTab = ext.workspaceUri
+      ? await isExistingTabApp(ext.workspaceUri.fsPath)
+      : false;
+    if (isSpfxProject || isExistingTab) {
+      return {
+        isM365AccountLogin,
+        warnings,
+      };
+    }
 
-        if (provisionedSubId) {
-          const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-          const targetSub = subscriptions.find(
-            (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
+    let isAzureAccountLogin = true;
+    if (AzureAccountManager.getAccountInfo() !== undefined) {
+      const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+      const provisionedSubId = subscriptionInfo?.subscriptionId;
+
+      if (provisionedSubId) {
+        const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+        const targetSub = subscriptions.find(
+          (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
+        );
+        if (targetSub === undefined) {
+          isAzureAccountLogin = false;
+          warnings.push(
+            util.format(
+              localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotMatch"),
+              subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
+            )
           );
-          if (targetSub === undefined) {
-            checkResult = false;
-            warnings.push(
-              util.format(
-                localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotMatch"),
-                subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
-              )
-            );
-          }
         }
-      } else {
-        checkResult = false;
-        warnings.push(localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotSignedIn"));
       }
+    } else {
+      isAzureAccountLogin = false;
+      warnings.push(localize("teamstoolkit.commandsTreeViewProvider.azureAccountNotSignedIn"));
     }
 
     return {
-      isOk: checkResult,
-      warnings: warnings,
+      isM365AccountLogin,
+      isAzureAccountLogin,
+      warnings,
     };
   }
 
@@ -144,11 +158,18 @@ export class EnvironmentNode extends DynamicNode {
 }
 
 class WarningNode extends DynamicNode {
-  constructor(public identifier: string, warnings: string[]) {
+  constructor(public identifier: string, accountStatus: accountStatus) {
     super(identifier, vscode.TreeItemCollapsibleState.None);
-    this.label = `Sign in with your correct Azure / M365 account`;
+    if (accountStatus.isAzureAccountLogin === false && !accountStatus.isM365AccountLogin) {
+      this.label = localize("teamstoolkit.envTree.missingAzureAndM365Account");
+    } else if (!accountStatus.isM365AccountLogin) {
+      this.label = localize("teamstoolkit.envTree.missingM365Account");
+    } else if (accountStatus.isAzureAccountLogin === false) {
+      this.label = localize("teamstoolkit.envTree.missingAzureAccount");
+    }
+
     this.iconPath = warningIcon;
-    this.tooltip = this.formatWarningMessages(warnings);
+    this.tooltip = this.formatWarningMessages(accountStatus.warnings);
   }
 
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {

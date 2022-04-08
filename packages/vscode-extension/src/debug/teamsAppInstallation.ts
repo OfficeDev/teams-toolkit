@@ -18,23 +18,22 @@ export async function showInstallAppInTeamsMessage(
   appId: string,
   botId: string | undefined
 ): Promise<boolean> {
-  let message = detected
-    ? localize("teamstoolkit.localDebug.installApp.detection")
-    : botId
-    ? localize("teamstoolkit.localDebug.installApp.outlookChannel.description")
-    : localize("teamstoolkit.localDebug.installApp.description");
-  message += localize("teamstoolkit.localDebug.installApp.guide");
-  if (botId) {
-    message += localize("teamstoolkit.localDebug.installApp.outlookChannel.guide");
-  }
-  message += botId
-    ? localize("teamstoolkit.localDebug.installApp.outlookChannel.finish")
-    : localize("teamstoolkit.localDebug.installApp.finish");
+  const messages = botId
+    ? [
+        localize("teamstoolkit.localDebug.installApp.bot.description"),
+        localize("teamstoolkit.localDebug.installApp.bot.guide1"),
+        localize("teamstoolkit.localDebug.installApp.bot.guide2"),
+        localize("teamstoolkit.localDebug.installApp.bot.finish"),
+      ]
+    : [
+        localize("teamstoolkit.localDebug.installApp.description"),
+        localize("teamstoolkit.localDebug.installApp.guide"),
+        localize("teamstoolkit.localDebug.installApp.finish"),
+      ];
+  const message = messages.join("\n\n");
   const items = [localize("teamstoolkit.localDebug.installApp.installInTeams")];
   if (botId) {
-    items.push(
-      localize("teamstoolkit.localDebug.installApp.outlookChannel.connectToOutlookChannel")
-    );
+    items.push(localize("teamstoolkit.localDebug.installApp.bot.configureOutlook"));
   }
   items.push(localize("teamstoolkit.localDebug.installApp.continue"));
   const result = await VS_CODE_UI.showMessage("info", message, true, ...items);
@@ -59,8 +58,7 @@ export async function showInstallAppInTeamsMessage(
       await VS_CODE_UI.openUrl(url);
       return await showInstallAppInTeamsMessage(false, appId, botId);
     } else if (
-      result.value ===
-      localize("teamstoolkit.localDebug.installApp.outlookChannel.connectToOutlookChannel")
+      result.value === localize("teamstoolkit.localDebug.installApp.bot.configureOutlook")
     ) {
       const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
       await VS_CODE_UI.openUrl(url);

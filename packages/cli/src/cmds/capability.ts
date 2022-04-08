@@ -292,14 +292,14 @@ export class CapabilityAddMessageExtension extends YargsCommand {
   }
 }
 
-class CapabilityAddNotification extends CapabilityAddBase {
+export class CapabilityAddNotification extends CapabilityAddBase {
   public readonly commandHead = "notification";
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add notification.";
   public readonly yargsHelp = "addCapability-Notification";
 }
 
-class CapabilityAddCommandAndResponse extends CapabilityAddBase {
+export class CapabilityAddCommandAndResponse extends CapabilityAddBase {
   public readonly commandHead = "command-and-response";
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add command and response.";

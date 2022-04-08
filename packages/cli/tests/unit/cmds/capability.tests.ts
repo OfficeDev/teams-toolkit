@@ -36,7 +36,7 @@ describe("Capability Command Tests", function () {
   let telemetryEvents: string[] = [];
   let telemetryEventStatus: string | undefined = undefined;
 
-  before(() => {
+  beforeEach(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
     sandbox
       .stub<any, any>(yargs, "command")
@@ -93,17 +93,15 @@ describe("Capability Command Tests", function () {
     sandbox.stub(ProjectSettingsHelper, "includeBot").returns(false);
     sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").callsFake(async () => {});
     sandbox.stub(LogProvider, "necessaryLog").returns();
-  });
 
-  after(() => {
-    sandbox.restore();
-  });
-
-  beforeEach(() => {
     registeredCommands = [];
     options = [];
     telemetryEvents = [];
     telemetryEventStatus = undefined;
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("Builder Check", () => {

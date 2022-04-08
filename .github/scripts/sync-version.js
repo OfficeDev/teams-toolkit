@@ -61,6 +61,7 @@ function updateFileDeps(file, deps) {
 
 function main() {
     const pathInput = process.argv[2];
+    console.log('=================', __dirname, " pathInput: ", pathInput);
     if(pathInput){
         console.log('syncup ', pathInput);
         const content = getSdkDeps();

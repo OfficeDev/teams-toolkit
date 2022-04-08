@@ -1,4 +1,14 @@
 #!/bin/bash
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+REPO_ROOT_DIR=$(cd $SCRIPT_DIR/../.. && pwd)
+TEMPLATE_DIR=$(cd $REPO_ROOT_DIR/templates && pwd)
+FX_CORE_API_CONNECTOR_CONFIG_DIR=$(cd $REPO_ROOT_DIR/packages/fx-core/templates/plugins/resource/apiconnector && pwd)
+
+echo "------ script dir: " $SCRIPT_DIR
+echo "------ repo root dir: " $REPO_ROOT_DIR
+echo "------ templates dir: " $TEMPLATE_DIR
+echo "------ fx-core api-connector dir: " $FX_CORE_API_CONNECTOR_CONFIG_DIR
+
 if [ $1 == 'templates' ]; then
     if [[ $SkipSyncup == *"template"* ]]; then
         echo "skip sync up templates version with sdk version"
@@ -43,11 +53,12 @@ elif [ $1 == 'template-adaptive-card' ]; then
         node ../../.github/scripts/sdk-sync-up-version.js adaptivecards-tools-sdk
     fi
     git add ../../templates
-elif [ $1 == 'template-sync' ]; then
-    node ../.github/scripts/sync-version.js 
+else [ $1 == 'template-sync' ]; then
+    echo "sync up templates deps' version with all the lerna pkgs"
+    node $SCRIPT_DIR/sync-version.js
     git add .
 elif [ $1 == 'api-connector-sync' ]; then
     echo "sync up api connector config version with sdk"
-    node ../../.github/scripts/sync-version.js packages/fx-core/templates/plugins/resource/apiconnector
+    node $SCRIPT_DIR/sync-version.js $FX_CORE_API_CONNECTOR_CONFIG_DIR
     git add .
 fi

@@ -69,13 +69,14 @@ export class EnvironmentNode extends DynamicNode {
 
   public async getTreeItem(): Promise<vscode.TreeItem> {
     const envInfo = await this.getCurrentEnvInfo(this.identifier);
-    const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
-
     this.iconPath = envInfo === EnvInfo.ProvisionedRemoteEnv ? provisionedIcon : nonProvisionedIcon;
+
+    const children = await this.getChildren();
     this.collapsibleState =
-      envInfo === EnvInfo.Local || envInfo === EnvInfo.LocalForExistingApp || isSpfxProject
-        ? vscode.TreeItemCollapsibleState.None
-        : vscode.TreeItemCollapsibleState.Expanded;
+      children && children.length > 0
+        ? vscode.TreeItemCollapsibleState.Expanded
+        : vscode.TreeItemCollapsibleState.None;
+
     this.description = envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "";
     this.contextValue = envInfo;
     return this;

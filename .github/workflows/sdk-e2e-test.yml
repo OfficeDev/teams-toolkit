@@ -12,6 +12,7 @@ jobs:
       SDK_INTEGRATION_TEST_SQL: ${{ secrets.SDK_INTEGRATION_TEST_SQL }}
       SDK_INTEGRATION_TEST_ACCOUNT: ${{ secrets.SDK_INTEGRATION_TEST_ACCOUNT }}
       SDK_INTEGRATION_TEST_AAD: ${{ secrets.SDK_INTEGRATION_TEST_AAD }}
+      SDK_INTEGRATION_TEST_API_CERTPROVIDER: ${{ secrets.SDK_INTEGRATION_TEST_API_CERTPROVIDER }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -458,6 +458,9 @@ export interface EnvConfig {
         clientSecret?: string;
         objectId?: string;
         accessAsUserScopeId?: string;
+        frontendDomain?: string;
+        botId?: string;
+        botEndpoint?: string;
         [k: string]: unknown;
     };
     azure?: {

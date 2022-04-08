@@ -553,6 +553,7 @@
   "error.aad.UpdateAppIdUriError": "Failed to update Application ID URI in Azure Active Directory. %s",
   "error.aad.UpdatePermissionError": "Failed to update application permission in Azure Active Directory.",
   "error.aad.AppIdUriInvalidError": "Invalid Application ID URI. Provision your application before continuing.",
+  "error.aad.CannotGenerateIdentifierUris": "Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file",
   "error.aad.InvalidSelectedPlugins": "Invalid selected plugins. %s",
   "error.aad.ParsePermissionError": "Failed to parse permission request.",
   "error.aad.UnhandledError": "Unhandled Error. ",

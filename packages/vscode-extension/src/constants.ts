@@ -3,7 +3,6 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
-  UnifyConfigs = "unifyConfigs",
   EnableExistingApp = "enableExistingApp",
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
   YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",

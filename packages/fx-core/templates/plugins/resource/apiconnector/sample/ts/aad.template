@@ -10,6 +10,7 @@ import {
 const teamsFx = new TeamsFx(IdentityType.App);
 {{else}}
 const teamsFx = new TeamsFx(IdentityType.App, {
+  // You can replace the default authorityHost url with actual value per your requirement
   authorityHost: "https://login.microsoftonline.com",
   tenantId: process.env.TEAMSFX_API_{{capitalName}}_TENANT_ID,
   clientId: process.env.TEAMSFX_API_{{capitalName}}_CLIENT_ID,

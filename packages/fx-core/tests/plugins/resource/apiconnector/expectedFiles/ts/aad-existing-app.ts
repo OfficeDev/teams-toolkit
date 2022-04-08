@@ -7,6 +7,7 @@ import {
 
 // Loads current app's configuration and use app for auth.
 const teamsFx = new TeamsFx(IdentityType.App, {
+  // You can replace the default authorityHost url with actual value per your requirement
   authorityHost: "https://login.microsoftonline.com",
   tenantId: process.env.TEAMSFX_API_FAKE_TENANT_ID,
   clientId: process.env.TEAMSFX_API_FAKE_CLIENT_ID,

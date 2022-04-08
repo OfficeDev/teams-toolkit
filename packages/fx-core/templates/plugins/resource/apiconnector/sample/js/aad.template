@@ -5,6 +5,7 @@ const teamsfxSdk = require("@microsoft/teamsfx");
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App);
 {{else}}
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
+  // You can replace the default authorityHost url with actual value per your requirement
   authorityHost: "https://login.microsoftonline.com",
   tenantId: process.env.TEAMSFX_API_{{capitalName}}_TENANT_ID,
   clientId: process.env.TEAMSFX_API_{{capitalName}}_CLIENT_ID,

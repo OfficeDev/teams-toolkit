@@ -39,6 +39,9 @@ export function extractIntegrationEnvVariables() {
     process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET = aadData[4];
     process.env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT = aadData[5];
   }
+  if (!process.env.SDK_INTEGRATION_TEST_API_CERTPROVIDER) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_API_CERTPROVIDER");
+  }
 }
 
 /**

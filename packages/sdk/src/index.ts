@@ -30,6 +30,11 @@ export {
 export { createApiClient } from "./apiClient/apiClient";
 export { AuthProvider } from "./apiClient/authProvider";
 export { BearerTokenAuthProvider } from "./apiClient/bearerTokenAuthProvider";
+export {
+  CertificateAuthProvider,
+  createPemCertOption,
+  createPfxCertOption,
+} from "./apiClient/certificateAuthProvider";
 
 export { TeamsFx } from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";

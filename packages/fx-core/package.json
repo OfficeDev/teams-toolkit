@@ -48,7 +48,8 @@
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
     "install:tabs": "cd tabs && npm install",
-    "installAll": "npm run install:tabs"
+    "installAll": "npm run install:tabs",
+    "version": "bash ../../.github/scripts/pkg-version.sh api-connector-sync"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

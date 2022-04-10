@@ -67,6 +67,7 @@ import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tool
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
+import { BotOptionItem, TabOptionItem } from "../../solution/fx-solution/question";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -396,18 +397,24 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const result: ArmTemplateResult = {
-      Parameters: JSON.parse(
-        await fs.readFile(
-          path.join(
-            getTemplatesFolder(),
-            TemplatePathInfo.BicepTemplateRelativeDir,
-            Bicep.ParameterFileName
-          ),
-          ConstantString.UTF8Encoding
-        )
-      ),
-    };
+    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    let result: ArmTemplateResult | undefined = undefined;
+
+    if (capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+      result = {
+        Parameters: JSON.parse(
+          await fs.readFile(
+            path.join(
+              getTemplatesFolder(),
+              TemplatePathInfo.BicepTemplateRelativeDir,
+              Bicep.ParameterFileName
+            ),
+            ConstantString.UTF8Encoding
+          )
+        ),
+      };
+    }
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);

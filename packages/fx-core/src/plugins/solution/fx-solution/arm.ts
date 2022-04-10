@@ -847,14 +847,14 @@ function generateArmFromResult(
   moduleConfigFiles: Map<string, string>
 ) {
   bicepOrchestrationTemplate.applyTemplate(pluginName, result);
-  if (result.Configuration?.Modules) {
+  if (result?.Configuration?.Modules) {
     for (const module of Object.entries(result.Configuration.Modules)) {
       const moduleName = module[0];
       const moduleValue = module[1] as string;
       moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
     }
   }
-  if (result.Provision?.Modules) {
+  if (result?.Provision?.Modules) {
     for (const module of Object.entries(result.Provision.Modules)) {
       const moduleName = module[0];
       const moduleValue = module[1] as string;
@@ -877,6 +877,12 @@ async function doGenerateArmTemplate(
   );
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
+
+  const templateFolderPath = path.join(ctx.root, templatesFolder);
+  if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
+    selectedPlugins = plugins;
+  }
+
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
@@ -1268,9 +1274,9 @@ export class ArmTemplateRenderContext {
       Configuration: {},
       References: {},
     };
-    const provision = armResult.Provision?.Modules;
-    const references = armResult.Reference;
-    const configs = armResult.Configuration?.Modules;
+    const provision = armResult?.Provision?.Modules;
+    const references = armResult?.Reference;
+    const configs = armResult?.Configuration?.Modules;
     if (provision) {
       for (const module of Object.entries(provision)) {
         const moduleFileName = module[0];
@@ -1316,11 +1322,11 @@ class BicepOrchestrationContent {
   }
 
   public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
-    this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
-    this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
+    this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult?.Provision?.Orchestration);
+    this.ConfigTemplate += this.normalizeTemplateSnippet(armResult?.Configuration?.Orchestration);
     this.RenderContext.addPluginOutput(pluginName, armResult);
-    Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
-    if (armResult.Parameters && Object.keys(armResult.Parameters).length > 0)
+    Object.assign(this.ParameterJsonTemplate, armResult?.Parameters);
+    if (armResult?.Parameters && Object.keys(armResult?.Parameters).length > 0)
       this.TemplateAdded = true;
   }
 

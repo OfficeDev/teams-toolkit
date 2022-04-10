@@ -205,24 +205,24 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 
     if (projectSettingsJson.solutionSettings.capabilities.includes("Tab")) {
       aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html",
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
         type: "Web",
       });
 
       aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
         type: "Spa",
       });
 
       aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html",
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html",
         type: "Spa",
       });
     }
 
     if (projectSettingsJson.solutionSettings.capabilities.includes("Bot")) {
       aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html",
+        url: "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html",
         type: "Web",
       });
     }

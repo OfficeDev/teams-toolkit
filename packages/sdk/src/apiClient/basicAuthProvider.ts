@@ -45,6 +45,10 @@ export class BasicAuthProvider implements AuthProvider {
    * @param config - Contains all the request information and can be updated to include extra authentication info.
    * Refer https://axios-http.com/docs/req_config for detailed document.
    *
+   * @returns Updated axios request config.
+   *
+   * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when Authorization header or auth property already exists in request configuration.
+   *
    * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {

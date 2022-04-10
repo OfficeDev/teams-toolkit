@@ -3,10 +3,11 @@
 "use strict";
 import { Inputs } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { LanguageType, FileType } from "./constants";
+import { LanguageType, FileType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import path from "path";
 
 export function generateTempFolder(): string {
   const timestamp = Date.now();
@@ -46,13 +47,18 @@ export class Notification {
   public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
   public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
 
-  public static GetBasiString(apiName: string, components: string[], languageType: string): string {
+  public static GetBasicString(
+    apiName: string,
+    components: string[],
+    languageType: string
+  ): string {
     const fileName = getSampleFileName(apiName, languageType);
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.GenerateFiles",
-      fileName,
-      components.toString()
-    );
+    let generatedFiles = "";
+    for (const component of components) {
+      generatedFiles += `'${path.join(component, fileName)}' and`;
+    }
+    generatedFiles = generatedFiles.replace(/ and+$/, ""); // remove trailing " and"
+    return getLocalizedString("plugins.apiConnector.Notification.GenerateFiles", generatedFiles);
   }
 
   public static GetBasicAuthString(apiName: string, components: string[]): string {
@@ -96,17 +102,26 @@ export class Notification {
   }
 
   public static GetGenAADAuthString(apiName: string, components: string[]): string {
-    const apiKeyEx: string = apiName.toUpperCase();
-    const apiKeyName = `API_${apiKeyEx}_CLIENTSECRET `;
+    const apiNameUpperCase: string = apiName.toUpperCase();
+    const envName = `API_${apiNameUpperCase}_CLIENTSECRET `;
+    let envFiles = "";
+    for (const component of components) {
+      envFiles += `'${path.join(component, Constants.envFileName)}' and`;
+    }
+    envFiles = envFiles.replace(/ and+$/, ""); // remove trailing " and";
     return getLocalizedString(
       "plugins.apiConnector.Notification.GenAADAuth",
       "<your-api-scope>",
-      apiKeyName,
-      components.toString()
+      envName,
+      envFiles
     );
   }
 
   public static GetReuseAADAuthString(apiName: string): string {
     return getLocalizedString("plugins.apiConnector.Notification.ReuseAADAuth", "<your-api-scope>");
+  }
+
+  public static GetNpmInstallString(): string {
+    return getLocalizedString("plugins.apiConnector.Notification.NpmInstall");
   }
 }

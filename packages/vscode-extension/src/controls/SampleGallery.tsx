@@ -25,7 +25,7 @@ const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
   "todo-list-SPFx": ToDoListSharepoint,
   "share-now": ShareNow,
-  "in-meeting-app": InMeetingApp,
+  "hello-world-in-meeting": InMeetingApp,
   "faq-plus": FAQPlus,
   "todo-list-with-Azure-backend-M365": ToDoListM365,
   "NPM-search-connector-M365": NpmSearchConnectorM365,

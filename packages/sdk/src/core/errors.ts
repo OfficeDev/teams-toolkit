@@ -72,17 +72,15 @@ export enum ErrorCode {
   IdentityTypeNotSupported = "IdentityTypeNotSupported",
 
   /**
-   * Authentication info error.
+   * Authentication info already exists error.
    */
-  AuthorizationInfoError = "AuthorizationInfoError",
+  AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
 }
 
 /**
  * @internal
  */
 export class ErrorMessage {
-  static readonly ArgumentEmpty = "Argument {0} is empty.";
-
   // InvalidConfiguration Error
   static readonly InvalidConfiguration = "{0} in configuration is invalid: {1}.";
   static readonly ConfigurationNotExists = "Configuration does not exist. {0}";

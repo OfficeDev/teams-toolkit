@@ -38,7 +38,7 @@ export class BearerTokenAuthProvider implements AuthProvider {
     if (config.headers["Authorization"]) {
       throw new ErrorWithCode(
         ErrorMessage.AuthorizationHeaderAlreadyExists,
-        ErrorCode.AuthorizationInfoError
+        ErrorCode.AuthorizationInfoAlreadyExists
       );
     }
 

@@ -34,7 +34,7 @@ describe("BearerTokenAuthProvider Tests - Node", () => {
     ).to.eventually.be.rejectedWith(ErrorWithCode);
 
     // Assert
-    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoError);
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoAlreadyExists);
     assert.equal(errorResult.message, ErrorMessage.AuthorizationHeaderAlreadyExists);
   });
 });

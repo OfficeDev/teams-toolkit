@@ -25,13 +25,13 @@ export class BasicAuthProvider implements AuthProvider {
   constructor(userName: string, password: string) {
     if (!userName) {
       throw new ErrorWithCode(
-        formatString(ErrorMessage.ArgumentEmpty, "username"),
+        formatString(ErrorMessage.EmptyParameter, "username"),
         ErrorCode.InvalidParameter
       );
     }
     if (!password) {
       throw new ErrorWithCode(
-        formatString(ErrorMessage.ArgumentEmpty, "password"),
+        formatString(ErrorMessage.EmptyParameter, "password"),
         ErrorCode.InvalidParameter
       );
     }
@@ -51,13 +51,13 @@ export class BasicAuthProvider implements AuthProvider {
     if (config.headers && config.headers["Authorization"]) {
       throw new ErrorWithCode(
         ErrorMessage.AuthorizationHeaderAlreadyExists,
-        ErrorCode.AuthorizationInfoError
+        ErrorCode.AuthorizationInfoAlreadyExists
       );
     }
     if (config.auth) {
       throw new ErrorWithCode(
         ErrorMessage.BasicCredentialAlreadyExists,
-        ErrorCode.AuthorizationInfoError
+        ErrorCode.AuthorizationInfoAlreadyExists
       );
     }
 

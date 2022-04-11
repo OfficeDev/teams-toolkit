@@ -24,7 +24,7 @@
       "skipFiles": [
           "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\build\\core\\workflow\\provisionSPFx.js",
+      "program": "${workspaceFolder}\\build\\core\\workflow\\test\\botLifecycle.js",
       "outFiles": [
           "${workspaceFolder}/**/*.js"
       ]

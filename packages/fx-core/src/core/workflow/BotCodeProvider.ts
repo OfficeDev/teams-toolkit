@@ -15,6 +15,7 @@ import {
   SourceCodeProvider,
   TeamsBotInputs,
 } from "./interface";
+import { getComponent } from "./workflow";
 
 /**
  * bot scaffold plugin
@@ -69,35 +70,39 @@ export class BotCodeProvider implements SourceCodeProvider {
     context: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const language = context.projectSetting.programmingLanguage;
-    if (language === "typescript") {
-      const group: GroupAction = {
-        type: "group",
-        name: "bot-code.build",
-        actions: [
-          {
-            type: "shell",
-            command: "npm install",
-            description: `npm install (${path.resolve(inputs.projectPath, "bot")})`,
-            cwd: path.resolve(inputs.projectPath, "bot"),
-          },
-          {
-            type: "shell",
-            command: "npm run build",
-            description: `npm run build (${path.resolve(inputs.projectPath, "bot")})`,
-            cwd: path.resolve(inputs.projectPath, "bot"),
-          },
-        ],
-      };
-      return ok(group);
-    } else if (language === "csharp") {
-      return ok({
-        type: "shell",
-        name: "bot-code.build",
-        command: "MsBuild",
-        description: `MsBuild (${path.resolve(inputs.projectPath, "bot")})`,
-        cwd: path.resolve(inputs.projectPath, "bot"),
-      });
-    } else return ok(undefined);
+    const component = getComponent(context.projectSetting as ProjectSettingsV3, "bot-code");
+    if (component) {
+      const language = component.language || context.projectSetting.programmingLanguage;
+      if (language === "typescript") {
+        const group: GroupAction = {
+          type: "group",
+          name: "bot-code.build",
+          actions: [
+            {
+              type: "shell",
+              command: "npm install",
+              description: `npm install (${path.resolve(inputs.projectPath, "bot")})`,
+              cwd: path.resolve(inputs.projectPath, "bot"),
+            },
+            {
+              type: "shell",
+              command: "npm run build",
+              description: `npm run build (${path.resolve(inputs.projectPath, "bot")})`,
+              cwd: path.resolve(inputs.projectPath, "bot"),
+            },
+          ],
+        };
+        return ok(group);
+      } else if (language === "csharp") {
+        return ok({
+          type: "shell",
+          name: "bot-code.build",
+          command: "MsBuild",
+          description: `MsBuild (${path.resolve(inputs.projectPath, "bot")})`,
+          cwd: path.resolve(inputs.projectPath, "bot"),
+        });
+      } else return ok(undefined);
+    }
+    return ok(undefined);
   }
 }

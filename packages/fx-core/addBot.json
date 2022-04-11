@@ -1,0 +1,45 @@
+{
+    "type": "group",
+    "name": "fx.addBot",
+    "mode": "parallel",
+    "actions": [
+        {
+            "name": "fx.configBot",
+            "type": "function"
+        },
+        {
+            "name": "call:bot-code.generate",
+            "type": "call",
+            "required": false,
+            "targetAction": "bot-code.generate"
+        },
+        {
+            "name": "call:azure-bicep.generate",
+            "type": "call",
+            "required": false,
+            "targetAction": "azure-bicep.generate",
+            "inputs": {
+                "azure-bicep": {
+                    "resources": [
+                        "azure-web-app"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "call:teams-manifest.addCapability",
+            "type": "call",
+            "required": true,
+            "targetAction": "teams-manifest.addCapability",
+            "inputs": {
+                "teams-manifest": {
+                    "capabilities": [
+                        {
+                            "name": "Bot"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

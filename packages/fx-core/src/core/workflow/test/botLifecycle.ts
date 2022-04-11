@@ -10,7 +10,7 @@ import "reflect-metadata";
 import { createV2Context } from "../../../common";
 import { setTools } from "../../globalVars";
 import "../core";
-import { ContextV3, ProjectSettingsV3 } from "../interface";
+import { ContextV3 } from "../interface";
 import { MockTools } from "../utils";
 import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 
@@ -71,6 +71,23 @@ async function provision(context: ContextV3) {
   console.log("projectSetting:");
   console.log(context.projectSetting);
 }
+async function deploy(context: ContextV3) {
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: path.join(os.tmpdir(), "myapp"),
+    platform: Platform.VSCode,
+  };
+  const action = await getAction("fx.deploy", context, inputs);
+  if (action) {
+    const resolved = await resolveAction(action, context, cloneDeep(inputs));
+    fs.writeFileSync("deploy.json", JSON.stringify(resolved, undefined, 4));
+    await planAction(action, context, cloneDeep(inputs));
+    await executeAction(action, context, inputs);
+  }
+  console.log("inputs:");
+  console.log(inputs);
+  console.log("projectSetting:");
+  console.log(context.projectSetting);
+}
 
 async function test() {
   const projectSettings = {};
@@ -79,6 +96,7 @@ async function test() {
   await init(context);
   await addBot(context);
   await provision(context);
+  await deploy(context);
 }
 
 test();

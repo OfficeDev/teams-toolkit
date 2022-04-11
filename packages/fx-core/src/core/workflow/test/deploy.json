@@ -8,25 +8,7 @@
             "actions": [
                 {
                     "type": "group",
-                    "name": "tab-scaffold.build",
-                    "actions": [
-                        {
-                            "type": "shell",
-                            "command": "my cmd",
-                            "description": "npm install (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab)",
-                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
-                        },
-                        {
-                            "type": "shell",
-                            "command": "npm run build",
-                            "description": "npm run build (C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab)",
-                            "cwd": "C:\\Users\\HUAJIE~1\\AppData\\Local\\Temp\\myapp\\tab"
-                        }
-                    ]
-                },
-                {
-                    "type": "group",
-                    "name": "bot-scaffold.build",
+                    "name": "bot-code.build",
                     "actions": [
                         {
                             "type": "shell",
@@ -46,23 +28,11 @@
         },
         {
             "type": "call",
-            "targetAction": "azure-storage.deploy",
-            "required": false,
-            "inputs": {
-                "azure-storage": {
-                    "folder": "myApp",
-                    "type": "zip"
-                }
-            }
-        },
-        {
-            "type": "call",
             "targetAction": "azure-web-app.deploy",
             "required": false,
             "inputs": {
                 "azure-web-app": {
-                    "folder": "bot",
-                    "type": "zip"
+                    "folder": "bot"
                 }
             }
         }

@@ -1,0 +1,63 @@
+{
+    "name": "fx.provision",
+    "type": "group",
+    "actions": [
+        {
+            "type": "function",
+            "name": "fx.commonConfig"
+        },
+        {
+            "type": "group",
+            "name": "resources.provision",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "name": "call:azure-web-app.provision",
+                    "required": false,
+                    "targetAction": "azure-web-app.provision"
+                }
+            ]
+        },
+        {
+            "type": "call",
+            "name": "call:azure-bicep.deploy",
+            "required": true,
+            "targetAction": "azure-bicep.deploy"
+        },
+        {
+            "type": "call",
+            "name": "call:azure-bot.provision",
+            "required": false,
+            "targetAction": "azure-bot.provision"
+        },
+        {
+            "type": "function",
+            "name": "prepare inputs for configuration stage"
+        },
+        {
+            "type": "group",
+            "name": "resources.configure",
+            "mode": "parallel",
+            "actions": [
+                {
+                    "type": "call",
+                    "name": "call:azure-web-app.configure",
+                    "required": false,
+                    "targetAction": "azure-web-app.configure"
+                }
+            ]
+        },
+        {
+            "type": "call",
+            "name": "call:teams-manifest.provision",
+            "required": true,
+            "targetAction": "teams-manifest.provision",
+            "inputs": {
+                "teams-manifest": {
+                    "botId": "{{azure-bot.botId}}"
+                }
+            }
+        }
+    ]
+}

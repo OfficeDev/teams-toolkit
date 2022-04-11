@@ -7,52 +7,12 @@
             "mode": "parallel",
             "actions": [
                 {
-                    "name": "call:teams-tab.build",
+                    "name": "call:bot-code.build",
                     "type": "call",
-                    "targetAction": "teams-tab.build",
-                    "required": false,
-                    "inputs": {
-                        "teams-tab": {}
-                    }
-                },
-                {
-                    "name": "call:tab-scaffold.build",
-                    "type": "call",
-                    "targetAction": "tab-scaffold.build",
-                    "required": false,
-                    "inputs": {
-                        "tab-scaffold": {}
-                    }
-                },
-                {
-                    "name": "call:teams-bot.build",
-                    "type": "call",
-                    "targetAction": "teams-bot.build",
-                    "required": false,
-                    "inputs": {
-                        "teams-bot": {}
-                    }
-                },
-                {
-                    "name": "call:bot-scaffold.build",
-                    "type": "call",
-                    "targetAction": "bot-scaffold.build",
-                    "required": false,
-                    "inputs": {
-                        "bot-scaffold": {}
-                    }
+                    "targetAction": "bot-code.build",
+                    "required": false
                 }
             ]
-        },
-        {
-            "type": "call",
-            "targetAction": "azure-storage.deploy",
-            "required": false,
-            "inputs": {
-                "azure-storage": {
-                    "type": "zip"
-                }
-            }
         },
         {
             "type": "call",
@@ -60,7 +20,7 @@
             "required": false,
             "inputs": {
                 "azure-web-app": {
-                    "type": "zip"
+                    "folder": "bot"
                 }
             }
         }

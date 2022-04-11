@@ -100,10 +100,27 @@ export class HelpParamGenerator {
     }
   }
 
+  private getNamespaceFromStage(stage: string): string {
+    let res = "";
+    switch (stage) {
+      case "addCICDWorkflows": {
+        res = "fx-solution-azure/fx-resource-cicd";
+        break;
+      }
+      case "connectExistingApi": {
+        res = "fx-solution-azure/fx-resource-api-connector";
+        break;
+      }
+      default: {
+        res = "fx-solution-azure";
+      }
+    }
+    return res;
+  }
+
   private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
-      namespace:
-        stage === "addCICDWorkflows" ? "fx-solution-azure/fx-resource-cicd" : "fx-solution-azure",
+      namespace: this.getNamespaceFromStage(stage),
       method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);

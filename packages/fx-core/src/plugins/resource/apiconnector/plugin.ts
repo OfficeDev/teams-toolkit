@@ -10,6 +10,7 @@ import {
   SystemError,
   UserError,
   ok,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -267,27 +268,32 @@ export class ApiConnectorImpl {
     return retMsg;
   }
 
-  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
-    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    if (!activePlugins) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoActivePluginsExistError.name,
-        ErrorMessage.NoActivePluginsExistError.message()
-      );
-    }
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
     const options = [];
-    if (activePlugins.includes(ResourcePlugins.Bot)) {
+    if (inputs.platform === Platform.CLI_HELP) {
       options.push(botOption);
-    }
-    if (activePlugins.includes(ResourcePlugins.Function)) {
       options.push(functionOption);
-    }
-    if (options.length === 0) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoValidCompoentExistError.name,
-        ErrorMessage.NoValidCompoentExistError.message()
-      );
+    } else {
+      const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+        ?.activeResourcePlugins;
+      if (!activePlugins) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoActivePluginsExistError.name,
+          ErrorMessage.NoActivePluginsExistError.message()
+        );
+      }
+      if (activePlugins.includes(ResourcePlugins.Bot)) {
+        options.push(botOption);
+      }
+      if (activePlugins.includes(ResourcePlugins.Function)) {
+        options.push(functionOption);
+      }
+      if (options.length === 0) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoValidCompoentExistError.name,
+          ErrorMessage.NoValidCompoentExistError.message()
+        );
+      }
     }
     const whichComponent = new QTreeNode({
       name: Constants.questionKey.componentsSelect,

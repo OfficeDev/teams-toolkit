@@ -15,7 +15,7 @@ export async function checkApiNameExist(
   const apiFileName: string = getSampleFileName(input, languageType);
   for (const component of components) {
     const componentPath = path.join(projectPath, component);
-    if (await fs.pathExists(path.join(componentPath, apiFileName))) {
+    if (fs.pathExistsSync(path.join(componentPath, apiFileName))) {
       return getLocalizedString(
         "plugins.apiConnector.QuestionAppName.validation.ApiNameExist",
         apiFileName

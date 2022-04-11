@@ -21,10 +21,10 @@ import { sampleProvider } from "../common/samples";
 import {
   getRootDirectory,
   isAadManifestEnabled,
-  isBotNotificationEnabled,
   isExistingTabAppEnabled,
   isM365AppEnabled,
 } from "../common/tools";
+import { isBotNotificationEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -223,19 +223,30 @@ export function validateConflict<T>(sets: Set<T>[], current: Set<T>): string | u
 }
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
-  return {
-    name: CoreQuestionNames.Capabilities,
-    title: getLocalizedString("core.createCapabilityQuestion.title"),
-    type: "multiSelect",
-    staticOptions: [
-      ...[TabOptionItem],
-      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
-      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
-      ...[MessageExtensionItem, TabSPFxItem],
+  let staticOptions: StaticOptions;
+  if (isBotNotificationEnabled()) {
+    // new capabilities question order
+    staticOptions = [
+      ...[CommandAndResponseOptionItem, NotificationOptionItem],
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      ...[TabOptionItem, TabSPFxItem, MessageExtensionItem],
+    ];
+  } else {
+    staticOptions = [
+      ...[TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-    ],
-    default: [TabOptionItem.id],
+    ];
+  }
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.createCapabilityQuestion.titleNew")
+      : getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "multiSelect",
+    staticOptions: staticOptions,
+    default: isBotNotificationEnabled() ? [CommandAndResponseOptionItem.id] : [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
       validFunc: validateCapabilities,

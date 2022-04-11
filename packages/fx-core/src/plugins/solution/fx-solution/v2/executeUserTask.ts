@@ -83,6 +83,7 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
+import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -277,7 +278,7 @@ export async function addCapability(
     isMiniApp = true;
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew: Inputs = {
+  const inputsNew: InputsWithProjectPath = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -336,18 +337,18 @@ export async function addCapability(
   if (isAadManifestEnabled()) {
     if (alreadyHasTabSso && toAddTabNonSso) {
       const e = new SystemError(
+        SolutionSource,
         SolutionError.InvalidInput,
-        getLocalizedString("core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled"),
-        SolutionSource
+        getLocalizedString("core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled")
       );
       return err(e);
     }
 
     if (alreadyHasTab && !alreadyHasTabSso && toAddTab) {
       const e = new SystemError(
+        SolutionSource,
         SolutionError.InvalidInput,
-        getLocalizedString("core.addSsoFiles.canNotAddTabWhenSsoNotEnabled"),
-        SolutionSource
+        getLocalizedString("core.addSsoFiles.canNotAddTabWhenSsoNotEnabled")
       );
       return err(e);
     }
@@ -443,8 +444,9 @@ export async function addCapability(
       capabilitiesToAddManifest.push({ name: "staticTab" });
       newCapabilitySet.add(TabOptionItem.id);
 
-      if (toAddTab) {
+      if (toAddTab && !alreadyHasTabSso) {
         newCapabilitySet.add(TabSsoItem.id);
+        pluginNamesToScaffold.add(ResourcePluginsV2.AadPlugin);
       }
     }
 
@@ -523,7 +525,7 @@ export async function addCapability(
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
+    await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
@@ -822,9 +824,9 @@ export function canAddSso(
   // Can not add sso if feature flag is not enabled
   if (!isAadManifestEnabled()) {
     const e = new SystemError(
+      SolutionSource,
       SolutionError.NeedEnableFeatureFlag,
-      getLocalizedString("core.addSso.needEnableFeatureFlag"),
-      SolutionSource
+      getLocalizedString("core.addSso.needEnableFeatureFlag")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
@@ -834,9 +836,9 @@ export function canAddSso(
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
+      SolutionSource,
       SolutionError.AddSsoNotSupported,
-      getLocalizedString("core.addSso.onlySupportAzure"),
-      SolutionSource
+      getLocalizedString("core.addSso.onlySupportAzure")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
@@ -848,9 +850,9 @@ export function canAddSso(
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
     if (botHostType === BotHostTypes.AzureFunctions) {
       const e = new UserError(
+        SolutionSource,
         SolutionError.AddSsoNotSupported,
-        getLocalizedString("core.addSso.functionNotSupport"),
-        SolutionSource
+        getLocalizedString("core.addSso.functionNotSupport")
       );
       return err(
         sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
@@ -866,30 +868,29 @@ export function canAddSso(
   const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
   if (
-    ((containTab && containTabSsoItem && !containBot) ||
+    ((containTabSsoItem && !containBot) ||
       (containBot && containBotSsoItem && !containTab) ||
       (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
     containAadPlugin
   ) {
     // Throw error if sso is already enabled
     const e = new UserError(
+      SolutionSource,
       SolutionError.SsoEnabled,
-      getLocalizedString("core.addSso.ssoEnabled"),
-      SolutionSource
+      getLocalizedString("core.addSso.ssoEnabled")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
     );
   } else if (
-    (containTabSsoItem && !containTab) ||
     (containBotSsoItem && !containBot) ||
     (containTabSsoItem || containBotSsoItem) !== containAadPlugin
   ) {
     // Throw error if the project is invalid
     const e = new UserError(
+      SolutionSource,
       SolutionError.InvalidSsoProject,
-      getLocalizedString("core.addSso.invalidSsoProject"),
-      SolutionSource
+      getLocalizedString("core.addSso.invalidSsoProject")
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
@@ -928,8 +929,20 @@ export async function addSso(
     return err(canProceed.error);
   }
 
+  const needsTab =
+    solutionSettings.capabilities.length == 0 ||
+    (solutionSettings.capabilities.includes(TabOptionItem.id) &&
+      !solutionSettings.capabilities.includes(TabSsoItem.id));
+  const needsBot =
+    (solutionSettings.capabilities.includes(BotOptionItem.id) ||
+      solutionSettings.capabilities.includes(MessageExtensionItem.id)) &&
+    !solutionSettings.capabilities.includes(BotSsoItem.id);
+
   // Update project settings
   solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  if (solutionSettings.capabilities.length == 0) {
+    solutionSettings.capabilities.push(TabSsoItem.id);
+  }
   if (
     solutionSettings.capabilities.includes(TabOptionItem.id) &&
     !solutionSettings.capabilities.includes(TabSsoItem.id)
@@ -951,10 +964,6 @@ export async function addSso(
     existingCapabilities: originalSettings.capabilities,
   };
 
-  const needsTab = solutionSettings.capabilities.includes(TabOptionItem.id);
-  const needsBot =
-    solutionSettings.capabilities.includes(BotOptionItem.id) ||
-    solutionSettings.capabilities.includes(MessageExtensionItem.id);
   const createAuthFilesRes = await createAuthFiles(
     inputsNew,
     ctx,
@@ -1011,9 +1020,9 @@ export async function createAuthFiles(
   const projectPath = input.projectPath;
   if (!projectPath) {
     const e = new SystemError(
+      SolutionSource,
       SolutionError.InvalidProjectPath,
-      getLocalizedString("core.addSsoFiles.emptyProjectPath"),
-      SolutionSource
+      getLocalizedString("core.addSsoFiles.emptyProjectPath")
     );
     return err(e);
   }
@@ -1028,9 +1037,9 @@ export async function createAuthFiles(
   const projectFolderExists = await fs.pathExists(projectPath!);
   if (!projectFolderExists) {
     const e = new SystemError(
+      SolutionSource,
       SolutionError.InvalidProjectPath,
-      getLocalizedString("core.addSsoFiles.projectPathNotExists"),
-      SolutionSource
+      getLocalizedString("core.addSsoFiles.projectPathNotExists")
     );
     return err(e);
   }
@@ -1109,9 +1118,9 @@ export async function createAuthFiles(
       await fs.remove(botFolder);
     }
     const e = new SystemError(
+      SolutionSource,
       SolutionError.FailedToCreateAuthFiles,
-      getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message),
-      SolutionSource
+      getLocalizedString("core.addSsoFiles.FailedToCreateAuthFiles", error.message)
     );
     return err(e);
   }
@@ -1129,9 +1138,9 @@ export function validateAndParseLanguage(language: string): Result<string, FxErr
   }
 
   const e = new SystemError(
+    SolutionSource,
     SolutionError.InvalidInput,
-    getLocalizedString("core.addSsoFiles.invalidLanguage"),
-    SolutionSource
+    getLocalizedString("core.addSsoFiles.invalidLanguage")
   );
   return err(e);
 }

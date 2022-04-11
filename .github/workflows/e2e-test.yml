@@ -40,7 +40,11 @@ jobs:
           declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
           if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            if [[ "${{ github.event.pull_request.body }}" == *"E2E TEST:"* ]]; then
+            if (cat <<- 'EOF_HEREDOC' |
+              ${{ github.event.pull_request.body }}
+          EOF_HEREDOC
+              grep -q 'E2E TEST:'
+            ); then
               echo "::set-output name=passed::true"
             else
               echo "::set-output name=passed::false"

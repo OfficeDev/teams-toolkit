@@ -23,6 +23,7 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import {
   AzureResourceApim,

@@ -2,14 +2,14 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
-import { notificationBot } from "./internal/initialize";
+import { bot } from "./internal/initialize";
 
 // HTTP trigger to send notification.
 const httpTrigger: AzureFunction = async function (
   context: Context,
   req: HttpRequest
 ): Promise<void> {
-  for (const target of await notificationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare<CardData>(notificationTemplate).render({
         title: "New Event Occurred!",

@@ -1,18 +1,19 @@
 import { Activity, TurnContext } from "botbuilder";
-import { TeamsFxBotCommandHandler } from "@microsoft/teamsfx";
+import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns } from "@microsoft/teamsfx";
 import helloWorldCard from "./adaptiveCards/helloworldCommand.json";
 import { MessageBuilder } from "@microsoft/teamsfx";
 
 export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
-  commandNameOrPattern: string | RegExp = "helloWorld";
+  triggerPatterns: TriggerPatterns = "helloWorld";
 
   async handleCommandReceived(
     context: TurnContext,
-    receivedText: string
+    message: CommandMessage
   ): Promise<string | Partial<Activity>> {
     // verify the command arguments which are received from the client if needed.
+    console.log(`Bot received message: ${message.text}`);
 
-    // do something to process your command and return an adaptive card or a text message.
+    // do something to process your command and return message activity as the response.
     return MessageBuilder.attachAdaptiveCardWithoutData(helloWorldCard);
   }
 }

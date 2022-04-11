@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@azure/identity';
 import { Activity } from 'botbuilder-core';
 import { Activity as Activity_2 } from 'botbuilder';
@@ -25,6 +27,7 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
+import { SecureContextOptions } from 'tls';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
@@ -56,9 +59,23 @@ export interface AuthProvider {
     AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
 }
 
+export { AxiosInstance }
+
+// @beta
+export class BasicAuthProvider implements AuthProvider {
+    constructor(userName: string, password: string);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
 // @beta
 export class BearerTokenAuthProvider implements AuthProvider {
     constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
+export class CertificateAuthProvider implements AuthProvider {
+    constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
@@ -121,8 +138,15 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 // @beta
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
+// @public
+export function createPemCertOption(cert: string | Buffer, key: string | Buffer, passphrase?: string, ca?: string | Buffer): SecureContextOptions;
+
+// @public
+export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): SecureContextOptions;
+
 // @beta
 export enum ErrorCode {
+    AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",

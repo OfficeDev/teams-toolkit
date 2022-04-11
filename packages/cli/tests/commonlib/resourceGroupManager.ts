@@ -17,17 +17,14 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 export class ResourceGroupManager {
-  private static instance: ResourceGroupManager;
-
   private static client?: arm.ResourceManagementClient.ResourceManagementClient;
 
   private constructor() {
     ResourceGroupManager.client = undefined;
   }
 
-  private static async init(): Promise<ResourceGroupManager> {
-    if (!ResourceGroupManager.instance) {
-      ResourceGroupManager.instance = new ResourceGroupManager();
+  private static async init() {
+    if (!ResourceGroupManager.client) {
       const c = await msRestAzure.loginWithUsernamePassword(user, password, {
         domain: azureConfig.AZURE_TENANT_ID,
       });
@@ -36,7 +33,6 @@ export class ResourceGroupManager {
         subscriptionId
       );
     }
-    return Promise.resolve(ResourceGroupManager.instance);
   }
 
   public static async getResourceGroup(name: string) {

@@ -105,12 +105,12 @@ export default class Add extends YargsCommand {
   ];
 
   public builder(yargs: Argv): Argv<any> {
-    yargs.options("action", {
-      description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
-      type: "string",
-      choices: this.subCommands.map((cmd) => cmd.commandHead),
-      global: false,
-    });
+    yargs
+      .positional("feature", {
+        choices: this.subCommands.map((cmd) => cmd.commandHead),
+        global: false,
+      })
+      .hide("feature");
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });

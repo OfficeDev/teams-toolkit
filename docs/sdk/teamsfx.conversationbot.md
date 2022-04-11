@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel).
+Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, channel, incoming wehbook).
 
 <b>Signature:</b>
 
@@ -21,7 +21,7 @@ Set `adapter` in [ConversationOptions](./teamsfx.conversationoptions.md) to use 
 
 For command and response, ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
 
-For notification, set `notification.storage` in [ConversationOptions](./teamsfx.conversationoptions.md) to use your own storage implementation.
+For notification, set `notification.options.storage` in [ConversationOptions](./teamsfx.conversationoptions.md) to use your own storage implementation.
 
 ## Example
 
@@ -32,14 +32,16 @@ For command and response, you can register your commands through the constructor
 const conversationBot = new ConversationBot({
   command: {
     enabled: true,
-    commands: [ new HelloWorldCommandHandler() ],
+    options: {
+        commands: [ new HelloWorldCommandHandler() ],
+    },
   },
 });
 
 // register through `register*` API
 conversationBot.command.registerCommand(new HelpCommandHandler());
 ```
-For notification, you can enable notification at initialization, then send notifications at any time.
+For notification, you can enable notification at initialization, then send notificaations at any time.
 
 ```typescript
 // enable through constructor
@@ -75,10 +77,4 @@ for (const target of await conversationBot.notification.installations()) {
 |  [adapter](./teamsfx.conversationbot.adapter.md) |  | BotFrameworkAdapter | <b><i>(BETA)</i></b> The bot adapter. |
 |  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of command and response. |
 |  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of notification. |
-
-## Methods
-
-|  Method | Modifiers | Description |
-|  --- | --- | --- |
-|  [requestHandler(req, res, logic)](./teamsfx.conversationbot.requesthandler.md) |  | <b><i>(BETA)</i></b> The request handler to integrate with web request. |
 

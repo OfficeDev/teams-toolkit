@@ -18,6 +18,18 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
 import { getSystemInputs } from "../utils";
+import {
+  ResourceAddApim,
+  ResourceAddFunction,
+  ResourceAddKeyVault,
+  ResourceAddSql,
+} from "./resource";
+import {
+  CapabilityAddCommandAndResponse,
+  CapabilityAddMessageExtension,
+  CapabilityAddNotification,
+  CapabilityAddTab,
+} from "./capability";
 
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
@@ -75,7 +87,22 @@ export default class Add extends YargsCommand {
   public readonly command = `${this.commandHead} <feature>`;
   public readonly description = "Adds features to your Teams application.";
 
-  public readonly subCommands: YargsCommand[] = [new AddCICD()];
+  public readonly subCommands: YargsCommand[] = [
+    // Category 1: Add Teams Capability
+    new CapabilityAddNotification(),
+    new CapabilityAddCommandAndResponse(),
+    new CapabilityAddMessageExtension(),
+    new CapabilityAddTab(),
+
+    // Category 2: Add Cloud Resources
+    new ResourceAddFunction(),
+    new ResourceAddSql(),
+    new ResourceAddApim(),
+    new ResourceAddKeyVault(),
+
+    // Category 3: Standalone features
+    new AddCICD(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {

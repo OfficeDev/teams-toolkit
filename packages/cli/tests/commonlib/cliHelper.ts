@@ -177,7 +177,7 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = `teamsfx capability add ${capabilityToAdd}`;
+    const command = `teamsfx add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -205,7 +205,7 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx resource add ${resourceToAdd} ${options}`;
+    const command = `teamsfx add ${resourceToAdd} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

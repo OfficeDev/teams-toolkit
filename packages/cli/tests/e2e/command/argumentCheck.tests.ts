@@ -10,9 +10,9 @@ import { expect } from "chai";
 import { execAsync } from "../commonUtils";
 
 describe("teamsfx command argument check", function () {
-  it(`teamsfx capability add me`, async function () {
+  it(`teamsfx add me`, async function () {
     try {
-      await execAsync(`teamsfx capability add me`, {
+      await execAsync(`teamsfx add me`, {
         env: process.env,
         timeout: 0,
       });

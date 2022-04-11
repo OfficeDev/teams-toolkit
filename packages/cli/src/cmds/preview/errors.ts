@@ -148,7 +148,7 @@ export function NotM365Project(): UserError {
 }
 
 export function OnlyLaunchPageSupportedInOffice(): UserError {
-  return new SystemError(
+  return new UserError(
     constants.cliSource,
     "OnlyLaunchPageSupportedByOffice",
     "Only launch page is supported in Office. Messaging extension is not supported in Office."

@@ -6,25 +6,12 @@ import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
-import { createV2Context } from "../../common";
-import { setTools } from "../globalVars";
-import "./aad";
-import "./azureBot";
-import "./azureFunction";
-import "./azureSql";
-import "./azureStorage";
-import "./azureWebApp";
-import "./botScaffold";
-import { ProjectSettingsV3 } from "./interface";
-import "./spfx";
-import "./tabScaffold";
-import "./teamsBot";
-import "./teamsManifest";
-import "./teamsTab";
-import "./core";
-import "./functionScaffold";
-import { MockTools } from "./utils";
-import { executeAction, getAction, planAction, resolveAction } from "./workflow";
+import { createV2Context } from "../../../common";
+import { setTools } from "../../globalVars";
+import { ProjectSettingsV3 } from "../interface";
+import "../core";
+import { MockTools } from "../utils";
+import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 import { cloneDeep } from "lodash";
 
 async function addFunction() {
@@ -34,7 +21,7 @@ async function addFunction() {
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
     programmingLanguage: "typescript",
-    resources: [
+    components: [
       {
         name: "teams-tab",
         hostingResource: "azure-storage",

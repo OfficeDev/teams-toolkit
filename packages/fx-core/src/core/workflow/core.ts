@@ -1,46 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  FxError,
-  Inputs,
-  ok,
-  QTreeNode,
-  Result,
-  TokenProvider,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Container, Service } from "typedi";
-import {
-  BotOptionItem,
-  CommandAndResponseOptionItem,
-  MessageExtensionItem,
-  NotificationOptionItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../plugins/solution/fx-solution/question";
-import "./aad";
-import "./azureBot";
-import "./azureFunction";
-import "./azureStorage";
-import "./azureWebApp";
+import { Service } from "typedi";
+import "./Aad";
+import "./ApiCodeProvider";
+import "./AzureBicepProvider";
+import "./AzureBot";
+import "./AzureFunction";
+import "./AzureSql";
+import "./AzureStorage";
+import "./AzureWebApp";
+import "./BotCodeProvider";
+import "./Spfx";
+import "./TeamsManifest";
 import {
   Action,
-  AddResourceInputs,
-  AzureResource,
-  ConfigureAction,
+  Component,
   ContextV3,
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
-  ResourceConfig,
-  ScaffoldResource,
+  TeamsBotInputs,
+  TeamsTabInputs,
 } from "./interface";
-import "./teamsBot";
-import "./teamsManifest";
-import { getResource } from "./workflow";
+import { getComponent } from "./workflow";
 
 @Service("fx")
 export class TeamsfxCore {
@@ -55,15 +40,6 @@ export class TeamsfxCore {
       plan: (context: ContextV3, inputs: Inputs) => {
         return ok(["init teamsfx project settings"]);
       },
-      // question: async (context: any, inputs: any) => {
-      //   return ok(
-      //     new QTreeNode({
-      //       type: "text",
-      //       name: "m365ClientId",
-      //       title: "M365 Client Id",
-      //     })
-      //   );
-      // },
       execute: async (context: ContextV3, inputs: Inputs) => {
         console.log("init teamsfx project settings");
         context.projectSetting = {
@@ -74,7 +50,7 @@ export class TeamsfxCore {
             activeResourcePlugins: [],
           },
           programmingLanguage: inputs["programming-language"],
-          resources: [],
+          components: [],
         };
         return ok(undefined);
       },
@@ -116,91 +92,162 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
-  add(
+  addBot(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const addInputs = (inputs as AddResourceInputs).fx;
-    const actions: Action[] = [];
-    addInputs.resources.forEach((r) => {
-      const addResourceActionRes = addResource(r, context, inputs);
-      if (addResourceActionRes.isOk() && addResourceActionRes.value) {
-        actions.push(addResourceActionRes.value);
-      }
-    });
-    const callResourceAddAction: GroupAction = {
+    const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+    const actions: Action[] = [
+      {
+        name: "fx.configBot",
+        type: "function",
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+          const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+          const component: Component = {
+            name: "teams-bot",
+            ...teamsBotInputs,
+          };
+          return ok([
+            `add components 'teams-bot', '${
+              teamsBotInputs.hostingResource
+            }' in projectSettings: ${JSON.stringify(component)}`,
+          ]);
+        },
+        execute: async (
+          context: ContextV3,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<undefined, FxError>> => {
+          const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+          const projectSettings = context.projectSetting;
+          const component: Component = {
+            name: "teams-bot",
+            ...teamsBotInputs,
+          };
+          projectSettings.components.push(component);
+          projectSettings.components.push({
+            name: teamsBotInputs.hostingResource,
+            provision: true,
+          });
+          console.log(
+            `add components 'teams-bot', 'azure-bot', '${
+              teamsBotInputs.hostingResource
+            }' in projectSettings: ${JSON.stringify(component)}`
+          );
+          return ok(undefined);
+        },
+      },
+      {
+        name: "call:bot-code.generate",
+        type: "call",
+        required: false,
+        targetAction: "bot-code.generate",
+      },
+      {
+        name: "call:azure-bicep.generate",
+        type: "call",
+        required: false,
+        targetAction: "azure-bicep.generate",
+        inputs: {
+          "azure-bicep": {
+            resources: [teamsBotInputs.hostingResource],
+          },
+        },
+      },
+      {
+        name: "call:teams-manifest.addCapability",
+        type: "call",
+        required: true,
+        targetAction: "teams-manifest.addCapability",
+        inputs: {
+          "teams-manifest": {
+            capabilities: [{ name: "Bot" }],
+          },
+        },
+      },
+    ];
+    const group: GroupAction = {
       type: "group",
-      name: "call:resource.add",
+      name: "fx.addBot",
       mode: "parallel",
       actions: actions,
     };
-    const callResourceAddAndPersistBicep: GroupAction = {
-      type: "group",
-      name: "resource.add+fx.persistBicep",
-      inputs: {
-        bicep: {},
-      },
-      actions: [
-        callResourceAddAction,
-        {
-          type: "call",
-          required: true,
-          targetAction: "fx.persistBicep",
+    return ok(group);
+  }
+  addTab(
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+    const actions: Action[] = [
+      {
+        name: "fx.configTab",
+        type: "function",
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+          const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+          return ok([
+            `add component 'teams-tab' in projectSettings: ${JSON.stringify(teamsTabInputs)}`,
+          ]);
         },
-      ],
+        execute: async (
+          context: ContextV3,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<undefined, FxError>> => {
+          const teamsTabInputs = (inputs as TeamsTabInputs)["teams-tab"];
+          const projectSettings = context.projectSetting as ProjectSettingsV3;
+          const teamsTabResource: Component = {
+            name: "teams-tab",
+            ...teamsTabInputs,
+          };
+          projectSettings.components.push(teamsTabResource);
+          console.log(
+            `add component 'teams-tab' in projectSettings: ${JSON.stringify(teamsTabResource)}`
+          );
+          return ok(undefined);
+        },
+      },
+      {
+        name: "call:tab-code.generate",
+        type: "call",
+        required: true,
+        targetAction: "tab-code.generate",
+      },
+      {
+        name: "call:azure-bicep.generate",
+        type: "call",
+        required: false,
+        targetAction: "azure-bicep.generate",
+        inputs: {
+          "azure-bicep": {
+            resources: [teamsTabInputs.hostingResource],
+          },
+        },
+      },
+      {
+        name: "call:teams-manifest.addCapability",
+        type: "call",
+        required: true,
+        targetAction: "teams-manifest.addCapability",
+        inputs: {
+          "teams-manifest": {
+            capabilities: [{ name: "staticTab" }],
+          },
+        },
+      },
+    ];
+    const group: GroupAction = {
+      type: "group",
+      name: "fx.addTab",
+      mode: "parallel",
+      actions: actions,
     };
-    return ok(callResourceAddAndPersistBicep);
-  }
-  persistBicep(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "fx.persistBicep",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["persist bicep files if there are bicep outputs"]);
-      },
-      execute: async (context: v2.Context, inputs: Inputs) => {
-        if (inputs.bicep && Object.keys(inputs.bicep).length > 0) {
-          console.log(`persist bicep files: ${Object.keys(inputs.bicep).join(", ")}`);
-        } else {
-          console.log("nothing to persist for bicep files");
-        }
-        return ok(undefined);
-      },
-    };
-    return ok(action);
-  }
-  deployBicep(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "fx.deployBicep",
-      plan: (context: v2.Context, inputs: Inputs) => {
-        return ok(["deploy bicep to ARM"]);
-      },
-      execute: async (context: v2.Context, inputs: Inputs) => {
-        console.log("deploy bicep");
-        inputs["azure-storage"] = {
-          endpoint: "MockStorageEndpoint",
-        };
-        inputs["azure-web-app"] = {
-          endpoint: "MockAzureWebAppEndpoint",
-        };
-        return ok(undefined);
-      },
-    };
-    return ok(action);
+    return ok(group);
   }
   provision(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const projectSettings = context.ctx.projectSetting as ProjectSettingsV3;
-    const resourcesToProvision = projectSettings.resources.filter((r) => r.provision);
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const resourcesToProvision = projectSettings.components.filter((r) => r.provision);
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {
         type: "call",
@@ -221,10 +268,10 @@ export class TeamsfxCore {
       {
         type: "function",
         name: "fx.commonConfig",
-        plan: (context: v2.Context, inputs: Inputs) => {
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           return ok(["check common configs (account, resource group)"]);
         },
-        execute: async (context: v2.Context, inputs: Inputs) => {
+        execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           console.log("check common configs (account, resource group)");
           inputs.solution = {
             tenantId: "MockTenantId",
@@ -242,14 +289,14 @@ export class TeamsfxCore {
       },
       {
         type: "call",
-        name: "call:fx.deployBicep",
+        name: "call:azure-bicep.deploy",
         required: true,
-        targetAction: "fx.deployBicep",
+        targetAction: "azure-bicep.deploy",
       },
     ];
 
-    const teamsBot = getResource(projectSettings, "teams-bot") as ResourceConfig;
-    const teamsTab = getResource(projectSettings, "teams-tab") as ResourceConfig;
+    const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
+    const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
     if (teamsBot) {
       provisionSequences.push({
         type: "call",
@@ -259,23 +306,17 @@ export class TeamsfxCore {
       });
     }
     if (configureActions.length > 0) {
-      const setInputsForConfig: ConfigureAction = {
+      const setInputsForConfig: Action = {
         type: "function",
         name: "prepare inputs for configuration stage",
-        plan: (
-          context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-          inputs: v2.InputsWithProjectPath
-        ) => {
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           return ok(["set inputs for configuration"]);
         },
-        execute: (
-          context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-          inputs: v2.InputsWithProjectPath
-        ) => {
-          const projectSettings = context.ctx.projectSetting as ProjectSettingsV3;
-          const teamsTab = getResource(projectSettings, "teams-tab") as ResourceConfig;
-          const teamsBot = getResource(projectSettings, "teams-bot") as ResourceConfig;
-          const aad = getResource(projectSettings, "aad");
+        execute: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+          const projectSettings = context.projectSetting as ProjectSettingsV3;
+          const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
+          const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
+          const aad = getComponent(projectSettings, "aad");
           let aadOutputs: any;
           if (aad) {
             aadOutputs = inputs["aad"] || {};
@@ -351,12 +392,9 @@ export class TeamsfxCore {
     return ok(result);
   }
 
-  build(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Result<Action | undefined, FxError> {
+  build(context: ContextV3, inputs: v2.InputsWithProjectPath): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const actions: Action[] = projectSettings.resources
+    const actions: Action[] = projectSettings.components
       .filter((resource) => resource.build)
       .map((resource) => {
         return {
@@ -375,7 +413,7 @@ export class TeamsfxCore {
   }
 
   deploy(
-    context: v2.Context,
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
@@ -387,7 +425,7 @@ export class TeamsfxCore {
         required: false,
       },
     ];
-    projectSettings.resources
+    projectSettings.components
       .filter((resource) => resource.build && resource.hostingResource)
       .forEach((resource) => {
         actions.push({
@@ -406,45 +444,6 @@ export class TeamsfxCore {
       type: "group",
       name: "fx.deploy",
       actions: actions,
-    };
-    return ok(action);
-  }
-}
-
-export function addResource(
-  resource: ResourceConfig,
-  context: ContextV3,
-  inputs: v2.InputsWithProjectPath
-): Result<Action | undefined, FxError> {
-  const resourcePlugin = Container.get(resource.name) as ScaffoldResource | AzureResource;
-  if (resourcePlugin.type === "azure") {
-    const action: Action = {
-      type: "call",
-      required: true,
-      targetAction: `${resource.name}.generateBicep`,
-      inputs: {
-        [resource.name]: resource,
-      },
-    };
-    return ok(action);
-  } else if (resourcePlugin.type === "scaffold") {
-    const action: Action = {
-      type: "call",
-      required: true,
-      targetAction: `${resource.name}.generateCode`,
-      inputs: {
-        [resource.name]: resource,
-      },
-    };
-    return ok(action);
-  } else {
-    const action: Action = {
-      type: "call",
-      required: true,
-      targetAction: `${resource.name}.add`,
-      inputs: {
-        [resource.name]: resource,
-      },
     };
     return ok(action);
   }

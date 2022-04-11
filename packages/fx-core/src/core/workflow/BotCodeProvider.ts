@@ -11,33 +11,37 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
-  ResourceConfig,
-  ScaffoldResource,
+  Component,
+  SourceCodeProvider,
   TeamsBotInputs,
 } from "./interface";
 
 /**
  * bot scaffold plugin
  */
-@Service("bot-scaffold")
-export class BotScaffoldResource implements ScaffoldResource {
-  readonly type = "scaffold";
-  name = "bot-scaffold";
-  generateCode(
+@Service("bot-code")
+export class BotCodeProvider implements SourceCodeProvider {
+  readonly type = "code";
+  name = "bot-code";
+  generate(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "bot-scaffold.generateCode",
+      name: "bot-code.generate",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
-        const language = teamsBotInputs.language || context.projectSetting.programmingLanguage;
-        const scenarios = teamsBotInputs.scenarios;
-        const folder = teamsBotInputs.folder || "bot";
+        const component: Component = {
+          name: "bot-code",
+          ...teamsBotInputs,
+          build: true,
+          language: teamsBotInputs.language || context.projectSetting.programmingLanguage,
+          folder: teamsBotInputs.folder || "bot",
+        };
         return ok([
-          "add resource 'bot-scaffold' in projectSettings",
-          `scaffold bot source code for language: ${language}, scenario: ${scenarios}, hostingResource: ${teamsBotInputs.hostingResource}, folder: ${folder}`,
+          "add component 'bot-code' in projectSettings",
+          `scaffold bot source code: ${JSON.stringify(component)}`,
         ]);
       },
       execute: async (
@@ -46,23 +50,16 @@ export class BotScaffoldResource implements ScaffoldResource {
       ): Promise<Result<undefined, FxError>> => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
-        const language = (teamsBotInputs.language || context.projectSetting.programmingLanguage) as
-          | "csharp"
-          | "javascript"
-          | "typescript";
-        const folder = teamsBotInputs.folder || "bot";
-        const resourceConfig: ResourceConfig = {
-          name: "bot-scaffold",
+        const component: Component = {
+          name: "bot-code",
+          ...teamsBotInputs,
           build: true,
-          deployType: "zip",
-          folder: folder,
-          language: language,
-          scenarios: teamsBotInputs.scenarios,
-          hostingResource: teamsBotInputs.hostingResource,
+          language: teamsBotInputs.language || context.projectSetting.programmingLanguage,
+          folder: teamsBotInputs.folder || "bot",
         };
-        projectSettings.resources.push(resourceConfig);
-        console.log("add resource 'bot-scaffold' in projectSettings");
-        console.log(`scaffold bot source code: ${JSON.stringify(resourceConfig)}`);
+        projectSettings.components.push(component);
+        console.log("add component 'bot-code' in projectSettings");
+        console.log(`scaffold bot source code: ${JSON.stringify(component)}`);
         return ok(undefined);
       },
     };
@@ -76,7 +73,7 @@ export class BotScaffoldResource implements ScaffoldResource {
     if (language === "typescript") {
       const group: GroupAction = {
         type: "group",
-        name: "bot-scaffold.build",
+        name: "bot-code.build",
         actions: [
           {
             type: "shell",
@@ -96,7 +93,7 @@ export class BotScaffoldResource implements ScaffoldResource {
     } else if (language === "csharp") {
       return ok({
         type: "shell",
-        name: "bot-scaffold.build",
+        name: "bot-code.build",
         command: "MsBuild",
         description: `MsBuild (${path.resolve(inputs.projectPath, "bot")})`,
         cwd: path.resolve(inputs.projectPath, "bot"),

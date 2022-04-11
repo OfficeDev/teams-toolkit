@@ -11,29 +11,25 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
-  ResourceConfig,
-  ScaffoldResource,
+  Component,
+  SourceCodeProvider,
 } from "./interface";
-import { getResource } from "./workflow";
+import { getComponent } from "./workflow";
 
-@Service("function-scaffold")
-export class FunctionScaffoldResource implements ScaffoldResource {
-  readonly type = "scaffold";
-  readonly name = "function-scaffold";
-  generateCode(
+@Service("api-code")
+export class ApiCodeProvider implements SourceCodeProvider {
+  readonly name = "api-code";
+  generate(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "function-scaffold.generateCode",
+      name: "api-code.generate",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const resource = getResource(context.projectSetting, "function-scaffold");
+        const resource = getComponent(context.projectSetting, "api-code");
         if (!resource) {
-          return ok([
-            "ensure resource 'function-scaffold' in projectSettings",
-            "generate code of function",
-          ]);
+          return ok(["ensure resource 'api-code' in projectSettings", "generate code of function"]);
         }
         return ok([]);
       },
@@ -42,18 +38,18 @@ export class FunctionScaffoldResource implements ScaffoldResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const projectSettings = context.projectSetting;
-        const funcInputs = inputs["function-scaffold"];
-        const resource = getResource(projectSettings, "function-scaffold");
+        const funcInputs = inputs["api-code"];
+        const resource = getComponent(projectSettings, "api-code");
         if (!resource) {
-          const resource: ResourceConfig = {
-            name: "function-scaffold",
+          const resource: Component = {
+            name: "api-code",
             build: true,
             hostingResource: "azure-function",
             folder: funcInputs.folder || "api",
           };
-          projectSettings.resources.push(resource);
-          console.log("ensure resource 'function-scaffold' in projectSettings");
-          console.log("generate code of function");
+          projectSettings.components.push(resource);
+          console.log("ensure resource 'api-code' in projectSettings");
+          console.log("generate code of function api");
         }
         return ok(undefined);
       },
@@ -69,7 +65,7 @@ export class FunctionScaffoldResource implements ScaffoldResource {
     if (language === "typescript") {
       const group: GroupAction = {
         type: "group",
-        name: "function-scaffold.build",
+        name: "api-code.build",
         actions: [
           {
             type: "shell",
@@ -89,7 +85,7 @@ export class FunctionScaffoldResource implements ScaffoldResource {
     } else if (language === "csharp") {
       return ok({
         type: "shell",
-        name: "function-scaffold.build",
+        name: "api-code.build",
         command: "MsBuild",
         description: `MsBuild (${path.resolve(inputs.projectPath, "api")})`,
         cwd: path.resolve(inputs.projectPath, "api"),

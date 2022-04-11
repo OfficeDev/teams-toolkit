@@ -4,7 +4,6 @@
 import {
   FxError,
   Json,
-  ok,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -114,39 +113,31 @@ export interface FunctionAction {
 export interface ContextV3 extends v2.Context {
   manifestProvider: v3.AppManifestProvider;
   projectSetting: ProjectSettingsV3;
+  envInfo?: v3.EnvInfoV3;
+  tokenProvider?: TokenProvider;
 }
 
-export interface AzureResource {
+export interface CloudResource {
   readonly name: string;
-  readonly type: "azure";
   readonly description?: string;
-  generateBicep?: (
+  provision?: (
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
-  updateBicep?: (
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
-  provision?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
   configure?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
   deploy?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
 }
 
-export interface ScaffoldResource {
+export interface SourceCodeProvider {
   readonly name: string;
-  readonly type: "scaffold";
   readonly description?: string;
-  generateCode: (
+  generate: (
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ) => MaybePromise<Result<Action | undefined, FxError>>;
@@ -156,116 +147,13 @@ export interface ScaffoldResource {
   ) => MaybePromise<Result<Action | undefined, FxError>>;
 }
 
-export interface Resource {
-  readonly name: string;
-  readonly description?: string;
-  add: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
-  update?: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
-}
-
-export interface GenerateCodeAction extends FunctionAction {
-  plan(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
-export interface GenerateBicepAction extends FunctionAction {
-  plan(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
-export interface ProvisionAction extends FunctionAction {
-  plan(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
-export interface ConfigureAction extends FunctionAction {
-  plan(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
-export interface BuildAction extends FunctionAction {
-  plan(
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
-export interface DeployAction extends FunctionAction {
-  plan: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<string[], FxError>>;
-  question?: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-  execute: (
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ) => MaybePromise<Result<undefined, FxError>>;
-}
-
 export interface TeamsBotInputs extends v2.InputsWithProjectPath {
   "teams-bot": {
     scenarios: ("notification" | "commandAndResponse" | "messageExtension" | "default")[];
     hostingResource: "azure-web-app" | "azure-function";
     folder?: string;
     deployType?: "folder" | "zip";
-    language?: "csharp" | "javascript" | "typescript";
+    language?: string;
   };
 }
 
@@ -275,35 +163,26 @@ export interface TeamsTabInputs extends v2.InputsWithProjectPath {
     hostingResource: "azure-web-app" | "azure-function" | "azure-storage" | "spfx";
     folder?: string;
     deployType?: "folder" | "zip";
-    language?: "csharp" | "javascript" | "typescript";
+    language?: string;
   };
 }
 
-export interface AddResourceInputs extends v2.InputsWithProjectPath {
+export interface AddComponentsInputs extends v2.InputsWithProjectPath {
   fx: {
-    resources: ResourceConfig[];
+    components: Component[];
   };
 }
 
-export interface ResourceConfig extends Json {
+export interface Component extends Json {
   name: string;
-  /**
-   * support build operation, deployable
-   */
-  build?: boolean;
-  /**
-   * resource support provision
-   */
-  provision?: boolean;
-  /**
-   * for deployable resource, which cloud resource can host it
-   */
   hostingResource?: string;
   deployType?: "folder" | "zip";
-  language?: "csharp" | "javascript" | "typescript";
+  language?: string;
   folder?: string;
+  build?: boolean;
+  provision?: boolean;
 }
 
 export interface ProjectSettingsV3 extends ProjectSettings {
-  resources: ResourceConfig[];
+  components: Component[];
 }

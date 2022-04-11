@@ -6,26 +6,13 @@ import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
-import { createV2Context } from "../../common";
-import { NotificationOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
-import { setTools } from "../globalVars";
-import "./aad";
-import "./azureBot";
-import "./azureFunction";
-import "./azureSql";
-import "./azureStorage";
-import "./azureWebApp";
-import "./botScaffold";
-import "./spfx";
-import "./tabScaffold";
-import "./teamsBot";
-import "./teamsManifest";
-import "./teamsTab";
-import "./core";
-import { MockTools } from "./utils";
-import { executeAction, getAction, planAction, resolveAction } from "./workflow";
+import { createV2Context } from "../../../common";
+import { setTools } from "../../globalVars";
+import "../core";
+import { MockTools } from "../utils";
+import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 import { cloneDeep } from "lodash";
-import { ProjectSettingsV3 } from "./interface";
+import { ProjectSettingsV3 } from "../interface";
 
 async function createSPFx() {
   setTools(new MockTools());
@@ -66,7 +53,7 @@ async function provisionSPFx() {
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
     programmingLanguage: "typescript",
-    resources: [
+    components: [
       {
         name: "teams-tab",
         framework: "spfx",

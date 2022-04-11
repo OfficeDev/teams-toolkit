@@ -6,34 +6,21 @@ import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
-import { createV2Context } from "../../common";
-import { setTools } from "../globalVars";
-import "./aad";
-import "./azureBot";
-import "./azureFunction";
-import "./azureSql";
-import "./azureStorage";
-import "./azureWebApp";
-import "./botScaffold";
-import { ProjectSettingsV3 } from "./interface";
-import "./spfx";
-import "./tabScaffold";
-import "./teamsBot";
-import "./teamsManifest";
-import "./teamsTab";
-import "./core";
-import { MockTools } from "./utils";
-import { executeAction, getAction, planAction, resolveAction } from "./workflow";
-import { cloneDeep } from "lodash";
+import { createV2Context } from "../../../common";
+import { setTools } from "../../globalVars";
+import "../core";
+import { ProjectSettingsV3 } from "../interface";
+import { MockTools } from "../utils";
+import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 
-async function addSql() {
+async function tabAddBot() {
   setTools(new MockTools());
   const projectSetting: ProjectSettingsV3 = {
     projectId: "123",
     appName: "test",
     solutionSettings: { name: "fx", activeResourcePlugins: [] },
     programmingLanguage: "typescript",
-    resources: [
+    components: [
       {
         name: "teams-tab",
         hostingResource: "azure-storage",
@@ -50,7 +37,6 @@ async function addSql() {
         hostingResource: "azure-storage",
       },
       { name: "azure-storage", provision: true },
-      { name: "aad", provision: true },
     ],
   };
   const context = createV2Context(projectSetting);
@@ -58,20 +44,28 @@ async function addSql() {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
     fx: {
-      resources: [{ name: "azure-sql" }],
+      resources: [
+        {
+          name: "teams-bot",
+          scenarios: ["default"],
+          folder: "bot",
+          hostingResource: "azure-web-app",
+        },
+      ],
     },
   };
   const action = await getAction("fx.add", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("addSql.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
+    const resolved = await resolveAction(action, context, inputs);
+    await fs.writeFile("tabAddBot.json", JSON.stringify(resolved, undefined, 4));
+    await planAction(action, context, inputs);
+    inputs.step = 1;
     await executeAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
   console.log("projectSetting:");
-  console.log(context.projectSetting);
+  console.log(projectSetting);
 }
 
-addSql();
+tabAddBot();

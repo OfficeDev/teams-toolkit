@@ -230,11 +230,11 @@ export async function executeAction(action: Action, context: any, inputs: any): 
   }
 }
 
-export function getResource(
+export function getComponent(
   projectSettings: ProjectSettingsV3,
   resourceType: string
 ): ResourceConfig | undefined {
-  if (!projectSettings.resources) return undefined;
-  const results = projectSettings.resources.filter((r) => r.name === resourceType);
+  if (!projectSettings.components) return undefined;
+  const results = projectSettings.components.filter((r) => r.name === resourceType);
   return results[0];
 }

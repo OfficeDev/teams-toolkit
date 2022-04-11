@@ -7,34 +7,21 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
-import { createV2Context } from "../../common";
-import { TabOptionItem } from "../../plugins/solution/fx-solution/question";
-import { setTools } from "../globalVars";
-import "./aad";
-import "./azureBot";
-import "./azureFunction";
-import "./azureSql";
-import "./azureStorage";
-import "./azureWebApp";
-import "./botScaffold";
-import "./core";
-import { AddResourceInputs } from "./interface";
-import "./spfx";
-import "./tabScaffold";
-import "./teamsBot";
-import "./teamsManifest";
-import "./teamsTab";
-import { MockTools } from "./utils";
-import { executeAction, getAction, planAction, resolveAction } from "./workflow";
+import { createV2Context } from "../../../common";
+import { setTools } from "../../globalVars";
+import "../core";
+import { AddComponentsInputs } from "../interface";
+import { MockTools } from "../utils";
+import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 
 async function createTab() {
   setTools(new MockTools());
   const context = createV2Context({} as ProjectSettings);
-  const inputs: AddResourceInputs = {
+  const inputs: AddComponentsInputs = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
     fx: {
-      resources: [
+      components: [
         {
           name: "teams-tab",
           hostingResource: "azure-storage",

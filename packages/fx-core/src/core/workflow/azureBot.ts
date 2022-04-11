@@ -4,23 +4,19 @@
 import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { Action, MaybePromise, ProvisionAction, AzureResource } from "./interface";
+import { Action, MaybePromise, CloudResource, ContextV3 } from "./interface";
 
 @Service("azure-bot")
-export class AzureBotResource implements AzureResource {
-  readonly type = "azure";
+export class AzureBotResource implements CloudResource {
   readonly name = "azure-bot";
   provision(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const provision: ProvisionAction = {
+    const provision: Action = {
       name: "azure-bot.provision",
       type: "function",
-      plan: (
-        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-        inputs: v2.InputsWithProjectPath
-      ) => {
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         return ok([
           "provision azure-bot step 1.create AAD app for bot service",
           "provision azure-bot step 2.create azure bot service",

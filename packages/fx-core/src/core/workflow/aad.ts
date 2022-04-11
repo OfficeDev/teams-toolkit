@@ -4,62 +4,17 @@
 import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import {
-  Action,
-  AzureResource,
-  ContextV3,
-  GenerateBicepAction,
-  MaybePromise,
-  ProjectSettingsV3,
-  ProvisionAction,
-  ResourceConfig,
-} from "./interface";
-import { getResource } from "./workflow";
+import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
 
 @Service("aad")
-export class AADResource implements AzureResource {
-  readonly type = "azure";
+export class Aad implements CloudResource {
+  readonly type = "cloud";
   readonly name = "aad";
-  generateBicep(
+  provision(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const generateBicep: GenerateBicepAction = {
-      name: "aad.generateBicep",
-      type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const resource = getResource(context.projectSetting as ProjectSettingsV3, "aad");
-        if (!resource) {
-          return ok(["ensure resource aad in projectSettings", "generate code of aad"]);
-        }
-        return ok([]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        const projectSettings = context.projectSetting as ProjectSettingsV3;
-        const resource = getResource(projectSettings, "aad");
-        if (!resource) {
-          const resource: ResourceConfig = {
-            name: this.name,
-            provision: true,
-          };
-          projectSettings.resources.push(resource);
-          inputs.bicep[this.name] = "aad bicep";
-          console.log("ensure resource 'aad' in projectSettings");
-          console.log("generate bicep of 'aad");
-        }
-        return ok(undefined);
-      },
-    };
-    return ok(generateBicep);
-  }
-  provision(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const provision: ProvisionAction = {
+    const action: Action = {
       name: "aad.provision",
       type: "function",
       plan: (
@@ -82,13 +37,13 @@ export class AADResource implements AzureResource {
         return ok(undefined);
       },
     };
-    return ok(provision);
+    return ok(action);
   }
   configure(
-    context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
+    context: ContextV3,
     inputs: v2.InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const configure: ProvisionAction = {
+    const action: Action = {
       name: "aad.configure",
       type: "function",
       plan: (
@@ -105,6 +60,6 @@ export class AADResource implements AzureResource {
         return ok(undefined);
       },
     };
-    return ok(configure);
+    return ok(action);
   }
 }

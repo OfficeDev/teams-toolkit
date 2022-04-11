@@ -19,6 +19,7 @@ export declare enum ErrorCode
 
 |  Member | Value | Description |
 |  --- | --- | --- |
+|  AuthorizationInfoAlreadyExists | <code>&quot;AuthorizationInfoAlreadyExists&quot;</code> | <b><i>(BETA)</i></b> Authentication info already exists error. |
 |  ChannelNotSupported | <code>&quot;ChannelNotSupported&quot;</code> | <b><i>(BETA)</i></b> Channel is not supported error. |
 |  ConsentFailed | <code>&quot;ConsentFailed&quot;</code> | <b><i>(BETA)</i></b> User failed to finish the AAD consent flow failed. |
 |  FailedOperation | <code>&quot;FailedOperation&quot;</code> | <b><i>(BETA)</i></b> Operation failed. |

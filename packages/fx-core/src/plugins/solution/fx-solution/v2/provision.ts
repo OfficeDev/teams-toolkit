@@ -42,7 +42,11 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
-import { hasAAD, isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import {
+  hasAAD,
+  hasAzureResource,
+  isPureExistingApp,
+} from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function provisionResource(
@@ -92,7 +96,7 @@ export async function provisionResource(
     teamsAppResource.tenantId = tenantIdInToken;
     solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
-  if (isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings) && hasAzureResource(ctx.projectSetting, true)) {
     if (hasAAD(ctx.projectSetting)) {
       if (ctx.permissionRequestProvider === undefined) {
         ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
@@ -186,7 +190,11 @@ export async function provisionResource(
   solutionInputs.remoteTeamsAppId = teamsAppId;
 
   // call deployArmTemplates
-  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
+  if (
+    isAzureProject(azureSolutionSettings) &&
+    !inputs.isForUT &&
+    hasAzureResource(ctx.projectSetting, true)
+  ) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {

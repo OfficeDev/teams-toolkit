@@ -290,7 +290,7 @@ export async function getQuestions(
       plugins = getAllV2ResourcePlugins();
     }
     plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
-    if (plugins.length === 0) {
+    if (plugins.length === 0 && inputs.skipAadDeploy !== "no") {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }
 
@@ -413,7 +413,7 @@ export async function getQuestionsForAddCapability(
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
     type: "multiSelect",
     staticOptions: [],
     default: [],
@@ -499,6 +499,14 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
+  if (isBotAddable) {
+    if (isBotNotificationEnabled()) {
+      options.push(CommandAndResponseOptionItem);
+      options.push(NotificationOptionItem);
+    } else {
+      options.push(BotOptionItem);
+    }
+  }
   if (isTabAddable) {
     if (!isAadManifestEnabled()) {
       options.push(TabOptionItem);
@@ -510,14 +518,6 @@ export async function getQuestionsForAddCapability(
           settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
         );
       }
-    }
-  }
-  if (isBotAddable) {
-    if (isBotNotificationEnabled()) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-    } else {
-      options.push(BotOptionItem);
     }
   }
   if (isMEAddable) options.push(MessageExtensionItem);

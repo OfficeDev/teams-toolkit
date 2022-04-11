@@ -54,6 +54,8 @@ import {
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { isFeatureFlagEnabled } from "./featureFlags";
+export { isFeatureFlagEnabled, isBotNotificationEnabled } from "./featureFlags";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -365,16 +367,6 @@ export function getResourceGroupInPortal(
   }
 }
 
-// Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
-  const flag = process.env[featureFlagName];
-  if (flag === undefined) {
-    return defaultValue; // allows consumer to set a default value when environment variable not set
-  } else {
-    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
-  }
-}
-
 /**
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
@@ -382,6 +374,7 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
+// TODO: move other feature flags to featureFlags.ts to prevent import loop
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
@@ -428,10 +421,6 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
     );
   }
-}
-
-export function isBotNotificationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
 
 export function getRootDirectory(): string {

@@ -6,6 +6,9 @@ import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getSampleFileName } from "./utils";
 
+const httpRegex = /^http[s]?:\/\/.+/;
+const guidRegex = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/;
+
 export async function checkApiNameExist(
   input: string,
   projectPath: string,
@@ -23,4 +26,25 @@ export async function checkApiNameExist(
     }
   }
   return undefined;
+}
+
+export async function checkEmptyValue(input: string): Promise<string | undefined> {
+  if (input) {
+    return undefined;
+  }
+  return getLocalizedString("plugins.apiConnector.Question.validation.EmptyValue");
+}
+
+export async function checkIsGuid(input: string): Promise<string | undefined> {
+  if (guidRegex.exec(input)) {
+    return undefined;
+  }
+  return getLocalizedString("plugins.apiConnector.Question.validation.NotGuid");
+}
+
+export async function checkHttp(input: string): Promise<string | undefined> {
+  if (httpRegex.exec(input)) {
+    return undefined;
+  }
+  return getLocalizedString("plugins.apiConnector.QuestionApiEndpoint.validation.NotHttp");
 }

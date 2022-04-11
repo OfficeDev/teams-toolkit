@@ -59,6 +59,14 @@ export interface AuthProvider {
     AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
 }
 
+export { AxiosInstance }
+
+// @beta
+export class BasicAuthProvider implements AuthProvider {
+    constructor(userName: string, password: string);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
 // @beta
 export class BearerTokenAuthProvider implements AuthProvider {
     constructor(getToken: () => Promise<string>);
@@ -138,6 +146,7 @@ export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): 
 
 // @beta
 export enum ErrorCode {
+    AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",

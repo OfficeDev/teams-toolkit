@@ -2,12 +2,12 @@ import { AzureFunction, Context } from "@azure/functions";
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
-import { notificationBot } from "./internal/initialize";
+import { bot } from "./internal/initialize";
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json
 const timerTrigger: AzureFunction = async function (context: Context, myTimer: any): Promise<void> {
   const timeStamp = new Date().toISOString();
-  for (const target of await notificationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare<CardData>(notificationTemplate).render({
         title: "New Event Occurred!",

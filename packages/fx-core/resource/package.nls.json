@@ -575,6 +575,7 @@
   "error.aad.AadManifestMissingObjectId": "id property is missing or invalid in AAD manifest file, please re-provision and try again",
   "error.aad.AadManifestMissingReplyUrlsWithType": "replyUrlsWithType property is missing or invalid in AAD manifest file, please re-provision and try again",
   "error.aad.AadManifestMissingIdentifierUris": "identifierUris property is missing or invalid in AAD manifest file, please re-provision and try again",
+  "error.aad.AadManifestNotProvisioned": "Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.",
   "error.aad.UpdateAadAppError": "Failed to update application in Azure Active Directory: %s",
   "error.aad.AadManifestNotFoundError": "Aad manifest file not found",
   "error.aad.GetDisplayNameError": "Failed to get display name.",

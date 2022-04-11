@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { assert } from "chai";
-import { BasicAuthProvider, BearerTokenAuthProvider, createApiClient } from "../../../src";
+import {
+  ApiKeyLocation,
+  ApiKeyProvider,
+  BasicAuthProvider,
+  BearerTokenAuthProvider,
+  createApiClient,
+} from "../../../src";
 import * as http from "http";
 
 describe("ApiClient Tests - Node", () => {
@@ -64,5 +70,34 @@ describe("ApiClient Tests - Node", () => {
     const serverPassword = parts.join(":");
     assert.equal(serverUsername, username);
     assert.equal(serverPassword, password);
+  });
+
+  it("can connect to existing API using api key provider with api key in header", async function () {
+    // Arrange
+    const keyName = "x-api-key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.Header);
+    const apiClient = createApiClient(apiBaseUrl, apiKeyProvider);
+
+    // Act
+    const res = await apiClient.get("/foo");
+
+    // Assert
+    assert.equal(res.data.url, "/foo");
+    assert.equal(res.data.requestHeader![keyName], keyVaule);
+  });
+
+  it("can connect to existing API using api key provider with api key in query parameter", async function () {
+    // Arrange
+    const keyName = "x-api-key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
+    const apiClient = createApiClient(apiBaseUrl, apiKeyProvider);
+
+    // Act
+    const res = await apiClient.get("/foo");
+
+    // Assert
+    assert.equal(res.data.url, "/foo?x-api-key=mock-api-key-vaule");
   });
 });

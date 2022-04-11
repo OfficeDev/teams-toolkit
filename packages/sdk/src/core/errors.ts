@@ -105,6 +105,7 @@ export class ErrorMessage {
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 
   // AuthorizationInfoError
+  static readonly ApiKeyAlreadyExists = "Api key already exists in {0}!";
   static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";
   static readonly BasicCredentialAlreadyExists = "Basic credential already exists!";
   // InvalidParameter Error

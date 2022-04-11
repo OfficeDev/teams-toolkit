@@ -18,6 +18,7 @@ import {
   SingleSelectQuestion,
   MultiSelectQuestion,
   OptionItem,
+  StringValidation,
 } from "@microsoft/teamsfx-api";
 
 import { FxCore, isM365AppEnabled } from "@microsoft/teamsfx-core";
@@ -33,8 +34,6 @@ import {
   azureSolutionGroupNodeName,
   CollaboratorEmailNode,
   EnvNodeNoCreate,
-  m365AppTypeNodeName,
-  m365CapabilitiesNodeName,
   RootFolderNode,
   sqlPasswordConfirmQuestionName,
 } from "./constants";
@@ -213,6 +212,12 @@ export class HelpParamGenerator {
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
+    } else if (root && stage === Stage.create) {
+      const condition = inputs?.isM365 ? "yes-m365" : "yes";
+      root.children = root?.children?.filter(
+        (value) => (value.condition as StringValidation).equals === condition
+      );
+      nodes = flattenNodes(root);
     } else if (root) {
       nodes = flattenNodes(root);
     }
@@ -263,16 +268,6 @@ export class HelpParamGenerator {
         // hide --azure-solution-group
         if (node.data.name === azureSolutionGroupNodeName) {
           (node.data as any).hide = true;
-        }
-
-        // hide --m365-capabilities
-        if (node.data.name === m365CapabilitiesNodeName) {
-          (node.data as any).hide = true;
-        }
-
-        // hide --app-type if not inputs.isM365
-        if (node.data.name === m365AppTypeNodeName) {
-          (node.data as any).hide = !inputs?.isM365;
         }
       }
     }

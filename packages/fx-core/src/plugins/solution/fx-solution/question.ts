@@ -103,19 +103,18 @@ export const TabNonSsoItem: OptionItem = {
   detail: getLocalizedString("core.TabNonSso.detail"),
 };
 
-export const M365LaunchPageOptionItem: OptionItem = {
-  id: "M365LaunchPage",
-  label: "Launch Page",
-  cliName: "launch-page",
-  description: getLocalizedString("core.M365LaunchPageOptionItem.description"),
+export const M365SsoLaunchPageOptionItem: OptionItem = {
+  id: "M365SsoLaunchPage",
+  label: "SSO enabled Launch page",
+  cliName: "sso-launch-page",
+  detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
 };
 
-export const M365MessagingExtensionOptionItem: OptionItem = {
-  id: "M365MessagingExtension",
-  label: "Messaging Extension",
-  cliName: "messaging-extension",
-  description: getLocalizedString("core.M365MessagingExtensionOptionItem.description"),
-  detail: getLocalizedString("core.M365MessagingExtensionOptionItem.detail"),
+export const M365SearchAppOptionItem: OptionItem = {
+  id: "M365SearchApp",
+  label: "Search App",
+  cliName: "search-app",
+  detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
 };
 
 export enum AzureSolutionQuestionNames {

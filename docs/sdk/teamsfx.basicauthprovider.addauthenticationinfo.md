@@ -25,3 +25,9 @@ AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 
 Promise&lt;AxiosRequestConfig&gt;
 
+Updated axios request config.
+
+## Exceptions
+
+[AuthorizationInfoAlreadyExists](./teamsfx.errorcode.md) - when Authorization header or auth property already exists in request configuration.
+

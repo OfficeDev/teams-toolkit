@@ -144,7 +144,7 @@ export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): 
 
 // @beta
 export enum ErrorCode {
-    AuthorizationInfoError = "AuthorizationInfoError",
+    AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",

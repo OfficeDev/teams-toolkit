@@ -62,6 +62,7 @@
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.selectTutorials",
     "onCommand:fx-extension.connectExistingApi",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
@@ -1008,7 +1009,7 @@
             "title": "What's next?",
             "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
-              "markdown": "media/guidedTutorial.md"
+              "markdown": "media/walkthrough/whatsnext.md"
             }
           }
         ]

@@ -48,7 +48,7 @@ export const CommandAndResponseOptionItem: OptionItem = {
 
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
-  label: "Embed existing web app",
+  label: getLocalizedString("core.ExistingTabOption.label"),
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
 };
@@ -56,8 +56,8 @@ export const ExistingTabOptionItem: OptionItem = {
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: isBotNotificationEnabled()
-    ? "Search, action and link unfurling app"
-    : "Messaging Extension",
+    ? getLocalizedString("core.MessageExtensionOption.labelNew")
+    : getLocalizedString("core.MessageExtensionOption.label"),
   cliName: "messaging-extension",
   description: isBotNotificationEnabled()
     ? undefined
@@ -67,7 +67,9 @@ export const MessageExtensionItem: OptionItem = {
 
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
-  label: isBotNotificationEnabled() ? "SPFx Launch page" : "Tab(SPFx)",
+  label: isBotNotificationEnabled()
+    ? getLocalizedString("core.TabSPFxOption.labelNew")
+    : getLocalizedString("core.TabSPFxOption.label"),
   cliName: "tab-spfx",
   description: isBotNotificationEnabled()
     ? undefined
@@ -239,7 +241,9 @@ export function addCapabilityQuestion(
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.addCapabilityQuestion.titleNew")
+      : getLocalizedString("core.addCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: options,
     default: [],

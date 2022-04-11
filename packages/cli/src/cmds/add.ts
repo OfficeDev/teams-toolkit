@@ -25,11 +25,13 @@ import {
   ResourceAddSql,
 } from "./resource";
 import {
+  CapabilityAddBot,
   CapabilityAddCommandAndResponse,
   CapabilityAddMessageExtension,
   CapabilityAddNotification,
   CapabilityAddTab,
 } from "./capability";
+import { isBotNotificationEnabled } from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
@@ -89,8 +91,9 @@ export default class Add extends YargsCommand {
 
   public readonly subCommands: YargsCommand[] = [
     // Category 1: Add Teams Capability
-    new CapabilityAddNotification(),
-    new CapabilityAddCommandAndResponse(),
+    ...(isBotNotificationEnabled()
+      ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
+      : [new CapabilityAddBot()]),
     new CapabilityAddMessageExtension(),
     new CapabilityAddTab(),
 
@@ -105,12 +108,6 @@ export default class Add extends YargsCommand {
   ];
 
   public builder(yargs: Argv): Argv<any> {
-    yargs
-      .positional("feature", {
-        choices: this.subCommands.map((cmd) => cmd.commandHead),
-        global: false,
-      })
-      .hide("feature");
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });

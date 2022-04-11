@@ -239,7 +239,7 @@ export function addCapabilityQuestion(
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
     type: "multiSelect",
     staticOptions: options,
     default: [],

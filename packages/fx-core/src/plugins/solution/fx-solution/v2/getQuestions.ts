@@ -413,7 +413,7 @@ export async function getQuestionsForAddCapability(
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
     type: "multiSelect",
     staticOptions: [],
     default: [],

@@ -96,7 +96,7 @@ export async function provisionResource(
     teamsAppResource.tenantId = tenantIdInToken;
     solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
-  if (isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings) && hasAzureResource(ctx.projectSetting, true)) {
     if (hasAAD(ctx.projectSetting)) {
       if (ctx.permissionRequestProvider === undefined) {
         ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
@@ -193,7 +193,7 @@ export async function provisionResource(
   if (
     isAzureProject(azureSolutionSettings) &&
     !inputs.isForUT &&
-    hasAzureResource(ctx.projectSetting)
+    hasAzureResource(ctx.projectSetting, true)
   ) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);

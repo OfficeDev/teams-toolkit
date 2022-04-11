@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
-import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
+import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";

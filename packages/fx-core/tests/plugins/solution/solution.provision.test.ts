@@ -1169,7 +1169,7 @@ describe("API v2 implementation", () => {
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "./",
-        isForUT: true,
+        isForUT: false,
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),

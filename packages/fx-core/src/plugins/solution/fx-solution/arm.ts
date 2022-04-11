@@ -878,6 +878,8 @@ async function doGenerateArmTemplate(
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
 
+  // In existing app scenario, arm template will not be added when adding sso
+  // Thus here if main.bicep does not exist, will try to scaffold all
   const templateFolderPath = path.join(ctx.root, templatesFolder);
   if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
     selectedPlugins = plugins;

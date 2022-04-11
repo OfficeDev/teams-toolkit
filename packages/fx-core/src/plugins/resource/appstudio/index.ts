@@ -34,6 +34,7 @@ import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { isDeployManifestEnabled } from "../../../common";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -66,6 +67,7 @@ export class AppStudioPlugin implements Plugin {
     }
 
     if (
+      isDeployManifestEnabled() &&
       stage === Stage.deploy &&
       (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
     ) {
@@ -74,7 +76,7 @@ export class AppStudioPlugin implements Plugin {
         type: "singleSelect",
         staticOptions: ["yes", "no"],
         title: "Whether to skip deploying manifest to AppStudio",
-        default: "no",
+        default: "yes",
       });
       appStudioQuestions.addChild(node);
     }

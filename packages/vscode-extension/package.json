@@ -150,6 +150,11 @@
           "command": "fx-extension.deployAadAppManifest",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.updatePreviewFile",
+          "when": "resourceFilename =~ /manifest.[\\w]+.json|appPackage.[\\w]+.zip/",
+          "group": "deploy@1"
         }
       ],
       "view/title": [

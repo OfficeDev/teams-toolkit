@@ -18,11 +18,12 @@ import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
 import { isRemoteCollaborationEnabled } from "../utils";
+import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
 import Init from "./init";
-import { isInitAppEnabled } from "@microsoft/teamsfx-core";
+import { isDeployManifestEnabled, isInitAppEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -33,12 +34,17 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Package(),
+  new Manifest(),
   new ManifestValidate(),
   new Publish(),
   new Config(),
   new Preview(),
   new Env(),
 ];
+
+if (isDeployManifestEnabled()) {
+  commands.splice(8, 1);
+}
 
 if (isInitAppEnabled()) {
   // add Init command after the New command.

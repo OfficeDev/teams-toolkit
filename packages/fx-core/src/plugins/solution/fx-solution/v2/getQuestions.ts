@@ -19,7 +19,8 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { HelpLinks } from "../../../../common/constants";
+import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
+import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
@@ -54,7 +55,11 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import {
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isDeployManifestEnabled,
+} from "../../../../common/tools";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
@@ -289,6 +294,11 @@ export async function getQuestions(
       plugins = getAllV2ResourcePlugins();
     }
     plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
+
+    if (isDeployManifestEnabled() && inputs.platform === Platform.VSCode) {
+      plugins = plugins.filter((plugin) => plugin.name !== ResourcePlugins.AppStudio);
+    }
+
     if (plugins.length === 0) {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }

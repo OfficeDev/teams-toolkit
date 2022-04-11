@@ -27,6 +27,7 @@ import {
   ResourcePlugin,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
+import { isDeployManifestEnabled } from "../../../../common";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -60,7 +61,9 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
-  async deploy(
+  deploy = isDeployManifestEnabled() ? this._deploy : undefined;
+
+  async _deploy(
     ctx: v2.Context,
     inputs: v2.DeploymentInputs,
     envInfo: v2.DeepReadonly<v2.EnvInfoV2>,

@@ -285,6 +285,14 @@ export const AadManifestMissingIdentifierUris: AadError = {
   ],
 };
 
+export const AadManifestNotProvisioned: AadError = {
+  name: "AadManifestNotProvisioned",
+  message: () => [
+    getDefaultString("error.aad.AadManifestNotProvisioned"),
+    getLocalizedString("error.aad.AadManifestNotProvisioned"),
+  ],
+};
+
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError: [string, string] = [
     getDefaultString("error.aad.GetDisplayNameError"),

@@ -1,18 +1,19 @@
 const teamsfxSdk = require("@microsoft/teamsfx");
 
-// Loads current app's configuration
+// Loads current app's configuration, the sample uses client credential flow to acquire token for your API.
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
-  // You can replace the default authorityHost url with actual value per your requirement
+  // You can replace the default authorityHost url with actual value per your requirement.
   authorityHost: "https://login.microsoftonline.com",
   tenantId: process.env.TEAMSFX_API_FAKE_TENANT_ID,
   clientId: process.env.TEAMSFX_API_FAKE_CLIENT_ID,
+  // Please add your client secret to .env.teamsfx.local before local debugging.
   clientSecret: process.env.TEAMSFX_API_FAKE_CLIENT_SECRET,
 });
-// Initializes a new axios instance to call fake API
+// Initializes a new axios instance to call fake API.
 const appCredential = teamsFx.getCredential();
 const authProvider = new teamsfxSdk.BearerTokenAuthProvider(
   // Please replace '<your-api-scope>' with actual api scope value.
-  async () => await appCredential.getToken("<your-api-scope>")?.token
+  async () => (await appCredential.getToken("<your-api-scope>"))?.token
 );
 const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };

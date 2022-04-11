@@ -237,7 +237,7 @@ export class ApiConnectorImpl {
   private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
     const authType: AuthType = config.AuthConfig.AuthType;
     const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasiString(apiName, config.ComponentPath, languageType);
+    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
     switch (authType) {
       case AuthType.BASIC: {
         retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
@@ -248,7 +248,7 @@ export class ApiConnectorImpl {
         break;
       }
       case AuthType.AAD: {
-        if (config.ReuseTeamsApp) {
+        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
           retMsg += Notification.GetReuseAADAuthString(apiName);
         } else {
           retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
@@ -264,6 +264,7 @@ export class ApiConnectorImpl {
         break;
       }
     }
+    retMsg += `${Notification.GetNpmInstallString()}`;
     return retMsg;
   }
 

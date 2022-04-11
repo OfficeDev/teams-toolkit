@@ -105,7 +105,6 @@ import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { InvalidInputError } from "../../../core/error";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};

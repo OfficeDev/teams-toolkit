@@ -5,7 +5,7 @@ import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
-import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./teamsAppInstallation";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 import { showError } from "../handlers";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";

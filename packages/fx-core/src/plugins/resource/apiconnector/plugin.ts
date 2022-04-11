@@ -11,22 +11,24 @@ import {
   UserError,
   ok,
 } from "@microsoft/teamsfx-api";
-import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
-  ApiConnectorConfiguration,
   generateTempFolder,
   copyFileIfExist,
   removeFileIfExist,
   getSampleFileName,
+  checkInputEmpty,
+  Notification,
 } from "./utils";
-import { Constants } from "./constants";
+import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
+import { AuthType, Constants } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
 import {
   ApiNameQuestion,
-  apiLoginUserNameQuestion,
+  basicAuthUsernameQuestion,
   botOption,
   functionOption,
   apiEndpointQuestion,
@@ -35,9 +37,16 @@ import {
   AADAuthOption,
   APIKeyAuthOption,
   ImplementMyselfOption,
+  reuseAppOption,
+  anotherAppOption,
+  appTenantIdQuestion,
+  appIdQuestion,
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
+import { isAADEnabled } from "../../../common";
+import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
+import { DepsHandler } from "./depsHandler";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -63,6 +72,15 @@ export class ApiConnectorImpl {
           await this.scaffoldInComponent(projectPath, component, config, languageType);
         })
       );
+      const msg: string = this.getNotificationMsg(config, languageType);
+      ctx.userInteraction
+        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === Notification.READ_MORE) {
+            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
+          }
+        });
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -105,7 +123,7 @@ export class ApiConnectorImpl {
   ) {
     await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
     await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    // await this.addSDKDependency(ComponentPath);
+    await this.addSDKDependency(projectPath, componentItem);
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -135,13 +153,53 @@ export class ApiConnectorImpl {
     await removeFileIfExist(sampleFilePath);
   }
 
+  private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
+    let config: AuthConfig;
+    if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
+      checkInputEmpty(inputs, Constants.questionKey.apiUserName);
+      config = {
+        AuthType: AuthType.BASIC,
+        UserName: inputs[Constants.questionKey.apiUserName],
+      } as BasicAuthConfig;
+    } else if (inputs[Constants.questionKey.apiType] === AuthType.AAD) {
+      const AADConfig = {
+        AuthType: AuthType.AAD,
+      } as AADAuthConfig;
+      if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
+        AADConfig.ReuseTeamsApp = true;
+      } else {
+        AADConfig.ReuseTeamsApp = false;
+        checkInputEmpty(
+          inputs,
+          Constants.questionKey.apiAppTenentId,
+          Constants.questionKey.apiAppTenentId
+        );
+        AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
+        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
+      }
+      config = AADConfig;
+    } else {
+      throw ResultFactory.SystemError(
+        ErrorMessage.ApiConnectorInputError.name,
+        ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
+      );
+    }
+    return config;
+  }
+
   private getUserDataFromInputs(inputs: Inputs): ApiConnectorConfiguration {
+    checkInputEmpty(
+      inputs,
+      Constants.questionKey.componentsSelect,
+      Constants.questionKey.apiName,
+      Constants.questionKey.endpoint
+    );
+    const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
       ComponentPath: inputs[Constants.questionKey.componentsSelect],
       APIName: inputs[Constants.questionKey.apiName],
-      ApiAuthType: inputs[Constants.questionKey.apiType],
+      AuthConfig: authConfig,
       EndPoint: inputs[Constants.questionKey.endpoint],
-      ApiUserName: inputs[Constants.questionKey.apiUserName],
     };
     return config;
   }
@@ -166,6 +224,48 @@ export class ApiConnectorImpl {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
     await sampleHandler.generateSampleCode(config);
     return ResultFactory.Success();
+  }
+
+  private async addSDKDependency(
+    projectPath: string,
+    component: string
+  ): Promise<ApiConnectorResult> {
+    const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
+    return await depsHandler.addPkgDeps();
+  }
+
+  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
+    const authType: AuthType = config.AuthConfig.AuthType;
+    const apiName: string = config.APIName;
+    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
+    switch (authType) {
+      case AuthType.BASIC: {
+        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.APIKEY: {
+        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.AAD: {
+        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
+          retMsg += Notification.GetReuseAADAuthString(apiName);
+        } else {
+          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
+        }
+        break;
+      }
+      case AuthType.CERT: {
+        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.CUSTOM: {
+        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
+        break;
+      }
+    }
+    retMsg += `${Notification.GetNpmInstallString()}`;
+    return retMsg;
   }
 
   public async generateQuestion(ctx: Context): Promise<QesutionResult> {
@@ -208,6 +308,20 @@ export class ApiConnectorImpl {
       },
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });
+    const apiNameQuestion = new ApiNameQuestion(ctx);
+    const whichAuthType = this.buildAuthTypeQuestion(ctx);
+    const question = new QTreeNode({
+      type: "group",
+    });
+    question.addChild(new QTreeNode(apiEndpointQuestion));
+    question.addChild(whichComponent);
+    question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
+    question.addChild(whichAuthType);
+
+    return ok(question);
+  }
+
+  public buildAuthTypeQuestion(ctx: Context): QTreeNode {
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
       type: "singleSelect",
@@ -221,16 +335,37 @@ export class ApiConnectorImpl {
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
       placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
     });
-    const question = new QTreeNode({
-      type: "group",
-    });
-    const apiNameQuestion = new ApiNameQuestion(ctx);
-    question.addChild(new QTreeNode(apiEndpointQuestion));
-    question.addChild(whichComponent);
-    question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
-    question.addChild(whichAuthType);
-    question.addChild(new QTreeNode(apiLoginUserNameQuestion));
+    whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
+    whichAuthType.addChild(this.buildBasicAuthQuestion());
+    return whichAuthType;
+  }
 
-    return ok(question);
+  public buildBasicAuthQuestion(): QTreeNode {
+    const node = new QTreeNode(basicAuthUsernameQuestion);
+    node.condition = { equals: BasicAuthOption.id };
+    return node;
+  }
+
+  public buildAADAuthQuestion(ctx: Context): QTreeNode {
+    let node: QTreeNode;
+    const solutionSettings = getAzureSolutionSettings(ctx)!;
+    if (isAADEnabled(solutionSettings)) {
+      node = new QTreeNode({
+        name: Constants.questionKey.apiAppType,
+        type: "singleSelect",
+        staticOptions: [reuseAppOption, anotherAppOption],
+        title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
+      });
+      node.condition = { equals: AADAuthOption.id };
+      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
+      tenentQuestionNode.condition = { equals: anotherAppOption.id };
+      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
+      node.addChild(tenentQuestionNode);
+    } else {
+      node = new QTreeNode(appTenantIdQuestion);
+      node.condition = { equals: AADAuthOption.id };
+      node.addChild(new QTreeNode(appIdQuestion));
+    }
+    return node;
   }
 }

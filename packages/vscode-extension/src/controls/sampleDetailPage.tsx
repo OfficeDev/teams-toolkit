@@ -1,7 +1,7 @@
 import { ActionButton, Image } from "@fluentui/react";
 import * as React from "react";
 import "./sampleDetailPage.scss";
-import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
+import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { Watch, Setting } from "./resources";
 import { Commands } from "./Commands";
 
@@ -68,7 +68,7 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
   onViewGithub = () => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.baseUrl + this.props.sampleAppFolder,
+      data: this.props.url + this.props.sampleAppFolder,
     });
   };
 }

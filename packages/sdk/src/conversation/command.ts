@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { BotFrameworkAdapter } from "botbuilder";
-import { TeamsFxBotCommandHandler } from "./interface";
+import { CommandOptions, TeamsFxBotCommandHandler } from "./interface";
 import { CommandResponseMiddleware } from "./middleware";
 
 /**
@@ -11,33 +11,22 @@ import { CommandResponseMiddleware } from "./middleware";
  * @remarks
  * Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
  *
- * @example
- * You can register your commands  through the constructor of the {@link CommandBot}, or use the `registerCommand` and `registerCommands` API to add commands after creating the `CommandBot` instance.
- *
- * ```typescript
- * // register through constructor
- * const commandBot = new CommandBot(adapter, [ new HelloWorldCommandHandler() ]);
- *
- * // register through `register*` API
- * commandBot.registerCommand(new HelpCommandHandler());
- * ```
- *
  * @beta
  */
 export class CommandBot {
-  public readonly adapter: BotFrameworkAdapter;
+  private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;
 
   /**
    * Creates a new instance of the `CommandBot`.
    *
    * @param adapter The bound `BotFrameworkAdapter`.
-   * @param commands The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
+   * @param options - initialize options
    *
    * @beta
    */
-  constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]) {
-    this.middleware = new CommandResponseMiddleware(commands);
+  constructor(adapter: BotFrameworkAdapter, options?: CommandOptions) {
+    this.middleware = new CommandResponseMiddleware(options?.commands);
     this.adapter = adapter.use(this.middleware);
   }
 

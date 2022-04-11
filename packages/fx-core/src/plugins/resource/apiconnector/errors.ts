@@ -10,8 +10,8 @@ export class ErrorMessage {
   };
   public static readonly ApiConnectorInputError = {
     name: "ApiConnectorInputError",
-    message: () =>
-      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`),
+    message: (key: string) =>
+      getLocalizedString(`error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`, key),
   };
 
   public static readonly ApiConnectorPathError = {
@@ -66,6 +66,26 @@ export class ErrorMessage {
       getLocalizedString(
         `error.apiConnector.${ErrorMessage.generateApiConFilesError.name}`,
         reason
+      ),
+  };
+
+  public static readonly sdkVersionImcompatibleError = {
+    name: "SDKVersionImcompatibleError",
+    message: (component: string, localVersion: string, targetVersion: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.sdkVersionImcompatibleError.name}`,
+        component,
+        localVersion,
+        targetVersion
+      ),
+  };
+
+  public static readonly localPkgFileNotExistError = {
+    name: "pkgFileNotExistError",
+    message: (component: string) =>
+      getLocalizedString(
+        `error.apiConnector.${ErrorMessage.localPkgFileNotExistError.name}`,
+        component
       ),
   };
 }

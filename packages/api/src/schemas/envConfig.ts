@@ -31,6 +31,18 @@ export interface EnvConfig {
      * The access_as_user scope id of existing AAD app for Teams app.
      */
     accessAsUserScopeId?: string;
+    /**
+     * The frontend domain for redirect URLs of existing AAD app for Teams app.
+     */
+    frontendDomain?: string;
+    /**
+     * The bot id for identifier URIs of existing AAD app for Teams app.
+     */
+    botId?: string;
+    /**
+     * The bot endpoint for redirect URLs of existing AAD app for Teams app.
+     */
+    botEndpoint?: string;
     [k: string]: unknown;
   };
   /**

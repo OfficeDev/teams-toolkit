@@ -23,6 +23,7 @@ import {
   Result,
   SystemError,
   UnknownError,
+  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import {
@@ -421,8 +422,9 @@ export default class Preview extends YargsCommand {
 
     /* === get local teams app id === */
     // re-load local settings
-    let tenantId = undefined,
-      localTeamsAppId = undefined;
+    let tenantId = undefined;
+    let localTeamsAppId = undefined;
+    let localBotId = undefined;
     if (isConfigUnifyEnabled()) {
       configResult = await core.getProjectConfig(inputs);
       if (configResult.isErr()) {
@@ -435,11 +437,15 @@ export default class Preview extends YargsCommand {
       localTeamsAppId = config?.config
         ?.get(constants.appstudioPluginName)
         ?.get(constants.remoteTeamsAppIdConfigKey);
+      localBotId = config?.config
+        ?.get(constants.botPluginName)
+        ?.get(constants.botIdConfigKey) as string;
     } else {
       localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
       tenantId = localSettings?.teamsApp?.tenantId as string;
       localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+      localBotId = localSettings?.bot?.botId as string;
     }
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
@@ -466,6 +472,7 @@ export default class Preview extends YargsCommand {
         false,
         tenantId,
         localTeamsAppId,
+        localBotId,
         browser,
         browserArguments
       );
@@ -483,6 +490,8 @@ export default class Preview extends YargsCommand {
           );
           cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
         }
+      } else {
+        return err(UserCancelError);
       }
     } else {
       const internalId = await getTeamsAppInternalId(localTeamsAppId);
@@ -771,6 +780,7 @@ export default class Preview extends YargsCommand {
         false,
         tenantId,
         remoteTeamsAppId,
+        undefined,
         browser,
         browserArguments
       );
@@ -787,6 +797,8 @@ export default class Preview extends YargsCommand {
             this.telemetryProperties
           );
         }
+      } else {
+        return err(UserCancelError);
       }
     } else {
       const internalId = await getTeamsAppInternalId(remoteTeamsAppId);

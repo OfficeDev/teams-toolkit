@@ -46,6 +46,7 @@ export const spfxPluginName = "fx-resource-spfx";
 
 export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "teamsAppId";
+export const botIdConfigKey = "botId";
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
@@ -116,12 +117,12 @@ export const doctorResult = {
 };
 
 export const installApp = {
-  detection:
-    "We detected that you have not yet installed the app in Teams first, please make sure the app is installed.",
   description:
-    "To continue debug your application in Outlook, you need to install the app via Teams first.",
+    "To continue to debug your application in Outlook or Office.com, you need to install the app via Teams manually.",
+  finish: "Once you have finished the installation, please come back and click 'Continue'.",
+  guide: "Click 'Install in Teams' will pop up Teams web client for you to install the app.",
   installInTeams: "Install in Teams",
-  installInTeamsDescription: "Pop up Teams Web Client for you to instapp app.",
+  installInTeamsDescription: "Pop up Teams web client for you to install the app.",
   continue: "Continue",
   continueDescription: "Continue to preview in Outlook or Office.",
   cancel: "Cancel",
@@ -129,8 +130,18 @@ export const installApp = {
   installAppTitle: "Install app in Teams or continue to Outlook or Office",
   nonInteractive: {
     notInstalled:
-      'We detected that you have not yet installed the app in Teams first, please run "teamsfx preview %s --m365-host teams" to install app.',
+      "We detected that you have not yet installed the app in Teams first, please run 'teamsfx preview %s --m365-host teams' to install app.",
     manifestChanges:
-      'If you changed the manifest file, please run "teamsfx preview %s --m365-host teams" to install app again.',
+      "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
+  },
+  bot: {
+    description: "To continue to debug your application in Outlook, you need to follow two steps:",
+    guide1: "First, please click 'Install in Teams' to instapp the app in Teams.",
+    guide2:
+      "Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.",
+    finish: "Once you have finished the above two steps, please come back and click 'Continue'",
+    configureOutlook: "Configure Outlook",
+    configureOutlookDescription:
+      "Pop up Bot Framework Portal for you to connect your bot to Outlook channel.",
   },
 };

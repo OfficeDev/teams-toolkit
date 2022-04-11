@@ -4,11 +4,15 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@azure/identity';
 import { Activity } from 'botbuilder-core';
 import { Activity as Activity_2 } from 'botbuilder';
 import { Attachment } from 'botbuilder';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
+import { AxiosInstance } from 'axios';
+import { AxiosRequestConfig } from 'axios';
 import { BotFrameworkAdapter } from 'botbuilder';
 import { CardAction } from 'botbuilder';
 import { CardImage } from 'botbuilder';
@@ -23,11 +27,15 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
+import { SecureContextOptions } from 'tls';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder-core';
+import { TurnContext as TurnContext_2 } from 'botbuilder';
+import { WebRequest } from 'botbuilder';
+import { WebResponse } from 'botbuilder';
 
 // @beta
 export class AppCredential implements TokenCredential {
@@ -47,6 +55,31 @@ export interface AuthenticationConfiguration {
 }
 
 // @beta
+export interface AuthProvider {
+    AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
+}
+
+export { AxiosInstance }
+
+// @beta
+export class BasicAuthProvider implements AuthProvider {
+    constructor(userName: string, password: string);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
+export class BearerTokenAuthProvider implements AuthProvider {
+    constructor(getToken: () => Promise<string>);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
+export class CertificateAuthProvider implements AuthProvider {
+    constructor(certOption: SecureContextOptions);
+    AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
+}
+
+// @beta
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
@@ -58,20 +91,62 @@ export class Channel implements NotificationTarget {
 
 // @beta
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]);
-    // (undocumented)
-    readonly adapter: BotFrameworkAdapter;
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 }
+
+// @public
+export interface CommandMessage {
+    matches?: RegExpMatchArray;
+    text: string;
+}
+
+// @beta
+export interface CommandOptions {
+    commands?: TeamsFxBotCommandHandler[];
+}
+
+// @beta
+export class ConversationBot {
+    constructor(options: ConversationOptions);
+    readonly adapter: BotFrameworkAdapter;
+    readonly command?: CommandBot;
+    readonly notification?: NotificationBot;
+    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
+}
+
+// @beta
+export interface ConversationOptions {
+    adapter?: BotFrameworkAdapter;
+    adapterConfig?: {
+        [key: string]: unknown;
+    };
+    command?: CommandOptions & {
+        enabled?: boolean;
+    };
+    notification?: NotificationOptions_2 & {
+        enabled?: boolean;
+    };
+}
+
+// @beta
+export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
 // @beta
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
+// @public
+export function createPemCertOption(cert: string | Buffer, key: string | Buffer, passphrase?: string, ca?: string | Buffer): SecureContextOptions;
+
+// @public
+export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): SecureContextOptions;
+
 // @beta
 export enum ErrorCode {
+    AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",
@@ -168,7 +243,6 @@ export class NotificationBot {
 
 // @beta
 interface NotificationOptions_2 {
-    // Warning: (ae-forgotten-export) The symbol "NotificationTargetStorage" needs to be exported by the entry point index.d.ts
     storage?: NotificationTargetStorage;
 }
 export { NotificationOptions_2 as NotificationOptions }
@@ -178,6 +252,20 @@ export interface NotificationTarget {
     sendAdaptiveCard(card: unknown): Promise<void>;
     sendMessage(text: string): Promise<void>;
     readonly type?: NotificationTargetType;
+}
+
+// @beta
+export interface NotificationTargetStorage {
+    delete(key: string): Promise<void>;
+    list(): Promise<{
+        [key: string]: unknown;
+    }[]>;
+    read(key: string): Promise<{
+        [key: string]: unknown;
+    } | undefined>;
+    write(key: string, object: {
+        [key: string]: unknown;
+    }): Promise<void>;
 }
 
 // @beta
@@ -252,8 +340,8 @@ export class TeamsFx implements TeamsFxConfiguration {
 
 // @beta
 export interface TeamsFxBotCommandHandler {
-    commandNameOrPattern: string | RegExp;
-    handleCommandReceived(context: TurnContext, receivedText: string): Promise<string | Partial<Activity>>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
+    triggerPatterns: TriggerPatterns;
 }
 
 // @beta
@@ -263,6 +351,9 @@ export class TeamsUserCredential implements TokenCredential {
     getUserInfo(): Promise<UserInfo>;
     login(scopes: string | string[]): Promise<void>;
 }
+
+// @public
+export type TriggerPatterns = string | RegExp | (string | RegExp)[];
 
 // @beta
 export interface UserInfo {

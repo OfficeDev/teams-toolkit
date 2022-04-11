@@ -4,7 +4,7 @@ export enum ConfigurationKey {
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
   UnifyConfigs = "unifyConfigs",
-  EnableInitApp = "enableInitApp",
+  EnableExistingApp = "enableExistingApp",
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
   YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",

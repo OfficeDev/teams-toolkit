@@ -11,42 +11,65 @@ import { installApp } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
 import { openHubWebClient } from "./launch";
+import open from "open";
 
 const installOptionItem: OptionItem = {
   id: installApp.installInTeams,
   label: installApp.installInTeams,
   description: installApp.installInTeamsDescription,
+  detail: installApp.installInTeamsDescription,
+};
+
+const configureOutlookOptionItem: OptionItem = {
+  id: installApp.bot.configureOutlook,
+  label: installApp.bot.configureOutlook,
+  description: installApp.bot.configureOutlookDescription,
+  detail: installApp.bot.configureOutlookDescription,
 };
 
 const continueOptionItem: OptionItem = {
   id: installApp.continue,
   label: installApp.continue,
   description: installApp.continueDescription,
+  detail: installApp.continueDescription,
 };
 
 const cancelOptionItem: OptionItem = {
   id: installApp.cancel,
   label: installApp.cancel,
   description: installApp.cancelDescription,
+  detail: installApp.cancelDescription,
 };
 
 const installAppSingleSelect: SingleSelectConfig = {
   name: installApp.installAppTitle,
   title: installApp.installAppTitle,
-  options: [installOptionItem, continueOptionItem, cancelOptionItem],
+  options: [],
 };
 
 export async function showInstallAppInTeamsMessage(
   detected: boolean,
   tenantIdFromConfig: string,
   appId: string,
+  botId: string | undefined,
   browser: constants.Browser,
   browserArguments: string[]
 ): Promise<boolean> {
-  cliLogger.necessaryLog(
-    LogLevel.Warning,
-    detected ? installApp.detection : installApp.description
-  );
+  const messages = botId
+    ? [
+        installApp.bot.description,
+        installApp.bot.guide1,
+        installApp.bot.guide2,
+        installApp.bot.finish,
+      ]
+    : [installApp.description, installApp.guide, installApp.finish];
+  const message = messages.join("\n");
+  cliLogger.necessaryLog(LogLevel.Warning, message);
+  installAppSingleSelect.options = [installOptionItem];
+  if (botId) {
+    (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
+  }
+  (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);
   const result = await CLIUIInstance.selectOption(installAppSingleSelect);
   if (result.isOk()) {
     if (result.value.result === cancelOptionItem.id) {
@@ -64,6 +87,18 @@ export async function showInstallAppInTeamsMessage(
         false,
         tenantIdFromConfig,
         appId,
+        botId,
+        browser,
+        browserArguments
+      );
+    } else if (result.value.result === configureOutlookOptionItem.id) {
+      const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+      await open(url);
+      return await showInstallAppInTeamsMessage(
+        false,
+        tenantIdFromConfig,
+        appId,
+        botId,
         browser,
         browserArguments
       );
@@ -74,6 +109,7 @@ export async function showInstallAppInTeamsMessage(
             true,
             tenantIdFromConfig,
             appId,
+            botId,
             browser,
             browserArguments
           )

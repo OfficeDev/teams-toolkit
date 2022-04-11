@@ -12,6 +12,7 @@ import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import envTreeProviderInstance from "./environmentTreeViewProvider";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -111,7 +112,6 @@ class TreeViewManager {
     const disposables: vscode.Disposable[] = [];
 
     this.registerAccount(disposables);
-    this.registerEnvironment(disposables);
 
     return disposables;
   }
@@ -123,11 +123,10 @@ class TreeViewManager {
   }
 
   private registerEnvironment(disposables: vscode.Disposable[]) {
-    const environmentProvider = new CommandsTreeViewProvider([]);
     disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-environment", environmentProvider)
+      vscode.window.registerTreeDataProvider("teamsfx-environment", envTreeProviderInstance)
     );
-    this.treeviewMap.set("teamsfx-environment", environmentProvider);
+    this.treeviewMap.set("teamsfx-environment", envTreeProviderInstance);
   }
 
   private getDevelopmentCommands(isNonSPFx: boolean, hasAdaptiveCard: boolean) {

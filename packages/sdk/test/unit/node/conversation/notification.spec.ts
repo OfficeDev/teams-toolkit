@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   BotFrameworkAdapter,
   CardFactory,
@@ -276,9 +279,10 @@ describe("Notification Tests - Node", () => {
     });
 
     it("members should return correct members", async () => {
-      sandbox
-        .stub(TeamsInfo, "getMembers")
-        .resolves([{} as TeamsChannelAccount, {} as TeamsChannelAccount]);
+      sandbox.stub(TeamsInfo, "getPagedMembers").resolves({
+        continuationToken: undefined as unknown as string,
+        members: [{} as TeamsChannelAccount, {} as TeamsChannelAccount],
+      });
       const conversationRef = {
         conversation: {
           conversationType: "channel",

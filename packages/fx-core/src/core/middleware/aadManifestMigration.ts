@@ -201,7 +201,34 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       "appPackage",
       "aad.template.json"
     );
+    const projectSettingsJson = await fs.readJson(projectSettingsPath);
+
+    if (projectSettingsJson.solutionSettings.capabilities.includes("Tab")) {
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
+        type: "Web",
+      });
+
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
+        type: "Spa",
+      });
+
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html",
+        type: "Spa",
+      });
+    }
+
+    if (projectSettingsJson.solutionSettings.capabilities.includes("Bot")) {
+      aadManifestJson.replyUrlsWithType.push({
+        url: "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html",
+        type: "Web",
+      });
+    }
+
     await fs.writeJSON(aadManifestPath, aadManifestJson, { spaces: 4, EOL: os.EOL });
+
     fileList.push(aadManifestPath);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
@@ -212,10 +239,18 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       TelemetryEvent.ProjectAadManifestMigrationAddSSOCapabilityStart
     );
 
-    const projectSettingsJson = await fs.readJson(projectSettingsPath);
+    if (
+      projectSettingsJson.solutionSettings.capabilities.includes("Tab") &&
+      !projectSettingsJson.solutionSettings.capabilities.includes("TabSSO")
+    ) {
+      projectSettingsJson.solutionSettings.capabilities.push("TabSSO");
+    }
 
-    if (!projectSettingsJson.solutionSettings.capabilities.includes("SSO")) {
-      projectSettingsJson.solutionSettings.capabilities.push("SSO");
+    if (
+      projectSettingsJson.solutionSettings.capabilities.includes("Bot") &&
+      !projectSettingsJson.solutionSettings.capabilities.includes("BotSSO")
+    ) {
+      projectSettingsJson.solutionSettings.capabilities.push("BotSSO");
     }
 
     await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
@@ -227,10 +262,6 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     const backupPath = path.join(inputs.projectPath as string, backupFolder);
     await fs.ensureDir(path.join(backupPath, ".fx", "configs"));
 
-    await fs.move(permissionFilePath, path.join(backupPath, "permissions.json"), {
-      overwrite: true,
-    });
-    fileList.push(path.join(backupPath, "permissions.json"));
     await fs.writeJSON(
       path.join(backupPath, ".fx", "configs", "projectSettings.json"),
       projectSettings,

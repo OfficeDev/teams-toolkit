@@ -92,18 +92,5 @@
     "identifierUris": [
         "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
     ],
-    "replyUrlsWithType": [
-        {
-            "url": "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html",
-            "type": "Web"
-        },
-        {
-            "url": "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
-            "type": "Spa"
-        },
-        {
-            "url": "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html",
-            "type": "Spa"
-        }
-    ]
+    "replyUrlsWithType": []
 }

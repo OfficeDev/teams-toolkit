@@ -243,6 +243,7 @@ export function syncFeatureFlags() {
   ).toString();
 
   process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
+  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
 }
 
 export class FeatureFlags {

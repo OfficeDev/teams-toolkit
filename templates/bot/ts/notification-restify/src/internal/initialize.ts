@@ -1,32 +1,25 @@
-// Create adapter.
 import { ConversationBot } from "@microsoft/teamsfx";
-import { BotFrameworkAdapter, TurnContext } from "botbuilder";
+import * as restify from "restify";
 
-// See https://aka.ms/about-bot-adapter to learn more about adapters.
-export const adapter = new BotFrameworkAdapter({
-  appId: process.env.BOT_ID,
-  appPassword: process.env.BOT_PASSWORD,
+// Create bot.
+export const bot = new ConversationBot({
+  // The bot id and password to create BotFrameworkAdapter.
+  // See https://aka.ms/about-bot-adapter to learn more about adapters.
+  adapterConfig: {
+    appId: process.env.BOT_ID,
+    appPassword: process.env.BOT_PASSWORD,
+  },
+  // Enable notification
+  notification: {
+    enabled: true,
+  },
 });
 
-// Catch-all for errors.
-// Set the onTurnError for the singleton BotFrameworkAdapter.
-adapter.onTurnError = async (context: TurnContext, error: Error) => {
-  // This check writes out errors to console log .vs. app insights.
-  // NOTE: In production environment, you should consider logging this to Azure
-  //       application insights.
-  console.error(`\n [onTurnError] unhandled error: ${error}`);
+// Create HTTP server.
+const server = restify.createServer();
 
-  // Send a trace activity, which will be displayed in Bot Framework Emulator
-  await context.sendTraceActivity(
-    "OnTurnError Trace",
-    `${error}`,
-    "https://www.botframework.com/schemas/error",
-    "TurnError"
-  );
+server.listen(process.env.port || process.env.PORT || 3978, () => {
+  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+});
 
-  // Send a message to the user
-  await context.sendActivity(`The bot encountered unhandled error:\n ${error.message}`);
-  await context.sendActivity("To continue to run this bot, please fix the bot source code.");
-};
-
-ConversationBot.initialize(adapter, { enableNotification: true });
+export { server };

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { ConversationReference, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -7,20 +10,15 @@ import {
   NotificationMiddleware,
 } from "../../../../src/conversation/middleware";
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
-import {
-  MockContext,
-  TestCommandHandler,
-  TestRegExpCommandHandler,
-  TestStorage,
-} from "./testUtils";
+import { MockContext, TestCommandHandler, TestStorage } from "./testUtils";
 
 chaiUse(chaiPromises);
 
 describe("CommandResponse Middleware Tests - Node", () => {
-  it("onTurn should correctly handle command if name equals", async () => {
+  it("onTurn should correctly trigger command if matches string", async () => {
     const testContext = new MockContext("test");
 
-    const testCommandHandler = new TestCommandHandler();
+    const testCommandHandler = new TestCommandHandler("test");
     const middleware = new CommandResponseMiddleware([testCommandHandler]);
     await middleware.onTurn(testContext as any, async () => {});
 
@@ -28,12 +26,51 @@ describe("CommandResponse Middleware Tests - Node", () => {
     assert.isTrue(testCommandHandler.isInvoked);
   });
 
-  it("onTurn should correctly handle command if pattern matches", async () => {
-    const testContext = new MockContext("test op1,op2");
+  it("onTurn should correctly trigger command if matches string array", async () => {
+    const testContext1 = new MockContext("test1");
+    const testContext2 = new MockContext("tes2");
 
-    const testCommandHandler = new TestRegExpCommandHandler();
+    const testCommandHandler = new TestCommandHandler(["test1", "test2"]);
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+    await middleware.onTurn(testContext1 as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+
+    await middleware.onTurn(testContext2 as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+  });
+
+  it("onTurn should correctly handle command if matches regexp", async () => {
+    const testContext = new MockContext("test some-input");
+
+    const testCommandHandler = new TestCommandHandler(/^test (.*?)$/i);
     const middleware = new CommandResponseMiddleware([testCommandHandler]);
     await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+    assert.isDefined(testCommandHandler.lastReceivedMessage);
+
+    const args = testCommandHandler.lastReceivedMessage?.matches as RegExpMatchArray;
+    assert.isTrue(args.length === 2);
+    assert.isTrue(args[1] === "some-input");
+  });
+
+  it("onTurn should correctly handle command if matches regexp array", async () => {
+    const testContext1 = new MockContext("test1 some-input");
+    const testContext2 = new MockContext("test2 some-input");
+
+    const testCommandHandler = new TestCommandHandler([/^test1 (.*?)$/i, /^test2 (.*?)$/i]);
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+    await middleware.onTurn(testContext1 as any, async () => {});
+
+    // Assert the test command handler is invoked
+    assert.isTrue(testCommandHandler.isInvoked);
+
+    await middleware.onTurn(testContext2 as any, async () => {});
 
     // Assert the test command handler is invoked
     assert.isTrue(testCommandHandler.isInvoked);
@@ -42,7 +79,7 @@ describe("CommandResponse Middleware Tests - Node", () => {
   it("onTurn should skip handling command if the text is not acceptable ", async () => {
     const testContext = new MockContext("invalid input");
 
-    const testCommandHandler = new TestRegExpCommandHandler();
+    const testCommandHandler = new TestCommandHandler("test");
     const middleware = new CommandResponseMiddleware([testCommandHandler]);
     await middleware.onTurn(testContext as any, async () => {});
 

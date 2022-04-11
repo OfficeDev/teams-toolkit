@@ -142,7 +142,7 @@ export class AppStudioPluginV3 {
         );
       }
     });
-    const res = await addCapabilities(pluginContext.root, capabilities);
+    const res = await addCapabilities(pluginContext.root, capabilities, inputs);
     if (res.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.addCapability);
     } else {

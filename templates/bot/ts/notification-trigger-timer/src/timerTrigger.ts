@@ -1,22 +1,20 @@
 import { AzureFunction, Context } from "@azure/functions";
-import { ConversationBot } from "@microsoft/teamsfx";
-import { buildAdaptiveCard } from "./adaptiveCard";
+import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
+import { CardData } from "./cardModels";
+import { bot } from "./internal/initialize";
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json
 const timerTrigger: AzureFunction = async function (context: Context, myTimer: any): Promise<void> {
   const timeStamp = new Date().toISOString();
-  for (const target of await ConversationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
-      buildAdaptiveCard(
-        {
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample time-triggered notification (${timeStamp}).`,
-          notificationUrl: "https://www.adaptivecards.io/",
-        },
-        notificationTemplate
-      )
+      AdaptiveCards.declare<CardData>(notificationTemplate).render({
+        title: "New Event Occurred!",
+        appName: "Contoso App Notification",
+        description: `This is a sample time-triggered notification (${timeStamp}).`,
+        notificationUrl: "https://www.adaptivecards.io/",
+      })
     );
   }
 

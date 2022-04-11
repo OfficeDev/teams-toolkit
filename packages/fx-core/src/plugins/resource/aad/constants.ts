@@ -98,6 +98,9 @@ export class ConfigKeys {
   static clientSecret = "clientSecret";
   static objectId = "objectId";
   static oauth2PermissionScopeId = "oauth2PermissionScopeId";
+  static frontendEndpoint = "frontendEndpoint";
+  static botId = "botId";
+  static botEndpoint = "botEndpoint";
   static teamsMobileDesktopAppId = "teamsMobileDesktopAppId";
   static teamsWebAppId = "teamsWebAppId";
   static domain = "domain";

@@ -16,7 +16,8 @@ import {
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { checkApiNameExist } from "./checker";
+import { checkApiNameExist, checkEmptyValue, checkHttp, checkIsGuid } from "./checker";
+
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
@@ -45,17 +46,21 @@ export class ApiNameQuestion extends BaseQuestionService implements IQuestionSer
       type: "text",
       name: Constants.questionKey.apiName,
       title: getLocalizedString("plugins.apiConnector.getQuestionApiName.title"),
+      placeholder: getLocalizedString("plugins.apiConnector.getQuestionApiName.placeholder"),
       validation: {
         validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const languageType: string = this.ctx?.projectSetting.programmingLanguage as string;
           const components: string[] = previousInputs![
             Constants.questionKey.componentsSelect
           ] as string[];
-          return await checkApiNameExist(
-            input,
-            previousInputs?.projectPath as string,
-            components,
-            languageType
+          return (
+            (await checkEmptyValue(input)) ||
+            (await checkApiNameExist(
+              input,
+              previousInputs?.projectPath as string,
+              components,
+              languageType
+            ))
           );
         },
       },
@@ -68,6 +73,9 @@ export const apiEndpointQuestion: TextInputQuestion = {
   title: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.title"),
   type: "text",
   placeholder: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.placeholder"), // Use the placeholder to display some description
+  validation: {
+    validFunc: checkHttp,
+  },
 };
 
 export const apiTypeQuestion: TextInputQuestion = {
@@ -90,6 +98,9 @@ export const appTenantIdQuestion: TextInputQuestion = {
   title: getLocalizedString("plugins.apiConnector.appTenantId.title"),
   type: "text",
   placeholder: getLocalizedString("plugins.apiConnector.appTenantId.placeholder"), // Use the placeholder to display some description
+  validation: {
+    validFunc: checkIsGuid,
+  },
 };
 
 export const appIdQuestion: TextInputQuestion = {
@@ -97,6 +108,9 @@ export const appIdQuestion: TextInputQuestion = {
   title: getLocalizedString("plugins.apiConnector.appId.title"),
   type: "text",
   placeholder: getLocalizedString("plugins.apiConnector.appId.placeholder"), // Use the placeholder to display some description
+  validation: {
+    validFunc: checkIsGuid,
+  },
 };
 
 export const reuseAppOption: OptionItem = {

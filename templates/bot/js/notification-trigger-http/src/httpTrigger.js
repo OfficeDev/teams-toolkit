@@ -1,10 +1,10 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { notificationBot } = require("./internal/initialize");
+const { bot } = require("./internal/initialize");
 
 // HTTP trigger to send notification.
 module.exports = async function (context, req) {
-  for (const target of await notificationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare(notificationTemplate).render({
         title: "New Event Occurred!",

@@ -11,8 +11,14 @@ import {
   AppPackageFolderName,
   v3,
   IStaticTab,
+  Inputs,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory, isConfigUnifyEnabled, deepCopy } from "../../../common";
+import {
+  getAppDirectory,
+  isConfigUnifyEnabled,
+  deepCopy,
+  isBotNotificationEnabled,
+} from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -40,8 +46,11 @@ import {
   DEFAULT_DEVELOPER_WEBSITE_URL,
   DEFAULT_DEVELOPER_PRIVACY_URL,
   DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
+  BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
+import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -231,7 +240,8 @@ export async function capabilityExceedLimit(
 
 export async function addCapabilities(
   projectRoot: string,
-  capabilities: v3.ManifestCapability[]
+  capabilities: v3.ManifestCapability[],
+  inputs: Inputs
 ): Promise<Result<any, FxError>> {
   const remoteManifestRes = await loadManifest(projectRoot, false);
   if (remoteManifestRes.isErr()) {
@@ -290,7 +300,27 @@ export async function addCapabilities(
           if (capability.existingApp) {
             remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
           } else {
-            remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+            if (remoteManifest.bots === undefined) {
+              remoteManifest.bots = [];
+            }
+
+            if (isBotNotificationEnabled()) {
+              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
+              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
+
+              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
+                // command and response bot
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
+              } else if (scenarios.includes(BotScenario.NotificationBot)) {
+                // notification
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION);
+              } else {
+                // legacy bot
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+              }
+            } else {
+              remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+            }
           }
         }
         break;

@@ -165,6 +165,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         lens.command = {
           title: title,
           command: "fx-extension.openConfigState",
+          arguments: [{ type: key.startsWith("state") ? "state" : "config" }],
         };
         return lens;
       }

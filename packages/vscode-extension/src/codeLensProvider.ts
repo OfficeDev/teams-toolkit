@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
+import { Mutex } from "async-mutex";
 import { AdaptiveCardsFolderName, ProjectConfigV3, Json } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
 import {
@@ -116,6 +117,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
 
   private projectConfigs: ProjectConfigV3 | undefined = undefined;
+  private mutex = new Mutex();
 
   public provideCodeLenses(
     document: vscode.TextDocument
@@ -136,19 +138,26 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     if (isConfigUnifyEnabled() && lens instanceof ManifestPlacholderCodeLens) {
       const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "");
       if (!this.projectConfigs) {
-        const inputs = getSystemInputs();
-        const getConfigRes = await core.getProjectConfigV3(inputs);
-        if (getConfigRes.isErr()) throw getConfigRes.error;
-        this.projectConfigs = getConfigRes.value;
+        const release = await this.mutex.acquire();
+        try {
+          if (!this.projectConfigs) {
+            const inputs = getSystemInputs();
+            const getConfigRes = await core.getProjectConfigV3(inputs);
+            if (getConfigRes.isErr()) throw getConfigRes.error;
+            this.projectConfigs = getConfigRes.value;
+          }
+        } finally {
+          release();
+        }
       }
 
       if (this.projectConfigs) {
-        let title = "";
+        let title = "👉";
         const localEnvInfo = this.projectConfigs.envInfos[environmentManager.getLocalEnvName()];
         const defaultEnvInfo = this.projectConfigs.envInfos[environmentManager.getDefaultEnvName()];
 
         const localValue = getPropertyByPath(localEnvInfo, key);
-        title = `${environmentManager.getLocalEnvName()}: ${localValue}`;
+        title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
 
         const defaultValue = getPropertyByPath(defaultEnvInfo, key);
         title = `${title}, ${defaultEnvInfo.envName}: ${defaultValue}`;

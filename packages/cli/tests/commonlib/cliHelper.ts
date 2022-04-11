@@ -1,5 +1,5 @@
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
-import { Capability, M365AppType, Resource, ResourceToDeploy } from "./constants";
+import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
 
 export class CliHelper {

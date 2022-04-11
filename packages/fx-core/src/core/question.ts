@@ -57,9 +57,6 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
-  M365CreateFromScratch = "m365-scratch",
-  M365AppType = "app-type",
-  M365Capabilities = "m365-capabilities",
   ExistingTabEndpoint = "existing-tab-endpoint",
 }
 

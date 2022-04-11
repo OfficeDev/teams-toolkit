@@ -94,11 +94,10 @@ export function hasSPFx(projectSetting: ProjectSettings): boolean {
   return solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.spfx);
 }
 
-export function hasAzureResource(projectSetting: ProjectSettings): boolean {
+export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = false): boolean {
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   if (!solutionSettings) return false;
   const azurePlugins = [
-    BuiltInFeaturePluginNames.aad,
     BuiltInFeaturePluginNames.apim,
     BuiltInFeaturePluginNames.bot,
     BuiltInFeaturePluginNames.dotnet,
@@ -109,6 +108,9 @@ export function hasAzureResource(projectSetting: ProjectSettings): boolean {
     BuiltInFeaturePluginNames.simpleAuth,
     BuiltInFeaturePluginNames.sql,
   ];
+  if (!excludeAad) {
+    azurePlugins.push(BuiltInFeaturePluginNames.aad);
+  }
   for (const pluginName of solutionSettings.activeResourcePlugins) {
     if (azurePlugins.includes(pluginName)) return true;
   }

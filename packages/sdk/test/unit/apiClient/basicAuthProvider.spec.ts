@@ -69,14 +69,14 @@ describe("BasicAuthProvider Tests - Node", () => {
     expect(() => {
       new BasicAuthProvider("", "test-password");
     })
-      .to.throw(ErrorWithCode, "Argument username is empty.")
+      .to.throw(ErrorWithCode, "Parameter username is empty")
       .with.property("code", ErrorCode.InvalidParameter);
 
     // Test when password is empty
     expect(() => {
       new BasicAuthProvider("test-username", "");
     })
-      .to.throw(ErrorWithCode, "Argument password is empty.")
+      .to.throw(ErrorWithCode, "Parameter password is empty")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 });

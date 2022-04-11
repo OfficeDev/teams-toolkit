@@ -314,9 +314,9 @@ export class UnzipTemplateError extends FrontendPluginError {
   }
 }
 
-export class FileSystemError extends FrontendPluginError {
+export class FileIOError extends FrontendPluginError {
   constructor(messages: [string, string]) {
-    super(ErrorType.System, "FileSystemError", messages, [tips.checkLog]);
+    super(ErrorType.System, "FileIOError", messages, [tips.checkLog]);
   }
 }
 

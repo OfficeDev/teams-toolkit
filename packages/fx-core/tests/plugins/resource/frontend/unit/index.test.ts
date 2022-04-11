@@ -17,10 +17,7 @@ import {
   NoStorageError,
   StaticWebsiteDisabledError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
-import {
-  FrontendConfigInfo,
-  FrontendPathInfo,
-} from "../../../../../src/plugins/resource/frontend/constants";
+import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";

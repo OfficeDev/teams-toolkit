@@ -10,8 +10,10 @@ import {
   UploadToStorageError,
   runWithErrorCatchAndThrow,
   NoBuildPathError,
+  FileIOError,
+  runWithErrorCatchAndWrap,
 } from "../resources/errors";
-import { Commands, Constants, FrontendPathInfo, TelemetryEvent } from "../constants";
+import { Commands, Constants, FrontendPathInfo as PathInfo, TelemetryEvent } from "../constants";
 import { ProgressHelper } from "../utils/progress-helper";
 import { DeployProgress } from "../resources/steps";
 import { Logger } from "../utils/logger";
@@ -20,8 +22,7 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { envFileName, envFileNamePrefix, RemoteEnvs } from "../env";
-import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { envFileName, envFileNamePrefix, envFilePath, loadEnvFile } from "../env";
 import * as v3error from "../v3/error";
 
 interface DeploymentInfo {
@@ -51,60 +52,104 @@ export class FrontendDeployment {
     return lastDeployTime < lastBuildTime;
   }
 
-  public static async doFrontendBuild(
-    componentPath: string,
-    envs: RemoteEnvs,
-    envName: string
-  ): Promise<void> {
+  public static async doFrontendBuild(componentPath: string, envName: string): Promise<void> {
     if (!(await FrontendDeployment.needBuild(componentPath, envName))) {
       return FrontendDeployment.skipBuild();
     }
 
     const progressHandler = ProgressHelper.progressHandler;
 
+    const scripts =
+      (await runWithErrorCatchAndWrap(
+        (error) => new FileIOError(error.message),
+        async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
+      )) ?? [];
+
+    if (!("install:teamsfx" in scripts)) {
+      // * Track legacy projects
+      TelemetryHelper.sendGeneralEvent(TelemetryEvent.InstallScriptNotFound);
+    }
+
     await progressHandler?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new NpmInstallError(), async () => {
-      await Utils.execute(Commands.InstallNodePackages, componentPath);
+      await Utils.execute(
+        "install:teamsfx" in scripts
+          ? Commands.InstallNodePackages
+          : Commands.DefaultInstallNodePackages,
+        componentPath
+      );
     });
 
     await progressHandler?.next(DeployProgress.steps.Build);
     await runWithErrorCatchAndThrow(new BuildError(), async () => {
-      await Utils.execute(Commands.BuildFrontend, componentPath, {
-        ...envs.customizedRemoteEnvs,
-        ...envs.teamsfxRemoteEnvs,
-      });
+      if ("build:teamsfx" in scripts) {
+        await Utils.execute(Commands.BuildFrontend, componentPath, {
+          TEAMS_FX_ENV: envName,
+        });
+      } else {
+        const envs = await loadEnvFile(envFilePath(envName, componentPath));
+        await Utils.execute(Commands.DefaultBuildFrontend, componentPath, {
+          ...envs.customizedRemoteEnvs,
+          ...envs.teamsfxRemoteEnvs,
+        });
+      }
     });
+
     await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastBuildTime: new Date().toISOString(),
     });
   }
-  public static async doFrontendBuildV3(
-    componentPath: string,
-    envs: RemoteEnvs,
-    envName: string,
-    progress?: IProgressHandler
-  ): Promise<void> {
+
+  public static async doFrontendBuildV3(componentPath: string, envName: string): Promise<void> {
+    const progress = ProgressHelper.progressHandler;
     const needBuild = await FrontendDeployment.needBuild(componentPath, envName);
     if (!needBuild) {
       await progress?.next(DeployProgress.steps.NPMInstall);
       await progress?.next(DeployProgress.steps.Build);
       return;
     }
+
+    const scripts =
+      (await runWithErrorCatchAndWrap(
+        (error) => new FileIOError(error.message),
+        async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
+      )) ?? [];
+
+    if (!("install:teamsfx" in scripts)) {
+      // * Track legacy projects
+      TelemetryHelper.sendGeneralEvent(TelemetryEvent.InstallScriptNotFound);
+    }
+
     await progress?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
-      await Utils.execute(Commands.InstallNodePackages, componentPath);
+      await Utils.execute(
+        "install:teamsfx" in scripts
+          ? Commands.InstallNodePackages
+          : Commands.DefaultInstallNodePackages,
+        componentPath
+      );
     });
+
     await progress?.next(DeployProgress.steps.Build);
     await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
-      await Utils.execute(Commands.BuildFrontend, componentPath, {
-        ...envs.customizedRemoteEnvs,
-        ...envs.teamsfxRemoteEnvs,
-      });
+      if ("build:teamsfx" in scripts) {
+        await Utils.execute(Commands.BuildFrontend, componentPath, {
+          TEAMS_FX_ENV: envName,
+        });
+      } else {
+        const envs = await loadEnvFile(envFilePath(envName, componentPath));
+        await Utils.execute(Commands.DefaultBuildFrontend, componentPath, {
+          ...envs.customizedRemoteEnvs,
+          ...envs.teamsfxRemoteEnvs,
+        });
+      }
     });
+
     await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastBuildTime: new Date().toISOString(),
     });
   }
+
   public static async skipBuild(): Promise<void> {
     Logger.info(Messages.SkipBuild);
 
@@ -114,7 +159,7 @@ export class FrontendDeployment {
   }
 
   public static async getBuiltPath(componentPath: string): Promise<string> {
-    const builtPath = path.join(componentPath, FrontendPathInfo.BuildPath);
+    const builtPath = path.join(componentPath, PathInfo.BuildPath);
     const pathExists = await fs.pathExists(builtPath);
     if (!pathExists) {
       throw new NoBuildPathError();
@@ -158,9 +203,9 @@ export class FrontendDeployment {
   public static async doFrontendDeploymentV3(
     client: AzureStorageClient,
     componentPath: string,
-    envName: string,
-    progress?: IProgressHandler
+    envName: string
   ): Promise<void> {
+    const progress = ProgressHelper.progressHandler;
     const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
     if (!needDeploy) {
       await progress?.next(DeployProgress.steps.getSrcAndDest);
@@ -205,7 +250,7 @@ export class FrontendDeployment {
     filter?: (itemPath: string) => boolean
   ): Promise<boolean> {
     const folderFilter = (itemPath: string) =>
-      !FrontendPathInfo.TabDeployIgnoreFolder.includes(path.basename(itemPath));
+      !PathInfo.TabDeployIgnoreFolder.includes(path.basename(itemPath));
 
     let changed = false;
     await Utils.forEachFileAndDir(
@@ -227,8 +272,8 @@ export class FrontendDeployment {
     componentPath: string,
     envName: string
   ): Promise<DeploymentInfo | undefined> {
-    const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
-    const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
+    const deploymentDir = path.join(componentPath, PathInfo.TabDeploymentFolderName);
+    const deploymentInfoPath = path.join(deploymentDir, PathInfo.TabDeploymentInfoFileName);
 
     try {
       const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
@@ -267,8 +312,8 @@ export class FrontendDeployment {
     envName: string,
     deploymentInfo: DeploymentInfo
   ): Promise<void> {
-    const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
-    const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
+    const deploymentDir = path.join(componentPath, PathInfo.TabDeploymentFolderName);
+    const deploymentInfoPath = path.join(deploymentDir, PathInfo.TabDeploymentInfoFileName);
 
     await fs.ensureDir(deploymentDir);
     let deploymentInfoJson: any = {};

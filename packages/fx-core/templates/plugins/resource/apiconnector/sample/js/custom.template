@@ -21,7 +21,7 @@ class CustomAuthProvider {
   };
 }
 
-// Loads current app's configuration and use app for auth.
+// Loads current app's configuration.
 const teamsFx = new teamsfxSdk.TeamsFx();
 
 const authProvider = new CustomAuthProvider(

@@ -6,7 +6,7 @@
 import { Argv } from "yargs";
 
 import { err, Func, FxError, Inputs, ok, Result } from "@microsoft/teamsfx-api";
-
+import CLIUIInstance from "../userInteraction";
 import { YargsCommand } from "../yargsCommand";
 import HelpParamGenerator from "../helpParamGenerator";
 import path from "path";

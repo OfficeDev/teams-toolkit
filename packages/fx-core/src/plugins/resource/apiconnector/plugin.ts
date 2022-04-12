@@ -75,14 +75,18 @@ export class ApiConnectorImpl {
         })
       );
       const msg: string = this.getNotificationMsg(config, languageType);
-      ctx.userInteraction
-        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
-        .then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === Notification.READ_MORE) {
-            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
-          }
-        });
+      if (inputs.platform != Platform.CLI) {
+        ctx.userInteraction
+          ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === Notification.READ_MORE) {
+              ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
+            }
+          });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -267,14 +271,15 @@ export class ApiConnectorImpl {
       }
     }
     retMsg += `${Notification.GetNpmInstallString()}`;
+    retMsg += `${Notification.GetLinkNotification()}`;
     return retMsg;
   }
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
-    const options = [];
+    const componentOptions = [];
     if (inputs.platform === Platform.CLI_HELP) {
-      options.push(botOption);
-      options.push(functionOption);
+      componentOptions.push(botOption);
+      componentOptions.push(functionOption);
     } else {
       const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
         ?.activeResourcePlugins;
@@ -285,12 +290,12 @@ export class ApiConnectorImpl {
         );
       }
       if (activePlugins.includes(ResourcePlugins.Bot)) {
-        options.push(botOption);
+        componentOptions.push(botOption);
       }
       if (activePlugins.includes(ResourcePlugins.Function)) {
-        options.push(functionOption);
+        componentOptions.push(functionOption);
       }
-      if (options.length === 0) {
+      if (componentOptions.length === 0) {
         throw ResultFactory.UserError(
           ErrorMessage.NoValidCompoentExistError.name,
           ErrorMessage.NoValidCompoentExistError.message()
@@ -300,7 +305,7 @@ export class ApiConnectorImpl {
     const whichComponent = new QTreeNode({
       name: Constants.questionKey.componentsSelect,
       type: "multiSelect",
-      staticOptions: options,
+      staticOptions: componentOptions,
       title: getLocalizedString("plugins.apiConnector.whichService.title"),
       validation: {
         validFunc: checkEmptySelect,

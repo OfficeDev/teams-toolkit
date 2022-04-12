@@ -4,35 +4,22 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, LogLevel, ok } from "@microsoft/teamsfx-api";
-
-import LogProvider from "../../../src/commonlib/log";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import { expect } from "../utils";
-import Add from "../../../src/cmds/add";
-import mockedEnv from "mocked-env";
+import { FxError, Inputs, LogLevel, ok, Func } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
+import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
+import CliTelemetry from "../../../src/telemetry/cliTelemetry";
+import Add from "../../../src/cmds/add";
+import { expect } from "../utils";
 
-describe("Add Command Tests", function () {
+describe("Add api-connector Command Tests", () => {
   const sandbox = sinon.createSandbox();
   const registeredCommands: string[] = [];
   let options: string[] = [];
   const positionals: string[] = [];
   const telemetryEvents: string[] = [];
-  const logs: string[] = [];
-  let mockedEnvRestore: () => void;
-
-  after(() => {
-    sandbox.restore();
-  });
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_AAD_MANIFEST: "true",
-    });
-
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });
@@ -65,14 +52,9 @@ describe("Add Command Tests", function () {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
-
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      logs.push(message);
-    });
   });
 
-  this.afterEach(() => {
-    mockedEnvRestore();
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -88,21 +70,26 @@ describe("Add Command Tests", function () {
       "azure-sql",
       "azure-apim",
       "azure-keyvault",
-      "cicd",
       "api-connection",
-      "sso",
     ]);
   });
 
-  it("Add SSO", async () => {
+  it("Add api-connection Command Running Check", async () => {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure/fx-resource-cicd",
+          method: "addCICDWorkflows",
+        });
         return ok("");
       });
     const cmd = new Add();
-    const sso = cmd.subCommands.find((cmd) => cmd.commandHead === "sso");
-    await sso!.handler({});
-    expect(telemetryEvents).deep.equals([TelemetryEvent.AddSsoStart, TelemetryEvent.AddSso]);
+    const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "cicd");
+    await cicd!.handler({});
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ConnectExistingApiStart,
+      TelemetryEvent.ConnectExistingApi,
+    ]);
   });
 });

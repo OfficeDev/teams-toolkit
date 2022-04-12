@@ -78,6 +78,7 @@ describe("Add CICD Command Tests", function () {
       "azure-apim",
       "azure-keyvault",
       "cicd",
+      "api-connection",
     ]);
   });
 

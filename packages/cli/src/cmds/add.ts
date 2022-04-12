@@ -86,7 +86,7 @@ export class AddCICD extends YargsCommand {
 
 export class AddExistingApi extends YargsCommand {
   public readonly commandHead = `api-connection`;
-  public readonly command = `${this.commandHead} [auth-type]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "Add Connection to an API";
 
   public readonly subCommands: YargsCommand[] = [];
@@ -105,7 +105,9 @@ export class AddExistingApi extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
-
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
+      TelemetryEvent.ConnectExistingApiStart
+    );
     const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
@@ -124,6 +126,10 @@ export class AddExistingApi extends YargsCommand {
         return err(result.error);
       }
     }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConnectExistingApiStart, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvRelatedProperty(rootFolder, inputs),
+    });
     return ok(null);
   }
 }

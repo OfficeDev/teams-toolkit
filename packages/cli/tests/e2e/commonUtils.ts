@@ -267,9 +267,8 @@ export async function cleanUpResourceGroup(appName: string, envName?: string): P
 }
 
 export async function deleteResourceGroupByName(name: string): Promise<boolean> {
-  const manager = await ResourceGroupManager.init();
-  if (await manager.hasResourceGroup(name)) {
-    const result = await manager.deleteResourceGroup(name);
+  if (await ResourceGroupManager.hasResourceGroup(name)) {
+    const result = await ResourceGroupManager.deleteResourceGroup(name);
     if (result) {
       console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
     } else {
@@ -319,50 +318,8 @@ export async function cleanUp(
   ]);
 }
 
-export async function cleanUpResourcesCreatedHoursAgo(
-  type: "aad" | "rg",
-  contains: string,
-  hours?: number,
-  retryTimes = 5
-) {
-  if (type === "aad") {
-    const aadManager = await AadManager.init();
-    await aadManager.deleteAadApps(contains, hours, retryTimes);
-  } else {
-    const rgManager = await ResourceGroupManager.init();
-    const groups = await rgManager.searchResourceGroups(contains);
-    const filteredGroups =
-      hours && hours > 0
-        ? groups.filter((group: { name?: string }) => {
-            const name = group.name!;
-            const startPos = name.indexOf(contains) + contains.length;
-            const createdTime = Number(name.slice(startPos, startPos + 13));
-            return Date.now() - createdTime > hours * 3600 * 1000;
-          })
-        : groups;
-
-    const promises = filteredGroups.map((rg: { name?: string }) =>
-      rgManager.deleteResourceGroup(rg.name!, retryTimes)
-    );
-    const results = await Promise.all(promises);
-    results.forEach((result, index) => {
-      if (result) {
-        console.log(
-          `[Successfully] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
-        );
-      } else {
-        console.error(
-          `[Failed] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
-        );
-      }
-    });
-    return results;
-  }
-}
-
 export async function createResourceGroup(name: string, location: string) {
-  const manager = await ResourceGroupManager.init();
-  const result = await manager.createOrUpdateResourceGroup(name, location);
+  const result = await ResourceGroupManager.createOrUpdateResourceGroup(name, location);
   if (result) {
     console.log(`[Successfully] create resource group ${name}.`);
   } else {

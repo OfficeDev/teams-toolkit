@@ -59,6 +59,8 @@ export interface AuthProvider {
     AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
 }
 
+export { AxiosInstance }
+
 // @beta
 export class BasicAuthProvider implements AuthProvider {
     constructor(userName: string, password: string);

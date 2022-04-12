@@ -2,13 +2,32 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
+import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
-import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
+import { Mutex } from "async-mutex";
+import { AdaptiveCardsFolderName, ProjectConfigV3, Json } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
-import { isConfigUnifyEnabled, getPermissionMap, getAllowedAppMaps } from "@microsoft/teamsfx-core";
+import {
+  isConfigUnifyEnabled,
+  getPermissionMap,
+  getAllowedAppMaps,
+  environmentManager,
+  getPropertyByPath,
+} from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
+import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
+
+export class ManifestPlacholderCodeLens extends vscode.CodeLens {
+  constructor(
+    public readonly placeholder: string,
+    range: vscode.Range,
+    command?: vscode.Command | undefined
+  ) {
+    super(range, command);
+  }
+}
 
 /**
  * CodelensProvider
@@ -95,17 +114,62 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
-  private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
-  private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
+
+  private projectConfigs: ProjectConfigV3 | undefined = undefined;
+  private mutex = new Mutex();
 
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
     if (document.fileName.endsWith("template.json")) {
+      // env info needs to be reloaded
+      this.projectConfigs = undefined;
       return this.computeTemplateCodeLenses(document);
     } else {
       return this.computePreviewCodeLenses(document);
     }
+  }
+
+  public async resolveCodeLens(
+    lens: vscode.CodeLens,
+    _token: vscode.CancellationToken
+  ): Promise<vscode.CodeLens> {
+    if (isConfigUnifyEnabled() && lens instanceof ManifestPlacholderCodeLens) {
+      const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "");
+      if (!this.projectConfigs) {
+        const release = await this.mutex.acquire();
+        try {
+          if (!this.projectConfigs) {
+            const inputs = getSystemInputs();
+            const getConfigRes = await core.getProjectConfigV3(inputs);
+            if (getConfigRes.isErr()) throw getConfigRes.error;
+            this.projectConfigs = getConfigRes.value;
+          }
+        } finally {
+          release();
+        }
+      }
+
+      if (this.projectConfigs) {
+        let title = "👉";
+        const localEnvInfo = this.projectConfigs.envInfos[environmentManager.getLocalEnvName()];
+        const defaultEnvInfo = this.projectConfigs.envInfos[environmentManager.getDefaultEnvName()];
+
+        const localValue = getPropertyByPath(localEnvInfo, key);
+        title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+
+        const defaultValue = getPropertyByPath(defaultEnvInfo, key);
+        title = `${title}, ${defaultEnvInfo.envName}: ${defaultValue}`;
+
+        lens.command = {
+          title: title,
+          command: "fx-extension.openConfigState",
+          arguments: [{ type: key.startsWith("state") ? "state" : "config" }],
+        };
+        return lens;
+      }
+    }
+    return lens;
   }
 
   private computeTemplateCodeLenses(document: vscode.TextDocument) {
@@ -138,30 +202,41 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
     }
 
-    if (
-      document.fileName.endsWith(
-        isConfigUnifyEnabled() ? "manifest.template.json" : "manifest.remote.template.json"
-      )
-    ) {
-      const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
-        title: "✏️Edit the config file",
-        command: "fx-extension.openConfigState",
-        arguments: [{ type: "config" }],
-      });
-      codeLenses.push(...configCodelenses);
+    if (isConfigUnifyEnabled()) {
+      if (document.fileName.endsWith("manifest.template.json")) {
+        // code lens will be resolved later
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
+        codeLenses.push(...configCodelenses);
 
-      const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
-        title: "👀View the state file",
-        command: "fx-extension.openConfigState",
-        arguments: [{ type: "state" }],
-      });
-      codeLenses.push(...stateCodelenses);
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
+        codeLenses.push(...stateCodelenses);
+      }
+    } else {
+      if (document.fileName.endsWith("manifest.remote.template.json")) {
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex, {
+          title: "✏️Edit the config file",
+          command: "fx-extension.openConfigState",
+          arguments: [{ type: "config" }],
+        });
+        codeLenses.push(...configCodelenses);
+
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex, {
+          title: "👀View the state file",
+          command: "fx-extension.openConfigState",
+          arguments: [{ type: "state" }],
+        });
+        codeLenses.push(...stateCodelenses);
+      }
     }
 
     return codeLenses;
   }
 
-  private calculateCodeLens(document: vscode.TextDocument, regex: RegExp, command: vscode.Command) {
+  private calculateCodeLens(
+    document: vscode.TextDocument,
+    regex: RegExp,
+    command?: vscode.Command
+  ) {
     let matches;
     const codeLenses: vscode.CodeLens[] = [];
     const text = document.getText();
@@ -172,7 +247,11 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       const range = document.getWordRangeAtPosition(position, new RegExp(regex));
 
       if (range) {
-        codeLenses.push(new vscode.CodeLens(range, command));
+        if (command) {
+          codeLenses.push(new vscode.CodeLens(range, command));
+        } else {
+          codeLenses.push(new ManifestPlacholderCodeLens(matches[0], range, undefined));
+        }
       }
     }
     return codeLenses;

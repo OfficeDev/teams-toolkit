@@ -35,6 +35,8 @@ import {
   AadManifestMissingReplyUrlsWithType,
   AadManifestMissingIdentifierUris,
   AadManifestMissingName,
+  CannotGenerateIdentifierUrisError,
+  AadManifestNotProvisioned,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -67,6 +69,9 @@ import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tool
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
+import { BotOptionItem, TabOptionItem } from "../../solution/fx-solution/question";
+import { format, Formats } from "./utils/format";
+import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -232,17 +237,43 @@ export class AadAppForTeamsImpl {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
+    const userSetFrontendDomain = format(
+      ctx.envInfo.config.auth?.frontendDomain as string,
+      Formats.Domain
+    );
+    const userSetBotId = format(ctx.envInfo.config.auth?.botId as string, Formats.UUID);
+    const userSetBotEndpoint = format(
+      ctx.envInfo.config.auth?.botEndpoint as string,
+      Formats.Endpoint
+    );
+
     if (!config.frontendDomain && !config.botId) {
-      throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
+      const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+      if (
+        azureSolutionSettings?.capabilities.includes("Tab") ||
+        azureSolutionSettings?.capabilities.includes("Bot")
+      ) {
+        throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
+      }
     }
 
-    let applicationIdUri = "api://";
-    applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
-    applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
-    config.applicationIdUri = applicationIdUri;
+    config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
+    config.botId = userSetBotId ?? config.botId;
+    config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
-    ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
-    config.saveConfigIntoContext(ctx);
+    if (config.frontendDomain || config.botId) {
+      let applicationIdUri = "api://";
+      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+      applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
+      config.applicationIdUri = applicationIdUri;
+      ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
+    } else {
+      throw ResultFactory.UserError(
+        CannotGenerateIdentifierUrisError.name,
+        CannotGenerateIdentifierUrisError.message()
+      );
+    }
+    config.saveConfigIntoContext(ctx, config.frontendDomain, config.botId, config.botEndpoint);
     return ResultFactory.Success();
   }
 
@@ -396,18 +427,24 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const result: ArmTemplateResult = {
-      Parameters: JSON.parse(
-        await fs.readFile(
-          path.join(
-            getTemplatesFolder(),
-            TemplatePathInfo.BicepTemplateRelativeDir,
-            Bicep.ParameterFileName
-          ),
-          ConstantString.UTF8Encoding
-        )
-      ),
-    };
+    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    let result: ArmTemplateResult | undefined = undefined;
+
+    if (capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+      result = {
+        Parameters: JSON.parse(
+          await fs.readFile(
+            path.join(
+              getTemplatesFolder(),
+              TemplatePathInfo.BicepTemplateRelativeDir,
+              Bicep.ParameterFileName
+            ),
+            ConstantString.UTF8Encoding
+          )
+        ),
+      };
+    }
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
@@ -754,7 +791,8 @@ export class AadAppForTeamsImpl {
       }
 
       if (azureSolutionSettings.capabilities.includes("Tab")) {
-        const tabRedirectUrl1 = "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html";
+        const tabRedirectUrl1 =
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
           aadJson.replyUrlsWithType.push({
@@ -764,7 +802,7 @@ export class AadAppForTeamsImpl {
         }
 
         const tabRedirectUrl2 =
-          "{{state.fx-resource-frontend-hosting.endpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
           aadJson.replyUrlsWithType.push({
@@ -774,7 +812,7 @@ export class AadAppForTeamsImpl {
         }
 
         const tabRedirectUrl3 =
-          "{{state.fx-resource-frontend-hosting.endpoint}}/blank-auth-end.html";
+          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
           aadJson.replyUrlsWithType.push({
@@ -785,7 +823,7 @@ export class AadAppForTeamsImpl {
       }
 
       if (azureSolutionSettings.capabilities.includes("Bot")) {
-        const botRedirectUrl = "{{state.fx-resource-bot.siteEndpoint}}/auth-end.html";
+        const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
 
         if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
           aadJson.replyUrlsWithType.push({
@@ -816,21 +854,20 @@ export class AadAppForTeamsImpl {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
-
-      const skip = Utils.skipAADProvision(ctx, false);
       DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
 
       await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
       await DialogUtils.progress?.start(ProgressDetail.Starting);
 
-      const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+      const skip = Utils.skipAADProvision(ctx, false);
+
+      const manifest = await this.loadAndBuildManifest(ctx);
 
       this.validateDeployManifest(manifest);
 
       await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
 
-      await this.writeManifestFileToBuildFolder(manifest, ctx);
       await DialogUtils.progress?.end(true);
 
       Utils.addLogAndTelemetry(
@@ -840,6 +877,23 @@ export class AadAppForTeamsImpl {
       );
     }
     return ResultFactory.Success();
+  }
+
+  public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
+    const isProvisionSucceeded = !!(ctx.envInfo.state
+      .get("solution")
+      ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+
+    if (!isProvisionSucceeded) {
+      throw ResultFactory.UserError(
+        AadManifestNotProvisioned.name,
+        AadManifestNotProvisioned.message()
+      );
+    }
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+    await this.writeManifestFileToBuildFolder(manifest, ctx);
+    return manifest;
   }
 
   private async writeManifestFileToBuildFolder(
@@ -861,13 +915,6 @@ export class AadAppForTeamsImpl {
       throw ResultFactory.UserError(
         AadManifestMissingObjectId.name,
         AadManifestMissingObjectId.message()
-      );
-    }
-
-    if (!manifest.replyUrlsWithType || manifest.replyUrlsWithType.length === 0) {
-      throw ResultFactory.UserError(
-        AadManifestMissingReplyUrlsWithType.name,
-        AadManifestMissingReplyUrlsWithType.message()
       );
     }
 

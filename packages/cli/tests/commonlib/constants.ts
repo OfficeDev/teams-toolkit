@@ -31,11 +31,8 @@ export enum Capability {
   Tab = "tab",
   Bot = "bot",
   MessagingExtension = "messaging-extension",
-}
-
-export enum M365AppType {
-  LaunchPage = "launch-page",
-  MessagingExtension = "messaging-extension",
+  M365SsoLaunchPage = "sso-launch-page",
+  M365SearchApp = "search-app",
 }
 
 export enum Resource {

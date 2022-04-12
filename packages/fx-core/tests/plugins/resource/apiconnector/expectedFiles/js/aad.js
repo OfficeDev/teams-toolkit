@@ -1,12 +1,12 @@
 const teamsfxSdk = require("@microsoft/teamsfx");
 
-// Loads current app's configuration
+// Loads current app's configuration, the sample uses client credential flow to acquire token for your API.
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App);
-// Initializes a new axios instance to call fake API
+// Initializes a new axios instance to call fake API.
 const appCredential = teamsFx.getCredential();
 const authProvider = new teamsfxSdk.BearerTokenAuthProvider(
   // Please replace '<your-api-scope>' with actual api scope value.
-  async () => await appCredential.getToken("<your-api-scope>")?.token
+  async () => (await appCredential.getToken("<your-api-scope>"))?.token
 );
 const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };

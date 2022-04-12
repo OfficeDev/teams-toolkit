@@ -20,11 +20,11 @@ const installOptionItem: OptionItem = {
   detail: installApp.installInTeamsDescription,
 };
 
-const connectToOutlookChannelOptionItem: OptionItem = {
-  id: installApp.outlookChannel.connectToOutlookChannel,
-  label: installApp.outlookChannel.connectToOutlookChannel,
-  description: installApp.outlookChannel.connectToOutlookChannelDescription,
-  detail: installApp.outlookChannel.connectToOutlookChannelDescription,
+const configureOutlookOptionItem: OptionItem = {
+  id: installApp.bot.configureOutlook,
+  label: installApp.bot.configureOutlook,
+  description: installApp.bot.configureOutlookDescription,
+  detail: installApp.bot.configureOutlookDescription,
 };
 
 const continueOptionItem: OptionItem = {
@@ -55,21 +55,19 @@ export async function showInstallAppInTeamsMessage(
   browser: constants.Browser,
   browserArguments: string[]
 ): Promise<boolean> {
-  cliLogger.necessaryLog(
-    LogLevel.Warning,
-    detected
-      ? installApp.detection
-      : botId
-      ? installApp.outlookChannel.description
-      : installApp.description
-  );
-  cliLogger.necessaryLog(
-    LogLevel.Warning,
-    botId ? installApp.outlookChannel.finish : installApp.finish
-  );
+  const messages = botId
+    ? [
+        installApp.bot.description,
+        installApp.bot.guide1,
+        installApp.bot.guide2,
+        installApp.bot.finish,
+      ]
+    : [installApp.description, installApp.guide, installApp.finish];
+  const message = messages.join("\n");
+  cliLogger.necessaryLog(LogLevel.Warning, message);
   installAppSingleSelect.options = [installOptionItem];
   if (botId) {
-    (installAppSingleSelect.options as OptionItem[]).push(connectToOutlookChannelOptionItem);
+    (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
   }
   (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);
   const result = await CLIUIInstance.selectOption(installAppSingleSelect);
@@ -93,7 +91,7 @@ export async function showInstallAppInTeamsMessage(
         browser,
         browserArguments
       );
-    } else if (result.value.result === connectToOutlookChannelOptionItem.id) {
+    } else if (result.value.result === configureOutlookOptionItem.id) {
       const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
       await open(url);
       return await showInstallAppInTeamsMessage(

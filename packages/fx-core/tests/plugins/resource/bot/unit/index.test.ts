@@ -49,6 +49,9 @@ import {
 } from "../../../solution/util";
 import { randomAppName } from "../../../../core/utils";
 import * as os from "os";
+import { ResourcePlugins } from "../../../../../src/common/constants";
+import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
+import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
@@ -736,9 +739,12 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      pluginContext.localSettings?.bot?.set(
-        LocalSettingsBotKeys.BotEndpoint,
-        "https://bot.local.endpoint"
+      pluginContext.envInfo.state.set(
+        ResourcePlugins.Bot,
+        new Map<string, string>([
+          [ConfigKeys.SITE_ENDPOINT, "https://bot.local.endpoint"],
+          [BOT_ID, "bot_id"],
+        ])
       );
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();

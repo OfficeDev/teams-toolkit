@@ -3,7 +3,6 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
-  UnifyConfigs = "unifyConfigs",
   EnableExistingApp = "enableExistingApp",
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
   YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
@@ -32,3 +31,6 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }
+
+export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
+export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;

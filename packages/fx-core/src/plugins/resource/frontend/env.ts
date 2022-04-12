@@ -10,7 +10,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvent } from "./constants";
 import { Utils } from "./utils";
 import { Logger } from "./utils/logger";
-import { ErrorMessages as Messages, FileSystemError } from "./resources/errors";
+import { ErrorMessages as Messages, FileIOError } from "./resources/errors";
 
 export interface RemoteEnvs {
   teamsfxRemoteEnvs: { [key: string]: string };
@@ -42,7 +42,7 @@ export async function loadEnvFile(envPath: string): Promise<RemoteEnvs> {
     return await _loadEnvFile(envPath);
   } catch (e: any) {
     Logger.error(e.toString());
-    const error = new FileSystemError(Messages.FailedLoadEnv(envPath));
+    const error = new FileIOError(Messages.FailedLoadEnv(envPath));
     Logger.error(error.toString());
     TelemetryHelper.sendErrorEvent(TelemetryEvent.LoadEnvFile, error);
   }
@@ -73,7 +73,7 @@ export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<vo
     return await _saveEnvFile(envPath, envs, configs);
   } catch (e: any) {
     Logger.error(e.toString());
-    const error = new FileSystemError(Messages.FailedSaveEnv(envPath));
+    const error = new FileIOError(Messages.FailedSaveEnv(envPath));
     Logger.error(error.toString());
     TelemetryHelper.sendErrorEvent(TelemetryEvent.SaveEnvFile, error);
   }

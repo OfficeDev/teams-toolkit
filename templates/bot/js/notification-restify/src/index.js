@@ -1,13 +1,10 @@
-const { TeamsActivityHandler } = require("botbuilder");
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
-const { adapter } = require("./internal/initialize");
-const { server } = require("./internal/server");
+const { bot, server } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { notificationBot } = require("./internal/initialize");
 
 // HTTP trigger to send notification.
 server.post("/api/notification", async (req, res) => {
-  for (const target of await notificationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare(notificationTemplate).render({
         title: "New Event Occurred!",
@@ -61,10 +58,7 @@ server.post("/api/notification", async (req, res) => {
   res.json({});
 });
 
-// Process Teams activity with Bot Framework.
-const handler = new TeamsActivityHandler();
+// Bot Framework message handler.
 server.post("/api/messages", async (req, res) => {
-  await adapter.processActivity(req, res, async (context) => {
-    await handler.run(context);
-  });
+  await bot.requestHandler(req, res);
 });

@@ -23,6 +23,7 @@ import {
   Result,
   SystemError,
   UnknownError,
+  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import {
@@ -489,6 +490,8 @@ export default class Preview extends YargsCommand {
           );
           cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
         }
+      } else {
+        return err(UserCancelError);
       }
     } else {
       const internalId = await getTeamsAppInternalId(localTeamsAppId);
@@ -794,6 +797,8 @@ export default class Preview extends YargsCommand {
             this.telemetryProperties
           );
         }
+      } else {
+        return err(UserCancelError);
       }
     } else {
       const internalId = await getTeamsAppInternalId(remoteTeamsAppId);

@@ -868,7 +868,7 @@ export function canAddSso(
   const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
   if (
-    ((containTab && containTabSsoItem && !containBot) ||
+    ((containTabSsoItem && !containBot) ||
       (containBot && containBotSsoItem && !containTab) ||
       (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
     containAadPlugin

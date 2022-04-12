@@ -74,6 +74,7 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
+      tabIndexPath: "/index",
       aadId: uuid(),
       botDomain: "botDomain",
       botId: uuid(),
@@ -118,6 +119,7 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
+      tabIndexPath: "/index",
       aadId: uuid(),
       botDomain: "botDomain",
       botId: uuid(),

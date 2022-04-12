@@ -31,6 +31,7 @@ describe("AadGenerateArmTemplates", () => {
     ];
     const pluginContext: PluginContext = await TestHelper.pluginContext(new Map(), true, false);
     pluginContext.projectSettings!.solutionSettings = {
+      capabilities: ["Tab", "TabSSO"],
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
 

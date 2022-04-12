@@ -44,11 +44,17 @@ const subscriptionIcon = new vscode.ThemeIcon("key");
 const resourceGroupIcon = new vscode.ThemeIcon("symbol-method");
 
 export class EnvironmentNode extends DynamicNode {
+  private _children: DynamicNode[] | undefined;
+
   constructor(public identifier: string) {
     super(identifier, vscode.TreeItemCollapsibleState.None);
   }
 
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+    if (this._children !== undefined) {
+      return this._children;
+    }
+
     const children: DynamicNode[] = [];
     if (this.identifier !== LocalEnvironmentName) {
       // check account status
@@ -64,18 +70,21 @@ export class EnvironmentNode extends DynamicNode {
         children.push(subscriptionNode);
       }
     }
+
+    this._children = children;
     return children;
   }
 
   public async getTreeItem(): Promise<vscode.TreeItem> {
     const envInfo = await this.getCurrentEnvInfo(this.identifier);
-    const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
-
     this.iconPath = envInfo === EnvInfo.ProvisionedRemoteEnv ? provisionedIcon : nonProvisionedIcon;
+
+    const children = await this.getChildren();
     this.collapsibleState =
-      envInfo === EnvInfo.Local || envInfo === EnvInfo.LocalForExistingApp || isSpfxProject
-        ? vscode.TreeItemCollapsibleState.None
-        : vscode.TreeItemCollapsibleState.Expanded;
+      children && children.length > 0
+        ? vscode.TreeItemCollapsibleState.Expanded
+        : vscode.TreeItemCollapsibleState.None;
+
     this.description = envInfo === EnvInfo.ProvisionedRemoteEnv ? "(Provisioned)" : "";
     this.contextValue = envInfo;
     return this;

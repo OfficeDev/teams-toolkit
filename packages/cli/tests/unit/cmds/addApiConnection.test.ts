@@ -61,17 +61,7 @@ describe("Add api-connector Command Tests", () => {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals([
-      "add <feature>",
-      "bot",
-      "messaging-extension",
-      "tab",
-      "azure-function",
-      "azure-sql",
-      "azure-apim",
-      "azure-keyvault",
-      "api-connection",
-    ]);
+    expect(registeredCommands).deep.equals(["add <feature>", "api-connection"]);
   });
 
   it("Add api-connection Command Running Check", async () => {
@@ -79,13 +69,13 @@ describe("Add api-connector Command Tests", () => {
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
         expect(func).deep.equals({
-          namespace: "fx-solution-azure/fx-resource-cicd",
-          method: "addCICDWorkflows",
+          namespace: "fx-solution-azure/fx-resource-api-connector",
+          method: "connectExistingApi",
         });
         return ok("");
       });
     const cmd = new Add();
-    const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "cicd");
+    const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "api-connection");
     await cicd!.handler({});
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ConnectExistingApiStart,

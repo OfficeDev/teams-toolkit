@@ -31,7 +31,11 @@ import {
   CapabilityAddNotification,
   CapabilityAddTab,
 } from "./capability";
-import { isBotNotificationEnabled, isAadManifestEnabled } from "@microsoft/teamsfx-core";
+import {
+  isBotNotificationEnabled,
+  isAadManifestEnabled,
+  isApiConnectEnabled,
+} from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
@@ -200,7 +204,7 @@ export default class Add extends YargsCommand {
 
     // Category 3: Standalone features
     new AddCICD(),
-    new AddExistingApi(),
+    ...(isApiConnectEnabled() ? [new AddExistingApi()] : []),
     ...(isAadManifestEnabled() ? [new AddSso()] : []),
   ];
 

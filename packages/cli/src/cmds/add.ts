@@ -72,10 +72,15 @@ export class AddCICD extends YargsCommand {
 
 export class AddExistingApi extends YargsCommand {
   public readonly commandHead = `api-connection`;
-  public readonly command = this.commandHead;
+  public readonly command = `${this.commandHead} [auth-type]`;
   public readonly description = "Add Connection to an API";
 
+  public readonly subCommands: YargsCommand[] = [];
+
   public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
     this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
     return yargs.version(false).options(this.params);
   }

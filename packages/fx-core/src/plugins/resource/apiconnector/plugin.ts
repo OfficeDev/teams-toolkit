@@ -48,6 +48,7 @@ import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
+import { checkEmptySelect } from "./checker";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -302,15 +303,7 @@ export class ApiConnectorImpl {
       staticOptions: options,
       title: getLocalizedString("plugins.apiConnector.whichService.title"),
       validation: {
-        validFunc: async (input: string[]): Promise<string | undefined> => {
-          const name = input as string[];
-          if (name.length === 0) {
-            return getLocalizedString(
-              "plugins.apiConnector.questionComponentSelect.emptySelection"
-            );
-          }
-          return undefined;
-        },
+        validFunc: checkEmptySelect,
       },
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });

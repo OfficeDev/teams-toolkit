@@ -35,6 +35,14 @@ export async function checkEmptyValue(input: string): Promise<string | undefined
   return getLocalizedString("plugins.apiConnector.Question.validation.EmptyValue");
 }
 
+export async function checkEmptySelect(input: string[]): Promise<string | undefined> {
+  const name = input as string[];
+  if (name.length === 0) {
+    return getLocalizedString("plugins.apiConnector.questionComponentSelect.emptySelection");
+  }
+  return undefined;
+}
+
 export async function checkIsGuid(input: string): Promise<string | undefined> {
   if (guidRegex.exec(input)) {
     return undefined;

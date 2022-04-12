@@ -12,11 +12,7 @@ import "reflect-metadata";
 import { Container } from "typedi";
 import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import {
-  getAzureProjectRoot,
-  getAzureProjectRootWithStaticTabs,
-  MockUserInteraction,
-} from "../helper";
+import { getAzureProjectRoot, MockUserInteraction } from "../helper";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
@@ -78,7 +74,6 @@ describe("Add capability", () => {
   let plugin: AppStudioPluginV3;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
-  let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
     plugin = new AppStudioPluginV3();
@@ -99,10 +94,6 @@ describe("Add capability", () => {
     inputs = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
-    };
-    inputsWithStaticTabs = {
-      platform: Platform.VSCode,
-      projectPath: getAzureProjectRootWithStaticTabs(),
     };
   });
 
@@ -142,14 +133,10 @@ describe("Add capability", () => {
     });
 
     const capabilities = [{ name: "staticTab" as const }];
-    const addCapabilityResult = await plugin.addCapabilities(
-      ctx,
-      inputsWithStaticTabs,
-      capabilities
-    );
+    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputsWithStaticTabs);
+    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
@@ -187,8 +174,8 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
-      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[1].commandLists);
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[0].commandLists);
     }
   });
 
@@ -219,9 +206,9 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
+      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
       chai.assert.equal(
-        loadedManifestTemplate.value.remote.bots?.[1].commandLists?.[0].commands?.[0].title,
+        loadedManifestTemplate.value.remote.bots?.[0].commandLists?.[0].commands?.[0].title,
         "helloWorld"
       );
     }
@@ -233,7 +220,6 @@ describe("Update capability", () => {
   let plugin: AppStudioPluginV3;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
-  let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
     plugin = new AppStudioPluginV3();
@@ -255,10 +241,6 @@ describe("Update capability", () => {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    inputsWithStaticTabs = {
-      platform: Platform.VSCode,
-      projectPath: getAzureProjectRootWithStaticTabs(),
-    };
 
     sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {});
   });
@@ -272,7 +254,7 @@ describe("Update capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+    const result = await plugin.updateCapability(ctx, inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -311,7 +293,7 @@ describe("Update capability", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+    const result = await plugin.updateCapability(ctx, inputs, {
       name: "Bot",
       snippet: bot,
     });
@@ -327,7 +309,6 @@ describe("Delete capability", () => {
   let plugin: AppStudioPluginV3;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
-  let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
     plugin = new AppStudioPluginV3();
@@ -349,10 +330,6 @@ describe("Delete capability", () => {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    inputsWithStaticTabs = {
-      platform: Platform.VSCode,
-      projectPath: getAzureProjectRootWithStaticTabs(),
-    };
 
     sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {});
   });
@@ -366,7 +343,7 @@ describe("Delete capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await plugin.deleteCapability(ctx, inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -378,7 +355,7 @@ describe("Delete capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await plugin.deleteCapability(ctx, inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -396,7 +373,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete bot should failed", async () => {
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await plugin.deleteCapability(ctx, inputs, {
       name: "Bot",
     });
     chai.assert.isTrue(result.isErr());

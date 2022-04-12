@@ -181,7 +181,6 @@ export const LOCAL_TENANT_ID = "local_tenantId";
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
-export const TEAMS_APP_ID = "teamsAppId";
 
 export const AzureRoleAssignmentsHelpLink =
   "https://aka.ms/teamsfx-azure-role-assignments-help-link";

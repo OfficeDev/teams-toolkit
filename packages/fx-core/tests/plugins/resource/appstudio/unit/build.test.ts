@@ -93,7 +93,6 @@ describe("Build Teams Package", () => {
       botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: uuid(),
-      tabIndexPath: "/index.html#",
     });
     sandbox.stub(fs, "move").resolves();
 
@@ -137,7 +136,6 @@ describe("Build Teams Package", () => {
       botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: uuid(),
-      tabIndexPath: "/index.html#",
     });
     sandbox.stub(fs, "move").resolves();
 

@@ -221,7 +221,7 @@ suite("handlers", () => {
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      chai.expect(ignoreEnvInfo).to.equal(false);
+      chai.expect(ignoreEnvInfo).to.equal(true);
       chai.expect(localDebugCalled).equals(1);
     });
 
@@ -534,7 +534,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
+          "undefined/templates/appPackage/manifest.local.template.json" as any
         )
       );
     });
@@ -553,7 +553,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
+          "undefined/templates/appPackage/manifest.remote.template.json" as any
         )
       );
     });

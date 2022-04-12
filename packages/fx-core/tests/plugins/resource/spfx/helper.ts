@@ -27,7 +27,6 @@ import {
 import { SPFXQuestionNames } from "../../../../src/plugins/resource/spfx/utils/questions";
 import faker from "faker";
 import sinon from "sinon";
-import { newEnvInfo } from "../../../../src";
 
 export class TestHelper {
   static getFakePluginContext(
@@ -49,7 +48,6 @@ export class TestHelper {
       : "helloworld";
     pluginContext.answers![SPFXQuestionNames.webpart_desp] = "test";
     pluginContext.answers![SPFXQuestionNames.framework_type] = framework;
-    pluginContext.envInfo = newEnvInfo("test", undefined, new Map<string, Map<string, string>>());
     return pluginContext;
   }
 }

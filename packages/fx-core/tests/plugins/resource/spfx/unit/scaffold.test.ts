@@ -12,8 +12,6 @@ import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/
 import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
-import { DefaultManifestProvider } from "../../../../../src/plugins/solution/fx-solution/v3/addFeature";
-import { ok, Void } from "@microsoft/teamsfx-api";
 
 describe("SPFxScaffold", function () {
   const testFolder = path.resolve("./tmp");
@@ -35,7 +33,6 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
   });
 
   it("scaffold SPFx project without framework", async function () {

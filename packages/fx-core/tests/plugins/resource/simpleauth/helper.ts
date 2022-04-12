@@ -126,7 +126,6 @@ export class TestHelper {
             Constants.LocalDebugPlugin.id,
             new Map([[Constants.LocalDebugPlugin.configKeys.endpoint, mockEndpoint]]),
           ],
-          [Constants.SimpleAuthPlugin.id, new Map([])],
         ])
       ),
       app: {

@@ -113,7 +113,7 @@ export default class TelemetryReporter {
 
     const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
     const fileRegex =
-      /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/))?(\\\\|\\|\/)?(([\w-\._]+(\\\\|\\|\/))+[\w-\._]*)/g;
+      /((?:file:\/\/)[\w\.\-_\\\/]*)|((?:[a-zA-Z]:(?:\\{1,2}|\/))[\w\.\-_\\\/]*)|((?:[\w\.\-_]+(?:\\{1,2}|\/{1,2}))+[\w\.\-_]*)|((?:\\{1,2}|\/{1,2})+[\w\.\-_]+)+/g;
 
     let lastIndex = 0;
     updatedStack = "";

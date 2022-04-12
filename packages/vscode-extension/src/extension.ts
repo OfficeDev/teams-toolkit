@@ -22,6 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
+import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   Correlator,
   isConfigUnifyEnabled,
@@ -38,6 +39,7 @@ import {
   isValidNode,
   delay,
   isSupportAutoOpenAPI,
+  isM365Project,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -401,6 +403,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isM365",
+    workspacePath && (await isM365Project(workspacePath))
+  );
 
   vscode.commands.executeCommand(
     "setContext",
@@ -442,7 +449,7 @@ export async function activate(context: vscode.ExtensionContext) {
   };
 
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
-  const manifestTemplateSelecctor = {
+  const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
     pattern: isConfigUnifyEnabled()
@@ -476,7 +483,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
-      manifestTemplateSelecctor,
+      manifestTemplateSelector,
       manifestTemplateCodeLensProvider
     )
   );
@@ -491,6 +498,12 @@ export async function activate(context: vscode.ExtensionContext) {
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
     )
+  );
+
+  // Register hover provider
+  const manifestTemplateHoverProvider = new ManifestTemplateHoverProvider();
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
   );
 
   // Register debug configuration provider
@@ -660,6 +673,13 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
   // Quick start
   registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
+
+  // Tutorials
+  registerInCommandController(
+    context,
+    "fx-extension.selectTutorials",
+    handlers.selectTutorialsHandler
+  );
 
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);

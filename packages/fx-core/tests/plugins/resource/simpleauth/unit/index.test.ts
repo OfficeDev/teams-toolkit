@@ -24,12 +24,14 @@ import {
   mockSolutionUpdateArmTemplates,
 } from "../../util";
 import { LocalSettingsSimpleAuthKeys } from "../../../../../src/common/localSettingsConstants";
+import { LocalStateSimpleAuthKeys } from "../../../../../src/common/localStateConstants";
 import { getAllowedAppIds } from "../../../../../src/common/tools";
 import {
   AzureResourceKeyVault,
   HostTypeOptionAzure,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../util";
+import { PluginNames } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -67,18 +69,18 @@ describe("simpleAuthPlugin", () => {
     await simpleAuthPlugin.postLocalDebug(pluginContext);
 
     // Assert
-    const filePath: string = pluginContext.localSettings?.auth?.get(
-      LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
-    ) as string;
+    const filePath: string = pluginContext.envInfo.state
+      ?.get(PluginNames.SA)
+      ?.get(LocalStateSimpleAuthKeys.SimpleAuthFilePath);
     chai.assert.isOk(filePath);
     chai.assert.isTrue(await fs.pathExists(filePath));
-    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="${getAllowedAppIds().join(
+    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-clientId" CLIENT_SECRET="mock-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-applicationIdUris" ALLOWED_APP_IDS="${getAllowedAppIds().join(
       ";"
     )}" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"`;
     chai.assert.strictEqual(
-      pluginContext.localSettings?.auth?.get(
-        LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams
-      ),
+      pluginContext.envInfo.state
+        ?.get(PluginNames.SA)
+        ?.get(LocalStateSimpleAuthKeys.EnvironmentVariableParams),
       expectedEnvironmentVariableParams
     );
   });

@@ -100,7 +100,7 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
@@ -157,7 +157,7 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
     chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
@@ -213,7 +213,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
@@ -259,7 +259,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
@@ -403,7 +403,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
     chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
@@ -449,7 +449,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
@@ -484,7 +484,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)));
+    const manifest = fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)));
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(
@@ -515,7 +515,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)));
+    const manifest = fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)));
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(manifest.webApplicationInfo).to.be.undefined;

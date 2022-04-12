@@ -1,21 +1,18 @@
-import { TeamsFx, createApiClient, AuthProvider } from "@microsoft/teamsfx";
-import { AxiosRequestConfig } from "axios";
+const teamsfxSdk = require("@microsoft/teamsfx");
 
 // The custom authProvider should implement the AuthProvider interface.
 // Here is a sample authProvider class. It will set custom property in the request header
-class CustomAuthProvider implements AuthProvider {
-  customProperty: string;
-  customValue: string;
+class CustomAuthProvider {
+  customProperty;
+  customValue;
 
-  constructor(customProperty: string, customValue: string) {
+  constructor(customProperty, customValue) {
     this.customProperty = customProperty;
     this.customValue = customValue;
   }
 
   // Replace the sample code with your own logic
-  AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig> = async (
-    config
-  ) => {
+  AddAuthenticationInfo = async (config) => {
     if (!config.headers) {
       config.headers = {};
     }
@@ -25,7 +22,7 @@ class CustomAuthProvider implements AuthProvider {
 }
 
 // Loads current app's configuration and use app for auth.
-const teamsFx = new TeamsFx();
+const teamsFx = new teamsfxSdk.TeamsFx();
 
 const authProvider = new CustomAuthProvider(
   // You can also add customized settings to .env.teamsfx.local and use TeamsFx.getConfig("{setting_name}") to read the settings. For example:
@@ -35,7 +32,7 @@ const authProvider = new CustomAuthProvider(
   "customValue"
 );
 // Initializes a new axios instance to call fake API.
-const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };
 
 /* 

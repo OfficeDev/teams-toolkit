@@ -29,7 +29,7 @@
       "name": "Launch provision command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["add", "api-connection", "--api-connector-auth-type", "basic","--component-select", "bot", "--api-connector-user-name", "test123", "--api-connector-endpoint", "https://localhost.com", "--api-connector-name", "bbbbb", "--folder", "C:/Users/wenyutang.FAREAST/TeamsApps/wenytest040601", "--interactive", "false"],
+      "args": ["provision", "--folder", "../../../teams/app01"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

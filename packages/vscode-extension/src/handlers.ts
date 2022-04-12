@@ -2890,3 +2890,64 @@ export async function deployAadAppManifest(): Promise<Result<null, FxError>> {
 
   return await runCommand(Stage.deploy, inputs);
 }
+
+export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
+  const config: SingleSelectConfig = {
+    name: "tutorialName",
+    title: "Tutorials",
+    options: [
+      {
+        id: "embedWebPages",
+        label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
+        detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
+        data: "https://aka.ms/teamsfx-embed-existing-web",
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
+        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        data: "https://aka.ms/teamsfx-send-notification",
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
+        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        data: "https://aka.ms/teamsfx-create-command",
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
+        detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        data: "https://aka.ms/teamsfx-add-sso",
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
+        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        data: "https://aka.ms/teamsfx-connect-api",
+      },
+    ],
+    returnObject: true,
+  };
+  const selectedTutorial = await VS_CODE_UI.selectOption(config);
+  if (selectedTutorial.isErr()) {
+    return err(selectedTutorial.error);
+  } else {
+    const tutorial = selectedTutorial.value.result as OptionItem;
+    return openTutorialHandler([TelemetryTiggerFrom.Auto, tutorial]);
+  }
+}
+
+export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxError>> {
+  if (!args || args.length !== 2) {
+    // should never happen
+    return Promise.resolve(ok(null));
+  }
+  const tutorial = args[1] as OptionItem;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTutorial, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.TutorialName]: tutorial.id,
+  });
+  return VS_CODE_UI.openUrl(tutorial.data as string);
+}

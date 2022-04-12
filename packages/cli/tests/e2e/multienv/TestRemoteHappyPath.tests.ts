@@ -168,8 +168,12 @@ describe("Multi Env Happy Path for Azure", function () {
           chai.expect(result.stderr).to.be.empty;
         }
 
+        const updateManifestCmd =
+          processEnv["TEAMSFX_DEPLOY_MANIFEST"] === "true"
+            ? `teamsfx deploy manifest --env ${env} --skip-manifest no`
+            : `teamsfx manifest update --env ${env}`;
         // update manifest
-        result = await execAsyncWithRetry(`teamsfx deploy manifest --env ${env}`, {
+        result = await execAsyncWithRetry(updateManifestCmd, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,

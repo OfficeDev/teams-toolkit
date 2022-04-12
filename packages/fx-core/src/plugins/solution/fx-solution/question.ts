@@ -40,9 +40,10 @@ export const NotificationOptionItem: OptionItem = {
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
-  id: "CommandBot",
+  // For default option, id and cliName must be the same
+  id: "command-bot",
   label: getLocalizedString("core.CommandAndResponseOption.label"),
-  cliName: "command-and-response",
+  cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };
 

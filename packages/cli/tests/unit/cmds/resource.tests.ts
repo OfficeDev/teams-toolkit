@@ -27,17 +27,7 @@ import {
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
-import Resource, {
-  ResourceAdd,
-  ResourceAddApim,
-  ResourceAddFunction,
-  ResourceAddSql,
-  ResourceList,
-  ResourceShow,
-  ResourceShowApim,
-  ResourceShowFunction,
-  ResourceShowSQL,
-} from "../../../src/cmds/resource";
+import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {
@@ -207,34 +197,6 @@ describe("Resource Command Tests", function () {
     allArguments = new Map<string, any>();
   });
 
-  it("Builder Check", () => {
-    const cmd = new Resource();
-    yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals([
-      "resource [action]",
-      "add [resource-type]",
-      "azure-sql",
-      "azure-apim",
-      "azure-function",
-      "azure-keyvault",
-      "show [resource-type]",
-      "azure-function",
-      "azure-sql",
-      "azure-apim",
-      "list",
-    ]);
-  });
-
-  it("Resource Command Running Check", async () => {
-    const cmd = new Resource();
-    await cmd.handler({});
-  });
-
-  it("Resource Add Command Running Check", async () => {
-    const cmd = new ResourceAdd();
-    await cmd.handler({});
-  });
-
   it("Resource Add Sql Command Running Check", async () => {
     const cmd = new ResourceAddSql();
     const args = {
@@ -349,115 +311,6 @@ describe("Resource Command Tests", function () {
         TelemetryEvent.UpdateProject,
       ]);
       expect(telemetryEventStatus).equals(TelemetrySuccess.No);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
-  });
-
-  it("Resource Show Command Running Check", async () => {
-    const cmd = new ResourceShow();
-    await cmd.handler({});
-  });
-
-  it("Resource Show Sql Command Running Check", async () => {
-    const cmd = new ResourceShowSQL();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    await cmd.handler(args);
-    expect(JSON.parse(logs[0])).deep.equals({ "fx-resource-azure-sql": "fx-resource-azure-sql" });
-  });
-
-  it("Resource Show Sql Command Running Check with NotSupportedProjectType Error", async () => {
-    const cmd = new ResourceShowSQL();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "fake",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
-  });
-
-  it("Resource Show Function Command Running Check", async () => {
-    const cmd = new ResourceShowFunction();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    await cmd.handler(args);
-    expect(JSON.parse(logs[0])).deep.equals({ "fx-resource-function": "fx-resource-function" });
-  });
-
-  it("Resource Show Function Command Running Check with NotSupportedProjectType Error", async () => {
-    const cmd = new ResourceShowFunction();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "fake",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
-  });
-
-  it("Resource Show Apim Command Running Check", async () => {
-    const cmd = new ResourceShowApim();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    await cmd.handler(args);
-    expect(JSON.parse(logs[0])).deep.equals({ "fx-resource-apim": "fx-resource-apim" });
-  });
-
-  it("Resource Show Apim Command Running Check with NotSupportedProjectType Error", async () => {
-    const cmd = new ResourceShowApim();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "fake",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
-    }
-  });
-
-  it("Resource List Command Running Check", async () => {
-    const cmd = new ResourceList();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    await cmd.handler(args);
-    expect(JSON.parse(logs[0])).deep.equals({
-      "fx-resource-azure-sql": "fx-resource-azure-sql",
-      "fx-resource-function": "fx-resource-function",
-      "fx-resource-apim": "fx-resource-apim",
-    });
-  });
-
-  it("Resource List Command Running Check with NotSupportedProjectType Error", async () => {
-    const cmd = new ResourceList();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "fake",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }

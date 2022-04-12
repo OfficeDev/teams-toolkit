@@ -94,10 +94,6 @@ export class AddSso extends YargsCommand {
     return yargs.version(false).options(this.params);
   }
 
-  public modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
-    return args;
-  }
-
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddSsoStart);

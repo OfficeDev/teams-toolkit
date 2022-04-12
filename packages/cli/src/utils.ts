@@ -539,7 +539,7 @@ export function isRemoteCollaborationEnabled(): boolean {
 }
 
 export function isGAPreviewEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlags.GAPreview, true);
+  return isFeatureFlagEnabled(FeatureFlags.GAPreview, false);
 }
 
 export function getAllFeatureFlags(): string[] | undefined {

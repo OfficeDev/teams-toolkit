@@ -37,6 +37,6 @@ export async function cleanUpResourceGroup(
 (async () => {
   const promise1 = cleanUpAad(getAppNamePrefix());
   const promise2 = cleanUpResourceGroup(getAppNamePrefix());
-  const promise3 = cleanUpResourceGroup("fx_e_2_e");
+  const promise3 = cleanUpResourceGroup("fx_e_2_e_");
   await Promise.all([promise1, promise2, promise3]);
 })();

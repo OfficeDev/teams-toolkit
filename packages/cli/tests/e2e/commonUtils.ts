@@ -18,7 +18,7 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { sleep } from "../../src/utils";
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 import {
   cfg,
   AadManager,
@@ -35,7 +35,6 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { environmentManager } from "@microsoft/teamsfx-core";
 import appStudioLogin from "../../src/commonlib/appStudioLogin";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
@@ -85,7 +84,7 @@ export function getTestFolder() {
 }
 
 export function getAppNamePrefix() {
-  return "fxE2E";
+  return "fxe2e";
 }
 
 export function getUniqueAppName() {

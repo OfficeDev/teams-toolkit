@@ -3,11 +3,11 @@
 
 "use strict";
 
-import * as path from "path";
+import path from "path";
 import { Argv } from "yargs";
 
 import { err, FxError, ok, Platform, Result } from "@microsoft/teamsfx-api";
-import { isBotNotificationEnabled, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import { getSystemInputs } from "../utils";
@@ -304,54 +304,4 @@ export class CapabilityAddCommandAndResponse extends CapabilityAddBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add command and response.";
   public readonly yargsHelp = "addCapability-CommandAndResponse";
-}
-
-export class CapabilityAdd extends YargsCommand {
-  public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} [capability]`;
-  public readonly description = "Add new capabilities to the current application";
-
-  public readonly subCommands: YargsCommand[] = [
-    new CapabilityAddTab(),
-    ...(isBotNotificationEnabled()
-      ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
-      : [new CapabilityAddBot()]),
-    new CapabilityAddMessageExtension(),
-  ];
-
-  public builder(yargs: Argv): Argv<any> {
-    this.subCommands.forEach((cmd) => {
-      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    });
-    return yargs.positional("capability", {
-      choices: this.subCommands.map((c) => c.commandHead),
-    });
-  }
-
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
-  }
-}
-
-export default class Capability extends YargsCommand {
-  public readonly commandHead = `capability`;
-  public readonly command = `${this.commandHead} [action]`;
-  public readonly description = "Add new capabilities to the current application.";
-
-  public readonly subCommands: YargsCommand[] = [new CapabilityAdd()];
-
-  public builder(yargs: Argv): Argv<any> {
-    this.subCommands.forEach((cmd) => {
-      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    });
-    return yargs
-      .positional("action", {
-        choices: this.subCommands.map((c) => c.commandHead),
-      })
-      .version(false);
-  }
-
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
-  }
 }

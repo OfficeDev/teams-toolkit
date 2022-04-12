@@ -8,7 +8,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../../common";
 import { setTools } from "../../globalVars";
-import "../core";
+import "../fx";
 import { ProjectSettingsV3 } from "../interface";
 import { MockTools } from "../utils";
 import { executeAction, getAction, planAction, resolveAction } from "../workflow";

@@ -1,9 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  FxError,
+  ok,
+  QTreeNode,
+  Result,
+  TextInputQuestion,
+  v2,
+} from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { newProjectSettings } from "../../common/projectSettingsHelper";
+import { getProjectSettingsPath } from "../middleware/projectSettingsLoader";
+import { ProjectNamePattern } from "../question";
 import "./Aad";
 import "./ApiCodeProvider";
 import "./AzureBicepProvider";
@@ -13,8 +26,6 @@ import "./AzureSql";
 import "./AzureStorage";
 import "./AzureWebApp";
 import "./BotCodeProvider";
-import "./Spfx";
-import "./TeamsManifest";
 import {
   Action,
   Component,
@@ -25,7 +36,9 @@ import {
   TeamsBotInputs,
   TeamsTabInputs,
 } from "./interface";
-import { getComponent } from "./workflow";
+import "./Spfx";
+import "./TeamsManifest";
+import { getComponent, getEmbeddedValueByPath } from "./workflow";
 
 @Service("fx")
 export class TeamsfxCore {
@@ -37,21 +50,35 @@ export class TeamsfxCore {
     const initProjectSettings: Action = {
       type: "function",
       name: "fx.initConfig",
-      plan: (context: ContextV3, inputs: Inputs) => {
-        return ok(["init teamsfx project settings"]);
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        return ok([
+          `ensure folder: ${inputs.projectPath}`,
+          `ensure folder: ${path.join(inputs.projectPath, `.${ConfigFolderName}`)}`,
+          `ensure folder: ${path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs")}`,
+          `create file: ${getProjectSettingsPath(inputs.projectPath)}`,
+        ]);
       },
-      execute: async (context: ContextV3, inputs: Inputs) => {
-        console.log("init teamsfx project settings");
-        context.projectSetting = {
-          projectId: "123",
-          appName: "test",
-          solutionSettings: {
-            name: "fx",
-            activeResourcePlugins: [],
+      question: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const question: TextInputQuestion = {
+          type: "text",
+          name: "fx.app-name",
+          title: "Application name",
+          validation: {
+            pattern: ProjectNamePattern,
+            maxLength: 30,
           },
-          programmingLanguage: inputs["programming-language"],
-          components: [],
+          placeholder: "Application name",
         };
+        return ok(new QTreeNode(question));
+      },
+      execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const projectSettings = newProjectSettings() as ProjectSettingsV3;
+        projectSettings.appName = getEmbeddedValueByPath(inputs, "fx.app-name");
+        projectSettings.components = [];
+        context.projectSetting = projectSettings;
+        await fs.ensureDir(inputs.projectPath);
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
         return ok(undefined);
       },
     };
@@ -103,14 +130,8 @@ export class TeamsfxCore {
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
-          const component: Component = {
-            name: "teams-bot",
-            ...teamsBotInputs,
-          };
           return ok([
-            `add components 'teams-bot', '${
-              teamsBotInputs.hostingResource
-            }' in projectSettings: ${JSON.stringify(component)}`,
+            `add components 'teams-bot', '${teamsBotInputs.hostingResource}' in projectSettings`,
           ]);
         },
         execute: async (
@@ -128,11 +149,6 @@ export class TeamsfxCore {
             name: teamsBotInputs.hostingResource,
             provision: true,
           });
-          console.log(
-            `add components 'teams-bot', 'azure-bot', '${
-              teamsBotInputs.hostingResource
-            }' in projectSettings: ${JSON.stringify(component)}`
-          );
           return ok(undefined);
         },
       },

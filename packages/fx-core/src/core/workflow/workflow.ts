@@ -1,13 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Json, ResourceConfig } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  getValidationFunction,
+  InputResult,
+  Inputs,
+  Json,
+  ok,
+  Question,
+  ResourceConfig,
+  Result,
+  traverse,
+  UserError,
+  UserInteraction,
+} from "@microsoft/teamsfx-api";
 import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
-import { Action, ProjectSettingsV3 } from "./interface";
+import { Action, FunctionAction, ProjectSettingsV3 } from "./interface";
 import toposort from "toposort";
 import { merge } from "lodash";
+import { MockUserInteraction } from "./utils";
 
 export async function getAction(
   name: string,
@@ -34,7 +49,7 @@ function _resolveVariables(schema: Json) {
   extractVariables(schema, variables);
   const graph: Array<[string, string | undefined]> = [];
   for (const variable of variables) {
-    const variableValue = getValueByPath(schema, variable);
+    const variableValue = getEmbeddedValueByPath(schema, variable);
     const dependentVariables = extractVariablesInString(variableValue); // variables's dependent variables
     if (dependentVariables.size > 0) {
       for (const dependency of dependentVariables) {
@@ -45,7 +60,7 @@ function _resolveVariables(schema: Json) {
   const list = toposort(graph).reverse();
   for (let i = 1; i < list.length; ++i) {
     const variable = list[i];
-    const variableValue = getValueByPath(schema, variable);
+    const variableValue = getEmbeddedValueByPath(schema, variable);
     const replacedValue = _replaceVariables(variableValue, schema);
     setValueByPath(schema, variable, replacedValue);
   }
@@ -112,7 +127,7 @@ function extractVariablesInString(schema: string): Set<string> {
   return set;
 }
 
-function getValueByPath(obj: Json, path: string): any {
+export function getEmbeddedValueByPath(obj: Json, path: string): any {
   const array = path.split(".");
   let subObj = obj;
   for (let i = 0; i < array.length; ++i) {
@@ -174,8 +189,9 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
   if (action.type === "function") {
     const planRes = await action.plan(context, inputs);
     if (planRes.isOk()) {
+      let subStep = 1;
       for (const plan of planRes.value) {
-        console.log(`---- plan [${inputs.step}]: [${action.name}] - ${plan}`);
+        console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
       }
       inputs.step++;
     }
@@ -202,13 +218,97 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
   }
 }
 
+export class ValidationError extends UserError {
+  constructor(msg: string) {
+    super({ message: msg, displayMessage: msg, source: "core" });
+  }
+}
+
+export async function validateQuestion(
+  question: Question,
+  ui: UserInteraction,
+  inputs: Inputs,
+  step?: number,
+  totalSteps?: number
+): Promise<Result<InputResult<any>, FxError>> {
+  const validationFunc = (question as any).validation
+    ? getValidationFunction<string>((question as any).validation, inputs)
+    : undefined;
+  if (validationFunc) {
+    const answer = getEmbeddedValueByPath(inputs, question.name);
+    if (!answer) return err(new ValidationError(`question ${question.name} has no answer!`));
+    let res = await validationFunc(answer);
+    if (res) {
+      res = `${question.name}: ${res}`;
+      return err(new ValidationError(res));
+    }
+  }
+  return ok({ type: "success" });
+}
+
+/** 
+ * test case for validation
+const textNode = new QTreeNode({
+  type: "text",
+  name: "fx.app-name",
+  title: "app name",
+  validation: { maxLength: 10 },
+});
+
+const multiSelectNode = new QTreeNode({
+  type: "multiSelect",
+  name: "fx.resources",
+  staticOptions: ["sql", "function", "apim", "keyvalut"],
+  title: "select resources",
+  validation: { enum: ["sql", "function", "apim", "keyvalut"] },
+});
+
+const groupNode = new QTreeNode({ type: "group" });
+groupNode.addChild(textNode);
+groupNode.addChild(multiSelectNode);
+
+const inputs: Inputs = {
+  platform: Platform.VSCode,
+  fx: {
+    "app-name": "123456",
+    resources: ["sql1"],
+  },
+};
+traverse(groupNode, inputs, new MockUserInteraction(), undefined, validateQuestion).then((res) =>
+  console.log(res)
+);
+*/
+
+export async function executeFunctionAction(
+  action: FunctionAction,
+  context: any,
+  inputs: any
+): Promise<void> {
+  if (action.question) {
+    const getQuestionRes = await action.question(context, inputs);
+    if (getQuestionRes.isErr()) throw new Error(`get question error: ${action.name}`);
+    const node = getQuestionRes.value;
+    if (node) {
+      const validationRes = await traverse(
+        node,
+        inputs,
+        new MockUserInteraction(),
+        undefined,
+        validateQuestion
+      );
+      if (validationRes.isErr()) throw validationRes.error;
+    }
+  }
+  await action.execute(context, inputs);
+  console.log(`##### executed [${inputs.step++}]: [${action.name}]`);
+}
+
 export async function executeAction(action: Action, context: any, inputs: any): Promise<void> {
   if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
-    console.log(`##### execute [${inputs.step++}]: [${action.name}]`);
-    await action.execute(context, inputs);
+    await executeFunctionAction(action, context, inputs);
   } else if (action.type === "shell") {
-    console.log(`##### shell [${inputs.step++}]: ${action.command}`);
+    console.log(`##### shell executed [${inputs.step++}]: ${action.command}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);

@@ -6,6 +6,15 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
+  ScaffoldAction,
+  ScaffoldActionName,
+  ScaffoldContext,
+  scaffoldFromTemplates,
+} from "../../common/template-utils/templatesActions";
+import { TemplateProjectsConstants } from "../../plugins/resource/bot/constants";
+import { CommonStrings } from "../../plugins/resource/bot/resources/strings";
+import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
+import {
   Action,
   ContextV3,
   GroupAction,
@@ -33,16 +42,10 @@ export class BotCodeProvider implements SourceCodeProvider {
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
-        const component: Component = {
-          name: "bot-code",
-          ...teamsBotInputs,
-          build: true,
-          language: teamsBotInputs.language || context.projectSetting.programmingLanguage,
-          folder: teamsBotInputs.folder || "bot",
-        };
+        const folder = teamsBotInputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         return ok([
           "add component 'bot-code' in projectSettings",
-          `scaffold bot source code: ${JSON.stringify(component)}`,
+          `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
         ]);
       },
       execute: async (
@@ -51,16 +54,40 @@ export class BotCodeProvider implements SourceCodeProvider {
       ): Promise<Result<undefined, FxError>> => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+        const language =
+          teamsBotInputs.language || context.projectSetting.programmingLanguage || "javascript";
+        const folder = teamsBotInputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         const component: Component = {
           name: "bot-code",
           ...teamsBotInputs,
           build: true,
-          language: teamsBotInputs.language || context.projectSetting.programmingLanguage,
-          folder: teamsBotInputs.folder || "bot",
+          language: language,
+          folder: folder,
         };
         projectSettings.components.push(component);
-        console.log("add component 'bot-code' in projectSettings");
-        console.log(`scaffold bot source code: ${JSON.stringify(component)}`);
+        const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+        const lang = convertToLangKey(language);
+        const workingDir = path.join(inputs.projectPath, folder);
+        await scaffoldFromTemplates({
+          group: group_name,
+          lang: lang,
+          scenario: teamsBotInputs.scenario,
+          dst: workingDir,
+          onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {},
+          onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+            switch (action.name) {
+              case ScaffoldActionName.FetchTemplatesUrlWithTag:
+              case ScaffoldActionName.FetchTemplatesZipFromUrl:
+                break;
+              case ScaffoldActionName.FetchTemplateZipFromLocal:
+                throw new TemplateZipFallbackError();
+              case ScaffoldActionName.Unzip:
+                throw new UnzipError(context.dst);
+              default:
+                throw new Error(error.message);
+            }
+          },
+        });
         return ok(undefined);
       },
     };
@@ -104,5 +131,19 @@ export class BotCodeProvider implements SourceCodeProvider {
       } else return ok(undefined);
     }
     return ok(undefined);
+  }
+}
+
+export function convertToLangKey(programmingLanguage: string): string {
+  switch (programmingLanguage) {
+    case "javascript": {
+      return "js";
+    }
+    case "typescript": {
+      return "ts";
+    }
+    default: {
+      return "js";
+    }
   }
 }

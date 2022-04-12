@@ -226,7 +226,8 @@ export async function traverse(
   root: QTreeNode,
   inputs: Inputs,
   ui: UserInteraction,
-  telemetryReporter?: TelemetryReporter
+  telemetryReporter?: TelemetryReporter,
+  visitor = questionVisitor
 ): Promise<Result<Void, FxError>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -245,7 +246,7 @@ export async function traverse(
       totalStep = step + stack.length;
       let qvRes;
       try {
-        qvRes = await questionVisitor(question, ui, inputs, step, totalStep);
+        qvRes = await visitor(question, ui, inputs, step, totalStep);
         sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
       } catch (e) {
         return err(assembleError(e));

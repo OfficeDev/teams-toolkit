@@ -1645,7 +1645,7 @@ export interface Tools {
 }
 
 // @public (undocumented)
-export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter): Promise<Result<Void, FxError>>;
+export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter, visitor?: (question: Question, ui: UserInteraction, inputs: Inputs, step?: number | undefined, totalSteps?: number | undefined) => Promise<Result<InputResult<any>, FxError>>): Promise<Result<Void, FxError>>;
 
 // @public (undocumented)
 export enum TreeCategory {

@@ -149,7 +149,7 @@ export interface SourceCodeProvider {
 
 export interface TeamsBotInputs extends v2.InputsWithProjectPath {
   "teams-bot": {
-    scenarios: ("notification" | "commandAndResponse" | "messageExtension" | "default")[];
+    scenario: string;
     hostingResource: "azure-web-app" | "azure-function";
     folder?: string;
     deployType?: "folder" | "zip";

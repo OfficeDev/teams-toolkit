@@ -304,7 +304,7 @@ export class MockUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    return ok("");
+    throw new Error(`Method showMessage not implemented: ${message}`);
   }
 
   createProgressBar(title: string, totalSteps: number): IProgressHandler {

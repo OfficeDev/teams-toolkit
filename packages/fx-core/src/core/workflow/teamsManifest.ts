@@ -2,9 +2,12 @@
 // Licensed under the MIT license.
 import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { Action, ContextV3, MaybePromise } from "./interface";
-
+import { AppStudioPluginV3 } from "../../plugins/resource/appstudio/v3";
+import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
+import * as path from "path";
+import "../../plugins/resource/appstudio/v3";
 @Service("teams-manifest")
 export class TeamsManifestResource {
   name = "teams-manifest";
@@ -16,13 +19,44 @@ export class TeamsManifestResource {
       name: "teams-manifest.init",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["init manifest template"]);
+        return ok([
+          `ensure folder: ${path.join(inputs.projectPath, "templates", "appPackage")}`,
+          `ensure folder: ${path.join(inputs.projectPath, "templates", "appPackage", "resources")}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "appPackage",
+            "resources",
+            "color.png"
+          )}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "appPackage",
+            "resources",
+            "outline.png"
+          )}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "appPackage",
+            "manifest.local.template.json"
+          )}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "appPackage",
+            "manifest.remote.template.json"
+          )}`,
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log("init manifest template");
+        const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+        const res = await appStudio.init(context, inputs);
+        if (res.isErr()) return res;
         return ok(undefined);
       },
     };

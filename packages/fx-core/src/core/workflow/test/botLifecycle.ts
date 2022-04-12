@@ -9,96 +9,114 @@ import * as path from "path";
 import "reflect-metadata";
 import { createV2Context } from "../../../common";
 import { setTools } from "../../globalVars";
-import "../core";
-import { ContextV3 } from "../interface";
+import { getProjectSettingsPath } from "../../middleware/projectSettingsLoader";
+import "../fx";
+import { Action, ContextV3 } from "../interface";
 import { MockTools } from "../utils";
-import { executeAction, getAction, planAction, resolveAction } from "../workflow";
+import { executeAction, getAction, planAction } from "../workflow";
+import readlineSync from "readline-sync";
 
-async function init(context: ContextV3) {
+const appName = "appv3";
+const projectPath = path.join(os.homedir(), "TeamsApps", appName);
+const debugMode = false;
+
+async function runAction(action: Action, context: any, inputs: any): Promise<void> {
+  await planAction(action, context, cloneDeep(inputs));
+  if (debugMode) {
+    await executeAction(action, context, inputs);
+  } else {
+    const confirm = readlineSync.question("confirm to execute (y|n):");
+    if (confirm !== "n") {
+      await executeAction(action, context, inputs);
+    }
+  }
+  await fs.writeFile(
+    path.join(inputs.projectPath, ".fx/inputs.json"),
+    JSON.stringify(inputs, undefined, 4)
+  );
+  await fs.writeFile(
+    getProjectSettingsPath(inputs.projectPath),
+    JSON.stringify(context.projectSetting, undefined, 4)
+  );
+}
+
+async function init() {
+  const context = createV2Context({} as ProjectSettings) as ContextV3;
   const inputs: v2.InputsWithProjectPath = {
-    projectPath: path.join(os.tmpdir(), "myapp"),
+    projectPath: projectPath,
     platform: Platform.VSCode,
+    fx: {
+      "app-name": "myapp123",
+    },
   };
   const action = await getAction("fx.init", context, inputs);
   if (action) {
-    await planAction(action, context, cloneDeep(inputs));
-    await executeAction(action, context, inputs);
+    await runAction(action, context, inputs);
   }
-  console.log("inputs:");
-  console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
 }
 
-async function addBot(context: ContextV3) {
+async function addBot() {
   const inputs: v2.InputsWithProjectPath = {
-    projectPath: path.join(os.tmpdir(), "myapp"),
+    projectPath: projectPath,
     platform: Platform.VSCode,
     "teams-bot": {
       hostingResource: "azure-web-app",
       folder: "bot",
-      scenarios: ["default"],
+      scenario: "default",
       language: "typescript",
     },
   };
+  const projectSettings = await fs.readJson(getProjectSettingsPath(inputs.projectPath));
+  const context = createV2Context(projectSettings) as ContextV3;
   const action = await getAction("fx.addBot", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("addBot.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
-    await executeAction(action, context, inputs);
+    await runAction(action, context, inputs);
   }
-  console.log("inputs:");
-  console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
+  await fs.writeFile(
+    getProjectSettingsPath(inputs.projectPath),
+    JSON.stringify(context.projectSetting, undefined, 4)
+  );
 }
 
-async function provision(context: ContextV3) {
+async function provision() {
   const inputs: v2.InputsWithProjectPath = {
     projectPath: path.join(os.tmpdir(), "myapp"),
     platform: Platform.VSCode,
   };
+  const projectSettings = await fs.readJson(getProjectSettingsPath(inputs.projectPath));
+  const context = createV2Context(projectSettings) as ContextV3;
   const action = await getAction("fx.provision", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("provision.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
-    await executeAction(action, context, inputs);
+    await runAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
 }
-async function deploy(context: ContextV3) {
+async function deploy() {
   const inputs: v2.InputsWithProjectPath = {
-    projectPath: path.join(os.tmpdir(), "myapp"),
+    projectPath: projectPath,
     platform: Platform.VSCode,
   };
+  const projectSettings = await fs.readJson(getProjectSettingsPath(inputs.projectPath));
+  const context = createV2Context(projectSettings) as ContextV3;
   const action = await getAction("fx.deploy", context, inputs);
   if (action) {
-    const resolved = await resolveAction(action, context, cloneDeep(inputs));
-    fs.writeFileSync("deploy.json", JSON.stringify(resolved, undefined, 4));
-    await planAction(action, context, cloneDeep(inputs));
-    await executeAction(action, context, inputs);
+    await runAction(action, context, inputs);
   }
   console.log("inputs:");
   console.log(inputs);
-  console.log("projectSetting:");
-  console.log(context.projectSetting);
 }
 
-async function test() {
-  const projectSettings = {};
-  setTools(new MockTools());
-  const context = createV2Context(projectSettings as ProjectSettings) as ContextV3;
-  await init(context);
-  await addBot(context);
-  await provision(context);
-  await deploy(context);
-  // console.log("projectSetting:");
-  // console.log(context.projectSetting);
-}
+setTools(new MockTools());
+// addBot();
 
-test();
+const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
+if (command === "init") {
+  init();
+} else if (command === "addBot") {
+  addBot();
+} else if (command === "provision") {
+  provision();
+} else if (command === "deploy") {
+  deploy();
+}

@@ -9,7 +9,7 @@ import "reflect-metadata";
 import { createV2Context } from "../../../common";
 import { setTools } from "../../globalVars";
 import { ProjectSettingsV3 } from "../interface";
-import "../core";
+import "../fx";
 import { MockTools } from "../utils";
 import { executeAction, getAction, planAction, resolveAction } from "../workflow";
 import { cloneDeep } from "lodash";

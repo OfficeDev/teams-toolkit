@@ -132,6 +132,22 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
   }
 }
 
+export async function isM365Project(workspacePath: string): Promise<boolean> {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return projectSettings.isM365;
+  } else {
+    return false;
+  }
+}
+
 export function isSPFxProject(workspacePath: string): boolean {
   if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;

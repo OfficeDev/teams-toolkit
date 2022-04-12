@@ -22,6 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
+import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   Correlator,
   isConfigUnifyEnabled,
@@ -442,7 +443,7 @@ export async function activate(context: vscode.ExtensionContext) {
   };
 
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
-  const manifestTemplateSelecctor = {
+  const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
     pattern: isConfigUnifyEnabled()
@@ -476,7 +477,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
-      manifestTemplateSelecctor,
+      manifestTemplateSelector,
       manifestTemplateCodeLensProvider
     )
   );
@@ -491,6 +492,12 @@ export async function activate(context: vscode.ExtensionContext) {
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
     )
+  );
+
+  // Register hover provider
+  const manifestTemplateHoverProvider = new ManifestTemplateHoverProvider();
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
   );
 
   // Register debug configuration provider

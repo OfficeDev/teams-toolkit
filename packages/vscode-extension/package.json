@@ -292,6 +292,11 @@
           "command": "fx-extension.updatePreviewFile",
           "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
           "group": "navigation"
+        },
+        {
+          "command": "fx-extension.openPreviewAadFile",
+          "when": "resourceFilename == aad.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -559,6 +564,12 @@
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openPreviewAadFile",
+        "title": "%teamstoolkit.commands.previewAadManifest.title%",
+        "icon": "$(file-code)",
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.openSchema",

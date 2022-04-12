@@ -578,7 +578,7 @@ suite("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-    await handlers.deployAadAppManifest();
+    await handlers.deployAadAppManifest([]);
 
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0].skipAadDeploy, "no");

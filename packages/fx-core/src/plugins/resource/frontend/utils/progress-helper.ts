@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 import { Messages } from "../resources/messages";
 
 export interface IProgress {
@@ -13,12 +13,12 @@ export class ProgressHelper {
   static progressHandler: IProgressHandler | undefined;
 
   static async startProgress(
-    ctx: PluginContext,
+    ui: UserInteraction | undefined,
     progress: IProgress
   ): Promise<IProgressHandler | undefined> {
     await this.progressHandler?.end(true);
 
-    this.progressHandler = ctx.ui?.createProgressBar(
+    this.progressHandler = ui?.createProgressBar(
       progress.title,
       Object.entries(progress.steps).length
     );

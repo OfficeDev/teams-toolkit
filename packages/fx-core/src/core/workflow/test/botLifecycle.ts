@@ -97,6 +97,8 @@ async function test() {
   await addBot(context);
   await provision(context);
   await deploy(context);
+  // console.log("projectSetting:");
+  // console.log(context.projectSetting);
 }
 
 test();

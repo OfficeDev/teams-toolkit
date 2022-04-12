@@ -8,13 +8,19 @@ import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import * as fs from "fs-extra";
-
+import mockedEnv from "mocked-env";
 describe("Add api-connection cli", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  before(async () => {});
+  let mockedEnvRestore: () => void;
+  before(async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_AAD_MANIFEST: "true",
+    });
+  });
   after(async () => {
+    mockedEnvRestore();
     await cleanUp(appName, projectPath, false, false, false);
   });
 
@@ -22,7 +28,7 @@ describe("Add api-connection cli", () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addExistingApi(
       projectPath,
-      `--api-connector-auth-type basic --component-select bot --api-connector-user-name basictest --api-connector-endpoint https://localhost.basictest.com --api-connector-name basictest --interactive false`
+      `--api-connector-auth-type basic --component bot --api-connector-user-name basictest --api-connector-endpoint https://localhost.basictest.com --api-connector-name basictest --interactive false`
     );
     // Assert
     expect(await fs.pathExists(path.join(testFolder, "bot", "basictest.js"))).to.be.true;

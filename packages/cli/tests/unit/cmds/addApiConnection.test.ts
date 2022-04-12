@@ -11,6 +11,7 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Add from "../../../src/cmds/add";
 import { expect } from "../utils";
+import mockedEnv from "mocked-env";
 
 describe("Add api-connector Command Tests", () => {
   const sandbox = sinon.createSandbox();
@@ -18,8 +19,12 @@ describe("Add api-connector Command Tests", () => {
   let options: string[] = [];
   const positionals: string[] = [];
   const telemetryEvents: string[] = [];
+  let mockedEnvRestore: () => void;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_AAD_MANIFEST: "true",
+    });
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });
@@ -55,13 +60,26 @@ describe("Add api-connector Command Tests", () => {
   });
 
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add <feature>", "api-connection"]);
+    expect(registeredCommands).deep.equals([
+      "add <feature>",
+      "bot",
+      "messaging-extension",
+      "tab",
+      "azure-function",
+      "azure-sql",
+      "azure-apim",
+      "azure-keyvault",
+      "cicd",
+      "api-connection",
+      "sso",
+    ]);
   });
 
   it("Add api-connection Command Running Check", async () => {
@@ -75,8 +93,8 @@ describe("Add api-connector Command Tests", () => {
         return ok("");
       });
     const cmd = new Add();
-    const cicd = cmd.subCommands.find((cmd) => cmd.commandHead === "api-connection");
-    await cicd!.handler({});
+    const apiConnection = cmd.subCommands.find((cmd) => cmd.commandHead === "api-connection");
+    await apiConnection!.handler({});
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ConnectExistingApiStart,
       TelemetryEvent.ConnectExistingApi,

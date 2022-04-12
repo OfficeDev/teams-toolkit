@@ -22,8 +22,7 @@ import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
-import Init from "./init";
-import { isDeployManifestEnabled, isInitAppEnabled } from "@microsoft/teamsfx-core";
+import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -44,11 +43,6 @@ export const commands: YargsCommand[] = [
 
 if (isDeployManifestEnabled()) {
   commands.splice(8, 1);
-}
-
-if (isInitAppEnabled()) {
-  // add Init command after the New command.
-  commands.splice(2, 0, new Init());
 }
 
 /**

@@ -111,7 +111,13 @@ export default class Add extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs
+      .option("feature", {
+        choices: this.subCommands.map((c) => c.commandHead),
+        global: false,
+        hidden: true,
+      })
+      .version(false);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

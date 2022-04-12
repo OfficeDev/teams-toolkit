@@ -70,6 +70,11 @@ export enum ErrorCode {
    * Identity type error.
    */
   IdentityTypeNotSupported = "IdentityTypeNotSupported",
+
+  /**
+   * Authentication info already exists error.
+   */
+  AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
 }
 
 /**
@@ -99,6 +104,9 @@ export class ErrorMessage {
   // IdentityTypeNotSupported Error
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 
+  // AuthorizationInfoError
+  static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";
+  static readonly BasicCredentialAlreadyExists = "Basic credential already exists!";
   // InvalidParameter Error
   static readonly EmptyParameter = "Parameter {0} is empty";
   static readonly DuplicateHttpsOptionProperty =

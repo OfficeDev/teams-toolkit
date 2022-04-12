@@ -36,6 +36,7 @@ import {
   AadManifestMissingIdentifierUris,
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
+  AadManifestNotProvisioned,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -68,7 +69,9 @@ import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tool
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
+import { BotOptionItem, TabOptionItem } from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
+import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -424,18 +427,24 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const result: ArmTemplateResult = {
-      Parameters: JSON.parse(
-        await fs.readFile(
-          path.join(
-            getTemplatesFolder(),
-            TemplatePathInfo.BicepTemplateRelativeDir,
-            Bicep.ParameterFileName
-          ),
-          ConstantString.UTF8Encoding
-        )
-      ),
-    };
+    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    let result: ArmTemplateResult | undefined = undefined;
+
+    if (capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+      result = {
+        Parameters: JSON.parse(
+          await fs.readFile(
+            path.join(
+              getTemplatesFolder(),
+              TemplatePathInfo.BicepTemplateRelativeDir,
+              Bicep.ParameterFileName
+            ),
+            ConstantString.UTF8Encoding
+          )
+        ),
+      };
+    }
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
@@ -845,21 +854,20 @@ export class AadAppForTeamsImpl {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
-
-      const skip = Utils.skipAADProvision(ctx, false);
       DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
 
       await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
       await DialogUtils.progress?.start(ProgressDetail.Starting);
 
-      const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+      const skip = Utils.skipAADProvision(ctx, false);
+
+      const manifest = await this.loadAndBuildManifest(ctx);
 
       this.validateDeployManifest(manifest);
 
       await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
 
-      await this.writeManifestFileToBuildFolder(manifest, ctx);
       await DialogUtils.progress?.end(true);
 
       Utils.addLogAndTelemetry(
@@ -869,6 +877,23 @@ export class AadAppForTeamsImpl {
       );
     }
     return ResultFactory.Success();
+  }
+
+  public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
+    const isProvisionSucceeded = !!(ctx.envInfo.state
+      .get("solution")
+      ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+
+    if (!isProvisionSucceeded) {
+      throw ResultFactory.UserError(
+        AadManifestNotProvisioned.name,
+        AadManifestNotProvisioned.message()
+      );
+    }
+
+    const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+    await this.writeManifestFileToBuildFolder(manifest, ctx);
+    return manifest;
   }
 
   private async writeManifestFileToBuildFolder(
@@ -890,13 +915,6 @@ export class AadAppForTeamsImpl {
       throw ResultFactory.UserError(
         AadManifestMissingObjectId.name,
         AadManifestMissingObjectId.message()
-      );
-    }
-
-    if (!manifest.replyUrlsWithType || manifest.replyUrlsWithType.length === 0) {
-      throw ResultFactory.UserError(
-        AadManifestMissingReplyUrlsWithType.name,
-        AadManifestMissingReplyUrlsWithType.message()
       );
     }
 

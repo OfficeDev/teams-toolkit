@@ -9,14 +9,19 @@ import {
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
-  label: "Tab",
+  label: isBotNotificationEnabled() ? "SSO enabled Launch page" : "Tab",
   cliName: "tab",
-  description: getLocalizedString("core.TabOption.description"),
-  detail: getLocalizedString("core.TabOption.detail"),
+  description: isBotNotificationEnabled()
+    ? undefined
+    : getLocalizedString("core.TabOption.description"),
+  detail: isBotNotificationEnabled()
+    ? getLocalizedString("core.TabOption.detailNew")
+    : getLocalizedString("core.TabOption.detail"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -29,42 +34,49 @@ export const BotOptionItem: OptionItem = {
 
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
-  label: "Notification",
+  label: getLocalizedString("core.NotificationOption.label"),
   cliName: "notification",
-  description: getLocalizedString("core.NotificationOption.description"),
   detail: getLocalizedString("core.NotificationOption.detail"),
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
-  id: "CommandAndResponse",
-  label: "Command and Response",
+  id: "CommandBot",
+  label: getLocalizedString("core.CommandAndResponseOption.label"),
   cliName: "command-and-response",
-  description: getLocalizedString("core.CommandAndResponseOption.description"),
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
 };
 
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
-  label: "Existing Tab",
+  label: getLocalizedString("core.ExistingTabOption.label"),
   cliName: "existing-tab",
-  description: getLocalizedString("core.ExistingTabOption.description"),
   detail: getLocalizedString("core.ExistingTabOption.detail"),
 };
 
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
-  label: "Messaging Extension",
+  label: isBotNotificationEnabled()
+    ? getLocalizedString("core.MessageExtensionOption.labelNew")
+    : getLocalizedString("core.MessageExtensionOption.label"),
   cliName: "messaging-extension",
-  description: getLocalizedString("core.MessageExtensionOption.description"),
+  description: isBotNotificationEnabled()
+    ? undefined
+    : getLocalizedString("core.MessageExtensionOption.description"),
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
 
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
-  label: "Tab(SPFx)",
+  label: isBotNotificationEnabled()
+    ? getLocalizedString("core.TabSPFxOption.labelNew")
+    : getLocalizedString("core.TabSPFxOption.label"),
   cliName: "tab-spfx",
-  description: getLocalizedString("core.TabSPFxOption.description"),
-  detail: getLocalizedString("core.TabSPFxOption.detail"),
+  description: isBotNotificationEnabled()
+    ? undefined
+    : getLocalizedString("core.TabSPFxOption.description"),
+  detail: isBotNotificationEnabled()
+    ? getLocalizedString("core.TabSPFxOption.detailNew")
+    : getLocalizedString("core.TabSPFxOption.detail"),
 };
 
 export const TabSsoItem: OptionItem = {
@@ -85,7 +97,7 @@ export const BotSsoItem: OptionItem = {
 
 export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
-  label: "Tab(Non-SSO)",
+  label: getLocalizedString("core.TabNonSso.label"),
   cliName: "tab-non-sso",
   description: getLocalizedString("core.TabNonSso.description"),
   detail: getLocalizedString("core.TabNonSso.detail"),
@@ -229,7 +241,9 @@ export function addCapabilityQuestion(
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.addCapabilityQuestion.titleNew")
+      : getLocalizedString("core.addCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: options,
     default: [],

@@ -12,6 +12,7 @@ import {
 } from "../../util";
 import { TeamsBot } from "../../../../../src";
 import * as tools from "../../../../../src/common/tools";
+import * as featureFlags from "../../../../../src/common/featureFlags";
 import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import * as testUtils from "./utils";
 import path from "path";
@@ -413,7 +414,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in enable always on scenario", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(true);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(true);
     const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
     const settings: AzureSolutionSettings = {
       hostType: HostTypeOptionAzure.id,

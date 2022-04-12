@@ -17,17 +17,14 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 export class ResourceGroupManager {
-  private static instance: ResourceGroupManager;
-
   private static client?: arm.ResourceManagementClient.ResourceManagementClient;
 
   private constructor() {
     ResourceGroupManager.client = undefined;
   }
 
-  public static async init(): Promise<ResourceGroupManager> {
-    if (!ResourceGroupManager.instance) {
-      ResourceGroupManager.instance = new ResourceGroupManager();
+  private static async init() {
+    if (!ResourceGroupManager.client) {
       const c = await msRestAzure.loginWithUsernamePassword(user, password, {
         domain: azureConfig.AZURE_TENANT_ID,
       });
@@ -36,14 +33,15 @@ export class ResourceGroupManager {
         subscriptionId
       );
     }
-    return Promise.resolve(ResourceGroupManager.instance);
   }
 
-  public async getResourceGroup(name: string) {
+  public static async getResourceGroup(name: string) {
+    await ResourceGroupManager.init();
     return ResourceGroupManager.client!.resourceGroups.get(name);
   }
 
-  public async hasResourceGroup(name: string) {
+  public static async hasResourceGroup(name: string): Promise<boolean> {
+    await ResourceGroupManager.init();
     try {
       await this.getResourceGroup(name);
       return Promise.resolve(true);
@@ -52,12 +50,14 @@ export class ResourceGroupManager {
     }
   }
 
-  public async searchResourceGroups(contain: string) {
+  public static async searchResourceGroups(contain: string) {
+    await ResourceGroupManager.init();
     const groups = await ResourceGroupManager.client!.resourceGroups.list();
     return groups.filter((group) => group.name?.includes(contain));
   }
 
-  public async deleteResourceGroup(name: string, retryTimes = 5): Promise<boolean> {
+  public static async deleteResourceGroup(name: string, retryTimes = 5): Promise<boolean> {
+    await ResourceGroupManager.init();
     return new Promise<boolean>(async (resolve) => {
       for (let i = 0; i < retryTimes; ++i) {
         try {
@@ -74,7 +74,11 @@ export class ResourceGroupManager {
     });
   }
 
-  public async createOrUpdateResourceGroup(name: string, location: string): Promise<boolean> {
+  public static async createOrUpdateResourceGroup(
+    name: string,
+    location: string
+  ): Promise<boolean> {
+    await ResourceGroupManager.init();
     return new Promise<boolean>(async (resolve) => {
       try {
         const resourceGroup: arm.ResourceModels.ResourceGroup = {

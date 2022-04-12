@@ -23,3 +23,7 @@ constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);
 |  keyValue | string | The value of API Key |
 |  keyLocation | [ApiKeyLocation](./teamsfx.apikeylocation.md) | The location of API Key: request header or query parameter. |
 
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) - when key name or key value is empty.
+

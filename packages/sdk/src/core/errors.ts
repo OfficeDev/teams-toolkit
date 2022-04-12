@@ -105,13 +105,16 @@ export class ErrorMessage {
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 
   // AuthorizationInfoError
-  static readonly ApiKeyAlreadyExists = "Api key already exists in {0}!";
   static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";
   static readonly BasicCredentialAlreadyExists = "Basic credential already exists!";
   // InvalidParameter Error
   static readonly EmptyParameter = "Parameter {0} is empty";
   static readonly DuplicateHttpsOptionProperty =
     "Axios HTTPS agent already defined value for property {0}";
+  static readonly DuplicateApiKeyInHeader =
+    "The request already defined a request header with name {0}.";
+  static readonly DuplicateApiKeyInQueryParam =
+    "The request already defined a query parameter with name {0}.";
 }
 
 /**

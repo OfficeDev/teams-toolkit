@@ -18,9 +18,11 @@ export class ApiKeyProvider implements AuthProvider {
 
   /**
    *
-   * @param keyName - The name of request header or query parameter that specifies API Key
-   * @param keyValue - The value of API Key
-   * @param keyLocation - The location of API Key: request header or query parameter.
+   * @param { string } keyName - The name of request header or query parameter that specifies API Key
+   * @param { string } keyValue - The value of API Key
+   * @param { ApiKeyLocation } keyLocation - The location of API Key: request header or query parameter.
+   *
+   * @throws {@link ErrorCode|InvalidParameter} - when key name or key value is empty.
    *
    * @beta
    */
@@ -45,7 +47,7 @@ export class ApiKeyProvider implements AuthProvider {
   /**
    * Adds authentication info to http requests
    *
-   * @param config - Contains all the request information and can be updated to include extra authentication info.
+   * @param { AxiosRequestConfig } config - Contains all the request information and can be updated to include extra authentication info.
    * Refer https://axios-http.com/docs/req_config for detailed document.
    *
    * @returns Updated axios request config.
@@ -62,7 +64,7 @@ export class ApiKeyProvider implements AuthProvider {
         }
         if (config.headers[this.keyName]) {
           throw new ErrorWithCode(
-            formatString(ErrorMessage.ApiKeyAlreadyExists, "header"),
+            formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
             ErrorCode.AuthorizationInfoAlreadyExists
           );
         }
@@ -72,7 +74,7 @@ export class ApiKeyProvider implements AuthProvider {
         const url = new URL(config.url!, config.baseURL);
         if (url.searchParams.get(this.keyName)) {
           throw new ErrorWithCode(
-            formatString(ErrorMessage.ApiKeyAlreadyExists, "query param"),
+            formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
             ErrorCode.AuthorizationInfoAlreadyExists
           );
         }

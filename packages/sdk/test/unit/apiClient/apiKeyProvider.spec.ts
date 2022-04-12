@@ -5,6 +5,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import { ApiKeyProvider, ApiKeyLocation } from "../../../src";
 import * as chaiPromises from "chai-as-promised";
 import { ErrorMessage, ErrorCode, ErrorWithCode } from "../../../src/core/errors";
+import { formatString } from "../../../src/util/utils";
 
 chaiUse(chaiPromises);
 
@@ -54,7 +55,7 @@ describe("ApiKeyProvider Tests - Node", () => {
 
     // Assert
     assert.equal(errorResult.code, ErrorCode.AuthorizationInfoAlreadyExists);
-    assert.equal(errorResult.message, "Api key already exists in header!");
+    assert.equal(errorResult.message, formatString(ErrorMessage.DuplicateApiKeyInHeader, keyName));
   });
 
   it("AddAuthenticationInfo should throw error if api key already exists in request query parameter", async function () {
@@ -72,7 +73,25 @@ describe("ApiKeyProvider Tests - Node", () => {
 
     // Assert
     assert.equal(errorResult.code, ErrorCode.AuthorizationInfoAlreadyExists);
-    assert.equal(errorResult.message, "Api key already exists in query param!");
+    assert.equal(
+      errorResult.message,
+      formatString(ErrorMessage.DuplicateApiKeyInQueryParam, keyName)
+    );
+  });
+
+  it("AddAuthenticationInfo can add api key in request query parameter with special characters", async function () {
+    // Arrange
+    const keyName = "x&api&key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
+
+    // Act
+    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({
+      url: "https://mock.api.com",
+    });
+
+    // Assert
+    assert.equal(updatedConfig.url, "https://mock.api.com/?x%26api%26key=mock-api-key-vaule");
   });
 
   it("Initialize ApiKeyProvider should throw error if keyName or keyVaule is empty", async function () {

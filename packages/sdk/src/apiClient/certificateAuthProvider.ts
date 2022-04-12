@@ -21,6 +21,8 @@ export class CertificateAuthProvider implements AuthProvider {
    *
    * @param { SecureContextOptions } certOption - information about the cert used in http requests
    *
+   * @throws {@link ErrorCode|InvalidParameter} - when cert option is empty.
+   *
    * @beta
    */
   constructor(certOption: SecureContextOptions) {

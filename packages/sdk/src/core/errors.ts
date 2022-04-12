@@ -112,9 +112,9 @@ export class ErrorMessage {
   static readonly DuplicateHttpsOptionProperty =
     "Axios HTTPS agent already defined value for property {0}";
   static readonly DuplicateApiKeyInHeader =
-    "The request already defined a request header with name {0}.";
+    "The request already defined api key in request header with name {0}.";
   static readonly DuplicateApiKeyInQueryParam =
-    "The request already defined a query parameter with name {0}.";
+    "The request already defined api key in query parameter with name {0}.";
 }
 
 /**

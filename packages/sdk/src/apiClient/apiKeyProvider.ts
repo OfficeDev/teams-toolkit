@@ -71,15 +71,16 @@ export class ApiKeyProvider implements AuthProvider {
         config.headers[this.keyName] = this.keyValue;
         break;
       case ApiKeyLocation.QueryParams:
-        const url = new URL(config.url!, config.baseURL);
-        if (url.searchParams.get(this.keyName)) {
+        if (!config.params) {
+          config.params = {};
+        }
+        if (config.params[this.keyName]) {
           throw new ErrorWithCode(
             formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
             ErrorCode.AuthorizationInfoAlreadyExists
           );
         }
-        url.searchParams.set(this.keyName, this.keyValue);
-        config.url = url.href;
+        config.params[this.keyName] = this.keyValue;
         break;
     }
 

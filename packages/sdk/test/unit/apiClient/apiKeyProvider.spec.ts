@@ -30,12 +30,10 @@ describe("ApiKeyProvider Tests - Node", () => {
     const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
 
     // Act
-    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({
-      url: "https://mock.api.com",
-    });
+    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({});
 
     // Assert
-    assert.equal(updatedConfig.url, "https://mock.api.com/?x-api-key=mock-api-key-vaule");
+    assert.equal(updatedConfig.params[keyName], keyVaule);
   });
 
   it("AddAuthenticationInfo should throw error if api key already exists in request header", async function () {
@@ -67,7 +65,9 @@ describe("ApiKeyProvider Tests - Node", () => {
     // Act
     const errorResult = await expect(
       apiKeyProvider.AddAuthenticationInfo({
-        url: "https://mock.api.com/?x-api-key=preset-api-key-vaule",
+        params: {
+          "x-api-key": "preset-api-key-value",
+        },
       })
     ).to.eventually.be.rejectedWith(ErrorWithCode);
 
@@ -77,21 +77,6 @@ describe("ApiKeyProvider Tests - Node", () => {
       errorResult.message,
       formatString(ErrorMessage.DuplicateApiKeyInQueryParam, keyName)
     );
-  });
-
-  it("AddAuthenticationInfo can add api key in request query parameter with special characters", async function () {
-    // Arrange
-    const keyName = "x&api&key";
-    const keyVaule = "mock-api-key-vaule";
-    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
-
-    // Act
-    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({
-      url: "https://mock.api.com",
-    });
-
-    // Assert
-    assert.equal(updatedConfig.url, "https://mock.api.com/?x%26api%26key=mock-api-key-vaule");
   });
 
   it("Initialize ApiKeyProvider should throw error if keyName or keyVaule is empty", async function () {

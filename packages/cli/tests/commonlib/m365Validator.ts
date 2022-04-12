@@ -34,7 +34,7 @@ export class M365Validator {
   public static async validateManifest(projectPath: string) {
     if (isConfigUnifyEnabled()) {
       await M365Validator.validateManifestFile(
-        path.join(projectPath, TemplateFolderName, AppPackageFolderName, "manifest.template")
+        path.join(projectPath, TemplateFolderName, AppPackageFolderName, "manifest.template.json")
       );
     } else {
       await M365Validator.validateManifestFile(

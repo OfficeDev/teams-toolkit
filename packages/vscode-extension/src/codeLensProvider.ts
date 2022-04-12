@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
+import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import { Mutex } from "async-mutex";
@@ -113,8 +114,6 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
-  private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
-  private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
 
   private projectConfigs: ProjectConfigV3 | undefined = undefined;
   private mutex = new Mutex();
@@ -206,22 +205,22 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     if (isConfigUnifyEnabled()) {
       if (document.fileName.endsWith("manifest.template.json")) {
         // code lens will be resolved later
-        const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex);
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
         codeLenses.push(...configCodelenses);
 
-        const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex);
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
         codeLenses.push(...stateCodelenses);
       }
     } else {
       if (document.fileName.endsWith("manifest.remote.template.json")) {
-        const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex, {
           title: "✏️Edit the config file",
           command: "fx-extension.openConfigState",
           arguments: [{ type: "config" }],
         });
         codeLenses.push(...configCodelenses);
 
-        const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex, {
           title: "👀View the state file",
           command: "fx-extension.openConfigState",
           arguments: [{ type: "state" }],

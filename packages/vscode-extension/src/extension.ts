@@ -39,6 +39,7 @@ import {
   isValidNode,
   delay,
   isSupportAutoOpenAPI,
+  isM365Project,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -204,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const deployAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifest",
-    () => Correlator.run(handlers.deployAadAppManifest)
+    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
   );
   context.subscriptions.push(deployAadAppManifest);
 
@@ -291,6 +292,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
 
+  const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
+    "fx-extension.openPreviewAadFile",
+    (...args) => Correlator.run(handlers.openPreviewAadFile, args)
+  );
+  context.subscriptions.push(manifestTemplateCodeLensCmd);
+
   const openConfigStateCmd = vscode.commands.registerCommand(
     "fx-extension.openConfigState",
     (...args) => Correlator.run(handlers.openConfigStateFile, args)
@@ -308,6 +315,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.editManifestTemplate, args)
   );
   context.subscriptions.push(editManifestTemplateCmd);
+
+  const editAadManifestTemplateCmd = vscode.commands.registerCommand(
+    "fx-extension.editAadManifestTemplate",
+    (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
+  );
+  context.subscriptions.push(editAadManifestTemplateCmd);
 
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
@@ -402,6 +415,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isM365",
+    workspacePath && (await isM365Project(workspacePath))
+  );
 
   vscode.commands.executeCommand(
     "setContext",
@@ -463,6 +481,12 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
   };
 
+  const aadManifestPreviewSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${BuildFolderName}/${AppPackageFolderName}/aad.*.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -498,6 +522,17 @@ export async function activate(context: vscode.ExtensionContext) {
   const manifestTemplateHoverProvider = new ManifestTemplateHoverProvider();
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(aadAppTemplateSelector, manifestTemplateHoverProvider)
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadManifestPreviewSelector,
+      aadAppTemplateCodeLensProvider
+    )
   );
 
   // Register debug configuration provider

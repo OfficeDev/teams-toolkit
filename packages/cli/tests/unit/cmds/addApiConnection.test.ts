@@ -23,7 +23,7 @@ describe("Add api-connector Command Tests", () => {
 
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_API_CONNECT_ENABLE: "true",
     });
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
@@ -78,7 +78,6 @@ describe("Add api-connector Command Tests", () => {
       "azure-keyvault",
       "cicd",
       "api-connection",
-      "sso",
     ]);
   });
 

@@ -16,7 +16,7 @@ describe("Add api-connection cli", () => {
   let mockedEnvRestore: () => void;
   before(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_API_CONNECT_ENABLE: "true",
     });
   });
   after(async () => {

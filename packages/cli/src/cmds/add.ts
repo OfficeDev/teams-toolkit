@@ -93,12 +93,7 @@ export class AddExistingApi extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add connection to an API";
 
-  public readonly subCommands: YargsCommand[] = [];
-
   public builder(yargs: Argv): Argv<any> {
-    this.subCommands.forEach((cmd) => {
-      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    });
     this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
     return yargs.version(false).options(this.params);
   }
@@ -110,6 +105,7 @@ export class AddExistingApi extends YargsCommand {
     );
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, result.error);
       return err(result.error);
     }
     const core = result.value;
@@ -123,6 +119,11 @@ export class AddExistingApi extends YargsCommand {
       inputs = getSystemInputs(rootFolder, args.env as any);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.ConnectExistingApi,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
         return err(result.error);
       }
     }

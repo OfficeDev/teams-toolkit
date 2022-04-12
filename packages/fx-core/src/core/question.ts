@@ -32,8 +32,8 @@ import {
   NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
-  M365LaunchPageOptionItem,
-  M365MessagingExtensionOptionItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
   CommandAndResponseOptionItem,
   TabNonSsoItem,
   ExistingTabOptionItem,
@@ -57,9 +57,6 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
-  M365CreateFromScratch = "m365-scratch",
-  M365AppType = "app-type",
-  M365Capabilities = "m365-capabilities",
   ExistingTabEndpoint = "existing-tab-endpoint",
 }
 
@@ -254,6 +251,17 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     onDidChangeSelection: onChangeSelectionForCapabilities,
   };
 }
+
+export function createM365CapabilityQuestion(): SingleSelectQuestion {
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.single.title"),
+    type: "singleSelect",
+    staticOptions: [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem],
+    placeholder: getLocalizedString("core.createCapabilityQuestion.single.placeholder"),
+  };
+}
+
 export function validateCapabilities(inputs: string[]): string | undefined {
   if (inputs.length === 0) {
     return getLocalizedString("core.createCapabilityQuestion.placeholder");
@@ -511,26 +519,6 @@ export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
   title: "",
   staticOptions: [ScratchOptionYesM365],
   skipSingleOption: true,
-};
-
-export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.M365AppType,
-  title: getLocalizedString("core.M365AppTypeSelectQuestion.title"),
-  staticOptions: [M365LaunchPageOptionItem, M365MessagingExtensionOptionItem],
-  placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
-};
-
-export const M365CapabilitiesFuncQuestion: FuncQuestion = {
-  type: "func",
-  name: CoreQuestionNames.M365Capabilities,
-  func: (inputs: Inputs) => {
-    if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
-      inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
-    } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
-      inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
-    }
-  },
 };
 
 export const ExistingTabEndpointQuestion: TextInputQuestion = {

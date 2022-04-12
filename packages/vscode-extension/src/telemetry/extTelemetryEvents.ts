@@ -47,11 +47,15 @@ export enum TelemetryEvent {
   ConnectExistingApi = "connect-existing-api",
 
   EditManifestTemplate = "edit-manifest-template",
+  EditAadManifestTemplate = "edit-aad-manifest-template",
 
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
   Build = "build",
+
+  BuildAadManifestStart = "build-aad-manifest-start",
+  BuildAadManifest = "build-aad-manifest",
 
   ProvisionStart = "provision-start",
   Provision = "provision",
@@ -130,6 +134,9 @@ export enum TelemetryEvent {
   OpenManifestConfigStateStart = "open-manifest-config-state-start",
   OpenManifestConfigState = "open-manifest-config-state",
 
+  OpenAadConfigStateStart = "open-aad-config-state-start",
+  OpenAadConfigState = "open-aad-config-state",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
@@ -161,6 +168,7 @@ export enum TelemetryEvent {
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",
+  PreviewAadManifestFile = "preview-aad-manifest",
 
   MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
   MigrateTeamsTabApp = "migrate-teams-tab-app",

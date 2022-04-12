@@ -136,6 +136,13 @@ import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { getTemplatesFolder } from "../folder";
 import { getLocalizedString } from "../common/localizeUtils";
+import {
+  CoreTelemetryComponentName,
+  CoreTelemetryEvent,
+  CoreTelemetryProperty,
+  CoreTelemetrySuccess,
+  sendErrorTelemetryThenReturnError,
+} from "./telemetry";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -188,9 +195,7 @@ export class FxCore implements v3.ICore {
 
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
     if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      inputs.folder = path.join(folder, appName);
-      return await this._init(inputs, ctx, true);
+      return await this.createExistingTabApp(inputs, folder, ctx);
     }
 
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
@@ -302,6 +307,38 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
+
+  async createExistingTabApp(
+    inputs: Inputs,
+    folder: string,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.CreateStart, {
+      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+    });
+
+    const appName = inputs[CoreQuestionNames.AppName] as string;
+    inputs.folder = path.join(folder, appName);
+    const result = await this._init(inputs, ctx, true);
+    if (result.isErr()) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          CoreTelemetryEvent.Create,
+          result.error,
+          TOOLS.telemetryReporter
+        )
+      );
+    }
+
+    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
+      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+    });
+    return result;
+  }
+
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {

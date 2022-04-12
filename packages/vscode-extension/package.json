@@ -292,6 +292,11 @@
           "command": "fx-extension.updatePreviewFile",
           "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
           "group": "navigation"
+        },
+        {
+          "command": "fx-extension.openPreviewAadFile",
+          "when": "resourceFilename == aad.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -462,7 +467,7 @@
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.openManifest",
@@ -559,6 +564,12 @@
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openPreviewAadFile",
+        "title": "%teamstoolkit.commands.previewAadManifest.title%",
+        "icon": "$(file-code)",
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.openSchema",
@@ -916,11 +927,6 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
-          "fx-extension.unifyConfigs": {
-            "type": "boolean",
-            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
-            "default": false
-          },
           "fx-extension.enableNotification / CommandAndResponseBot": {
             "type": "boolean",
             "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",

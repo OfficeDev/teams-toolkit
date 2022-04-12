@@ -12,15 +12,15 @@ Build a bot message activity attached with adaptive card.
 <b>Signature:</b>
 
 ```typescript
-static attachAdaptiveCard<TData>(getCardData: () => TData, cardTemplate: any): Partial<Activity>;
+static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  getCardData | () =&gt; TData | Function to prepare your card data. |
 |  cardTemplate | any | The adaptive card template. |
+|  data | TData | card data used to render the template. |
 
 <b>Returns:</b>
 
@@ -52,10 +52,10 @@ type CardData = {
   title: string,
   description: string
 };
-const card = MessageBuilder.attachAdaptiveCard<CardData>(() => {
-    return {
-      title: "sample card title",
-      description: "sample card description"
-    }}, cardTemplate);
+const card = MessageBuilder.attachAdaptiveCard<CardData>(
+  cardTemplate, {
+  title: "sample card title",
+  description: "sample card description"
+});
 ```
 

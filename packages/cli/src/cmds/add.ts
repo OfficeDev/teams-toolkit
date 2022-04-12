@@ -17,7 +17,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, isGAPreviewEnabled } from "../utils";
 import {
   ResourceAddApim,
   ResourceAddFunction,
@@ -31,7 +31,7 @@ import {
   CapabilityAddNotification,
   CapabilityAddTab,
 } from "./capability";
-import { isBotNotificationEnabled } from "@microsoft/teamsfx-core";
+import { isBotNotificationEnabled, isAadManifestEnabled } from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
@@ -84,27 +84,78 @@ export class AddCICD extends YargsCommand {
   }
 }
 
+export class AddSso extends YargsCommand {
+  public readonly commandHead = `sso`;
+  public readonly command = this.commandHead;
+  public readonly description = "Add Single Sign On for your project.";
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addSso");
+    return yargs.version(false).options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddSsoStart);
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddSso, result.error);
+      return err(result.error);
+    }
+
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addSso",
+    };
+
+    const core = result.value;
+    const inputs = getSystemInputs(rootFolder);
+    {
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddSso, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead,
+        });
+        return err(result.error);
+      }
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddSso, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvRelatedProperty(rootFolder, inputs),
+    });
+    return ok(null);
+  }
+}
+
 export default class Add extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <feature>`;
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [
-    // Category 1: Add Teams Capability
-    ...(isBotNotificationEnabled()
-      ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
-      : [new CapabilityAddBot()]),
-    new CapabilityAddMessageExtension(),
-    new CapabilityAddTab(),
+    ...(isGAPreviewEnabled()
+      ? [
+          // Category 1: Add Teams Capability
+          ...(isBotNotificationEnabled()
+            ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
+            : [new CapabilityAddBot()]),
+          new CapabilityAddMessageExtension(),
+          new CapabilityAddTab(),
 
-    // Category 2: Add Cloud Resources
-    new ResourceAddFunction(),
-    new ResourceAddSql(),
-    new ResourceAddApim(),
-    new ResourceAddKeyVault(),
+          // Category 2: Add Cloud Resources
+          new ResourceAddFunction(),
+          new ResourceAddSql(),
+          new ResourceAddApim(),
+          new ResourceAddKeyVault(),
+        ]
+      : []),
 
     // Category 3: Standalone features
     new AddCICD(),
+    ...(isAadManifestEnabled() ? [new AddSso()] : []),
   ];
 
   public builder(yargs: Argv): Argv<any> {

@@ -23,6 +23,7 @@ export class PluginId {
   static readonly Identity = "fx-resource-identity";
   static readonly Apim = "fx-resource-apim";
   static readonly KeyVault = "fx-resource-key-vault";
+  static readonly AppStudio = "fx-resource-appstudio";
 }
 
 export const fileEncoding = "UTF8";
@@ -31,11 +32,9 @@ export enum Capability {
   Tab = "tab",
   Bot = "bot",
   MessagingExtension = "messaging-extension",
-}
-
-export enum M365AppType {
-  LaunchPage = "launch-page",
-  MessagingExtension = "messaging-extension",
+  M365SsoLaunchPage = "sso-launch-page",
+  M365SearchApp = "search-app",
+  ExistingTab = "existing-tab",
 }
 
 export enum Resource {
@@ -69,6 +68,9 @@ export class StateConfigKey {
   static readonly oauthHost = "oauthHost";
   static readonly oauth2PermissionScopeId = "oauth2PermissionScopeId";
   static readonly applicationIdUris = "applicationIdUris";
+
+  // app studio
+  static readonly teamsAppId = "teamsAppId";
 
   // simple auth
   static readonly endpoint = "endpoint";

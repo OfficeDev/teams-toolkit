@@ -17,7 +17,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, isGAPreviewEnabled } from "../utils";
 import {
   ResourceAddApim,
   ResourceAddFunction,
@@ -136,18 +136,22 @@ export default class Add extends YargsCommand {
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [
-    // Category 1: Add Teams Capability
-    ...(isBotNotificationEnabled()
-      ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
-      : [new CapabilityAddBot()]),
-    new CapabilityAddMessageExtension(),
-    new CapabilityAddTab(),
+    ...(isGAPreviewEnabled()
+      ? [
+          // Category 1: Add Teams Capability
+          ...(isBotNotificationEnabled()
+            ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
+            : [new CapabilityAddBot()]),
+          new CapabilityAddMessageExtension(),
+          new CapabilityAddTab(),
 
-    // Category 2: Add Cloud Resources
-    new ResourceAddFunction(),
-    new ResourceAddSql(),
-    new ResourceAddApim(),
-    new ResourceAddKeyVault(),
+          // Category 2: Add Cloud Resources
+          new ResourceAddFunction(),
+          new ResourceAddSql(),
+          new ResourceAddApim(),
+          new ResourceAddKeyVault(),
+        ]
+      : []),
 
     // Category 3: Standalone features
     new AddCICD(),

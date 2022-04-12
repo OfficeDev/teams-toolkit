@@ -28,8 +28,10 @@ export {
 } from "./util/logger";
 
 export { createApiClient } from "./apiClient/apiClient";
+export { AxiosInstance } from "axios";
 export { AuthProvider } from "./apiClient/authProvider";
 export { BearerTokenAuthProvider } from "./apiClient/bearerTokenAuthProvider";
+export { BasicAuthProvider } from "./apiClient/basicAuthProvider";
 export {
   CertificateAuthProvider,
   createPemCertOption,

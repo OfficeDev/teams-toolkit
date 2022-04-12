@@ -269,8 +269,8 @@ describe("getQuestionsForScaffolding()", async () => {
       );
       if (node && node.data && node.data.type === "multiSelect") {
         assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as OptionItem[], [
-          TabOptionItem,
           BotOptionItem,
+          TabOptionItem,
           MessageExtensionItem,
         ]);
       }

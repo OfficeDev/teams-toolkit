@@ -18,8 +18,8 @@ describe("teamsfx command help", function () {
     expect(result.stdout).not.includes("--action");
   });
 
-  it(`teamsfx resource add azure-apim -h`, async function () {
-    const result = await execAsync(`teamsfx resource add azure-apim -h`, {
+  it(`teamsfx add azure-apim -h`, async function () {
+    const result = await execAsync(`teamsfx add azure-apim -h`, {
       env: process.env,
       timeout: 0,
     });

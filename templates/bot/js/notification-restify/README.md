@@ -121,12 +121,15 @@ The file contains template arguments with `{...}` statements which will be repla
 Teams Toolkit provides commands to help provision, deploy, preview, publish your app. You can execute those commands from
 
 - VSCode Treeview
+
   ![Command in Treeview](images/treeview-deployment.png)
 
 - VSCode Command Palette
+
   ![Command Palette](images/command-palette-provision.png)
 
 - Teams Toolkit CLI
+
   ![CLI](images/cli-provision.png)
 
 To provision cloud resource:
@@ -144,9 +147,13 @@ Then, to deploy your code to cloud:
 Then, to preview your app in Teams:
 
 - Click preview button &#9654; from Treeview Environment section
+
   ![Treeview Preview](images/treeview-preview.png)
+
 - Or, use `Launch Remote (Edge)` or `Launch Remote (Chrome)` from VSCode Debug view
+
   ![Debug Remote](images/debug-preview.png)
+
 - Or, execute `teamsfx preview --remote <args>` command line
 
 Then, to publish your app:

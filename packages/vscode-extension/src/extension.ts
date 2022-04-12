@@ -39,6 +39,7 @@ import {
   isValidNode,
   delay,
   isSupportAutoOpenAPI,
+  isM365Project,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -402,6 +403,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isM365",
+    workspacePath && (await isM365Project(workspacePath))
+  );
 
   vscode.commands.executeCommand(
     "setContext",

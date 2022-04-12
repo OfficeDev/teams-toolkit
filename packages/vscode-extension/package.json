@@ -462,7 +462,7 @@
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.openManifest",

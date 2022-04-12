@@ -916,11 +916,6 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
-          "fx-extension.unifyConfigs": {
-            "type": "boolean",
-            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
-            "default": false
-          },
           "fx-extension.enableNotification / CommandAndResponseBot": {
             "type": "boolean",
             "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",

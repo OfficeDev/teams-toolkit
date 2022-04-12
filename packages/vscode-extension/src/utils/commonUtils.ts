@@ -229,8 +229,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.RootDirectory
   ).toString();
 
-  process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();

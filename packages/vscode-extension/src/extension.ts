@@ -661,6 +661,13 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
   // Quick start
   registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
 
+  // Tutorials
+  registerInCommandController(
+    context,
+    "fx-extension.selectTutorials",
+    handlers.selectTutorialsHandler
+  );
+
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
 

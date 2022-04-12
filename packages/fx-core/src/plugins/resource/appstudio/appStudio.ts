@@ -383,8 +383,8 @@ export namespace AppStudioClient {
   ): Promise<IPublishingAppDenition | undefined> {
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.get(`/api/publishing/${teamsAppId}`);
-    if (response && response.data && response.data.value && response.data.value.length > 0) {
-      const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions.map(
+    if (response && response.data && response.data.length > 0) {
+      const appdefinitions: IPublishingAppDenition[] = response.data[0].appDefinitions.map(
         (item: any) => {
           return {
             lastModifiedDateTime: item.lastModifiedDateTime

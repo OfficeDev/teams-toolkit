@@ -299,7 +299,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy);
-    await ProgressHelper.startProgress(ctx, DeployProgress);
+    await ProgressHelper.startProgress(ctx.ui, DeployProgress);
 
     const config = this.syncConfigFromContext(ctx);
 

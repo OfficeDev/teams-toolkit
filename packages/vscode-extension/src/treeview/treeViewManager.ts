@@ -313,6 +313,14 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
+        "fx-extension.selectTutorials",
+        undefined,
+        { name: "tutorial", custom: true },
+        TreeCategory.GettingStarted
+      ),
+      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",

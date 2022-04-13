@@ -136,4 +136,24 @@ describe("ApiKeyProvider Tests - Node", () => {
       formatString(ErrorMessage.DuplicateApiKeyInQueryParam, keyName)
     );
   });
+
+  it("should throw error when connect to existing API with duplicate api key in parameter", async function () {
+    // Arrange
+    const keyName = "x-api-key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
+    const apiClient = createApiClient(apiBaseUrl, apiKeyProvider);
+
+    // Act
+    const errorResult = await expect(
+      apiClient.get("/foo?x-api-key=preset-api-key-vaule")
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
+
+    // Assert
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoAlreadyExists);
+    assert.equal(
+      errorResult.message,
+      formatString(ErrorMessage.DuplicateApiKeyInQueryParam, keyName)
+    );
+  });
 });

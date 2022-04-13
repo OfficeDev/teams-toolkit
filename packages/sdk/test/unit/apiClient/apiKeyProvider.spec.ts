@@ -30,7 +30,10 @@ describe("ApiKeyProvider Tests - Node", () => {
     const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
 
     // Act
-    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({});
+    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({
+      baseURL: "http://fake-base-url",
+      url: "/foo",
+    });
 
     // Assert
     assert.equal(updatedConfig.params[keyName], keyVaule);
@@ -56,7 +59,7 @@ describe("ApiKeyProvider Tests - Node", () => {
     assert.equal(errorResult.message, formatString(ErrorMessage.DuplicateApiKeyInHeader, keyName));
   });
 
-  it("AddAuthenticationInfo should throw error if api key already exists in request query parameter", async function () {
+  it("AddAuthenticationInfo should throw error if api key already defined in request config param as query parameter", async function () {
     // Arrange
     const keyName = "x-api-key";
     const keyVaule = "mock-api-key-vaule";
@@ -65,9 +68,33 @@ describe("ApiKeyProvider Tests - Node", () => {
     // Act
     const errorResult = await expect(
       apiKeyProvider.AddAuthenticationInfo({
+        baseURL: "http://fake-base-url",
+        url: "/foo",
         params: {
           "x-api-key": "preset-api-key-value",
         },
+      })
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
+
+    // Assert
+    assert.equal(errorResult.code, ErrorCode.AuthorizationInfoAlreadyExists);
+    assert.equal(
+      errorResult.message,
+      formatString(ErrorMessage.DuplicateApiKeyInQueryParam, keyName)
+    );
+  });
+
+  it("AddAuthenticationInfo should throw error if api key already defined in request url as query parameter", async function () {
+    // Arrange
+    const keyName = "x-api-key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
+
+    // Act
+    const errorResult = await expect(
+      apiKeyProvider.AddAuthenticationInfo({
+        baseURL: "http://fake-base-url",
+        url: "/foo?x-api-key=preset-api-key-value",
       })
     ).to.eventually.be.rejectedWith(ErrorWithCode);
 

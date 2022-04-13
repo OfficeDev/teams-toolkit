@@ -11,6 +11,23 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
+// Following keys are used by SDK internally
+const ReservedKey: Set<string> = new Set<string>([
+  "authorityHost",
+  "tenantId",
+  "clientId",
+  "clientSecret",
+  "initiateLoginEndpoint",
+  "applicationIdUri",
+  "apiEndpoint",
+  "apiName",
+  "sqlServerEndpoint",
+  "sqlUsername",
+  "sqlPassword",
+  "sqlDatabaseName",
+  "sqlIdentityId",
+]);
+
 /**
  * A class providing credential and configuration.
  * @beta
@@ -208,10 +225,12 @@ export class TeamsFx implements TeamsFxConfiguration {
     this.configuration.set("sqlIdentityId", env.IDENTITY_ID);
 
     Object.keys(env).forEach((key: string) => {
-      const value = env[key];
-      if (key.startsWith("TEAMSFX_") && value) {
-        this.configuration.set(key.substring(8), value);
+      if (ReservedKey.has(key)) {
+        internalLogger.warn(
+          `The name of environment variable ${key} is preserved. Will not load it as configuration.`
+        );
       }
+      this.configuration.set(key, env[key]);
     });
   }
 }

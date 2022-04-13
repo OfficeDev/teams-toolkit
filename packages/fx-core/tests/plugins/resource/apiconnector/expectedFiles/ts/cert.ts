@@ -9,9 +9,9 @@ import {
 const teamsFx = new TeamsFx();
 // Initializes a new axios instance to call fake API.
 const authProvider = new CertificateAuthProvider(
-  // Please replace '<your-cert>' with the actual cert chain in PEM format and
-  // replace '<your-cert-key>' with the actual private key for the cert chain.
-  createPemCertOption("<your-cert>", "<your-cert-key>")
+  // Please add code to read your cert and private key, replace '<your-cert>' and '<your-private-key>' with actual value.
+  // If you have a .pfx cert, you can use 'createPfxCertOption' function to initialize your cert option.
+  createPemCertOption("<your-cert>", "<your-private-key>")
 );
 const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };

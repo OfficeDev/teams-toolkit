@@ -15,6 +15,11 @@ export enum AuthType {
   CUSTOM = "custom",
 }
 
+export enum KeyLocation {
+  Header = "request header",
+  QueryParams = "query parameter",
+}
+
 export enum LanguageType {
   JS = "javascript",
   TS = "typescript",
@@ -47,5 +52,7 @@ export class Constants {
     apiAppType: "app-type",
     apiAppTenentId: "app-tenant-id",
     apiAppId: "app-id",
+    apiAPIKeyLocation: "key-location",
+    apiAPIKeyName: "key-name",
   };
 }

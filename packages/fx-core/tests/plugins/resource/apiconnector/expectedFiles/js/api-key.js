@@ -1,14 +1,17 @@
-import { TeamsFx, createApiClient, ApiKeyProvider, ApiKeyLocation } from "@microsoft/teamsfx";
+const teamsfxSdk = require("@microsoft/teamsfx");
 
 // Loads current app's configuration.
-const teamsFx = new TeamsFx();
+const teamsFx = new teamsfxSdk.TeamsFx();
 // Initializes a new axios instance to call fake API.
-const authProvider = new ApiKeyProvider(
+const authProvider = new teamsfxSdk.ApiKeyProvider(
   "fake_api_key_name",
   teamsFx.getConfig("TEAMSFX_API_FAKE_API_KEY"),
-  ApiKeyLocation.Header
+  teamsfxSdk.ApiKeyLocation.Header
 );
-const fakeClient = createApiClient(teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  authProvider
+);
 export { fakeClient };
 
 /* 

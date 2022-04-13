@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { getPropertyByPath, environmentManager } from "@microsoft/teamsfx-core";
 import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import { core, getSystemInputs } from "./handlers";
+import { getProvisionSucceedFromEnv } from "./utils/commonUtils";
 
 export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
   public async provideHover(
@@ -59,8 +60,13 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
             const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
             message += `**${envName}**: [Trigger local debug to generate value](${commandUri}) \n\n`;
           } else {
-            const commandUri = vscode.Uri.parse("command:fx-extension.provision");
-            message += `**${envName}**: [Provision to generate value](${commandUri}) \n\n`;
+            const provisioned = await getProvisionSucceedFromEnv(envName);
+            if (provisioned) {
+              message += `**${envName}**: ${value} \n\n`;
+            } else {
+              const commandUri = vscode.Uri.parse("command:fx-extension.provision");
+              message += `**${envName}**: [Provision to generate value](${commandUri}) \n\n`;
+            }
           }
         }
       }

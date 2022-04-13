@@ -228,12 +228,14 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...[TabOptionItem, TabSPFxItem, MessageExtensionItem],
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {
     staticOptions = [
       ...[TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   }
   return {
@@ -249,16 +251,6 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: validateCapabilities,
     },
     onDidChangeSelection: onChangeSelectionForCapabilities,
-  };
-}
-
-export function createM365CapabilityQuestion(): SingleSelectQuestion {
-  return {
-    name: CoreQuestionNames.Capabilities,
-    title: getLocalizedString("core.createCapabilityQuestion.single.title"),
-    type: "singleSelect",
-    staticOptions: [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem],
-    placeholder: getLocalizedString("core.createCapabilityQuestion.single.placeholder"),
   };
 }
 
@@ -293,6 +285,24 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   );
   if (result) return result;
   result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  if (result) return result;
+  result = validateConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        TabSPFxItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        ExistingTabOptionItem.id,
+      ]),
+      new Set([M365SsoLaunchPageOptionItem.id]),
+      new Set([M365SearchAppOptionItem.id]),
+    ],
+    set
+  );
   return result;
 }
 
@@ -321,6 +331,8 @@ export async function onChangeSelectionForCapabilities(
       ]),
       new Set([TabSPFxItem.id]),
       new Set([ExistingTabOptionItem.id]),
+      new Set([M365SsoLaunchPageOptionItem.id]),
+      new Set([M365SearchAppOptionItem.id]),
     ],
     previousSelectedIds,
     result
@@ -442,12 +454,6 @@ export const ScratchOptionYesVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
 };
 
-export const ScratchOptionYesM365VSC: OptionItem = {
-  id: "yes-m365",
-  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesM365VSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionYesM365VSC.detail"),
-};
-
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
@@ -460,12 +466,6 @@ export const ScratchOptionYes: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYes.detail"),
 };
 
-export const ScratchOptionYesM365: OptionItem = {
-  id: "yes-m365",
-  label: getLocalizedString("core.ScratchOptionYesM365.label"),
-  detail: getLocalizedString("core.ScratchOptionYesM365.detail"),
-};
-
 export const ScratchOptionNo: OptionItem = {
   id: "no",
   label: getLocalizedString("core.ScratchOptionNo.label"),
@@ -476,15 +476,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
-    if (isM365AppEnabled()) {
-      staticOptions.push(ScratchOptionYesM365VSC);
-    }
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
-    if (isM365AppEnabled()) {
-      staticOptions.push(ScratchOptionYesM365);
-    }
     staticOptions.push(ScratchOptionNo);
   }
   return {
@@ -511,14 +505,6 @@ export const SampleSelect: SingleSelectQuestion = {
     } as OptionItem;
   }),
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
-};
-
-export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.CreateFromScratch,
-  title: "",
-  staticOptions: [ScratchOptionYesM365],
-  skipSingleOption: true,
 };
 
 export const ExistingTabEndpointQuestion: TextInputQuestion = {

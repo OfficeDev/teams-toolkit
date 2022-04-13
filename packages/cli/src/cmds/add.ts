@@ -90,7 +90,7 @@ export class AddCICD extends YargsCommand {
 
 export class AddExistingApi extends YargsCommand {
   public readonly commandHead = `api-connection`;
-  public readonly command = `${this.commandHead}`;
+  public readonly command = this.commandHead;
   public readonly description = "Add connection to an API";
 
   public builder(yargs: Argv): Argv<any> {

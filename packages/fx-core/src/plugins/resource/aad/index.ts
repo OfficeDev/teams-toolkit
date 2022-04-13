@@ -30,6 +30,7 @@ import "./v2";
 import "./v3";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 import { isAADEnabled } from "../../../common";
+import { getLocalizedString } from "../../../common/localizeUtils";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
@@ -168,7 +169,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         name: Constants.INCLUDE_AAD_MANIFEST,
         type: "singleSelect",
         staticOptions: ["yes", "no"],
-        title: "Whether to deploy aad manifest",
+        title: getLocalizedString("core.aad.includeAadQuestionTitle"),
         default: "no",
       });
       aadQuestions.addChild(node);

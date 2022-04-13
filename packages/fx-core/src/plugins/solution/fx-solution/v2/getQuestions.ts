@@ -19,7 +19,7 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { HelpLinks } from "../../../../common/constants";
+import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
@@ -324,7 +324,7 @@ export async function getQuestions(
           id: plugin.name,
           label: plugin.displayName,
           cliName:
-            plugin.name === "fx-resource-aad-app-for-teams"
+            plugin.name === ResourcePlugins.Aad
               ? "aad-manifest"
               : plugin.name.replace(pluginPrefix, ""),
         };

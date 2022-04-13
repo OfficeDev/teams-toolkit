@@ -238,7 +238,7 @@ export default class Add extends YargsCommand {
 
     // Category 3: Standalone features
     new AddCICD(),
-    ...(isApiConnectEnabled() ? [new AddExistingApi()] : []),
+    ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
     ...(isAadManifestEnabled() ? [new AddSso()] : []),
   ];
 

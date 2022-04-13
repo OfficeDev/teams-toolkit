@@ -21,8 +21,8 @@ export class MessageBuilder {
   /**
    * Build a bot message activity attached with adaptive card.
    *
-   * @param getCardData Function to prepare your card data.
    * @param cardTemplate The adaptive card template.
+   * @param data card data used to render the template.
    * @returns A bot message activity attached with an adaptive card.
    *
    * @example
@@ -47,23 +47,18 @@ export class MessageBuilder {
    *   title: string,
    *   description: string
    * };
-   * const card = MessageBuilder.attachAdaptiveCard<CardData>(() => {
-   *     return {
-   *       title: "sample card title",
-   *       description: "sample card description"
-   *     }}, cardTemplate);
+   * const card = MessageBuilder.attachAdaptiveCard<CardData>(
+   *   cardTemplate, {
+   *   title: "sample card title",
+   *   description: "sample card description"
+   * });
    * ```
    *
    * @beta
    */
-  public static attachAdaptiveCard<TData>(
-    getCardData: () => TData,
-    cardTemplate: any
-  ): Partial<Activity> {
-    const cardData: TData = getCardData();
-
+  public static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity> {
     return {
-      attachments: [CardFactory.adaptiveCard(AdaptiveCards.declare(cardTemplate).render(cardData))],
+      attachments: [CardFactory.adaptiveCard(AdaptiveCards.declare(cardTemplate).render(data))],
     };
   }
 

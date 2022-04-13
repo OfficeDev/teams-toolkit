@@ -89,6 +89,9 @@ export class AadAppForTeamsPlugin implements Plugin {
       const isLocal: boolean =
         func.params && func.params.isLocal !== undefined ? (func.params.isLocal as boolean) : false;
       return Promise.resolve(this.setApplicationInContext(ctx, isLocal));
+    } else if (func.method === "buildAadManifest") {
+      await this.pluginImpl.loadAndBuildManifest(ctx);
+      return ResultFactory.Success();
     }
     return err(
       new SystemError({

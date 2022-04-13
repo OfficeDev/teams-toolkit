@@ -1,6 +1,7 @@
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
+import { isGAPreviewEnabled } from "../../src/utils";
 
 export class CliHelper {
   static async setSubscription(
@@ -83,6 +84,18 @@ export class CliHelper {
       );
     } else {
       console.log(`[Successfully] addCICDWorkflows for ${projectPath}`);
+    }
+  }
+
+  static async addExistingApi(projectPath: string, option = "") {
+    const result = await execAsyncWithRetry(`teamsfx add api-connection ${option}`, {
+      cwd: projectPath,
+      timeout: 0,
+    });
+    if (result.stderr) {
+      console.error(`[Failed] addExistingApi for ${projectPath}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] addExistingApi for ${projectPath}`);
     }
   }
 
@@ -177,7 +190,9 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = `teamsfx add ${capabilityToAdd}`;
+    const command = isGAPreviewEnabled()
+      ? `teamsfx add ${capabilityToAdd}`
+      : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -205,7 +220,9 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx add ${resourceToAdd} ${options}`;
+    const command = isGAPreviewEnabled()
+      ? `teamsfx add ${resourceToAdd} ${options}`
+      : `teamsfx resource add ${resourceToAdd} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

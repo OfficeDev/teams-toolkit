@@ -124,4 +124,11 @@ export class Notification {
   public static GetNpmInstallString(): string {
     return getLocalizedString("plugins.apiConnector.Notification.NpmInstall");
   }
+
+  public static GetLinkNotification(): string {
+    return getLocalizedString(
+      "plugins.apiConnector.Notification.LinkNotification",
+      Notification.READ_MORE_URL
+    );
+  }
 }

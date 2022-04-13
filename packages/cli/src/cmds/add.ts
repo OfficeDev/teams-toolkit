@@ -6,7 +6,7 @@
 import { Argv } from "yargs";
 
 import { err, Func, FxError, Inputs, ok, Result } from "@microsoft/teamsfx-api";
-
+import CLIUIInstance from "../userInteraction";
 import { YargsCommand } from "../yargsCommand";
 import HelpParamGenerator from "../helpParamGenerator";
 import path from "path";
@@ -17,7 +17,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { getSystemInputs } from "../utils";
+import { getSystemInputs, isGAPreviewEnabled } from "../utils";
 import {
   ResourceAddApim,
   ResourceAddFunction,
@@ -31,7 +31,11 @@ import {
   CapabilityAddNotification,
   CapabilityAddTab,
 } from "./capability";
-import { isBotNotificationEnabled, isAadManifestEnabled } from "@microsoft/teamsfx-core";
+import {
+  isBotNotificationEnabled,
+  isAadManifestEnabled,
+  isApiConnectEnabled,
+} from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
@@ -84,6 +88,48 @@ export class AddCICD extends YargsCommand {
   }
 }
 
+export class AddExistingApi extends YargsCommand {
+  public readonly commandHead = `api-connection`;
+  public readonly command = this.commandHead;
+  public readonly description = "Add connection to an API";
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
+    return yargs.version(false).options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
+      TelemetryEvent.ConnectExistingApiStart
+    );
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, result.error);
+      return err(result.error);
+    }
+    const core = result.value;
+    let inputs: Inputs;
+    {
+      const func: Func = {
+        namespace: "fx-solution-azure/fx-resource-api-connector",
+        method: "connectExistingApi",
+      };
+
+      inputs = getSystemInputs(rootFolder);
+      const result = await core.executeUserTask!(func, inputs);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, result.error);
+        return err(result.error);
+      }
+    }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConnectExistingApi, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvRelatedProperty(rootFolder, inputs),
+    });
+    return ok(null);
+  }
+}
 export class AddSso extends YargsCommand {
   public readonly commandHead = `sso`;
   public readonly command = this.commandHead;
@@ -136,21 +182,26 @@ export default class Add extends YargsCommand {
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [
-    // Category 1: Add Teams Capability
-    ...(isBotNotificationEnabled()
-      ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
-      : [new CapabilityAddBot()]),
-    new CapabilityAddMessageExtension(),
-    new CapabilityAddTab(),
+    ...(isGAPreviewEnabled()
+      ? [
+          // Category 1: Add Teams Capability
+          ...(isBotNotificationEnabled()
+            ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
+            : [new CapabilityAddBot()]),
+          new CapabilityAddMessageExtension(),
+          new CapabilityAddTab(),
 
-    // Category 2: Add Cloud Resources
-    new ResourceAddFunction(),
-    new ResourceAddSql(),
-    new ResourceAddApim(),
-    new ResourceAddKeyVault(),
+          // Category 2: Add Cloud Resources
+          new ResourceAddFunction(),
+          new ResourceAddSql(),
+          new ResourceAddApim(),
+          new ResourceAddKeyVault(),
+        ]
+      : []),
 
     // Category 3: Standalone features
     new AddCICD(),
+    ...(isApiConnectEnabled() ? [new AddExistingApi()] : []),
     ...(isAadManifestEnabled() ? [new AddSso()] : []),
   ];
 

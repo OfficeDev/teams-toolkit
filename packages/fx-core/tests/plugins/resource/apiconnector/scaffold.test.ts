@@ -48,7 +48,7 @@ describe("Api Connector scaffold sample code", async () => {
   });
   it("call add existing api connector success", async () => {
     const expectInputs = {
-      ComponentSelect: ["api", "bot"],
+      component: ["api", "bot"],
       "api-connector-name": "test",
       "api-connector-endpoint": "test.endpoint",
       "api-connector-auth-type": "basic",
@@ -66,7 +66,7 @@ describe("Api Connector scaffold sample code", async () => {
   it("restore files meets failure on scaffold", async () => {
     sandbox.stub(SampleHandler.prototype, "generateSampleCode").rejects("Create File Failed");
     const expectInputs = {
-      ComponentSelect: ["api", "bot"],
+      component: ["api", "bot"],
       "api-connector-name": "test",
       "api-connector-endpoint": "test.endpoint",
       "api-connector-auth-type": "basic",

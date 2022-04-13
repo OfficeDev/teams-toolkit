@@ -7,6 +7,7 @@
 
 import { expect } from "chai";
 
+import { isGAPreviewEnabled } from "../../../src/utils";
 import { execAsync } from "../commonUtils";
 
 describe("teamsfx command help", function () {
@@ -19,7 +20,10 @@ describe("teamsfx command help", function () {
   });
 
   it(`teamsfx add azure-apim -h`, async function () {
-    const result = await execAsync(`teamsfx add azure-apim -h`, {
+    const command = isGAPreviewEnabled()
+      ? `teamsfx add azure-apim -h`
+      : `teamsfx resource add azure-apim -h`;
+    const result = await execAsync(command, {
       env: process.env,
       timeout: 0,
     });

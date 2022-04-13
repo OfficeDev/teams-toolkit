@@ -40,7 +40,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<ApiConnectorResult> {
-    return await this.apiConnectorImpl.generateQuestion(ctx);
+    return await this.apiConnectorImpl.generateQuestion(ctx, inputs);
   }
 
   async executeUserTask(

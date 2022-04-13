@@ -73,6 +73,7 @@
     "teamstoolkit.commands.openManifestSchema.title": "Open manifest schema",
     "teamstoolkit.commands.previewApp.title": "Preview App",
     "teamstoolkit.commands.previewManifest.title": "Preview manifest file",
+    "teamstoolkit.commands.previewAadManifest.title": "Preview AAD manifest file",
     "teamstoolkit.commands.provision.title": "Teams: Provision in the cloud",
     "teamstoolkit.commands.publish.title": "Teams: Publish to Teams",
     "teamstoolkit.commands.quickStart.title": "Teams: Quick Start",

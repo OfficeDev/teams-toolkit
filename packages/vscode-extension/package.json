@@ -292,6 +292,11 @@
           "command": "fx-extension.updatePreviewFile",
           "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
           "group": "navigation"
+        },
+        {
+          "command": "fx-extension.openPreviewAadFile",
+          "when": "resourceFilename == aad.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -564,6 +569,12 @@
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openPreviewAadFile",
+        "title": "%teamstoolkit.commands.previewAadManifest.title%",
+        "icon": "$(file-code)",
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.openSchema",
@@ -1009,7 +1020,8 @@
             "title": "What's next?",
             "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
-              "markdown": "media/walkthrough/whatsnext.md"
+              "svg": "media/walkthrough/whatsnext.svg",
+              "altText": "Tutorials, README.md and Documentation"
             }
           }
         ]

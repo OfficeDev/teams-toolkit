@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { getPropertyByPath } from "@microsoft/teamsfx-core";
+import { getPropertyByPath, environmentManager } from "@microsoft/teamsfx-core";
 import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 
@@ -52,7 +52,17 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
       for (const envName in projectConfigs.envInfos) {
         const envInfo = projectConfigs.envInfos[envName];
         const value = getPropertyByPath(envInfo, key);
-        message += `**${envName}**: ${value} \n\n`;
+        if (value || key.startsWith("config")) {
+          message += `**${envName}**: ${value} \n\n`;
+        } else {
+          if (envName === environmentManager.getLocalEnvName()) {
+            const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
+            message += `**${envName}**: [Trigger local debug to generate value](${commandUri}) \n\n`;
+          } else {
+            const commandUri = vscode.Uri.parse("command:fx-extension.provision");
+            message += `**${envName}**: [Provision to generate value](${commandUri}) \n\n`;
+          }
+        }
       }
       if (key.startsWith("state")) {
         const args = [{ type: "state" }];

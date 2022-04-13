@@ -235,12 +235,8 @@ export class HelpParamGenerator {
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
     } else if (authType && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
-      const authNodes = rootCopy.children!.filter(
-        (node: any) => node.data.name === "api-connector-auth-type"
-      )[0];
-      const mustHaveNodes = rootCopy.children!.filter(
-        (node: any) => node.data.name != "api-connector-auth-type"
-      );
+      const authNodes = rootCopy.children!.filter((node: any) => node.data.name === "auth-type")[0];
+      const mustHaveNodes = rootCopy.children!.filter((node: any) => node.data.name != "auth-type");
       const authNode = authNodes.children!.filter((node: any) =>
         ((node.condition as any).equals as string).includes(authType as string)
       )[0];

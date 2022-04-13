@@ -133,7 +133,7 @@ export class AddExistingApiSubCommand extends AddExistingApiAuthBase {
     this.description = `Add connection to an API with ${command} auth`;
   }
   public override modifyArguments(args: { [argName: string]: any }) {
-    CLIUIInstance.updatePresetAnswer("api-connector-auth-type", this.commandHead);
+    CLIUIInstance.updatePresetAnswer("auth-type", this.commandHead);
     return args;
   }
   public builder(yargs: Argv): Argv<any> {

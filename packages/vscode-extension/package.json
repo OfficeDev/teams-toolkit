@@ -465,6 +465,11 @@
         "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
+        "command": "fx-extension.addFeature",
+        "title": "Teams: Add Feature",
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+      },
+      {
         "command": "fx-extension.openManifest",
         "title": "%teamstoolkit.commands.editManifest.title%"
       },

@@ -265,6 +265,7 @@ export class FeatureFlags {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly GeneralAvailablityPreview = "TEAMSFX_GA_PREVIEW";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

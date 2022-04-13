@@ -40,6 +40,8 @@ import {
   delay,
   isSupportAutoOpenAPI,
   isM365Project,
+  isFeatureFlagEnabled,
+  FeatureFlags,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -599,21 +601,31 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   // View samples
   registerInCommandController(context, "fx-extension.openSamples", handlers.openSamplesHandler);
 
-  // Add capabilities
-  registerInCommandController(
-    context,
-    "fx-extension.addCapability",
-    handlers.addCapabilityHandler,
-    "addCapabilities"
-  );
+  if (isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview)) {
+    // Add feature
+    registerInCommandController(
+      context,
+      "fx-extension.addFeature",
+      handlers.addFeatureHandler,
+      "addFeature"
+    );
+  } else {
+    // Add capabilities
+    registerInCommandController(
+      context,
+      "fx-extension.addCapability",
+      handlers.addCapabilityHandler,
+      "addCapabilities"
+    );
 
-  // Add cloud resources
-  registerInCommandController(
-    context,
-    "fx-extension.update",
-    handlers.addResourceHandler,
-    "addResources"
-  );
+    // Add cloud resources
+    registerInCommandController(
+      context,
+      "fx-extension.update",
+      handlers.addResourceHandler,
+      "addResources"
+    );
+  }
 
   // Edit manifest file
   registerInCommandController(

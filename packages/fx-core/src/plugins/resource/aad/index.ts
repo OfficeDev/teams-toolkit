@@ -12,13 +12,16 @@ import {
   Result,
   FxError,
   AzureSolutionSettings,
+  Stage,
+  Platform,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
-import { Messages, Plugins, Telemetry } from "./constants";
+import { Constants, Messages, Plugins, Telemetry } from "./constants";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
@@ -147,6 +150,31 @@ export class AadAppForTeamsPlugin implements Plugin {
       ctx,
       Messages.EndDeploy.telemetry
     );
+  }
+
+  async getQuestions(
+    stage: Stage,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const aadQuestions = new QTreeNode({
+      type: "group",
+    });
+
+    if (
+      stage === Stage.deploy &&
+      (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
+    ) {
+      const node = new QTreeNode({
+        name: Constants.INCLUDE_AAD_MANIFEST,
+        type: "singleSelect",
+        staticOptions: ["yes", "no"],
+        title: "Whether to deploy aad manifest",
+        default: "no",
+      });
+      aadQuestions.addChild(node);
+    }
+
+    return ok(aadQuestions);
   }
 
   private async runWithExceptionCatchingAsync(

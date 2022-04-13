@@ -62,6 +62,9 @@ import {
   validateCapabilities,
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { AadPlugin } from "../../../resource/localdebug/constants";
+import { AadPluginV2 } from "../../../resource/aad/v2";
+import { Constants } from "../../../resource/aad/constants";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -289,13 +292,27 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
-    if (plugins.length === 0 && inputs.skipAadDeploy !== "no") {
+
+    let filterAadPlugin = true;
+    if (
+      isAadManifestEnabled() &&
+      (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI)
+    ) {
+      filterAadPlugin = false;
+    }
+
+    if (filterAadPlugin) {
+      plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
+    } else {
+      plugins = plugins.filter((plugin) => !!plugin.deploy);
+    }
+
+    if (plugins.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }
 
     // trigger from Deploy AAD App manifest command in VSCode
-    if (inputs.platform === Platform.VSCode && inputs.skipAadDeploy === "no") {
+    if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
       return ok(node);
     }
 
@@ -306,7 +323,10 @@ export async function getQuestions(
         const item: OptionItem = {
           id: plugin.name,
           label: plugin.displayName,
-          cliName: plugin.name.replace(pluginPrefix, ""),
+          cliName:
+            plugin.name === "fx-resource-aad-app-for-teams"
+              ? "aad-manifest"
+              : plugin.name.replace(pluginPrefix, ""),
         };
         return item;
       });

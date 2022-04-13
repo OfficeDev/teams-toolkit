@@ -7,7 +7,10 @@ const authProvider = new BasicAuthProvider(
   teamsFx.getConfig("TEAMSFX_API_FAKE_USERNAME"),
   teamsFx.getConfig("TEAMSFX_API_FAKE_PASSWORD")
 );
-const fakeClient = createApiClient(teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  authProvider
+);
 export { fakeClient };
 
 /* 

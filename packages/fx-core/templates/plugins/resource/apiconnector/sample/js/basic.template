@@ -7,5 +7,8 @@ const authProvider = new teamsfxSdk.BasicAuthProvider(
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_USERNAME"),
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_PASSWORD")
 );
-const {{config.APIName}}Client = teamsfxSdk.createApiClient(teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"), authProvider);
+const {{config.APIName}}Client = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  authProvider
+);
 export { {{config.APIName}}Client };

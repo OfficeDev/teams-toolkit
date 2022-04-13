@@ -32,5 +32,8 @@ const authProvider = new CustomAuthProvider(
   "customValue"
 );
 // Initializes a new axios instance to call {{config.APIName}} API.
-const {{config.APIName}}Client = teamsfxSdk.createApiClient(teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"), authProvider);
+const {{config.APIName}}Client = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  authProvider
+);
 export { {{config.APIName}}Client };

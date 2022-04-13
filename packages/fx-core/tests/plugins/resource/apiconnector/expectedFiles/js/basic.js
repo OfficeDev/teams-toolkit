@@ -4,10 +4,13 @@ const teamsfxSdk = require("@microsoft/teamsfx");
 const teamsFx = new teamsfxSdk.TeamsFx();
 // Initializes a new axios instance to call fake API
 const authProvider = new teamsfxSdk.BasicAuthProvider(
-  teamsFx.getConfig("API_FAKE_USERNAME"),
-  teamsFx.getConfig("API_FAKE_PASSWORD")
+  teamsFx.getConfig("TEAMSFX_API_FAKE_USERNAME"),
+  teamsFx.getConfig("TEAMSFX_API_FAKE_PASSWORD")
 );
-const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  authProvider
+);
 export { fakeClient };
 
 /* 

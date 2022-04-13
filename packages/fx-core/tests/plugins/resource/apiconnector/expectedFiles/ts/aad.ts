@@ -13,7 +13,7 @@ const authProvider = new BearerTokenAuthProvider(
   // Please replace '<your-api-scope>' with actual api scope value.
   async () => (await appCredential.getToken("<your-api-scope>"))?.token
 );
-const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = createApiClient(teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };
 
 /* 

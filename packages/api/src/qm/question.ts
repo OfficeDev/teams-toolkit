@@ -79,6 +79,15 @@ export interface BaseQuestion {
    * if true, the toolkit will not remember the value as default value
    */
   forgetLastValue?: boolean;
+
+  /**
+   * Actions that can be made within the question.
+   * @param An array of actions
+   * @param `icon` is the icon id of the action item
+   * @param `tooltip` is the hint of the action item
+   * @param `command` is the command name that will be executed when current action triggered
+   */
+  buttons?: { icon: string; tooltip: string; command: string }[];
 }
 
 /**

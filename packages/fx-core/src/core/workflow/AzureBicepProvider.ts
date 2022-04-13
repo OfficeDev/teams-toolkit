@@ -1,15 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import "reflect-metadata";
 import { Service } from "typedi";
+import * as path from "path";
+import { ArmTemplateResult } from "../../common/armInterface";
+import {
+  BicepOrchestrationContent,
+  generateArmFromResult,
+  generateResourceBaseName,
+  persistBicepTemplates,
+} from "../../plugins/solution/fx-solution/arm";
 import { Action, ContextV3, MaybePromise } from "./interface";
+import { compileHandlebarsTemplateString } from "../../common/tools";
 
 @Service("azure-bicep")
 export class AzureBicepProvider {
   readonly type = "bicep";
-  readonly name = "azure-bot";
+  readonly name = "azure-bicep";
   generate(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
@@ -26,6 +36,55 @@ export class AzureBicepProvider {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const azureBicepInputs = inputs["azure-bicep"];
+        const resources = azureBicepInputs.resources as string[];
+        const baseName = generateResourceBaseName(context.projectSetting.appName, "");
+        const bicepOrchestrationTemplate = new BicepOrchestrationContent(resources, baseName);
+        const moduleProvisionFiles = new Map<string, string>();
+        const moduleConfigFiles = new Map<string, string>();
+        const provisionOrchestration = await fs.readFile(
+          path.join(__dirname, "bicep", "webApp.provision.orchestration.bicep"),
+          "utf-8"
+        );
+        const provisionModules = await fs.readFile(
+          path.join(__dirname, "bicep", "webApp.provision.module.bicep"),
+          "utf-8"
+        );
+        const configOrchestration = await fs.readFile(
+          path.join(__dirname, "bicep", "webApp.config.orchestration.bicep"),
+          "utf-8"
+        );
+        const configModule = await fs.readFile(
+          path.join(__dirname, "bicep", "webApp.config.module.bicep"),
+          "utf-8"
+        );
+        for (const resource of resources) {
+          const armTemplate: ArmTemplateResult = {
+            Provision: {
+              Orchestration: provisionOrchestration,
+              Modules: { azureWebApp: provisionModules },
+            },
+            Configuration: {
+              Orchestration: configOrchestration,
+              Modules: { azureWebApp: configModule },
+            },
+          };
+          generateArmFromResult(
+            armTemplate,
+            bicepOrchestrationTemplate,
+            resource,
+            moduleProvisionFiles,
+            moduleConfigFiles
+          );
+        }
+        const persistRes = await persistBicepTemplates(
+          bicepOrchestrationTemplate,
+          moduleProvisionFiles,
+          moduleConfigFiles,
+          inputs.projectPath
+        );
+        if (persistRes.isErr()) {
+          return err(persistRes.error);
+        }
         return ok(undefined);
       },
     };

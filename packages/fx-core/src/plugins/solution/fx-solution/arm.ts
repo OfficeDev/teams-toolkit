@@ -839,13 +839,13 @@ export async function getParameterJsonV3(
   return parameterJson;
 }
 
-function generateArmFromResult(
+export function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   pluginName: string,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>
-) {
+): void {
   bicepOrchestrationTemplate.applyTemplate(pluginName, result);
   if (result?.Configuration?.Modules) {
     for (const module of Object.entries(result.Configuration.Modules)) {
@@ -1046,7 +1046,7 @@ async function doGenerateBicep(
   return ok(undefined); // Nothing to return when success
 }
 
-async function persistBicepTemplates(
+export async function persistBicepTemplates(
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
@@ -1310,7 +1310,7 @@ export class ArmTemplateRenderContext {
 }
 
 // Stores the bicep orchestration information for all resource plugins
-class BicepOrchestrationContent {
+export class BicepOrchestrationContent {
   private ParameterJsonTemplate: Record<string, string> = {};
   private RenderContext: ArmTemplateRenderContext;
   private TemplateAdded = false;
@@ -1504,7 +1504,7 @@ function expandParameterPlaceholdersV3(
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
-function generateResourceBaseName(appName: string, envName: string): string {
+export function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
   const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();

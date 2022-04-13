@@ -475,7 +475,7 @@
   "core.ExistingTabOption.label": "Embed existing web app",
   "core.ExistingTabOption.detail": "Bring your own static webpages and embed in Microsoft Teams",
   "core.ExistingTabEndpointQuestion.placeholder": "Input your existing tab endpoint",
-  "core.ExistingTabEndpointQuestion.title": "Enter your web app endpoint",
+  "core.ExistingTabEndpointQuestion.title": "Enter your web app's local endpoint",
   "core.ExistingTabEndpointQuestion.validation": "Please enter a valid URL started with https://",
   "core.TabSPFxOption.label": "Tab(SPFx)",
   "core.TabSPFxOption.labelNew": "SPFx Launch page",

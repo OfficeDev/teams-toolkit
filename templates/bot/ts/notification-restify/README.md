@@ -1,6 +1,6 @@
 # Notification Bot
 
-A notifiction bot is an app that proactively sends messages in Teams channel / group chat / personal chat.
+A notification bot is an app that proactively sends messages in Teams channel / group chat / personal chat.
 
 For example, once triggered, it sends text, card, or other message(s) to Teams:
 
@@ -21,7 +21,7 @@ This new project folder structure looks like:
 
 | Folder | Contents |
 | - | - |
-| `.fx` | Project level settings and configurations |
+| `.fx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
 | `bot` | The bot source code |
 | `templates` |Templates for Teams app manifest and corresponding Azure resources|

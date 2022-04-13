@@ -55,7 +55,7 @@ describe("Api Connector scaffold sample code", async () => {
         ConstantString.UTF8Encoding
       );
       const expectedContent = await fs.readFile(
-        path.join(__dirname, "expectedFiles", "js", item.FileName + ".js"),
+        path.join(__dirname, "expectedFiles", "js", item.FileName),
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(
@@ -83,7 +83,7 @@ describe("Api Connector scaffold sample code", async () => {
         ConstantString.UTF8Encoding
       );
       const expectedContent = await fs.readFile(
-        path.join(__dirname, "expectedFiles", "ts", item.FileName + ".ts"),
+        path.join(__dirname, "expectedFiles", "ts", item.FileName),
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(

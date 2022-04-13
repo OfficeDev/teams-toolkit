@@ -49,6 +49,15 @@ export interface UIConfig<T> {
    * Return `undefined` when 'value' is valid.
    */
   validation?: (input: T) => string | undefined | Promise<string | undefined>;
+
+  /**
+   * Actions that can be made within the question.
+   * @param An array of actions
+   * @param `icon` is the icon id of the action item
+   * @param `tooltip` is the hint of the action item
+   * @param `command` is the command name that will be executed when current action triggered
+   */
+  buttons?: { icon: string; tooltip: string; command: string }[];
 }
 
 /**

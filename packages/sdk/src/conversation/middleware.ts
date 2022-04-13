@@ -44,13 +44,6 @@ export class NotificationMiddleware implements Middleware {
         await this.conversationReferenceStore.set(reference);
         break;
       }
-      case ActivityType.CurrentBotMessaged: {
-        const reference = TurnContext.getConversationReference(context.activity);
-        if (!(await this.conversationReferenceStore.check(reference))) {
-          await this.conversationReferenceStore.set(reference);
-        }
-        break;
-      }
       case ActivityType.CurrentBotUninstalled:
       case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
@@ -73,8 +66,6 @@ export class NotificationMiddleware implements Middleware {
       } else {
         return ActivityType.CurrentBotUninstalled;
       }
-    } else if (activityType === "message") {
-      return ActivityType.CurrentBotMessaged;
     } else if (activityType === "conversationUpdate") {
       const eventType = activity.channelData?.eventType as string;
       if (eventType === "teamDeleted") {

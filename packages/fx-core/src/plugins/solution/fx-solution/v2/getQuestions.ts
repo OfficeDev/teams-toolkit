@@ -491,7 +491,8 @@ export async function getQuestionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  const isMEAddable = !meExceedRes.value;
+  // for the new bot, messaging extension and other bots are mutally exclusive
+  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

@@ -2,6 +2,12 @@
 
 We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features, including a consistent configuration file schema and a single Teams app manifest template across local and remote environments.
 
+# Collaborate cautions
+If you collaborate on this project with your co-workers, they need to update Teams toolkit extension to the latest version.
+
+## Know about the upgrade benefits
+We combine local and remote manifest configs into one style. You can configure once for bot local and remote environments.
+
 ## Know about the changes we made
 After the project upgrade, the new file structure will consist:
 * `localSettings.json` will be updated to `config.local.json` to ensure consistency between local and remote environment configuration settings.

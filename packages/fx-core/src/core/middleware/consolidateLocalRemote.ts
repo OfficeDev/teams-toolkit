@@ -38,6 +38,8 @@ import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
 const upgradeButton = "Upgrade";
+const LearnMore = "Learn More";
+const LearnMoreLink = "https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-to-support-unify-config";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -66,13 +68,20 @@ export const ProjectConsolidateMW: Middleware = async (
 };
 
 async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
-  const res = await TOOLS?.ui.showMessage(
-    "warn",
-    getLocalizedString("core.consolidateLocalRemote.Message"),
-    showModal,
-    upgradeButton
-  );
-  const answer = res?.isOk() ? res.value : undefined;
+  let answer: string | undefined = undefined;
+  do {
+    const res = await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.consolidateLocalRemote.Message"),
+      showModal,
+      upgradeButton,
+      LearnMore
+    );
+    answer = res?.isOk() ? res.value : undefined;
+    if (answer === LearnMore) {
+      TOOLS?.ui.openUrl(LearnMoreLink);
+    }
+  } while (answer === LearnMore);
   if (!answer || answer != upgradeButton) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,

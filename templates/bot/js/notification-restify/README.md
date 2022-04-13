@@ -12,11 +12,8 @@ Before run this app locally, make sure you have prepared these prerequisites:
 
 - Node.js (Recommended version is 14)
 - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-- (Optional) if you'd like to use CLI, install our [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli).
 
 Then, you can quickly start local debugging via `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)` debug option of your preferred browser.
-
-(Optional) For CLI experience, execute command line `teamsfx preview --local` in your project directory to preview your app locally (without attaching debugger).
 
 ## Develop
 
@@ -40,77 +37,24 @@ The core notification implementation is in `bot/` folder, containing following c
 | `.gitignore` | The git ignore file to exclude local files from bot project |
 | `package.json` | The NPM package file for bot project |
 
-### To notify different targets
+Following lists how this app could be extended. **You can also find more code snippets and samples on [Notification Document](https://aka.ms/teamsfx-notification#how-to-send-more-notifications).**
 
-``` typescript
-// list all installation targets
-for (const target of await bot.notification.installations()) {
-    // "Channel" means this bot is installed to a Team (default to notify General channel)
-    if (target.type === "Channel") {
-        // Directly notify the Team (to the default General channel)
-        await target.sendAdaptiveCard(...);
+### More initializations
 
-        // List all members in the Team then notify each member
-        const members = await target.members();
-        for (const member of members) {
-            await member.sendAdaptiveCard(...);
-        }
+The default initialization is located in `bot/src/internal/initialize.*s`, and you can also add your own initialization logic here to:
 
-        // List all channels in the Team then notify each channel
-        const channels = await target.channels();
-        for (const channel of channels) {
-            await channel.sendAdaptiveCard(...);
-        }
-    }
+- Set `options.adapter` to use your own `BotFrameworkAdapter` with additional bot logic
+- Set `options.notification.storage` to use your own `NotificationTargetStorage` for persistency on production environment
+- Set `options.{feature}.enabled` to enable more functionalities of `ConversationBot`
 
-    // "Group" means this bot is installed to a Group Chat
-    if (target.type === "Group") {
-        // Directly notify the Group Chat
-        await target.sendAdaptiveCard(...);
+### More notifications
 
-        // List all members in the Group Chat then notify each member
-        const members = await target.members();
-        for (const member of members) {
-            await member.sendAdaptiveCard(...);
-        }
-    }
+The default notifying logic is located in `bot/src/index.*s`, and you can also customize the targets and messages:
+- Use `target.type` to distinguish different targets
+- Use `target.members()`, `target.channels()` to get more targets
+- Send your own card message
 
-    // "Person" means this bot is installed as Personal app
-    if (target.type === "Person") {
-        // Directly notify the individual person
-        await target.sendAdaptiveCard(...);
-    }
-}
-```
-
-### To use your own storage
-
-``` typescript
-// implement your own storage
-class MyStorage implements NotificationTargetStorage {...}
-const myStorage = new MyStorage(...);
-
-// initialize ConversationBot with notification enabled and customized storage
-const bot = new ConversationBot({
-    // The bot id and password to create BotFrameworkAdapter.
-    // See https://aka.ms/about-bot-adapter to learn more about adapters.
-    adapterConfig: {
-        appId: process.env.BOT_ID,
-        appPassword: process.env.BOT_PASSWORD,
-    },
-    // Enable notification
-    notification: {
-        enabled: true,
-        storage: myStorage,
-    },
-});
-```
-
-> Note: It's recommended to use your own shared storage for production environment. If `storage` is not provided, a default local file storage will be used, which stores notification connections into:
->   - *.notification.localstore.json* if running locally
->   - *${process.env.TEMP}/.notification.localstore.json* if `process.env.RUNNING_ON_AZURE` is set to "1"
-
-### To edit your Teams App manifest
+### Edit Teams App manifest
 
 You can find the Teams app manifest in `templates/appPackage/manifest.template.json`.
 
@@ -118,49 +62,13 @@ The file contains template arguments with `{...}` statements which will be repla
 
 ## Deployment
 
-Teams Toolkit provides commands to help provision, deploy, preview, publish your app. You can execute those commands from
+Teams Toolkit can help provision cloud resource for your app, refer [Use Teams Toolkit to provision cloud resources](https://docs.microsoft.com/microsoftteams/platform/toolkit/provision) for more information.
 
-- VSCode Treeview
+After provisioned, you can deploy your code to cloud, see [Deploy to the cloud](https://docs.microsoft.com/microsoftteams/platform/toolkit/deploy).
 
-  ![Command in Treeview](images/treeview-deployment.png)
+Then, you can preview your app via [Run the deployed app](https://docs.microsoft.com/microsoftteams/platform/sbs-gs-javascript?tabs=vscode%2Cvsc%2Cviscode%2Cvcode&tutorial-step=8#run-the-deployed-app).
 
-- VSCode Command Palette
-
-  ![Command Palette](images/command-palette-provision.png)
-
-- Teams Toolkit CLI
-
-  ![CLI](images/cli-provision.png)
-
-To provision cloud resource:
-
-- Click `Provision in the cloud` from Treeview
-- Or, use `Teams: Provision in the cloud` from Command Palette
-- Or, execute `teamsfx provision <args>` command line
-
-Then, to deploy your code to cloud:
-
-- Click `Deploy to the cloud` from Treeview
-- Or, use `Teams: Deploy to the cloud` from Command Palette
-- Or, execute `teamsfx deploy <args>` command line
-
-Then, to preview your app in Teams:
-
-- Click preview button &#9654; from Treeview Environment section
-
-  ![Treeview Preview](images/treeview-preview.png)
-
-- Or, use `Launch Remote (Edge)` or `Launch Remote (Chrome)` from VSCode Debug view
-
-  ![Debug Remote](images/debug-preview.png)
-
-- Or, execute `teamsfx preview --remote <args>` command line
-
-Then, to publish your app:
-
-- Click `Publish to Teams` from Treeview
-- Or, use `Teams: Publish to Teams` from Command Palette
-- Or, execute `teamsfx publish <args>` command line
+After finish development and to distribute your app to others, you can [Publish Teams apps using Teams Toolkit](https://docs.microsoft.com/microsoftteams/platform/toolkit/publish).
 
 ## Reference
 

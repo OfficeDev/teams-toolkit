@@ -39,7 +39,6 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import appStudioLogin from "../../src/commonlib/appStudioLogin";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
-import { string } from "yargs";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);

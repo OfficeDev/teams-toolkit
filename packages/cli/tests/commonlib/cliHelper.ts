@@ -144,38 +144,6 @@ export class CliHelper {
     }
   }
 
-  static async createM365ProjectWithCapability(
-    appName: string,
-    testFolder: string,
-    capability: Capability,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx new m365 --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `scaffold project to ${path.resolve(
-        testFolder,
-        appName
-      )} with capability ${capability}`;
-      if (result.stderr) {
-        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e) {
-      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
     const command = `teamsfx add ${capabilityToAdd}`;
     const timeout = 100000;

@@ -213,7 +213,7 @@ export class HelpParamGenerator {
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
     } else if (root && stage === Stage.create) {
-      const condition = inputs?.isM365 ? "yes-m365" : "yes";
+      const condition = "yes";
       root.children = root?.children?.filter(
         (value) => (value.condition as StringValidation).equals === condition
       );

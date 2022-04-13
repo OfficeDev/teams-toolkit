@@ -534,6 +534,7 @@
   "core.getCreateNewOrFromSampleQuestion.placeholder": "Select an option",
   "core.SampleSelect.title": "Start from a sample",
   "core.SampleSelect.placeholder": "Select a sample",
+  "core.SampleSelect.buttons.viewSamples": "View samples",
   "core.HostTypeOptionAzure.label": "Azure",
   "core.HostTypeOptionSPFx.label": "SharePoint Framework (SPFx)",
   "core.AzureResourceSQL.label": "Azure SQL Database",

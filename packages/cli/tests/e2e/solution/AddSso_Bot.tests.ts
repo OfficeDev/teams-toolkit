@@ -84,7 +84,7 @@ describe("Add SSO", () => {
       expect(readmeExists).to.be.true;
     }
 
-    await CliHelper.provisionProject(projectPath);
+    await CliHelper.provisionProject(projectPath, "", env);
 
     const context = await readContextMultiEnv(projectPath, "dev");
     // Validate Aad App

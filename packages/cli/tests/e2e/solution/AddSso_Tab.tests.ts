@@ -82,7 +82,7 @@ describe("Add SSO", () => {
       expect(readmeExists).to.be.false;
     }
 
-    await CliHelper.provisionProject(projectPath);
+    await CliHelper.provisionProject(projectPath, "", env);
 
     // Assert
     await validateTabAndBotProjectProvision(projectPath, "dev");

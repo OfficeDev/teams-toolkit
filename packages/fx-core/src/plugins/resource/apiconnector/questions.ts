@@ -113,6 +113,18 @@ export const appIdQuestion: TextInputQuestion = {
   },
 };
 
+export function buildAPIKeyNameQuestion(location: string): TextInputQuestion {
+  return {
+    name: Constants.questionKey.apiAPIKeyName,
+    title: getLocalizedString("plugins.apiConnector.apiKeyName.title", location),
+    type: "text",
+    placeholder: getLocalizedString("plugins.apiConnector.apiKeyName.placeholder"), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkEmptyValue,
+    },
+  };
+}
+
 export const reuseAppOption: OptionItem = {
   id: "reuseApp",
   label: getLocalizedString("plugins.apiConnector.reuseAppOption.title"),
@@ -121,6 +133,16 @@ export const reuseAppOption: OptionItem = {
 export const anotherAppOption: OptionItem = {
   id: "anotherApp",
   label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
+};
+
+export const headerLocationOption: OptionItem = {
+  id: "header",
+  label: getLocalizedString("plugins.apiConnector.headerLocationOption.title"),
+};
+
+export const queryLocationOption: OptionItem = {
+  id: "query",
+  label: getLocalizedString("plugins.apiConnector.queryLocationOption.title"),
 };
 
 export const botOption: OptionItem = {

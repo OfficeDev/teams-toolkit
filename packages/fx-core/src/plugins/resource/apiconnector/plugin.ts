@@ -21,9 +21,15 @@ import {
   checkInputEmpty,
   Notification,
 } from "./utils";
-import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
+import {
+  ApiConnectorConfiguration,
+  AuthConfig,
+  BasicAuthConfig,
+  AADAuthConfig,
+  APIKeyAuthConfig,
+} from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants } from "./constants";
+import { AuthType, Constants, KeyLocation } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -42,6 +48,9 @@ import {
   anotherAppOption,
   appTenantIdQuestion,
   appIdQuestion,
+  headerLocationOption,
+  queryLocationOption,
+  buildAPIKeyNameQuestion,
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
@@ -161,13 +170,14 @@ export class ApiConnectorImpl {
 
   private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
     let config: AuthConfig;
-    if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
+    const apiType = inputs[Constants.questionKey.apiType];
+    if (apiType === AuthType.BASIC) {
       checkInputEmpty(inputs, Constants.questionKey.apiUserName);
       config = {
         AuthType: AuthType.BASIC,
         UserName: inputs[Constants.questionKey.apiUserName],
       } as BasicAuthConfig;
-    } else if (inputs[Constants.questionKey.apiType] === AuthType.AAD) {
+    } else if (apiType === AuthType.AAD) {
       const AADConfig = {
         AuthType: AuthType.AAD,
       } as AADAuthConfig;
@@ -184,6 +194,22 @@ export class ApiConnectorImpl {
         AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
       }
       config = AADConfig;
+    } else if (apiType === AuthType.APIKEY) {
+      const APIKeyConfig = {
+        AuthType: AuthType.APIKEY,
+      } as APIKeyAuthConfig;
+      if (inputs[Constants.questionKey.apiAPIKeyLocation] === headerLocationOption.id) {
+        APIKeyConfig.Location = KeyLocation.Header;
+      } else {
+        APIKeyConfig.Location = KeyLocation.QueryParams;
+      }
+      checkInputEmpty(inputs, Constants.questionKey.apiAPIKeyName);
+      APIKeyConfig.Name = inputs[Constants.questionKey.apiAPIKeyName];
+      config = APIKeyConfig;
+    } else if (apiType === AuthType.CERT || apiType === AuthType.CUSTOM) {
+      config = {
+        AuthType: apiType,
+      };
     } else {
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorInputError.name,
@@ -341,6 +367,7 @@ export class ApiConnectorImpl {
     });
     whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
     whichAuthType.addChild(this.buildBasicAuthQuestion());
+    whichAuthType.addChild(this.buildAPIKeyAuthQuestion());
     return whichAuthType;
   }
 
@@ -370,6 +397,28 @@ export class ApiConnectorImpl {
       node.condition = { equals: AADAuthOption.id };
       node.addChild(new QTreeNode(appIdQuestion));
     }
+    return node;
+  }
+
+  public buildAPIKeyAuthQuestion(): QTreeNode {
+    const node = new QTreeNode({
+      name: Constants.questionKey.apiAPIKeyLocation,
+      type: "singleSelect",
+      staticOptions: [headerLocationOption, queryLocationOption],
+      title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyLocation.title"),
+    });
+    node.condition = { equals: APIKeyAuthOption.id };
+
+    const headerKeyNameQuestionNode = new QTreeNode(buildAPIKeyNameQuestion(KeyLocation.Header));
+    headerKeyNameQuestionNode.condition = { equals: headerLocationOption.id };
+
+    const queryKeyNameQuestionNode = new QTreeNode(
+      buildAPIKeyNameQuestion(KeyLocation.QueryParams)
+    );
+    queryKeyNameQuestionNode.condition = { equals: queryLocationOption.id };
+
+    node.addChild(headerKeyNameQuestionNode);
+    node.addChild(queryKeyNameQuestionNode);
     return node;
   }
 }

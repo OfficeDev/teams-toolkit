@@ -156,15 +156,11 @@ export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
-    return yargs
-      .version(false)
-      .options(this.params)
-      .options("auth-type", {
-        choices: this.subCommands.map((c) => c.commandHead),
-        global: false,
-        hidden: true,
-      });
+    return yargs.version(false).options("auth-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+      global: false,
+      hidden: true,
+    });
   }
 }
 export class AddSso extends YargsCommand {

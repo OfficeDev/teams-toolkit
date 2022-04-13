@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import * as fs from "fs-extra";
-import path from "path";
 import {
   Inputs,
   LogProvider,
@@ -135,14 +133,14 @@ export const anotherAppOption: OptionItem = {
   label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
 };
 
-export const headerLocationOption: OptionItem = {
+export const requestHeaderOption: OptionItem = {
   id: "header",
-  label: getLocalizedString("plugins.apiConnector.headerLocationOption.title"),
+  label: getLocalizedString("plugins.apiConnector.requestHeaderOption.title"),
 };
 
-export const queryLocationOption: OptionItem = {
+export const queryParamsOption: OptionItem = {
   id: "query",
-  label: getLocalizedString("plugins.apiConnector.queryLocationOption.title"),
+  label: getLocalizedString("plugins.apiConnector.queryParamsOption.title"),
 };
 
 export const botOption: OptionItem = {

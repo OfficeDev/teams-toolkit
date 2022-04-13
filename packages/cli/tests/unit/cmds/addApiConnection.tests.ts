@@ -67,7 +67,13 @@ describe("Add api-connector Command Tests", () => {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add <feature>", "cicd", "api-connection"]);
+    expect(registeredCommands).deep.equals([
+      "add <feature>",
+      "cicd",
+      "api-connection [auth-type]",
+      "basic",
+      "aad",
+    ]);
   });
 
   it("Add api-connection Command Running Check", async () => {

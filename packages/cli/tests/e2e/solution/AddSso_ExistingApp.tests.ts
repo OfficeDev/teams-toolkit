@@ -19,6 +19,7 @@ import {
   getActivePluginsFromProjectSetting,
   getCapabilitiesFromProjectSetting,
   readContextMultiEnv,
+  setFrontendDomainToConfig,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId, ProjectSettingKey, TestFilePath } from "../../commonlib/constants";
@@ -39,12 +40,13 @@ describe("Add SSO", () => {
   env["TEAMSFX_INIT_APP"] = "true";
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it("Add SSO to existing app", async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab, env);
+    await setFrontendDomainToConfig(projectPath, "dev");
 
     // Act
     await execAsync(`teamsfx add sso`, {

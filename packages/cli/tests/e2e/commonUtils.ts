@@ -39,6 +39,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import appStudioLogin from "../../src/commonlib/appStudioLogin";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
+import { string } from "yargs";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -193,6 +194,19 @@ export async function setSkipAddingSqlUserToConfig(projectPath: string, envName:
   const configFilePath = path.resolve(projectPath, configFile);
   const config = await fs.readJSON(configFilePath);
   config["skipAddingSqlUser"] = true;
+  return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
+export async function setFrontendDomainToConfig(projectPath: string, envName: string) {
+  const configFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `config.${envName}.json`
+  );
+  const configFilePath = path.resolve(projectPath, configFile);
+  const config = await fs.readJSON(configFilePath);
+  config["auth"] = {};
+  config["auth"]["frontendDomain"] = "xxx.com";
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
 }
 

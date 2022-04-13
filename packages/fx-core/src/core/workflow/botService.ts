@@ -27,7 +27,7 @@ export class BotServiceResource implements CloudResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         console.log("provision bot-service step 1.create AAD app for bot service");
-        console.log("provision bot-service step 2.create azure bot service");
+        console.log("provision bot-service step 2.create bot service");
         inputs["bot-service"] = {
           botAadAppClientId: "MockBotAadAppClientId",
           botId: "MockBotId",

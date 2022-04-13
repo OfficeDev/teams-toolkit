@@ -116,9 +116,9 @@ export const appIdQuestion: TextInputQuestion = {
 export function buildAPIKeyNameQuestion(location: string): TextInputQuestion {
   return {
     name: Constants.questionKey.apiAPIKeyName,
-    title: getLocalizedString("plugins.apiConnector.apiKeyName.title", location),
+    title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyName.title", location),
     type: "text",
-    placeholder: getLocalizedString("plugins.apiConnector.apiKeyName.placeholder"), // Use the placeholder to display some description
+    placeholder: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyName.placeholder"), // Use the placeholder to display some description
     validation: {
       validFunc: checkEmptyValue,
     },

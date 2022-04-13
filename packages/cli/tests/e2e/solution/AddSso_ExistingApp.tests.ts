@@ -36,7 +36,7 @@ describe("Add SSO", () => {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_AAD_MANIFEST"] = "true";
   env["TEAMSFX_CONFIG_UNIFY"] = "true";
-  env["TEAMSFX_INIT_APP"];
+  env["TEAMSFX_INIT_APP"] = "true";
 
   after(async () => {
     await cleanUp(appName, projectPath, true, true, false);

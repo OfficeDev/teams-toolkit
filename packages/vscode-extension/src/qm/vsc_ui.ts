@@ -14,6 +14,8 @@ import {
   ExtensionContext,
   commands,
   extensions,
+  QuickInputButton,
+  ThemeIcon,
 } from "vscode";
 import {
   UserCancelError,
@@ -130,8 +132,18 @@ export class VsCodeUI implements UserInteraction {
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
+      const buttons: QuickInputButton[] = option.buttons
+        ? option.buttons.map((button) => {
+            return {
+              iconPath: new ThemeIcon(button.icon),
+              tooltip: button.tooltip,
+            } as QuickInputButton;
+          })
+        : [];
       if (option.step && option.step > 1) {
-        quickPick.buttons = [QuickInputButtons.Back];
+        quickPick.buttons = [QuickInputButtons.Back, ...buttons];
+      } else {
+        quickPick.buttons = buttons;
       }
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
@@ -179,7 +191,16 @@ export class VsCodeUI implements UserInteraction {
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              else {
+              else if (option.buttons && buttons.indexOf(button) !== -1) {
+                const curButton = option.buttons?.find((btn) => {
+                  return (
+                    btn.icon === (button.iconPath as ThemeIcon).id && btn.tooltip === button.tooltip
+                  );
+                });
+                if (curButton) {
+                  commands.executeCommand(curButton.command);
+                }
+              } else {
                 quickPick.selectedItems = quickPick.activeItems;
                 onDidAccept();
               }

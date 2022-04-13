@@ -17,15 +17,12 @@ export class AzureSqlResource implements CloudResource {
     const action: Action = {
       name: "azure-sql.configure",
       type: "function",
-      plan: (
-        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-        inputs: Inputs
-      ) => {
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         return ok(["configure azure-sql"]);
       },
       execute: async (
-        context: { ctx: v2.Context; envInfo: v3.EnvInfoV3; tokenProvider: TokenProvider },
-        inputs: Inputs
+        context: ContextV3,
+        inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         console.log("configure azure-sql");
         return ok(undefined);

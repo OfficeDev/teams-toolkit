@@ -17,14 +17,14 @@ import { Service } from "typedi";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { getProjectSettingsPath } from "../middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../question";
-import "./Aad";
+import "./aad";
 import "./ApiCodeProvider";
 import "./AzureBicepProvider";
-import "./AzureBot";
-import "./AzureFunction";
-import "./AzureSql";
-import "./AzureStorage";
-import "./AzureWebApp";
+import "./botService";
+import "./azureFunction";
+import "./azureSql";
+import "./azureStorage";
+import "./azureWebApp";
 import "./BotCodeProvider";
 import {
   Action,
@@ -36,8 +36,8 @@ import {
   TeamsBotInputs,
   TeamsTabInputs,
 } from "./interface";
-import "./Spfx";
-import "./TeamsManifest";
+import "./spfx";
+import "./teamsManifest";
 import { getComponent, getEmbeddedValueByPath } from "./workflow";
 
 @Service("fx")
@@ -283,12 +283,11 @@ export class TeamsfxCore {
     const provisionSequences: Action[] = [
       {
         type: "function",
-        name: "fx.commonConfig",
+        name: "fx.preProvision",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          return ok(["check common configs (account, resource group)"]);
+          return ok(["pre step before provision (tenant, subscription, resource group)"]);
         },
         execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          console.log("check common configs (account, resource group)");
           inputs.solution = {
             tenantId: "MockTenantId",
             subscriptionId: "MockSubscriptionId",
@@ -316,9 +315,9 @@ export class TeamsfxCore {
     if (teamsBot) {
       provisionSequences.push({
         type: "call",
-        name: "call:azure-bot.provision",
+        name: "call:bot-service.provision",
         required: false,
-        targetAction: "azure-bot.provision",
+        targetAction: "bot-service.provision",
       });
     }
     if (configureActions.length > 0) {
@@ -333,46 +332,46 @@ export class TeamsfxCore {
           const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
           const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
           const aad = getComponent(projectSettings, "aad");
-          let aadOutputs: any;
+          let aadInputs: any;
           if (aad) {
-            aadOutputs = inputs["aad"] || {};
+            aadInputs = inputs["aad"];
             if (teamsTab && teamsBot) {
-              aadOutputs.m365ApplicationIdUri = `api://${
+              aadInputs.m365ApplicationIdUri = `api://${
                 inputs[teamsTab.hostingResource!].endpoint
               }/botid-${inputs["azure-bot"].botId}`;
             } else if (teamsTab) {
-              aadOutputs.m365ApplicationIdUri = `api://${
+              aadInputs.m365ApplicationIdUri = `api://${
                 inputs[teamsTab.hostingResource!].endpoint
               }`;
             } else {
-              aadOutputs.m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
+              aadInputs.m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
             }
-            inputs["aad"] = aadOutputs;
+            inputs["aad"] = aadInputs;
             if (teamsTab) {
               inputs[teamsTab.hostingResource!].appSettings = {
-                M365_AUTHORITY_HOST: aadOutputs.authAuthorityHost, // AAD authority host
-                M365_CLIENT_ID: aadOutputs.clientId, // Client id of AAD application
-                M365_CLIENT_SECRET: aadOutputs.clientSecret, // Client secret of AAD application
-                M365_TENANT_ID: aadOutputs.tenantId, // Tenant id of AAD application
-                M365_APPLICATION_ID_URI: aadOutputs.m365ApplicationIdUri, // Application ID URI of AAD application
+                M365_AUTHORITY_HOST: aadInputs.authAuthorityHost, // AAD authority host
+                M365_CLIENT_ID: aadInputs.clientId, // Client id of AAD application
+                M365_CLIENT_SECRET: aadInputs.clientSecret, // Client secret of AAD application
+                M365_TENANT_ID: aadInputs.tenantId, // Tenant id of AAD application
+                M365_APPLICATION_ID_URI: aadInputs.m365ApplicationIdUri, // Application ID URI of AAD application
               };
             }
             if (teamsBot) {
               inputs[teamsBot.hostingResource!].appSettings = {
-                BOT_ID: inputs["azure-bot"].botId,
-                BOT_PASSWORD: inputs["azure-bot"].botPassword,
-                M365_AUTHORITY_HOST: aadOutputs.authAuthorityHost, // AAD authority host
-                M365_CLIENT_ID: aadOutputs.clientId, // Client id of AAD application
-                M365_CLIENT_SECRET: aadOutputs.clientSecret, // Client secret of AAD application
-                M365_TENANT_ID: aadOutputs.tenantId, // Tenant id of AAD application
-                M365_APPLICATION_ID_URI: aadOutputs.m365ApplicationIdUri, // Application ID URI of AAD application
+                BOT_ID: inputs["bot-service"].botId,
+                BOT_PASSWORD: inputs["bot-service"].botPassword,
+                M365_AUTHORITY_HOST: aadInputs.authAuthorityHost, // AAD authority host
+                M365_CLIENT_ID: aadInputs.clientId, // Client id of AAD application
+                M365_CLIENT_SECRET: aadInputs.clientSecret, // Client secret of AAD application
+                M365_TENANT_ID: aadInputs.tenantId, // Tenant id of AAD application
+                M365_APPLICATION_ID_URI: aadInputs.m365ApplicationIdUri, // Application ID URI of AAD application
               };
             }
           } else {
             if (teamsBot) {
               inputs[teamsBot.hostingResource!].appSettings = {
-                BOT_ID: inputs["azure-bot"].botId,
-                BOT_PASSWORD: inputs["azure-bot"].botPassword,
+                BOT_ID: inputs["bot-service"].botId,
+                BOT_PASSWORD: inputs["bot-service"].botPassword,
               };
             }
           }

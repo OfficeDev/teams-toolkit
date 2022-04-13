@@ -26,7 +26,6 @@ export class AzureBicepProvider {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const azureBicepInputs = inputs["azure-bicep"];
-        console.log(`generate bicep for: ${azureBicepInputs.resources}`);
         return ok(undefined);
       },
     };
@@ -48,7 +47,6 @@ export class AzureBicepProvider {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const azureBicepInputs = inputs["azure-bicep"];
-        console.log(`update bicep for: ${azureBicepInputs.resources}`);
         return ok(undefined);
       },
     };

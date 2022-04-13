@@ -80,7 +80,7 @@ async function addBot() {
 
 async function provision() {
   const inputs: v2.InputsWithProjectPath = {
-    projectPath: path.join(os.tmpdir(), "myapp"),
+    projectPath: projectPath,
     platform: Platform.VSCode,
   };
   const projectSettings = await fs.readJson(getProjectSettingsPath(inputs.projectPath));

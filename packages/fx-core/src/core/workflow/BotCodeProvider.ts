@@ -73,7 +73,6 @@ export class BotCodeProvider implements SourceCodeProvider {
           lang: lang,
           scenario: teamsBotInputs.scenario,
           dst: workingDir,
-          onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {},
           onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
             switch (action.name) {
               case ScaffoldActionName.FetchTemplatesUrlWithTag:

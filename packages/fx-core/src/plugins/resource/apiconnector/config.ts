@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { AuthType } from "./constants";
+import { AuthType, KeyLocation } from "./constants";
 
 export interface ApiConnectorConfiguration extends Record<any, any> {
   ComponentPath: string[];
@@ -16,10 +16,13 @@ export interface AuthConfig {
 
 export interface BasicAuthConfig extends AuthConfig {
   UserName: string;
-  Password?: string;
 }
 export interface AADAuthConfig extends AuthConfig {
   ReuseTeamsApp: boolean;
   TenantId?: string;
   ClientId?: string;
+}
+export interface APIKeyAuthConfig extends AuthConfig {
+  Name: string;
+  Location: KeyLocation;
 }

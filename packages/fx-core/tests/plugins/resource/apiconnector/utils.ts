@@ -3,8 +3,9 @@ import { newEnvInfo } from "../../../../src";
 import {
   BasicAuthConfig,
   AADAuthConfig,
+  APIKeyAuthConfig,
 } from "../../../../src/plugins/resource/apiconnector/config";
-import { AuthType } from "../../../../src/plugins/resource/apiconnector/constants";
+import { AuthType, KeyLocation } from "../../../../src/plugins/resource/apiconnector/constants";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/function/constants";
 
 export function MockContext(): any {
@@ -66,5 +67,19 @@ export const SampleCodeCases = [
       AuthType: AuthType.CUSTOM,
     },
     FileName: "custom",
+  },
+  {
+    AuthConfig: {
+      AuthType: AuthType.CERT,
+    },
+    FileName: "cert",
+  },
+  {
+    AuthConfig: {
+      AuthType: AuthType.APIKEY,
+      Name: "fake_api_key_name",
+      Location: KeyLocation.Header,
+    } as APIKeyAuthConfig,
+    FileName: "api-key",
   },
 ];

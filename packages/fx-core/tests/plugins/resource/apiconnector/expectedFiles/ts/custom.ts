@@ -12,7 +12,7 @@ class CustomAuthProvider implements AuthProvider {
     this.customValue = customValue;
   }
 
-  // Replace the sample code with your own logic
+  // Replace the sample code with your own logic.
   AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig> = async (
     config
   ) => {

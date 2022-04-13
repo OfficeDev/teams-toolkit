@@ -154,8 +154,13 @@
         },
         {
           "command": "fx-extension.updatePreviewFile",
-          "when": "resourceFilename =~ /manifest.[\\w]+.json|appPackage.[\\w]+.zip/",
-          "group": "deploy@1"
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
+          "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.updatePreviewFile",
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
+          "group": "deploy@0"
         }
       ],
       "view/title": [

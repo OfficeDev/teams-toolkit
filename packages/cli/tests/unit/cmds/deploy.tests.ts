@@ -32,7 +32,7 @@ describe("Deploy Command Tests", function () {
     "open-api-document": {},
     "api-prefix": {},
     "api-version": {},
-    "skip-manifest": {},
+    "include-app-manifest": {},
   };
 
   before(() => {
@@ -95,7 +95,7 @@ describe("Deploy Command Tests", function () {
     const cmd = new Deploy();
     cmd.builder(yargs);
     expect(options).deep.equals(
-      ["open-api-document", "api-prefix", "api-version", "skip-manifest"],
+      ["open-api-document", "api-prefix", "api-version", "include-app-manifest"],
       JSON.stringify(options)
     );
     expect(positionals).deep.equals(["components"], JSON.stringify(positionals));
@@ -111,7 +111,7 @@ describe("Deploy Command Tests", function () {
     expect(allArguments.get("open-api-document")).equals(undefined);
     expect(allArguments.get("api-prefix")).equals(undefined);
     expect(allArguments.get("api-version")).equals(undefined);
-    expect(allArguments.get("skip-manifest")).equals(undefined);
+    expect(allArguments.get("include-app-manifest")).equals(undefined);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 
@@ -156,7 +156,7 @@ describe("Deploy manifest", function () {
     "open-api-document": {},
     "api-prefix": {},
     "api-version": {},
-    "skip-manifest": {},
+    "include-app-manifest": {},
   };
 
   before(() => {
@@ -219,7 +219,7 @@ describe("Deploy manifest", function () {
     const cmd = new Deploy();
     cmd.builder(yargs);
     expect(options).deep.equals(
-      ["open-api-document", "api-prefix", "api-version", "skip-manifest"],
+      ["open-api-document", "api-prefix", "api-version", "include-app-manifest"],
       JSON.stringify(options)
     );
     expect(positionals.length).equals(1);

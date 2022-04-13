@@ -170,7 +170,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
         const updateManifestCmd =
           processEnv["TEAMSFX_DEPLOY_MANIFEST"] === "true"
-            ? `teamsfx deploy manifest --env ${env} --skip-manifest no`
+            ? `teamsfx deploy manifest --env ${env} --include-app-manifest yes`
             : `teamsfx manifest update --env ${env}`;
         // update manifest
         result = await execAsyncWithRetry(updateManifestCmd, {

@@ -29,6 +29,7 @@ import {
   isM365AppEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
+  isDeployManifestEnabled,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
@@ -412,6 +413,18 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isAadManifestEnabled",
     isAadManifestEnabled()
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isDeployManifestEnabled",
+    isDeployManifestEnabled()
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isConfigUnifyEnabled",
+    isConfigUnifyEnabled()
   );
 
   vscode.commands.executeCommand(

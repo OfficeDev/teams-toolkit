@@ -131,7 +131,7 @@ describe("teamsfx provision manifest", async () => {
     "open-api-document": {},
     "api-prefix": {},
     "api-version": {},
-    "skip-manifest": {},
+    "include-app-manifest": {},
   };
 
   before(() => {

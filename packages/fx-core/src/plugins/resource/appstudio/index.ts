@@ -72,11 +72,11 @@ export class AppStudioPlugin implements Plugin {
       (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
     ) {
       const node = new QTreeNode({
-        name: Constants.SKIP_MANIFEST,
+        name: Constants.INCLUDE_APP_MANIFEST,
         type: "singleSelect",
         staticOptions: ["yes", "no"],
-        title: "Whether to skip deploying manifest to AppStudio",
-        default: "yes",
+        title: "Whether to deploy manifest to AppStudio",
+        default: "no",
       });
       appStudioQuestions.addChild(node);
     }
@@ -290,8 +290,8 @@ export class AppStudioPlugin implements Plugin {
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     if (
       ctx.answers &&
-      ctx.answers[Constants.SKIP_MANIFEST] &&
-      ctx.answers[Constants.SKIP_MANIFEST] == "yes"
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] &&
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] == "yes"
     ) {
       await ctx.logProvider?.info("skip appstudio deployment");
       return ok(Void);

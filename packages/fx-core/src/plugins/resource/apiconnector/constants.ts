@@ -38,7 +38,7 @@ export class Constants {
   public static readonly sdkJsName = "@microsft/teams-js";
 
   public static readonly questionKey = {
-    componentsSelect: "ComponentSelect",
+    componentsSelect: "component",
     endpoint: "api-connector-endpoint",
     apiName: "api-connector-name",
     apiType: "api-connector-auth-type",

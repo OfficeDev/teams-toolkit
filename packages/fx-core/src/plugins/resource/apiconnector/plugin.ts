@@ -10,6 +10,7 @@ import {
   SystemError,
   UserError,
   ok,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -47,6 +48,7 @@ import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
+import { checkEmptySelect } from "./checker";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -73,14 +75,18 @@ export class ApiConnectorImpl {
         })
       );
       const msg: string = this.getNotificationMsg(config, languageType);
-      ctx.userInteraction
-        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
-        .then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === Notification.READ_MORE) {
-            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
-          }
-        });
+      if (inputs.platform != Platform.CLI) {
+        ctx.userInteraction
+          ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === Notification.READ_MORE) {
+              ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
+            }
+          });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -265,46 +271,44 @@ export class ApiConnectorImpl {
       }
     }
     retMsg += `${Notification.GetNpmInstallString()}`;
+    retMsg += `${Notification.GetLinkNotification()}`;
     return retMsg;
   }
 
-  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
-    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    if (!activePlugins) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoActivePluginsExistError.name,
-        ErrorMessage.NoActivePluginsExistError.message()
-      );
-    }
-    const options = [];
-    if (activePlugins.includes(ResourcePlugins.Bot)) {
-      options.push(botOption);
-    }
-    if (activePlugins.includes(ResourcePlugins.Function)) {
-      options.push(functionOption);
-    }
-    if (options.length === 0) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoValidCompoentExistError.name,
-        ErrorMessage.NoValidCompoentExistError.message()
-      );
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
+    const componentOptions = [];
+    if (inputs.platform === Platform.CLI_HELP) {
+      componentOptions.push(botOption);
+      componentOptions.push(functionOption);
+    } else {
+      const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+        ?.activeResourcePlugins;
+      if (!activePlugins) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoActivePluginsExistError.name,
+          ErrorMessage.NoActivePluginsExistError.message()
+        );
+      }
+      if (activePlugins.includes(ResourcePlugins.Bot)) {
+        componentOptions.push(botOption);
+      }
+      if (activePlugins.includes(ResourcePlugins.Function)) {
+        componentOptions.push(functionOption);
+      }
+      if (componentOptions.length === 0) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoValidCompoentExistError.name,
+          ErrorMessage.NoValidCompoentExistError.message()
+        );
+      }
     }
     const whichComponent = new QTreeNode({
       name: Constants.questionKey.componentsSelect,
       type: "multiSelect",
-      staticOptions: options,
+      staticOptions: componentOptions,
       title: getLocalizedString("plugins.apiConnector.whichService.title"),
       validation: {
-        validFunc: async (input: string[]): Promise<string | undefined> => {
-          const name = input as string[];
-          if (name.length === 0) {
-            return getLocalizedString(
-              "plugins.apiConnector.questionComponentSelect.emptySelection"
-            );
-          }
-          return undefined;
-        },
+        validFunc: checkEmptySelect,
       },
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });

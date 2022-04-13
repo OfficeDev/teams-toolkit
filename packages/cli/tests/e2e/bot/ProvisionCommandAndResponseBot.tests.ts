@@ -38,7 +38,7 @@ describe("Provision", function () {
 
   it("Provision Resource: command and response", async function () {
     await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities command-and-response --programming-language typescript`,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities command-bot --programming-language typescript`,
       {
         cwd: testFolder,
         env: env,

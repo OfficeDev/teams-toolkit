@@ -87,6 +87,18 @@ export class CliHelper {
     }
   }
 
+  static async addExistingApi(projectPath: string, option = "") {
+    const result = await execAsyncWithRetry(`teamsfx add api-connection ${option}`, {
+      cwd: projectPath,
+      timeout: 0,
+    });
+    if (result.stderr) {
+      console.error(`[Failed] addExistingApi for ${projectPath}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] addExistingApi for ${projectPath}`);
+    }
+  }
+
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,

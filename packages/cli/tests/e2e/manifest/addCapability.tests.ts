@@ -35,7 +35,7 @@ describe("Add capabilities", function () {
     await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
 
     const manifest: TeamsAppManifest = await fs.readJSON(
-      `${projectPath}/templates/appPackage/manifest.local.template.json`
+      `${projectPath}/templates/appPackage/manifest.template.json`
     );
     chai.assert.equal(manifest.staticTabs!.length, 2);
   });
@@ -46,7 +46,7 @@ describe("Add capabilities", function () {
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
 
     const manifest: TeamsAppManifest = await fs.readJSON(
-      `${projectPath}/templates/appPackage/manifest.local.template.json`
+      `${projectPath}/templates/appPackage/manifest.template.json`
     );
     chai.assert.equal(manifest.staticTabs!.length, 1);
     chai.assert.equal(manifest.bots!.length, 1);

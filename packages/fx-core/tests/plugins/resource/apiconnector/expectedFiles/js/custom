@@ -26,13 +26,16 @@ const teamsFx = new teamsfxSdk.TeamsFx();
 
 const authProvider = new CustomAuthProvider(
   // You can also add customized settings to .env.teamsfx.local and use TeamsFx.getConfig("{setting_name}") to read the settings. For example:
-  //  teamsFx.getConfig("API_FAKE_CUSTOM_PROPERTY"),
-  //  teamsFx.getConfig("API_FAKE_CUSTOM_VALUE")
+  //  teamsFx.getConfig("TEAMSFX_API_FAKE_CUSTOM_PROPERTY"),
+  //  teamsFx.getConfig("TEAMSFX_API_FAKE_CUSTOM_VALUE")
   "customPropery",
   "customValue"
 );
 // Initializes a new axios instance to call fake API.
-const fakeClient = teamsfxSdk.createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  authProvider
+);
 export { fakeClient };
 
 /* 

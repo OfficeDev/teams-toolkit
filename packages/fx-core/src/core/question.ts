@@ -506,11 +506,19 @@ export const SampleSelect: SingleSelectQuestion = {
     return {
       id: sample.id,
       label: sample.title,
+      description: `${sample.time} • ${sample.configuration}`,
       detail: sample.shortDescription,
       data: sample.link,
     } as OptionItem;
   }),
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+  buttons: [
+    {
+      icon: "library",
+      tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
+      command: "fx-extension.openSamples",
+    },
+  ],
 };
 
 export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {

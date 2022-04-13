@@ -88,16 +88,7 @@ export class AddCICD extends YargsCommand {
   }
 }
 
-export class AddExistingApi extends YargsCommand {
-  public readonly commandHead = `api-connection`;
-  public readonly command = this.commandHead;
-  public readonly description = "Add connection to an API";
-
-  public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("connectExistingApi");
-    return yargs.version(false).options(this.params);
-  }
-
+export abstract class AddExistingApiAuthBase extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
@@ -128,6 +119,48 @@ export class AddExistingApi extends YargsCommand {
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
+  }
+}
+
+export class AddExistingApiSubCommand extends AddExistingApiAuthBase {
+  public readonly commandHead: string;
+  public readonly command: string;
+  public readonly description: string;
+  constructor(command: string) {
+    super();
+    this.commandHead = command;
+    this.command = command;
+    this.description = `Add connection to an API with ${command} auth`;
+  }
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("auth-type", this.commandHead);
+    return args;
+  }
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(`connectExistingApi-${this.commandHead}`);
+    return yargs.options(this.params);
+  }
+}
+
+export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
+  public readonly commandHead = `api-connection`;
+  public readonly command = `${this.commandHead} [auth-type]`;
+  public readonly description = "Add connection to an API";
+
+  public readonly subCommands: YargsCommand[] = [
+    new AddExistingApiSubCommand("basic"),
+    new AddExistingApiSubCommand("aad"),
+  ];
+
+  public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+    return yargs.version(false).options("auth-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+      global: false,
+      hidden: true,
+    });
   }
 }
 export class AddSso extends YargsCommand {
@@ -201,7 +234,7 @@ export default class Add extends YargsCommand {
 
     // Category 3: Standalone features
     new AddCICD(),
-    ...(isApiConnectEnabled() ? [new AddExistingApi()] : []),
+    ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
     ...(isAadManifestEnabled() ? [new AddSso()] : []),
   ];
 

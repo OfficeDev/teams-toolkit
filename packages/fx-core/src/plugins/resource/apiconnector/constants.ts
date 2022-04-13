@@ -39,13 +39,13 @@ export class Constants {
 
   public static readonly questionKey = {
     componentsSelect: "component",
-    endpoint: "api-connector-endpoint",
-    apiName: "api-connector-name",
-    apiType: "api-connector-auth-type",
-    apiUserName: "api-connector-user-name",
-    apiPassword: "api-connector-password",
-    apiAppType: "api-connector-app-type",
-    apiAppTenentId: "api-connector-app-tenant-id",
-    apiAppId: "api-connector-app-id",
+    endpoint: "endpoint",
+    apiName: "name",
+    apiType: "auth-type",
+    apiUserName: "user-name",
+    apiPassword: "password",
+    apiAppType: "app-type",
+    apiAppTenentId: "app-tenant-id",
+    apiAppId: "app-id",
   };
 }

@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { FxError, Inputs, LogLevel, ok, Func } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Func } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
@@ -67,18 +67,7 @@ describe("Add api-connector Command Tests", () => {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals([
-      "add <feature>",
-      "bot",
-      "messaging-extension",
-      "tab",
-      "azure-function",
-      "azure-sql",
-      "azure-apim",
-      "azure-keyvault",
-      "cicd",
-      "api-connection",
-    ]);
+    expect(registeredCommands).deep.equals(["add <feature>", "cicd", "api-connection"]);
   });
 
   it("Add api-connection Command Running Check", async () => {
@@ -94,6 +83,7 @@ describe("Add api-connector Command Tests", () => {
     const cmd = new Add();
     const apiConnection = cmd.subCommands.find((cmd) => cmd.commandHead === "api-connection");
     await apiConnection!.handler({});
+    console.log(telemetryEvents);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ConnectExistingApiStart,
       TelemetryEvent.ConnectExistingApi,

@@ -116,14 +116,10 @@ export class AddExistingApi extends YargsCommand {
         method: "connectExistingApi",
       };
 
-      inputs = getSystemInputs(rootFolder, args.env as any);
+      inputs = getSystemInputs(rootFolder);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(
-          TelemetryEvent.ConnectExistingApi,
-          result.error,
-          makeEnvRelatedProperty(rootFolder, inputs)
-        );
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, result.error);
         return err(result.error);
       }
     }

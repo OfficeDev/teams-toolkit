@@ -40,7 +40,7 @@ import {
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
-import { newEnvInfo } from "../../../../../src";
+import { isConfigUnifyEnabled, newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   LocalSettingsAuthKeys,
@@ -247,10 +247,19 @@ describe("Get AppDefinition and Update", () => {
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.GetRemoteConfigFailedError.name);
-      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes(BOT_DOMAIN);
+      if (isConfigUnifyEnabled()) {
+        chai
+          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+          .equals(AppStudioError.GetRemoteConfigFailedError.name);
+        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes(BOT_DOMAIN);
+      } else {
+        chai
+          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
+          .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
+        chai
+          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
+          .includes(LOCAL_DEBUG_BOT_DOMAIN);
+      }
     }
   });
 
@@ -278,7 +287,6 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
 
-    // TODO: why get capabilities via manifest
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     console.log(getAppDefinitionAndResult);
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());

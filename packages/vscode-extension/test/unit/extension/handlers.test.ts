@@ -25,7 +25,7 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
-import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import { CollaborationState, CoreHookContext, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
@@ -221,7 +221,11 @@ suite("handlers", () => {
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      chai.expect(ignoreEnvInfo).to.equal(false);
+      if (isConfigUnifyEnabled()) {
+        chai.expect(ignoreEnvInfo).to.equal(false);
+      } else {
+        chai.expect(ignoreEnvInfo).to.equal(true);
+      }
       chai.expect(localDebugCalled).equals(1);
     });
 
@@ -532,11 +536,19 @@ suite("handlers", () => {
 
       const args = [{ fsPath: "c:\\testPath\\manifest.local.json" }, "CodeLens"];
       await handlers.editManifestTemplate(args);
-      chai.assert.isTrue(
-        openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
-        )
-      );
+      if (isConfigUnifyEnabled()) {
+        chai.assert.isTrue(
+          openTextDocument.calledOnceWith(
+            "undefined/templates/appPackage/manifest.template.json" as any
+          )
+        );
+      } else {
+        chai.assert.isTrue(
+          openTextDocument.calledOnceWith(
+            "undefined/templates/appPackage/manifest.local.template.json" as any
+          )
+        );
+      }
     });
 
     test("edit manifest template: remote", async () => {
@@ -551,11 +563,19 @@ suite("handlers", () => {
 
       const args = [{ fsPath: "c:\\testPath\\manifest.dev.json" }, "CodeLens"];
       await handlers.editManifestTemplate(args);
-      chai.assert.isTrue(
-        openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
-        )
-      );
+      if (isConfigUnifyEnabled()) {
+        chai.assert.isTrue(
+          openTextDocument.calledOnceWith(
+            "undefined/templates/appPackage/manifest.template.json" as any
+          )
+        );
+      } else {
+        chai.assert.isTrue(
+          openTextDocument.calledOnceWith(
+            "undefined/templates/appPackage/manifest.remote.template.json" as any
+          )
+        );
+      }
     });
   });
 

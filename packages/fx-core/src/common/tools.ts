@@ -381,7 +381,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return true;
+  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
 }
 
 export function isExistingTabAppEnabled(): boolean {

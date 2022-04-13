@@ -26,6 +26,7 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../../../src/plugins/resource/bot/question";
+import { isConfigUnifyEnabled } from "../../../../../src";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
@@ -142,14 +143,20 @@ describe("Add capability", () => {
     });
 
     const capabilities = [{ name: "staticTab" as const }];
-    const addCapabilityResult = await plugin.addCapabilities(
-      ctx,
-      inputsWithStaticTabs,
-      capabilities
-    );
+    let addCapabilityResult: any;
+    if (isConfigUnifyEnabled()) {
+      addCapabilityResult = await plugin.addCapabilities(ctx, inputsWithStaticTabs, capabilities);
+    } else {
+      addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
+    }
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputsWithStaticTabs);
+    let loadedManifestTemplate: any;
+    if (isConfigUnifyEnabled()) {
+      loadedManifestTemplate = await plugin.loadManifest(ctx, inputsWithStaticTabs);
+    } else {
+      loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    }
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
@@ -187,8 +194,13 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
-      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[1].commandLists);
+      if (isConfigUnifyEnabled()) {
+        chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
+        chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[1].commandLists);
+      } else {
+        chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+        chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[0].commandLists);
+      }
     }
   });
 
@@ -219,11 +231,19 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
-      chai.assert.equal(
-        loadedManifestTemplate.value.remote.bots?.[1].commandLists?.[0].commands?.[0].title,
-        "helloWorld"
-      );
+      if (isConfigUnifyEnabled()) {
+        chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
+        chai.assert.equal(
+          loadedManifestTemplate.value.remote.bots?.[1].commandLists?.[0].commands?.[0].title,
+          "helloWorld"
+        );
+      } else {
+        chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 1);
+        chai.assert.equal(
+          loadedManifestTemplate.value.remote.bots?.[0].commandLists?.[0].commands?.[0].title,
+          "helloWorld"
+        );
+      }
     }
   });
 });
@@ -272,11 +292,19 @@ describe("Update capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
-      name: "staticTab",
-      snippet: tab,
-    });
-    chai.assert.isTrue(result.isOk());
+    if (isConfigUnifyEnabled()) {
+      const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+      chai.assert.isTrue(result.isOk());
+    } else {
+      const result = await plugin.updateCapability(ctx, inputs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+      chai.assert.isTrue(result.isOk());
+    }
   });
 
   it("Update static tab should failed with StaticTabNotExistError", async () => {
@@ -311,10 +339,18 @@ describe("Update capability", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
-      name: "Bot",
-      snippet: bot,
-    });
+    let result: any;
+    if (isConfigUnifyEnabled()) {
+      result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+        name: "Bot",
+        snippet: bot,
+      });
+    } else {
+      result = await plugin.updateCapability(ctx, inputs, {
+        name: "Bot",
+        snippet: bot,
+      });
+    }
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
@@ -366,11 +402,19 @@ describe("Delete capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
-      name: "staticTab",
-      snippet: tab,
-    });
-    chai.assert.isTrue(result.isOk());
+    if (isConfigUnifyEnabled()) {
+      const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+      chai.assert.isTrue(result.isOk());
+    } else {
+      const result = await plugin.deleteCapability(ctx, inputs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+      chai.assert.isTrue(result.isOk());
+    }
   });
 
   it("Delete static tab should failed with StaticTabNotExistError", async () => {
@@ -378,10 +422,18 @@ describe("Delete capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
-      name: "staticTab",
-      snippet: tab,
-    });
+    let result: any;
+    if (isConfigUnifyEnabled()) {
+      result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+    } else {
+      result = await plugin.deleteCapability(ctx, inputs, {
+        name: "staticTab",
+        snippet: tab,
+      });
+    }
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(result.error.name, AppStudioError.StaticTabNotExistError.name);
@@ -396,9 +448,16 @@ describe("Delete capability", () => {
   });
 
   it("Delete bot should failed", async () => {
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
-      name: "Bot",
-    });
+    let result: any;
+    if (isConfigUnifyEnabled()) {
+      result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+        name: "Bot",
+      });
+    } else {
+      result = await plugin.deleteCapability(ctx, inputs, {
+        name: "Bot",
+      });
+    }
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);

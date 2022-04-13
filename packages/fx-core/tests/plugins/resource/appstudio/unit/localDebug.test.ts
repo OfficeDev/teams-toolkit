@@ -41,7 +41,7 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import fs from "fs-extra";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
-import { newEnvInfo } from "../../../../../src";
+import { isConfigUnifyEnabled, newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   LocalSettingsAuthKeys,
@@ -161,6 +161,11 @@ describe("Post Local Debug", () => {
   });
 
   it("read an invalid manifest and should return error", async () => {
+    if (!isConfigUnifyEnabled()) {
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
@@ -194,6 +199,11 @@ describe("Post Local Debug", () => {
   });
 
   it("should return Ok for postLocalDebug happy path", async () => {
+    if (!isConfigUnifyEnabled()) {
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
     ctx = {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),

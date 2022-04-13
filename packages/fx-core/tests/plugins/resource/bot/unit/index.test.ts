@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { PluginNames, TeamsBot } from "../../../../../src";
+import { isConfigUnifyEnabled, PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
@@ -739,13 +739,20 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      pluginContext.envInfo.state.set(
-        ResourcePlugins.Bot,
-        new Map<string, string>([
-          [ConfigKeys.SITE_ENDPOINT, "https://bot.local.endpoint"],
-          [BOT_ID, "bot_id"],
-        ])
-      );
+      if (isConfigUnifyEnabled()) {
+        pluginContext.envInfo.state.set(
+          ResourcePlugins.Bot,
+          new Map<string, string>([
+            [ConfigKeys.SITE_ENDPOINT, "https://bot.local.endpoint"],
+            [BOT_ID, "bot_id"],
+          ])
+        );
+      } else {
+        pluginContext.localSettings?.bot?.set(
+          LocalSettingsBotKeys.BotEndpoint,
+          "https://bot.local.endpoint"
+        );
+      }
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 

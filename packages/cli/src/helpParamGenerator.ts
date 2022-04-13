@@ -183,12 +183,16 @@ export class HelpParamGenerator {
     }
     let resourceName: string | undefined;
     let capabilityId: string | undefined;
+    let authType: string | undefined;
     if (stage.startsWith("addResource")) {
       resourceName = stage.split("-")[1];
       stage = "addResource";
     } else if (stage.startsWith("addCapability")) {
       capabilityId = stage.split("-")[1];
       stage = "addCapability";
+    } else if (stage.startsWith("connectExistingApi")) {
+      authType = stage.split("-")[1];
+      stage = "connectExistingApi";
     }
     const root = this.getQuestionRootNodeForHelp(stage, inputs);
     let nodes: QTreeNode[] = [];
@@ -229,6 +233,19 @@ export class HelpParamGenerator {
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
+    } else if (authType && root?.children) {
+      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
+      const authNodes = rootCopy.children!.filter(
+        (node: any) => node.data.name === "api-connector-auth-type"
+      )[0];
+      const mustHaveNodes = rootCopy.children!.filter(
+        (node: any) => node.data.name != "api-connector-auth-type"
+      );
+      const authNode = authNodes.children!.filter((node: any) =>
+        ((node.condition as any).equals as string).includes(authType as string)
+      )[0];
+      rootCopy.children = undefined;
+      nodes = [rootCopy].concat(mustHaveNodes).concat(authNode);
     } else if (root && stage === Stage.create) {
       const condition = inputs?.isM365 ? "yes-m365" : "yes";
       root.children = root?.children?.filter(

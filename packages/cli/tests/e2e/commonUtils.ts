@@ -391,6 +391,13 @@ export async function getActivePluginsFromProjectSetting(projectPath: string): P
   ];
 }
 
+export async function getCapabilitiesFromProjectSetting(projectPath: string): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
+}
+
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";

@@ -13,7 +13,7 @@ const authProvider = new CertificateAuthProvider(
   // If you have a .pfx cert, you can use 'createPfxCertOption' function to initialize your cert option.
   createPemCertOption("<your-cert>", "<your-private-key>")
 );
-const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = createApiClient(teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"), authProvider);
 export { fakeClient };
 
 /* 

@@ -18,7 +18,7 @@ import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
 import Manifest from "./manifest";
-import { isRemoteCollaborationEnabled } from "../utils";
+import { isGAPreviewEnabled, isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
@@ -27,8 +27,7 @@ export const commands: YargsCommand[] = [
   new Account(),
   new New(),
   new Add(),
-  new Capability(),
-  new Resource(),
+  ...(isGAPreviewEnabled() ? [] : [new Capability(), new Resource()]),
   new Provision(),
   new Deploy(),
   new Package(),

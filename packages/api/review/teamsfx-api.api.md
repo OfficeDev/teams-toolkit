@@ -216,6 +216,11 @@ interface AzureSQL extends AzureResource {
 
 // @public
 export interface BaseQuestion {
+    buttons?: {
+        icon: string;
+        tooltip: string;
+        command: string;
+    }[];
     default?: unknown;
     forgetLastValue?: boolean;
     name: string;
@@ -1704,6 +1709,11 @@ export interface TreeProvider {
 
 // @public
 export interface UIConfig<T> {
+    buttons?: {
+        icon: string;
+        tooltip: string;
+        command: string;
+    }[];
     default?: T;
     name: string;
     placeholder?: string;

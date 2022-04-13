@@ -28,7 +28,6 @@ describe("Help Parameter Tests", function () {
     const result = HelpParamGenerator.getYargsParamForHelp(Stage.create);
     expect(result.folder.default).equals("./");
     expect(result.scratch.hidden).equals(true);
-    expect(result.samples.hidden).equals(true);
   });
 
   it("Resource Add Parameter Hardcode Check", async () => {

@@ -16,7 +16,7 @@ export declare class MessageBuilder
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [attachAdaptiveCard(getCardData, cardTemplate)](./teamsfx.messagebuilder.attachadaptivecard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with adaptive card. |
+|  [attachAdaptiveCard(cardTemplate, data)](./teamsfx.messagebuilder.attachadaptivecard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with adaptive card. |
 |  [attachAdaptiveCardWithoutData(card)](./teamsfx.messagebuilder.attachadaptivecardwithoutdata.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with an adaptive card. |
 |  [attachContent(attachement)](./teamsfx.messagebuilder.attachcontent.md) | <code>static</code> | <b><i>(BETA)</i></b> Add an attachement to a bot activity. |
 |  [attachHeroCard(title, images, buttons, other)](./teamsfx.messagebuilder.attachherocard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with an hero card. |

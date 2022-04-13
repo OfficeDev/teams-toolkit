@@ -1,6 +1,7 @@
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
-import { Capability, M365AppType, Resource, ResourceToDeploy } from "./constants";
+import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
+import { isGAPreviewEnabled } from "../../src/utils";
 
 export class CliHelper {
   static async setSubscription(
@@ -86,6 +87,18 @@ export class CliHelper {
     }
   }
 
+  static async addExistingApi(projectPath: string, option = "") {
+    const result = await execAsyncWithRetry(`teamsfx add api-connection ${option}`, {
+      cwd: projectPath,
+      timeout: 0,
+    });
+    if (result.stderr) {
+      console.error(`[Failed] addExistingApi for ${projectPath}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] addExistingApi for ${projectPath}`);
+    }
+  }
+
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,
@@ -144,14 +157,14 @@ export class CliHelper {
     }
   }
 
-  static async createM365ProjectWithAppType(
+  static async createM365ProjectWithCapability(
     appName: string,
     testFolder: string,
-    appType: M365AppType,
+    capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const command = `teamsfx new m365 --interactive false --app-name ${appName} --app-type ${appType} ${options}`;
+    const command = `teamsfx new m365 --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -162,7 +175,7 @@ export class CliHelper {
       const message = `scaffold project to ${path.resolve(
         testFolder,
         appName
-      )} with app type ${appType}`;
+      )} with capability ${capability}`;
       if (result.stderr) {
         console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {
@@ -177,7 +190,9 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = `teamsfx capability add ${capabilityToAdd}`;
+    const command = isGAPreviewEnabled()
+      ? `teamsfx add ${capabilityToAdd}`
+      : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -205,7 +220,9 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx resource add ${resourceToAdd} ${options}`;
+    const command = isGAPreviewEnabled()
+      ? `teamsfx add ${resourceToAdd} ${options}`
+      : `teamsfx resource add ${resourceToAdd} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

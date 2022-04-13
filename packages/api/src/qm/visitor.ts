@@ -149,6 +149,7 @@ const questionVisitor = async function (
           prompt: prompt,
           step: step,
           totalSteps: totalSteps,
+          buttons: question.buttons,
         });
       } else {
         const mq = selectQuestion as MultiSelectQuestion;

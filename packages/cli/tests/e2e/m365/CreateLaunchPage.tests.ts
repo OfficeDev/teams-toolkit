@@ -11,8 +11,8 @@ import path from "path";
 import { FrontendValidator } from "../../commonlib";
 import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { M365AppType } from "../../commonlib/constants";
 import { M365Validator } from "../../commonlib/m365Validator";
+import { Capability } from "../../commonlib/constants";
 
 describe("Create M365 Launch Page", function () {
   const testFolder = getTestFolder();
@@ -34,7 +34,11 @@ describe("Create M365 Launch Page", function () {
   });
 
   it("happy path", async () => {
-    await CliHelper.createM365ProjectWithAppType(appName, testFolder, M365AppType.LaunchPage);
+    await CliHelper.createM365ProjectWithCapability(
+      appName,
+      testFolder,
+      Capability.M365SsoLaunchPage
+    );
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);
     await FrontendValidator.validateScaffold(projectPath, "javascript");

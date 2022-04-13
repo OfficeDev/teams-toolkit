@@ -132,6 +132,22 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
   }
 }
 
+export async function isM365Project(workspacePath: string): Promise<boolean> {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return projectSettings.isM365;
+  } else {
+    return false;
+  }
+}
+
 export function isSPFxProject(workspacePath: string): boolean {
   if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;
@@ -228,8 +244,6 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
     ConfigurationKey.RootDirectory
   ).toString();
-
-  process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
 
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable

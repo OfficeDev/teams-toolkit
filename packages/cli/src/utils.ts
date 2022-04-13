@@ -538,6 +538,10 @@ export function isRemoteCollaborationEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true);
 }
 
+export function isGAPreviewEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlags.GAPreview, false);
+}
+
 export function getAllFeatureFlags(): string[] | undefined {
   const result = Object.values(FeatureFlags)
     .filter((featureFlag) => {

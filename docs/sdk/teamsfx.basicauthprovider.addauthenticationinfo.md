@@ -31,3 +31,5 @@ Updated axios request config.
 
 [AuthorizationInfoAlreadyExists](./teamsfx.errorcode.md) - when Authorization header or auth property already exists in request configuration.
 
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+

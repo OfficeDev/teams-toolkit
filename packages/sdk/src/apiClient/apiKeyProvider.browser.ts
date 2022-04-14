@@ -28,21 +28,10 @@ export class ApiKeyProvider implements AuthProvider {
    * @beta
    */
   constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation) {
-    if (!keyName) {
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.EmptyParameter, "keyName"),
-        ErrorCode.InvalidParameter
-      );
-    }
-    if (!keyValue) {
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.EmptyParameter, "keyVaule"),
-        ErrorCode.InvalidParameter
-      );
-    }
-    this.keyName = keyName;
-    this.keyValue = keyValue;
-    this.keyLocation = keyLocation;
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "ApiKeyProvider"),
+      ErrorCode.RuntimeNotSupported
+    );
   }
 
   /**
@@ -59,35 +48,10 @@ export class ApiKeyProvider implements AuthProvider {
    * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
-    switch (this.keyLocation) {
-      case ApiKeyLocation.Header:
-        if (!config.headers) {
-          config.headers = {};
-        }
-        if (config.headers[this.keyName]) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
-          );
-        }
-        config.headers[this.keyName] = this.keyValue;
-        break;
-      case ApiKeyLocation.QueryParams:
-        if (!config.params) {
-          config.params = {};
-        }
-        const url = new URL(config.url!, config.baseURL);
-        if (config.params[this.keyName] || url.searchParams.has(this.keyName)) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
-          );
-        }
-        config.params[this.keyName] = this.keyValue;
-        break;
-    }
-
-    return config;
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "ApiKeyProvider"),
+      ErrorCode.RuntimeNotSupported
+    );
   }
 }
 

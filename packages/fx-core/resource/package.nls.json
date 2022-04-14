@@ -188,7 +188,7 @@
   "plugins.bot.triggers.http-functions.cliName": "http-functions",
   "plugins.bot.triggers.http-functions.description": "Azure Functions",
   "plugins.bot.triggers.http-functions.detail": "A running function hosted on Azure Functions can listen to HTTP requests.",
-  "plugins.bot.triggers.http-functions.label": "HTTP Trigger",
+  "plugins.bot.triggers.http-functions.label": "HTTP Trigger (Function)",
   "plugins.bot.triggers.http-restify.cliName": "http-restify",
   "plugins.bot.triggers.http-restify.description": "Restify Server",
   "plugins.bot.triggers.http-restify.detail": "A running restify server hosted on Azure App Service can listen to HTTP requests.",

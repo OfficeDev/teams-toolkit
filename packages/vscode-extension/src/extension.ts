@@ -27,7 +27,6 @@ import {
   Correlator,
   isConfigUnifyEnabled,
   isExistingTabAppEnabled,
-  isM365AppEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
 } from "@microsoft/teamsfx-core";
@@ -93,11 +92,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInDevelopment(context);
   registerTreeViewCommandsInDeployment(context);
   registerTreeViewCommandsInHelper(context);
-
-  const createM365Cmd = vscode.commands.registerCommand("fx-extension.create-M365", (...args) =>
-    Correlator.run(handlers.createNewM365ProjectHandler, args)
-  );
-  context.subscriptions.push(createM365Cmd);
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
@@ -414,7 +408,6 @@ export async function activate(context: vscode.ExtensionContext) {
     workspacePath && isSPFxProject(workspacePath)
   );
 
-  vscode.commands.executeCommand("setContext", "fx-extension.isM365AppEnabled", isM365AppEnabled());
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isM365",

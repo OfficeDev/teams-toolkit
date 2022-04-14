@@ -14,7 +14,7 @@ export class BearerTokenAuthProvider implements AuthProvider {
   private getToken: () => Promise<string>;
 
   /**
-   * @param getToken Function that returns the content of bearer token used in http request
+   * @param { () => Promise<string> } getToken - Function that returns the content of bearer token used in http request
    *
    * @beta
    */
@@ -25,7 +25,7 @@ export class BearerTokenAuthProvider implements AuthProvider {
   /**
    * Adds authentication info to http requests
    *
-   * @param config - Contains all the request information and can be updated to include extra authentication info.
+   * @param { AxiosRequestConfig } config - Contains all the request information and can be updated to include extra authentication info.
    * Refer https://axios-http.com/docs/req_config for detailed document.
    *
    * @returns Updated axios request config.

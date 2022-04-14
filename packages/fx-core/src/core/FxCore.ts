@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
+import { Container } from "typedi";
+import * as uuid from "uuid";
+
 import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
@@ -28,18 +34,14 @@ import {
   StatesFolderName,
   Tools,
   UserCancelError,
-  UserError,
   v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import { Container } from "typedi";
-import * as uuid from "uuid";
-import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+
+import { initializeGAFeatureFlags } from "../common/featureFlags";
 import { globalStateUpdate } from "../common/globalState";
+import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
@@ -56,20 +58,21 @@ import {
   mapToJson,
   undefinedName,
 } from "../common/tools";
+import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
+  BotSsoItem,
   CommandAndResponseOptionItem,
   ExistingTabOptionItem,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  TabSsoItem,
-  BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  M365SsoLaunchPageOptionItem,
-  M365SearchAppOptionItem,
+  TabSsoItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -79,8 +82,8 @@ import { downloadSample } from "./downloadSample";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
-  InitializedFileAlreadyExistError,
   FunctionRouterError,
+  InitializedFileAlreadyExistError,
   InvalidInputError,
   LoadSolutionError,
   NonExistEnvNameError,
@@ -91,7 +94,10 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
+import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
+import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import {
   askNewEnvironment,
@@ -132,11 +138,6 @@ import {
   ScratchOptionNo,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
-import { CoreHookContext } from "./types";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
-import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
-import { getTemplatesFolder } from "../folder";
-import { getLocalizedString } from "../common/localizeUtils";
 import {
   CoreTelemetryComponentName,
   CoreTelemetryEvent,
@@ -144,6 +145,7 @@ import {
   CoreTelemetrySuccess,
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
+import { CoreHookContext } from "./types";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -153,6 +155,7 @@ export class FxCore implements v3.ICore {
   constructor(tools: Tools) {
     this.tools = tools;
     setTools(tools);
+    initializeGAFeatureFlags();
     TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 

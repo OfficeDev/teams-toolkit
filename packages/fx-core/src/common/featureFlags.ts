@@ -13,6 +13,20 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
+/**
+ * Update feature flags related to GA.
+ */
+export function initializeGAFeatureFlags(): void {
+  if (isFeatureFlagEnabled(FeatureFlagName.GAPreview, false)) {
+    process.env[FeatureFlagName.BotNotification] = "true";
+    process.env[FeatureFlagName.M365App] = "true";
+    process.env[FeatureFlagName.ExistingTabApp] = "true";
+    process.env[FeatureFlagName.ConfigUnify] = "true";
+    process.env[FeatureFlagName.AadManifest] = "true";
+    process.env[FeatureFlagName.ApiConnect] = "true";
+  }
+}
+
 export function isBotNotificationEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }

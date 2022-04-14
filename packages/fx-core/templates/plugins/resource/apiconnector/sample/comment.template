@@ -21,6 +21,8 @@ TEAMSFX_API_{{capitalName}}_TENANT_ID
 TEAMSFX_API_{{capitalName}}_CLIENT_ID
 TEAMSFX_API_{{capitalName}}_CLIENT_SECRET
     {{/if}}
+{{else if (equals config.AuthConfig.AuthType "apiKey")}}
+TEAMSFX_API_{{capitalName}}_API_KEY
 {{/if}}
 
 You can refer https://aka.ms/teamsfx-connet-api to learn more. 

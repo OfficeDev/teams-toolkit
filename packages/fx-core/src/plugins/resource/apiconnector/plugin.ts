@@ -21,9 +21,15 @@ import {
   checkInputEmpty,
   Notification,
 } from "./utils";
-import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
+import {
+  ApiConnectorConfiguration,
+  AuthConfig,
+  BasicAuthConfig,
+  AADAuthConfig,
+  APIKeyAuthConfig,
+} from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants } from "./constants";
+import { AuthType, Constants, KeyLocation } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -42,6 +48,9 @@ import {
   anotherAppOption,
   appTenantIdQuestion,
   appIdQuestion,
+  requestHeaderOption,
+  queryParamsOption,
+  buildAPIKeyNameQuestion,
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
@@ -161,34 +170,57 @@ export class ApiConnectorImpl {
 
   private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
     let config: AuthConfig;
-    if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
-      checkInputEmpty(inputs, Constants.questionKey.apiUserName);
-      config = {
-        AuthType: AuthType.BASIC,
-        UserName: inputs[Constants.questionKey.apiUserName],
-      } as BasicAuthConfig;
-    } else if (inputs[Constants.questionKey.apiType] === AuthType.AAD) {
-      const AADConfig = {
-        AuthType: AuthType.AAD,
-      } as AADAuthConfig;
-      if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
-        AADConfig.ReuseTeamsApp = true;
-      } else {
-        AADConfig.ReuseTeamsApp = false;
-        checkInputEmpty(
-          inputs,
-          Constants.questionKey.apiAppTenentId,
-          Constants.questionKey.apiAppTenentId
+    const apiType = inputs[Constants.questionKey.apiType];
+    switch (apiType) {
+      case AuthType.BASIC:
+        checkInputEmpty(inputs, Constants.questionKey.apiUserName);
+        config = {
+          AuthType: AuthType.BASIC,
+          UserName: inputs[Constants.questionKey.apiUserName],
+        } as BasicAuthConfig;
+        break;
+      case AuthType.AAD:
+        const AADConfig = {
+          AuthType: AuthType.AAD,
+        } as AADAuthConfig;
+        if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
+          AADConfig.ReuseTeamsApp = true;
+        } else {
+          AADConfig.ReuseTeamsApp = false;
+          checkInputEmpty(
+            inputs,
+            Constants.questionKey.apiAppTenentId,
+            Constants.questionKey.apiAppTenentId
+          );
+          AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
+          AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
+        }
+        config = AADConfig;
+        break;
+      case AuthType.APIKEY:
+        const APIKeyConfig = {
+          AuthType: AuthType.APIKEY,
+        } as APIKeyAuthConfig;
+        if (inputs[Constants.questionKey.apiAPIKeyLocation] === requestHeaderOption.id) {
+          APIKeyConfig.Location = KeyLocation.Header;
+        } else {
+          APIKeyConfig.Location = KeyLocation.QueryParams;
+        }
+        checkInputEmpty(inputs, Constants.questionKey.apiAPIKeyName);
+        APIKeyConfig.Name = inputs[Constants.questionKey.apiAPIKeyName];
+        config = APIKeyConfig;
+        break;
+      case AuthType.CUSTOM:
+      case AuthType.CERT:
+        config = {
+          AuthType: apiType,
+        };
+        break;
+      default:
+        throw ResultFactory.SystemError(
+          ErrorMessage.ApiConnectorInputError.name,
+          ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
         );
-        AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
-      }
-      config = AADConfig;
-    } else {
-      throw ResultFactory.SystemError(
-        ErrorMessage.ApiConnectorInputError.name,
-        ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
-      );
     }
     return config;
   }
@@ -341,6 +373,7 @@ export class ApiConnectorImpl {
     });
     whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
     whichAuthType.addChild(this.buildBasicAuthQuestion());
+    whichAuthType.addChild(this.buildAPIKeyAuthQuestion());
     return whichAuthType;
   }
 
@@ -370,6 +403,30 @@ export class ApiConnectorImpl {
       node.condition = { equals: AADAuthOption.id };
       node.addChild(new QTreeNode(appIdQuestion));
     }
+    return node;
+  }
+
+  public buildAPIKeyAuthQuestion(): QTreeNode {
+    const node = new QTreeNode({
+      name: Constants.questionKey.apiAPIKeyLocation,
+      type: "singleSelect",
+      staticOptions: [requestHeaderOption, queryParamsOption],
+      title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyLocation.title"),
+    });
+    node.condition = { equals: APIKeyAuthOption.id };
+
+    const headerKeyNameQuestionNode = new QTreeNode(
+      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.requestHeaderOption.title"))
+    );
+    headerKeyNameQuestionNode.condition = { equals: requestHeaderOption.id };
+
+    const queryKeyNameQuestionNode = new QTreeNode(
+      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.queryParamsOption.title"))
+    );
+    queryKeyNameQuestionNode.condition = { equals: queryParamsOption.id };
+
+    node.addChild(headerKeyNameQuestionNode);
+    node.addChild(queryKeyNameQuestionNode);
     return node;
   }
 }

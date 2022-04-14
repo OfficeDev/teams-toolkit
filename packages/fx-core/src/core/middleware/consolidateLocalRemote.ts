@@ -39,7 +39,7 @@ import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
-const LearnMoreLink = "https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-to-support-unify-config";
+const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);

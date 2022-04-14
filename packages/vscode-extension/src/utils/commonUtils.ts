@@ -17,7 +17,12 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, isValidProject, PluginNames } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  initializeGAFeatureFlags,
+  isValidProject,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
@@ -262,6 +267,8 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_GA_PREVIEW"] = getConfiguration(
     ConfigurationKey.EnableGAPreviewFeatures
   ).toString();
+
+  initializeGAFeatureFlags();
 }
 
 export class FeatureFlags {

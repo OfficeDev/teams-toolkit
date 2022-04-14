@@ -30,3 +30,7 @@ export function initializeGAFeatureFlags(): void {
 export function isBotNotificationEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
+
+export function isGAPreviewEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GAPreview, false);
+}

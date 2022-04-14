@@ -39,7 +39,6 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { initializeGAFeatureFlags } from "../common/featureFlags";
 import { globalStateUpdate } from "../common/globalState";
 import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
@@ -155,7 +154,6 @@ export class FxCore implements v3.ICore {
   constructor(tools: Tools) {
     this.tools = tools;
     setTools(tools);
-    initializeGAFeatureFlags();
     TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 

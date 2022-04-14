@@ -36,6 +36,7 @@ describe("Verify generated templates & readme", function () {
     // Action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // Assert
-    chai.assert.exists(await fs.pathExists(path.join(testFolder, "bot", "test.js")));
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
   });
 });

@@ -74,8 +74,8 @@ export class BotPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    // return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
+    // return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async updateResourceTemplate(

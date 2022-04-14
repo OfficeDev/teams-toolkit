@@ -5,21 +5,26 @@ import { Inputs, ResourceTemplate } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
-import { generateBicepFromFile } from "../../../../common";
+import { BotHostTypes, generateBicepFromFile } from "../../../../common";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
+import { HostTypes, PluginBot } from "../resources/strings";
 import { AppSettings } from "./codeTemplateProvider";
+import * as utils from "../utils/common";
 
 const BicepTemplateRelativeDir = path.join("plugins", "resource", "botv2", "bicep");
 const WebAppBicepFolderName = "webapp";
+const FunctionBicepFolderName = "function";
 const BotServiceBicepFolderName = "botservice";
 
 const resourceId = "provisionOutputs.botOutput.value.botWebAppResourceId";
 const hostName = "provisionOutputs.botOutput.value.validDomain";
 const webAppEndpoint = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
+const functionEndpoint = "provisionOutputs.botOutputs.value.botFunctionEndpoint";
+const endpointAsParam = "functionProvision.outputs.botFunctionEndpoint";
 
 interface BicepGenerator {
   generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate>;
@@ -40,8 +45,8 @@ export class WebAppBicepGenerator implements BicepGenerator {
     );
     const bicepFilenames = [
       Bicep.ProvisionFileName,
-      "webappProvision.template.bicep",
       Bicep.ConfigFileName,
+      "webappProvision.template.bicep",
       "webappConfiguration.template.bicep",
     ];
 
@@ -76,11 +81,41 @@ export class WebAppBicepGenerator implements BicepGenerator {
 
 export class FunctionBicepGenerator implements BicepGenerator {
   async generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const bicepTemplateDir = path.join(
+      getTemplatesFolder(),
+      BicepTemplateRelativeDir,
+      FunctionBicepFolderName
+    );
+    const bicepFilenames = [
+      Bicep.ProvisionFileName,
+      Bicep.ConfigFileName,
+      "functionProvision.template.bicep",
+      "functionConfiguration.template.bicep",
+    ];
+    const modules = await Promise.all(
+      bicepFilenames.map((name) =>
+        generateBicepFromFile(path.join(bicepTemplateDir, name), pluginCtx)
+      )
+    );
     const result: ArmTemplateResult = {
-      Provision: {},
-      Configuration: {},
-      Reference: {},
-      Parameters: {},
+      Provision: {
+        Orchestration: modules[0],
+        Modules: { function: modules[2] },
+      },
+      Configuration: {
+        Orchestration: modules[1],
+        Modules: { function: modules[3] },
+      },
+      Reference: {
+        resourceId: resourceId,
+        hostName: hostName,
+        functionEndpoint: functionEndpoint,
+        endpointAsParam: endpointAsParam,
+      },
     };
     return result;
   }
@@ -125,15 +160,22 @@ export class BotServiceBicepGenerator implements BicepGenerator {
 }
 
 export function getGenerators(ctx: Context, inputs: Inputs): BicepGenerator[] {
-  // web app hosting or function hosting
-
   const generators = [];
+  const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+    PluginBot.HOST_TYPE
+  ] as string;
+
+  const hostType = utils.convertToConstValues(rawHostType, HostTypes);
+
+  if (hostType === BotHostTypes.AppService) {
+    generators.push(new WebAppBicepGenerator());
+  } else if (hostType === BotHostTypes.AzureFunctions) {
+    generators.push(new FunctionBicepGenerator());
+  }
+
   generators.push(new BotServiceBicepGenerator());
-  generators.push(new WebAppBicepGenerator());
   return generators;
 }
-
-export function getDeployment(ctx: Context, inputs: Inputs) {}
 
 export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {
   const result: ArmTemplateResult = {

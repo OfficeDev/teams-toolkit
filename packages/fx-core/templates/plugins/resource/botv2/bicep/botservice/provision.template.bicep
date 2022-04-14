@@ -1,5 +1,5 @@
 // Resources for bot
-module botProvision '\{{fx-resource-bot.Provision.botservice.path}}' = {
+module botProvision '\{{fx-resource-bot.Provision.bot.path}}' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters
@@ -9,5 +9,4 @@ module botProvision '\{{fx-resource-bot.Provision.botservice.path}}' = {
 
 output botOutput object = {
   teamsFxPluginId: 'fx-resource-bot'
-  validDomain: \{{fx-resource-bot.References.domainAsParam}}
 }

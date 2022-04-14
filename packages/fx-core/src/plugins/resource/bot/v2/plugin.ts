@@ -14,12 +14,26 @@ import { getGenerators, mergeTemplates } from "./bicep";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { CodeTemplateProvider } from "./codeTemplateProvider";
 import { scaffold } from "./scaffold";
+import * as utils from "../utils/common";
+import { PluginBot } from "../resources/strings";
+import { QuestionNames } from "../constants";
+import { HostTypeTriggerOptions } from "../question";
+import path from "path";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    const templates = CodeTemplateProvider.getTemplates(ctx, inputs);
-    const workingPath = inputs.projectPath ?? "";
+    const workingPath = path.join(inputs.projectPath ?? "", "bot");
+    const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
+    let hostType;
+    if (Array.isArray(hostTypeTriggers)) {
+      const hostTypes = hostTypeTriggers.map(
+        (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
+      );
+      hostType = hostTypes ? hostTypes[0] : undefined;
+    }
+    utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
+    const templates = CodeTemplateProvider.getTemplates(ctx, inputs);
     await Promise.all(
       templates.map(async (template) => {
         await scaffold(template, workingPath);

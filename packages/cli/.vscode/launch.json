@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["add", "api-connection", "aad","-h", "--folder", "C:/Users/wenyutang/TeamsApps/wenytest041401/api"],
+      "args": ["new", "--interactive", "false"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

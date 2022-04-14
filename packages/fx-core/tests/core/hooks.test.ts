@@ -314,9 +314,6 @@ describe("Middleware - others", () => {
       solutionContext = undefined;
       envLoaded = undefined;
 
-      // stub functions before
-      sandbox.stub(commonTools, "isMultiEnvEnabled").returns(true);
-
       // stub environmentManager.loadEnvInfo()
       sandbox
         .stub(environmentManager, "loadEnvInfo")

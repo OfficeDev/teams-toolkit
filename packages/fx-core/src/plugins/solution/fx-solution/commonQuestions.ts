@@ -41,7 +41,6 @@ import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { PluginDisplayName } from "../../../common/constants";
-import { isMultiEnvEnabled } from "../../../common";
 import {
   CoreQuestionNames,
   QuestionNewResourceGroupLocation,
@@ -212,23 +211,6 @@ export async function askResourceGroupInfo(
   ui: UserInteraction,
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
-  if (!isMultiEnvEnabled()) {
-    let exists = false;
-    try {
-      const checkRes = await rmClient.resourceGroups.checkExistence(defaultResourceGroupName);
-      exists = !!checkRes.body;
-    } catch (error) {
-      ctx.logProvider?.warning(
-        `Failed to check resource group existence ${defaultResourceGroupName}, assume non-existent, error '${error}'`
-      );
-    }
-    return ok({
-      createNewResourceGroup: !exists,
-      name: defaultResourceGroupName,
-      location: DefaultResourceGroupLocation,
-    });
-  }
-
   // TODO: support pagination
   let resourceGroupResults;
   try {
@@ -428,9 +410,7 @@ async function askCommonQuestions(
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(RESOURCE_GROUP_NAME);
   const resourceGroupLocationFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}${
-    isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
-  }-rg`;
+  const defaultResourceGroupName = `${appName.replace(" ", "_")}-${ctx.envInfo.envName}-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   const telemetryProperties: { [key: string]: string } = {};
   if (ctx.answers?.env) {

@@ -43,7 +43,6 @@ import {
   getHashedEnv,
   getResourceGroupInPortal,
   isCheckAccountError,
-  isMultiEnvEnabled,
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
@@ -454,7 +453,7 @@ export class TeamsAppSolution implements Solution {
         }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-        if (!this.isAzureProject(ctx) && isMultiEnvEnabled()) {
+        if (!this.isAzureProject(ctx)) {
           const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
           ctx.envInfo.state
             .get(GLOBAL_CONFIG)
@@ -557,21 +556,6 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async (provisionResults?: Result<any, FxError>[]) => {
-        if (!isMultiEnvEnabled()) {
-          if (provisionWithCtx.length === provisionResults?.length) {
-            provisionWithCtx.map(function (plugin, index) {
-              if (plugin[2] === PluginNames.APPST) {
-                const teamsAppResult = provisionResults[index];
-                if (teamsAppResult.isOk()) {
-                  ctx.envInfo.state
-                    .get(GLOBAL_CONFIG)
-                    ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
-                }
-              }
-            });
-          }
-        }
-
         if (provisionResults) {
           for (const result of provisionResults) {
             if (result.isErr()) {
@@ -1064,9 +1048,9 @@ export class TeamsAppSolution implements Solution {
       await ctx.appStudioToken?.getAccessToken();
 
       // Pop-up window to confirm if local debug in another tenant
-      const localDebugTenantId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId)
-        : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
+      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
+        LocalSettingsTeamsAppKeys.TenantId
+      );
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
         localDebugTenantId,
         ctx.appStudioToken
@@ -1144,16 +1128,9 @@ export class TeamsAppSolution implements Solution {
       if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
         postLocalDebugWithCtx.map(function (plugin, index) {
           if (plugin[2] === PluginNames.APPST) {
-            if (isMultiEnvEnabled()) {
-              ctx.localSettings?.teamsApp?.set(
-                LocalSettingsTeamsAppKeys.TeamsAppId,
-                combinedPostLocalDebugResults.value[index]
-              );
-            } else {
-              ctx.envInfo.state
-                .get(GLOBAL_CONFIG)
-                ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
-            }
+            ctx.envInfo.state
+              .get(GLOBAL_CONFIG)
+              ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
           }
         });
       }
@@ -1195,7 +1172,7 @@ export class TeamsAppSolution implements Solution {
   ): Result<SolutionContext, FxError> {
     return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
       (teamsAppTenantId) => {
-        if (isLocalDebug && isMultiEnvEnabled()) {
+        if (isLocalDebug) {
           ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
         } else {
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
@@ -1976,22 +1953,12 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
   const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
   const msg = getLocalizedString(
-    "core.provision.confirmNotice",
+    "core.provision.confirmEnvNotice",
+    ctx.envInfo.envName,
     username,
     subscriptionName ? subscriptionName : subscriptionId
   );
-  let confirmRes = undefined;
-  if (isMultiEnvEnabled()) {
-    const msgNew = getLocalizedString(
-      "core.provision.confirmEnvNotice",
-      ctx.envInfo.envName,
-      username,
-      subscriptionName ? subscriptionName : subscriptionId
-    );
-    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
-  } else {
-    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
-  }
+  const confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision");
 
   const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 

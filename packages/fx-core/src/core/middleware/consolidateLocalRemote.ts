@@ -139,14 +139,14 @@ function outputCancelMessage(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= ????`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
     );
   } else {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core] If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= ????`
+      `[core] If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 3.7.0`
     );
   }
 }

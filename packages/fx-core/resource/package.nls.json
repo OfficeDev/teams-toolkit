@@ -308,7 +308,7 @@
   "error.ProjectEnvNotExistError": "Environment %s not found. Make sure the config.%s.json file exist.",
   "error.InvalidEnvNameError": "Environment name can only contain letters, digits, _ and -.",
   "error.UpgradeCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
-  "error.ConsolidateCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= ????).",
+  "error.ConsolidateCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 3.7.0).",
   "error.AadManifestMigrationCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= ????).",
   "error.OperationNotSupportedForExistingAppError": "Operation is not supported for existing app: %s.",
   "error.OperationNotPermittedError": "Operation is not permitted: %s",

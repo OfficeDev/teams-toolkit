@@ -52,7 +52,7 @@ describe("Verify generated templates & readme", function () {
   });
 
   it("scaffold with apiKey auth", async () => {
-    const apiKeyInputs = "--key-location fake-path --key-name fake-name";
+    const apiKeyInputs = "--key-location query --key-name fakename";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
     // assert

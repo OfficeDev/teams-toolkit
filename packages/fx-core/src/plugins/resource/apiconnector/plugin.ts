@@ -345,7 +345,7 @@ export class ApiConnectorImpl {
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });
     const apiNameQuestion = new ApiNameQuestion(ctx);
-    const whichAuthType = this.buildAuthTypeQuestion(ctx);
+    const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({
       type: "group",
     });
@@ -357,7 +357,7 @@ export class ApiConnectorImpl {
     return ok(question);
   }
 
-  public buildAuthTypeQuestion(ctx: Context): QTreeNode {
+  public buildAuthTypeQuestion(ctx: Context, inputs: Inputs): QTreeNode {
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
       type: "singleSelect",
@@ -371,7 +371,7 @@ export class ApiConnectorImpl {
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
       placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
     });
-    whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
+    whichAuthType.addChild(this.buildAADAuthQuestion(ctx, inputs));
     whichAuthType.addChild(this.buildBasicAuthQuestion());
     whichAuthType.addChild(this.buildAPIKeyAuthQuestion());
     return whichAuthType;
@@ -383,26 +383,23 @@ export class ApiConnectorImpl {
     return node;
   }
 
-  public buildAADAuthQuestion(ctx: Context): QTreeNode {
-    let node: QTreeNode;
+  public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
+    const options = [anotherAppOption];
     const solutionSettings = getAzureSolutionSettings(ctx)!;
-    if (isAADEnabled(solutionSettings)) {
-      node = new QTreeNode({
-        name: Constants.questionKey.apiAppType,
-        type: "singleSelect",
-        staticOptions: [reuseAppOption, anotherAppOption],
-        title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
-      });
-      node.condition = { equals: AADAuthOption.id };
-      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
-      tenentQuestionNode.condition = { equals: anotherAppOption.id };
-      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
-      node.addChild(tenentQuestionNode);
-    } else {
-      node = new QTreeNode(appTenantIdQuestion);
-      node.condition = { equals: AADAuthOption.id };
-      node.addChild(new QTreeNode(appIdQuestion));
+    if (isAADEnabled(solutionSettings) || inputs.platform === Platform.CLI_HELP) {
+      options.unshift(reuseAppOption);
     }
+    const node = new QTreeNode({
+      name: Constants.questionKey.apiAppType,
+      type: "singleSelect",
+      staticOptions: options,
+      title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
+    });
+    node.condition = { equals: AADAuthOption.id };
+    const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
+    tenentQuestionNode.condition = { equals: anotherAppOption.id };
+    tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
+    node.addChild(tenentQuestionNode);
     return node;
   }
 

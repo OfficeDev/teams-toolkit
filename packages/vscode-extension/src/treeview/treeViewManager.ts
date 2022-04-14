@@ -8,7 +8,7 @@ import { TreeCategory } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { isSPFxProject } from "../utils/commonUtils";
+import { FeatureFlags, isFeatureFlagEnabled, isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
@@ -151,22 +151,34 @@ class TreeViewManager {
     );
 
     if (isNonSPFx) {
-      developmentCommand.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
-          "fx-extension.addCapability",
-          "addCapabilities",
-          { name: "addCapability", custom: true }
-        ),
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
-          "fx-extension.update",
-          "addResources",
-          { name: "addResources", custom: true }
-        )
-      );
+      if (isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview)) {
+        developmentCommand.push(
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
+            localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
+            "fx-extension.addFeature",
+            "addFeature",
+            { name: "addFeature", custom: true }
+          )
+        );
+      } else {
+        developmentCommand.push(
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew"),
+            localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription"),
+            "fx-extension.addCapability",
+            "addCapabilities",
+            { name: "addCapability", custom: true }
+          ),
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew"),
+            localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription"),
+            "fx-extension.update",
+            "addResources",
+            { name: "addResources", custom: true }
+          )
+        );
+      }
     }
 
     developmentCommand.push(
@@ -258,21 +270,29 @@ class TreeViewManager {
         "publish",
         { name: "publish", custom: true }
       ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
-        "fx-extension.addCICDWorkflows",
-        "addCICDWorkflows",
-        { name: "sync", custom: false }
-      ),
+    ];
+
+    if (!isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview)) {
+      deployCommand.push(
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
+          localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription"),
+          "fx-extension.addCICDWorkflows",
+          "addCICDWorkflows",
+          { name: "sync", custom: false }
+        )
+      );
+    }
+
+    deployCommand.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
         undefined,
         { name: "developerPortal", custom: true }
-      ),
-    ];
+      )
+    );
 
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));

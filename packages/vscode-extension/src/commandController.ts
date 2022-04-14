@@ -34,6 +34,7 @@ class CommandController {
     this.exclusiveCommands = new Set([
       "fx-extension.create",
       "fx-extension.init",
+      "fx-extension.addFeature",
       "fx-extension.addCapability",
       "fx-extension.update",
       "fx-extension.openManifest",

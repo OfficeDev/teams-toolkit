@@ -55,11 +55,8 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import {
-  generateBicepFromFile,
-  isBotNotificationEnabled,
-  isConfigUnifyEnabled,
-} from "../../../common/tools";
+import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
 

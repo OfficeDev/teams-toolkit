@@ -39,6 +39,8 @@ import {
   delay,
   isSupportAutoOpenAPI,
   isM365Project,
+  isFeatureFlagEnabled,
+  FeatureFlags,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -432,6 +434,12 @@ export async function activate(context: vscode.ExtensionContext) {
     isApiConnectEnabled()
   );
 
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-entension.gaPreviewEnabled",
+    isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview, false)
+  );
+
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const userDataSelector = {
@@ -620,6 +628,14 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
 
   // View samples
   registerInCommandController(context, "fx-extension.openSamples", handlers.openSamplesHandler);
+
+  // Add features
+  registerInCommandController(
+    context,
+    "fx-extension.addFeature",
+    handlers.addFeatureHandler,
+    "addFeature"
+  );
 
   // Add capabilities
   registerInCommandController(

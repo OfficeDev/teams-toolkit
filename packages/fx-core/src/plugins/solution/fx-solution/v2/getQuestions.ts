@@ -57,11 +57,8 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import {
-  isAadManifestEnabled,
-  isBotNotificationEnabled,
-  isGAPreviewEnabled,
-} from "../../../../common/tools";
+import { isAadManifestEnabled } from "../../../../common/tools";
+import { isBotNotificationEnabled, isGAPreviewEnabled } from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,

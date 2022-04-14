@@ -12,6 +12,7 @@ import {
   Void,
   v2,
   ProjectSettings,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2, Context } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -27,6 +28,7 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  getQuestionsAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
@@ -186,5 +188,14 @@ export class AadPluginV2 implements v2.ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

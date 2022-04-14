@@ -1067,7 +1067,7 @@ async function processResult(
     createProperty[TelemetryProperty.IsM365] = "true";
   }
 
-  if (eventName === TelemetryEvent.Deploy && inputs?.skipAadDeploy === "no") {
+  if (eventName === TelemetryEvent.Deploy && inputs && inputs["include-aad-manifest"] === "yes") {
     eventName = TelemetryEvent.DeployAadManifest;
   }
 
@@ -2938,8 +2938,8 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
 export async function deployAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
-  inputs.skipAadDeploy = "no";
-  if (args && args.length > 0) {
+  inputs["include-aad-manifest"] = "yes";
+  if (args && args.length > 1 && args[1] === "CodeLens") {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2];
     inputs.env = env;

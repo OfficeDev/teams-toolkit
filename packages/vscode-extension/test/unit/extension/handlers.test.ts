@@ -581,7 +581,7 @@ suite("handlers", () => {
     await handlers.deployAadAppManifest([]);
 
     sinon.assert.calledOnce(deployArtifacts);
-    chai.assert.equal(deployArtifacts.getCall(0).args[0].skipAadDeploy, "no");
+    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
   });
 });

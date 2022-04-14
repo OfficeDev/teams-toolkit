@@ -47,6 +47,36 @@ describe("portChecker", () => {
       chai.assert.equal(ports.length, 0);
     });
 
+    it("detect-port timeout", async () => {
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve(port + 1), 60 * 1000);
+          }),
+      });
+      const clock = sinon.useFakeTimers();
+
+      const portsPromise = portChecker.getPortsInUse(
+        projectPath,
+        {
+          appName: "unit-test0",
+          projectId: "11111111-1111-1111-1111-111111111111",
+          programmingLanguage: "javascript",
+          solutionSettings: {
+            name: "fx-solution-azure",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+        },
+        true
+      );
+      clock.tick(30 * 1000);
+      const ports = await portsPromise;
+
+      chai.assert.isDefined(ports);
+      chai.assert.equal(ports.length, 0);
+    });
+
     it("53000 in use", async () => {
       const portChecker = proxyquire("../../../src/common/local/portChecker", {
         "detect-port": async (port: number) => (port === 53000 ? 53001 : port),

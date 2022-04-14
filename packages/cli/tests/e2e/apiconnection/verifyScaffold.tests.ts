@@ -50,4 +50,14 @@ describe("Verify generated templates & readme", function () {
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
   });
+
+  it("scaffold with apiKey auth", async () => {
+    const apiKeyInputs = "--key-location fake-path --key-name fake-name";
+    // action
+    await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
+    // assert
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+  });
 });

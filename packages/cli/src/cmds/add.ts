@@ -152,8 +152,6 @@ export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
     new AddExistingApiSubCommand("basic"),
     new AddExistingApiSubCommand("aad"),
     new AddExistingApiSubCommand("apiKey"),
-    new AddExistingApiSubCommand("cert"),
-    new AddExistingApiSubCommand("custom"),
   ];
 
   public builder(yargs: Argv): Argv<any> {

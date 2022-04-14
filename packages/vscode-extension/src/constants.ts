@@ -8,6 +8,7 @@ export enum ConfigurationKey {
   YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
   enableM365App = "enableM365App",
+  EnableGAPreviewFeatures = "enableGAPreviewFeatures",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

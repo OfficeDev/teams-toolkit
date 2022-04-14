@@ -258,6 +258,19 @@ export function syncFeatureFlags() {
 
   process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
   process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
+
+  // Overwrite GA preview feature flags if this configuration is enabled
+  const gaFeaturesEnabled = getConfiguration(ConfigurationKey.EnableGAPreviewFeatures);
+  if (gaFeaturesEnabled) {
+    process.env["TEAMSFX_GA_PREVIEW"] = "true";
+    process.env["BOT_NOTIFICATION_ENABLED"] = "true";
+    process.env["TEAMSFX_M365_APP"] = "true";
+    process.env["TEAMSFX_INIT_APP"] = "true";
+    process.env["TEAMSFX_CONFIG_UNIFY"] = "true";
+    process.env["TEAMSFX_DEPLOY_MANIFEST"] = "true";
+    process.env["TEAMSFX_AAD_MANIFEST"] = "true";
+    process.env["TEAMSFX_API_CONNECT_ENABLE"] = "true";
+  }
 }
 
 export class FeatureFlags {

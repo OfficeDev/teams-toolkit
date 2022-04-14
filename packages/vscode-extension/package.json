@@ -932,6 +932,12 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
+          "fx-extension.enableGAPreviewFeatures": {
+            "order": 0,
+            "type": "boolean",
+            "description": "Enable GA related features including notification bot, M365 app, existing app etc. (requires reload of VS Code)",
+            "default": false
+          },
           "fx-extension.enableNotification / CommandAndResponseBot": {
             "type": "boolean",
             "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",

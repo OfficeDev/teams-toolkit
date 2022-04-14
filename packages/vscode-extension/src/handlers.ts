@@ -705,7 +705,8 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
     } else if (config.name === "additionalFeature") {
       if (answer.value.result === "sso") {
         return addSsoHanlder();
-        // } else if (answer.value.result === "api") {
+      } else if (answer.value.result === "api") {
+        return connectExistingApiHandler(args);
       } else if (answer.value.result === "cicd") {
         return addCICDWorkflowsHandler(args);
       }

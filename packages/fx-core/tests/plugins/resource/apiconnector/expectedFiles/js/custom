@@ -11,7 +11,7 @@ class CustomAuthProvider {
     this.customValue = customValue;
   }
 
-  // Replace the sample code with your own logic
+  // Replace the sample code with your own logic.
   AddAuthenticationInfo = async (config) => {
     if (!config.headers) {
       config.headers = {};

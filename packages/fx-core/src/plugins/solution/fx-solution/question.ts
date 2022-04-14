@@ -14,7 +14,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
-  label: isBotNotificationEnabled() ? "SSO enabled Launch page" : "Tab",
+  label: isBotNotificationEnabled() ? "SSO enabled launch page" : "Tab",
   cliName: "tab",
   description: isBotNotificationEnabled()
     ? undefined
@@ -106,14 +106,14 @@ export const TabNonSsoItem: OptionItem = {
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
-  label: "SSO enabled Launch page",
+  label: "SSO enabled launch page",
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
 };
 
 export const M365SearchAppOptionItem: OptionItem = {
   id: "M365SearchApp",
-  label: "Search App",
+  label: "Search app",
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
 };

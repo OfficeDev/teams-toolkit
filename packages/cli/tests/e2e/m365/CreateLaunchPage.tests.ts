@@ -34,11 +34,7 @@ describe("Create M365 Launch Page", function () {
   });
 
   it("happy path", async () => {
-    await CliHelper.createM365ProjectWithCapability(
-      appName,
-      testFolder,
-      Capability.M365SsoLaunchPage
-    );
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SsoLaunchPage);
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);
     await FrontendValidator.validateScaffold(projectPath, "javascript");

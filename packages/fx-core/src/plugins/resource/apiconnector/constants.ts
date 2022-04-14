@@ -15,6 +15,11 @@ export enum AuthType {
   CUSTOM = "custom",
 }
 
+export enum KeyLocation {
+  Header = "request header",
+  QueryParams = "query parameter",
+}
+
 export enum LanguageType {
   JS = "javascript",
   TS = "typescript",
@@ -38,14 +43,16 @@ export class Constants {
   public static readonly sdkJsName = "@microsft/teams-js";
 
   public static readonly questionKey = {
-    componentsSelect: "ComponentSelect",
-    endpoint: "api-connector-endpoint",
-    apiName: "api-connector-name",
-    apiType: "api-connector-auth-type",
-    apiUserName: "api-connector-user-name",
-    apiPassword: "api-connector-password",
-    apiAppType: "api-connector-app-type",
-    apiAppTenentId: "api-connector-app-tenant-id",
-    apiAppId: "api-connector-app-id",
+    componentsSelect: "component",
+    endpoint: "endpoint",
+    apiName: "name",
+    apiType: "auth-type",
+    apiUserName: "user-name",
+    apiPassword: "password",
+    apiAppType: "app-type",
+    apiAppTenentId: "app-tenant-id",
+    apiAppId: "app-id",
+    apiAPIKeyLocation: "key-location",
+    apiAPIKeyName: "key-name",
   };
 }

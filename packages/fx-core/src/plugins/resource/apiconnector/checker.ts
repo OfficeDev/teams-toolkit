@@ -18,7 +18,8 @@ export async function checkApiNameExist(
   const apiFileName: string = getSampleFileName(input, languageType);
   for (const component of components) {
     const componentPath = path.join(projectPath, component);
-    if (await fs.pathExists(path.join(componentPath, apiFileName))) {
+    // This pathExistsSync is a workaround for cli interactive command.
+    if (fs.pathExistsSync(path.join(componentPath, apiFileName))) {
       return getLocalizedString(
         "plugins.apiConnector.QuestionAppName.validation.ApiNameExist",
         apiFileName
@@ -33,6 +34,14 @@ export async function checkEmptyValue(input: string): Promise<string | undefined
     return undefined;
   }
   return getLocalizedString("plugins.apiConnector.Question.validation.EmptyValue");
+}
+
+export async function checkEmptySelect(input: string[]): Promise<string | undefined> {
+  const name = input as string[];
+  if (name.length === 0) {
+    return getLocalizedString("plugins.apiConnector.questionComponentSelect.emptySelection");
+  }
+  return undefined;
 }
 
 export async function checkIsGuid(input: string): Promise<string | undefined> {

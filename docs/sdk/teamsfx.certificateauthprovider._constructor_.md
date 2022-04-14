@@ -21,3 +21,7 @@ constructor(certOption: SecureContextOptions);
 |  --- | --- | --- |
 |  certOption | SecureContextOptions | information about the cert used in http requests |
 
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) - when cert option is empty.
+

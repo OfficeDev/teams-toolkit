@@ -196,6 +196,19 @@ export async function setSkipAddingSqlUserToConfig(projectPath: string, envName:
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
 }
 
+export async function setFrontendDomainToConfig(projectPath: string, envName: string) {
+  const configFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `config.${envName}.json`
+  );
+  const configFilePath = path.resolve(projectPath, configFile);
+  const config = await fs.readJSON(configFilePath);
+  config["auth"] = {};
+  config["auth"]["frontendDomain"] = "xxx.com";
+  return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
 export async function cleanupSharePointPackage(appId: string) {
   if (appId) {
     try {
@@ -389,6 +402,13 @@ export async function getActivePluginsFromProjectSetting(projectPath: string): P
   return projectSettings[ProjectSettingKey.solutionSettings][
     ProjectSettingKey.activeResourcePlugins
   ];
+}
+
+export async function getCapabilitiesFromProjectSetting(projectPath: string): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
 }
 
 export function mockTeamsfxMultiEnvFeatureFlag() {

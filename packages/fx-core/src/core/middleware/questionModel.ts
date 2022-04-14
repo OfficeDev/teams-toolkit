@@ -36,16 +36,13 @@ import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityQuestion,
-  createM365CapabilityQuestion,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
-  M365CreateFromScratchSelectQuestion,
   ProgrammingLanguageQuestion,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
-  ScratchOptionYesM365,
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
@@ -382,11 +379,7 @@ export async function getQuestionsForCreateProjectV3(
 export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(
-    inputs.isM365
-      ? M365CreateFromScratchSelectQuestion
-      : getCreateNewOrFromSampleQuestion(inputs.platform)
-  );
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
   // create new
   const createNew = new QTreeNode({ type: "group" });
@@ -397,14 +390,6 @@ export async function getQuestionsForCreateProjectV2(
   const capQuestion = createCapabilityQuestion();
   const capNode = new QTreeNode(capQuestion);
   createNew.addChild(capNode);
-
-  // create new M365
-  const createNewM365 = new QTreeNode({ type: "group" });
-  node.addChild(createNewM365);
-  createNewM365.condition = { equals: ScratchOptionYesM365.id };
-
-  // M365 capability
-  createNewM365.addChild(new QTreeNode(createM365CapabilityQuestion()));
 
   const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
   const context = createV2Context(newProjectSettings());
@@ -425,7 +410,6 @@ export async function getQuestionsForCreateProjectV2(
       for (const node of solutionNode) {
         if (node.data) {
           capNode.addChild(node);
-          createNewM365.addChild(node);
         }
       }
     }
@@ -438,7 +422,6 @@ export async function getQuestionsForCreateProjectV2(
     excludes: ExistingTabOptionItem.id,
   };
   capNode.addChild(programmingLanguage);
-  createNewM365.addChild(programmingLanguage);
 
   // existing tab endpoint
   const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
@@ -450,10 +433,8 @@ export async function getQuestionsForCreateProjectV2(
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
-    createNewM365.addChild(new QTreeNode(QuestionRootFolder));
   }
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
-  createNewM365.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

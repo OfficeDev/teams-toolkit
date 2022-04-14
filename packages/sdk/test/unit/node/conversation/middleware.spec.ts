@@ -167,7 +167,7 @@ describe("Notification Middleware Tests - Node", () => {
     assert.deepStrictEqual(testStorage.items, {});
   });
 
-  it("onTurn should correctly handle bot messaged (new)", async () => {
+  it("onTurn should ignore bot messaged (new)", async () => {
     const testContext = {
       activity: {
         type: "message",
@@ -182,18 +182,10 @@ describe("Notification Middleware Tests - Node", () => {
       },
     };
     await middleware.onTurn(testContext as any, async () => {});
-    assert.deepStrictEqual(testStorage.items, {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    });
+    assert.deepStrictEqual(testStorage.items, {});
   });
 
-  it("onTurn should correctly handle bot messaged (exist)", async () => {
+  it("onTurn should ignore bot messaged (exist)", async () => {
     testStorage.items = {
       _a_1: {
         channelId: "1",

@@ -83,8 +83,10 @@ export class CertificateAuthProvider implements AuthProvider {
 export function createPemCertOption(
   cert: string | Buffer,
   key: string | Buffer,
-  passphrase?: string,
-  ca?: string | Buffer
+  options?: {
+    passphrase?: string;
+    ca?: string | Buffer;
+  }
 ): SecureContextOptions {
   if (cert.length === 0) {
     throw new ErrorWithCode(
@@ -102,8 +104,8 @@ export function createPemCertOption(
   return {
     cert,
     key,
-    passphrase,
-    ca,
+    passphrase: options?.passphrase,
+    ca: options?.ca,
   };
 }
 
@@ -120,7 +122,9 @@ export function createPemCertOption(
  */
 export function createPfxCertOption(
   pfx: string | Buffer,
-  passphrase?: string
+  options?: {
+    passphrase?: string;
+  }
 ): SecureContextOptions {
   if (pfx.length === 0) {
     throw new ErrorWithCode(
@@ -131,6 +135,6 @@ export function createPfxCertOption(
 
   return {
     pfx,
-    passphrase,
+    passphrase: options?.passphrase,
   };
 }

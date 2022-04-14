@@ -38,6 +38,7 @@ export class CertificateAuthProvider implements AuthProvider {
    * @returns Updated axios request config.
    *
    * @throws {@link ErrorCode|InvalidParameter} - when custom httpsAgent in the request has duplicate properties with certOption provided in constructor.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
@@ -60,6 +61,7 @@ export class CertificateAuthProvider implements AuthProvider {
  * @returns Instance of SecureContextOptions
  *
  * @throws {@link ErrorCode|InvalidParameter} - when any parameter is empty
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  *
  */
 export function createPemCertOption(
@@ -83,6 +85,7 @@ export function createPemCertOption(
  * @returns Instance of SecureContextOptions
  *
  * @throws {@link ErrorCode|InvalidParameter} - when any parameter is empty
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  *
  */
 export function createPfxCertOption(

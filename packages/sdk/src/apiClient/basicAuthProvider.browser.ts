@@ -26,20 +26,10 @@ export class BasicAuthProvider implements AuthProvider {
    * @beta
    */
   constructor(userName: string, password: string) {
-    if (!userName) {
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.EmptyParameter, "username"),
-        ErrorCode.InvalidParameter
-      );
-    }
-    if (!password) {
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.EmptyParameter, "password"),
-        ErrorCode.InvalidParameter
-      );
-    }
-    this.userName = userName;
-    this.password = password;
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BasicAuthProvider"),
+      ErrorCode.RuntimeNotSupported
+    );
   }
 
   /**
@@ -56,24 +46,9 @@ export class BasicAuthProvider implements AuthProvider {
    * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
-    if (config.headers && config.headers["Authorization"]) {
-      throw new ErrorWithCode(
-        ErrorMessage.AuthorizationHeaderAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
-      );
-    }
-    if (config.auth) {
-      throw new ErrorWithCode(
-        ErrorMessage.BasicCredentialAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
-      );
-    }
-
-    config.auth = {
-      username: this.userName,
-      password: this.password,
-    };
-
-    return config;
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BasicAuthProvider"),
+      ErrorCode.RuntimeNotSupported
+    );
   }
 }

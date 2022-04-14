@@ -31,8 +31,8 @@ export { createApiClient } from "./apiClient/apiClient";
 export { AxiosInstance } from "axios";
 export { AuthProvider } from "./apiClient/authProvider";
 export { BearerTokenAuthProvider } from "./apiClient/bearerTokenAuthProvider";
-export { BasicAuthProvider } from "./apiClient/basicAuthProvider";
-export { ApiKeyProvider, ApiKeyLocation } from "./apiClient/apiKeyProvider";
+export { BasicAuthProvider } from "./apiClient/basicAuthProvider.browser";
+export { ApiKeyProvider, ApiKeyLocation } from "./apiClient/apiKeyProvider.browser";
 export {
   CertificateAuthProvider,
   createPemCertOption,

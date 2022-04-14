@@ -42,11 +42,7 @@ export default class Deploy extends YargsCommand {
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs.positional("components", {
       array: true,
-      choices: deployPluginOption.choices?.map((elem) =>
-        // rename appstudio to manifest, because we want the command
-        // to be `teamsfx deploy manifest`
-        elem === "appstudio" ? "manifest" : elem
-      ),
+      choices: deployPluginOption.choices,
       description: deployPluginOption.description,
       coerce: (arg) => toLocaleLowerCase(arg),
     });
@@ -89,11 +85,7 @@ export default class Deploy extends YargsCommand {
         } else {
           ids = (choices as OptionItem[]).map((choice) => choice.id);
         }
-        // change manifest back to appstudio, because the real name of the resource
-        // is appstudio
-        const components = ((args.components as string[]) || []).map((c) =>
-          c === "manifest" ? "appstudio" : c
-        );
+        const components = (args.components as string[]) || [];
         if (components.length !== 0 && components.some((c) => c === "appstudio")) {
           inputs["include-app-manifest"] = "yes";
         }

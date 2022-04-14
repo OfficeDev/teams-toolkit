@@ -33,9 +33,19 @@ describe("Verify generated templates & readme", function () {
 
   it("scaffold with basic auth", async () => {
     const basicInputs = "--user-name test123";
-    // Action
+    // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
-    // Assert
+    // assert
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+  });
+
+  it("scaffold with aad auth", async () => {
+    const aadInputs = "--app-tenant-id fake-tenant-id --app-id fake-app-id";
+    // action
+    await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
+    // assert
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;

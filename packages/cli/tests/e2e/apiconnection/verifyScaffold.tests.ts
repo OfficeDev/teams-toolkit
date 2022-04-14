@@ -35,7 +35,7 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // assert
-    const files = await fs.readdir(path.join(testFolder, "bot"));
+    const files = await fs.readdir(path.join(projectPath, "bot"));
     console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
@@ -47,7 +47,7 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
-    const files = await fs.readdir(path.join(testFolder, "bot"));
+    const files = await fs.readdir(path.join(projectPath, "bot"));
     console.log(files);
 
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
@@ -60,7 +60,7 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
     // assert
-    const files = await fs.readdir(path.join(testFolder, "bot"));
+    const files = await fs.readdir(path.join(projectPath, "bot"));
     console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
@@ -71,7 +71,7 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
     // assert
-    const files = await fs.readdir(path.join(testFolder, "bot"));
+    const files = await fs.readdir(path.join(projectPath, "bot"));
     console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
@@ -82,7 +82,7 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
     // assert
-    const files = await fs.readdir(path.join(testFolder, "bot"));
+    const files = await fs.readdir(path.join(projectPath, "bot"));
     console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;

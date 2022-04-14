@@ -181,6 +181,7 @@ export const LOCAL_TENANT_ID = "local_tenantId";
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
+export const TEAMS_APP_ID = "teamsAppId";
 
 export const AzureRoleAssignmentsHelpLink =
   "https://aka.ms/teamsfx-azure-role-assignments-help-link";
@@ -240,7 +241,7 @@ export enum SolutionTelemetryProperty {
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
-  SkipAadDeploy = "skip-aad-deploy",
+  IncludeAadManifest = "include-aad-manifest",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   HostType = "host-type",

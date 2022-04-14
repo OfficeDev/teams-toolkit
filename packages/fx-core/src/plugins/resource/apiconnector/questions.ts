@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import * as fs from "fs-extra";
-import path from "path";
 import {
   Inputs,
   LogProvider,
@@ -113,6 +111,18 @@ export const appIdQuestion: TextInputQuestion = {
   },
 };
 
+export function buildAPIKeyNameQuestion(location: string): TextInputQuestion {
+  return {
+    name: Constants.questionKey.apiAPIKeyName,
+    title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyName.title", location),
+    type: "text",
+    placeholder: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyName.placeholder"), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkEmptyValue,
+    },
+  };
+}
+
 export const reuseAppOption: OptionItem = {
   id: "reuseApp",
   label: getLocalizedString("plugins.apiConnector.reuseAppOption.title"),
@@ -121,6 +131,16 @@ export const reuseAppOption: OptionItem = {
 export const anotherAppOption: OptionItem = {
   id: "anotherApp",
   label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
+};
+
+export const requestHeaderOption: OptionItem = {
+  id: "header",
+  label: getLocalizedString("plugins.apiConnector.requestHeaderOption.title"),
+};
+
+export const queryParamsOption: OptionItem = {
+  id: "query",
+  label: getLocalizedString("plugins.apiConnector.queryParamsOption.title"),
 };
 
 export const botOption: OptionItem = {

@@ -104,6 +104,11 @@ export default class Deploy extends YargsCommand {
           inputs[this.deployPluginNodeName] = ids;
         } else {
           inputs[this.deployPluginNodeName] = indexes.map((i) => ids[i]);
+          if (inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")) {
+            inputs["include-aad-manifest"] = "yes";
+          } else {
+            inputs["include-aad-manifest"] = "no";
+          }
         }
       }
       const result = await core.deployArtifacts(inputs);

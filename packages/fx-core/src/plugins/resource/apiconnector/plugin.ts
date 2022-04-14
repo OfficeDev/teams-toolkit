@@ -10,6 +10,7 @@ import {
   SystemError,
   UserError,
   ok,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -20,9 +21,15 @@ import {
   checkInputEmpty,
   Notification,
 } from "./utils";
-import { ApiConnectorConfiguration, AuthConfig, BasicAuthConfig, AADAuthConfig } from "./config";
+import {
+  ApiConnectorConfiguration,
+  AuthConfig,
+  BasicAuthConfig,
+  AADAuthConfig,
+  APIKeyAuthConfig,
+} from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants } from "./constants";
+import { AuthType, Constants, KeyLocation } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -41,12 +48,16 @@ import {
   anotherAppOption,
   appTenantIdQuestion,
   appIdQuestion,
+  requestHeaderOption,
+  queryParamsOption,
+  buildAPIKeyNameQuestion,
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
+import { checkEmptySelect } from "./checker";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -73,14 +84,18 @@ export class ApiConnectorImpl {
         })
       );
       const msg: string = this.getNotificationMsg(config, languageType);
-      ctx.userInteraction
-        ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
-        .then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === Notification.READ_MORE) {
-            ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
-          }
-        });
+      if (inputs.platform != Platform.CLI) {
+        ctx.userInteraction
+          ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === Notification.READ_MORE) {
+              ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
+            }
+          });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     } catch (err) {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -155,34 +170,57 @@ export class ApiConnectorImpl {
 
   private getAuthConfigFromInputs(inputs: Inputs): AuthConfig {
     let config: AuthConfig;
-    if (inputs[Constants.questionKey.apiType] === AuthType.BASIC) {
-      checkInputEmpty(inputs, Constants.questionKey.apiUserName);
-      config = {
-        AuthType: AuthType.BASIC,
-        UserName: inputs[Constants.questionKey.apiUserName],
-      } as BasicAuthConfig;
-    } else if (inputs[Constants.questionKey.apiType] === AuthType.AAD) {
-      const AADConfig = {
-        AuthType: AuthType.AAD,
-      } as AADAuthConfig;
-      if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
-        AADConfig.ReuseTeamsApp = true;
-      } else {
-        AADConfig.ReuseTeamsApp = false;
-        checkInputEmpty(
-          inputs,
-          Constants.questionKey.apiAppTenentId,
-          Constants.questionKey.apiAppTenentId
+    const apiType = inputs[Constants.questionKey.apiType];
+    switch (apiType) {
+      case AuthType.BASIC:
+        checkInputEmpty(inputs, Constants.questionKey.apiUserName);
+        config = {
+          AuthType: AuthType.BASIC,
+          UserName: inputs[Constants.questionKey.apiUserName],
+        } as BasicAuthConfig;
+        break;
+      case AuthType.AAD:
+        const AADConfig = {
+          AuthType: AuthType.AAD,
+        } as AADAuthConfig;
+        if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
+          AADConfig.ReuseTeamsApp = true;
+        } else {
+          AADConfig.ReuseTeamsApp = false;
+          checkInputEmpty(
+            inputs,
+            Constants.questionKey.apiAppTenentId,
+            Constants.questionKey.apiAppTenentId
+          );
+          AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
+          AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
+        }
+        config = AADConfig;
+        break;
+      case AuthType.APIKEY:
+        const APIKeyConfig = {
+          AuthType: AuthType.APIKEY,
+        } as APIKeyAuthConfig;
+        if (inputs[Constants.questionKey.apiAPIKeyLocation] === requestHeaderOption.id) {
+          APIKeyConfig.Location = KeyLocation.Header;
+        } else {
+          APIKeyConfig.Location = KeyLocation.QueryParams;
+        }
+        checkInputEmpty(inputs, Constants.questionKey.apiAPIKeyName);
+        APIKeyConfig.Name = inputs[Constants.questionKey.apiAPIKeyName];
+        config = APIKeyConfig;
+        break;
+      case AuthType.CUSTOM:
+      case AuthType.CERT:
+        config = {
+          AuthType: apiType,
+        };
+        break;
+      default:
+        throw ResultFactory.SystemError(
+          ErrorMessage.ApiConnectorInputError.name,
+          ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
         );
-        AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
-        AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
-      }
-      config = AADConfig;
-    } else {
-      throw ResultFactory.SystemError(
-        ErrorMessage.ApiConnectorInputError.name,
-        ErrorMessage.ApiConnectorInputError.message(inputs[Constants.questionKey.apiAppType])
-      );
     }
     return config;
   }
@@ -265,51 +303,49 @@ export class ApiConnectorImpl {
       }
     }
     retMsg += `${Notification.GetNpmInstallString()}`;
+    retMsg += `${Notification.GetLinkNotification()}`;
     return retMsg;
   }
 
-  public async generateQuestion(ctx: Context): Promise<QesutionResult> {
-    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    if (!activePlugins) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoActivePluginsExistError.name,
-        ErrorMessage.NoActivePluginsExistError.message()
-      );
-    }
-    const options = [];
-    if (activePlugins.includes(ResourcePlugins.Bot)) {
-      options.push(botOption);
-    }
-    if (activePlugins.includes(ResourcePlugins.Function)) {
-      options.push(functionOption);
-    }
-    if (options.length === 0) {
-      throw ResultFactory.UserError(
-        ErrorMessage.NoValidCompoentExistError.name,
-        ErrorMessage.NoValidCompoentExistError.message()
-      );
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
+    const componentOptions = [];
+    if (inputs.platform === Platform.CLI_HELP) {
+      componentOptions.push(botOption);
+      componentOptions.push(functionOption);
+    } else {
+      const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+        ?.activeResourcePlugins;
+      if (!activePlugins) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoActivePluginsExistError.name,
+          ErrorMessage.NoActivePluginsExistError.message()
+        );
+      }
+      if (activePlugins.includes(ResourcePlugins.Bot)) {
+        componentOptions.push(botOption);
+      }
+      if (activePlugins.includes(ResourcePlugins.Function)) {
+        componentOptions.push(functionOption);
+      }
+      if (componentOptions.length === 0) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoValidCompoentExistError.name,
+          ErrorMessage.NoValidCompoentExistError.message()
+        );
+      }
     }
     const whichComponent = new QTreeNode({
       name: Constants.questionKey.componentsSelect,
       type: "multiSelect",
-      staticOptions: options,
+      staticOptions: componentOptions,
       title: getLocalizedString("plugins.apiConnector.whichService.title"),
       validation: {
-        validFunc: async (input: string[]): Promise<string | undefined> => {
-          const name = input as string[];
-          if (name.length === 0) {
-            return getLocalizedString(
-              "plugins.apiConnector.questionComponentSelect.emptySelection"
-            );
-          }
-          return undefined;
-        },
+        validFunc: checkEmptySelect,
       },
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });
     const apiNameQuestion = new ApiNameQuestion(ctx);
-    const whichAuthType = this.buildAuthTypeQuestion(ctx);
+    const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({
       type: "group",
     });
@@ -321,7 +357,7 @@ export class ApiConnectorImpl {
     return ok(question);
   }
 
-  public buildAuthTypeQuestion(ctx: Context): QTreeNode {
+  public buildAuthTypeQuestion(ctx: Context, inputs: Inputs): QTreeNode {
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
       type: "singleSelect",
@@ -335,8 +371,9 @@ export class ApiConnectorImpl {
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
       placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
     });
-    whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
+    whichAuthType.addChild(this.buildAADAuthQuestion(ctx, inputs));
     whichAuthType.addChild(this.buildBasicAuthQuestion());
+    whichAuthType.addChild(this.buildAPIKeyAuthQuestion());
     return whichAuthType;
   }
 
@@ -346,26 +383,47 @@ export class ApiConnectorImpl {
     return node;
   }
 
-  public buildAADAuthQuestion(ctx: Context): QTreeNode {
-    let node: QTreeNode;
+  public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
+    const options = [anotherAppOption];
     const solutionSettings = getAzureSolutionSettings(ctx)!;
-    if (isAADEnabled(solutionSettings)) {
-      node = new QTreeNode({
-        name: Constants.questionKey.apiAppType,
-        type: "singleSelect",
-        staticOptions: [reuseAppOption, anotherAppOption],
-        title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
-      });
-      node.condition = { equals: AADAuthOption.id };
-      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
-      tenentQuestionNode.condition = { equals: anotherAppOption.id };
-      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
-      node.addChild(tenentQuestionNode);
-    } else {
-      node = new QTreeNode(appTenantIdQuestion);
-      node.condition = { equals: AADAuthOption.id };
-      node.addChild(new QTreeNode(appIdQuestion));
+    if (isAADEnabled(solutionSettings) || inputs.platform === Platform.CLI_HELP) {
+      options.unshift(reuseAppOption);
     }
+    const node = new QTreeNode({
+      name: Constants.questionKey.apiAppType,
+      type: "singleSelect",
+      staticOptions: options,
+      title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
+    });
+    node.condition = { equals: AADAuthOption.id };
+    const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
+    tenentQuestionNode.condition = { equals: anotherAppOption.id };
+    tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
+    node.addChild(tenentQuestionNode);
+    return node;
+  }
+
+  public buildAPIKeyAuthQuestion(): QTreeNode {
+    const node = new QTreeNode({
+      name: Constants.questionKey.apiAPIKeyLocation,
+      type: "singleSelect",
+      staticOptions: [requestHeaderOption, queryParamsOption],
+      title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyLocation.title"),
+    });
+    node.condition = { equals: APIKeyAuthOption.id };
+
+    const headerKeyNameQuestionNode = new QTreeNode(
+      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.requestHeaderOption.title"))
+    );
+    headerKeyNameQuestionNode.condition = { equals: requestHeaderOption.id };
+
+    const queryKeyNameQuestionNode = new QTreeNode(
+      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.queryParamsOption.title"))
+    );
+    queryKeyNameQuestionNode.condition = { equals: queryParamsOption.id };
+
+    node.addChild(headerKeyNameQuestionNode);
+    node.addChild(queryKeyNameQuestionNode);
     return node;
   }
 }

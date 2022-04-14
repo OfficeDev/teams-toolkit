@@ -38,6 +38,8 @@ import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 
 const upgradeButton = "Upgrade";
+const LearnMore = "Learn More";
+const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -66,13 +68,20 @@ export const ProjectConsolidateMW: Middleware = async (
 };
 
 async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
-  const res = await TOOLS?.ui.showMessage(
-    "warn",
-    getLocalizedString("core.consolidateLocalRemote.Message"),
-    showModal,
-    upgradeButton
-  );
-  const answer = res?.isOk() ? res.value : undefined;
+  let answer: string | undefined = undefined;
+  do {
+    const res = await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.consolidateLocalRemote.Message"),
+      showModal,
+      upgradeButton,
+      LearnMore
+    );
+    answer = res?.isOk() ? res.value : undefined;
+    if (answer === LearnMore) {
+      TOOLS?.ui.openUrl(LearnMoreLink);
+    }
+  } while (answer === LearnMore);
   if (!answer || answer != upgradeButton) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
@@ -130,14 +139,14 @@ function outputCancelMessage(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= ????`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
     );
   } else {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core] If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= ????`
+      `[core] If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 3.7.0`
     );
   }
 }

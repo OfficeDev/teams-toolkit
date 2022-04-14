@@ -35,6 +35,8 @@ import {
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
   TabNonSsoItem,
@@ -264,6 +266,12 @@ export function fillInSolutionSettings(
     // set capabilities to TabOptionItem in case of TabSPFx item, so donot impact capabilities.includes() check overall
     capabilities = [TabOptionItem.id];
     hostType = HostTypeOptionSPFx.id;
+  } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
+    capabilities = [TabOptionItem.id];
+    hostType = HostTypeOptionAzure.id;
+  } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
+    capabilities = [MessageExtensionItem.id];
+    hostType = HostTypeOptionAzure.id;
   }
   if (!hostType) {
     return err(

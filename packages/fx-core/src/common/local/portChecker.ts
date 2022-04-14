@@ -30,7 +30,12 @@ const botServicePorts = [3978];
 async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
   try {
     sendTelemetryEvent(Component.core, TelemetryEvent.DetectPortStart, { port: port.toString() });
-    const portChosen = await detectPort(port);
+    const race = Promise.race([
+      detectPort(port),
+      // in case `detectPort` hangs, set 10 seconds timeout
+      new Promise<number>((resolve) => setTimeout(() => resolve(port), 10 * 1000)),
+    ]);
+    const portChosen = await race;
     sendTelemetryEvent(Component.core, TelemetryEvent.DetectPort, {
       portChosen: portChosen.toString(),
       port: port.toString(),

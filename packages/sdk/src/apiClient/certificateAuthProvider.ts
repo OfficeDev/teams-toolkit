@@ -21,6 +21,8 @@ export class CertificateAuthProvider implements AuthProvider {
    *
    * @param { SecureContextOptions } certOption - information about the cert used in http requests
    *
+   * @throws {@link ErrorCode|InvalidParameter} - when cert option is empty.
+   *
    * @beta
    */
   constructor(certOption: SecureContextOptions) {
@@ -70,8 +72,7 @@ export class CertificateAuthProvider implements AuthProvider {
  *
  * @param { string | Buffer } cert - The cert chain in PEM format
  * @param { string | Buffer } key - The private key for the cert chain
- * @param { string? } passphrase - The passphrase for private key
- * @param { string? | Buffer? } ca - Overrides the trusted CA certificates
+ * @param { {passphrase?: string; ca?: string | Buffer} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *
@@ -81,8 +82,10 @@ export class CertificateAuthProvider implements AuthProvider {
 export function createPemCertOption(
   cert: string | Buffer,
   key: string | Buffer,
-  passphrase?: string,
-  ca?: string | Buffer
+  options?: {
+    passphrase?: string;
+    ca?: string | Buffer;
+  }
 ): SecureContextOptions {
   if (cert.length === 0) {
     throw new ErrorWithCode(
@@ -100,8 +103,8 @@ export function createPemCertOption(
   return {
     cert,
     key,
-    passphrase,
-    ca,
+    passphrase: options?.passphrase,
+    ca: options?.ca,
   };
 }
 
@@ -109,7 +112,7 @@ export function createPemCertOption(
  * Helper to create SecureContextOptions from PFX format cert
  *
  * @param { string | Buffer } pfx - The content of .pfx file
- * @param { string? } passphrase - Optional. The passphrase of .pfx file
+ * @param { {passphrase?: string} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *
@@ -118,7 +121,9 @@ export function createPemCertOption(
  */
 export function createPfxCertOption(
   pfx: string | Buffer,
-  passphrase?: string
+  options?: {
+    passphrase?: string;
+  }
 ): SecureContextOptions {
   if (pfx.length === 0) {
     throw new ErrorWithCode(
@@ -129,6 +134,6 @@ export function createPfxCertOption(
 
   return {
     pfx,
-    passphrase,
+    passphrase: options?.passphrase,
   };
 }

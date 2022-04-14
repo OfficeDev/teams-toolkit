@@ -17,6 +17,7 @@ import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
   GLOBAL_CONFIG,
@@ -46,7 +47,7 @@ export async function deploy(
 ): Promise<Result<Void, FxError>> {
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.DeployStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    [SolutionTelemetryProperty.SkipAadDeploy]: inputs.skipAadDeploy ?? "yes",
+    [SolutionTelemetryProperty.IncludeAadManifest]: inputs[Constants.INCLUDE_AAD_MANIFEST] ?? "no",
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
@@ -104,9 +105,14 @@ export async function deploy(
   let optionsToDeploy: string[] = [];
   if (!isVsProject) {
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
-    if (inputs.skipAadDeploy === "no" && inputs.platform === Platform.VSCode) {
+    if (inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode) {
       optionsToDeploy = [PluginNames.AAD];
     }
+
+    if (inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes" && inputs.platform === Platform.CLI) {
+      optionsToDeploy = optionsToDeploy.filter((option) => option !== PluginNames.AAD);
+    }
+
     if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
       return err(
         sendErrorTelemetryThenReturnError(

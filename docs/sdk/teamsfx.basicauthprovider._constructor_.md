@@ -22,3 +22,9 @@ constructor(userName: string, password: string);
 |  userName | string | Username used in basic auth |
 |  password | string | Password used in basic auth |
 
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) - when username or password is empty.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+

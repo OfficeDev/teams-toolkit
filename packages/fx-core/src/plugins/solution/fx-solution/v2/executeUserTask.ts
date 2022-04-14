@@ -157,6 +157,18 @@ export async function executeUserTask(
           tokenProvider
         );
       }
+    } else if (method === "buildAadManifest") {
+      const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+      if (aadPlugin.executeUserTask) {
+        return await aadPlugin.executeUserTask(
+          ctx,
+          inputs,
+          func,
+          localSettings,
+          envInfo,
+          tokenProvider
+        );
+      }
     } else if (method === "validateManifest") {
       const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
       if (appStudioPlugin.executeUserTask) {

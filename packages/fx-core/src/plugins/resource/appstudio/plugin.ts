@@ -71,6 +71,7 @@ import {
   M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -1836,7 +1837,9 @@ export async function createManifest(
       }
     }
     if (hasMessageExtension) {
-      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
+      manifest.composeExtensions = isM365
+        ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365
+        : COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
     }
     if (isM365) {
       manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;

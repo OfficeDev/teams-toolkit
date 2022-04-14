@@ -55,7 +55,6 @@ import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
-export { isFeatureFlagEnabled, isBotNotificationEnabled } from "./featureFlags";
 import _ from "lodash";
 
 Handlebars.registerHelper("contains", (value, array) => {
@@ -381,7 +380,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+  return true;
 }
 
 export function isExistingTabAppEnabled(): boolean {

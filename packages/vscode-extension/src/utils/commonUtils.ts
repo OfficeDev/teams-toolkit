@@ -17,7 +17,12 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, isValidProject, PluginNames } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  initializeGAFeatureFlags,
+  isValidProject,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
@@ -132,6 +137,22 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
   }
 }
 
+export async function isM365Project(workspacePath: string): Promise<boolean> {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return projectSettings.isM365;
+  } else {
+    return false;
+  }
+}
+
 export function isSPFxProject(workspacePath: string): boolean {
   if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;
@@ -229,8 +250,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.RootDirectory
   ).toString();
 
-  process.env["TEAMSFX_CONFIG_UNIFY"] = getConfiguration(ConfigurationKey.UnifyConfigs).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();
@@ -244,6 +263,12 @@ export function syncFeatureFlags() {
 
   process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
   process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
+
+  process.env["TEAMSFX_GA_PREVIEW"] = getConfiguration(
+    ConfigurationKey.EnableGAPreviewFeatures
+  ).toString();
+
+  initializeGAFeatureFlags();
 }
 
 export class FeatureFlags {
@@ -251,6 +276,7 @@ export class FeatureFlags {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly GeneralAvailablityPreview = "TEAMSFX_GA_PREVIEW";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

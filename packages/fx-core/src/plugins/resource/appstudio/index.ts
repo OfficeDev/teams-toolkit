@@ -363,25 +363,29 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      ctx.ui
-        ?.showMessage(
+      const msg = getLocalizedString(
+        "plugins.appstudio.publishSucceedNotice",
+        result.name,
+        Constants.TEAMS_ADMIN_PORTAL
+      );
+      if (ctx.answers?.platform === Platform.CLI) {
+        ctx.ui?.showMessage(
           "info",
-          getLocalizedString(
-            "plugins.appstudio.publishSucceedNotice",
-            result.name,
-            Constants.TEAMS_ADMIN_PORTAL
-          ),
-          false,
-          Constants.LEARN_MORE,
-          Constants.ADMIN_PORTAL
-        )
-        .then((value) => {
-          if (value.isOk() && value.value === Constants.LEARN_MORE) {
-            ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
-          } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
-            ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-          }
-        });
+          msg.replace("[", "").replace("]", "") +
+            ` Learn more from ${Constants.TEAMS_MANAGE_APP_DOC}.`,
+          false
+        );
+      } else {
+        ctx.ui
+          ?.showMessage("info", msg, false, Constants.LEARN_MORE, Constants.ADMIN_PORTAL)
+          .then((value) => {
+            if (value.isOk() && value.value === Constants.LEARN_MORE) {
+              ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
+            } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
+              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+            }
+          });
+      }
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
       properties[TelemetryPropertyKey.publishedAppId] = String(result.id);

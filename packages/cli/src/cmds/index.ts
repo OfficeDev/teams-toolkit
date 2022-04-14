@@ -5,6 +5,8 @@
 
 import { Argv } from "yargs";
 
+import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
@@ -28,8 +30,7 @@ export const commands: YargsCommand[] = [
   new Account(),
   new New(),
   new Add(),
-  new Capability(),
-  new Resource(),
+  ...(isGAPreviewEnabled() ? [] : [new Capability(), new Resource()]),
   new Provision(),
   new Deploy(),
   new Package(),

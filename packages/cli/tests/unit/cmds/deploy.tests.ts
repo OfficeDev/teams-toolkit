@@ -140,6 +140,42 @@ describe("Deploy Command Tests", function () {
       expect(e.name).equals("NotSupportedProjectType");
     }
   });
+
+  it("Deploy Command Running -- aad manifest component", async () => {
+    const cmd = new Deploy();
+    cmd["params"] = {
+      [constants.deployPluginNodeName]: {
+        choices: ["aad-manifest"],
+        default: ["fx-resource-aad-app-for-teams"],
+        description: "deployPluginNodeName",
+      },
+      "open-api-document": {},
+      "api-prefix": {},
+      "api-version": {},
+    };
+    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["fx-resource-aad-app-for-teams"],
+      });
+    });
+
+    (FxCore.prototype.deployArtifacts as any).restore();
+    sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
+      if (inputs["include-aad-manifest"] === "yes") return ok("");
+      else return err(NotSupportedProjectType());
+    });
+
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["aad-manifest"],
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
 });
 
 describe("Deploy manifest", function () {

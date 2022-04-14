@@ -325,6 +325,29 @@ export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
   },
 ];
 
+export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365: IComposeExtension[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    commands: [
+      {
+        id: "searchQuery",
+        context: ["compose", "commandBox"],
+        description: "Test command to run query",
+        title: "Search",
+        type: "query",
+        parameters: [
+          {
+            name: "searchQuery",
+            title: "Search Query",
+            description: "Your search query",
+            inputType: "text",
+          },
+        ],
+      },
+    ],
+  },
+];
+
 export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
   {
     botId: "{{config.manifest.botId}}",

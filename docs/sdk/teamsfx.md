@@ -8,6 +8,7 @@
 
 |  Class | Description |
 |  --- | --- |
+|  [ApiKeyProvider](./teamsfx.apikeyprovider.md) | <b><i>(BETA)</i></b> Provider that handles API Key authentication |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
@@ -30,6 +31,7 @@
 
 |  Enumeration | Description |
 |  --- | --- |
+|  [ApiKeyLocation](./teamsfx.apikeylocation.md) | <b><i>(BETA)</i></b> Define available location for API Key location |
 |  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | <b><i>(BETA)</i></b> Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> Log level. |
@@ -40,8 +42,8 @@
 |  --- | --- |
 |  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | <b><i>(BETA)</i></b> Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
-|  [createPemCertOption(cert, key, passphrase, ca)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
-|  [createPfxCertOption(pfx, passphrase)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
+|  [createPemCertOption(cert, key, options)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
+|  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | <b><i>(BETA)</i></b> Send an adaptive card message to a notification target. |

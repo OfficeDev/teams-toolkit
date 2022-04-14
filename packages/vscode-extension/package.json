@@ -46,7 +46,6 @@
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
-    "onCommand:fx-extension.create-M365",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
@@ -302,6 +301,11 @@
           "command": "fx-extension.updatePreviewFile",
           "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
           "group": "navigation"
+        },
+        {
+          "command": "fx-extension.openPreviewAadFile",
+          "when": "resourceFilename == aad.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -460,11 +464,6 @@
         "title": "%teamstoolkit.commands.createProject.title%"
       },
       {
-        "command": "fx-extension.create-M365",
-        "title": "%teamstoolkit.commands.createM365Project.title%",
-        "enablement": "fx-extension.isM365AppEnabled"
-      },
-      {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
         "enablement": "!fx-extension.isSPFx"
@@ -472,7 +471,12 @@
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+      },
+      {
+        "command": "fx-extension.addFeature",
+        "title": "%teamstoolkit.commands.addFeature.title%",
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365 && fx-entension.gaPreviewEnabled"
       },
       {
         "command": "fx-extension.openManifest",
@@ -569,6 +573,12 @@
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openPreviewAadFile",
+        "title": "%teamstoolkit.commands.previewAadManifest.title%",
+        "icon": "$(file-code)",
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.openSchema",
@@ -926,9 +936,10 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
-          "fx-extension.unifyConfigs": {
+          "fx-extension.enableGAPreviewFeatures": {
+            "order": 0,
             "type": "boolean",
-            "description": "Unify the configs/templates for local/remote environments. (requires reload of VS Code)",
+            "description": "Enable GA related features including notification bot, M365 app, existing app etc. (requires reload of VS Code)",
             "default": false
           },
           "fx-extension.enableNotification / CommandAndResponseBot": {
@@ -1019,7 +1030,8 @@
             "title": "What's next?",
             "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
-              "markdown": "media/walkthrough/whatsnext.md"
+              "svg": "media/walkthrough/whatsnext.svg",
+              "altText": "Tutorials, README.md and Documentation"
             }
           }
         ]

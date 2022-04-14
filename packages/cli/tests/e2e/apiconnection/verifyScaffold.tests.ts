@@ -57,7 +57,7 @@ describe("Add Api Connection Tests", function () {
 
   it("scaffold with aad auth", async () => {
     const aadInputs =
-      "--app-tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111";
+      "--app-tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111 --app-type anotherapp";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert

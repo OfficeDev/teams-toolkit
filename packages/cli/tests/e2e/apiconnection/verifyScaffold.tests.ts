@@ -8,11 +8,10 @@ import sinon from "sinon";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import { getTemplatesFolder } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
 
-describe("Verify generated templates & readme", function () {
+describe("Add Api Connection Tests", function () {
   const sandbox = sinon.createSandbox();
   let mockedEnvRestore: () => void;
   const testFolder = getTestFolder();
@@ -36,6 +35,8 @@ describe("Verify generated templates & readme", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // assert
+    const files = await fs.readdir(path.join(testFolder, "bot"));
+    console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
@@ -46,6 +47,9 @@ describe("Verify generated templates & readme", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
+    const files = await fs.readdir(path.join(testFolder, "bot"));
+    console.log(files);
+
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
@@ -56,6 +60,30 @@ describe("Verify generated templates & readme", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
     // assert
+    const files = await fs.readdir(path.join(testFolder, "bot"));
+    console.log(files);
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+  });
+
+  it("scaffold with cert auth", async () => {
+    // action
+    await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
+    // assert
+    const files = await fs.readdir(path.join(testFolder, "bot"));
+    console.log(files);
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+  });
+
+  it("scaffold with custom auth", async () => {
+    // action
+    await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
+    // assert
+    const files = await fs.readdir(path.join(testFolder, "bot"));
+    console.log(files);
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;

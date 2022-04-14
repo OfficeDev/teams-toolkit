@@ -293,18 +293,13 @@ export async function getQuestions(
       plugins = getAllV2ResourcePlugins();
     }
 
-    let filterAadPlugin = true;
     if (
       isAadManifestEnabled() &&
       (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI)
     ) {
-      filterAadPlugin = false;
-    }
-
-    if (filterAadPlugin) {
-      plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
-    } else {
       plugins = plugins.filter((plugin) => !!plugin.deploy);
+    } else {
+      plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
     }
 
     if (plugins.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {

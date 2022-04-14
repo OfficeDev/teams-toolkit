@@ -5,6 +5,7 @@ import path from "path";
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
+import * as dotenv from "dotenv";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -18,6 +19,7 @@ describe("Add Api Connection Tests", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const commonInputs = "--component bot --endpoint https://localhost.test.com --name test";
+  const EnvPreFix = "TEAMSFX_API_";
 
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
@@ -35,24 +37,53 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // assert
-    const files = await fs.readdir(path.join(projectPath, "bot"));
-    console.log(files);
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
+      .true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
+
+    const envs = dotenv.parse(
+      await fs.readFile(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    );
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_ENDPOINT"], "https://localhost.test.com");
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_USERNAME"], "test123");
+    chai.assert.exists(envs[EnvPreFix + "TEST_PASSWORD"]);
+
+    const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
+    const deps = pkgFile.dependencies;
+    chai.assert.exists(deps["@microsoft/teamsfx"]);
+    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with aad auth", async () => {
-    const aadInputs = "--app-tenant-id fake-tenant-id --app-id fake-app-id";
+    const aadInputs =
+      "--app-tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
-    const files = await fs.readdir(path.join(projectPath, "bot"));
-    console.log(files);
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
+      .true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+    const envs = dotenv.parse(
+      await fs.readFile(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    );
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_ENDPOINT"], "https://localhost.test.com");
+    chai.assert.strictEqual(
+      envs[EnvPreFix + "TEST_TENANT_ID"],
+      "00000000-0000-0000-0000-000000000000"
+    );
+    chai.assert.strictEqual(
+      envs[EnvPreFix + "TEST_CLIENT_ID"],
+      "11111111-1111-1111-1111-111111111111"
+    );
+    chai.assert.exists(envs[EnvPreFix + "TEST_CLIENT_SECRET"]);
+
+    const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
+    const deps = pkgFile.dependencies;
+    chai.assert.exists(deps["@microsoft/teamsfx"]);
+    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with apiKey auth", async () => {
@@ -60,32 +91,59 @@ describe("Add Api Connection Tests", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
     // assert
-    const files = await fs.readdir(path.join(projectPath, "bot"));
-    console.log(files);
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
+      .true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
+
+    const envs = dotenv.parse(
+      await fs.readFile(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    );
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_ENDPOINT"], "https://localhost.test.com");
+
+    const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
+    const deps = pkgFile.dependencies;
+    chai.assert.exists(deps["@microsoft/teamsfx"]);
+    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with cert auth", async () => {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
     // assert
-    const files = await fs.readdir(path.join(projectPath, "bot"));
-    console.log(files);
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
+      .true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
+
+    const envs = dotenv.parse(
+      await fs.readFile(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    );
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_ENDPOINT"], "https://localhost.test.com");
+
+    const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
+    const deps = pkgFile.dependencies;
+    chai.assert.exists(deps["@microsoft/teamsfx"]);
+    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with custom auth", async () => {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
     // assert
-    const files = await fs.readdir(path.join(projectPath, "bot"));
-    console.log(files);
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
-    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
+      .true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
+
+    const envs = dotenv.parse(
+      await fs.readFile(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    );
+    chai.assert.strictEqual(envs[EnvPreFix + "TEST_ENDPOINT"], "https://localhost.test.com");
+
+    const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
+    const deps = pkgFile.dependencies;
+    chai.assert.exists(deps["@microsoft/teamsfx"]);
+    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 });

@@ -16,13 +16,7 @@ async function callFunction() {
     const credential = teamsfx.getCredential();
     const apiClient = createApiClient(
       teamsfx.getConfig("apiEndpoint"),
-      new BearerTokenAuthProvider(async () => {
-        const tokenResponse = await credential.getToken("");
-        if (tokenResponse) {
-          return tokenResponse.token;
-        }
-        throw new Error("Cannot obtain token response");
-      }));
+      new BearerTokenAuthProvider(async ()=> (await credential.getToken(""))!.token));
     const response = await apiClient.get("/api/" + functionName);
     return response.data;
   } catch (err: unknown) {

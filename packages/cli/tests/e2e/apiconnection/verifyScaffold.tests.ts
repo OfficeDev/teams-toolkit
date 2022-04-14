@@ -38,5 +38,6 @@ describe("Verify generated templates & readme", function () {
     // Assert
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(testFolder, "bot", ".env.teamsfx.local"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(testFolder, "bot", "package.json"))).to.be.true;
   });
 });

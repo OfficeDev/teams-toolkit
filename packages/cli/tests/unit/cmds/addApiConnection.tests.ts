@@ -74,6 +74,8 @@ describe("Add api-connector Command Tests", () => {
       "basic",
       "aad",
       "apiKey",
+      "cert",
+      "custom",
     ]);
   });
 

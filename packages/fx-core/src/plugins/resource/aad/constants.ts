@@ -10,6 +10,8 @@ export class Constants {
   static aadAppMaxLength = 120;
   static aadAppPasswordDisplayName = "default";
 
+  static INCLUDE_AAD_MANIFEST = "include-aad-manifest";
+
   static localDebugPrefix = "local_";
 
   static AskForEnv = "Which Azure AD app do you want to update permission for?";

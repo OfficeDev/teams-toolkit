@@ -12,7 +12,7 @@ class CustomAuthProvider implements AuthProvider {
     this.customValue = customValue;
   }
 
-  // Replace the sample code with your own logic
+  // Replace the sample code with your own logic.
   AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig> = async (
     config
   ) => {
@@ -29,13 +29,16 @@ const teamsFx = new TeamsFx();
 
 const authProvider = new CustomAuthProvider(
   // You can also add customized settings to .env.teamsfx.local and use TeamsFx.getConfig("{setting_name}") to read the settings. For example:
-  //  teamsFx.getConfig("API_FAKE_CUSTOM_PROPERTY"),
-  //  teamsFx.getConfig("API_FAKE_CUSTOM_VALUE")
+  //  teamsFx.getConfig("TEAMSFX_API_FAKE_CUSTOM_PROPERTY"),
+  //  teamsFx.getConfig("TEAMSFX_API_FAKE_CUSTOM_VALUE")
   "customPropery",
   "customValue"
 );
 // Initializes a new axios instance to call fake API.
-const fakeClient = createApiClient(teamsFx.getConfig("API_FAKE_ENDPOINT"), authProvider);
+const fakeClient = createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  authProvider
+);
 export { fakeClient };
 
 /* 

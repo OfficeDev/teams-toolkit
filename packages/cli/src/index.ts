@@ -29,7 +29,6 @@ export async function start() {
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,
-    "duplicate-arguments-array": false,
   });
   registerCommands(argv);
   argv

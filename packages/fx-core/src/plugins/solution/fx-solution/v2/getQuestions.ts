@@ -19,7 +19,7 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { HelpLinks } from "../../../../common/constants";
+import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
@@ -41,6 +41,8 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -55,13 +57,20 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import {
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isGAPreviewEnabled,
+} from "../../../../common/tools";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
   validateCapabilities,
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { AadPlugin } from "../../../resource/localdebug/constants";
+import { AadPluginV2 } from "../../../resource/aad/v2";
+import { Constants } from "../../../resource/aad/constants";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -85,32 +94,32 @@ export async function getQuestionsForScaffolding(
         CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
+        M365SsoLaunchPageOptionItem.id,
+        M365SearchAppOptionItem.id,
       ],
     };
-    if (!inputs.isM365) {
-      // 1.1.1 SPFX Tab
-      const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-        ResourcePluginsV2.SpfxPlugin
-      );
-      if (spfxPlugin.getQuestionsForScaffolding) {
-        const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const spfxNode = res.value as QTreeNode;
-          spfxNode.condition = {
-            validFunc: (input: any, inputs?: Inputs) => {
-              if (!inputs) {
-                return "Invalid inputs";
-              }
-              const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-              if (cap.includes(TabSPFxItem.id)) {
-                return undefined;
-              }
-              return "SPFx is not selected";
-            },
-          };
-          if (spfxNode.data) node.addChild(spfxNode);
-        }
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+            if (cap.includes(TabSPFxItem.id)) {
+              return undefined;
+            }
+            return "SPFx is not selected";
+          },
+        };
+        if (spfxNode.data) node.addChild(spfxNode);
       }
     }
   } else {
@@ -121,7 +130,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
@@ -289,13 +298,22 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
-    if (plugins.length === 0 && inputs.skipAadDeploy !== "no") {
+
+    if (
+      isAadManifestEnabled() &&
+      (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI)
+    ) {
+      plugins = plugins.filter((plugin) => !!plugin.deploy);
+    } else {
+      plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
+    }
+
+    if (plugins.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
       return err(new NoCapabilityFoundError(Stage.deploy));
     }
 
     // trigger from Deploy AAD App manifest command in VSCode
-    if (inputs.platform === Platform.VSCode && inputs.skipAadDeploy === "no") {
+    if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
       return ok(node);
     }
 
@@ -306,7 +324,10 @@ export async function getQuestions(
         const item: OptionItem = {
           id: plugin.name,
           label: plugin.displayName,
-          cliName: plugin.name.replace(pluginPrefix, ""),
+          cliName:
+            plugin.name === ResourcePlugins.Aad
+              ? "aad-manifest"
+              : plugin.name.replace(pluginPrefix, ""),
         };
         return item;
       });
@@ -489,7 +510,8 @@ export async function getQuestionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  const isMEAddable = !meExceedRes.value;
+  // for the new bot, messaging extension and other bots are mutally exclusive
+  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

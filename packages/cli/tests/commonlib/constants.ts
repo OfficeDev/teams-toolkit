@@ -35,6 +35,9 @@ export enum Capability {
   M365SsoLaunchPage = "sso-launch-page",
   M365SearchApp = "search-app",
   ExistingTab = "existing-tab",
+  TabSso = "TabSSO",
+  BotSso = "BotSSO",
+  TabNonSso = "tab-non-sso",
 }
 
 export enum Resource {
@@ -109,6 +112,7 @@ export class StateConfigKey {
 export class ProjectSettingKey {
   static readonly solutionSettings = "solutionSettings";
   static readonly activeResourcePlugins = "activeResourcePlugins";
+  static readonly capabilities = "capabilities";
 }
 
 export class provisionParametersKey {

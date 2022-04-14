@@ -75,6 +75,7 @@ export class FeatureFlagName {
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
+  static readonly GAPreview = "TEAMSFX_GA_PREVIEW";
 }
 
 export class ManifestVariables {

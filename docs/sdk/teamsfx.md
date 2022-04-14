@@ -8,6 +8,7 @@
 
 |  Class | Description |
 |  --- | --- |
+|  [ApiKeyProvider](./teamsfx.apikeyprovider.md) | <b><i>(BETA)</i></b> Provider that handles API Key authentication |
 |  [AppCredential](./teamsfx.appcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | <b><i>(BETA)</i></b> Provider that handles Bearer Token authentication |
@@ -30,6 +31,7 @@
 
 |  Enumeration | Description |
 |  --- | --- |
+|  [ApiKeyLocation](./teamsfx.apikeylocation.md) | <b><i>(BETA)</i></b> Define available location for API Key location |
 |  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | <b><i>(BETA)</i></b> Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> Log level. |

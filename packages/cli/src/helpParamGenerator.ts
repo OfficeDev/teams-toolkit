@@ -99,10 +99,27 @@ export class HelpParamGenerator {
     }
   }
 
+  private getNamespaceFromStage(stage: string): string {
+    let res = "";
+    switch (stage) {
+      case "addCICDWorkflows": {
+        res = "fx-solution-azure/fx-resource-cicd";
+        break;
+      }
+      case "connectExistingApi": {
+        res = "fx-solution-azure/fx-resource-api-connector";
+        break;
+      }
+      default: {
+        res = "fx-solution-azure";
+      }
+    }
+    return res;
+  }
+
   private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
-      namespace:
-        stage === "addCICDWorkflows" ? "fx-solution-azure/fx-resource-cicd" : "fx-solution-azure",
+      namespace: this.getNamespaceFromStage(stage),
       method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);
@@ -148,7 +165,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(`${Stage.create}-m365`, result.value);
       }
     }
-    const userTasks = ["addCapability", "addResource", "addCICDWorkflows"];
+    const userTasks = ["addCapability", "addResource", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
@@ -166,12 +183,16 @@ export class HelpParamGenerator {
     }
     let resourceName: string | undefined;
     let capabilityId: string | undefined;
+    let authType: string | undefined;
     if (stage.startsWith("addResource")) {
       resourceName = stage.split("-")[1];
       stage = "addResource";
     } else if (stage.startsWith("addCapability")) {
       capabilityId = stage.split("-")[1];
       stage = "addCapability";
+    } else if (stage.startsWith("connectExistingApi")) {
+      authType = stage.split("-")[1];
+      stage = "connectExistingApi";
     }
     const root = this.getQuestionRootNodeForHelp(stage, inputs);
     let nodes: QTreeNode[] = [];
@@ -212,8 +233,17 @@ export class HelpParamGenerator {
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
+    } else if (authType && root?.children) {
+      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
+      const authNodes = rootCopy.children!.filter((node: any) => node.data.name === "auth-type")[0];
+      const mustHaveNodes = rootCopy.children!.filter((node: any) => node.data.name != "auth-type");
+      const authNode = authNodes.children!.filter((node: any) =>
+        ((node.condition as any).equals as string).includes(authType as string)
+      )[0];
+      rootCopy.children = undefined;
+      nodes = [rootCopy].concat(mustHaveNodes).concat(authNode);
     } else if (root && stage === Stage.create) {
-      const condition = inputs?.isM365 ? "yes-m365" : "yes";
+      const condition = "yes";
       root.children = root?.children?.filter(
         (value) => (value.condition as StringValidation).equals === condition
       );

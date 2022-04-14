@@ -1,7 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
-import { isGAPreviewEnabled } from "../../src/utils";
 
 export class CliHelper {
   static async setSubscription(
@@ -87,6 +91,18 @@ export class CliHelper {
     }
   }
 
+  static async addExistingApi(projectPath: string, option = "") {
+    const result = await execAsyncWithRetry(`teamsfx add api-connection ${option}`, {
+      cwd: projectPath,
+      timeout: 0,
+    });
+    if (result.stderr) {
+      console.error(`[Failed] addExistingApi for ${projectPath}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] addExistingApi for ${projectPath}`);
+    }
+  }
+
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,
@@ -121,38 +137,6 @@ export class CliHelper {
     options = ""
   ) {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `scaffold project to ${path.resolve(
-        testFolder,
-        appName
-      )} with capability ${capability}`;
-      if (result.stderr) {
-        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e) {
-      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
-  static async createM365ProjectWithCapability(
-    appName: string,
-    testFolder: string,
-    capability: Capability,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx new m365 --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

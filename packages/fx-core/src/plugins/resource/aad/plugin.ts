@@ -69,7 +69,11 @@ import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tool
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
-import { BotOptionItem, TabOptionItem } from "../../solution/fx-solution/question";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
 import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 
@@ -431,7 +435,11 @@ export class AadAppForTeamsImpl {
     const capabilities = solutionSettings.capabilities;
     let result: ArmTemplateResult | undefined = undefined;
 
-    if (capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id)) {
+    if (
+      capabilities.includes(TabOptionItem.id) ||
+      capabilities.includes(BotOptionItem.id) ||
+      capabilities.includes(MessageExtensionItem.id)
+    ) {
       result = {
         Parameters: JSON.parse(
           await fs.readFile(

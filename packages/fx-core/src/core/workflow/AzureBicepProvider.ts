@@ -29,7 +29,28 @@ export class AzureBicepProvider {
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
         const azureBicepInputs = inputs["azure-bicep"];
-        return ok([`generate bicep for: ${azureBicepInputs.resources}`]);
+        return ok([
+          `ensure folder: ${path.join(inputs.projectPath, "templates", "azure")}`,
+          `ensure folder: ${path.join(inputs.projectPath, "templates", "azure", "provision")}`,
+          `ensure folder: ${path.join(inputs.projectPath, "templates", "azure", "teamsFx")}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "azure",
+            "provision",
+            "azure-web-app.bicep"
+          )}`,
+          `create file: ${path.join(
+            inputs.projectPath,
+            "templates",
+            "azure",
+            "teamsFx",
+            "azure-web-app.bicep"
+          )}`,
+          `create file: ${path.join(inputs.projectPath, "templates", "azure", "config.bicep")}`,
+          `create file: ${path.join(inputs.projectPath, "templates", "azure", "main.bicep")}`,
+          `create file: ${path.join(inputs.projectPath, "templates", "azure", "provision.bicep")}`,
+        ]);
       },
       execute: async (
         context: ContextV3,
@@ -61,11 +82,11 @@ export class AzureBicepProvider {
           const armTemplate: ArmTemplateResult = {
             Provision: {
               Orchestration: provisionOrchestration,
-              Modules: { azureWebApp: provisionModules },
+              Modules: { [resource]: provisionModules },
             },
             Configuration: {
               Orchestration: configOrchestration,
-              Modules: { azureWebApp: configModule },
+              Modules: { [resource]: configModule },
             },
           };
           generateArmFromResult(

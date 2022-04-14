@@ -27,15 +27,15 @@ The core command-response implementation is in `bot/` folder, containing followi
 | File / Folder | Contents |
 | - | - |
 | `src/adaptiveCards/` | Adaptive card templates |
-| `src/internal/initialize.ts(js)` | Generated initialize code for initialize the command bot |
+| `src/internal/initialize.ts` | Generated initialize code for initialize the command bot |
 | `src/helloworldCommandHandler.ts` | A hello world command handler to process a helloworld command and return an adaptive card as response |
-| `src/index.ts(js)` | The entrypoint to handle bot messages and send response |
+| `src/index.ts` | The entrypoint to handle bot messages and send response |
 | `.gitignore` | The git ignore file to exclude local files from bot project |
 | `package.json` | The NPM package file for bot project |
 
 ### Bot Initialization
 
-The default initialization is located in `bot/src/internal/initialize.ts(js)`, which creates a default [Bot Freamework adapter](https://docs.microsoft.com/en-us/javascript/api/botbuilder/botframeworkadapter?view=botbuilder-ts-latest) and sets up the TeamsFx command bot. You can also add your own initialization logic here to:
+The default initialization is located in `bot/src/internal/initialize.ts`, which creates a default [Bot Freamework adapter](https://docs.microsoft.com/en-us/javascript/api/botbuilder/botframeworkadapter?view=botbuilder-ts-latest) and sets up the TeamsFx command bot. You can also add your own initialization logic here to:
 
 - Set `options.adapter` to use your own `BotFrameworkAdapter` with additional bot logic
 - Set `options.command.commands` to include more command handlers.
@@ -43,10 +43,10 @@ The default initialization is located in `bot/src/internal/initialize.ts(js)`, w
 
 ### Add More Commands
 
-A helloworld command handler is generated in `bot/src/helloworldCommandHandler.ts(js)` to help you getting started easily, and you can add more commands to your bot with the following steps: 
+A helloworld command handler is generated in `bot/src/helloworldCommandHandler.ts` to help you getting started easily, and you can add more commands to your bot with the following steps: 
 
 1. Create a new command handler class which implements the `TeamsFxBotCommandHandler` interface.
-2. Register the instance of your command handler into your command bot in `bot/src/internal/initialize.ts(js)`.
+2. Register the instance of your command handler into your command bot in `bot/src/internal/initialize.ts`.
     - Option 1: update the `ConversationBot` constructor in include your new command handler(s) in `options.command.commands`.
     - Option 2: call `ConversationBot.command.registerCommand(s)` to incrementally register your new command(s). 
 3. Update the app's manifest template in `templates/appPackage/manifest.template.json` to include the command definition for newly added commands in the `bots.commandLists` section. 

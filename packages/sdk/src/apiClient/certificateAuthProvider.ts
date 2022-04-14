@@ -72,8 +72,7 @@ export class CertificateAuthProvider implements AuthProvider {
  *
  * @param { string | Buffer } cert - The cert chain in PEM format
  * @param { string | Buffer } key - The private key for the cert chain
- * @param { string? } passphrase - The passphrase for private key
- * @param { string? | Buffer? } ca - Overrides the trusted CA certificates
+ * @param { {passphrase?: string; ca?: string | Buffer} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *
@@ -113,7 +112,7 @@ export function createPemCertOption(
  * Helper to create SecureContextOptions from PFX format cert
  *
  * @param { string | Buffer } pfx - The content of .pfx file
- * @param { string? } passphrase - Optional. The passphrase of .pfx file
+ * @param { {passphrase?: string} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *

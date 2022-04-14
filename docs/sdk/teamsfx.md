@@ -42,8 +42,8 @@
 |  --- | --- |
 |  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | <b><i>(BETA)</i></b> Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
-|  [createPemCertOption(cert, key, passphrase, ca)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
-|  [createPfxCertOption(pfx, passphrase)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
+|  [createPemCertOption(cert, key, options)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
+|  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | <b><i>(BETA)</i></b> Send an adaptive card message to a notification target. |

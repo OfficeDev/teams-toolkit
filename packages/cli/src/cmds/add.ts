@@ -150,6 +150,9 @@ export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
   public readonly subCommands: YargsCommand[] = [
     new AddExistingApiSubCommand("basic"),
     new AddExistingApiSubCommand("aad"),
+    new AddExistingApiSubCommand("apiKey"),
+    new AddExistingApiSubCommand("cert"),
+    new AddExistingApiSubCommand("custom"),
   ];
 
   public builder(yargs: Argv): Argv<any> {

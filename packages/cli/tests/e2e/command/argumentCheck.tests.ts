@@ -5,9 +5,9 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
+import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 
-import { isGAPreviewEnabled } from "../../../src/utils";
 import { execAsync } from "../commonUtils";
 
 describe("teamsfx command argument check", function () {

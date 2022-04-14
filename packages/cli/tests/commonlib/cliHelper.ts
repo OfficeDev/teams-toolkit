@@ -1,7 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
-import { isGAPreviewEnabled } from "../../src/utils";
 
 export class CliHelper {
   static async setSubscription(

@@ -61,5 +61,4 @@ export const azureSolutionGroupNodeName = "azure-solution-group";
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly GAPreview = "__TEAMSFX_GA_PREVIEW";
 }

@@ -17,7 +17,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { getSystemInputs, isGAPreviewEnabled } from "../utils";
+import { getSystemInputs } from "../utils";
 import {
   ResourceAddApim,
   ResourceAddFunction,
@@ -35,6 +35,7 @@ import {
   isBotNotificationEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
+  isGAPreviewEnabled,
 } from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {

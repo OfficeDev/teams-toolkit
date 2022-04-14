@@ -5,6 +5,8 @@
 
 import { Argv } from "yargs";
 
+import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
@@ -18,7 +20,7 @@ import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
 import Manifest from "./manifest";
-import { isGAPreviewEnabled, isRemoteCollaborationEnabled } from "../utils";
+import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";

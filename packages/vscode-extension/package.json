@@ -465,8 +465,8 @@
       },
       {
         "command": "fx-extension.addFeature",
-        "title": "Teams: Add Feature",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+        "title": "%teamstoolkit.commands.addFeature.title%",
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365 && fx-entension.gaPreviewEnabled"
       },
       {
         "command": "fx-extension.openManifest",

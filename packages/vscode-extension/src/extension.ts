@@ -39,6 +39,8 @@ import {
   delay,
   isSupportAutoOpenAPI,
   isM365Project,
+  isFeatureFlagEnabled,
+  FeatureFlags,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -430,6 +432,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isApiConnectEnabled",
     isApiConnectEnabled()
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-entension.gaPreviewEnabled",
+    isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview, false)
   );
 
   // Setup CodeLens provider for userdata file

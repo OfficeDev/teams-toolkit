@@ -57,7 +57,11 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import {
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isGAPreviewEnabled,
+} from "../../../../common/tools";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
@@ -123,7 +127,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {

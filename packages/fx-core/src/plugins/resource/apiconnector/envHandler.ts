@@ -31,13 +31,13 @@ export class ApiDataManager {
       this.apiConnector[apiName] = new Map();
     }
     const endPoint = Constants.envPrefix + apiName + "_ENDPOINT";
-    const authName = Constants.envPrefix + apiName + "_AUTHENTICATION_TYPE";
-    this.apiConnector[apiName].set(authName, config.AuthConfig.AuthType);
     this.apiConnector[apiName].set(endPoint, config.EndPoint);
     if (config.AuthConfig.AuthType === AuthType.BASIC) {
       this.addBasicEnvs(config);
     } else if (config.AuthConfig.AuthType === AuthType.AAD) {
       this.addAADEnvs(config);
+    } else if (config.AuthConfig.AuthType === AuthType.APIKEY) {
+      this.addAPIKeyEnvs(config);
     }
   }
 
@@ -63,6 +63,13 @@ export class ApiDataManager {
       apiConfig.set(clientId, authConfig.ClientId!);
       apiConfig.set(clientSecret, "");
     }
+  }
+
+  public addAPIKeyEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const apiKey = Constants.envPrefix + apiName + "_API_KEY";
+    apiConfig.set(apiKey, "");
   }
 }
 export class EnvHandler {

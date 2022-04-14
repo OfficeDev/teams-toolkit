@@ -41,6 +41,8 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -55,7 +57,11 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import {
+  isAadManifestEnabled,
+  isBotNotificationEnabled,
+  isGAPreviewEnabled,
+} from "../../../../common/tools";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
@@ -85,32 +91,32 @@ export async function getQuestionsForScaffolding(
         CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
+        M365SsoLaunchPageOptionItem.id,
+        M365SearchAppOptionItem.id,
       ],
     };
-    if (!inputs.isM365) {
-      // 1.1.1 SPFX Tab
-      const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-        ResourcePluginsV2.SpfxPlugin
-      );
-      if (spfxPlugin.getQuestionsForScaffolding) {
-        const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const spfxNode = res.value as QTreeNode;
-          spfxNode.condition = {
-            validFunc: (input: any, inputs?: Inputs) => {
-              if (!inputs) {
-                return "Invalid inputs";
-              }
-              const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-              if (cap.includes(TabSPFxItem.id)) {
-                return undefined;
-              }
-              return "SPFx is not selected";
-            },
-          };
-          if (spfxNode.data) node.addChild(spfxNode);
-        }
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+            if (cap.includes(TabSPFxItem.id)) {
+              return undefined;
+            }
+            return "SPFx is not selected";
+          },
+        };
+        if (spfxNode.data) node.addChild(spfxNode);
       }
     }
   } else {
@@ -121,7 +127,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {

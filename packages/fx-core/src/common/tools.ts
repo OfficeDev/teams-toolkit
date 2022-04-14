@@ -441,6 +441,10 @@ export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
+export function isGAPreviewEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GAPreview, false);
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any

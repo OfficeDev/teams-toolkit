@@ -68,6 +68,8 @@ import {
   BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -128,7 +130,6 @@ import {
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
-  ScratchOptionYesM365,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
 import { CoreHookContext } from "./types";
@@ -241,8 +242,8 @@ export class FxCore implements v3.ICore {
         isFromSample: false,
       };
       if (
-        inputs.isM365 ||
-        inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionYesM365.id
+        inputs[CoreQuestionNames.Capabilities].includes(M365SsoLaunchPageOptionItem.id) ||
+        inputs[CoreQuestionNames.Capabilities].includes(M365SearchAppOptionItem.id)
       ) {
         projectSettings.isM365 = true;
         inputs.isM365 = true;

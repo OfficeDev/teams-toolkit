@@ -12,7 +12,7 @@ export interface AuthProvider {
   /**
    * Adds authentication info to http requests
    *
-   * @param config - Contains all the request information and can be updated to include extra authentication info.
+   * @param { AxiosRequestConfig } config - Contains all the request information and can be updated to include extra authentication info.
    * Refer https://axios-http.com/docs/req_config for detailed document.
    *
    * @beta

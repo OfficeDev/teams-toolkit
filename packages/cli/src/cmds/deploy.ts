@@ -94,6 +94,9 @@ export default class Deploy extends YargsCommand {
         const components = ((args.components as string[]) || []).map((c) =>
           c === "manifest" ? "appstudio" : c
         );
+        if (components.length !== 0 && components.some((c) => c === "appstudio")) {
+          inputs["include-app-manifest"] = "yes";
+        }
 
         const options = this.params[this.deployPluginNodeName].choices as string[];
         const indexes = components.map((c) => options.findIndex((op) => op === c));

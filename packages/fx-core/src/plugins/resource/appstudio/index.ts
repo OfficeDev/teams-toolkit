@@ -291,9 +291,9 @@ export class AppStudioPlugin implements Plugin {
     if (
       ctx.answers &&
       ctx.answers[Constants.INCLUDE_APP_MANIFEST] &&
-      ctx.answers[Constants.INCLUDE_APP_MANIFEST] == "yes"
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] == "no"
     ) {
-      await ctx.logProvider?.info("skip appstudio deployment");
+      await ctx.logProvider?.debug("Skip Teams app manifest deployment");
       return ok(Void);
     }
 

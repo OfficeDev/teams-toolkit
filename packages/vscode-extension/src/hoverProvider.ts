@@ -58,14 +58,14 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
         } else {
           if (envName === environmentManager.getLocalEnvName()) {
             const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
-            message += `**${envName}**: [Trigger local debug to generate value](${commandUri}) \n\n`;
+            message += `**${envName}**: [Trigger local debug to see placeholder value](${commandUri}) \n\n`;
           } else {
             const provisioned = await getProvisionSucceedFromEnv(envName);
             if (provisioned) {
               message += `**${envName}**: ${value} \n\n`;
             } else {
               const commandUri = vscode.Uri.parse("command:fx-extension.provision");
-              message += `**${envName}**: [Provision to generate value](${commandUri}) \n\n`;
+              message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;
             }
           }
         }

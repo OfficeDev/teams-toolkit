@@ -14,7 +14,6 @@ import {
   persistBicepTemplates,
 } from "../../plugins/solution/fx-solution/arm";
 import { Action, ContextV3, MaybePromise } from "./interface";
-import { compileHandlebarsTemplateString } from "../../common/tools";
 
 @Service("azure-bicep")
 export class AzureBicepProvider {
@@ -28,7 +27,6 @@ export class AzureBicepProvider {
       name: "azure-bicep.generate",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const azureBicepInputs = inputs["azure-bicep"];
         return ok([
           `ensure folder: ${path.join(inputs.projectPath, "templates", "azure")}`,
           `ensure folder: ${path.join(inputs.projectPath, "templates", "azure", "provision")}`,

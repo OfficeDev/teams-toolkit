@@ -88,10 +88,13 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Browser] = frontendConfigs?.get(
       LocalStateFrontendKeys.Browser
     ) as string;
+    if (localEnvs[LocalEnvFrontendKeys.Browser] === undefined) {
+      localEnvs[LocalEnvFrontendKeys.Browser] = "none";
+    }
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalStateFrontendKeys.Https
     ) as string;
-    if (!localEnvs[LocalEnvFrontendKeys.Https]) {
+    if (localEnvs[LocalEnvFrontendKeys.Https] === undefined) {
       localEnvs[LocalEnvFrontendKeys.Https] = "true";
     }
     localEnvs[LocalEnvFrontendKeys.Port] = "53000";

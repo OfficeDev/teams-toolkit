@@ -1,8 +1,11 @@
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
+  static readonly manifestFolder = "./template/appPackage";
 
   static readonly projectSettingsFileName = "projectSettings.json";
+  static readonly aadManifestTemplateFileName = "aad.template.json";
+  static readonly permissionJsonFileName = "permissions.json";
 
   static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";

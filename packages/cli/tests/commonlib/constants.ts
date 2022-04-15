@@ -53,6 +53,7 @@ export enum ResourceToDeploy {
   Bot = "bot",
   Function = "function",
   Apim = "apim",
+  AadManifest = "aad-manifest",
 }
 export class StateConfigKey {
   // solution

@@ -87,8 +87,6 @@ export class TestHelper {
                 Constants.solutionConfigKey.resourceNameSuffix,
                 Math.random().toString(36).substring(2, 8),
               ],
-              [Constants.solutionConfigKey.subscriptionId, "1756abc0-3554-4341-8d6a-46674962ea19"],
-              [Constants.solutionConfigKey.resourceGroupName, "zhaofengtest"],
               [Constants.solutionConfigKey.location, "eastus"],
             ]),
           ],

@@ -11,6 +11,7 @@ import {
   UserError,
   ok,
   Platform,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -58,6 +59,7 @@ import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { checkEmptySelect } from "./checker";
+import { Telemetry, TelemetryUtils } from "./telemetry";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -69,6 +71,15 @@ export class ApiConnectorImpl {
     const projectPath = inputs.projectPath;
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
+
+    const telemetryProperties = this.getTelemetryProperties(config);
+
+    TelemetryUtils.init(ctx.telemetryReporter);
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.scaffold + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
     // backup relative files.
     const backupFolderName = generateTempFolder();
     await Promise.all(
@@ -112,14 +123,14 @@ export class ApiConnectorImpl {
           );
         })
       );
-      if (err instanceof SystemError || err instanceof UserError) {
-        throw err;
-      } else {
-        throw ResultFactory.SystemError(
+      if (!(err instanceof SystemError) && !(err instanceof UserError)) {
+        err = ResultFactory.SystemError(
           ErrorMessage.generateApiConFilesError.name,
           ErrorMessage.generateApiConFilesError.message(err.message)
         );
       }
+      this.sendErrorTelemetry(err as FxError);
+      throw err;
     } finally {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -127,7 +138,17 @@ export class ApiConnectorImpl {
         })
       );
     }
+    TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
     return ResultFactory.Success();
+  }
+
+  private sendErrorTelemetry(thrownErr: FxError) {
+    const errorCode = thrownErr.source + "." + thrownErr.name;
+    const errorType =
+      thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+    const errorMessage = thrownErr.message;
+    TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
+    return thrownErr;
   }
 
   private async scaffoldInComponent(
@@ -190,7 +211,7 @@ export class ApiConnectorImpl {
           checkInputEmpty(
             inputs,
             Constants.questionKey.apiAppTenentId,
-            Constants.questionKey.apiAppTenentId
+            Constants.questionKey.apiAppId
           );
           AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
           AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
@@ -425,5 +446,28 @@ export class ApiConnectorImpl {
     node.addChild(headerKeyNameQuestionNode);
     node.addChild(queryKeyNameQuestionNode);
     return node;
+  }
+
+  public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
+    const properties = {
+      [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
+      [Telemetry.properties.componentType]: config.ComponentPath.join(","),
+    };
+
+    switch (config.AuthConfig.AuthType) {
+      case AuthType.AAD:
+        const aadAuthConfig = config.AuthConfig as AADAuthConfig;
+        properties[Telemetry.properties.reuseTeamsApp] = aadAuthConfig.ReuseTeamsApp
+          ? Telemetry.valueYes
+          : Telemetry.valueNo;
+        break;
+      case AuthType.APIKEY:
+        const authConfig = config.AuthConfig as APIKeyAuthConfig;
+        properties[Telemetry.properties.keyLocation] = authConfig.Location;
+        break;
+      default:
+        break;
+    }
+    return properties;
   }
 }

@@ -72,18 +72,18 @@ describe("SSO Tab with aad manifest enabled", () => {
     await setAadManifestIdentifierUris(projectPath, firstIdentifierUri);
 
     // Deploy all resources without aad manifest
-    await CliHelper.deployAll(projectPath);
+    await CliHelper.deployAll(projectPath, "", env);
     await AadValidator.validate(aad);
 
     // Deploy all resources include aad manifest
-    await CliHelper.deployAll(projectPath, "--include-aad-manifest");
+    await CliHelper.deployAll(projectPath, "--include-aad-manifest", env);
     await AadValidator.validate(aad, firstIdentifierUri);
 
     const secondIdentifierUri = "api://second.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
     await setAadManifestIdentifierUris(projectPath, secondIdentifierUri);
 
     // Only deploy aad manifest
-    await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath);
+    await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath, "", env);
     await AadValidator.validate(aad, secondIdentifierUri);
   });
 });

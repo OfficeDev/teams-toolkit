@@ -52,8 +52,8 @@ describe("SSO Tab with aad manifest enabled", () => {
         projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
       expect(activeResourcePlugins.includes(PluginId.Aad)).to.be.true;
       expect(activeResourcePlugins.includes(PluginId.FrontendHosting)).to.be.true;
-      expect(capabilities.includes(Capability.Tab)).to.be.true;
-      expect(capabilities.includes(Capability.TabSso)).to.be.true;
+      expect(capabilities.includes("Tab")).to.be.true;
+      expect(capabilities.includes("TabSSO")).to.be.true;
     }
 
     await CliHelper.provisionProject(projectPath, "", env);

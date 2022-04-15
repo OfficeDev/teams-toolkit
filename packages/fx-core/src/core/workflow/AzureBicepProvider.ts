@@ -27,6 +27,8 @@ export class AzureBicepProvider {
       name: "azure-bicep.generate",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const azureBicepInputs = inputs["azure-bicep"];
+        const resource = azureBicepInputs.resources[0];
         return ok([
           `ensure folder: ${path.join(inputs.projectPath, "templates", "azure")}`,
           `ensure folder: ${path.join(inputs.projectPath, "templates", "azure", "provision")}`,
@@ -36,14 +38,14 @@ export class AzureBicepProvider {
             "templates",
             "azure",
             "provision",
-            "azure-web-app.bicep"
+            `${resource}.bicep`
           )}`,
           `create file: ${path.join(
             inputs.projectPath,
             "templates",
             "azure",
             "teamsFx",
-            "azure-web-app.bicep"
+            `${resource}.bicep`
           )}`,
           `create file: ${path.join(inputs.projectPath, "templates", "azure", "config.bicep")}`,
           `create file: ${path.join(inputs.projectPath, "templates", "azure", "main.bicep")}`,

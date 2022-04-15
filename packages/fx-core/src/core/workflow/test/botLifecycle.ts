@@ -56,13 +56,18 @@ async function init() {
 }
 
 async function addBot() {
+  const scenario = readlineSync.question(
+    "Scenario(default|notification-restify|notification-function-base): "
+  );
+  let hostingResource = "azure-web-app";
+  if (scenario === "notification-function-base") hostingResource = "azure-function";
   const inputs: v2.InputsWithProjectPath = {
     projectPath: projectPath,
     platform: Platform.VSCode,
     "teams-bot": {
-      hostingResource: "azure-web-app",
+      hostingResource: hostingResource,
       folder: "bot",
-      scenario: "default",
+      scenario: scenario,
       language: "typescript",
     },
   };

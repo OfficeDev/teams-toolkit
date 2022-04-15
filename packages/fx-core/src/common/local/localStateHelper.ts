@@ -91,6 +91,9 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalStateFrontendKeys.Https
     ) as string;
+    if (!localEnvs[LocalEnvFrontendKeys.Https]) {
+      localEnvs[LocalEnvFrontendKeys.Https] = "true";
+    }
     localEnvs[LocalEnvFrontendKeys.Port] = "53000";
 
     if (includeAAD) {

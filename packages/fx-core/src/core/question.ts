@@ -37,6 +37,9 @@ import {
   CommandAndResponseOptionItem,
   TabNonSsoItem,
   ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxNewUIItem,
+  MessageExtensionNewUIItem,
   TeamsAppSeparatorOptionItem,
   TeamsM365AppSeparatorOptionItem,
 } from "../plugins/solution/fx-solution/question";
@@ -230,7 +233,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...[CommandAndResponseOptionItem, NotificationOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabOptionItem, TabSPFxItem, MessageExtensionItem],
+      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
       ...(isM365AppEnabled()
         ? [TeamsM365AppSeparatorOptionItem, M365SsoLaunchPageOptionItem, M365SearchAppOptionItem]
         : []),

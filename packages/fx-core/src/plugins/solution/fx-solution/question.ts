@@ -15,14 +15,17 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
-  label: isBotNotificationEnabled() ? "SSO enabled launch page" : "Tab",
+  label: getLocalizedString("core.TabOption.label"),
   cliName: "tab",
-  description: isBotNotificationEnabled()
-    ? undefined
-    : getLocalizedString("core.TabOption.description"),
-  detail: isBotNotificationEnabled()
-    ? getLocalizedString("core.TabOption.detailNew")
-    : getLocalizedString("core.TabOption.detail"),
+  description: getLocalizedString("core.TabOption.description"),
+  detail: getLocalizedString("core.TabOption.detail"),
+};
+
+export const TabNewUIOptionItem: OptionItem = {
+  id: "Tab",
+  label: getLocalizedString("core.TabOption.labelNew"),
+  cliName: "tab",
+  detail: getLocalizedString("core.TabOption.detailNew"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -57,28 +60,32 @@ export const ExistingTabOptionItem: OptionItem = {
 
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
-  label: isBotNotificationEnabled()
-    ? getLocalizedString("core.MessageExtensionOption.labelNew")
-    : getLocalizedString("core.MessageExtensionOption.label"),
+  label: getLocalizedString("core.MessageExtensionOption.label"),
   cliName: "messaging-extension",
-  description: isBotNotificationEnabled()
-    ? undefined
-    : getLocalizedString("core.MessageExtensionOption.description"),
+  description: getLocalizedString("core.MessageExtensionOption.description"),
+  detail: getLocalizedString("core.MessageExtensionOption.detail"),
+};
+
+export const MessageExtensionNewUIItem: OptionItem = {
+  id: "MessagingExtension",
+  label: getLocalizedString("core.MessageExtensionOption.labelNew"),
+  cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
 
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
-  label: isBotNotificationEnabled()
-    ? getLocalizedString("core.TabSPFxOption.labelNew")
-    : getLocalizedString("core.TabSPFxOption.label"),
+  label: getLocalizedString("core.TabSPFxOption.label"),
   cliName: "tab-spfx",
-  description: isBotNotificationEnabled()
-    ? undefined
-    : getLocalizedString("core.TabSPFxOption.description"),
-  detail: isBotNotificationEnabled()
-    ? getLocalizedString("core.TabSPFxOption.detailNew")
-    : getLocalizedString("core.TabSPFxOption.detail"),
+  description: getLocalizedString("core.TabSPFxOption.description"),
+  detail: getLocalizedString("core.TabSPFxOption.detail"),
+};
+
+export const TabSPFxNewUIItem: OptionItem = {
+  id: "TabSPFx",
+  label: getLocalizedString("core.TabSPFxOption.labelNew"),
+  cliName: "tab-spfx",
+  detail: getLocalizedString("core.TabSPFxOption.detailNew"),
 };
 
 export const TabSsoItem: OptionItem = {

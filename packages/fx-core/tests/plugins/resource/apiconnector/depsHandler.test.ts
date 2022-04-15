@@ -78,7 +78,11 @@ describe("DepsHandler in Api Connector", () => {
       await depsHandler.addPkgDeps();
     } catch (err) {
       expect(err instanceof UserError).to.be.true;
-      chai.assert.strictEqual(err.source, "SDKVersionImcompatibleError");
+      chai.assert.strictEqual(err.source, "api-connector");
+      chai.assert.strictEqual(
+        err.displayMessage,
+        "In bot project, @microsoft/teamsfx version ^0.1.0 is not compatible. Please upgrade your package version to 0.2.0"
+      );
     }
   });
 });

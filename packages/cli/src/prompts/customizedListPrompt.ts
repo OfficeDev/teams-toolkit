@@ -35,7 +35,7 @@ export default class CustomizedListPrompt extends ListPrompt {
 
     // Render choices or answer depending on the state
     if (this.status === "answered") {
-      message += chalk.cyan(this.opt.choices.getChoice(this.selected).short);
+      message += chalk.cyan(this.opt.choices.getChoice(this.selected).extra.title);
     } else {
       const choicesStr = listRender(this.opt.choices, this.selected);
       const indexPosition = this.opt.choices.indexOf(
@@ -84,7 +84,7 @@ function listRender(choices: any, pointer: number): string {
   choices.forEach((choice: any) => {
     prefixWidth = Math.max(
       prefixWidth,
-      choice.disabled || !choice.name ? 0 : choice.name.length + 1
+      choice.disabled || !choice.extra?.title ? 0 : choice.extra.title.length + 1
     );
   });
 
@@ -97,7 +97,7 @@ function listRender(choices: any, pointer: number): string {
 
     if (choice.disabled) {
       separatorOffset++;
-      output += "  - " + choice.name;
+      output += "  - " + choice.extra.title;
       output += " (" + (lodash.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
       output += "\n";
       return;
@@ -105,13 +105,13 @@ function listRender(choices: any, pointer: number): string {
 
     const isSelected = i - separatorOffset === pointer;
     if (isSelected) {
-      output += chalk.blueBright(figures.radioOn + " " + choice.name);
+      output += chalk.blueBright(figures.radioOn + " " + choice.extra.title);
     } else {
-      output += chalk.blueBright(figures.radioOff) + " " + chalk.whiteBright(choice.name);
+      output += chalk.blueBright(figures.radioOff) + " " + chalk.whiteBright(choice.extra.title);
     }
 
     if (choice.extra?.detail) {
-      output = addChoiceDetail(output, choice.extra.detail, choice.name.length, prefixWidth);
+      output = addChoiceDetail(output, choice.extra.detail, choice.extra.title.length, prefixWidth);
     }
 
     output += "\n";

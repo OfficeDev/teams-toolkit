@@ -2646,8 +2646,14 @@ export async function updatePreviewManifest(args: any[]) {
   );
   let env: string | undefined;
   if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    env = segments[segments.length - 2];
+    const filePath = args[0].fsPath as string;
+    if (!filePath.endsWith("manifest.template.json")) {
+      const envReg = /manifest\.(\w+)\.json$/;
+      const result = envReg.exec(filePath);
+      if (result && result.length >= 2) {
+        env = result[1];
+      }
+    }
   }
 
   if (env && env !== "local") {

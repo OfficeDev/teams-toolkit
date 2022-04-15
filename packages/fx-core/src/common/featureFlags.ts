@@ -24,6 +24,7 @@ export function initializeGAFeatureFlags(): void {
     process.env[FeatureFlagName.ConfigUnify] = "true";
     process.env[FeatureFlagName.AadManifest] = "true";
     process.env[FeatureFlagName.ApiConnect] = "true";
+    process.env[FeatureFlagName.DeployManifest] = "true";
   }
 }
 

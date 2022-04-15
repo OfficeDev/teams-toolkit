@@ -23,7 +23,7 @@ export class Telemetry {
     authType: "auth-type",
     reuseTeamsApp: "reuse-teams-app",
     keyLocation: "key-location",
-    componentPath: "component-path",
+    componentType: "component-type",
   };
 }
 

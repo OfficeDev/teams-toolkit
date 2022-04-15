@@ -451,7 +451,7 @@ export class ApiConnectorImpl {
   public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
     const properties = {
       [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
-      [Telemetry.properties.componentPath]: config.ComponentPath.join(","),
+      [Telemetry.properties.componentType]: config.ComponentPath.join(","),
     };
 
     switch (config.AuthConfig.AuthType) {

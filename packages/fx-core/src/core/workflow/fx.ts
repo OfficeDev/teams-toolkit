@@ -131,7 +131,7 @@ export class TeamsfxCore {
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
           return ok([
-            `add components 'teams-bot', '${teamsBotInputs.hostingResource}' in projectSettings`,
+            `add components 'teams-bot', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
           ]);
         },
         execute: async (
@@ -147,6 +147,10 @@ export class TeamsfxCore {
           projectSettings.components.push(component);
           projectSettings.components.push({
             name: teamsBotInputs.hostingResource,
+            provision: true,
+          });
+          projectSettings.components.push({
+            name: "bot-service",
             provision: true,
           });
           return ok(undefined);
@@ -165,7 +169,7 @@ export class TeamsfxCore {
         targetAction: "azure-bicep.generate",
         inputs: {
           "azure-bicep": {
-            resources: [teamsBotInputs.hostingResource],
+            resources: [teamsBotInputs.hostingResource, "azure-bot"],
           },
         },
       },
@@ -307,19 +311,15 @@ export class TeamsfxCore {
         name: "call:azure-bicep.deploy",
         required: true,
         targetAction: "azure-bicep.deploy",
+        inputs: {
+          "azure-bot": {
+            properties: {}, //TODO
+          },
+        },
       },
     ];
-
     const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
     const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
-    if (teamsBot) {
-      provisionSequences.push({
-        type: "call",
-        name: "call:bot-service.provision",
-        required: false,
-        targetAction: "bot-service.provision",
-      });
-    }
     if (configureActions.length > 0) {
       const setInputsForConfig: Action = {
         type: "function",

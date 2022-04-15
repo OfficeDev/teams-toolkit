@@ -130,7 +130,7 @@
   "plugins.spfx.error.invalidDependency": "Failed to validate package %s",
   "plugins.spfx.error.installDependency": "Failed to install package %s. Learn how to remediate in the [output](command:fx-extension.showOutputChannel).",
   "plugins.spfx.scaffold.dependencyCheck": "Checking dependencies...",
-  "plugins.spfx.scaffold.dependencyInstall": "Installing dependencies ([details](command:fx-extension.showOutputChannel)). This may take more than 5 minutes to finish.",
+  "plugins.spfx.scaffold.dependencyInstall": "Installing dependencies. This may take more than 5 minutes to finish.",
   "plugins.spfx.scaffold.scaffoldProject": "Generate SPFx project using Yeoman CLI",
   "plugins.spfx.scaffold.updateManifest": "Update webpart manifest",
   "plugins.spfx.GetTenantFailedError": "Cannot get tenant %s %s",

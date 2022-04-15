@@ -10,6 +10,8 @@ import {
   StatesFolderName,
   Result,
   ok,
+  TemplateFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { exec } from "child_process";
 import fs from "fs-extra";
@@ -207,6 +209,17 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
   config["auth"] = {};
   config["auth"]["frontendDomain"] = "xxx.com";
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
+export async function setAadManifestIdentifierUris(projectPath: string, identifierUri: string) {
+  const aadManifestPath = path.join(
+    projectPath,
+    `${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`
+  );
+
+  const aadTemplate = await fs.readJSON(aadManifestPath);
+  aadTemplate.identifierUris = [identifierUri];
+  await fs.writeJSON(aadManifestPath, aadTemplate, { spaces: 4 });
 }
 
 export async function cleanupSharePointPackage(appId: string) {

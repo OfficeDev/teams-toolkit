@@ -1,3 +1,4 @@
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import path from "path";
 import { newEnvInfo } from "../../../../src";
 import {
@@ -35,8 +36,41 @@ export function MockContext(): any {
     },
     config: new Map(),
     root: path.join(__dirname, "ut"),
+    telemetryReporter: mockTelemetryReporter,
   };
 }
+
+const mockTelemetryReporter: TelemetryReporter = {
+  async sendTelemetryEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry event");
+    console.log(eventName);
+    console.log(properties);
+  },
+
+  async sendTelemetryErrorEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry Error");
+    console.log(eventName);
+    console.log(properties);
+  },
+
+  async sendTelemetryException(
+    error: Error,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry Exception");
+    console.log(error.message);
+    console.log(properties);
+  },
+};
 
 export const SampleCodeCases = [
   {

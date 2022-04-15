@@ -430,6 +430,16 @@ export async function getQuestionsForAddCapability(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (ctx.projectSetting.isM365) {
+    return err(
+      new UserError(
+        SolutionSource,
+        SolutionError.AddCapabilityNotSupport,
+        getDefaultString("core.addCapability.notSupportedForM365Project"),
+        getLocalizedString("core.addCapability.notSupportedForM365Project")
+      )
+    );
+  }
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,

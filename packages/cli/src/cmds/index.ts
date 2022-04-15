@@ -34,17 +34,13 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Package(),
-  new Manifest(),
+  ...(isDeployManifestEnabled() ? [] : [new Manifest()]),
   new ManifestValidate(),
   new Publish(),
   new Config(),
   new Preview(),
   new Env(),
 ];
-
-if (isDeployManifestEnabled()) {
-  commands.splice(8, 1);
-}
 
 /**
  * Registers cli and partner commands with yargs.

@@ -2,18 +2,22 @@
 // Licensed under the MIT license.
 "use strict";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { ApiConnectionMsg } from "./result";
 export class ErrorMessage {
-  public static getMessages(key: string, ...params: any[]): [string, string] {
-    return [getDefaultString(key, ...params), getLocalizedString(key, ...params)];
+  public static getMessages(key: string, ...params: any[]): ApiConnectionMsg {
+    return {
+      defaultMsg: getDefaultString(key, ...params),
+      localizedMsg: getLocalizedString(key, ...params),
+    };
   }
   public static readonly InvalidProjectError = {
     name: "InvalidProjectError",
-    message: (): [string, string] =>
+    message: (): ApiConnectionMsg =>
       ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.InvalidProjectError.name}`),
   };
   public static readonly ApiConnectorInputError = {
     name: "ApiConnectorInputError",
-    message: (key: string): [string, string] =>
+    message: (key: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.ApiConnectorInputError.name}`,
         key
@@ -22,7 +26,7 @@ export class ErrorMessage {
 
   public static readonly ApiConnectorPathError = {
     name: "ApiConnectorPathNotExistError",
-    message: (pathName: string): [string, string] =>
+    message: (pathName: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.ApiConnectorPathError.name}`,
         pathName
@@ -31,7 +35,7 @@ export class ErrorMessage {
 
   public static readonly ApiConnectorFileCreateFailError = {
     name: "ApiConnectorCreateFileFail",
-    message: (pathName: string): [string, string] =>
+    message: (pathName: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.ApiConnectorFileCreateFailError.name}`,
         pathName
@@ -40,7 +44,7 @@ export class ErrorMessage {
 
   public static readonly ApiConnectorRouteError = {
     name: "ApiConnectorFunctionRouteError",
-    message: (funcName: string): [string, string] =>
+    message: (funcName: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.ApiConnectorRouteError.name}`,
         funcName
@@ -49,7 +53,7 @@ export class ErrorMessage {
 
   public static readonly SampleCodeCreateFailError = {
     name: "SampleCodeCreateFailError",
-    message: (pathName: string, reason: string): [string, string] =>
+    message: (pathName: string, reason: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.SampleCodeCreateFailError.name}`,
         pathName,
@@ -59,19 +63,19 @@ export class ErrorMessage {
 
   public static readonly NoValidCompoentExistError = {
     name: "NoValidCompoentExistError",
-    message: (): [string, string] =>
+    message: (): ApiConnectionMsg =>
       ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.NoValidCompoentExistError.name}`),
   };
 
   public static readonly NoActivePluginsExistError = {
     name: "NoActivePluginsExistError",
-    message: (): [string, string] =>
+    message: (): ApiConnectionMsg =>
       ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.NoActivePluginsExistError.name}`),
   };
 
   public static readonly generateApiConFilesError = {
     name: "ScaffoldApiFilesError",
-    message: (reason: string): [string, string] =>
+    message: (reason: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.generateApiConFilesError.name}`,
         reason
@@ -80,7 +84,7 @@ export class ErrorMessage {
 
   public static readonly sdkVersionImcompatibleError = {
     name: "SDKVersionImcompatibleError",
-    message: (component: string, localVersion: string, targetVersion: string): [string, string] =>
+    message: (component: string, localVersion: string, targetVersion: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.sdkVersionImcompatibleError.name}`,
         component,
@@ -91,7 +95,7 @@ export class ErrorMessage {
 
   public static readonly localPkgFileNotExistError = {
     name: "pkgFileNotExistError",
-    message: (component: string): [string, string] =>
+    message: (component: string): ApiConnectionMsg =>
       ErrorMessage.getMessages(
         `error.apiConnector.${ErrorMessage.localPkgFileNotExistError.name}`,
         component

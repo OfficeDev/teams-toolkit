@@ -64,7 +64,7 @@ describe("Api Connector scaffold sample code", async () => {
   });
 
   it("restore files meets failure on scaffold", async () => {
-    sandbox.stub(SampleHandler.prototype, "generateSampleCode").rejects("Create File Failed");
+    sandbox.stub(SampleHandler.prototype, "generateSampleCode").throws(new Error("fake error"));
     const expectInputs = {
       component: ["api", "bot"],
       alias: "test",
@@ -81,7 +81,12 @@ describe("Api Connector scaffold sample code", async () => {
     try {
       await apiConnector.scaffold(context, fakeInputs);
     } catch (err) {
-      chai.assert.strictEqual(err.source, ErrorMessage.generateApiConFilesError.name);
+      expect(err instanceof SystemError).to.be.true;
+      chai.assert.strictEqual(err.source, "api-connector");
+      chai.assert.strictEqual(
+        err.displayMessage,
+        "Failed to scaffold connect API files, Reason: fake error"
+      );
     }
     expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.false;
     const actualFile = await fs.readFile(

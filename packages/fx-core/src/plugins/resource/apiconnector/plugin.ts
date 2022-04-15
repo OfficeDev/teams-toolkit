@@ -99,7 +99,7 @@ export class ApiConnectorImpl {
           ""
         )
       ).trimEnd();
-      ctx.logProvider.info(logMessage); // Print generated/updated files for users
+      ctx.logProvider?.info(logMessage); // Print generated/updated files for users
 
       const msg: string = this.getNotificationMsg(config, languageType);
       if (inputs.platform != Platform.CLI) {

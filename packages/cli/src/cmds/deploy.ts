@@ -86,7 +86,7 @@ export default class Deploy extends YargsCommand {
           ids = (choices as OptionItem[]).map((choice) => choice.id);
         }
         const components = (args.components as string[]) || [];
-        if (components.length !== 0 && components.some((c) => c === "appstudio")) {
+        if (components.length !== 0 && components.includes("appstudio")) {
           inputs["include-app-manifest"] = "yes";
         }
 

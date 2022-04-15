@@ -307,6 +307,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateManifestCmd);
 
+  const deployManifestFromCtxMenuCmd = vscode.commands.registerCommand(
+    "fx-extension.deployManifestFromCtxMenu",
+    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
+  );
+  context.subscriptions.push(deployManifestFromCtxMenuCmd);
+
   const editManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editManifestTemplate",
     (...args) => Correlator.run(handlers.editManifestTemplate, args)

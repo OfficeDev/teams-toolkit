@@ -85,6 +85,7 @@
     "teamstoolkit.commands.specifySubscription.title": "Specify subscription",
     "teamstoolkit.commands.survey.title": "Teams: Survey",
     "teamstoolkit.commands.updateManifest.title": "Teams: Deploy manifest to Teams platform",
+    "teamstoolkit.commands.deployManifest.ctxMenu.title": "Deploy manifest to Teams platform",
     "teamstoolkit.commands.upgradeProject.title": "Teams: Upgrade project",
     "teamstoolkit.commands.validateManifest.title": "Teams: Validate manifest file",
     "teamstoolkit.commands.viewSamples.title": "Teams: View samples",

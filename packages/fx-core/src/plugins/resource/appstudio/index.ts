@@ -75,7 +75,7 @@ export class AppStudioPlugin implements Plugin {
         name: Constants.INCLUDE_APP_MANIFEST,
         type: "singleSelect",
         staticOptions: ["yes", "no"],
-        title: "Whether to deploy manifest to AppStudio",
+        title: getLocalizedString("plugins.appstudio.whetherToDeployManifest"),
         default: "no",
       });
       appStudioQuestions.addChild(node);

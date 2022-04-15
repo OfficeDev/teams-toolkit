@@ -132,7 +132,6 @@ export class ApiConnectorImpl {
       const errorCode = thrownErr.source + "." + thrownErr.name;
       const errorType =
         thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      TelemetryUtils.init(ctx.telemetryReporter);
       const errorMessage = thrownErr.message;
       TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
       throw thrownErr;
@@ -457,8 +456,7 @@ export class ApiConnectorImpl {
         break;
       case AuthType.APIKEY:
         const authConfig = config.AuthConfig as APIKeyAuthConfig;
-        properties[Telemetry.properties.keyInHeader] =
-          authConfig.Location === KeyLocation.Header ? Telemetry.valueYes : Telemetry.valueNo;
+        properties[Telemetry.properties.keyLocation] = authConfig.Location;
         break;
       default:
         break;

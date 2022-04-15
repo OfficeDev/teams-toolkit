@@ -22,7 +22,7 @@ export class Telemetry {
     appid: "appid",
     authType: "auth-type",
     reuseTeamsApp: "reuse-teams-app",
-    keyInHeader: "key-in-header",
+    keyLocation: "key-location",
   };
 }
 

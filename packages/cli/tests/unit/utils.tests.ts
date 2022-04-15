@@ -46,7 +46,6 @@ const staticOptions2: apis.StaticOptions = [
   { id: "a", cliName: "aa", label: "aaa" },
   { id: "b", cliName: "bb", label: "bbb" },
   { id: "c", cliName: "cc", label: "ccc" },
-  { id: "d", label: "label", kind: -1 },
 ];
 
 describe("Utils Tests", function () {

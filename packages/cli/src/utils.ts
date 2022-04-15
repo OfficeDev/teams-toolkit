@@ -3,50 +3,49 @@
 
 "use strict";
 
-import chalk from "chalk";
-import * as dotenv from "dotenv";
 import fs from "fs-extra";
 import path from "path";
-import * as uuid from "uuid";
 import { Options } from "yargs";
-
+import chalk from "chalk";
+import * as uuid from "uuid";
+import * as dotenv from "dotenv";
 import {
-  Colors,
-  ConfigFolderName,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
-  err,
-  FxError,
-  getSingleOption,
-  InputConfigsFolderName,
-  Inputs,
-  MultiSelectQuestion,
-  ok,
   OptionItem,
-  OptionItemKind,
-  Platform,
-  ProjectSettingsFileName,
-  QTreeNode,
   Question,
+  err,
+  ok,
   Result,
-  SingleSelectConfig,
+  FxError,
+  ConfigFolderName,
+  getSingleOption,
   SingleSelectQuestion,
+  MultiSelectQuestion,
+  QTreeNode,
+  Inputs,
+  Platform,
+  Colors,
   StatesFolderName,
+  EnvNamePlaceholder,
+  ProjectSettingsFileName,
+  EnvStateFileNameTemplate,
+  InputConfigsFolderName,
+  SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
-import {
-  environmentManager,
-  FxCore,
-  isConfigUnifyEnabled,
-  isSPFxProject,
-  localSettingsFileName,
-  PluginNames,
-  WriteFileError,
-} from "@microsoft/teamsfx-core";
 
-import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
-import { ConfigNotFoundError, EnvUndefined, ReadFileError, UserdataNotFound } from "./error";
+import {
+  environmentManager,
+  WriteFileError,
+  localSettingsFileName,
+  FxCore,
+  isSPFxProject,
+  PluginNames,
+  isValidProject,
+  isConfigUnifyEnabled,
+} from "@microsoft/teamsfx-core";
+import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
 
 export type Json = { [_: string]: any };
@@ -57,9 +56,7 @@ export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefin
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
-      return (option as OptionItem[])
-        .filter((op) => op.kind !== OptionItemKind.Separator)
-        .map((op) => op.cliName || toLocaleLowerCase(op.id));
+      return (option as OptionItem[]).map((op) => op.cliName || toLocaleLowerCase(op.id));
     }
   } else {
     return undefined;

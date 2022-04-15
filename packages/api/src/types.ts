@@ -46,14 +46,9 @@ export interface OptionItem {
    */
   cliName?: string;
   /**
-   * kind of this option item. If it's separator, only label will take effect.
+   * group name. If it's set, separator will be rendered on UI between groups.
    */
-  kind?: OptionItemKind;
-}
-
-export enum OptionItemKind {
-  Default = 0,
-  Separator = -1,
+  groupName?: string;
 }
 
 export class ConfigMap extends Map<string, ConfigValue> {

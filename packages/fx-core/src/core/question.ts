@@ -40,8 +40,6 @@ import {
   TabNewUIOptionItem,
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
-  TeamsAppSeparatorOptionItem,
-  TeamsM365AppSeparatorOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -229,14 +227,11 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   if (isBotNotificationEnabled()) {
     // new capabilities question order
     staticOptions = [
-      TeamsAppSeparatorOptionItem,
       ...[CommandAndResponseOptionItem, NotificationOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
-      ...(isM365AppEnabled()
-        ? [TeamsM365AppSeparatorOptionItem, M365SsoLaunchPageOptionItem, M365SearchAppOptionItem]
-        : []),
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {
     staticOptions = [

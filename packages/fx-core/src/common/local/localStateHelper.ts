@@ -141,6 +141,19 @@ export async function convertToLocalEnvs(
     }
 
     if (
+      frontendConfigs &&
+      frontendConfigs.get(LocalStateFrontendKeys.SslCertFile) &&
+      frontendConfigs.get(LocalStateFrontendKeys.SslKeyFile)
+    ) {
+      localEnvs[LocalEnvCertKeys.SslCrtFile] = frontendConfigs.get(
+        LocalStateFrontendKeys.SslCertFile
+      );
+      localEnvs[LocalEnvCertKeys.SslKeyFile] = frontendConfigs.get(
+        LocalStateFrontendKeys.SslKeyFile
+      );
+    }
+
+    if (
       localConfig?.frontend &&
       localConfig.frontend.sslCertFile &&
       localConfig.frontend.sslKeyFile

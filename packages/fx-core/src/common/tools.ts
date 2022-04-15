@@ -55,7 +55,6 @@ import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
-export { isFeatureFlagEnabled, isBotNotificationEnabled } from "./featureFlags";
 import _ from "lodash";
 
 Handlebars.registerHelper("contains", (value, array) => {
@@ -439,10 +438,6 @@ export function isYoCheckerEnabled(): boolean {
 
 export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
-}
-
-export function isGAPreviewEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.GAPreview, false);
 }
 
 export async function generateBicepFromFile(

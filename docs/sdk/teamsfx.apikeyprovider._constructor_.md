@@ -27,3 +27,5 @@ constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);
 
 [InvalidParameter](./teamsfx.errorcode.md) - when key name or key value is empty.
 
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+

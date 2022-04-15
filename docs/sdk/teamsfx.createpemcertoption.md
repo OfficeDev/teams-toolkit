@@ -9,7 +9,10 @@ Helper to create SecureContextOptions from PEM format cert
 <b>Signature:</b>
 
 ```typescript
-export declare function createPemCertOption(cert: string | Buffer, key: string | Buffer, passphrase?: string, ca?: string | Buffer): SecureContextOptions;
+export declare function createPemCertOption(cert: string | Buffer, key: string | Buffer, options?: {
+    passphrase?: string;
+    ca?: string | Buffer;
+}): SecureContextOptions;
 ```
 
 ## Parameters
@@ -18,8 +21,7 @@ export declare function createPemCertOption(cert: string | Buffer, key: string |
 |  --- | --- | --- |
 |  cert | string \| Buffer | The cert chain in PEM format |
 |  key | string \| Buffer | The private key for the cert chain |
-|  passphrase | string | The passphrase for private key |
-|  ca | string \| Buffer | Overrides the trusted CA certificates |
+|  options | { passphrase?: string; ca?: string \| Buffer; } | Optional settings when create the cert options. |
 
 <b>Returns:</b>
 

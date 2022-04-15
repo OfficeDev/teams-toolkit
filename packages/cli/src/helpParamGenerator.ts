@@ -241,7 +241,7 @@ export class HelpParamGenerator {
         ((node.condition as any).equals as string).includes(authType as string)
       )[0];
       rootCopy.children = undefined;
-      nodes = [rootCopy].concat(mustHaveNodes).concat(authNode);
+      nodes = [rootCopy].concat(mustHaveNodes).concat(authNode ? flattenNodes(authNode) : []);
     } else if (root && stage === Stage.create) {
       const condition = "yes";
       root.children = root?.children?.filter(

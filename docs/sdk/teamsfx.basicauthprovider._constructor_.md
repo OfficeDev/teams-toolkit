@@ -26,3 +26,5 @@ constructor(userName: string, password: string);
 
 [InvalidParameter](./teamsfx.errorcode.md) - when username or password is empty.
 
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+

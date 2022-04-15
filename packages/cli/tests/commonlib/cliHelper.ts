@@ -75,6 +75,29 @@ export class CliHelper {
     }
   }
 
+  static async addApiConnection(
+    projectPath: string,
+    commonInputs: string,
+    authType: string,
+    options = ""
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx add api-connection ${authType} ${commonInputs} ${options} --interactive false`,
+      {
+        cwd: projectPath,
+        timeout: 0,
+      }
+    );
+
+    if (result.stderr) {
+      console.error(
+        `[Failed] addApiConnection for ${projectPath}. Error message: ${result.stderr}`
+      );
+    } else {
+      console.log(`[Successfully] addApiConnection for ${projectPath}`);
+    }
+  }
+
   static async addCICDWorkflows(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
     const result = await execAsyncWithRetry(`teamsfx add cicd ${option}`, {
       cwd: projectPath,

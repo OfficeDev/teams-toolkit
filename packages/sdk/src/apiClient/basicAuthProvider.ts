@@ -21,6 +21,7 @@ export class BasicAuthProvider implements AuthProvider {
    * @param { string } password - Password used in basic auth
    *
    * @throws {@link ErrorCode|InvalidParameter} - when username or password is empty.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
@@ -50,6 +51,7 @@ export class BasicAuthProvider implements AuthProvider {
    * @returns Updated axios request config.
    *
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when Authorization header or auth property already exists in request configuration.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */

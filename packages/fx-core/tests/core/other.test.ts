@@ -19,7 +19,8 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
-import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
+import { getRootDirectory } from "../../src/common/tools";
+import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,

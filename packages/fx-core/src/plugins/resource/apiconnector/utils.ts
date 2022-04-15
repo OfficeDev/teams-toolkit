@@ -143,19 +143,19 @@ export class Notification {
   ): string {
     const authType: AuthType = config.AuthConfig.AuthType;
     const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
+    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentType, languageType);
     switch (authType) {
       case AuthType.BASIC: {
         retMsg = concatLines([
           retMsg,
-          Notification.GetBasicAuthString(apiName, config.ComponentPath),
+          Notification.GetBasicAuthString(apiName, config.ComponentType),
         ]);
         break;
       }
       case AuthType.APIKEY: {
         retMsg = concatLines([
           retMsg,
-          Notification.GetApiKeyAuthString(apiName, config.ComponentPath),
+          Notification.GetApiKeyAuthString(apiName, config.ComponentType),
         ]);
         break;
       }
@@ -165,7 +165,7 @@ export class Notification {
         } else {
           retMsg = concatLines([
             retMsg,
-            Notification.GetGenAADAuthString(apiName, config.ComponentPath),
+            Notification.GetGenAADAuthString(apiName, config.ComponentType),
           ]);
         }
         break;
@@ -173,12 +173,12 @@ export class Notification {
       case AuthType.CERT: {
         retMsg = concatLines([
           retMsg,
-          Notification.GetCertAuthString(apiName, config.ComponentPath),
+          Notification.GetCertAuthString(apiName, config.ComponentType),
         ]);
         break;
       }
       case AuthType.CUSTOM: {
-        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
+        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentType, languageType);
         break;
       }
     }

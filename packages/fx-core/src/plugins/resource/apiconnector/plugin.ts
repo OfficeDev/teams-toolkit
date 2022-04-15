@@ -83,7 +83,7 @@ export class ApiConnectorImpl {
     // backup relative files.
     const backupFolderName = generateTempFolder();
     await Promise.all(
-      config.ComponentPath.map(async (component) => {
+      config.ComponentType.map(async (component) => {
         await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
       })
     );
@@ -91,7 +91,7 @@ export class ApiConnectorImpl {
     try {
       let filesChanged: string[] = [];
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           const changes = await this.scaffoldInComponent(
             projectPath,
             component,
@@ -130,7 +130,7 @@ export class ApiConnectorImpl {
       }
     } catch (err) {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await fs.copy(
             path.join(projectPath, component, backupFolderName),
             path.join(projectPath, component),
@@ -154,7 +154,7 @@ export class ApiConnectorImpl {
       throw err;
     } finally {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await removeFileIfExist(path.join(projectPath, component, backupFolderName));
         })
       );
@@ -286,7 +286,7 @@ export class ApiConnectorImpl {
     );
     const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
-      ComponentPath: inputs[Constants.questionKey.componentsSelect],
+      ComponentType: inputs[Constants.questionKey.componentsSelect],
       APIName: inputs[Constants.questionKey.apiName],
       AuthConfig: authConfig,
       EndPoint: inputs[Constants.questionKey.endpoint],
@@ -433,7 +433,7 @@ export class ApiConnectorImpl {
   public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
     const properties = {
       [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
-      [Telemetry.properties.componentType]: config.ComponentPath.join(","),
+      [Telemetry.properties.componentType]: config.ComponentType.join(","),
     };
 
     switch (config.AuthConfig.AuthType) {

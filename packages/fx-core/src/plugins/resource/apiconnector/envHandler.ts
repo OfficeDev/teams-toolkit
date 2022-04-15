@@ -80,7 +80,7 @@ export class EnvHandler {
     this.apiDataManager.addApiEnvs(config);
   }
 
-  public async saveLocalEnvFile(): Promise<ApiConnectorResult> {
+  public async saveLocalEnvFile(): Promise<string> {
     const srcFile = path.join(this.projectRoot, this.componentType, Constants.envFileName);
     if (!(await fs.pathExists(srcFile))) {
       await fs.createFile(srcFile);
@@ -103,7 +103,7 @@ export class EnvHandler {
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)
       );
     }
-    return ResultFactory.Success();
+    return srcFile; // return modified env file
   }
 
   private updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {

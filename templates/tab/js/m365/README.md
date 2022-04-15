@@ -1,8 +1,10 @@
-# How to use this Teams Tab app HelloWorld app
+# How to use this M365 Launch Page HelloWorld app
 
 > Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
 
-Microsoft Teams supports the ability to run web-based UI inside "custom tabs" that users can install either for just themselves (personal tabs) or within a team or group chat context. Please be advised that mgt-teamsfx-provider library in this app is currently in preview stage, please expect breaking changes in the future release.
+Microsoft 365 supports the ability to run web-based UI inside "custom tabs" that users can install for themselves (personal tabs). Please be advised that mgt-teamsfx-provider library in this app is currently in preview stage, please expect breaking changes in the future release.
+
+![Launch Page Demo](./images/launch-page-demo.gif)
 
 ## Prerequisites
 
@@ -11,10 +13,15 @@ Microsoft Teams supports the ability to run web-based UI inside "custom tabs" th
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 1.55 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Debug
+### From Visual Studio Code
+- Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
+- If you select `Debug in Outlook` or `Debug in Office`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue debugging the app in Outlook or Office.
+![Install in Teams](./images/install-in-teams-vsc.png)
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. 
-- Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
+### From TeamsFx CLI
+- Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams`, `outlook` or `office`.
+- If you select `m365-host` as `outlook` or `office`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue debugging the app in Outlook or Office.
+![Install in Teams](./images/install-in-teams-cli.png)
 
 ## Edit the manifest
 
@@ -37,13 +44,7 @@ Deploy your project to Azure by following these steps:
 
 Once the provisioning and deployment steps are finished, you can preview your app:
 
-- From Visual Studio Code
-
-  1. Open the `Run and Debug Activity Panel`.
-  1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
-  1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
-
-- From TeamsFx CLI: execute `teamsfx preview --remote` in your project directory to launch your application.
+- From TeamsFx CLI: execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory to launch your application, where `m365-host` is `teams`, `outlook` or `office`.
 
 ## Validate manifest file
 

@@ -37,6 +37,7 @@ import {
   Colors,
   IProgressHandler,
   Json,
+  OptionItemKind,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
@@ -106,7 +107,9 @@ export class CLIUserInteraction implements UserInteraction {
     if (typeof config.options[0] === "string") {
       return;
     }
-    const options = config.options as OptionItem[];
+    const options = (config.options as OptionItem[]).filter(
+      (op) => op.kind !== OptionItemKind.Separator
+    );
     const labels = options.map((op) => op.label);
     const ids = options.map((op) => op.id);
     const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
@@ -301,7 +304,8 @@ export class CLIUserInteraction implements UserInteraction {
       });
       return [choices, defaultValue];
     } else {
-      const choices = (option as OptionItem[]).map((op) => {
+      const options = (option as OptionItem[]).filter((op) => op.kind !== OptionItemKind.Separator);
+      const choices = options.map((op) => {
         return {
           name: op.id,
           extra: {
@@ -311,7 +315,7 @@ export class CLIUserInteraction implements UserInteraction {
           },
         };
       });
-      const ids = (option as OptionItem[]).map((op) => op.id);
+      const ids = options.map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
         return [choices, choices[index]?.name as any];

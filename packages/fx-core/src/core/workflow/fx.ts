@@ -312,8 +312,11 @@ export class TeamsfxCore {
         required: true,
         targetAction: "azure-bicep.deploy",
         inputs: {
-          "azure-bot": {
-            properties: {}, //TODO
+          "azure-bicep": {
+            "azure-bot": {
+              botId: "{{bot-service.botId}}",
+              botEndpoint: "{{azure-web-app.endpoint}}", //TODO
+            },
           },
         },
       },

@@ -140,13 +140,12 @@ export class AzureBicepProvider {
       type: "function",
       name: "azure-bicep.deploy",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["deploy bicep"]);
+        const deployInputs = inputs["azure-bicep"];
+        return ok([`deploy bicep, ${JSON.stringify(deployInputs)}`]);
       },
       execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        console.log("deploy bicep");
-        inputs["azure-storage"] = {
-          endpoint: "MockStorageEndpoint",
-        };
+        const deployInputs = inputs["azure-bicep"];
+        console.log(`deploy bicep, ${JSON.stringify(deployInputs)}`);
         inputs["azure-web-app"] = {
           endpoint: "MockAzureWebAppEndpoint",
         };

@@ -24,7 +24,6 @@ export class BotServiceResource implements CloudResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         inputs["bot-service"] = {
-          botAadAppClientId: "MockBotAadAppClientId",
           botId: "MockBotId",
           botPassword: "MockBotPassword",
         };

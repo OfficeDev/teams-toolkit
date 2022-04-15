@@ -41,13 +41,17 @@ export class AzureWebAppResource implements CloudResource {
       name: "azure-web-app.deploy",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok([`deploy azure web app in folder: ${inputs["azure-web-app"].folder}`]);
+        return ok([
+          `deploy azure web app in folder: ${path.join(
+            inputs.projectPath,
+            inputs["azure-web-app"].folder
+          )}`,
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log(`deploy azure web app in folder: ${inputs["azure-web-app"].folder}`);
         return ok(undefined);
       },
     };

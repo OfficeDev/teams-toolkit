@@ -63,9 +63,6 @@ export enum TelemetryEvent {
   DeployStart = "deploy-start",
   Deploy = "deploy",
 
-  DeployManifestStart = "deploy-start",
-  DeployManifest = "deploy",
-
   DeployAadManifestStart = "deploy-aad-manifest-start",
   DeployAadManifest = "deploy-aad-manifest",
 

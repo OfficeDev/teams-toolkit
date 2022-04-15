@@ -1267,18 +1267,6 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
   }
 }
 
-/*
-export async function deployManifestHandler(args?: any[]): Promise<string | undefined> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployManifestStart, getTriggerFromProperty(args));
-  const projectPath = getWorkspacePath();
-  if (!projectPath) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DeployManifest, new InvalidProjectError());
-    throw new InvalidProjectError();
-  }
-  
-}
-*/
-
 /**
  * Check & install required local prerequisites before local debug.
  */

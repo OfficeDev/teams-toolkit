@@ -120,22 +120,22 @@ export class CLIUserInteraction implements UserInteraction {
       const idIndexes = this.findIndexes(ids, presetAnwser);
       const cliNameIndexes = this.findIndexes(cliNames, presetAnwser);
 
-      const labelSubArray1 = this.getSubArray(labels, idIndexes);
-      const labelSubArray2 = this.getSubArray(labels, cliNameIndexes);
+      const idSubArray1 = this.getSubArray(ids, idIndexes);
+      const idSubArray2 = this.getSubArray(ids, cliNameIndexes);
 
-      if (labelSubArray1[0] !== undefined) {
-        this.updatePresetAnswer(config.name, labelSubArray1);
-      } else if (labelSubArray2[0] !== undefined) {
-        this.updatePresetAnswer(config.name, labelSubArray2);
+      if (idSubArray1[0] !== undefined) {
+        this.updatePresetAnswer(config.name, idSubArray1);
+      } else if (idSubArray2[0] !== undefined) {
+        this.updatePresetAnswer(config.name, idSubArray2);
       }
     } else {
       const idIndex = this.findIndex(ids, presetAnwser);
       const cliNameIndex = this.findIndex(cliNames, presetAnwser);
 
       if (idIndex >= 0) {
-        this.updatePresetAnswer(config.name, labels[idIndex]);
+        this.updatePresetAnswer(config.name, ids[idIndex]);
       } else if (cliNameIndex >= 0) {
-        this.updatePresetAnswer(config.name, labels[cliNameIndex]);
+        this.updatePresetAnswer(config.name, ids[cliNameIndex]);
       }
     }
   }
@@ -289,18 +289,23 @@ export class CLIUserInteraction implements UserInteraction {
   private toChoices<T>(
     option: StaticOptions,
     defaultValue?: T
-  ): [string[] | ChoiceOptions[], T | undefined, { [x: string]: string }] {
-    const mapping: Json = {};
+  ): [string[] | ChoiceOptions[], T | undefined] {
     if (typeof option[0] === "string") {
-      const choices = option as string[];
-      choices.forEach((s) => (mapping[s] = s));
-      return [choices, defaultValue, mapping];
+      const choices = (option as string[]).map((op) => {
+        return {
+          name: op,
+          extra: {
+            title: op,
+          },
+        };
+      });
+      return [choices, defaultValue];
     } else {
       const choices = (option as OptionItem[]).map((op) => {
-        mapping[op.label] = op.id;
         return {
-          name: op.label,
+          name: op.id,
           extra: {
+            title: op.label,
             description: op.description,
             detail: op.detail,
           },
@@ -309,14 +314,10 @@ export class CLIUserInteraction implements UserInteraction {
       const ids = (option as OptionItem[]).map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
-        return [choices, choices[index]?.name as any, mapping];
+        return [choices, choices[index]?.name as any];
       } else {
         const indexes = this.findIndexes(ids, defaultValue as any);
-        return [
-          choices,
-          this.getSubArray(choices, indexes).map((choice) => choice.name) as any,
-          mapping,
-        ];
+        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.name) as any];
       }
     }
   }
@@ -362,13 +363,13 @@ export class CLIUserInteraction implements UserInteraction {
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.singleSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation, mapping)
+        this.toValidationFunc(config.validation)
       );
       if (result.isOk()) {
         const index = this.findIndex(
@@ -398,13 +399,13 @@ export class CLIUserInteraction implements UserInteraction {
   ): Promise<Result<MultiSelectResult, FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.multiSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation, mapping)
+        this.toValidationFunc(config.validation)
       );
       if (result.isOk()) {
         const indexes = this.findIndexes(

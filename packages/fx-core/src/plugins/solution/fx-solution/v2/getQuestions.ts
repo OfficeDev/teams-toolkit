@@ -43,6 +43,8 @@ import {
   TabSPFxItem,
   M365SsoLaunchPageOptionItem,
   M365SearchAppOptionItem,
+  MessageExtensionNewUIItem,
+  TabNewUIOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -428,6 +430,16 @@ export async function getQuestionsForAddCapability(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (ctx.projectSetting.isM365) {
+    return err(
+      new UserError(
+        SolutionSource,
+        SolutionError.AddCapabilityNotSupport,
+        getDefaultString("core.addCapability.notSupportedForM365Project"),
+        getLocalizedString("core.addCapability.notSupportedForM365Project")
+      )
+    );
+  }
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
@@ -444,10 +456,10 @@ export async function getQuestionsForAddCapability(
   if (!isDynamicQuestion) {
     // For CLI_HELP
     addCapQuestion.staticOptions = [
-      TabOptionItem,
+      ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
       ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
-      MessageExtensionItem,
+      ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
     const addCapNode = new QTreeNode(addCapQuestion);
@@ -526,20 +538,23 @@ export async function getQuestionsForAddCapability(
       options.push(BotOptionItem);
     }
   }
+  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
   if (isTabAddable) {
     if (!isAadManifestEnabled()) {
-      options.push(TabOptionItem);
+      options.push(tabOptionItem);
     } else {
       if (!settings?.capabilities.includes(TabOptionItem.id)) {
-        options.push(TabNonSsoItem, TabOptionItem);
+        options.push(TabNonSsoItem, tabOptionItem);
       } else {
         options.push(
-          settings?.capabilities.includes(TabSsoItem.id) ? TabOptionItem : TabNonSsoItem
+          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
         );
       }
     }
   }
-  if (isMEAddable) options.push(MessageExtensionItem);
+  if (isMEAddable) {
+    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
+  }
 
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);

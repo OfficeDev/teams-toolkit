@@ -32,6 +32,7 @@ async function resolveStateAndConfigCodeLens(
       try {
         if (!projectConfigs) {
           const inputs = getSystemInputs();
+          inputs.loglevel = "Debug";
           const getConfigRes = await core.getProjectConfigV3(inputs);
           if (getConfigRes.isErr()) throw getConfigRes.error;
           projectConfigs = getConfigRes.value;

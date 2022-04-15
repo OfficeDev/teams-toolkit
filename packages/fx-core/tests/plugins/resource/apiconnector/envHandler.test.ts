@@ -63,7 +63,6 @@ describe("EnvHandler", () => {
     await envHandler.saveLocalEnvFile();
     const envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
     chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
   });
@@ -85,7 +84,6 @@ describe("EnvHandler", () => {
     await envHandler.saveLocalEnvFile();
     let envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
     chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
 
@@ -102,7 +100,6 @@ describe("EnvHandler", () => {
     await envHandler.saveLocalEnvFile();
     envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint2");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name2");
   });
 });

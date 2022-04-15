@@ -1,24 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import {
-  AzureSolutionSettings,
-  Inputs,
-  Json,
-  ProjectSettings,
-  SystemError,
-  v2,
-  err,
-  Func,
-  ok,
-  TokenProvider,
-  QTreeNode,
-} from "@microsoft/teamsfx-api";
+import { Inputs, Json, ProjectSettings, v2, Func, TokenProvider } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ApiConnectorImpl } from "./plugin";
-import { Constants } from "./constants";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import { ApiConnectorResult, ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";

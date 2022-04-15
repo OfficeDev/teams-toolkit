@@ -20,7 +20,7 @@ export class SampleHandler {
     this.component = component;
   }
 
-  public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
+  public async generateSampleCode(config: ApiConnectorConfiguration): Promise<string> {
     const fileSuffix: string = this.languageExt;
     const baseDirectory = path.join(
       getTemplatesFolder(),
@@ -48,7 +48,7 @@ export class SampleHandler {
       }
       const codeFile = compileHandlebarsTemplateString(templateString, context);
       await fs.writeFile(codeFilePath, codeFile);
-      return ResultFactory.Success();
+      return codeFilePath;
     } catch (error) {
       throw ResultFactory.SystemError(
         ErrorMessage.SampleCodeCreateFailError.name,

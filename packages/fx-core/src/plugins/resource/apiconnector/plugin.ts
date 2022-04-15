@@ -72,8 +72,9 @@ export class ApiConnectorImpl {
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
 
+    const telemetryProperties = this.getTelemetryProperties(config);
+
     TelemetryUtils.init(ctx.telemetryReporter);
-    const telemetryProperties = this.exactTelemetryProperties(config);
     TelemetryUtils.sendEvent(
       Telemetry.stage.scaffold + Telemetry.startSuffix,
       undefined,
@@ -443,10 +444,12 @@ export class ApiConnectorImpl {
     return node;
   }
 
-  public exactTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
+  public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
     const properties = {
       [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
+      [Telemetry.properties.componentPath]: config.ComponentPath.join(","),
     };
+
     switch (config.AuthConfig.AuthType) {
       case AuthType.AAD:
         const aadAuthConfig = config.AuthConfig as AADAuthConfig;

@@ -41,7 +41,7 @@ describe("Test question", () => {
           "should accept all functions triggers",
         ],
       ];
-      const question = createHostTypeTriggerQuestion();
+      const question = createHostTypeTriggerQuestion(Platform.VSCode);
       const validFunc = (question.validation as FuncValidation<string[]>).validFunc;
 
       for (const c of cases) {
@@ -92,7 +92,7 @@ describe("Test question", () => {
           "should do nothing on un-selecting",
         ],
       ];
-      const question = createHostTypeTriggerQuestion();
+      const question = createHostTypeTriggerQuestion(Platform.VSCode);
       chai.assert.notStrictEqual(question.onDidChangeSelection, undefined);
       const onDidChangeSelection = question.onDidChangeSelection!;
 
@@ -116,7 +116,7 @@ describe("Test question", () => {
   describe("Workaround CLI default value issue, remove me after CLI is fixed", () => {
     it("cliName and ID must be the same", () => {
       // Arrange
-      const question = createHostTypeTriggerQuestion();
+      const question = createHostTypeTriggerQuestion(Platform.VSCode);
       for (const option of question.staticOptions) {
         if (typeof option !== "string") {
           // Assert
@@ -125,6 +125,19 @@ describe("Test question", () => {
             option.cliName,
             "option.id and option.cliName must be the same to workaround CLI default value issue"
           );
+        }
+      }
+    });
+  });
+
+  describe("Workaround CLI label display issue", () => {
+    it("merges description into label", () => {
+      const question = createHostTypeTriggerQuestion(Platform.CLI);
+      for (const option of question.staticOptions) {
+        chai.assert.isNotString(option);
+        if (typeof option !== "string") {
+          chai.assert.isOk(option.description);
+          chai.assert.include(option.label, option.description!);
         }
       }
     });

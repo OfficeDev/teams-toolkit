@@ -44,6 +44,12 @@ export function checkInputEmpty(inputs: Inputs, ...keys: string[]) {
   }
 }
 
+export function concatLines(line: string[], interval = " "): string {
+  return line.reduce((prev, cur) => {
+    return prev + interval + cur;
+  });
+}
+
 export class Notification {
   public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
   public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
@@ -54,11 +60,10 @@ export class Notification {
     languageType: string
   ): string {
     const fileName = getSampleFileName(apiName, languageType);
-    let generatedFiles = "";
-    for (const component of components) {
-      generatedFiles += `'${path.join(component, fileName)}' and`;
-    }
-    generatedFiles = generatedFiles.replace(/ and+$/, ""); // remove trailing " and"
+    const generatedFiles = concatLines(
+      components.map((item) => path.join(item, fileName)),
+      " and "
+    );
     return getLocalizedString("plugins.apiConnector.Notification.GenerateFiles", generatedFiles);
   }
 
@@ -68,7 +73,7 @@ export class Notification {
     return getLocalizedString(
       "plugins.apiConnector.Notification.BasicAuth",
       envName,
-      components.toString()
+      concatLines(components, " and ")
     );
   }
 
@@ -85,7 +90,7 @@ export class Notification {
     return getLocalizedString(
       "plugins.apiConnector.Notification.ApiKeyAuth",
       apiKeyName,
-      components.toString()
+      concatLines(components, " and ")
     );
   }
 
@@ -98,18 +103,17 @@ export class Notification {
     return getLocalizedString(
       "plugins.apiConnector.Notification.CustomAuth",
       fileName,
-      components.toString()
+      concatLines(components, " and ")
     );
   }
 
   public static GetGenAADAuthString(apiName: string, components: string[]): string {
     const apiNameUpperCase: string = apiName.toUpperCase();
     const envName = `API_${apiNameUpperCase}_CLIENTSECRET `;
-    let envFiles = "";
-    for (const component of components) {
-      envFiles += `'${path.join(component, Constants.envFileName)}' and`;
-    }
-    envFiles = envFiles.replace(/ and+$/, ""); // remove trailing " and";
+    const envFiles = concatLines(
+      components.map((item) => path.join(item, Constants.envFileName)),
+      " and "
+    );
     return getLocalizedString(
       "plugins.apiConnector.Notification.GenAADAuth",
       "<your-api-scope>",
@@ -142,23 +146,35 @@ export class Notification {
     let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
     switch (authType) {
       case AuthType.BASIC: {
-        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
+        retMsg = concatLines([
+          retMsg,
+          Notification.GetBasicAuthString(apiName, config.ComponentPath),
+        ]);
         break;
       }
       case AuthType.APIKEY: {
-        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
+        retMsg = concatLines([
+          retMsg,
+          Notification.GetApiKeyAuthString(apiName, config.ComponentPath),
+        ]);
         break;
       }
       case AuthType.AAD: {
         if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
-          retMsg += Notification.GetReuseAADAuthString(apiName);
+          retMsg = concatLines([retMsg, Notification.GetReuseAADAuthString(apiName)]);
         } else {
-          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
+          retMsg = concatLines([
+            retMsg,
+            Notification.GetGenAADAuthString(apiName, config.ComponentPath),
+          ]);
         }
         break;
       }
       case AuthType.CERT: {
-        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
+        retMsg = concatLines([
+          retMsg,
+          Notification.GetCertAuthString(apiName, config.ComponentPath),
+        ]);
         break;
       }
       case AuthType.CUSTOM: {
@@ -166,7 +182,7 @@ export class Notification {
         break;
       }
     }
-    retMsg += `${Notification.GetNpmInstallString()}`;
+    retMsg = concatLines([retMsg, Notification.GetNpmInstallString()]);
     return retMsg;
   }
 }

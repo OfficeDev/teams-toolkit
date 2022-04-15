@@ -391,6 +391,10 @@ export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }
 
+export function isDeployManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.DeployManifest, false);
+}
+
 export function isM365AppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
 }

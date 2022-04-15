@@ -129,13 +129,8 @@ export class ApiConnectorImpl {
           ErrorMessage.generateApiConFilesError.message(err.message)
         );
       }
-      const thrownErr = err as FxError;
-      const errorCode = thrownErr.source + "." + thrownErr.name;
-      const errorType =
-        thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      const errorMessage = thrownErr.message;
-      TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
-      throw thrownErr;
+      this.sendErrorTelemetry(err as FxError);
+      throw err;
     } finally {
       await Promise.all(
         config.ComponentPath.map(async (component) => {
@@ -145,6 +140,15 @@ export class ApiConnectorImpl {
     }
     TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
     return ResultFactory.Success();
+  }
+
+  private sendErrorTelemetry(thrownErr: FxError) {
+    const errorCode = thrownErr.source + "." + thrownErr.name;
+    const errorType =
+      thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+    const errorMessage = thrownErr.message;
+    TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
+    return thrownErr;
   }
 
   private async scaffoldInComponent(

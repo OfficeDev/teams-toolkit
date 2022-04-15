@@ -615,9 +615,7 @@ export class VsCodeUI implements UserInteraction {
           let lastReport = 0;
           const showProgress = config.showProgress === true;
           const total = task.total ? task.total : 1;
-          const head = `${localize("teamstoolkit.progressHandler.teamsToolkitComponent")} ${
-            task.name ? task.name : ""
-          }`;
+          const head = task.name ? task.name : "";
           const report = (task: RunnableTask<T>) => {
             const current = task.current ? task.current : 0;
             const body = showProgress

@@ -27,7 +27,7 @@ export class ProgressHandler implements IProgressHandler {
   }
 
   private generateWholeMessage(): string {
-    const head = `${localize("teamstoolkit.progressHandler.teamsToolkitComponent")} ${this.title}`;
+    const head = this.title;
     const body = `: [${this.currentStep}/${this.totalSteps}] ${util.format(
       localize("teamstoolkit.progressHandler.showOutputLink"),
       "command:fx-extension.showOutputChannel"

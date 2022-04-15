@@ -5,7 +5,7 @@ import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
-
+import * as path from "path";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";

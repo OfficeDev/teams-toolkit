@@ -450,7 +450,6 @@ export class TeamsfxCore {
           inputs: {
             [resource.hostingResource!]: {
               folder: resource.folder,
-              type: resource.deployType,
             },
           },
         });

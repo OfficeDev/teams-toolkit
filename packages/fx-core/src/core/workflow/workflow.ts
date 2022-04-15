@@ -196,7 +196,7 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
       inputs.step++;
     }
   } else if (action.type === "shell") {
-    console.log(`---- plan[${inputs.step++}]: shell command: ${action.description}`);
+    console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);

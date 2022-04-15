@@ -14,7 +14,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
-  label: "Tab",
+  label: getLocalizedString("core.TabOption.label"),
   cliName: "tab",
   description: getLocalizedString("core.TabOption.description"),
   detail: getLocalizedString("core.TabOption.detail"),
@@ -22,7 +22,7 @@ export const TabOptionItem: OptionItem = {
 
 export const TabNewUIOptionItem: OptionItem = {
   id: "Tab",
-  label: "SSO enabled launch page",
+  label: getLocalizedString("core.TabOption.labelNew"),
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
 };

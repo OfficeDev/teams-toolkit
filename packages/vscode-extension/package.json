@@ -902,16 +902,16 @@
         "title": "SPFx Prerequisite Check",
         "order": 2,
         "properties": {
-          "fx-extension.spfxPrerequisiteCheck": {
+          "fx-extension.SPFxPrerequisiteCheck": {
             "type": "object",
             "properties": {
               "yo": {
                 "type": "boolean",
-                "description": "Ensure Yeoman CLI is installed. (requires reload of VS Code)"
+                "description": "Ensure Yeoman CLI is installed. (Requires reload of VS Code)"
               },
               "sharepointYeomanGenerator": {
                 "type": "boolean",
-                "description": "Ensure Sharepoint Yeoman generator is installed. (requires reload of VS Code)"
+                "description": "Ensure SPFx Yeoman Generator is installed. (Requires reload of VS Code)"
               }
             },
             "additionalProperties": false,

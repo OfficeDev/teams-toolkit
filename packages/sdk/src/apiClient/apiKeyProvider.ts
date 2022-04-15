@@ -23,6 +23,7 @@ export class ApiKeyProvider implements AuthProvider {
    * @param { ApiKeyLocation } keyLocation - The location of API Key: request header or query parameter.
    *
    * @throws {@link ErrorCode|InvalidParameter} - when key name or key value is empty.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
@@ -53,6 +54,7 @@ export class ApiKeyProvider implements AuthProvider {
    * @returns Updated axios request config.
    *
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when API key already exists in request header or url query parameter.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */

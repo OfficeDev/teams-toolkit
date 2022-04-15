@@ -37,6 +37,9 @@ import {
   CommandAndResponseOptionItem,
   TabNonSsoItem,
   ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxNewUIItem,
+  MessageExtensionNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -227,7 +230,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...[CommandAndResponseOptionItem, NotificationOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabOptionItem, TabSPFxItem, MessageExtensionItem],
+      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
       ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {

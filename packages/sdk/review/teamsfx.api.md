@@ -151,10 +151,15 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @public
-export function createPemCertOption(cert: string | Buffer, key: string | Buffer, passphrase?: string, ca?: string | Buffer): SecureContextOptions;
+export function createPemCertOption(cert: string | Buffer, key: string | Buffer, options?: {
+    passphrase?: string;
+    ca?: string | Buffer;
+}): SecureContextOptions;
 
 // @public
-export function createPfxCertOption(pfx: string | Buffer, passphrase?: string): SecureContextOptions;
+export function createPfxCertOption(pfx: string | Buffer, options?: {
+    passphrase?: string;
+}): SecureContextOptions;
 
 // @beta
 export enum ErrorCode {

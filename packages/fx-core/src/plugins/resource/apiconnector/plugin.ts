@@ -83,7 +83,7 @@ export class ApiConnectorImpl {
           await this.scaffoldInComponent(projectPath, component, config, languageType);
         })
       );
-      const msg: string = this.getNotificationMsg(config, languageType);
+      const msg: string = Notification.getNotificationMsg(config, languageType);
       if (inputs.platform != Platform.CLI) {
         ctx.userInteraction
           ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
@@ -94,7 +94,11 @@ export class ApiConnectorImpl {
             }
           });
       } else {
-        ctx.userInteraction.showMessage("info", msg, false);
+        ctx.userInteraction.showMessage(
+          "info",
+          msg + ` ${Notification.GetLinkNotification()}`,
+          false
+        );
       }
     } catch (err) {
       await Promise.all(
@@ -270,41 +274,6 @@ export class ApiConnectorImpl {
   ): Promise<ApiConnectorResult> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
-  }
-
-  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
-    const authType: AuthType = config.AuthConfig.AuthType;
-    const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
-    switch (authType) {
-      case AuthType.BASIC: {
-        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.APIKEY: {
-        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.AAD: {
-        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
-          retMsg += Notification.GetReuseAADAuthString(apiName);
-        } else {
-          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
-        }
-        break;
-      }
-      case AuthType.CERT: {
-        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.CUSTOM: {
-        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
-        break;
-      }
-    }
-    retMsg += `${Notification.GetNpmInstallString()}`;
-    retMsg += `${Notification.GetLinkNotification()}`;
-    return retMsg;
   }
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {

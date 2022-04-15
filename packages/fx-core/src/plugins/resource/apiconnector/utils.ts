@@ -3,11 +3,12 @@
 "use strict";
 import { Inputs } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { LanguageType, FileType, Constants } from "./constants";
+import { LanguageType, FileType, Constants, AuthType } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import path from "path";
+import { ApiConnectorConfiguration, AADAuthConfig } from "./config";
 
 export function generateTempFolder(): string {
   const timestamp = Date.now();
@@ -130,5 +131,42 @@ export class Notification {
       "plugins.apiConnector.Notification.LinkNotification",
       Notification.READ_MORE_URL
     );
+  }
+
+  public static getNotificationMsg(
+    config: ApiConnectorConfiguration,
+    languageType: string
+  ): string {
+    const authType: AuthType = config.AuthConfig.AuthType;
+    const apiName: string = config.APIName;
+    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
+    switch (authType) {
+      case AuthType.BASIC: {
+        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.APIKEY: {
+        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.AAD: {
+        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
+          retMsg += Notification.GetReuseAADAuthString(apiName);
+        } else {
+          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
+        }
+        break;
+      }
+      case AuthType.CERT: {
+        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
+        break;
+      }
+      case AuthType.CUSTOM: {
+        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
+        break;
+      }
+    }
+    retMsg += `${Notification.GetNpmInstallString()}`;
+    return retMsg;
   }
 }

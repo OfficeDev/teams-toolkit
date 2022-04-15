@@ -6,7 +6,3 @@ module botProvision '\{{fx-resource-bot.Provision.bot.path}}' = {
     botEndpoint: \{{fx-resource-bot.References.endpointAsParam}}
   }
 }
-
-output botOutput object = {
-  teamsFxPluginId: 'fx-resource-bot'
-}

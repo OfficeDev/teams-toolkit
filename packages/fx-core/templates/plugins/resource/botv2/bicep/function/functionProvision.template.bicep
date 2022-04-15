@@ -3,9 +3,8 @@ param provisionParameters object
 param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}' // Try to read name for Azure Bot Service from parameters
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
+var functionSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
 var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
 var storageName = contains(provisionParameters, 'botStorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, 'botStorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
@@ -16,7 +15,17 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   location: resourceGroup().location
   name: serverfarmsName
   sku: {
-    name: webAppSKU
+    name: functionSKU
+  }
+}
+
+// Azure Storage is required when creating Azure Functions instance
+resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: storageName
+  kind: 'StorageV2'
+  location: resourceGroup().location
+  sku: {
+    name: storageSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSku property to provisionParameters to override the default value "Standard_LRS".
   }
 }
 
@@ -60,6 +69,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14' // Set NodeJS version to 14.x
         }
+        {{#if (contains "running-on-azure" configurations)}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'
@@ -68,6 +78,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
           value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
+        {{/if}}
       ]
       ftpsState: 'FtpsOnly'
     }
@@ -80,20 +91,9 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
-// Azure Storage is required when creating Azure Functions instance
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: storageName
-  kind: 'StorageV2'
-  location: resourceGroup().location
-  sku: {
-    name: storageSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSku property to provisionParameters to override the default value "Standard_LRS".
-  }
-}
-
-output botFunctionSKU string = webAppSKU
-output botFunctionName string = webAppName
-output botDomain string = functionApp.properties.defaultHostName
+output functionSKU string = functionSKU
+output functionName string = webAppName
+output domain string = functionApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
-output botServiceName string = botServiceName
-output botFunctionResourceId string = functionApp.id
-output botFunctionEndpoint string = 'https://${functionApp.properties.defaultHostName}'
+output functionResourceId string = functionApp.id
+output functionEndpoint string = 'https://${functionApp.properties.defaultHostName}'

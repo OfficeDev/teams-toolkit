@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var botFunctionName = split(provisionOutputs.functionOutput.value.botFunctionResourceId, '/')[8]
+var functionName = split(provisionOutputs.functionOutput.value.resourceId, '/')[8]
 
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
 var m365ClientId = provisionParameters['m365ClientId']
@@ -22,26 +22,34 @@ var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 
 {{#if (contains "fx-resource-frontend-hosting" plugins)}}
   {{#if (contains "fx-resource-bot" plugins) }}
-var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botAadAppClientId}'
   {{/if}}
 {{else}}
-var m365ApplicationIdUri = 'api://botid-${botId}'
+var m365ApplicationIdUri = 'api://botid-${botAadAppClientId}'
 {{/if}}
 {{/if}}
 
+{{#if (contains "fx-resource-bot" plugins) }}
 var botAadAppClientId = provisionParameters['botAadAppClientId']
-
 {{#if (contains "fx-resource-key-vault" plugins) }}
 var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretReference}}
 {{else}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
+{{/if}}
 
-var botId = provisionParameters['botAadAppClientId']
 
 resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
-  name: '${botFunctionName}/appsettings'
+  name: '${functionName}/appsettings'
   properties: union({
+    {{#if (contains "dotnet" configurations)}}
+    {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
+    TeamsFx__Authentication__ClientId: m365ClientId
+    TeamsFx__Authentication__ClientSecret: m365ClientSecret
+    TeamsFx__Authentication__OAuthAuthority: m365OauthAuthorityHost
+    {{/if}}
+    {{/if}}
+    {{#if (contains "node" configurations)}}
     {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
     INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.functionOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
@@ -50,8 +58,11 @@ resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     M365_TENANT_ID: m365TenantId // Tenant id of AAD application
     M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
     {{/if}}
+    {{/if}}
+    {{#if (contains "fx-resource-bot" plugins) }}
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
+    {{/if}}
     {{#if (contains "fx-resource-function" plugins) }}
     API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint // Azure Function endpoint
     {{/if}}

@@ -150,3 +150,4 @@ export const NotificationTriggers = {
 } as const;
 
 export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+export type BotTrigger = NotificationTrigger;

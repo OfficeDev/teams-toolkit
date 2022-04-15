@@ -12,7 +12,7 @@ import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { HostTypes, PluginBot } from "../resources/strings";
-import { AppSettings } from "./codeTemplateProvider";
+import { Configurations } from "./codeTemplateProvider";
 import * as utils from "../utils/common";
 
 const BicepTemplateRelativeDir = path.join("plugins", "resource", "botv2", "bicep");
@@ -20,19 +20,21 @@ const WebAppBicepFolderName = "webapp";
 const FunctionBicepFolderName = "function";
 const BotServiceBicepFolderName = "botservice";
 
-const resourceId = "provisionOutputs.botOutput.value.botWebAppResourceId";
-const hostName = "provisionOutputs.botOutput.value.validDomain";
-const webAppEndpoint = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
-const functionEndpoint = "provisionOutputs.botOutputs.value.botFunctionEndpoint";
-const endpointAsParam = "functionProvision.outputs.botFunctionEndpoint";
+const webAppResourceId = "provisionOutputs.webAppOutput.value.resourceId";
+const webAppHostName = "provisionOutputs.webAppOutput.value.validDomain";
+const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
+const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
+const webAppEndpoint = "provisionOutputs.webAppOutputs.value.webAppEndpoint";
+const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
+const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
 interface BicepGenerator {
-  generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate>;
-  updateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate>;
+  generateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate>;
+  updateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate>;
 }
 
 export class WebAppBicepGenerator implements BicepGenerator {
-  async generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async generateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -66,25 +68,28 @@ export class WebAppBicepGenerator implements BicepGenerator {
         Modules: { webApp: modules[3] },
       },
       Reference: {
-        resourceId: resourceId,
-        hostName: hostName,
+        resourceId: webAppResourceId,
+        hostName: webAppHostName,
         webAppEndpoint: webAppEndpoint,
       },
     };
     return result;
   }
 
-  async updateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async updateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     return {} as ArmTemplateResult;
   }
 }
 
 export class FunctionBicepGenerator implements BicepGenerator {
-  async generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async generateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = {
+      plugins: plugins.map((obj) => obj.name),
+      configurations: configuration,
+    };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       BicepTemplateRelativeDir,
@@ -96,11 +101,12 @@ export class FunctionBicepGenerator implements BicepGenerator {
       "functionProvision.template.bicep",
       "functionConfiguration.template.bicep",
     ];
-    const modules = await Promise.all(
+    let modules = await Promise.all(
       bicepFilenames.map((name) =>
         generateBicepFromFile(path.join(bicepTemplateDir, name), pluginCtx)
       )
     );
+    modules = modules.map((module) => module.replace(/PluginIdPlaceholder/g, "fx-resource-bot"));
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: modules[0],
@@ -111,8 +117,8 @@ export class FunctionBicepGenerator implements BicepGenerator {
         Modules: { function: modules[3] },
       },
       Reference: {
-        resourceId: resourceId,
-        hostName: hostName,
+        resourceId: functionResourceId,
+        hostName: functionHostName,
         functionEndpoint: functionEndpoint,
         endpointAsParam: endpointAsParam,
       },
@@ -120,13 +126,13 @@ export class FunctionBicepGenerator implements BicepGenerator {
     return result;
   }
 
-  async updateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async updateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     return {} as ArmTemplateResult;
   }
 }
 
 export class BotServiceBicepGenerator implements BicepGenerator {
-  async generateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async generateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -154,7 +160,7 @@ export class BotServiceBicepGenerator implements BicepGenerator {
     return result;
   }
 
-  async updateBicep(ctx: Context, configuration: AppSettings): Promise<ResourceTemplate> {
+  async updateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
     return {} as ArmTemplateResult;
   }
 }

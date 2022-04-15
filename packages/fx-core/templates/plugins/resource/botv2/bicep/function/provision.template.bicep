@@ -1,5 +1,5 @@
 // Resources for bot
-module functionProvision '\{{fx-resource-bot.Provision.function.path}}' = {
+module functionProvision '\{{PluginIdPlaceholder.Provision.function.path}}' = {
   name: 'function.Provision'
   params: {
     provisionParameters: provisionParameters
@@ -8,11 +8,11 @@ module functionProvision '\{{fx-resource-bot.Provision.function.path}}' = {
 }
 
 output functionOutput object = {
-  teamsFxPluginId: 'fx-resource-bot'
-  skuName: functionProvision.outputs.botFunctionSKU
-  siteName: functionProvision.outputs.botFunctionName
-  validDomain: functionProvision.outputs.botDomain
+  teamsFxPluginId: 'PluginIdPlaceholder'
+  skuName: functionProvision.outputs.functionSKU
+  siteName: functionProvision.outputs.functionName
+  validDomain: functionProvision.outputs.domain
   appServicePlanName: functionProvision.outputs.appServicePlanName
-  botFunctionResourceId: functionProvision.outputs.botFunctionResourceId
-  siteEndpoint: functionProvision.outputs.botFunctionEndpoint
+  resourceId: functionProvision.outputs.functionResourceId
+  siteEndpoint: functionProvision.outputs.functionEndpoint
 }

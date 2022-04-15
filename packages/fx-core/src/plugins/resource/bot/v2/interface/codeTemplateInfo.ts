@@ -7,8 +7,5 @@ export interface CodeTemplateInfo {
   group: string;
   language: string;
   scenario: string;
-  version: string;
-  localTemplateBaseName: string;
-  localTemplatePath: string;
   variables: TemplateVariable;
 }

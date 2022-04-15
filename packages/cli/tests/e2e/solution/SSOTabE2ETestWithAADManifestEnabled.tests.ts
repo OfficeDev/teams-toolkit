@@ -32,7 +32,7 @@ describe("SSO Tab with aad manifest enabled", () => {
   env["TEAMSFX_CONFIG_UNIFY"] = "true";
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
   it("SSO Tab E2E test with aad manifest enabled", async () => {

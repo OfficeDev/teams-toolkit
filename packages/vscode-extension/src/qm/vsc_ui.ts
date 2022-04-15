@@ -16,6 +16,7 @@ import {
   extensions,
   QuickInputButton,
   ThemeIcon,
+  QuickPickItemKind,
 } from "vscode";
 import {
   UserCancelError,
@@ -28,6 +29,7 @@ import {
   SelectFilesResult,
   SelectFolderResult,
   OptionItem,
+  OptionItemKind,
   Result,
   SelectFileConfig,
   SelectFilesConfig,
@@ -76,14 +78,16 @@ function getFxQuickPickItem(item: string | OptionItem): FxQuickPickItem {
       id: item,
       label: item,
     };
-  else
+  else {
     return {
       id: item.id,
       label: item.label,
       description: item.description,
       detail: item.detail,
+      kind: item.kind == OptionItemKind.Separator ? QuickPickItemKind.Separator : undefined,
       data: item.data,
     };
+  }
 }
 
 function toIdSet(items: ({ id: string } | string)[]): Set<string> {

@@ -6,6 +6,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  OptionItemKind,
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -116,6 +117,18 @@ export const M365SearchAppOptionItem: OptionItem = {
   label: "Search app",
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+};
+
+export const TeamsAppSeparatorOptionItem: OptionItem = {
+  id: "TeamsAppSeparator",
+  label: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+  kind: OptionItemKind.Separator,
+};
+
+export const TeamsM365AppSeparatorOptionItem: OptionItem = {
+  id: "TeamsM365AppSeparator",
+  label: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
+  kind: OptionItemKind.Separator,
 };
 
 export enum AzureSolutionQuestionNames {

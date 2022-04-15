@@ -3,11 +3,9 @@
 
 import "mocha";
 import { assert } from "chai";
-import { ConfigMap, OptionItem } from "../src";
-
+import { ConfigMap, OptionItem, OptionItemKind } from "../src";
 
 describe("Types", () => {
-  
   it("ConfigMap", () => {
     const configMap = new ConfigMap();
     configMap.set("k", "hello");
@@ -19,31 +17,56 @@ describe("Types", () => {
     configMap.set("k", true);
     assert.isTrue(configMap.getBoolean("k") === true);
 
-    configMap.set("k", ["a","b"]);
-    assert.sameOrderedMembers(configMap.getStringArray("k") as string[], ["a","b"]);
+    configMap.set("k", ["a", "b"]);
+    assert.sameOrderedMembers(configMap.getStringArray("k") as string[], ["a", "b"]);
 
-    configMap.set("k", [1,2]);
-    assert.sameOrderedMembers(configMap.getNumberArray("k") as Number[], [1,2]);
+    configMap.set("k", [1, 2]);
+    assert.sameOrderedMembers(configMap.getNumberArray("k") as number[], [1, 2]);
 
     configMap.set("k", [true, false]);
-    assert.sameOrderedMembers(configMap.getBooleanArray("k") as Boolean[], [true, false]);
+    assert.sameOrderedMembers(configMap.getBooleanArray("k") as boolean[], [true, false]);
 
-    configMap.set("k", [{id:"1", label:"l1"}, {id:"2", label:"l2"}] as OptionItem[]);
+    configMap.set("k", [
+      { id: "1", label: "l1" },
+      { id: "2", label: "l2" },
+    ] as OptionItem[]);
     const items = configMap.getOptionItemArray("k") as OptionItem[];
-    assert.deepEqual(items[0],  {id:"1", label:"l1"});
-    assert.deepEqual(items[1],  {id:"2", label:"l2"});
+    assert.deepEqual(items[0], { id: "1", label: "l1" });
+    assert.deepEqual(items[1], { id: "2", label: "l2" });
 
-    configMap.set("k", {id:"1", label:"l1"} as OptionItem);
-    assert.deepEqual(configMap.getOptionItem("k") as OptionItem, {id:"1", label:"l1"});
+    configMap.set("k", { id: "1", label: "l1" } as OptionItem);
+    assert.deepEqual(configMap.getOptionItem("k") as OptionItem, { id: "1", label: "l1" });
+
+    configMap.set("separator", {
+      id: "s",
+      label: "label",
+      kind: OptionItemKind.Separator,
+    } as OptionItem);
+    assert.deepEqual(
+      configMap.getOptionItem("separator") as OptionItem,
+      {
+        id: "s",
+        label: "label",
+        kind: OptionItemKind.Separator,
+      } as OptionItem
+    );
 
     const json = configMap.toJSON();
-    assert.deepEqual(json, {"k":{id:"1", label:"l1"}});
+    assert.deepEqual(json, {
+      k: { id: "1", label: "l1" },
+      separator: { id: "s", label: "label", kind: -1 },
+    });
 
-    const configMap2 = ConfigMap.fromJSON(json);
+    const configMap2 = ConfigMap.fromJSON(json) as ConfigMap;
     assert.isTrue(configMap2 !== undefined);
-    assert.deepEqual(configMap.getOptionItem("k") as OptionItem, configMap2!.getOptionItem("k") as OptionItem);
-    assert.isTrue(configMap2!.size === 1);
+    assert.deepEqual(
+      configMap.getOptionItem("k") as OptionItem,
+      configMap2.getOptionItem("k") as OptionItem
+    );
+    assert.deepEqual(
+      configMap.getOptionItem("separator") as OptionItem,
+      configMap2.getOptionItem("separator") as OptionItem
+    );
+    assert.isTrue(configMap2.size === 2);
   });
-
-  
 });

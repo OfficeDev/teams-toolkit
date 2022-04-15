@@ -987,7 +987,16 @@ export interface OptionItem {
     description?: string;
     detail?: string;
     id: string;
+    kind?: OptionItemKind;
     label: string;
+}
+
+// @public (undocumented)
+export enum OptionItemKind {
+    // (undocumented)
+    Default = 0,
+    // (undocumented)
+    Separator = -1
 }
 
 // @public (undocumented)

@@ -45,6 +45,15 @@ export interface OptionItem {
    * CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
    */
   cliName?: string;
+  /**
+   * kind of this option item. If it's separator, only label will take effect.
+   */
+  kind?: OptionItemKind;
+}
+
+export enum OptionItemKind {
+  Default = 0,
+  Separator = -1,
 }
 
 export class ConfigMap extends Map<string, ConfigValue> {

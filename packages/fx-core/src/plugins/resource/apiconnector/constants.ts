@@ -9,7 +9,7 @@ export enum ComponentType {
 
 export enum AuthType {
   BASIC = "basic",
-  APIKEY = "apiKey",
+  APIKEY = "apikey",
   AAD = "aad",
   CERT = "cert",
   CUSTOM = "custom",

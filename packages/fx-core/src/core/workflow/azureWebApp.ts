@@ -9,30 +9,6 @@ import * as path from "path";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";
-  configure(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const configure: Action = {
-      name: "azure-web-app.configure",
-      type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["configure azure web app"]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `configure azure web app using appSettings: ${JSON.stringify(
-            inputs["azure-web-app"].appSettings
-          )}`
-        );
-        return ok(undefined);
-      },
-    };
-    return ok(configure);
-  }
   deploy(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

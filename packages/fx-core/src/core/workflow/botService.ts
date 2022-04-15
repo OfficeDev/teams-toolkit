@@ -17,17 +17,12 @@ export class BotServiceResource implements CloudResource {
       name: "bot-service.provision",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok([
-          "provision bot-service step 1.create AAD app for bot service",
-          "provision bot-service step 2.create azure bot service",
-        ]);
+        return ok(["create AAD app for bot service (botId, botPassword)"]);
       },
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        console.log("provision bot-service step 1.create AAD app for bot service");
-        console.log("provision bot-service step 2.create bot service");
         inputs["bot-service"] = {
           botAadAppClientId: "MockBotAadAppClientId",
           botId: "MockBotId",
@@ -37,24 +32,5 @@ export class BotServiceResource implements CloudResource {
       },
     };
     return ok(provision);
-  }
-  configure(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const configure: Action = {
-      name: "bot-service.configure",
-      type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["configure bot-service"]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        return ok(undefined);
-      },
-    };
-    return ok(configure);
   }
 }

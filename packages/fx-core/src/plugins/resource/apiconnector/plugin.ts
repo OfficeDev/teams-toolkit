@@ -89,11 +89,29 @@ export class ApiConnectorImpl {
     );
 
     try {
+      let filesChanged: string[] = [];
       await Promise.all(
         config.ComponentPath.map(async (component) => {
-          await this.scaffoldInComponent(projectPath, component, config, languageType);
+          const changes = await this.scaffoldInComponent(
+            projectPath,
+            component,
+            config,
+            languageType
+          );
+          filesChanged = filesChanged.concat(changes);
         })
       );
+
+      const logMessage = getLocalizedString(
+        "plugins.apiConnector.Log.CommandSuccess",
+        filesChanged.reduce(
+          (previousValue, currentValue) =>
+            previousValue + path.relative(inputs.projectPath!, currentValue) + "\n",
+          ""
+        )
+      ).trimEnd();
+      ctx.logProvider?.info(logMessage); // Print generated/updated files for users
+
       const msg: string = this.getNotificationMsg(config, languageType);
       if (inputs.platform != Platform.CLI) {
         ctx.userInteraction
@@ -156,10 +174,20 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ) {
-    await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-    await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    await this.addSDKDependency(projectPath, componentItem);
+  ): Promise<string[]> {
+    const updatedEnvFile = await this.scaffoldEnvFileToComponent(
+      projectPath,
+      config,
+      componentItem
+    );
+    const generatedSampleFile = await this.scaffoldSampleCodeToComponent(
+      projectPath,
+      config,
+      componentItem,
+      languageType
+    );
+    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
+    return [updatedEnvFile, generatedSampleFile, updatedPackageFile];
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -267,11 +295,10 @@ export class ApiConnectorImpl {
     projectPath: string,
     config: ApiConnectorConfiguration,
     component: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<string> {
     const envHander = new EnvHandler(projectPath, component);
     envHander.updateEnvs(config);
-    await envHander.saveLocalEnvFile();
-    return ResultFactory.Success();
+    return await envHander.saveLocalEnvFile();
   }
 
   private async scaffoldSampleCodeToComponent(
@@ -279,16 +306,12 @@ export class ApiConnectorImpl {
     config: ApiConnectorConfiguration,
     component: string,
     languageType: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<string> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
-    await sampleHandler.generateSampleCode(config);
-    return ResultFactory.Success();
+    return await sampleHandler.generateSampleCode(config);
   }
 
-  private async addSDKDependency(
-    projectPath: string,
-    component: string
-  ): Promise<ApiConnectorResult> {
+  private async addSDKDependency(projectPath: string, component: string): Promise<string> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
   }
@@ -433,18 +456,9 @@ export class ApiConnectorImpl {
     });
     node.condition = { equals: APIKeyAuthOption.id };
 
-    const headerKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.requestHeaderOption.title"))
-    );
-    headerKeyNameQuestionNode.condition = { equals: requestHeaderOption.id };
+    const keyNameQuestionNode = new QTreeNode(buildAPIKeyNameQuestion());
 
-    const queryKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.queryParamsOption.title"))
-    );
-    queryKeyNameQuestionNode.condition = { equals: queryParamsOption.id };
-
-    node.addChild(headerKeyNameQuestionNode);
-    node.addChild(queryKeyNameQuestionNode);
+    node.addChild(keyNameQuestionNode);
     return node;
   }
 

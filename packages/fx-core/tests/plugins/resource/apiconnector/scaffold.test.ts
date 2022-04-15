@@ -49,7 +49,7 @@ describe("Api Connector scaffold sample code", async () => {
   it("call add existing api connector success", async () => {
     const expectInputs = {
       component: ["api", "bot"],
-      name: "test",
+      alias: "test",
       endpoint: "test.endpoint",
       "auth-type": "basic",
       "user-name": "test account",
@@ -67,7 +67,7 @@ describe("Api Connector scaffold sample code", async () => {
     sandbox.stub(SampleHandler.prototype, "generateSampleCode").rejects("Create File Failed");
     const expectInputs = {
       component: ["api", "bot"],
-      name: "test",
+      alias: "test",
       endpoint: "test.endpoint",
       "auth-type": "basic",
       "user-name": "test account",

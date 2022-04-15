@@ -276,6 +276,10 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.deploy) {
+    if (inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes") {
+      return ok(node);
+    }
+
     if (isDynamicQuestion) {
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);

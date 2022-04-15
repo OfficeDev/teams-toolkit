@@ -124,6 +124,7 @@ import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVaria
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import {
+  AadManifestDeployConstants,
   AzureAssignRoleHelpUrl,
   AzurePortalUrl,
   GlobalKey,
@@ -3015,11 +3016,12 @@ export async function addSsoHanlder(): Promise<Result<null, FxError>> {
 export async function deployAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
-  inputs["include-aad-manifest"] = "yes";
+  inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
   if (args && args.length > 1 && args[1] === "CodeLens") {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2];
     inputs.env = env;
+    inputs[AadManifestDeployConstants.DEPLOY_AAD_FROM_CODELENS] = "yes";
   }
   return await runCommand(Stage.deploy, inputs);
 }

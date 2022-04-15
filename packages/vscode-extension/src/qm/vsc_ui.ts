@@ -73,23 +73,6 @@ function getOptionItem(item: FxQuickPickItem): OptionItem {
   };
 }
 
-function getFxQuickPickItem(item: string | OptionItem): FxQuickPickItem {
-  if (typeof item === "string")
-    return {
-      id: item,
-      label: item,
-    };
-  else {
-    return {
-      id: item.id,
-      label: item.label,
-      description: item.description,
-      detail: item.detail,
-      data: item.data,
-    };
-  }
-}
-
 function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
   if (options && options.length > 0 && typeof options[0] === "string") {
     return (options as string[]).map((option: string) => {
@@ -194,7 +177,6 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          // quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
           quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
@@ -289,7 +271,6 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          // quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
           quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {

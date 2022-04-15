@@ -51,6 +51,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
 
   private async generateHoverMessage(key: string): Promise<vscode.MarkdownString> {
     const inputs = getSystemInputs();
+    inputs.loglevel = "Debug";
     const getConfigRes = await core.getProjectConfigV3(inputs);
     if (getConfigRes.isErr()) throw getConfigRes.error;
     const projectConfigs = getConfigRes.value;

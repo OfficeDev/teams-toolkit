@@ -25,7 +25,6 @@ export class Telemetry {
     reuseTeamsApp: "reuse-teams-app",
     keyLocation: "key-location",
     componentType: "component-type",
-    dependencyInstalled: "install-depends",
   };
 }
 

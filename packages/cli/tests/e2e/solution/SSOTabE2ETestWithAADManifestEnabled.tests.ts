@@ -54,6 +54,16 @@ describe("SSO Tab with aad manifest enabled", () => {
       expect(activeResourcePlugins.includes(PluginId.FrontendHosting)).to.be.true;
       expect(capabilities.includes("Tab")).to.be.true;
       expect(capabilities.includes("TabSSO")).to.be.true;
+
+      const aadTemplatePath = path.join(
+        projectPath,
+        TestFilePath.manifestFolder,
+        TestFilePath.aadManifestTemplateFileName
+      );
+      expect(await fs.pathExists(aadTemplatePath)).to.be.true;
+
+      const permissionJsonFilePath = path.join(projectPath, TestFilePath.permissionJsonFileName);
+      expect(await fs.pathExists(permissionJsonFilePath)).to.be.false;
     }
 
     await CliHelper.provisionProject(projectPath, "", env);

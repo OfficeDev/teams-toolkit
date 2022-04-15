@@ -20,6 +20,7 @@
   "core.publish.FailedToPublishBeforeProvision": "Failed to publish because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
   "core.publish.SPFxAskProvisionBeforePublish": "Failed to publish because the teams app has not been provisioned yet. Please provision first. Click Get Help to learn more about why you need to provision.",
   "core.addCapability.onlySupportAzure": "Add capability is only supported for project hosted in Azure",
+  "core.addCapability.notSupportedForM365Project": "Add capability is not supported for Microsoft 365 project",
   "core.addCapability.exceedMaxLimit": "Your App reaches maximal limit for Tabs, Bot and Message Extension.",
   "core.addCapability.addCapabilityNotice": "[Teams Toolkit] Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
   "core.addCapability.addCapabilitiesNotice": "[Teams Toolkit] Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",

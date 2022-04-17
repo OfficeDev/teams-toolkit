@@ -1250,9 +1250,12 @@ async function compileBicepToJson(
   try {
     const result = await executeCommand(
       bicepCommand,
-      [`build ${bicepOrchestrationFilePath} --stdout`],
       logger,
-      { shell: false }
+      { shell: false },
+      undefined,
+      "build",
+      bicepOrchestrationFilePath,
+      "--stdout"
     );
     return JSON.parse(result);
   } catch (err) {

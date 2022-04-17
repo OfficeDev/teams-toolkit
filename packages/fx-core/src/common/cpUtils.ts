@@ -6,10 +6,10 @@ import * as os from "os";
 
 export async function executeCommand(
   command: string,
-  args: string[],
   logger?: LogProvider,
   options?: cp.SpawnOptions,
-  workingDirectory?: string
+  workingDirectory?: string,
+  ...args: string[]
 ): Promise<string> {
   const result: ICommandResult = await tryExecuteCommand(
     command,

@@ -150,6 +150,16 @@
           "command": "fx-extension.deployAadAppManifest",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
+          "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
+          "group": "deploy@0"
         }
       ],
       "view/title": [
@@ -301,6 +311,10 @@
       "commandPalette": [
         {
           "command": "fx-extension.signOut",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
           "when": "false"
         },
         {
@@ -579,6 +593,10 @@
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.deployManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployManifest.ctxMenu.title%"
       },
       {
         "command": "fx-extension.addEnvironment",
@@ -1069,6 +1087,7 @@
     "@types/glob": "^7.1.4",
     "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
+    "@types/lodash": "^4.14.181",
     "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.21",
     "@types/react": "^17.0.3",
@@ -1079,7 +1098,7 @@
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/validator": "^13.1.1",
-    "@types/vscode": "^1.58.0",
+    "@types/vscode": "^1.64.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
@@ -1152,6 +1171,7 @@
     "jscodeshift": "^0.13.0",
     "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",
+    "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",

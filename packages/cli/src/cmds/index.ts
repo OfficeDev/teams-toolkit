@@ -19,11 +19,12 @@ import Publish from "./publish";
 import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
-import Manifest from "./manifest";
 import { isRemoteCollaborationEnabled } from "../utils";
+import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
+import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -33,7 +34,7 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Package(),
-  new Manifest(),
+  ...(isDeployManifestEnabled() ? [] : [new Manifest()]),
   new ManifestValidate(),
   new Publish(),
   new Config(),

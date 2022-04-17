@@ -89,12 +89,29 @@ export class ApiConnectorImpl {
     );
 
     try {
+      let filesChanged: string[] = [];
       await Promise.all(
         config.ComponentPath.map(async (component) => {
-          await this.scaffoldInComponent(projectPath, component, config, languageType);
+          const changes = await this.scaffoldInComponent(
+            projectPath,
+            component,
+            config,
+            languageType
+          );
+          filesChanged = filesChanged.concat(changes);
         })
       );
-      const msg: string = this.getNotificationMsg(config, languageType);
+      const msg: string = Notification.getNotificationMsg(config, languageType);
+      const logMessage = getLocalizedString(
+        "plugins.apiConnector.Log.CommandSuccess",
+        filesChanged.reduce(
+          (previousValue, currentValue) =>
+            previousValue + path.relative(inputs.projectPath!, currentValue) + "\n",
+          ""
+        )
+      ).trimEnd();
+      ctx.logProvider?.info(logMessage); // Print generated/updated files for users
+
       if (inputs.platform != Platform.CLI) {
         ctx.userInteraction
           ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
@@ -105,7 +122,11 @@ export class ApiConnectorImpl {
             }
           });
       } else {
-        ctx.userInteraction.showMessage("info", msg, false);
+        ctx.userInteraction.showMessage(
+          "info",
+          msg + ` ${Notification.GetLinkNotification()}`,
+          false
+        );
       }
     } catch (err) {
       await Promise.all(
@@ -156,10 +177,20 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ) {
-    await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-    await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    await this.addSDKDependency(projectPath, componentItem);
+  ): Promise<string[]> {
+    const updatedEnvFile = await this.scaffoldEnvFileToComponent(
+      projectPath,
+      config,
+      componentItem
+    );
+    const generatedSampleFile = await this.scaffoldSampleCodeToComponent(
+      projectPath,
+      config,
+      componentItem,
+      languageType
+    );
+    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
+    return [updatedEnvFile, generatedSampleFile, updatedPackageFile];
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -267,11 +298,10 @@ export class ApiConnectorImpl {
     projectPath: string,
     config: ApiConnectorConfiguration,
     component: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<string> {
     const envHander = new EnvHandler(projectPath, component);
     envHander.updateEnvs(config);
-    await envHander.saveLocalEnvFile();
-    return ResultFactory.Success();
+    return await envHander.saveLocalEnvFile();
   }
 
   private async scaffoldSampleCodeToComponent(
@@ -279,53 +309,14 @@ export class ApiConnectorImpl {
     config: ApiConnectorConfiguration,
     component: string,
     languageType: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<string> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
-    await sampleHandler.generateSampleCode(config);
-    return ResultFactory.Success();
+    return await sampleHandler.generateSampleCode(config);
   }
 
-  private async addSDKDependency(
-    projectPath: string,
-    component: string
-  ): Promise<ApiConnectorResult> {
+  private async addSDKDependency(projectPath: string, component: string): Promise<string> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
-  }
-
-  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
-    const authType: AuthType = config.AuthConfig.AuthType;
-    const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
-    switch (authType) {
-      case AuthType.BASIC: {
-        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.APIKEY: {
-        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.AAD: {
-        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
-          retMsg += Notification.GetReuseAADAuthString(apiName);
-        } else {
-          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
-        }
-        break;
-      }
-      case AuthType.CERT: {
-        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.CUSTOM: {
-        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
-        break;
-      }
-    }
-    retMsg += `${Notification.GetNpmInstallString()}`;
-    retMsg += `${Notification.GetLinkNotification()}`;
-    return retMsg;
   }
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
@@ -433,18 +424,9 @@ export class ApiConnectorImpl {
     });
     node.condition = { equals: APIKeyAuthOption.id };
 
-    const headerKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.requestHeaderOption.title"))
-    );
-    headerKeyNameQuestionNode.condition = { equals: requestHeaderOption.id };
+    const keyNameQuestionNode = new QTreeNode(buildAPIKeyNameQuestion());
 
-    const queryKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.queryParamsOption.title"))
-    );
-    queryKeyNameQuestionNode.condition = { equals: queryParamsOption.id };
-
-    node.addChild(headerKeyNameQuestionNode);
-    node.addChild(queryKeyNameQuestionNode);
+    node.addChild(keyNameQuestionNode);
     return node;
   }
 

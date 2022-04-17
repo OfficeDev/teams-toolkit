@@ -34,6 +34,7 @@ import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { isDeployManifestEnabled } from "../../../common";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -63,6 +64,21 @@ export class AppStudioPlugin implements Plugin {
         });
         appStudioQuestions.addChild(buildOrPublish);
       }
+    }
+
+    if (
+      isDeployManifestEnabled() &&
+      stage === Stage.deploy &&
+      (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
+    ) {
+      const node = new QTreeNode({
+        name: Constants.INCLUDE_APP_MANIFEST,
+        type: "singleSelect",
+        staticOptions: ["yes", "no"],
+        title: getLocalizedString("plugins.appstudio.whetherToDeployManifest"),
+        default: "no",
+      });
+      appStudioQuestions.addChild(node);
     }
 
     return ok(appStudioQuestions);
@@ -265,6 +281,40 @@ export class AppStudioPlugin implements Plugin {
     } else {
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.updateManifest,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return ok(Void);
+    }
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (
+      ctx.answers &&
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] &&
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] == "no"
+    ) {
+      await ctx.logProvider?.debug("Skip Teams app manifest deployment");
+      return ok(Void);
+    }
+
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.deploy);
+
+    const res = await this.appStudioPluginImpl.updateManifest(ctx, false);
+    if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.deploy,
+        res.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
+        return ok(Void);
+      } else {
+        return err(res.error);
+      }
+    } else {
+      TelemetryUtils.sendSuccessEvent(
+        TelemetryEventName.deploy,
         this.appStudioPluginImpl.commonProperties
       );
       return ok(Void);

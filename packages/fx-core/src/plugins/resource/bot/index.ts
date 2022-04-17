@@ -6,6 +6,7 @@ import {
   Func,
   FxError,
   ok,
+  Platform,
   Plugin,
   PluginContext,
   QTreeNode,
@@ -210,7 +211,7 @@ export class TeamsBot implements Plugin {
             const res = new QTreeNode({
               type: "group",
             });
-            res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+            res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
             res.condition = showNotificationTriggerCondition;
             return ok(res);
           } else {
@@ -238,7 +239,7 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
           res.condition = showNotificationTriggerCondition;
           return ok(res);
         } else {

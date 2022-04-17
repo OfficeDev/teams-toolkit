@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { LocalEnvProvider, LocalEnvs } from "../../../common/local/localEnvProvider";
 import { AADAuthConfig, ApiConnectorConfiguration, BasicAuthConfig } from "./config";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { FileChange, FileChangeType, ResultFactory } from "./result";
 import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 
@@ -87,10 +87,12 @@ export class EnvHandler {
     this.apiDataManager.addApiEnvs(config);
   }
 
-  public async saveLocalEnvFile(): Promise<string> {
+  public async saveLocalEnvFile(): Promise<FileChange> {
     const srcFile = path.join(this.projectRoot, this.componentType, Constants.envFileName);
+    let fileChangeType: FileChangeType = FileChangeType.Update;
     if (!(await fs.pathExists(srcFile))) {
       await fs.createFile(srcFile);
+      fileChangeType = FileChangeType.Create;
     }
     // update localEnvs
     try {
@@ -110,7 +112,10 @@ export class EnvHandler {
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)
       );
     }
-    return srcFile; // return modified env file
+    return {
+      changeType: fileChangeType,
+      filePath: srcFile,
+    }; // return modified env file
   }
 
   private updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {

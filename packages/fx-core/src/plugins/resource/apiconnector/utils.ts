@@ -3,7 +3,7 @@
 "use strict";
 import { Inputs } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { LanguageType, FileType, Constants, AuthType } from "./constants";
+import { LanguageType, FileType } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -67,69 +67,6 @@ export class Notification {
     return getLocalizedString("plugins.apiConnector.Notification.GenerateFiles", generatedFiles);
   }
 
-  public static GetBasicAuthString(apiName: string, components: string[]): string {
-    const apiNameEx = apiName.toUpperCase();
-    const envName = `API_${apiNameEx}_PASSWORD`;
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.BasicAuth",
-      envName,
-      concatLines(components, " and ")
-    );
-  }
-
-  public static GetCertAuthString(apiName: string, components: string[]): string {
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.CertAuth",
-      "<your-certfication-content>"
-    );
-  }
-
-  public static GetApiKeyAuthString(apiName: string, components: string[]): string {
-    const apiKeyEx: string = apiName.toUpperCase();
-    const apiKeyName = `API_${apiKeyEx}_APIKEY`;
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.ApiKeyAuth",
-      apiKeyName,
-      concatLines(components, " and ")
-    );
-  }
-
-  public static GetCustomAuthString(
-    apiName: string,
-    components: string[],
-    languageType: string
-  ): string {
-    const fileName = getSampleFileName(apiName, languageType);
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.CustomAuth",
-      fileName,
-      concatLines(components, " and ")
-    );
-  }
-
-  public static GetGenAADAuthString(apiName: string, components: string[]): string {
-    const apiNameUpperCase: string = apiName.toUpperCase();
-    const envName = `API_${apiNameUpperCase}_CLIENTSECRET `;
-    const envFiles = concatLines(
-      components.map((item) => path.join(item, Constants.envFileName)),
-      " and "
-    );
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.GenAADAuth",
-      "<your-api-scope>",
-      envName,
-      envFiles
-    );
-  }
-
-  public static GetReuseAADAuthString(apiName: string): string {
-    return getLocalizedString("plugins.apiConnector.Notification.ReuseAADAuth", "<your-api-scope>");
-  }
-
-  public static GetNpmInstallString(): string {
-    return getLocalizedString("plugins.apiConnector.Notification.NpmInstall");
-  }
-
   public static GetLinkNotification(): string {
     return getLocalizedString(
       "plugins.apiConnector.Notification.LinkNotification",
@@ -141,48 +78,8 @@ export class Notification {
     config: ApiConnectorConfiguration,
     languageType: string
   ): string {
-    const authType: AuthType = config.AuthConfig.AuthType;
     const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
-    switch (authType) {
-      case AuthType.BASIC: {
-        retMsg = concatLines([
-          retMsg,
-          Notification.GetBasicAuthString(apiName, config.ComponentPath),
-        ]);
-        break;
-      }
-      case AuthType.APIKEY: {
-        retMsg = concatLines([
-          retMsg,
-          Notification.GetApiKeyAuthString(apiName, config.ComponentPath),
-        ]);
-        break;
-      }
-      case AuthType.AAD: {
-        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
-          retMsg = concatLines([retMsg, Notification.GetReuseAADAuthString(apiName)]);
-        } else {
-          retMsg = concatLines([
-            retMsg,
-            Notification.GetGenAADAuthString(apiName, config.ComponentPath),
-          ]);
-        }
-        break;
-      }
-      case AuthType.CERT: {
-        retMsg = concatLines([
-          retMsg,
-          Notification.GetCertAuthString(apiName, config.ComponentPath),
-        ]);
-        break;
-      }
-      case AuthType.CUSTOM: {
-        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
-        break;
-      }
-    }
-    retMsg = concatLines([retMsg, Notification.GetNpmInstallString()]);
+    const retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
     return retMsg;
   }
 }

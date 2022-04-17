@@ -29,7 +29,7 @@ import {
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
+import { ApiConnectorResult, ResultFactory, QesutionResult, FileChange } from "./result";
 import { AuthType, Constants, KeyLocation } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
@@ -89,7 +89,7 @@ export class ApiConnectorImpl {
     );
 
     try {
-      let filesChanged: string[] = [];
+      let filesChanged: FileChange[] = [];
       await Promise.all(
         config.ComponentPath.map(async (component) => {
           const changes = await this.scaffoldInComponent(
@@ -106,10 +106,15 @@ export class ApiConnectorImpl {
         "plugins.apiConnector.Log.CommandSuccess",
         filesChanged.reduce(
           (previousValue, currentValue) =>
-            previousValue + path.relative(inputs.projectPath!, currentValue) + "\n",
+            previousValue +
+            `[${currentValue.changeType}] ${path.relative(
+              inputs.projectPath!,
+              currentValue.filePath
+            )}` +
+            "\n",
           ""
         )
-      ).trimEnd();
+      );
       ctx.logProvider?.info(logMessage); // Print generated/updated files for users
 
       if (inputs.platform != Platform.CLI) {
@@ -177,7 +182,8 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ): Promise<string[]> {
+  ): Promise<FileChange[]> {
+    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
     const updatedEnvFile = await this.scaffoldEnvFileToComponent(
       projectPath,
       config,
@@ -189,8 +195,13 @@ export class ApiConnectorImpl {
       componentItem,
       languageType
     );
-    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
-    return [updatedEnvFile, generatedSampleFile, updatedPackageFile];
+
+    const fileChanges: FileChange[] = [updatedEnvFile, generatedSampleFile];
+    if (updatedPackageFile) {
+      // if we didn't update package.json, the result will be undefined
+      fileChanges.push(updatedPackageFile);
+    }
+    return fileChanges;
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -298,7 +309,7 @@ export class ApiConnectorImpl {
     projectPath: string,
     config: ApiConnectorConfiguration,
     component: string
-  ): Promise<string> {
+  ): Promise<FileChange> {
     const envHander = new EnvHandler(projectPath, component);
     envHander.updateEnvs(config);
     return await envHander.saveLocalEnvFile();
@@ -309,12 +320,15 @@ export class ApiConnectorImpl {
     config: ApiConnectorConfiguration,
     component: string,
     languageType: string
-  ): Promise<string> {
+  ): Promise<FileChange> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
     return await sampleHandler.generateSampleCode(config);
   }
 
-  private async addSDKDependency(projectPath: string, component: string): Promise<string> {
+  private async addSDKDependency(
+    projectPath: string,
+    component: string
+  ): Promise<FileChange | undefined> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
   }

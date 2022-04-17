@@ -233,7 +233,7 @@ describe("Other test case", () => {
   it("executeCommand", async () => {
     {
       try {
-        const res = await executeCommand("ls", []);
+        const res = await executeCommand("ls", undefined, undefined, undefined);
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }

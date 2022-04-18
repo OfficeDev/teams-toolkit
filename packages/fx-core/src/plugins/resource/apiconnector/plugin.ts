@@ -89,7 +89,7 @@ export class ApiConnectorImpl {
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
-        ErrorMessage.componentNotExistError.message(ResourcePlugins.Bot)
+        ErrorMessage.componentNotExistError.message(ComponentType.BOT)
       );
     }
     if (
@@ -98,7 +98,7 @@ export class ApiConnectorImpl {
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
-        ErrorMessage.componentNotExistError.message(ResourcePlugins.Function)
+        ErrorMessage.componentNotExistError.message(ComponentType.API)
       );
     }
 

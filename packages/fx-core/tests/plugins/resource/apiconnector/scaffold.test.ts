@@ -63,10 +63,7 @@ describe("Api Connector scaffold sample code", async () => {
     } catch (err) {
       expect(err instanceof UserError).to.be.true;
       chai.assert.strictEqual(err.source, "api-connector");
-      chai.assert.strictEqual(
-        err.displayMessage,
-        "Component fx-resource-function not exist, please add first"
-      );
+      chai.assert.strictEqual(err.displayMessage, "Component api not exist, please add first");
     }
   });
   it("call add existing api connector success", async () => {

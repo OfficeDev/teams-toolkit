@@ -59,7 +59,6 @@ import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/too
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
-import { CommonConstants } from "./functionsHostedBot/constants";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.

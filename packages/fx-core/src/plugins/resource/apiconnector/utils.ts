@@ -79,7 +79,7 @@ export class Notification {
     languageType: string
   ): string {
     const apiName: string = config.APIName;
-    const retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
+    const retMsg: string = Notification.GetBasicString(apiName, config.ComponentType, languageType);
     return retMsg;
   }
 }

@@ -11,7 +11,7 @@ import { expect } from "chai";
 import { ResourcePlugins, ConstantString } from "../util";
 import { ApiConnectorImpl } from "../../../../src/plugins/resource/apiconnector/plugin";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
-import { Inputs, Platform, SystemError } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { MockContext } from "./utils";
 import { ErrorMessage } from "../../../../src/plugins/resource/apiconnector/errors";
 
@@ -26,7 +26,7 @@ describe("Api Connector scaffold sample code", async () => {
   const testpath = path.join(__dirname, "api-connect-scaffold");
   const botPath = path.join(testpath, "bot");
   const apiPath = path.join(testpath, "api");
-  const context = MockContext();
+
   const inputs: Inputs = { platform: Platform.VSCode, projectPath: testpath };
   beforeEach(async () => {
     await fs.ensureDir(testpath);
@@ -46,6 +46,29 @@ describe("Api Connector scaffold sample code", async () => {
     await fs.remove(testpath);
     sandbox.restore();
   });
+  it("scaffold api without api active resource", async () => {
+    const expectInputs = {
+      component: ["api"],
+      alias: "test",
+      endpoint: "test.endpoint",
+      "auth-type": "basic",
+      "user-name": "test account",
+    };
+    const context = MockContext();
+    context.projectSetting.solutionSettings.activeResourcePlugins = ["fx-resource-bot"];
+    const fakeInputs: Inputs = { ...inputs, ...expectInputs };
+    const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
+    try {
+      await apiConnector.scaffold(context, fakeInputs);
+    } catch (err) {
+      expect(err instanceof UserError).to.be.true;
+      chai.assert.strictEqual(err.source, "api-connector");
+      chai.assert.strictEqual(
+        err.displayMessage,
+        "Component fx-resource-function not exist, please add first"
+      );
+    }
+  });
   it("call add existing api connector success", async () => {
     const expectInputs = {
       component: ["api", "bot"],
@@ -54,6 +77,7 @@ describe("Api Connector scaffold sample code", async () => {
       "auth-type": "basic",
       "user-name": "test account",
     };
+    const context = MockContext();
     const fakeInputs: Inputs = { ...inputs, ...expectInputs };
     const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
     await apiConnector.scaffold(context, fakeInputs);
@@ -72,6 +96,7 @@ describe("Api Connector scaffold sample code", async () => {
       "auth-type": "basic",
       "user-name": "test account",
     };
+    const context = MockContext();
     const fakeInputs: Inputs = { ...inputs, ...expectInputs };
     const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
     await fs.copyFile(

@@ -458,7 +458,7 @@
   "error.apiConnector.ApiConnectorFunctionRouteError": "Failed to route function call: %s",
   "error.apiConnector.SDKVersionImcompatibleError": "In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s",
   "error.apiConnector.pkgFileNotExistError": "In %s project, there is no package.json exist",
-  "error.apiConnector.componentNotExistError": "Component %s not exist, please create first",
+  "error.apiConnector.componentNotExistError": "Component %s not exist, please add first",
   "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
   "core.ProgrammingLanguageQuestion.title": "Programming Language",

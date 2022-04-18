@@ -33,6 +33,9 @@ export function MockContext(): any {
     projectSetting: {
       appName: "ut",
       programmingLanguage: "javascript",
+      solutionSettings: {
+        activeResourcePlugins: ["fx-resource-bot", "fx-resource-function"],
+      },
     },
     config: new Map(),
     root: path.join(__dirname, "ut"),

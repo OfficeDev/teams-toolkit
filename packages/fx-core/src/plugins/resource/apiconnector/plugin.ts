@@ -84,8 +84,8 @@ export class ApiConnectorImpl {
     const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     if (
-      activePlugins.includes(ResourcePlugins.Bot) &&
-      !config.ComponentType.includes(ComponentType.BOT)
+      !activePlugins.includes(ResourcePlugins.Bot) &&
+      config.ComponentType.includes(ComponentType.BOT)
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
@@ -93,8 +93,8 @@ export class ApiConnectorImpl {
       );
     }
     if (
-      activePlugins.includes(ResourcePlugins.Function) &&
-      !config.ComponentType.includes(ComponentType.API)
+      !activePlugins.includes(ResourcePlugins.Function) &&
+      config.ComponentType.includes(ComponentType.API)
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,

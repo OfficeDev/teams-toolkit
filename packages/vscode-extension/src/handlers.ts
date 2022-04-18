@@ -440,7 +440,7 @@ async function openFolder(
   showLocalPreviewMessage: boolean,
   args?: any[]
 ) {
-  await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, args);
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
   await ExtTelemetry.dispose();
   // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
   // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
@@ -452,14 +452,15 @@ async function openFolder(
 export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
+  projectUri: Uri,
   args?: any[]
 ): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
-    await globalStateUpdate(GlobalKey.OpenReadMe, false);
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-    await globalStateUpdate(GlobalKey.OpenReadMe, true);
+    await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
   }
 
   if (showLocalDebugMessage) {
@@ -1523,7 +1524,7 @@ export async function openSurveyHandler(args?: any[]) {
 
 async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = await globalStateGet(GlobalKey.OpenWalkThrough, false);
-  const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, false);
+  const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, "");
   const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
   if (isOpenWalkThrough) {
     showLocalDebugMessage();
@@ -1531,11 +1532,11 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe) {
+  if (isOpenReadMe === ext.workspaceUri.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
-    await globalStateUpdate(GlobalKey.OpenReadMe, false);
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
   }
   if (isOpenSampleReadMe) {
     showLocalDebugMessage();

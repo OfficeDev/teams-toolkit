@@ -29,8 +29,8 @@ import {
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants, KeyLocation } from "./constants";
+import { ApiConnectorResult, ResultFactory, QesutionResult, FileChange } from "./result";
+import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -80,18 +80,40 @@ export class ApiConnectorImpl {
       undefined,
       telemetryProperties
     );
+    // CLI checker
+    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    if (
+      !activePlugins.includes(ResourcePlugins.Bot) &&
+      config.ComponentType.includes(ComponentType.BOT)
+    ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ComponentType.BOT)
+      );
+    }
+    if (
+      !activePlugins.includes(ResourcePlugins.Function) &&
+      config.ComponentType.includes(ComponentType.API)
+    ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ComponentType.API)
+      );
+    }
+
     // backup relative files.
     const backupFolderName = generateTempFolder();
     await Promise.all(
-      config.ComponentPath.map(async (component) => {
+      config.ComponentType.map(async (component) => {
         await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
       })
     );
 
     try {
-      let filesChanged: string[] = [];
+      let filesChanged: FileChange[] = [];
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           const changes = await this.scaffoldInComponent(
             projectPath,
             component,
@@ -106,10 +128,15 @@ export class ApiConnectorImpl {
         "plugins.apiConnector.Log.CommandSuccess",
         filesChanged.reduce(
           (previousValue, currentValue) =>
-            previousValue + path.relative(inputs.projectPath!, currentValue) + "\n",
+            previousValue +
+            `[${currentValue.changeType}] ${path.relative(
+              inputs.projectPath!,
+              currentValue.filePath
+            )}` +
+            "\n",
           ""
         )
-      ).trimEnd();
+      );
       ctx.logProvider?.info(logMessage); // Print generated/updated files for users
 
       if (inputs.platform != Platform.CLI) {
@@ -130,7 +157,7 @@ export class ApiConnectorImpl {
       }
     } catch (err) {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await fs.copy(
             path.join(projectPath, component, backupFolderName),
             path.join(projectPath, component),
@@ -154,7 +181,7 @@ export class ApiConnectorImpl {
       throw err;
     } finally {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await removeFileIfExist(path.join(projectPath, component, backupFolderName));
         })
       );
@@ -177,7 +204,8 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ): Promise<string[]> {
+  ): Promise<FileChange[]> {
+    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
     const updatedEnvFile = await this.scaffoldEnvFileToComponent(
       projectPath,
       config,
@@ -189,8 +217,13 @@ export class ApiConnectorImpl {
       componentItem,
       languageType
     );
-    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
-    return [updatedEnvFile, generatedSampleFile, updatedPackageFile];
+
+    const fileChanges: FileChange[] = [updatedEnvFile, generatedSampleFile];
+    if (updatedPackageFile) {
+      // if we didn't update package.json, the result will be undefined
+      fileChanges.push(updatedPackageFile);
+    }
+    return fileChanges;
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -286,7 +319,7 @@ export class ApiConnectorImpl {
     );
     const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
-      ComponentPath: inputs[Constants.questionKey.componentsSelect],
+      ComponentType: inputs[Constants.questionKey.componentsSelect],
       APIName: inputs[Constants.questionKey.apiName],
       AuthConfig: authConfig,
       EndPoint: inputs[Constants.questionKey.endpoint],
@@ -298,7 +331,7 @@ export class ApiConnectorImpl {
     projectPath: string,
     config: ApiConnectorConfiguration,
     component: string
-  ): Promise<string> {
+  ): Promise<FileChange> {
     const envHander = new EnvHandler(projectPath, component);
     envHander.updateEnvs(config);
     return await envHander.saveLocalEnvFile();
@@ -309,12 +342,15 @@ export class ApiConnectorImpl {
     config: ApiConnectorConfiguration,
     component: string,
     languageType: string
-  ): Promise<string> {
+  ): Promise<FileChange> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
     return await sampleHandler.generateSampleCode(config);
   }
 
-  private async addSDKDependency(projectPath: string, component: string): Promise<string> {
+  private async addSDKDependency(
+    projectPath: string,
+    component: string
+  ): Promise<FileChange | undefined> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
   }
@@ -433,7 +469,7 @@ export class ApiConnectorImpl {
   public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
     const properties = {
       [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
-      [Telemetry.properties.componentType]: config.ComponentPath.join(","),
+      [Telemetry.properties.componentType]: config.ComponentType.join(","),
     };
 
     switch (config.AuthConfig.AuthType) {

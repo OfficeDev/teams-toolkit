@@ -72,6 +72,11 @@ export async function deploy(
     );
   }
 
+  const consent = await askForDeployConsent(ctx, envInfo as v3.EnvInfoV3);
+  if (consent.isErr()) {
+    return err(consent.error);
+  }
+
   if (!inAzureProject) {
     const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
 

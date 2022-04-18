@@ -9,6 +9,17 @@ export interface ApiConnectionMsg {
   defaultMsg: string;
   localizedMsg: string;
 }
+
+export enum FileChangeType {
+  Create = "Create",
+  Update = "Update",
+}
+
+export interface FileChange {
+  changeType: FileChangeType;
+  filePath: string;
+}
+
 export class ResultFactory {
   static readonly source: string = Constants.pluginNameShort;
   public static UserError(

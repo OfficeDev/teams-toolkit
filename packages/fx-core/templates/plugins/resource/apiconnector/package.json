@@ -1,5 +1,5 @@
 {
     "dependencies": {
-        "@microsoft/teamsfx": "0.6.2-alpha.0"
+        "@microsoft/teamsfx": "0.6.3-alpha.fda95b1d5.0"
     }
 }

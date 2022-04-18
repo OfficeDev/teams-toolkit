@@ -508,9 +508,21 @@ export async function fillInAzureConfigs(
 
 export async function askForDeployConsent(
   ctx: v2.Context,
+  azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
-  const msg = getLocalizedString("core.deploy.confirmEnvNotice", envInfo.envName);
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username || "";
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
+  const msg = getLocalizedString(
+    "core.deploy.confirmEnvNotice",
+    envInfo.envName,
+    username,
+    subscriptionName ? subscriptionName : subscriptionId
+  );
   const deployOption = "Deploy";
   const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
   const choice = result?.isOk() ? result.value : undefined;

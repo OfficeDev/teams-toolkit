@@ -17,7 +17,7 @@ import { isUndefined } from "lodash";
 import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { hasAzureResource, isVSProject } from "../../../../common/projectSettingsHelper";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -70,11 +70,6 @@ export async function deploy(
         ctx.telemetryReporter
       )
     );
-  }
-
-  const consent = await askForDeployConsent(ctx, envInfo as v3.EnvInfoV3);
-  if (consent.isErr()) {
-    return err(consent.error);
   }
 
   if (!inAzureProject) {
@@ -135,6 +130,21 @@ export async function deploy(
           ctx.telemetryReporter
         )
       );
+    }
+  }
+
+  if (
+    isAzureProject(getAzureSolutionSettings(ctx)) &&
+    hasAzureResource(ctx.projectSetting, true) &&
+    inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes"
+  ) {
+    const consent = await askForDeployConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
+    if (consent.isErr()) {
+      return err(consent.error);
     }
   }
 

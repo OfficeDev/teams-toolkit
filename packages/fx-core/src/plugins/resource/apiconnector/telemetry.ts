@@ -4,7 +4,6 @@ import { solutionGlobalVars } from "../../solution/fx-solution/v3/solutionGlobal
 export class Telemetry {
   static readonly componentName = "fx-resource-api-connector";
   static startSuffix = "-start";
-  static installedSuffix = "-installed";
   static valueYes = "yes";
   static valueNo = "no";
   static userError = "user";

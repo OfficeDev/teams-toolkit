@@ -1,4 +1,4 @@
-## How to enable SSO in TeamsFx Tab projects
+## How to enable SSO in TeamsFx Bot projects
 
 This doc will show you how to add Single sign-on (SSO) feature to TeamsFx Bot projects. Note that this article is only for Teams Toolkit Visual Studio Code Extension version after x.x.x or TeamsFx CLI version after x.x.x.
 

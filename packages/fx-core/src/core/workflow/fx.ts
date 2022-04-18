@@ -39,6 +39,7 @@ import {
 import "./spfx";
 import "./teamsManifest";
 import { getComponent, getEmbeddedValueByPath } from "./workflow";
+import { camelCase } from "lodash";
 
 @Service("fx")
 export class TeamsfxCore {
@@ -169,7 +170,21 @@ export class TeamsfxCore {
         targetAction: "azure-bicep.generate",
         inputs: {
           "azure-bicep": {
-            resources: [teamsBotInputs.hostingResource, "azure-bot"],
+            resource: camelCase(teamsBotInputs.hostingResource),
+          },
+        },
+      },
+      {
+        name: "call:azure-bicep.generate",
+        type: "call",
+        required: false,
+        targetAction: "azure-bicep.generate",
+        inputs: {
+          "azure-bicep": {
+            resource: "azureBot",
+            dependencies: {
+              endpoint: `${camelCase(teamsBotInputs.hostingResource)}.outputs.webAppEndpoint`,
+            },
           },
         },
       },

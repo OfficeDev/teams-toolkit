@@ -87,6 +87,8 @@ export class TeamsBotV2Impl {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    const packDir = await CodeTemplateProvider.localBuild(ctx, inputs);
+    // TODO: zip packDir and upload to Azure Web App or Azure Function
     return ok(Void);
   }
 

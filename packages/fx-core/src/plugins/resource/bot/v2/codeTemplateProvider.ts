@@ -17,10 +17,14 @@ import {
   BotTrigger,
   PluginBot,
   QuestionBotScenarioToPluginActRoles,
+  CommonStrings,
+  Commands,
 } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import * as utils from "../utils/common";
 import { HostTypeTriggerOptions } from "../question";
+import path from "path";
+import { CommandExecutionError } from "../errors";
 
 export type Configurations = string[];
 
@@ -41,6 +45,62 @@ export class CodeTemplateProvider {
         variables: {},
       };
     });
+  }
+
+  static getConfigurations(ctx: Context, inputs: Inputs): Configurations {
+    const lang = this.resolveProgrammingLanguage(ctx);
+
+    const configurations: Configurations = [];
+
+    if (lang === "js" || lang === "ts") {
+      configurations.push("node");
+    }
+    if (lang === "csharp") {
+      configurations.push("dotnet");
+    }
+
+    configurations.push("running-on-azure");
+
+    return configurations;
+  }
+
+  static async localBuild(ctx: Context, inputs: Inputs): Promise<string> {
+    // Return the folder path to be zipped and uploaded
+
+    const lang = ctx.projectSetting.programmingLanguage;
+    const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
+    if (lang === "ts") {
+      //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
+      try {
+        await utils.execute("npm install", packDir);
+        await utils.execute("npm run build", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+      }
+    }
+
+    if (lang === "js") {
+      try {
+        // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+        await utils.execute("npm install", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+      }
+    }
+
+    if (lang === "csharp") {
+      try {
+        // TODO: build csharp project
+        await utils.execute("dotnet publish", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`dotnet publish`, e);
+      }
+    }
+
+    throw new Error("Invalid programming language");
   }
 
   private static resolveActRoles(ctx: Context, inputs: Inputs): PluginActRoles[] {
@@ -126,23 +186,4 @@ export class CodeTemplateProvider {
     }
     return scenarios;
   }
-
-  static getConfigurations(ctx: Context, inputs: Inputs): Configurations {
-    const lang = this.resolveProgrammingLanguage(ctx);
-
-    const configurations: Configurations = [];
-
-    if (lang === "js" || lang === "ts") {
-      configurations.push("node");
-    }
-    if (lang === "csharp") {
-      configurations.push("dotnet");
-    }
-
-    configurations.push("running-on-azure");
-
-    return configurations;
-  }
-
-  static getBuiltArtifact(ctx: Context, inputs: Inputs) {}
 }

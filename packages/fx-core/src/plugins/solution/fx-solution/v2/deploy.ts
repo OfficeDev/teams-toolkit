@@ -72,11 +72,9 @@ export async function deploy(
     );
   }
 
-  if (inputs.platform === Platform.VSCode) {
-    const result = await askForDeployConsent(ctx, envInfo as v3.EnvInfoV3);
-    if (result.isErr()) {
-      return err(result.error);
-    }
+  const consent = await askForDeployConsent(ctx, envInfo as v3.EnvInfoV3);
+  if (consent.isErr()) {
+    return err(consent.error);
   }
 
   if (!inAzureProject) {

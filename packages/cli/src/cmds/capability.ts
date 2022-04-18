@@ -24,14 +24,14 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
-import { automaticNpmInstallHandlerByObject } from "./preview/npmInstallHandler";
+import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 
 abstract class CapabilityAddBase extends YargsCommand {
   abstract readonly yargsHelp: string;
   abstract getNpmInstallExcludeCaps(projectSettings: ProjectSettings | undefined): {
-    frontend: boolean;
-    backend: boolean;
-    bot: boolean;
+    excludeFrontend: boolean;
+    excludeBackend: boolean;
+    excludeBot: boolean;
   };
 
   public override builder(yargs: Argv): Argv<any> {
@@ -71,7 +71,9 @@ abstract class CapabilityAddBase extends YargsCommand {
       });
       return err(configResult.error);
     }
-    const exclude = this.getNpmInstallExcludeCaps(configResult.value?.settings);
+    const { excludeFrontend, excludeBackend, excludeBot } = this.getNpmInstallExcludeCaps(
+      configResult.value?.settings
+    );
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -90,7 +92,7 @@ abstract class CapabilityAddBase extends YargsCommand {
       }
     }
 
-    await automaticNpmInstallHandlerByObject(rootFolder, exclude);
+    await automaticNpmInstallHandler(rootFolder, excludeFrontend, excludeBackend, excludeBot);
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -106,22 +108,22 @@ export class CapabilityAddTab extends CapabilityAddBase {
   public readonly description = "Add a tab.";
   public readonly yargsHelp = "addCapability-Tab";
 
-  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined): {
-    frontend: boolean;
-    backend: boolean;
-    bot: boolean;
-  } {
-    return { frontend: ProjectSettingsHelper.includeFrontend(settings), backend: true, bot: true };
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
+    return {
+      excludeFrontend: ProjectSettingsHelper.includeFrontend(settings),
+      excludeBackend: true,
+      excludeBot: true,
+    };
   }
 }
 
 abstract class CapabilityAddBotBase extends CapabilityAddBase {
-  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined): {
-    frontend: boolean;
-    backend: boolean;
-    bot: boolean;
-  } {
-    return { frontend: true, backend: true, bot: ProjectSettingsHelper.includeBot(settings) };
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
+    return {
+      excludeFrontend: true,
+      excludeBackend: true,
+      excludeBot: ProjectSettingsHelper.includeBot(settings),
+    };
   }
 }
 

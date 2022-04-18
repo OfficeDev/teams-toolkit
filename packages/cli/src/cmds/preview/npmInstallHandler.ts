@@ -22,18 +22,6 @@ import * as constants from "./constants";
 import { NpmInstallFailed } from "./errors";
 import { getAutomaticNpmInstallSetting } from "./commonUtils";
 
-export async function automaticNpmInstallHandlerByObject(
-  workspaceFolder: string,
-  exclude: {
-    frontend: boolean;
-    backend: boolean;
-    bot: boolean;
-  }
-) {
-  const { frontend, backend, bot } = exclude;
-  return automaticNpmInstallHandler(workspaceFolder, frontend, backend, bot);
-}
-
 export async function automaticNpmInstallHandler(
   workspaceFolder: string,
   excludeFrontend: boolean,

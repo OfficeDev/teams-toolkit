@@ -23,6 +23,7 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import {
   AzureResourceApim,
@@ -34,12 +35,14 @@ import {
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
@@ -219,7 +222,7 @@ export function fillInSolutionSettings(
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (isAadManifestEnabled()) {
     if (capabilities.includes(TabOptionItem.id)) {
-      capabilities.push(SsoItem.id);
+      capabilities.push(TabSsoItem.id);
     } else if (capabilities.includes(TabNonSsoItem.id)) {
       const index = capabilities.indexOf(TabNonSsoItem.id);
       capabilities.splice(index, 1);
@@ -263,6 +266,12 @@ export function fillInSolutionSettings(
     // set capabilities to TabOptionItem in case of TabSPFx item, so donot impact capabilities.includes() check overall
     capabilities = [TabOptionItem.id];
     hostType = HostTypeOptionSPFx.id;
+  } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
+    capabilities = [TabOptionItem.id];
+    hostType = HostTypeOptionAzure.id;
+  } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
+    capabilities = [MessageExtensionItem.id];
+    hostType = HostTypeOptionAzure.id;
   }
   if (!hostType) {
     return err(

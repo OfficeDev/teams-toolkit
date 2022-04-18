@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
+import { Container } from "typedi";
+import * as uuid from "uuid";
+
 import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
@@ -9,6 +15,7 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  DefaultReadme,
   err,
   Func,
   FunctionRouter,
@@ -27,18 +34,13 @@ import {
   StatesFolderName,
   Tools,
   UserCancelError,
-  UserError,
   v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import { Container } from "typedi";
-import * as uuid from "uuid";
-import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+
 import { globalStateUpdate } from "../common/globalState";
+import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
@@ -55,16 +57,21 @@ import {
   mapToJson,
   undefinedName,
 } from "../common/tools";
+import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   BotOptionItem,
+  BotSsoItem,
   CommandAndResponseOptionItem,
+  ExistingTabOptionItem,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -74,8 +81,8 @@ import { downloadSample } from "./downloadSample";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
-  InitializedFileAlreadyExistError,
   FunctionRouterError,
+  InitializedFileAlreadyExistError,
   InvalidInputError,
   LoadSolutionError,
   NonExistEnvNameError,
@@ -86,7 +93,10 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
+import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
+import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import {
   askNewEnvironment,
@@ -125,13 +135,16 @@ import {
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
-  ScratchOptionYesM365,
 } from "./question";
 import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
+import {
+  CoreTelemetryComponentName,
+  CoreTelemetryEvent,
+  CoreTelemetryProperty,
+  CoreTelemetrySuccess,
+  sendErrorTelemetryThenReturnError,
+} from "./telemetry";
 import { CoreHookContext } from "./types";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
-import { getTemplatesFolder } from "../folder";
-import { getLocalizedString } from "../common/localizeUtils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -181,6 +194,12 @@ export class FxCore implements v3.ICore {
         throw new ProjectFolderInvalidError(folder);
       }
     }
+
+    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (capabilities && capabilities.includes(ExistingTabOptionItem.id)) {
+      return await this.createExistingTabApp(inputs, folder, ctx);
+    }
+
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
@@ -224,8 +243,8 @@ export class FxCore implements v3.ICore {
         isFromSample: false,
       };
       if (
-        inputs.isM365 ||
-        inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionYesM365.id
+        inputs[CoreQuestionNames.Capabilities].includes(M365SsoLaunchPageOptionItem.id) ||
+        inputs[CoreQuestionNames.Capabilities].includes(M365SearchAppOptionItem.id)
       ) {
         projectSettings.isM365 = true;
         inputs.isM365 = true;
@@ -290,6 +309,39 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
+
+  async createExistingTabApp(
+    inputs: Inputs,
+    folder: string,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.CreateStart, {
+      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+    });
+
+    const appName = inputs[CoreQuestionNames.AppName] as string;
+    inputs.folder = path.join(folder, appName);
+    const result = await this._init(inputs, ctx, true);
+    if (result.isErr()) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          CoreTelemetryEvent.Create,
+          result.error,
+          TOOLS.telemetryReporter
+        )
+      );
+    }
+
+    TOOLS.ui.showMessage("info", getLocalizedString("core.create.successNotice"), false);
+    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
+      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+    });
+    return result;
+  }
+
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -364,7 +416,10 @@ export class FxCore implements v3.ICore {
         if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
-        if (isAadManifestEnabled() && capabilities.includes(SsoItem.id)) {
+        if (
+          isAadManifestEnabled() &&
+          (capabilities.includes(TabSsoItem.id) || capabilities.includes(BotSsoItem.id))
+        ) {
           features.push(BuiltInFeaturePluginNames.aad);
         }
         if (inputs.platform === Platform.VS) {
@@ -417,6 +472,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -450,6 +506,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     ProjectSettingsLoaderMW,
+    AadManifestMigrationMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -521,6 +578,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -562,6 +620,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -594,6 +653,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -663,6 +723,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -696,6 +757,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -736,6 +798,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -835,6 +898,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
@@ -941,6 +1005,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -1001,6 +1066,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1027,6 +1093,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -1061,6 +1128,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1087,6 +1155,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1120,6 +1189,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1146,6 +1216,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1273,13 +1344,14 @@ export class FxCore implements v3.ICore {
   async createEnvWithName(
     targetEnvName: string,
     projectSettings: ProjectSettings,
-    inputs: Inputs
+    inputs: Inputs,
+    existingTabEndpoint?: string
   ): Promise<Result<Void, FxError>> {
     let appName = projectSettings.appName;
     if (targetEnvName === environmentManager.getLocalEnvName()) {
       appName = getLocalAppName(appName);
     }
-    const newEnvConfig = environmentManager.newEnvConfigData(appName);
+    const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
       newEnvConfig,
@@ -1331,6 +1403,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
+    AadManifestMigrationMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,
@@ -1368,7 +1441,11 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async _init(
+    inputs: Inputs,
+    ctx?: CoreHookContext,
+    isInitExistingApp = false
+  ): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -1380,16 +1457,26 @@ export class FxCore implements v3.ICore {
     if (validateResult.errors && validateResult.errors.length > 0) {
       return err(InvalidInputError("invalid app-name", inputs));
     }
+
     const projectPath = inputs.folder;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is empty", inputs));
     }
-    const isValid = isValidProject(projectPath);
-    if (isValid) {
-      return err(
-        new OperationNotPermittedError("initialize a project in existing teamsfx project")
-      );
+
+    if (isInitExistingApp) {
+      const folderExist = await fs.pathExists(projectPath);
+      if (folderExist) {
+        return err(new ProjectFolderExistError(projectPath));
+      }
+    } else {
+      const isValid = isValidProject(projectPath);
+      if (isValid) {
+        return err(
+          new OperationNotPermittedError("initialize a project in existing teamsfx project")
+        );
+      }
     }
+
     await fs.ensureDir(projectPath);
     inputs.projectPath = projectPath;
 
@@ -1422,10 +1509,20 @@ export class FxCore implements v3.ICore {
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
+    const manifestAddcapRes = await appStudioV3.addCapabilities(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      [{ name: "staticTab", existingApp: true }]
+    );
+    if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
+
+    // create env config with existing tab's endpoint
+    const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
     const createEnvResult = await this.createEnvWithName(
       environmentManager.getDefaultEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      isInitExistingApp ? endpoint : undefined
     );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
@@ -1433,14 +1530,15 @@ export class FxCore implements v3.ICore {
     const createLocalEnvResult = await this.createEnvWithName(
       environmentManager.getLocalEnvName(),
       projectSettings,
-      inputs
+      inputs,
+      isInitExistingApp ? endpoint : undefined
     );
     if (createLocalEnvResult.isErr()) {
       return err(createLocalEnvResult.error);
     }
-    const sourceReadmePath = path.join(getTemplatesFolder(), "core", AutoGeneratedReadme);
+    const sourceReadmePath = path.join(getTemplatesFolder(), "core", DefaultReadme);
     if (await fs.pathExists(sourceReadmePath)) {
-      const targetReadmePath = path.join(projectPath, AutoGeneratedReadme);
+      const targetReadmePath = path.join(projectPath, DefaultReadme);
       await fs.copy(sourceReadmePath, targetReadmePath);
     }
     return ok(inputs.projectPath!);

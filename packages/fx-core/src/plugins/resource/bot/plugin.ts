@@ -55,11 +55,8 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import {
-  generateBicepFromFile,
-  isBotNotificationEnabled,
-  isConfigUnifyEnabled,
-} from "../../../common/tools";
+import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
 
@@ -185,7 +182,10 @@ export class TeamsBotImpl implements PluginImpl {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = {
+      plugins: plugins.map((obj) => obj.name),
+      enableAlwaysOn: isBotNotificationEnabled(),
+    };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDir, Bicep.ProvisionFileName),
@@ -341,7 +341,8 @@ export class TeamsBotImpl implements PluginImpl {
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.CheckDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

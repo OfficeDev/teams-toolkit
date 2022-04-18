@@ -3,11 +3,12 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
-  UnifyConfigs = "unifyConfigs",
-  EnableInitApp = "enableInitApp",
+  EnableExistingApp = "enableExistingApp",
   BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
-  YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
-  generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
+  YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
+  generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
+  enableM365App = "enableM365App",
+  EnableGAPreviewFeatures = "enableGAPreviewFeatures",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -29,4 +30,13 @@ export enum GlobalKey {
   OpenReadMe = "fx-extension.openReadMe",
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
+  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }
+
+export enum AadManifestDeployConstants {
+  DEPLOY_AAD_FROM_CODELENS = "deploy-aad-from-codelens",
+  INCLUDE_AAD_MANIFEST = "include-aad-manifest",
+}
+
+export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
+export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;

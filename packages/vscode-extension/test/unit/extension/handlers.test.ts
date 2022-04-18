@@ -14,7 +14,6 @@ import {
   Void,
   Result,
   FxError,
-  TelemetryEvent,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -29,8 +28,9 @@ import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
-import * as envTree from "../../../src/envTree";
+import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
+import * as uuid from "uuid";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -39,10 +39,11 @@ suite("handlers", () => {
 
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
+    let setStatusChangeMap: any;
 
     this.beforeAll(() => {
       sandbox.stub(accountTree, "registerAccountTreeHandler");
-      sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
+      setStatusChangeMap = sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
@@ -56,6 +57,12 @@ suite("handlers", () => {
     test("No globalState error", async () => {
       const result = await handlers.activate();
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+    });
+
+    test("Don't listen to Azure account notify for non-Teamsfx project", async () => {
+      await handlers.activate();
+
+      chai.assert.isTrue(setStatusChangeMap.notCalled);
     });
   });
 
@@ -74,6 +81,7 @@ suite("handlers", () => {
       const clock = sinon.useFakeTimers();
 
       sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
@@ -102,7 +110,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
-      sinon.stub(envTree, "registerEnvTreeHandler");
+      sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
       await handlers.provisionHandler();
 
@@ -139,9 +147,24 @@ suite("handlers", () => {
     this.afterEach(() => {
       sinon.restore();
     });
-    test("create", async () => {
+    test("create sample with projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(vscode.commands, "executeCommand");
+      const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
+
+      await handlers.runCommand(Stage.create, inputs);
+
+      sinon.assert.calledOnce(createProject);
+      chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
+      chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
+    });
+
+    test("create from scratch without projectid", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
@@ -150,6 +173,8 @@ suite("handlers", () => {
 
       sinon.restore();
       sinon.assert.calledOnce(createProject);
+      chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
+      chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
     });
 
     test("provisionResources", async () => {
@@ -196,7 +221,7 @@ suite("handlers", () => {
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      chai.expect(ignoreEnvInfo).to.equal(true);
+      chai.expect(ignoreEnvInfo).to.equal(false);
       chai.expect(localDebugCalled).equals(1);
     });
 
@@ -304,7 +329,7 @@ suite("handlers", () => {
   test("signOutM365", async () => {
     const signOut = sinon.stub(AppStudioTokenInstance, "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(envTree, "registerEnvTreeHandler");
+    sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
     await handlers.signOutM365(false);
 
@@ -509,7 +534,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.local.template.json" as any
+          "undefined/templates/appPackage/manifest.template.json" as any
         )
       );
     });
@@ -528,7 +553,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.remote.template.json" as any
+          "undefined/templates/appPackage/manifest.template.json" as any
         )
       );
     });
@@ -546,5 +571,17 @@ suite("handlers", () => {
 
     inputs.stage = Stage.create;
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
+  });
+
+  test("deployAadAppManifest", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+    await handlers.deployAadAppManifest([]);
+
+    sinon.assert.calledOnce(deployArtifacts);
+    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
+    sinon.restore();
   });
 });

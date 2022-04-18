@@ -7,6 +7,9 @@ import "./console/screen";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import { initializeGAFeatureFlags } from "@microsoft/teamsfx-core";
+initializeGAFeatureFlags();
+
 import { registerCommands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
@@ -29,7 +32,6 @@ export async function start() {
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,
-    "duplicate-arguments-array": false,
   });
   registerCommands(argv);
   argv

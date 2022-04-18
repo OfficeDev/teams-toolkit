@@ -4,6 +4,7 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
+import path from "path";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -157,6 +158,7 @@ export enum SolutionError {
   SsoEnabled = "SsoEnabled",
   InvalidSsoProject = "InvalidSsoProject",
   InvalidProjectPath = "InvalidProjectPath",
+  FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -179,6 +181,7 @@ export const LOCAL_TENANT_ID = "local_tenantId";
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
+export const TEAMS_APP_ID = "teamsAppId";
 
 export const AzureRoleAssignmentsHelpLink =
   "https://aka.ms/teamsfx-azure-role-assignments-help-link";
@@ -221,6 +224,9 @@ export enum SolutionTelemetryEvent {
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
+
+  DeployStart = "deploy-start",
+  Deploy = "deploy",
 }
 
 export enum SolutionTelemetryProperty {
@@ -235,6 +241,7 @@ export enum SolutionTelemetryProperty {
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",
+  IncludeAadManifest = "include-aad-manifest",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   HostType = "host-type",
@@ -294,4 +301,16 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
       );
     }
   }
+}
+
+export enum Language {
+  JavaScript = "javascript",
+  TypeScript = "typescript",
+}
+
+export class AddSsoParameters {
+  static readonly filePath = path.join("plugins", "resource", "aad", "auth");
+  static readonly Bot = "bot";
+  static readonly Tab = "tab";
+  static readonly Readme = "README.md";
 }

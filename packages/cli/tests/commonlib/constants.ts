@@ -1,8 +1,11 @@
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
+  static readonly manifestFolder = "./templates/appPackage";
 
   static readonly projectSettingsFileName = "projectSettings.json";
+  static readonly aadManifestTemplateFileName = "aad.template.json";
+  static readonly permissionJsonFileName = "permissions.json";
 
   static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";
@@ -23,6 +26,7 @@ export class PluginId {
   static readonly Identity = "fx-resource-identity";
   static readonly Apim = "fx-resource-apim";
   static readonly KeyVault = "fx-resource-key-vault";
+  static readonly AppStudio = "fx-resource-appstudio";
 }
 
 export const fileEncoding = "UTF8";
@@ -31,6 +35,12 @@ export enum Capability {
   Tab = "tab",
   Bot = "bot",
   MessagingExtension = "messaging-extension",
+  M365SsoLaunchPage = "sso-launch-page",
+  M365SearchApp = "search-app",
+  ExistingTab = "existing-tab",
+  TabSso = "TabSSO",
+  BotSso = "BotSSO",
+  TabNonSso = "tab-non-sso",
 }
 
 export enum Resource {
@@ -46,6 +56,7 @@ export enum ResourceToDeploy {
   Bot = "bot",
   Function = "function",
   Apim = "apim",
+  AadManifest = "aad-manifest",
 }
 export class StateConfigKey {
   // solution
@@ -64,6 +75,9 @@ export class StateConfigKey {
   static readonly oauthHost = "oauthHost";
   static readonly oauth2PermissionScopeId = "oauth2PermissionScopeId";
   static readonly applicationIdUris = "applicationIdUris";
+
+  // app studio
+  static readonly teamsAppId = "teamsAppId";
 
   // simple auth
   static readonly endpoint = "endpoint";
@@ -102,6 +116,7 @@ export class StateConfigKey {
 export class ProjectSettingKey {
   static readonly solutionSettings = "solutionSettings";
   static readonly activeResourcePlugins = "activeResourcePlugins";
+  static readonly capabilities = "capabilities";
 }
 
 export class provisionParametersKey {

@@ -9,14 +9,23 @@ import {
   TextInputQuestion,
   Void,
 } from "@microsoft/teamsfx-api";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 export const TabOptionItem: OptionItem = {
   id: "Tab",
-  label: "Tab",
+  label: getLocalizedString("core.TabOption.label"),
   cliName: "tab",
   description: getLocalizedString("core.TabOption.description"),
   detail: getLocalizedString("core.TabOption.detail"),
+};
+
+export const TabNewUIOptionItem: OptionItem = {
+  id: "Tab",
+  label: getLocalizedString("core.TabOption.labelNew"),
+  cliName: "tab",
+  detail: getLocalizedString("core.TabOption.detailNew"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -29,65 +38,100 @@ export const BotOptionItem: OptionItem = {
 
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
-  label: "Notification",
+  label: getLocalizedString("core.NotificationOption.label"),
   cliName: "notification",
-  description: getLocalizedString("core.NotificationOption.description"),
   detail: getLocalizedString("core.NotificationOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
-  id: "CommandAndResponse",
-  label: "Command and Response",
-  cliName: "command-and-response",
-  description: getLocalizedString("core.CommandAndResponseOption.description"),
+  // For default option, id and cliName must be the same
+  id: "command-bot",
+  label: getLocalizedString("core.CommandAndResponseOption.label"),
+  cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+};
+
+export const ExistingTabOptionItem: OptionItem = {
+  id: "ExistingTab",
+  label: getLocalizedString("core.ExistingTabOption.label"),
+  cliName: "existing-tab",
+  detail: getLocalizedString("core.ExistingTabOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
-  label: "Messaging Extension",
+  label: getLocalizedString("core.MessageExtensionOption.label"),
   cliName: "messaging-extension",
   description: getLocalizedString("core.MessageExtensionOption.description"),
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
 
+export const MessageExtensionNewUIItem: OptionItem = {
+  id: "MessagingExtension",
+  label: getLocalizedString("core.MessageExtensionOption.labelNew"),
+  cliName: "messaging-extension",
+  detail: getLocalizedString("core.MessageExtensionOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+};
+
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
-  label: "Tab(SPFx)",
+  label: getLocalizedString("core.TabSPFxOption.label"),
   cliName: "tab-spfx",
   description: getLocalizedString("core.TabSPFxOption.description"),
   detail: getLocalizedString("core.TabSPFxOption.detail"),
 };
 
-export const SsoItem: OptionItem = {
-  id: "SSO",
-  label: "SSO",
-  cliName: "sso",
-  description: getLocalizedString("core.Sso.description"),
-  detail: getLocalizedString("core.Sso.detail"),
+export const TabSPFxNewUIItem: OptionItem = {
+  id: "TabSPFx",
+  label: getLocalizedString("core.TabSPFxOption.labelNew"),
+  cliName: "tab-spfx",
+  detail: getLocalizedString("core.TabSPFxOption.detailNew"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+};
+
+export const TabSsoItem: OptionItem = {
+  id: "TabSSO",
+  label: "TabSSO",
+  cliName: "tab-sso",
+  description: getLocalizedString("core.TabSso.description"),
+  detail: getLocalizedString("core.TabSso.detail"),
+};
+
+export const BotSsoItem: OptionItem = {
+  id: "BotSSO",
+  label: "BotSSO",
+  cliName: "bot-sso",
+  description: getLocalizedString("core.BotSso.description"),
+  detail: getLocalizedString("core.BotSso.detail"),
 };
 
 export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
-  label: "Tab(Non-SSO)",
+  label: getLocalizedString("core.TabNonSso.label"),
   cliName: "tab-non-sso",
   description: getLocalizedString("core.TabNonSso.description"),
   detail: getLocalizedString("core.TabNonSso.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
-export const M365LaunchPageOptionItem: OptionItem = {
-  id: "M365LaunchPage",
-  label: "Launch Page",
-  cliName: "launch-page",
-  description: getLocalizedString("core.M365LaunchPageOptionItem.description"),
+export const M365SsoLaunchPageOptionItem: OptionItem = {
+  id: "M365SsoLaunchPage",
+  label: "SSO enabled launch page",
+  cliName: "sso-launch-page",
+  detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
+  groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
 };
 
-export const M365MessagingExtensionOptionItem: OptionItem = {
-  id: "M365MessagingExtension",
-  label: "Messaging Extension",
-  cliName: "messaging-extension",
-  description: getLocalizedString("core.M365MessagingExtensionOptionItem.description"),
-  detail: getLocalizedString("core.M365MessagingExtensionOptionItem.detail"),
+export const M365SearchAppOptionItem: OptionItem = {
+  id: "M365SearchApp",
+  label: "Search app",
+  cliName: "search-app",
+  detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+  groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
 };
 
 export enum AzureSolutionQuestionNames {
@@ -213,7 +257,9 @@ export function addCapabilityQuestion(
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.addCapabilityQuestion.titleNew")
+      : getLocalizedString("core.addCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: options,
     default: [],

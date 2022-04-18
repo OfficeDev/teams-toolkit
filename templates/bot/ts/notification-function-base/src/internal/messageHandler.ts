@@ -1,15 +1,11 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { TeamsActivityHandler } from "botbuilder";
-import { adapter } from "./initialize";
+import { bot } from "./initialize";
 
-const handler = new TeamsActivityHandler();
 const httpTrigger: AzureFunction = async function (
   context: Context,
   req: HttpRequest
 ): Promise<void> {
-  await adapter.processActivity(req, context.res as any, async (context) => {
-    await handler.run(context);
-  });
+  await bot.requestHandler(req, context.res as any);
 };
 
 export default httpTrigger;

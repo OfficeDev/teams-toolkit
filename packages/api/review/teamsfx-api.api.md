@@ -216,6 +216,11 @@ interface AzureSQL extends AzureResource {
 
 // @public
 export interface BaseQuestion {
+    buttons?: {
+        icon: string;
+        tooltip: string;
+        command: string;
+    }[];
     default?: unknown;
     forgetLastValue?: boolean;
     name: string;
@@ -431,6 +436,9 @@ type DeepReadonly<T> = {
 };
 
 // @public (undocumented)
+export const DefaultReadme = "README.md";
+
+// @public (undocumented)
 type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 // @public
@@ -455,6 +463,9 @@ export interface EnvConfig {
         clientSecret?: string;
         objectId?: string;
         accessAsUserScopeId?: string;
+        frontendDomain?: string;
+        botId?: string;
+        botEndpoint?: string;
         [k: string]: unknown;
     };
     azure?: {
@@ -975,6 +986,7 @@ export interface OptionItem {
     data?: unknown;
     description?: string;
     detail?: string;
+    groupName?: string;
     id: string;
     label: string;
 }
@@ -1488,6 +1500,7 @@ export interface StringArrayValidation extends StaticValidation {
     containsAny?: string[];
     enum?: string[];
     equals?: string[];
+    excludes?: string;
     maxItems?: number;
     minItems?: number;
     uniqueItems?: boolean;
@@ -1695,6 +1708,11 @@ export interface TreeProvider {
 
 // @public
 export interface UIConfig<T> {
+    buttons?: {
+        icon: string;
+        tooltip: string;
+        command: string;
+    }[];
     default?: T;
     name: string;
     placeholder?: string;

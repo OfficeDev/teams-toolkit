@@ -1152,5 +1152,49 @@ describe("API v2 implementation", () => {
       );
       expect(result.isOk()).equals(true);
     });
+
+    it("should not call arm deployment when there is no Azure resource to provision", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        isForUT: false,
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {},
+      };
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+
+      const solution = new TeamsAppSolutionV2();
+      const armSpy = sinon.spy(arm, "deployArmTemplates");
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      chai.assert.equal(armSpy.callCount, 0);
+      expect(result.isOk()).equals(true);
+    });
   });
 });

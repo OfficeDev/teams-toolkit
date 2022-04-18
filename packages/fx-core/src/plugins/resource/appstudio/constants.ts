@@ -7,6 +7,7 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
+  public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = "Read more";
   public static readonly LEARN_MORE = "Learn more";
   public static readonly ADMIN_PORTAL = "Admin portal";
@@ -319,6 +320,29 @@ export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
         value: {
           domains: ["*.botframework.com"],
         },
+      },
+    ],
+  },
+];
+
+export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365: IComposeExtension[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    commands: [
+      {
+        id: "searchQuery",
+        context: ["compose", "commandBox"],
+        description: "Test command to run query",
+        title: "Search",
+        type: "query",
+        parameters: [
+          {
+            name: "searchQuery",
+            title: "Search Query",
+            description: "Your search query",
+            inputType: "text",
+          },
+        ],
       },
     ],
   },

@@ -41,6 +41,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   properties: {
     serverFarmId: serverFarms.id
     keyVaultReferenceIdentity: userAssignedIdentityId
+    httpsOnly: true
     siteConfig: {
       appSettings: [
         {
@@ -48,6 +49,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1'
         }
       ]
+      ftpsState: 'FtpsOnly'
     }
   }
   identity: {

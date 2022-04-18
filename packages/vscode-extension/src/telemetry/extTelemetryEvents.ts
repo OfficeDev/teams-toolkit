@@ -47,17 +47,24 @@ export enum TelemetryEvent {
   ConnectExistingApi = "connect-existing-api",
 
   EditManifestTemplate = "edit-manifest-template",
+  EditAadManifestTemplate = "edit-aad-manifest-template",
 
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
   Build = "build",
 
+  BuildAadManifestStart = "build-aad-manifest-start",
+  BuildAadManifest = "build-aad-manifest",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+
+  DeployAadManifestStart = "deploy-aad-manifest-start",
+  DeployAadManifest = "deploy-aad-manifest",
 
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
@@ -95,6 +102,8 @@ export enum TelemetryEvent {
   ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
+  ViewGuidedTutorials = "view-guided-tutorials",
+  OpenTutorial = "open-tutorial",
 
   GetStartedPrerequisitesStart = "get-started-prerequisites-start",
   GetStartedPrerequisites = "get-started-prerequisites",
@@ -125,6 +134,9 @@ export enum TelemetryEvent {
   OpenManifestConfigStateStart = "open-manifest-config-state-start",
   OpenManifestConfigState = "open-manifest-config-state",
 
+  OpenAadConfigStateStart = "open-aad-config-state-start",
+  OpenAadConfigState = "open-aad-config-state",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
@@ -149,11 +161,14 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
+  ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickLocalPreview = "click-local-preview",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",
+  PreviewAadManifestFile = "preview-aad-manifest",
 
   MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
   MigrateTeamsTabApp = "migrate-teams-tab-app",
@@ -226,6 +241,8 @@ export enum TelemetryProperty {
   // Used with TreeViewCommandConcurrentExecution
   RunningCommand = "running-command",
   BlockedCommand = "blocked-command",
+  // Used with OpenTutorial
+  TutorialName = "tutorial-name",
 }
 
 export enum TelemetrySuccess {

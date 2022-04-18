@@ -46,10 +46,16 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import { HostTypeOptionAzure, SsoItem } from "../plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+} from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { isFeatureFlagEnabled } from "./featureFlags";
+import _ from "lodash";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -58,6 +64,9 @@ Handlebars.registerHelper("contains", (value, array) => {
 Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) == -1 ? this : "";
+});
+Handlebars.registerHelper("equals", (value, target) => {
+  return value === target ? this : "";
 });
 
 export const Executor = {
@@ -358,16 +367,6 @@ export function getResourceGroupInPortal(
   }
 }
 
-// Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
-  const flag = process.env[featureFlagName];
-  if (flag === undefined) {
-    return defaultValue; // allows consumer to set a default value when environment variable not set
-  } else {
-    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
-  }
-}
-
 /**
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
@@ -375,20 +374,25 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
+// TODO: move other feature flags to featureFlags.ts to prevent import loop
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+  return true;
 }
 
-export function isInitAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.EnableInitApp, false);
+export function isExistingTabAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
 }
 
 export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
+}
+
+export function isDeployManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.DeployManifest, false);
 }
 
 export function isM365AppEnabled(): boolean {
@@ -410,7 +414,8 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   if (isAadManifestEnabled()) {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      solutionSettings.capabilities.includes(SsoItem.id)
+      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
+        solutionSettings.capabilities.includes(BotSsoItem.id))
     );
   } else {
     return (
@@ -420,10 +425,6 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
     );
   }
-}
-
-export function isBotNotificationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
 
 export function getRootDirectory(): string {
@@ -737,4 +738,8 @@ export function undefinedName(objs: any[], names: string[]) {
     }
   }
   return undefined;
+}
+
+export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
+  return _.get(obj, path, defaultValue);
 }

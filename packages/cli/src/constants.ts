@@ -58,8 +58,6 @@ export const sqlPasswordConfirmQuestionName = "sql-confirm-password";
 export const deployPluginNodeName = "deploy-plugin";
 
 export const azureSolutionGroupNodeName = "azure-solution-group";
-export const m365AppTypeNodeName = "app-type";
-export const m365CapabilitiesNodeName = "m365-capabilities";
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

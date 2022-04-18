@@ -43,6 +43,7 @@ import {
   isSPFxProject,
   PluginNames,
   isValidProject,
+  isConfigUnifyEnabled,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
@@ -96,7 +97,6 @@ export function toYargsOptions(data: Question): Options {
       hidden: !!(data as any).hide,
       global: false,
       type: "string",
-      coerce: choices ? toLocaleLowerCase : undefined,
     };
   }
   return {
@@ -107,7 +107,6 @@ export function toYargsOptions(data: Question): Options {
     hidden: !!(data as any).hide,
     global: false,
     type: "string",
-    coerce: choices ? toLocaleLowerCase : undefined,
   };
 }
 
@@ -220,6 +219,24 @@ export function readLocalSettingsJsonFile(projectFolder: string): Result<Json, F
   }
   try {
     const config = fs.readJsonSync(localSettingsPath);
+    return ok(config);
+  } catch (e) {
+    return err(ReadFileError(e));
+  }
+}
+
+export function readLocalStateJsonFile(projectFolder: string): Result<Json, FxError> {
+  const localStatePath = path.join(
+    projectFolder,
+    `.${ConfigFolderName}`,
+    `${StatesFolderName}`,
+    "state.local.json"
+  );
+  if (!fs.existsSync(localStatePath)) {
+    return err(ConfigNotFoundError(localStatePath));
+  }
+  try {
+    const config = fs.readJsonSync(localStatePath);
     return ok(config);
   } catch (e) {
     return err(ReadFileError(e));
@@ -389,15 +406,28 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   }
 
   if (isWorkspaceSupported(rootfolder)) {
-    const result = readLocalSettingsJsonFile(rootfolder);
-    if (result.isErr()) {
-      return undefined;
-    }
-    const localSettings = result.value;
-    try {
-      return localSettings.teamsApp.appId;
-    } catch (error) {
-      return undefined;
+    if (isConfigUnifyEnabled()) {
+      const result = readLocalStateJsonFile(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
+      const localState = result.value;
+      try {
+        return localState[PluginNames.APPST].teamsAppId;
+      } catch (error) {
+        return undefined;
+      }
+    } else {
+      const result = readLocalSettingsJsonFile(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
+      const localSettings = result.value;
+      try {
+        return localSettings.teamsApp.appId;
+      } catch (error) {
+        return undefined;
+      }
     }
   }
 

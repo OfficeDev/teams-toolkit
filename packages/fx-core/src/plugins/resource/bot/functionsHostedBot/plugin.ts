@@ -154,13 +154,8 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
       throw new PreconditionError(Messages.SomethingIsMissing(PluginBot.PROGRAMMING_LANGUAGE), []);
     }
 
-    const deployTime: Date = new Date();
     const deployMgr = new FuncHostedDeployMgr(workingDir, this.ctx.envInfo.envName);
-    const needsToRedeploy: boolean = await deployMgr.needsToRedeploy([
-      FolderNames.NODE_MODULES,
-      ...(await deployMgr.getIgnoreRules(FuncHostedBotDeployConfigs.FUNC_IGNORE_FILE)),
-      ...(await deployMgr.getIgnoreRules(FuncHostedBotDeployConfigs.GIT_IGNORE_FILE)),
-    ]);
+    const needsToRedeploy: boolean = await deployMgr.needsToRedeploy();
     if (!needsToRedeploy) {
       Logger.debug(Messages.SkipDeployNoUpdates);
       return ResultFactory.Success();
@@ -178,7 +173,7 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
     await LanguageStrategy.localBuild(programmingLanguage, workingDir);
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-
+    const deployTime: Date = new Date();
     const rules = await deployMgr.getIgnoreRules(FuncHostedBotDeployConfigs.FUNC_IGNORE_FILE);
     const zipBuffer = await deployMgr.zipAFolder(rules);
 
@@ -210,7 +205,8 @@ export class FunctionsHostedBotImpl extends TeamsBotImpl {
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.CheckDeployStatus(statusUrl, config);
 
     await AzureOperations.RestartWebApp(
       webSiteMgmtClient,

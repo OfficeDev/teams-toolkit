@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   Stage,
@@ -18,7 +19,8 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { HelpLinks } from "../../../../common/constants";
+import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
+import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
@@ -35,10 +37,15 @@ import {
   getUserEmailQuestion,
   MessageExtensionItem,
   NotificationOptionItem,
-  SsoItem,
+  TabSsoItem,
+  BotSsoItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
+  MessageExtensionNewUIItem,
+  TabNewUIOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -53,13 +60,15 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isBotNotificationEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isDeployManifestEnabled } from "../../../../common/tools";
+import { isBotNotificationEnabled, isGAPreviewEnabled } from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
   validateCapabilities,
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { Constants } from "../../../resource/aad/constants";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -83,32 +92,32 @@ export async function getQuestionsForScaffolding(
         CommandAndResponseOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
+        M365SsoLaunchPageOptionItem.id,
+        M365SearchAppOptionItem.id,
       ],
     };
-    if (!inputs.isM365) {
-      // 1.1.1 SPFX Tab
-      const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-        ResourcePluginsV2.SpfxPlugin
-      );
-      if (spfxPlugin.getQuestionsForScaffolding) {
-        const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const spfxNode = res.value as QTreeNode;
-          spfxNode.condition = {
-            validFunc: (input: any, inputs?: Inputs) => {
-              if (!inputs) {
-                return "Invalid inputs";
-              }
-              const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-              if (cap.includes(TabSPFxItem.id)) {
-                return undefined;
-              }
-              return "SPFx is not selected";
-            },
-          };
-          if (spfxNode.data) node.addChild(spfxNode);
-        }
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+            if (cap.includes(TabSPFxItem.id)) {
+              return undefined;
+            }
+            return "SPFx is not selected";
+          },
+        };
+        if (spfxNode.data) node.addChild(spfxNode);
       }
     }
   } else {
@@ -119,7 +128,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
@@ -230,6 +239,17 @@ export async function getTabScaffoldQuestionsV2(
   return ok(tabNode);
 }
 
+function getPluginCLIName(name: string): string {
+  const pluginPrefix = "fx-resource-";
+  if (name === ResourcePlugins.Aad) {
+    return "aad-manifest";
+  } else if (name === ResourcePlugins.AppStudio) {
+    return "manifest";
+  } else {
+    return name.replace(pluginPrefix, "");
+  }
+}
+
 export async function getQuestions(
   ctx: v2.Context,
   inputs: Inputs,
@@ -266,6 +286,10 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.deploy) {
+    if (inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes") {
+      return ok(node);
+    }
+
     if (isDynamicQuestion) {
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
@@ -287,23 +311,36 @@ export async function getQuestions(
     } else {
       plugins = getAllV2ResourcePlugins();
     }
-    plugins = plugins.filter(
-      (plugin) =>
-        !!plugin.deploy &&
-        (plugin.displayName !== "AAD" || (plugin.displayName === "AAD" && isAadManifestEnabled()))
-    );
-    if (plugins.length === 0) {
+
+    if (isDeployManifestEnabled() && inputs.platform === Platform.VSCode) {
+      plugins = plugins.filter((plugin) => plugin.name !== ResourcePlugins.AppStudio);
+    }
+
+    if (
+      isAadManifestEnabled() &&
+      (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI)
+    ) {
+      plugins = plugins.filter((plugin) => !!plugin.deploy);
+    } else {
+      plugins = plugins.filter((plugin) => !!plugin.deploy && plugin.displayName !== "AAD");
+    }
+
+    if (plugins.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
       return err(new NoCapabilityFoundError(Stage.deploy));
+    }
+
+    // trigger from Deploy AAD App manifest command in VSCode
+    if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
+      return ok(node);
     }
 
     // On VS, users are not expected to select plugins to deploy.
     if (!isVSProject(ctx.projectSetting)) {
-      const pluginPrefix = "fx-resource-";
       const options: OptionItem[] = plugins.map((plugin) => {
         const item: OptionItem = {
           id: plugin.name,
           label: plugin.displayName,
-          cliName: plugin.name.replace(pluginPrefix, ""),
+          cliName: getPluginCLIName(plugin.name),
         };
         return item;
       });
@@ -407,10 +444,20 @@ export async function getQuestionsForAddCapability(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (ctx.projectSetting.isM365) {
+    return err(
+      new UserError(
+        SolutionSource,
+        SolutionError.AddCapabilityNotSupport,
+        getDefaultString("core.addCapability.notSupportedForM365Project"),
+        getLocalizedString("core.addCapability.notSupportedForM365Project")
+      )
+    );
+  }
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
-    title: "Choose capabilities",
+    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
     type: "multiSelect",
     staticOptions: [],
     default: [],
@@ -423,14 +470,37 @@ export async function getQuestionsForAddCapability(
   if (!isDynamicQuestion) {
     // For CLI_HELP
     addCapQuestion.staticOptions = [
-      TabOptionItem,
-      BotOptionItem,
+      ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
+      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
-      MessageExtensionItem,
+      ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      TabSPFxItem,
     ];
-    return ok(new QTreeNode(addCapQuestion));
+    const addCapNode = new QTreeNode(addCapQuestion);
+    if (isBotNotificationEnabled()) {
+      // Hardcoded to call bot plugin to get notification trigger questions.
+      // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+      // V3 will not need this hardcoding.
+      const pluginMap = getAllV2ResourcePluginMap();
+      const plugin = pluginMap.get(PluginNames.BOT);
+      if (plugin && plugin.getQuestionsForUserTask) {
+        const result = await plugin.getQuestionsForUserTask(
+          ctx,
+          inputs,
+          func,
+          envInfo,
+          tokenProvider
+        );
+        if (result.isErr()) {
+          return result;
+        }
+        const botQuestionNode = result.value;
+        if (botQuestionNode) {
+          addCapNode.addChild(botQuestionNode);
+        }
+      }
+    }
+    return ok(addCapNode);
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
@@ -463,7 +533,8 @@ export async function getQuestionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  const isMEAddable = !meExceedRes.value;
+  // for the new bot, messaging extension and other bots are mutally exclusive
+  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
@@ -473,41 +544,51 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
+  if (isBotAddable) {
+    if (isBotNotificationEnabled()) {
+      options.push(CommandAndResponseOptionItem);
+      options.push(NotificationOptionItem);
+    } else {
+      options.push(BotOptionItem);
+    }
+  }
+  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
   if (isTabAddable) {
     if (!isAadManifestEnabled()) {
-      options.push(TabOptionItem);
+      options.push(tabOptionItem);
     } else {
-      options.push(settings?.capabilities.includes(SsoItem.id) ? TabOptionItem : TabNonSsoItem);
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, tabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
+        );
+      }
     }
   }
-  if (isBotAddable) {
-    options.push(BotOptionItem);
-    if (isBotNotificationEnabled()) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-    }
+  if (isMEAddable) {
+    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
   }
-  if (isMEAddable) options.push(MessageExtensionItem);
 
   addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
 
-  // mini app can add SPFx tab
-  if (!settings) {
-    options.push(TabSPFxItem);
-    const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
-    if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
-      const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (result.isErr()) {
-        return result;
-      }
-      const spfxQuestionNode = result.value;
-      if (spfxQuestionNode) {
-        spfxQuestionNode.condition = { contains: TabSPFxItem.id };
-        addCapNode.addChild(spfxQuestionNode);
-      }
-    }
-  }
+  // // mini app can add SPFx tab
+  // if (!settings) {
+  //   options.push(TabSPFxItem);
+  //   const spfxPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+  //   if (spfxPlugin && spfxPlugin.getQuestionsForScaffolding) {
+  //     const result = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+  //     if (result.isErr()) {
+  //       return result;
+  //     }
+  //     const spfxQuestionNode = result.value;
+  //     if (spfxQuestionNode) {
+  //       spfxQuestionNode.condition = { contains: TabSPFxItem.id };
+  //       addCapNode.addChild(spfxQuestionNode);
+  //     }
+  //   }
+  // }
 
   if (isBotNotificationEnabled()) {
     // Hardcoded to call bot plugin to get notification trigger questions.

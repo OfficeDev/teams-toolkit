@@ -10,6 +10,9 @@ export class Constants {
   static aadAppMaxLength = 120;
   static aadAppPasswordDisplayName = "default";
 
+  static INCLUDE_AAD_MANIFEST = "include-aad-manifest";
+  static DEPLOY_AAD_FROM_CODELENS = "deploy-aad-from-codelens";
+
   static localDebugPrefix = "local_";
 
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
@@ -98,6 +101,9 @@ export class ConfigKeys {
   static clientSecret = "clientSecret";
   static objectId = "objectId";
   static oauth2PermissionScopeId = "oauth2PermissionScopeId";
+  static frontendEndpoint = "frontendEndpoint";
+  static botId = "botId";
+  static botEndpoint = "botEndpoint";
   static teamsMobileDesktopAppId = "teamsMobileDesktopAppId";
   static teamsWebAppId = "teamsWebAppId";
   static domain = "domain";

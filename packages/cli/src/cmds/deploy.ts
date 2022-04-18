@@ -4,7 +4,7 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import { Argv, choices } from "yargs";
 
 import {
   FxError,
@@ -44,13 +44,14 @@ export default class Deploy extends YargsCommand {
       array: true,
       choices: deployPluginOption.choices,
       description: deployPluginOption.description,
-      coerce: toLocaleLowerCase,
+      coerce: (arg) => toLocaleLowerCase(arg),
     });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
         yargs.options(name, this.params[name]);
       }
     }
+
     return yargs.version(false);
   }
 
@@ -85,12 +86,21 @@ export default class Deploy extends YargsCommand {
           ids = (choices as OptionItem[]).map((choice) => choice.id);
         }
         const components = (args.components as string[]) || [];
+        if (components.length !== 0 && components.includes("appstudio")) {
+          inputs["include-app-manifest"] = "yes";
+        }
+
         const options = this.params[this.deployPluginNodeName].choices as string[];
         const indexes = components.map((c) => options.findIndex((op) => op === c));
         if (components.length === 0) {
           inputs[this.deployPluginNodeName] = ids;
         } else {
           inputs[this.deployPluginNodeName] = indexes.map((i) => ids[i]);
+          if (inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")) {
+            inputs["include-aad-manifest"] = "yes";
+          } else {
+            inputs["include-aad-manifest"] = "no";
+          }
         }
       }
       const result = await core.deployArtifacts(inputs);

@@ -34,6 +34,9 @@ export enum TelemetryEvent {
   AddCICDStart = "add-cicd-start",
   AddCICD = "add-cicd",
 
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 
@@ -75,6 +78,9 @@ export enum TelemetryEvent {
   EnvList = "env-list",
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
 }
 
 export enum TelemetryProperty {

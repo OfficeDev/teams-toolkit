@@ -21,9 +21,10 @@ import { sampleProvider } from "../common/samples";
 import {
   getRootDirectory,
   isAadManifestEnabled,
-  isBotNotificationEnabled,
+  isExistingTabAppEnabled,
   isM365AppEnabled,
 } from "../common/tools";
+import { isBotNotificationEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -31,10 +32,14 @@ import {
   NotificationOptionItem,
   TabOptionItem,
   TabSPFxItem,
-  M365LaunchPageOptionItem,
-  M365MessagingExtensionOptionItem,
+  M365SsoLaunchPageOptionItem,
+  M365SearchAppOptionItem,
   CommandAndResponseOptionItem,
   TabNonSsoItem,
+  ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxNewUIItem,
+  MessageExtensionNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -55,9 +60,7 @@ export enum CoreQuestionNames {
   NewResourceGroupName = "newResourceGroupName",
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
-  M365CreateFromScratch = "m365-scratch",
-  M365AppType = "app-type",
-  M365Capabilities = "m365-capabilities",
+  ExistingTabEndpoint = "existing-tab-endpoint",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -220,17 +223,32 @@ export function validateConflict<T>(sets: Set<T>[], current: Set<T>): string | u
 }
 
 export function createCapabilityQuestion(): MultiSelectQuestion {
+  let staticOptions: StaticOptions;
+  if (isBotNotificationEnabled()) {
+    // new capabilities question order
+    staticOptions = [
+      ...[CommandAndResponseOptionItem, NotificationOptionItem],
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+    ];
+  } else {
+    staticOptions = [
+      ...[TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+    ];
+  }
   return {
     name: CoreQuestionNames.Capabilities,
-    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.createCapabilityQuestion.titleNew")
+      : getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
-    staticOptions: [
-      ...[TabOptionItem, BotOptionItem],
-      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
-      ...[MessageExtensionItem, TabSPFxItem],
-      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-    ],
-    default: [TabOptionItem.id],
+    staticOptions: staticOptions,
+    default: isBotNotificationEnabled() ? [CommandAndResponseOptionItem.id] : [TabOptionItem.id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
       validFunc: validateCapabilities,
@@ -238,6 +256,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     onDidChangeSelection: onChangeSelectionForCapabilities,
   };
 }
+
 export function validateCapabilities(inputs: string[]): string | undefined {
   if (inputs.length === 0) {
     return getLocalizedString("core.createCapabilityQuestion.placeholder");
@@ -269,6 +288,24 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   );
   if (result) return result;
   result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  if (result) return result;
+  result = validateConflict(
+    [
+      new Set([
+        TabOptionItem.id,
+        TabNonSsoItem.id,
+        TabSPFxItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        ExistingTabOptionItem.id,
+      ]),
+      new Set([M365SsoLaunchPageOptionItem.id]),
+      new Set([M365SearchAppOptionItem.id]),
+    ],
+    set
+  );
   return result;
 }
 
@@ -296,6 +333,9 @@ export async function onChangeSelectionForCapabilities(
         CommandAndResponseOptionItem.id,
       ]),
       new Set([TabSPFxItem.id]),
+      new Set([ExistingTabOptionItem.id]),
+      new Set([M365SsoLaunchPageOptionItem.id]),
+      new Set([M365SearchAppOptionItem.id]),
     ],
     previousSelectedIds,
     result
@@ -417,12 +457,6 @@ export const ScratchOptionYesVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
 };
 
-export const ScratchOptionYesM365VSC: OptionItem = {
-  id: "yes-m365",
-  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesM365VSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionYesM365VSC.detail"),
-};
-
 export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
@@ -435,12 +469,6 @@ export const ScratchOptionYes: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionYes.detail"),
 };
 
-export const ScratchOptionYesM365: OptionItem = {
-  id: "yes-m365",
-  label: getLocalizedString("core.ScratchOptionYesM365.label"),
-  detail: getLocalizedString("core.ScratchOptionYesM365.detail"),
-};
-
 export const ScratchOptionNo: OptionItem = {
   id: "no",
   label: getLocalizedString("core.ScratchOptionNo.label"),
@@ -451,15 +479,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
-    if (isM365AppEnabled()) {
-      staticOptions.push(ScratchOptionYesM365VSC);
-    }
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
-    if (isM365AppEnabled()) {
-      staticOptions.push(ScratchOptionYesM365);
-    }
     staticOptions.push(ScratchOptionNo);
   }
   return {
@@ -481,37 +503,35 @@ export const SampleSelect: SingleSelectQuestion = {
     return {
       id: sample.id,
       label: sample.title,
+      description: `${sample.time} • ${sample.configuration}`,
       detail: sample.shortDescription,
       data: sample.link,
     } as OptionItem;
   }),
   placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+  buttons: [
+    {
+      icon: "library",
+      tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
+      command: "fx-extension.openSamples",
+    },
+  ],
 };
 
-export const M365CreateFromScratchSelectQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.CreateFromScratch,
-  title: "",
-  staticOptions: [ScratchOptionYesM365],
-  skipSingleOption: true,
-};
+export const ExistingTabEndpointQuestion: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.ExistingTabEndpoint,
+  title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
+  default: "https://localhost:3000",
+  placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
+  validation: {
+    validFunc: async (endpoint: string): Promise<string | undefined> => {
+      const match = endpoint.match(/^https:\/\/[\S]+$/i);
+      if (!match) {
+        return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
+      }
 
-export const M365AppTypeSelectQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.M365AppType,
-  title: getLocalizedString("core.M365AppTypeSelectQuestion.title"),
-  staticOptions: [M365LaunchPageOptionItem, M365MessagingExtensionOptionItem],
-  placeholder: getLocalizedString("core.M365AppTypeSelectQuestion.placeholder"),
-};
-
-export const M365CapabilitiesFuncQuestion: FuncQuestion = {
-  type: "func",
-  name: CoreQuestionNames.M365Capabilities,
-  func: (inputs: Inputs) => {
-    if (inputs[CoreQuestionNames.M365AppType] === M365LaunchPageOptionItem.id) {
-      inputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
-    } else if (inputs[CoreQuestionNames.M365AppType] === M365MessagingExtensionOptionItem.id) {
-      inputs[CoreQuestionNames.Capabilities] = [MessageExtensionItem.id];
-    }
+      return undefined;
+    },
   },
 };

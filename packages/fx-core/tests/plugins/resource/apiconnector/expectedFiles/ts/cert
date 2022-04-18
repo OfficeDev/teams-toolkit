@@ -1,0 +1,38 @@
+/*
+Your next steps:
+1. Run npm install. If your project did not install @microsoft/teamsfx package before, we have added it to package.json for you.
+   You need to run the command under "bot" folder instead of project's root folder.
+2. Add code to read your cert content and replace "<your-cert>" and "<your-private-key>" with actual value.
+
+You can now import the API client (an Axios instance) in another file and call fake APIs without worrying about authentication.
+Here is an example for a GET request to "relative_path_of_target_api":
+const result = await fakeClient.get("relative_path_of_target_api");
+
+You can refer https://aka.ms/teamsfx-connect-api to learn more.
+*/
+import {
+  TeamsFx,
+  createApiClient,
+  CertificateAuthProvider,
+  createPemCertOption,
+} from "@microsoft/teamsfx";
+
+// Loads current app's configuration.
+const teamsFx = new TeamsFx();
+// Initializes a new axios instance to call fake API.
+const authProvider = new CertificateAuthProvider(
+  // Please add code to read your cert and private key, replace "<your-cert>" and "<your-private-key>" with actual value.
+  // If you have a .pfx cert, you can use "createPfxCertOption" function to initialize your cert option.
+  createPemCertOption("<your-cert>", "<your-private-key>")
+);
+const fakeClient = createApiClient(teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"), authProvider);
+export { fakeClient };
+
+/* 
+Setting API configuration for cloud environment: 
+We have already set the configuration to .env.teamsfx.local based on your answers. 
+Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
+TEAMSFX_API_FAKE_ENDPOINT
+
+You can refer https://aka.ms/teamsfx-connect-api to learn more. 
+*/

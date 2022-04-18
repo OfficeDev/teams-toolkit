@@ -71,6 +71,7 @@ import {
   M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -105,7 +106,6 @@ import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { InvalidInputError } from "../../../core/error";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -384,6 +384,10 @@ export class AppStudioPluginImpl {
       }
     }
     return ok(errors);
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return this.updateManifest(ctx, false);
   }
 
   public async updateManifest(
@@ -1833,7 +1837,9 @@ export async function createManifest(
       }
     }
     if (hasMessageExtension) {
-      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
+      manifest.composeExtensions = isM365
+        ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365
+        : COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
     }
     if (isM365) {
       manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;

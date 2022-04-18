@@ -5,19 +5,21 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { LocalEnvProvider, LocalEnvs } from "../../../common/local/localEnvProvider";
-import { ApiConnectorConfiguration } from "./utils";
-import { ApiConnectorResult, ResultFactory } from "./result";
-import { ComponentType } from "./constants";
+import { AADAuthConfig, ApiConnectorConfiguration, BasicAuthConfig } from "./config";
+import { FileChange, FileChangeType, ResultFactory } from "./result";
+import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 
-declare type ApiConnectors = Record<string, Record<string, string>>;
+declare type ApiConnectors = Record<string, Map<string, string>>;
 export class ApiDataManager {
   private apiConnector: ApiConnectors = {};
   public updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {
-    let customEnvs = localEnvs.customizedLocalEnvs;
+    const customEnvs = localEnvs.customizedLocalEnvs;
     for (const item in this.apiConnector) {
       const apis = this.apiConnector[item];
-      customEnvs = { ...customEnvs, ...apis };
+      for (const [key, value] of Array.from(apis)) {
+        customEnvs[key] = value;
+      }
     }
     localEnvs.customizedLocalEnvs = customEnvs;
     return localEnvs;
@@ -26,26 +28,51 @@ export class ApiDataManager {
   public addApiEnvs(config: ApiConnectorConfiguration) {
     const apiName: string = config.APIName.toUpperCase();
     if (!this.apiConnector[apiName]) {
-      this.apiConnector[apiName] = {};
+      this.apiConnector[apiName] = new Map();
     }
-    const endPoint = "API_" + apiName + "_ENDPOINT";
-    const authName = "API_" + apiName + "_AUTHENTICATION_TYPE";
-    const userName = "API_" + apiName + "_USERNAME";
-    const passWd = "API_" + apiName + "_PASSWORD";
-    if (config.ApiUserName) {
-      this.apiConnector[apiName][userName] = config.ApiUserName;
+    const endPoint = Constants.envPrefix + apiName + "_ENDPOINT";
+    this.apiConnector[apiName].set(endPoint, config.EndPoint);
+    if (config.AuthConfig.AuthType === AuthType.BASIC) {
+      this.addBasicEnvs(config);
+    } else if (config.AuthConfig.AuthType === AuthType.AAD) {
+      this.addAADEnvs(config);
+    } else if (config.AuthConfig.AuthType === AuthType.APIKEY) {
+      this.addAPIKeyEnvs(config);
     }
-    if (config.ApiAuthType) {
-      this.apiConnector[apiName][authName] = config.ApiAuthType;
+  }
+
+  public addBasicEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const userName = Constants.envPrefix + apiName + "_USERNAME";
+    const passWd = Constants.envPrefix + apiName + "_PASSWORD";
+    const authConfig = config.AuthConfig as BasicAuthConfig;
+    apiConfig.set(userName, authConfig.UserName);
+    apiConfig.set(passWd, "");
+  }
+
+  public addAADEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const authConfig = config.AuthConfig as AADAuthConfig;
+    if (!authConfig.ReuseTeamsApp) {
+      const tenantId = Constants.envPrefix + apiName + "_TENANT_ID";
+      const clientId = Constants.envPrefix + apiName + "_CLIENT_ID";
+      const clientSecret = Constants.envPrefix + apiName + "_CLIENT_SECRET";
+      apiConfig.set(tenantId, authConfig.TenantId!);
+      apiConfig.set(clientId, authConfig.ClientId!);
+      apiConfig.set(clientSecret, "");
     }
-    if (config.EndPoint) {
-      this.apiConnector[apiName][endPoint] = config.EndPoint;
-    }
-    this.apiConnector[apiName][passWd] = "";
+  }
+
+  public addAPIKeyEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const apiKey = Constants.envPrefix + apiName + "_API_KEY";
+    apiConfig.set(apiKey, "");
   }
 }
 export class EnvHandler {
-  public static readonly LocalEnvFileName: string = ".env.teamsfx.local";
   private readonly projectRoot: string;
   private readonly componentType: string;
   private apiDataManager: ApiDataManager;
@@ -60,16 +87,13 @@ export class EnvHandler {
     this.apiDataManager.addApiEnvs(config);
   }
 
-  public async saveLocalEnvFile(): Promise<ApiConnectorResult> {
-    // backup .env.teamsfx.local file with timestamp
-    const timestamp = Date.now();
-    const backupFileName: string = EnvHandler.LocalEnvFileName + "." + timestamp;
-    const srcFile = path.join(this.projectRoot, this.componentType, EnvHandler.LocalEnvFileName);
-    const tmpFile = path.join(this.projectRoot, this.componentType, backupFileName);
+  public async saveLocalEnvFile(): Promise<FileChange> {
+    const srcFile = path.join(this.projectRoot, this.componentType, Constants.envFileName);
+    let fileChangeType: FileChangeType = FileChangeType.Update;
     if (!(await fs.pathExists(srcFile))) {
       await fs.createFile(srcFile);
+      fileChangeType = FileChangeType.Create;
     }
-    await fs.move(srcFile, tmpFile);
     // update localEnvs
     try {
       const provider: LocalEnvProvider = new LocalEnvProvider(this.projectRoot);
@@ -83,15 +107,15 @@ export class EnvHandler {
         await provider.saveLocalEnvs(undefined, localEnvsBE, undefined);
       }
     } catch (err) {
-      await fs.move(tmpFile, srcFile);
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorFileCreateFailError.name,
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)
       );
-    } finally {
-      await fs.remove(tmpFile);
     }
-    return ResultFactory.Success();
+    return {
+      changeType: fileChangeType,
+      filePath: srcFile,
+    }; // return modified env file
   }
 
   private updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {

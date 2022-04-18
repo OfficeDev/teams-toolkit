@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, MultiSelectQuestion, OptionItem } from "@microsoft/teamsfx-api";
+import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import {
   AzureSolutionQuestionNames,
@@ -14,7 +14,7 @@ import {
   NotificationTriggers,
 } from "./resources/strings";
 
-export interface HostTypeTriggerOptionItem extends OptionItem {
+interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   trigger?: NotificationTrigger;
 }
@@ -47,13 +47,27 @@ export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
 // The restrictions of this question:
 //   - appService and function are mutually exclusive
 //   - users must select at least one trigger.
-export function createHostTypeTriggerQuestion(): MultiSelectQuestion {
+export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
+
+  let staticOptions: HostTypeTriggerOptionItem[];
+  if (platform === Platform.CLI) {
+    // The UI in CLI is different. It does not have description. So we need to merge that into label.
+    staticOptions = HostTypeTriggerOptions.map((option) => {
+      // do not change the original option
+      const cliOption = Object.assign({}, option);
+      cliOption.label = `${option.label} (${option.description})`;
+      return cliOption;
+    });
+  } else {
+    staticOptions = HostTypeTriggerOptions;
+  }
+
   return {
     name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
     title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
-    staticOptions: HostTypeTriggerOptions,
+    staticOptions: staticOptions,
     default: [AppServiceOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
     validation: {
@@ -100,6 +114,8 @@ export const showNotificationTriggerCondition = {
     }
     return "Notification is not selected";
   },
+  // Workaround for CLI: it requires containsAny to be set, or it will crash.
+  containsAny: [NotificationOptionItem.id],
 };
 
 type HostTypeTriggerOptionItemWithoutText = Omit<

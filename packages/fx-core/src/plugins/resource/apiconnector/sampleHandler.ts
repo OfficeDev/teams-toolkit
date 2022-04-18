@@ -5,10 +5,10 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Constants, LanguageType, FileType } from "./constants";
 import { getTemplatesFolder } from "../../../folder";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { FileChange, FileChangeType, ResultFactory } from "./result";
 import { compileHandlebarsTemplateString } from "../../../common";
 import { ConstantString } from "../../../common/constants";
-import { ApiConnectorConfiguration } from "./utils";
+import { ApiConnectorConfiguration } from "./config";
 import { ErrorMessage } from "./errors";
 export class SampleHandler {
   private readonly projectRoot: string;
@@ -20,23 +20,35 @@ export class SampleHandler {
     this.component = component;
   }
 
-  public async generateSampleCode(config: ApiConnectorConfiguration): Promise<ApiConnectorResult> {
+  public async generateSampleCode(config: ApiConnectorConfiguration): Promise<FileChange> {
     const fileSuffix: string = this.languageExt;
-    const templateDirectory = path.join(
+    const baseDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
       "resource",
       "apiconnector",
-      "sample",
-      fileSuffix
+      "sample"
     );
-    const templateName: string = Constants.pluginNameShort + ".template";
+    const templateDirectory = path.join(baseDirectory, fileSuffix);
+    const headerCommentTemplateFilePath = path.join(baseDirectory, Constants.headerCommentTemplate);
+    const footerCommentTemplateFilePath = path.join(baseDirectory, Constants.footerCommentTemplate);
+    const templateName: string = config.AuthConfig.AuthType + Constants.templateEx;
     const templateFilePath = path.join(templateDirectory, templateName);
     try {
-      const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+      const footerCommentString = await fs.readFile(
+        footerCommentTemplateFilePath,
+        ConstantString.UTF8Encoding
+      );
+      const headerCommentString = await fs.readFile(
+        headerCommentTemplateFilePath,
+        ConstantString.UTF8Encoding
+      );
+      let templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+      templateString = `${headerCommentString}\n${templateString}\n${footerCommentString}`;
       const context = {
         config: config,
         capitalName: config.APIName.toUpperCase(),
+        component: this.component,
       };
       const codeFileName: string = config.APIName + "." + fileSuffix;
       const codeFilePath = path.join(this.projectRoot, this.component, codeFileName);
@@ -45,7 +57,10 @@ export class SampleHandler {
       }
       const codeFile = compileHandlebarsTemplateString(templateString, context);
       await fs.writeFile(codeFilePath, codeFile);
-      return ResultFactory.Success();
+      return {
+        changeType: FileChangeType.Create,
+        filePath: codeFilePath,
+      };
     } catch (error) {
       throw ResultFactory.SystemError(
         ErrorMessage.SampleCodeCreateFailError.name,

@@ -1,21 +1,18 @@
-const { ConversationBot } = require("@microsoft/teamsfx");
-const { buildAdaptiveCard } = require("./adaptiveCard");
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { bot } = require("./internal/initialize");
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json
 module.exports = async function (context, myTimer) {
   const timeStamp = new Date().toISOString();
-  for (const target of await ConversationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
-      buildAdaptiveCard(
-        {
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample time-triggered notification (${timeStamp}).`,
-          notificationUrl: "https://www.adaptivecards.io/",
-        },
-        notificationTemplate
-      )
+      AdaptiveCards.declare(notificationTemplate).render({
+        title: "New Event Occurred!",
+        appName: "Contoso App Notification",
+        description: `This is a sample time-triggered notification (${timeStamp}).`,
+        notificationUrl: "https://www.adaptivecards.io/",
+      })
     );
   }
 

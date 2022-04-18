@@ -1,23 +1,17 @@
-const { ConversationBot } = require("@microsoft/teamsfx");
-const { TeamsActivityHandler } = require("botbuilder");
-const { buildAdaptiveCard } = require("./adaptiveCard");
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
-const { adapter } = require("./internal/initialize");
-const { server } = require("./internal/server");
+const { bot, server } = require("./internal/initialize");
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 
 // HTTP trigger to send notification.
 server.post("/api/notification", async (req, res) => {
-  for (const target of await ConversationBot.installations()) {
+  for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(
-      buildAdaptiveCard(
-        {
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://www.adaptivecards.io/",
-        },
-        notificationTemplate
-      )
+      AdaptiveCards.declare(notificationTemplate).render({
+        title: "New Event Occurred!",
+        appName: "Contoso App Notification",
+        description: `This is a sample http-triggered notification to ${target.type}`,
+        notificationUrl: "https://www.adaptivecards.io/",
+      })
     );
   }
 
@@ -64,10 +58,7 @@ server.post("/api/notification", async (req, res) => {
   res.json({});
 });
 
-// Process Teams activity with Bot Framework.
-const handler = new TeamsActivityHandler();
+// Bot Framework message handler.
 server.post("/api/messages", async (req, res) => {
-  await adapter.processActivity(req, res, async (context) => {
-    await handler.run(context);
-  });
+  await bot.requestHandler(req, res);
 });

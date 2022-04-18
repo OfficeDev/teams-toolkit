@@ -49,6 +49,9 @@ import {
 } from "../../../solution/util";
 import { randomAppName } from "../../../../core/utils";
 import * as os from "os";
+import { ResourcePlugins } from "../../../../../src/common/constants";
+import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
+import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
@@ -313,23 +316,9 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
-
-      const fakeBotClient = factory.createAzureBotServiceClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(fakeBotClient.bots, "create").resolves({
-        status: 200,
-      });
-      sinon.stub(fakeBotClient.channels, "create").resolves({
-        status: 200,
-      });
-
-      sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
         defaultHostName: "abc.azurewebsites.net",
       });
-      sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
       sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 
       // Act
@@ -369,11 +358,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
       // Act
@@ -434,11 +418,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      const fakeWebClient = factory.createWebSiteMgmtClient(
-        testUtils.generateFakeServiceClientCredentials(),
-        "anything"
-      );
-      sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
       sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
       sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
 
@@ -502,7 +481,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -552,7 +532,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingPassword: "test-password",
       });
       sinon.stub(AzureOperations, "RestartWebApp").resolves();
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -587,7 +568,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
       sinon.stub(fs, "pathExists").resolves(true);
     });
 
@@ -760,9 +742,12 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
-      pluginContext.localSettings?.bot?.set(
-        LocalSettingsBotKeys.BotEndpoint,
-        "https://bot.local.endpoint"
+      pluginContext.envInfo.state.set(
+        ResourcePlugins.Bot,
+        new Map<string, string>([
+          [ConfigKeys.SITE_ENDPOINT, "https://bot.local.endpoint"],
+          [BOT_ID, "bot_id"],
+        ])
       );
       sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();

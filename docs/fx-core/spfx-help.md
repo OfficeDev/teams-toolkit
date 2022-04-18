@@ -84,7 +84,7 @@ SPFx scaffolding could fail due to unsuccessful execution of above command.
 
 #### _"Failed to run command: " yo @microsoft/sharepoint ..." , 'yo' is not recognized as an internal or external command"_
 
-If your os system is Windows,
+If your OS system is Windows,
 
 1. Check your npm and Node.js version. [Supported Node.js versions for SPFx v1.14.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) are:
 
@@ -94,6 +94,6 @@ Corresponding npm version is v6.x. Please make sure you have the right version i
 
 2. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx_
 
-If your os system is MacOS or Linux,
+If your OS system is MacOS or Linux,
 
 1. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx\node_modules\\.bin_

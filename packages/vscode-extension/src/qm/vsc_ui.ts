@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { remove } from "lodash";
 import {
   Disposable,
   InputBox,
@@ -16,6 +17,7 @@ import {
   extensions,
   QuickInputButton,
   ThemeIcon,
+  QuickPickItemKind,
 } from "vscode";
 import {
   UserCancelError,
@@ -45,6 +47,7 @@ import {
   Colors,
   IProgressHandler,
   SystemError,
+  StaticOptions,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -70,20 +73,41 @@ function getOptionItem(item: FxQuickPickItem): OptionItem {
   };
 }
 
-function getFxQuickPickItem(item: string | OptionItem): FxQuickPickItem {
-  if (typeof item === "string")
-    return {
-      id: item,
-      label: item,
-    };
-  else
-    return {
-      id: item.id,
-      label: item.label,
-      description: item.description,
-      detail: item.detail,
-      data: item.data,
-    };
+function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
+  if (options && options.length > 0 && typeof options[0] === "string") {
+    return (options as string[]).map((option: string) => {
+      return { id: option, label: option };
+    });
+  } else {
+    const result: FxQuickPickItem[] = [];
+    const candidates = [...options];
+    while (candidates.length > 0) {
+      const groupName = (candidates[0] as OptionItem).groupName;
+      const group = remove(
+        candidates as OptionItem[],
+        (option: OptionItem) => option.groupName === groupName
+      );
+      if (groupName) {
+        result.push({
+          id: groupName,
+          label: groupName,
+          kind: QuickPickItemKind.Separator,
+        });
+      }
+      result.push(
+        ...group.map((option) => {
+          return {
+            id: option.id,
+            label: option.label,
+            description: option.description,
+            detail: option.detail,
+            data: option.data,
+          };
+        })
+      );
+    }
+    return result;
+  }
 }
 
 function toIdSet(items: ({ id: string } | string)[]): Set<string> {
@@ -153,7 +177,7 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
+          quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -247,7 +271,7 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
+          quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);

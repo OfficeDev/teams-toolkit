@@ -25,6 +25,7 @@ export const TabNewUIOptionItem: OptionItem = {
   label: getLocalizedString("core.TabOption.labelNew"),
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -40,6 +41,7 @@ export const NotificationOptionItem: OptionItem = {
   label: getLocalizedString("core.NotificationOption.label"),
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
@@ -48,6 +50,7 @@ export const CommandAndResponseOptionItem: OptionItem = {
   label: getLocalizedString("core.CommandAndResponseOption.label"),
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const ExistingTabOptionItem: OptionItem = {
@@ -55,6 +58,7 @@ export const ExistingTabOptionItem: OptionItem = {
   label: getLocalizedString("core.ExistingTabOption.label"),
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const MessageExtensionItem: OptionItem = {
@@ -70,6 +74,7 @@ export const MessageExtensionNewUIItem: OptionItem = {
   label: getLocalizedString("core.MessageExtensionOption.labelNew"),
   cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const TabSPFxItem: OptionItem = {
@@ -85,6 +90,7 @@ export const TabSPFxNewUIItem: OptionItem = {
   label: getLocalizedString("core.TabSPFxOption.labelNew"),
   cliName: "tab-spfx",
   detail: getLocalizedString("core.TabSPFxOption.detailNew"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const TabSsoItem: OptionItem = {
@@ -109,6 +115,7 @@ export const TabNonSsoItem: OptionItem = {
   cliName: "tab-non-sso",
   description: getLocalizedString("core.TabNonSso.description"),
   detail: getLocalizedString("core.TabNonSso.detail"),
+  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
 };
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
@@ -116,6 +123,7 @@ export const M365SsoLaunchPageOptionItem: OptionItem = {
   label: "SSO enabled launch page",
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
+  groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
 };
 
 export const M365SearchAppOptionItem: OptionItem = {
@@ -123,6 +131,7 @@ export const M365SearchAppOptionItem: OptionItem = {
   label: "Search app",
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+  groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
 };
 
 export enum AzureSolutionQuestionNames {

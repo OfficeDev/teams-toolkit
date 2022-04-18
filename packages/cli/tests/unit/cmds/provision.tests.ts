@@ -4,10 +4,10 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
-import Provision from "../../../src/cmds/provision";
+import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
@@ -114,5 +114,101 @@ describe("Provision Command Tests", function () {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }
+  });
+});
+
+describe("teamsfx provision manifest", async () => {
+  const sandbox = sinon.createSandbox();
+  let telemetryEvents: string[] = [];
+  let options: string[] = [];
+  let positionals: string[] = [];
+  let allArguments = new Map<string, any>();
+  const params = {
+    [constants.deployPluginNodeName]: {
+      choices: ["a", "b", "c"],
+      description: "deployPluginNodeName",
+    },
+    "open-api-document": {},
+    "api-prefix": {},
+    "api-version": {},
+    "include-app-manifest": {},
+  };
+
+  before(() => {
+    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
+      return params;
+    });
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["a", "b", "c"],
+      });
+    });
+    sandbox.stub(yargs, "option").callsFake((ops: { [key: string]: Options }) => {
+      if (typeof ops === "string") {
+        options.push(ops);
+      } else {
+        options = options.concat(...Object.keys(ops));
+      }
+      return yargs;
+    });
+    sandbox.stub(yargs, "positional").callsFake((name: string) => {
+      positionals.push(name);
+      return yargs;
+    });
+    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
+      throw err;
+    });
+    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
+      telemetryEvents.push(eventName);
+    });
+    sandbox
+      .stub(CliTelemetry, "sendTelemetryErrorEvent")
+      .callsFake((eventName: string, error: FxError) => {
+        telemetryEvents.push(eventName);
+      });
+    sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
+      if (inputs.projectPath?.includes("real")) return ok("");
+      else return err(NotSupportedProjectType());
+    });
+
+    sandbox.stub(FxCore.prototype, "provisionTeamsAppForCLI").callsFake(async (inputs: Inputs) => {
+      return ok("aaa");
+    });
+    sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
+      allArguments.set(key, value);
+    });
+    sandbox.stub(LogProvider, "necessaryLog").returns();
+  });
+
+  after(() => {
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
+    telemetryEvents = [];
+    options = [];
+    positionals = [];
+    allArguments = new Map<string, any>();
+  });
+
+  it("should pass builder check", async () => {
+    const cmd = new ProvisionManifest();
+    cmd.builder(yargs);
+    expect(options).deep.equals([cmd.filePathParam]);
+  });
+
+  it("should work on happy path", async () => {
+    const cmd = new ProvisionManifest();
+    const args = {
+      [cmd.filePathParam]: "./",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ProvisionManifestStart,
+      TelemetryEvent.ProvisionManifest,
+    ]);
   });
 });

@@ -986,6 +986,7 @@ export interface OptionItem {
     data?: unknown;
     description?: string;
     detail?: string;
+    groupName?: string;
     id: string;
     label: string;
 }

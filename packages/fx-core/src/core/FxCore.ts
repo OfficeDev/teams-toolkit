@@ -333,6 +333,7 @@ export class FxCore implements v3.ICore {
       );
     }
 
+    TOOLS.ui.showMessage("info", getLocalizedString("core.create.successNotice"), false);
     TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
       [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
       [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,

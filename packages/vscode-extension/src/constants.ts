@@ -33,5 +33,10 @@ export enum GlobalKey {
   ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }
 
+export enum AadManifestDeployConstants {
+  DEPLOY_AAD_FROM_CODELENS = "deploy-aad-from-codelens",
+  INCLUDE_AAD_MANIFEST = "include-aad-manifest",
+}
+
 export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
 export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;

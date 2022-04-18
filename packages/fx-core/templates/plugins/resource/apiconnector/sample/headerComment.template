@@ -1,0 +1,29 @@
+/*
+Your next steps:
+1. Run npm install. If your project did not install @microsoft/teamsfx package before, we have added it to package.json for you.
+   You need to run the command under "{{component}}" folder instead of project's root folder.
+{{#if (equals config.AuthConfig.AuthType "basic")}}
+2. Add your user password to TEAMSFX_API_{{capitalName}}_PASSWORD in "{{component}}/.env.teamsfx.local".
+{{else if (equals config.AuthConfig.AuthType "aad")}}
+    {{#if (equals config.AuthConfig.ReuseTeamsApp false)}}
+2. Add your client secret to TEAMSFX_API_{{capitalName}}_CLIENT_SECRET in "{{component}}/.env.teamsfx.local".
+    {{else}}
+2. Replace "<your-api-scope>" in this file with actual scope required by the API.
+3. Gain consent of the required scope.
+4. Add the scope to "templates/appPackage/aad.template.json" in this project.
+   You can visit https://aka.ms/teamsfx-aad-manifest to learn more about the AAD app template.
+    {{/if}}
+{{else if (equals config.AuthConfig.AuthType "apikey")}}
+2. Add your API Key to TEAMSFX_API_{{capitalName}}_APIKEY in "{{component}}/.env.teamsfx.local".
+{{else if (equals config.AuthConfig.AuthType "cert")}}
+2. Add code to read your cert content and replace "<your-cert>" and "<your-private-key>" with actual value.
+{{else if (equals config.AuthConfig.AuthType "custom")}}
+2. Refer sample code and comments in this file to implement your auth provider.
+{{/if}}
+
+You can now import the API client (an Axios instance) in another file and call {{config.APIName}} APIs without worrying about authentication.
+Here is an example for a GET request to "relative_path_of_target_api":
+const result = await {{config.APIName}}Client.get("relative_path_of_target_api");
+
+You can refer https://aka.ms/teamsfx-connect-api to learn more.
+*/

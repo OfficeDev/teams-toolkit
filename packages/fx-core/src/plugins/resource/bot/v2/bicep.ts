@@ -16,15 +16,11 @@ import { Configurations } from "./codeTemplateProvider";
 import * as utils from "../utils/common";
 
 const BicepTemplateRelativeDir = path.join("plugins", "resource", "botv2", "bicep");
-const WebAppBicepFolderName = "webapp";
 const FunctionBicepFolderName = "function";
 const BotServiceBicepFolderName = "botservice";
 
-const webAppResourceId = "provisionOutputs.webAppOutput.value.resourceId";
-const webAppHostName = "provisionOutputs.webAppOutput.value.validDomain";
 const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
-const webAppEndpoint = "provisionOutputs.webAppOutputs.value.webAppEndpoint";
 const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
 const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
@@ -35,45 +31,7 @@ interface BicepGenerator {
 
 export class WebAppBicepGenerator implements BicepGenerator {
   async generateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      BicepTemplateRelativeDir,
-      WebAppBicepFolderName
-    );
-    const bicepFilenames = [
-      Bicep.ProvisionFileName,
-      Bicep.ConfigFileName,
-      "webappProvision.template.bicep",
-      "webappConfiguration.template.bicep",
-    ];
-
-    const modules = await Promise.all(
-      bicepFilenames.map((name) =>
-        generateBicepFromFile(path.join(bicepTemplateDir, name), pluginCtx)
-      )
-    );
-
-    const result: ArmTemplateResult = {
-      Provision: {
-        Orchestration: modules[0],
-        Modules: { webApp: modules[2] },
-      },
-      Configuration: {
-        Orchestration: modules[1],
-        Modules: { webApp: modules[3] },
-      },
-      Reference: {
-        resourceId: webAppResourceId,
-        hostName: webAppHostName,
-        webAppEndpoint: webAppEndpoint,
-      },
-    };
-    return result;
+    return {} as ArmTemplateResult;
   }
 
   async updateBicep(ctx: Context, configuration: Configurations): Promise<ResourceTemplate> {

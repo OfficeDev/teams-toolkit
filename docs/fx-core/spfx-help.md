@@ -92,8 +92,8 @@ If your os system is Windows,
 - Node.js v14.15.0+ (_Fermium_)
 Corresponding npm version is v6.x. Please make sure you have the right version installed for both npm and Node.js.
 
-2. Check execution files for `yo` are installed successfully at the correct path under _HOME\\.fx\bin\spfx_
+2. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx_
 
 If your os system is MacOS or Linux,
 
-1. Check execution files for `yo` exists after package installation at the correct path under _HOME\\.fx\bin\spfx\node_modules\\.bin_
+1. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx\node_modules\\.bin_

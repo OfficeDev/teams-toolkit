@@ -52,7 +52,7 @@ export const ProjectConsolidateMW: Middleware = async (
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     next();
   } else if ((await needConsolidateLocalRemote(ctx)) && checkMethod(ctx)) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotificationStart);
     let showModal = true;
     if (ctx.method && methods.has(ctx.method)) {
       showModal = false;
@@ -239,6 +239,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       "configs",
       "localSettings.json"
     );
+    let moveFiles = "";
     if (await fs.pathExists(localSettingsFile)) {
       await fs.copy(
         localSettingsFile,
@@ -246,6 +247,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         { overwrite: true }
       );
       await fs.remove(localSettingsFile);
+      moveFiles += "localSettings.json,";
       removeMap.set(
         path.join(backupPath, ".fx", "configs", "localSettings.json"),
         localSettingsFile
@@ -264,6 +266,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         { overwrite: true }
       );
       await fs.remove(localManifestFile);
+      moveFiles += "manifest.local.template.json,";
       removeMap.set(
         path.join(backupPath, "templates", "appPackage", "manifest.local.template.json"),
         localManifestFile
@@ -276,6 +279,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         { overwrite: true }
       );
       await fs.remove(remoteManifestFile);
+      moveFiles += "manifest.remote.template.json,";
       removeMap.set(
         path.join(backupPath, "templates", "appPackage", "manifest.remote.template.json"),
         remoteManifestFile
@@ -285,7 +289,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade);
 
-    postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder);
+    postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder, moveFiles);
   } catch (e) {
     for (const item of removeMap.entries()) {
       await fs.copy(item[0], item[1]);
@@ -311,14 +315,18 @@ async function postConsolidate(
   projectPath: string,
   ctx: CoreHookContext,
   inputs: Inputs,
-  backupFolder: string | undefined
+  backupFolder: string | undefined,
+  moveFiles: string
 ): Promise<void> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuideStart);
   await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
 
-  TOOLS?.logProvider.warning(
-    `[core] Upgrade success! Old localSettings.json, manifest.local.template.json and manifest.remote.template.json have been backed up to the .backup folder and you can delete it.`
-  );
+  if (moveFiles.length > 0) {
+    moveFiles = moveFiles.substring(0, moveFiles.length - 1);
+    TOOLS?.logProvider.warning(
+      `[core] Upgrade success! Old ${moveFiles} have been backed up to the .backup folder and you can delete it.`
+    );
+  }
 
   if (inputs.platform !== Platform.VSCode) {
     TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));

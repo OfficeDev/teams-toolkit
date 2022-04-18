@@ -45,6 +45,10 @@ export interface OptionItem {
    * CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
    */
   cliName?: string;
+  /**
+   * group name. If it's set, separator will be rendered on UI between groups.
+   */
+  groupName?: string;
 }
 
 export class ConfigMap extends Map<string, ConfigValue> {

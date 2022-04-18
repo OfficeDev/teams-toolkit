@@ -18,7 +18,7 @@ export class DepsHandler {
     this.componentType = componentType;
   }
 
-  public async addPkgDeps(): Promise<ApiConnectorResult> {
+  public async addPkgDeps(): Promise<string> {
     const depsConfig: Json = await this.getDepsConfig();
     return await this.updateLocalPkgDepsVersion(depsConfig);
   }
@@ -30,7 +30,7 @@ export class DepsHandler {
     return sdkContent.dependencies;
   }
 
-  public async updateLocalPkgDepsVersion(pkgConfig: Json): Promise<ApiConnectorResult> {
+  public async updateLocalPkgDepsVersion(pkgConfig: Json): Promise<string> {
     const localPkgPath = path.join(this.projectRoot, this.componentType, Constants.pkgJsonFile);
     if (!(await fs.pathExists(localPkgPath))) {
       throw ResultFactory.UserError(
@@ -49,7 +49,7 @@ export class DepsHandler {
     if (needUpdate) {
       await fs.writeFile(localPkgPath, JSON.stringify(pkgContent, null, 4));
     }
-    return ResultFactory.Success();
+    return localPkgPath; // return modified files
   }
 
   private sdkVersionCheck(deps: Json, sdkName: string, sdkVersion: string): boolean {

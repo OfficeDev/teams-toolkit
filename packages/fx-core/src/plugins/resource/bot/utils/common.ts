@@ -127,6 +127,10 @@ export function isHttpCodeOkOrCreated(code: number): boolean {
   return [200, 201].includes(code);
 }
 
+export function isHttpCodeAccepted(code: number): boolean {
+  return code === 202;
+}
+
 export function convertToLangKey(programmingLanguage: ProgrammingLanguage): string {
   switch (programmingLanguage) {
     case ProgrammingLanguage.JavaScript: {

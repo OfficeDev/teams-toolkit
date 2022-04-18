@@ -32,7 +32,8 @@ export enum FileType {
 export class Constants {
   public static readonly PLUGIN_NAME = "APIConnector";
   public static readonly pluginNameShort = "api-connector";
-  public static readonly commentTemplate = "comment.template";
+  public static readonly headerCommentTemplate = "headerComment.template";
+  public static readonly footerCommentTemplate = "footerComment.template";
   public static readonly templateEx = ".template";
   public static readonly envPrefix = "TEAMSFX_API_";
 

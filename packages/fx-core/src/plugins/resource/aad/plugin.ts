@@ -888,9 +888,10 @@ export class AadAppForTeamsImpl {
   }
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
-    const isProvisionSucceeded = !!(ctx.envInfo.state
-      .get("solution")
-      ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+    const isProvisionSucceeded =
+      !!(ctx.envInfo.state.get("solution")?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean) ||
+      ctx.answers![Constants.DEPLOY_AAD_FROM_CODELENS] === "yes" ||
+      ctx.envInfo.envName === "local";
 
     if (!isProvisionSucceeded) {
       throw ResultFactory.UserError(
@@ -900,6 +901,13 @@ export class AadAppForTeamsImpl {
     }
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+
+    if (!manifest.id) {
+      throw ResultFactory.UserError(
+        AadManifestMissingObjectId.name,
+        AadManifestMissingObjectId.message()
+      );
+    }
     await this.writeManifestFileToBuildFolder(manifest, ctx);
     return manifest;
   }

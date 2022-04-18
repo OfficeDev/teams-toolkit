@@ -51,7 +51,9 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const provisioned =
+    (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
+    inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
 
   if (inAzureProject && !provisioned) {
     return err(

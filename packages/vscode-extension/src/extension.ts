@@ -422,7 +422,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addSso);
 
-  const workspacePath = getWorkspacePath();
+  const workspacePath = handlers.getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isSPFx",

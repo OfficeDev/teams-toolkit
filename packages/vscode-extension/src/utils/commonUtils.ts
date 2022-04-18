@@ -498,6 +498,8 @@ export function getTriggerFromProperty(args?: any[]) {
   switch (args[0].toString()) {
     case TelemetryTriggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
+    case TelemetryTriggerFrom.ViewTitleNavigation:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ViewTitleNavigation };
     case TelemetryTriggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview };
     case TelemetryTriggerFrom.CodeLens:

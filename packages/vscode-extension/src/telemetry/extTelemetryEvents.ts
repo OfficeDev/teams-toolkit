@@ -250,7 +250,7 @@ export enum TelemetrySuccess {
   No = "no",
 }
 
-export enum TelemetryTiggerFrom {
+export enum TelemetryTriggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
   Webview = "Webview",

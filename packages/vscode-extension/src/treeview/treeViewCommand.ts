@@ -8,6 +8,7 @@ import { TreeCategory } from "@microsoft/teamsfx-api";
 
 import { ext } from "../extensionVariables";
 import { localize } from "../utils/localizeUtils";
+import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
 export enum CommandStatus {
   Ready,
@@ -18,8 +19,6 @@ export enum CommandStatus {
 const labelPrefix = "teamstoolkit.commandsTreeViewProvider.";
 
 export class TreeViewCommand extends vscode.TreeItem {
-  public static readonly TreeViewFlag = "TreeView";
-
   public children?: TreeViewCommand[];
 
   constructor(
@@ -38,7 +37,7 @@ export class TreeViewCommand extends vscode.TreeItem {
       this.command = {
         title: readyLabel,
         command: commandId,
-        arguments: [TreeViewCommand.TreeViewFlag, this],
+        arguments: [TelemetryTriggerFrom.TreeView, this],
       };
     }
   }

@@ -2,5 +2,5 @@
 // Licensed under the MIT license.
 
 export function getZipDeployEndpoint(siteName: string): string {
-  return `https://${siteName}.scm.azurewebsites.net/api/zipdeploy`;
+  return `https://${siteName}.scm.azurewebsites.net/api/zipdeploy?isAsync=true`;
 }

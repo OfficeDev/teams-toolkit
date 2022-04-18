@@ -717,6 +717,8 @@
   "plugins.bot.FailedToUpdateConfigs": "Failed to update configs for %s",
   "plugins.bot.FailedListPublishingCredentials": "Failed to list publishing credentials.",
   "plugins.bot.FailedDeployZipFile": "Failed to deploy zip file.",
+  "plugins.bot.FailedCheckDeployStatus": "Failed to check deployment status.",
+  "plugins.bot.CheckDeployStatusTimeout": "Check deployment status timeout.",
   "plugins.bot.FailedRestartWebApp": "Failed to restart web app.",
   "plugins.bot.FailedUpdateMessageEndpoint": "Failed to update message endpoint with %s",
   "plugins.bot.DownloadFail": "Failed to download from %s",

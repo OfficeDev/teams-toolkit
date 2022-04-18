@@ -523,7 +523,8 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.siteName);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.CheckDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

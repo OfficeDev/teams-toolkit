@@ -59,6 +59,7 @@ import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/too
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
+import { CommonConstants } from "./functionsHostedBot/constants";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -341,7 +342,8 @@ export class TeamsBotImpl implements PluginImpl {
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.CheckDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

@@ -1,8 +1,8 @@
 import { dialog } from "@microsoft/teams-js";
 import * as msft from "@microsoft/teams-js";
 
-msft.dialog.resize();
+msft.dialog.update.resize();
 
-dialog.resize();
+dialog.update.resize();
 
 tasks.updateTask();

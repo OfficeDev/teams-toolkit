@@ -506,6 +506,21 @@ export async function fillInAzureConfigs(
   return ok(Void);
 }
 
+export async function askForDeployConsent(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3
+): Promise<Result<Void, FxError>> {
+  const msg = getLocalizedString("core.deploy.confirmEnvNotice", envInfo.envName);
+  const deployOption = "Deploy";
+  const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
+  const choice = result?.isOk() ? result.value : undefined;
+
+  if (choice === deployOption) {
+    return ok(Void);
+  }
+  return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
+}
+
 export async function askForProvisionConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,

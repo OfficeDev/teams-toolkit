@@ -8,7 +8,7 @@ For more detail about SSO, please refer to the [wiki](https://aka.ms/teamsfx-add
 
 ### What we have done in 'Add SSO' command
 
-By triggering `Add SSO` command, we will help you to setup your project and create `auth/tab` folder with some code snippet. For detail, please refer to the [wiki](https://aka.ms/teamsfx-add-sso-readme).
+By triggering `Add SSO` command, we will help you to setup your project to enable SSO and create `auth/tab` folder with some code snippet. For detail, please refer to the [wiki](https://aka.ms/teamsfx-add-sso-readme).
 
 ### What you need to do after triggering 'Add SSO' command
 

@@ -137,9 +137,10 @@ export class AzureOperations {
     zipBuffer: Buffer,
     config: any
   ): Promise<string> {
+    const axiosInstance = axios.create();
     let res = undefined;
     try {
-      res = await axios.post(zipDeployEndpoint, zipBuffer, config);
+      res = await axiosInstance.post(zipDeployEndpoint, zipBuffer, config);
     } catch (e) {
       throw new ZipDeployError(e);
     }
@@ -152,10 +153,11 @@ export class AzureOperations {
   }
 
   public static async CheckDeployStatus(location: string, config: any): Promise<void> {
+    const axiosInstance = axios.create();
     let res = undefined;
     for (let i = 0; i < DeployStatus.RETRY_TIMES; ++i) {
       try {
-        res = await axios.get(location, config);
+        res = await axiosInstance.get(location, config);
       } catch (e) {
         throw new DeployStatusError(e);
       }

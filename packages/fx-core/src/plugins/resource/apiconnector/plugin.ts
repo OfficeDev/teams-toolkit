@@ -84,20 +84,21 @@ export class ApiConnectorImpl {
     const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     if (
-      activePlugins.length === 0 ||
-      config.ComponentType.every((item) => {
-        switch (item) {
-          case ComponentType.API: {
-            return activePlugins.includes(ResourcePlugins.Function);
-          }
-          case ComponentType.BOT: {
-            return activePlugins.includes(ResourcePlugins.Bot);
-          }
-          default:
-            return false;
-        }
-      })
+      activePlugins.includes(ResourcePlugins.Bot) &&
+      config.ComponentType.includes(ComponentType.BOT)
     ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ResourcePlugins.Bot)
+      );
+    } else if (
+      activePlugins.includes(ResourcePlugins.Function) &&
+      config.ComponentType.includes(ComponentType.API)
+    ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ResourcePlugins.Function)
+      );
     }
 
     // backup relative files.

@@ -30,7 +30,7 @@ import {
   APIKeyAuthConfig,
 } from "./config";
 import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants, KeyLocation } from "./constants";
+import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -80,6 +80,26 @@ export class ApiConnectorImpl {
       undefined,
       telemetryProperties
     );
+    // CLI checker
+    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    if (
+      activePlugins.length === 0 ||
+      config.ComponentType.every((item) => {
+        switch (item) {
+          case ComponentType.API: {
+            return activePlugins.includes(ResourcePlugins.Function);
+          }
+          case ComponentType.BOT: {
+            return activePlugins.includes(ResourcePlugins.Bot);
+          }
+          default:
+            return false;
+        }
+      })
+    ) {
+    }
+
     // backup relative files.
     const backupFolderName = generateTempFolder();
     await Promise.all(

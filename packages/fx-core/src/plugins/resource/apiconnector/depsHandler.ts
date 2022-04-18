@@ -49,10 +49,7 @@ export class DepsHandler {
     }
     if (needUpdate) {
       await fs.writeFile(localPkgPath, JSON.stringify(pkgContent, null, 4));
-      const telemetryProperties = {
-        component: this.componentType,
-        dependency: JSON.stringify(pkgConfig),
-      };
+      const telemetryProperties = { component: this.componentType };
 
       TelemetryUtils.sendEvent(
         Telemetry.stage.updatePkg + Telemetry.installedSuffix,

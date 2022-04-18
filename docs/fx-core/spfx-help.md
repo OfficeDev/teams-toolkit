@@ -96,4 +96,4 @@ Corresponding npm version is v6.x. Please make sure you have the right version i
 
 If your OS system is MacOS or Linux,
 
-1. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx\node_modules\\.bin_
+1. Check executable files for `yo` exist after package installation at the correct path under _HOME/\.fx/bin/spfx/node_modules/\.bin_

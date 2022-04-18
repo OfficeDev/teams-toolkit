@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { LocalEnvProvider, LocalEnvs } from "../../../common/local/localEnvProvider";
 import { AADAuthConfig, ApiConnectorConfiguration, BasicAuthConfig } from "./config";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { FileChange, FileChangeType, ResultFactory } from "./result";
 import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 
@@ -31,13 +31,13 @@ export class ApiDataManager {
       this.apiConnector[apiName] = new Map();
     }
     const endPoint = Constants.envPrefix + apiName + "_ENDPOINT";
-    const authName = Constants.envPrefix + apiName + "_AUTHENTICATION_TYPE";
-    this.apiConnector[apiName].set(authName, config.AuthConfig.AuthType);
     this.apiConnector[apiName].set(endPoint, config.EndPoint);
     if (config.AuthConfig.AuthType === AuthType.BASIC) {
       this.addBasicEnvs(config);
     } else if (config.AuthConfig.AuthType === AuthType.AAD) {
       this.addAADEnvs(config);
+    } else if (config.AuthConfig.AuthType === AuthType.APIKEY) {
+      this.addAPIKeyEnvs(config);
     }
   }
 
@@ -64,6 +64,13 @@ export class ApiDataManager {
       apiConfig.set(clientSecret, "");
     }
   }
+
+  public addAPIKeyEnvs(config: ApiConnectorConfiguration) {
+    const apiName: string = config.APIName.toUpperCase();
+    const apiConfig = this.apiConnector[apiName];
+    const apiKey = Constants.envPrefix + apiName + "_API_KEY";
+    apiConfig.set(apiKey, "");
+  }
 }
 export class EnvHandler {
   private readonly projectRoot: string;
@@ -80,10 +87,12 @@ export class EnvHandler {
     this.apiDataManager.addApiEnvs(config);
   }
 
-  public async saveLocalEnvFile(): Promise<ApiConnectorResult> {
+  public async saveLocalEnvFile(): Promise<FileChange> {
     const srcFile = path.join(this.projectRoot, this.componentType, Constants.envFileName);
+    let fileChangeType: FileChangeType = FileChangeType.Update;
     if (!(await fs.pathExists(srcFile))) {
       await fs.createFile(srcFile);
+      fileChangeType = FileChangeType.Create;
     }
     // update localEnvs
     try {
@@ -103,7 +112,10 @@ export class EnvHandler {
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)
       );
     }
-    return ResultFactory.Success();
+    return {
+      changeType: fileChangeType,
+      filePath: srcFile,
+    }; // return modified env file
   }
 
   private updateLocalApiEnvs(localEnvs: LocalEnvs): LocalEnvs {

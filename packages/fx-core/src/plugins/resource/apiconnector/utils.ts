@@ -3,11 +3,12 @@
 "use strict";
 import { Inputs } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { LanguageType, FileType, Constants } from "./constants";
+import { LanguageType, FileType } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import path from "path";
+import { ApiConnectorConfiguration, AADAuthConfig } from "./config";
 
 export function generateTempFolder(): string {
   const timestamp = Date.now();
@@ -43,6 +44,12 @@ export function checkInputEmpty(inputs: Inputs, ...keys: string[]) {
   }
 }
 
+export function concatLines(line: string[], interval = " "): string {
+  return line.reduce((prev, cur) => {
+    return prev + interval + cur;
+  });
+}
+
 export class Notification {
   public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
   public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
@@ -53,76 +60,11 @@ export class Notification {
     languageType: string
   ): string {
     const fileName = getSampleFileName(apiName, languageType);
-    let generatedFiles = "";
-    for (const component of components) {
-      generatedFiles += `'${path.join(component, fileName)}' and`;
-    }
-    generatedFiles = generatedFiles.replace(/ and+$/, ""); // remove trailing " and"
+    const generatedFiles = concatLines(
+      components.map((item) => path.join(item, fileName)),
+      " and "
+    );
     return getLocalizedString("plugins.apiConnector.Notification.GenerateFiles", generatedFiles);
-  }
-
-  public static GetBasicAuthString(apiName: string, components: string[]): string {
-    const apiNameEx = apiName.toUpperCase();
-    const envName = `API_${apiNameEx}_PASSWORD`;
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.BasicAuth",
-      envName,
-      components.toString()
-    );
-  }
-
-  public static GetCertAuthString(apiName: string, components: string[]): string {
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.CertAuth",
-      "<your-certfication-content>"
-    );
-  }
-
-  public static GetApiKeyAuthString(apiName: string, components: string[]): string {
-    const apiKeyEx: string = apiName.toUpperCase();
-    const apiKeyName = `API_${apiKeyEx}_APIKEY`;
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.ApiKeyAuth",
-      apiKeyName,
-      components.toString()
-    );
-  }
-
-  public static GetCustomAuthString(
-    apiName: string,
-    components: string[],
-    languageType: string
-  ): string {
-    const fileName = getSampleFileName(apiName, languageType);
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.CustomAuth",
-      fileName,
-      components.toString()
-    );
-  }
-
-  public static GetGenAADAuthString(apiName: string, components: string[]): string {
-    const apiNameUpperCase: string = apiName.toUpperCase();
-    const envName = `API_${apiNameUpperCase}_CLIENTSECRET `;
-    let envFiles = "";
-    for (const component of components) {
-      envFiles += `'${path.join(component, Constants.envFileName)}' and`;
-    }
-    envFiles = envFiles.replace(/ and+$/, ""); // remove trailing " and";
-    return getLocalizedString(
-      "plugins.apiConnector.Notification.GenAADAuth",
-      "<your-api-scope>",
-      envName,
-      envFiles
-    );
-  }
-
-  public static GetReuseAADAuthString(apiName: string): string {
-    return getLocalizedString("plugins.apiConnector.Notification.ReuseAADAuth", "<your-api-scope>");
-  }
-
-  public static GetNpmInstallString(): string {
-    return getLocalizedString("plugins.apiConnector.Notification.NpmInstall");
   }
 
   public static GetLinkNotification(): string {
@@ -130,5 +72,14 @@ export class Notification {
       "plugins.apiConnector.Notification.LinkNotification",
       Notification.READ_MORE_URL
     );
+  }
+
+  public static getNotificationMsg(
+    config: ApiConnectorConfiguration,
+    languageType: string
+  ): string {
+    const apiName: string = config.APIName;
+    const retMsg: string = Notification.GetBasicString(apiName, config.ComponentType, languageType);
+    return retMsg;
   }
 }

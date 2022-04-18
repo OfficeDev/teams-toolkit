@@ -11,6 +11,7 @@ import {
   SystemError,
   UserError,
   Platform,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import Container from "typedi";
@@ -31,6 +32,7 @@ import {
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import { askForDeployConsent } from "../v3/provision";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
@@ -51,7 +53,9 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const provisioned =
+    (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
+    inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -66,6 +70,11 @@ export async function deploy(
         ctx.telemetryReporter
       )
     );
+  }
+
+  const consent = await askForDeployConsent(ctx, envInfo as v3.EnvInfoV3);
+  if (consent.isErr()) {
+    return err(consent.error);
   }
 
   if (!inAzureProject) {

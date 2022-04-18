@@ -88,9 +88,15 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Browser] = frontendConfigs?.get(
       LocalStateFrontendKeys.Browser
     ) as string;
+    if (localEnvs[LocalEnvFrontendKeys.Browser] === undefined) {
+      localEnvs[LocalEnvFrontendKeys.Browser] = "none";
+    }
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalStateFrontendKeys.Https
     ) as string;
+    if (localEnvs[LocalEnvFrontendKeys.Https] === undefined) {
+      localEnvs[LocalEnvFrontendKeys.Https] = "true";
+    }
     localEnvs[LocalEnvFrontendKeys.Port] = "53000";
 
     if (includeAAD) {
@@ -132,6 +138,19 @@ export async function convertToLocalEnvs(
       localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
       localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = applicationIdUri;
       localEnvs[LocalEnvBackendKeys.AllowedAppIds] = getAllowedAppIds().join(";");
+    }
+
+    if (
+      frontendConfigs &&
+      frontendConfigs.get(LocalStateFrontendKeys.SslCertFile) &&
+      frontendConfigs.get(LocalStateFrontendKeys.SslKeyFile)
+    ) {
+      localEnvs[LocalEnvCertKeys.SslCrtFile] = frontendConfigs.get(
+        LocalStateFrontendKeys.SslCertFile
+      );
+      localEnvs[LocalEnvCertKeys.SslKeyFile] = frontendConfigs.get(
+        LocalStateFrontendKeys.SslKeyFile
+      );
     }
 
     if (

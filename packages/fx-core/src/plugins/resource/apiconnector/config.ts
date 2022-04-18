@@ -4,7 +4,7 @@
 import { AuthType, KeyLocation } from "./constants";
 
 export interface ApiConnectorConfiguration extends Record<any, any> {
-  ComponentPath: string[];
+  ComponentType: string[];
   APIName: string;
   EndPoint: string;
   AuthConfig: AuthConfig;

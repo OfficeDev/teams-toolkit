@@ -142,7 +142,6 @@ export class SqlPluginImpl {
       await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddUser);
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
-        ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(ctx.azureAccountProvider!, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
         await this.addDatabaseUser(ctx, sqlClient, SqlMgrClient);
@@ -170,6 +169,8 @@ export class SqlPluginImpl {
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx.telemetryReporter);
+    TelemetryUtils.sendEvent(Telemetry.stage.updateArmTemplates + Telemetry.startSuffix);
     const result: ArmTemplateResult = {
       Reference: {
         sqlResourceId: AzureSqlBicep.sqlResourceId,
@@ -177,6 +178,7 @@ export class SqlPluginImpl {
         databaseName: AzureSqlBicep.databaseName,
       },
     };
+    TelemetryUtils.sendEvent(Telemetry.stage.updateArmTemplates, true);
     return ok(result);
   }
 
@@ -217,6 +219,15 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx.telemetryReporter);
+    const telemetryProperties = {
+      [Telemetry.properties.dbOnly]: Telemetry.valueNo,
+    };
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.generateArmTemplates + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -253,10 +264,20 @@ export class SqlPluginImpl {
         databaseName: AzureSqlBicep.databaseName,
       },
     };
+    TelemetryUtils.sendEvent(Telemetry.stage.generateArmTemplates, true, telemetryProperties);
     return ok(result);
   }
 
   public async generateNewDatabaseBicepSnippet(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx.telemetryReporter);
+    const telemetryProperties = {
+      [Telemetry.properties.dbOnly]: Telemetry.valueYes,
+    };
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.generateArmTemplates + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
     const suffix = getUuid().substring(0, 6);
     const compileCtx = {
       suffix: suffix,
@@ -287,6 +308,7 @@ export class SqlPluginImpl {
         databaseName: AzureSqlBicep.databaseName,
       },
     };
+    TelemetryUtils.sendEvent(Telemetry.stage.generateArmTemplates, true, telemetryProperties);
     return ok(result);
   }
 
@@ -311,7 +333,6 @@ export class SqlPluginImpl {
 
   private async CheckAndSetAadAdmin(ctx: PluginContext, client: ManagementClient) {
     let existAdmin = false;
-    ctx.logProvider?.info(Message.checkAadAdmin);
     existAdmin = await client.existAadAdmin();
     if (!existAdmin) {
       ctx.logProvider?.info(Message.addSqlAadAdmin);

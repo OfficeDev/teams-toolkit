@@ -12,6 +12,7 @@ export class Telemetry {
 
   static readonly stage = {
     scaffold: "scafflod",
+    updatePkg: "update-package",
   };
 
   static readonly properties = {

@@ -101,4 +101,13 @@ export class ErrorMessage {
         component
       ),
   };
+
+  public static readonly componentNotExistError = {
+    name: "componentNotExistError",
+    message: (component: string): ApiConnectionMsg =>
+      ErrorMessage.getMessages(
+        `error.apiConnector.${ErrorMessage.componentNotExistError.name}`,
+        component
+      ),
+  };
 }

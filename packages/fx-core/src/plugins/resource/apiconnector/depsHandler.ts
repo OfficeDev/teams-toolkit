@@ -9,6 +9,7 @@ import semver from "semver";
 import { Constants } from "./constants";
 import { ResultFactory, FileChange, FileChangeType } from "./result";
 import { ErrorMessage } from "./errors";
+import { TelemetryUtils, Telemetry } from "./telemetry";
 import { getTemplatesFolder } from "../../../folder";
 export class DepsHandler {
   private readonly projectRoot: string;
@@ -48,6 +49,9 @@ export class DepsHandler {
     }
     if (needUpdate) {
       await fs.writeFile(localPkgPath, JSON.stringify(pkgContent, null, 4));
+      const telemetryProperties = { component: this.componentType };
+
+      TelemetryUtils.sendEvent(Telemetry.stage.updatePkg, undefined, telemetryProperties);
       return {
         changeType: FileChangeType.Update,
         filePath: localPkgPath,

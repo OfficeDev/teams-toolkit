@@ -85,15 +85,16 @@ export class ApiConnectorImpl {
       ?.activeResourcePlugins;
     if (
       activePlugins.includes(ResourcePlugins.Bot) &&
-      config.ComponentType.includes(ComponentType.BOT)
+      !config.ComponentType.includes(ComponentType.BOT)
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
         ErrorMessage.componentNotExistError.message(ResourcePlugins.Bot)
       );
-    } else if (
+    }
+    if (
       activePlugins.includes(ResourcePlugins.Function) &&
-      config.ComponentType.includes(ComponentType.API)
+      !config.ComponentType.includes(ComponentType.API)
     ) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,

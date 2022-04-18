@@ -28,7 +28,7 @@ import { automaticNpmInstallHandlerByObject } from "./preview/npmInstallHandler"
 
 abstract class CapabilityAddBase extends YargsCommand {
   abstract readonly yargsHelp: string;
-  abstract generateExculdeCaps(projectSettings: ProjectSettings | undefined): {
+  abstract getNpmInstallExcludeCaps(projectSettings: ProjectSettings | undefined): {
     frontend: boolean;
     backend: boolean;
     bot: boolean;
@@ -71,7 +71,7 @@ abstract class CapabilityAddBase extends YargsCommand {
       });
       return err(configResult.error);
     }
-    const exclude = this.generateExculdeCaps(configResult.value?.settings);
+    const exclude = this.getNpmInstallExcludeCaps(configResult.value?.settings);
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -106,7 +106,7 @@ export class CapabilityAddTab extends CapabilityAddBase {
   public readonly description = "Add a tab.";
   public readonly yargsHelp = "addCapability-Tab";
 
-  public override generateExculdeCaps(settings: ProjectSettings | undefined): {
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined): {
     frontend: boolean;
     backend: boolean;
     bot: boolean;
@@ -116,7 +116,7 @@ export class CapabilityAddTab extends CapabilityAddBase {
 }
 
 abstract class CapabilityAddBotBase extends CapabilityAddBase {
-  public override generateExculdeCaps(settings: ProjectSettings | undefined): {
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined): {
     frontend: boolean;
     backend: boolean;
     bot: boolean;

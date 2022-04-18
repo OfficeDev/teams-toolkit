@@ -181,7 +181,7 @@ export class CodeFlowLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
-        url += "&";
+        url += "#";
         if (this.accountName == "azure") {
           const message = [
             {

@@ -481,7 +481,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -531,7 +532,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingPassword: "test-password",
       });
       sinon.stub(AzureOperations, "RestartWebApp").resolves();
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -566,7 +568,8 @@ describe("Teams Bot Resource Plugin", () => {
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
       sinon.stub(fs, "pathExists").resolves(true);
     });
 

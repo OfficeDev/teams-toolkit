@@ -10,10 +10,14 @@ import {
   ZipDeployError,
   MessageEndpointUpdatingError,
   RestartWebAppError,
+  DeployStatusError,
+  DeployTimeoutError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
+import { waitSeconds } from "../../../common";
+import { DeployStatus } from "./constants";
 
 export class AzureOperations {
   public static async UpdateBotChannelRegistration(
@@ -132,7 +136,7 @@ export class AzureOperations {
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: any
-  ): Promise<void> {
+  ): Promise<string> {
     let res = undefined;
     try {
       res = await axios.post(zipDeployEndpoint, zipBuffer, config);
@@ -140,9 +144,34 @@ export class AzureOperations {
       throw new ZipDeployError(e);
     }
 
-    if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
+    if (!res || !utils.isHttpCodeAccepted(res?.status)) {
       throw new ZipDeployError();
     }
+
+    return res.headers.location;
+  }
+
+  public static async CheckDeployStatus(location: string, config: any): Promise<void> {
+    let res = undefined;
+    for (let i = 0; i < DeployStatus.RETRY_TIMES; ++i) {
+      try {
+        res = await axios.get(location, config);
+      } catch (e) {
+        throw new DeployStatusError(e);
+      }
+
+      if (res) {
+        if (utils.isHttpCodeAccepted(res?.status)) {
+          await waitSeconds(DeployStatus.BACKOFF_TIME_S);
+        } else if (utils.isHttpCodeOkOrCreated(res?.status)) {
+          return;
+        } else {
+          throw new DeployStatusError();
+        }
+      }
+    }
+
+    throw new DeployTimeoutError();
   }
 
   public static async RestartWebApp(

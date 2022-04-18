@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
       } else {
         const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
         if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(true, false, args);
+          await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value, args);
           await ExtTelemetry.dispose();
           await delay(2000);
           return { openFolder: targetUri.value };

@@ -50,7 +50,7 @@ describe("EnvHandler", () => {
     const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint",
       AuthConfig: {
@@ -71,7 +71,7 @@ describe("EnvHandler", () => {
     const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint",
       AuthConfig: {
@@ -88,7 +88,7 @@ describe("EnvHandler", () => {
     chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
 
     const fakeConfig2: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint2",
       AuthConfig: {

@@ -61,6 +61,7 @@ export const ProjectConsolidateMW: Middleware = async (
       await upgrade(ctx, next, true);
     } else {
       upgrade(ctx, next, false);
+      await next();
     }
   } else {
     await next();

@@ -54,11 +54,7 @@ export class DepsHandler {
         dependency: JSON.stringify(pkgConfig),
       };
 
-      TelemetryUtils.sendEvent(
-        Telemetry.stage.scaffold + Telemetry.installedSuffix,
-        undefined,
-        telemetryProperties
-      );
+      TelemetryUtils.sendEvent(Telemetry.stage.scaffold + Telemetry.installedSuffix, undefined, {});
     }
     return localPkgPath; // return modified files
   }

@@ -49,7 +49,7 @@ export async function tryExecuteCommand(
       };
       Object.assign(options, additionalOptions);
 
-      const childProc: cp.ChildProcess = cp.spawn(command, args, options);
+      const childProc: cp.ChildProcess = cp.execFile(command, args, options);
       let timer: NodeJS.Timeout;
       if (options.timeout && options.timeout > 0) {
         // timeout only exists for exec not spawn

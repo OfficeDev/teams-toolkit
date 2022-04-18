@@ -1436,12 +1436,18 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "general",
+  });
   return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "account",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
 }
 
@@ -1486,22 +1492,34 @@ export async function createAccountHandler(args: any[]): Promise<void> {
 }
 
 export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "environment",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
 }
 
 export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "development",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
 }
 
 export async function openDeploymentLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "deployment",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
 }
 
 export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "help&feedback",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {

@@ -243,6 +243,7 @@ export enum TelemetryProperty {
   BlockedCommand = "blocked-command",
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
+  DocumentationName = "documentation-name",
 }
 
 export enum TelemetrySuccess {

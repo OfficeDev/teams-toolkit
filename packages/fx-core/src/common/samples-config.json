@@ -155,7 +155,7 @@
             "id": "adaptive-card-notification",
             "title": "Adaptive Card Notification",
             "shortDescription": "Demonstrates how to send adaptive card notification to users.",
-            "fullDescription": "This is a sample which shows how to send notification with different adaptive card using Bots.",
+            "fullDescription": "This is a sample which shows how to send notification with different adaptive cards using Bots.",
             "tags": [
                 "Bot" , "TS"
             ],

@@ -1,4 +1,4 @@
-import { app, core, uninitializeCommunication } from "@microsoft/teams-js";
+import { app, pages, uninitializeCommunication } from "@microsoft/teams-js";
 
 app.getContext();
 
@@ -8,6 +8,6 @@ app.getContext(() => {});
 
 app.initialize();
 
-core.shareDeepLink();
+pages.shareDeepLink();
 
 uninitializeCommunication();

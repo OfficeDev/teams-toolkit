@@ -34,11 +34,11 @@
     },
     {
       "source": "microsoftTeams.shareDeepLink",
-      "target": "microsoftTeams.core.shareDeepLink"
+      "target": "microsoftTeams.pages.shareDeepLink"
     },
     {
       "source": "microsoftTeams.executeDeepLink",
-      "target": "microsoftTeams.core.executeDeepLink",
+      "target": "microsoftTeams.app.openLink",
       "callbackToPromise": true
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "source": "microsoftTeams.getUserJoinedTeams",
-      "target": "microsoftTeams.legacy.fullTrust.getUserJoinedTeams",
+      "target": "microsoftTeams.legacy.fullTrust.joinedTeams.getUserJoinedTeams",
       "callbackToPromise": true
     },
     {
@@ -160,7 +160,7 @@
     },
     {
       "source": "microsoftTeams.tasks.updateTask",
-      "target": "microsoftTeams.dialog.resize"
+      "target": "microsoftTeams.dialog.update.resize"
     },
     {
       "source": "microsoftTeams.enablePrintCapability",
@@ -184,12 +184,12 @@
     },
     {
       "source": "microsoftTeams.conversations.openConversation",
-      "target": "microsoftTeams.chat.openConversation",
+      "target": "microsoftTeams.conversations.openConversation",
       "callbackToPromise": true
     },
     {
       "source": "microsoftTeams.conversations.closeConversation",
-      "target": "microsoftTeams.chat.closeConversation"
+      "target": "microsoftTeams.conversations.closeConversation"
     },
     {
       "source": "microsoftTeams.getChatMembers",
@@ -218,6 +218,11 @@
     {
       "source": "microsoftTeams.files.getCloudStorageFolders",
       "target": "microsoftTeams.files.getCloudStorageFolders",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.files.getFileDownloads",
+      "target": "microsoftTeams.files.getFileDownloads",
       "callbackToPromise": true
     },
     {
@@ -345,6 +350,11 @@
     {
       "source": "microsoftTeams.people.selectPeople",
       "target": "microsoftTeams.people.selectPeople",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.stageView.open",
+      "target": "microsoftTeams.stageView.open",
       "callbackToPromise": true
     }
   ],

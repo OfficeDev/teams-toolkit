@@ -3,9 +3,7 @@ Your next steps:
 1. Run npm install. If your project did not install @microsoft/teamsfx package before, we have added it to package.json for you.
    You need to run the command under "bot" folder instead of project's root folder.
 2. Replace "<your-api-scope>" in this file with actual scope required by the API.
-3. Gain consent of the required scope.
-4. Add the scope to "templates/appPackage/aad.template.json" in this project.
-   You can visit https://aka.ms/teamsfx-aad-manifest to learn more about the AAD app template.
+3. Refer https://aka.ms/teamsfx-connect-api-with-aad for configuring AAD app and consent scopes.
 
 You can now import the API client (an Axios instance) in another file and call fake APIs without worrying about authentication.
 Here is an example for a GET request to "relative_path_of_target_api":

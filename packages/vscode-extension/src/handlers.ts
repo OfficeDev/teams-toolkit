@@ -1532,7 +1532,7 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe === ext.workspaceUri.fsPath) {
+  if (isOpenReadMe === ext.workspaceUri?.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);

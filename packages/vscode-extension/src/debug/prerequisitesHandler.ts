@@ -257,7 +257,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     checkResults.push(accountResult);
 
     // local cert
-    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+    if (enabledCheckers.includes(Checker.LocalCertificate)) {
       const localCertResult = await resolveLocalCertificate(
         localEnvManager,
         `(${currentStep++}/${totalSteps})`

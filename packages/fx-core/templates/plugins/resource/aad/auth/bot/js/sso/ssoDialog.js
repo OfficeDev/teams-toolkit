@@ -1,20 +1,20 @@
-import {
+const {
   ComponentDialog,
   WaterfallDialog,
   Dialog,
   DialogTurnResult,
   DialogSet,
   DialogTurnStatus,
-} from "botbuilder-dialogs";
-import { ActivityTypes, tokenExchangeOperationName, TurnContext } from "botbuilder";
-import { TeamsBotSsoPrompt, TeamsFx } from "@microsoft/teamsfx";
-import "isomorphic-fetch";
+} = require("botbuilder-dialogs");
+const { ActivityTypes, tokenExchangeOperationName, TurnContext } = require("botbuilder");
+const { TeamsBotSsoPrompt, TeamsFx } = require("@microsoft/teamsfx");
+require("isomorphic-fetch");
 
 const DIALOG_NAME = "SSODialog";
 const TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
 const COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
 
-export class SsoDialog extends ComponentDialog {
+class SsoDialog extends ComponentDialog {
   constructor(dedupStorage, requiredScopes) {
     super(DIALOG_NAME);
 
@@ -23,6 +23,7 @@ export class SsoDialog extends ComponentDialog {
     this.dedupStorage = dedupStorage;
     this.dedupStorageKeys = [];
     this.requiredScopes = requiredScopes;
+    this.commandMapping = new Map();
 
     const teamsFx = new TeamsFx();
     const ssoDialog = new TeamsBotSsoPrompt(teamsFx, TEAMS_SSO_PROMPT_ID, {
@@ -42,14 +43,19 @@ export class SsoDialog extends ComponentDialog {
       this.ssoStep.bind(this),
       this.dedupStep.bind(this),
       async (stepContext) => {
-        const tokenResponse = stepContext.result;
-        const context = stepContext.context;
-        if (tokenResponse) {
-          await operation(context, tokenResponse.ssoToken);
-        } else {
-          await context.sendActivity("Failed to retrieve user token from conversation context.");
+        try {
+          const tokenResponse = stepContext.result;
+          const context = stepContext.context;
+          if (tokenResponse) {
+            await operation(context, tokenResponse.ssoToken);
+          } else {
+            await context.sendActivity("Failed to retrieve user token from conversation context.");
+          }
+          return await stepContext.endDialog();
+        } catch (error) {
+          console.log(error);
+          return stepContext.endDialog();
         }
-        return await stepContext.endDialog();
       },
     ]);
 
@@ -156,7 +162,7 @@ export class SsoDialog extends ComponentDialog {
 
   matchCommands(text) {
     for (const command of this.commandMapping) {
-      let pattern = command[1];
+      const pattern = command[1];
       let matchResult;
       if (typeof pattern == "string") {
         matchResult = text === pattern;
@@ -171,3 +177,5 @@ export class SsoDialog extends ComponentDialog {
     return undefined;
   }
 }
+
+exports.SsoDialog = SsoDialog;

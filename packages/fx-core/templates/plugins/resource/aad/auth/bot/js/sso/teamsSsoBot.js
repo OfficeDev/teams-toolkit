@@ -1,8 +1,8 @@
-import { ConversationState, MemoryStorage, TeamsActivityHandler, UserState } from "botbuilder";
-import { showUserInfo } from "./showUserInfo";
-import { SsoDialog } from "./ssoDialog";
+const { ConversationState, MemoryStorage, TeamsActivityHandler, UserState } = require("botbuilder");
+const { showUserInfo } = require("./showUserInfo");
+const { SsoDialog } = require("./ssoDialog");
 
-export class TeamsSsoBot extends TeamsActivityHandler {
+class TeamsSsoBot extends TeamsActivityHandler {
   constructor() {
     super();
 
@@ -53,3 +53,5 @@ export class TeamsSsoBot extends TeamsActivityHandler {
     await this.dialog.run(context, this.dialogState);
   }
 }
+
+exports.TeamsSsoBot = TeamsSsoBot;

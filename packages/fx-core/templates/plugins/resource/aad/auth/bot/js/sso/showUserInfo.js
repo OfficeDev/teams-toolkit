@@ -1,6 +1,6 @@
-import { createMicrosoftGraphClient, TeamsFx } from "@microsoft/teamsfx";
+const { createMicrosoftGraphClient, TeamsFx } = require("@microsoft/teamsfx");
 
-export async function showUserInfo(context, ssoToken) {
+async function showUserInfo(context, ssoToken) {
   await context.sendActivity("Retrieving user information from Microsoft Graph ...");
   const teamsfx = new TeamsFx().setSsoToken(ssoToken);
   const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
@@ -17,3 +17,7 @@ export async function showUserInfo(context, ssoToken) {
 
   return;
 }
+
+module.exports = {
+  showUserInfo,
+};

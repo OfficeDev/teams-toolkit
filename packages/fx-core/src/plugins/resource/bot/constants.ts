@@ -147,7 +147,7 @@ export class Retry {
 }
 
 export class DeployStatus {
-  public static readonly RETRY_TIMES = 60;
+  public static readonly RETRY_TIMES = 120; // Timeout: 20 min
   public static readonly BACKOFF_TIME_S = 10;
 }
 

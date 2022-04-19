@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import { Mutex } from "async-mutex";
 import { AdaptiveCardsFolderName, ProjectConfigV3, Json } from "@microsoft/teamsfx-api";
-import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
+import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   isConfigUnifyEnabled,
   getPermissionMap,
@@ -32,6 +32,7 @@ async function resolveStateAndConfigCodeLens(
       try {
         if (!projectConfigs) {
           const inputs = getSystemInputs();
+          inputs.loglevel = "Debug";
           const getConfigRes = await core.getProjectConfigV3(inputs);
           if (getConfigRes.isErr()) throw getConfigRes.error;
           projectConfigs = getConfigRes.value;
@@ -150,7 +151,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     const command = {
       title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
       command: "fx-extension.OpenAdaptiveCardExt",
-      arguments: [TelemetryTiggerFrom.CodeLens],
+      arguments: [TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;
@@ -272,14 +273,14 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     const updateCmd = {
       title: "🔄Update to Teams platform",
       command: "fx-extension.updatePreviewFile",
-      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
 
     const editTemplateCmd = {
       title: "⚠️This file is auto-generated, click here to edit the manifest template file",
       command: "fx-extension.editManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
     return codeLenses;
@@ -509,14 +510,14 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     const updateCmd = {
       title: "🔄Deploy AAD manifest",
       command: "fx-extension.deployAadAppManifest",
-      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
 
     const editTemplateCmd = {
       title: "⚠️This file is auto-generated, click here to edit the manifest template file",
       command: "fx-extension.editAadManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
     return codeLenses;

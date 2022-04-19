@@ -150,6 +150,7 @@ export class CodeFlowTenantLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+        response += "#";
         if (this.accountName == "azure") {
           const message = [
             {

@@ -126,6 +126,31 @@ export class CliHelper {
     }
   }
 
+  static async deployAll(
+    projectPath: string,
+    option = "",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx deploy ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `deploy all resources for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
+
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,

@@ -260,7 +260,27 @@ export class ZipDeployError extends PluginError {
   }
 }
 
-// TODO: merge and update message
+export class DeployStatusError extends PluginError {
+  constructor(innerError?: InnerError) {
+    super(
+      ErrorType.USER,
+      ErrorNames.DEPLOY_STATUS_ERROR,
+      Messages.FailToCheckDeployStatus,
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
+      innerError
+    );
+  }
+}
+
+export class DeployTimeoutError extends PluginError {
+  constructor() {
+    super(ErrorType.USER, ErrorNames.DEPLOY_TIMEOUT_ERROR, Messages.CheckDeployStatusTimeout, [
+      Messages.CheckOutputLogAndTryToFix,
+      Messages.RetryTheCurrentStep,
+    ]);
+  }
+}
+
 export class RestartWebAppError extends PluginError {
   constructor(innerError?: InnerError) {
     super(

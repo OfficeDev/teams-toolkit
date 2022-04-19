@@ -1,4 +1,4 @@
-# How to use this Bots and Messaging Extensions HelloWorld app
+# How to use this M365 Messaging Extensions Search app
 
 A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
 
@@ -8,6 +8,8 @@ Messaging Extensions are implemented on top of the Bot support architecture with
 
 This is a simple hello world application with both Bot and Messaging extension capabilities.
 
+![Search App Demo](./images/SearchAppDemo.gif)
+
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/)
@@ -15,10 +17,17 @@ This is a simple hello world application with both Bot and Messaging extension c
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 1.55 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Debug
+### From Visual Studio Code
+- Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
+- If you select `Debug in Outlook`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Connect to Outlook channel" to connect the bot to Outlook channel, then click "Continue" to continue debugging the app in Outlook.
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. 
-- Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
+  ![Install in Teams](./images/InstallInTeamsVSC.png)
+
+### From TeamsFx CLI
+- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams` or `outlook`.
+- If you select `m365-host` as outlook, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Connect to Outlook channel" to connect the bot to Outlook channel, then select "Continue" to continue debugging the app in Outlook or Office.
+
+  ![Install in Teams](./images/InstallInTeamsCLI.png)
 
 ## Edit the manifest
 
@@ -70,23 +79,11 @@ Once deployed, you may want to distribute your application to your organization'
 
 ## Play with Messaging Extension
 
-This template provides some sample functionality:
+This template provides the sample functionality:
 
 - You can search for `npm` packages from the search bar.
 
-- You can create and send an adaptive card.
-
-  ![CreateCard](./images/AdaptiveCard.png)
-
-- You can share a message in an adaptive card form.
-
-  ![ShareMessage](./images/ShareMessage.png)
-
-- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
-
-  ![ComposeArea](./images/LinkUnfurlingImage.png)
-
-To trigger these functions, there are multiple entry points:
+To trigger the function in Teams, there are multiple entry points:
 
 - `@mention` Your messaging extension, from the `search box area`.
 
@@ -100,9 +97,10 @@ To trigger these functions, there are multiple entry points:
 
   ![ComposeArea](./images/ThreeDot.png)
 
-- Click the `...` next to any messages you received or sent.
+To trigger these functions in Outlook:
+- Click the "More apps" icon under compose email area, find your messaging extension.
 
-  ![ComposeArea](./images/ThreeDotOnMessage.png)
+  ![InOutlook](./images/InOutlook.png)
 
 ## Further reading
 
@@ -115,5 +113,3 @@ To trigger these functions, there are multiple entry points:
 ### Messaging Extension
 
 - [Search Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/search-commands/define-search-command)
-- [Action Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/action-commands/define-action-command)
-- [Link Unfurling](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet)

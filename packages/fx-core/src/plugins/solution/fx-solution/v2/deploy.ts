@@ -11,12 +11,13 @@ import {
   SystemError,
   UserError,
   Platform,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { hasAzureResource, isVSProject } from "../../../../common/projectSettingsHelper";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -31,6 +32,7 @@ import {
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import { askForDeployConsent } from "../v3/provision";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
@@ -51,7 +53,9 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const provisioned =
+    (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
+    inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -126,6 +130,21 @@ export async function deploy(
           ctx.telemetryReporter
         )
       );
+    }
+  }
+
+  if (
+    isAzureProject(getAzureSolutionSettings(ctx)) &&
+    hasAzureResource(ctx.projectSetting, true) &&
+    inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes"
+  ) {
+    const consent = await askForDeployConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
+    if (consent.isErr()) {
+      return err(consent.error);
     }
   }
 

@@ -43,7 +43,7 @@ describe("Api Connector scaffold sample code", async () => {
 
     for (const item of SampleCodeCases) {
       const fakeConfig: ApiConnectorConfiguration = {
-        ComponentPath: ["bot"],
+        ComponentType: ["bot"],
         APIName: "fake",
         EndPoint: "fake_endpoint",
         AuthConfig: item.AuthConfig,
@@ -71,7 +71,7 @@ describe("Api Connector scaffold sample code", async () => {
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
     for (const item of SampleCodeCases) {
       const fakeConfig: ApiConnectorConfiguration = {
-        ComponentPath: ["bot"],
+        ComponentType: ["bot"],
         APIName: "fake",
         EndPoint: "fake_endpoint",
         AuthConfig: item.AuthConfig,

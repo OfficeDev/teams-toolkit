@@ -17,7 +17,7 @@ const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
 const appCredential = teamsFx.getCredential();
 const authProvider = new teamsfxSdk.BearerTokenAuthProvider(
   // Please replace '<your-api-scope>' with actual api scope value.
-  async () => (await appCredential.getToken("<your-api-scope>"))?.token
+  async () => (await appCredential.getToken("<your-api-scope>")).token
 );
 const {{config.APIName}}Client = teamsfxSdk.createApiClient(
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),

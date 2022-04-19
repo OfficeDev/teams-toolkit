@@ -9,7 +9,7 @@ export enum ComponentType {
 
 export enum AuthType {
   BASIC = "basic",
-  APIKEY = "apiKey",
+  APIKEY = "apikey",
   AAD = "aad",
   CERT = "cert",
   CUSTOM = "custom",
@@ -32,7 +32,8 @@ export enum FileType {
 export class Constants {
   public static readonly PLUGIN_NAME = "APIConnector";
   public static readonly pluginNameShort = "api-connector";
-  public static readonly commentTemplate = "comment.template";
+  public static readonly headerCommentTemplate = "headerComment.template";
+  public static readonly footerCommentTemplate = "footerComment.template";
   public static readonly templateEx = ".template";
   public static readonly envPrefix = "TEAMSFX_API_";
 
@@ -45,14 +46,13 @@ export class Constants {
   public static readonly questionKey = {
     componentsSelect: "component",
     endpoint: "endpoint",
-    apiName: "name",
+    apiName: "alias",
     apiType: "auth-type",
-    apiUserName: "user-name",
-    apiPassword: "password",
-    apiAppType: "app-type",
-    apiAppTenentId: "app-tenant-id",
-    apiAppId: "app-id",
-    apiAPIKeyLocation: "key-location",
-    apiAPIKeyName: "key-name",
+    apiUserName: "user-name", // for basic auth
+    apiAppType: "app-type", // for aad auth
+    apiAppTenentId: "tenant-id", // for aad auth
+    apiAppId: "app-id", // for aad auth
+    apiAPIKeyLocation: "key-location", // for api key auth
+    apiAPIKeyName: "key-name", // for aad auth
   };
 }

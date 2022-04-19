@@ -45,6 +45,16 @@ export class Messages {
     getDefaultString("plugins.bot.FailedDeployZipFile"),
     getLocalizedString("plugins.bot.FailedDeployZipFile"),
   ];
+  public static readonly FailToCheckDeployStatus: [string, string] = [
+    getDefaultString("plugins.bot.FailedCheckDeployStatus"),
+    getLocalizedString("plugins.bot.FailedCheckDeployStatus"),
+  ];
+
+  public static readonly CheckDeployStatusTimeout: [string, string] = [
+    getDefaultString("plugins.bot.CheckDeployStatusTimeout"),
+    getLocalizedString("plugins.bot.CheckDeployStatusTimeout"),
+  ];
+
   public static readonly FailToRestartWebApp: [string, string] = [
     getDefaultString("plugins.bot.FailedRestartWebApp"),
     getLocalizedString("plugins.bot.FailedRestartWebApp"),

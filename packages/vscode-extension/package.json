@@ -20,7 +20,7 @@
     ]
   },
   "engines": {
-    "vscode": "^1.58.0"
+    "vscode": "^1.64.0"
   },
   "license": "MIT",
   "keywords": [
@@ -149,6 +149,16 @@
         {
           "command": "fx-extension.deployAadAppManifest",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
+          "group": "deploy@0"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
+          "when": "fx-extension.isDeployManifestEnabled && resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
           "group": "deploy@0"
         }
       ],
@@ -301,6 +311,10 @@
       "commandPalette": [
         {
           "command": "fx-extension.signOut",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.deployManifestFromCtxMenu",
           "when": "false"
         },
         {
@@ -579,6 +593,10 @@
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.deployManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployManifest.ctxMenu.title%"
       },
       {
         "command": "fx-extension.addEnvironment",
@@ -902,16 +920,16 @@
         "title": "SPFx Prerequisite Check",
         "order": 2,
         "properties": {
-          "fx-extension.spfxPrerequisiteCheck": {
+          "fx-extension.SPFxPrerequisiteCheck": {
             "type": "object",
             "properties": {
               "yo": {
                 "type": "boolean",
-                "description": "Ensure Yeoman CLI is installed. (requires reload of VS Code)"
+                "description": "Ensure Yeoman CLI is installed. (Requires reload of VS Code)"
               },
               "sharepointYeomanGenerator": {
                 "type": "boolean",
-                "description": "Ensure Sharepoint Yeoman generator is installed. (requires reload of VS Code)"
+                "description": "Ensure SPFx Yeoman Generator is installed. (Requires reload of VS Code)"
               }
             },
             "additionalProperties": false,
@@ -976,7 +994,7 @@
             "title": "Get your environment ready",
             "description": "Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
             "media": {
-              "svg": "media/Prerequisites.svg",
+              "svg": "media/walkthrough/Prerequisites.svg",
               "altText": "Get your environment ready"
             }
           },
@@ -985,7 +1003,7 @@
             "title": "Build your first Teams app",
             "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.getNewProjectPath?%5B%22WalkThrough%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)",
             "media": {
-              "svg": "media/Create.svg",
+              "svg": "media/walkthrough/Create.svg",
               "altText": "Build your first Teams app"
             }
           },
@@ -1002,7 +1020,7 @@
             "title": "Preview your Teams app locally",
             "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
             "media": {
-              "svg": "media/F5.svg",
+              "svg": "media/walkthrough/F5.svg",
               "altText": "Preview your Teams app locally"
             }
           },
@@ -1011,7 +1029,7 @@
             "title": "Deploy Teams apps",
             "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
             "media": {
-              "svg": "media/Deployment.svg",
+              "svg": "media/walkthrough/Deployment.svg",
               "altText": "Deploy Teams apps"
             }
           },
@@ -1069,6 +1087,7 @@
     "@types/glob": "^7.1.4",
     "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
+    "@types/lodash": "^4.14.181",
     "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.21",
     "@types/react": "^17.0.3",
@@ -1079,7 +1098,7 @@
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/validator": "^13.1.1",
-    "@types/vscode": "^1.58.0",
+    "@types/vscode": "^1.64.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
@@ -1109,7 +1128,7 @@
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
-    "node-sass": "^6.0.1",
+    "node-sass": "^7.0.1",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "react": "^17.0.2",
@@ -1132,7 +1151,7 @@
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.6.2",
-    "vsce": "^1.93.0",
+    "vsce": "^2.7.0",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2",
     "winston": "^3.3.3"
@@ -1152,6 +1171,7 @@
     "jscodeshift": "^0.13.0",
     "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",
+    "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",

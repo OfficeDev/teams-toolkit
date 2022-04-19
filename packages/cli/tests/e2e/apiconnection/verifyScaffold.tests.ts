@@ -18,7 +18,7 @@ describe("Add Api Connection Tests", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const commonInputs = "--component bot --endpoint https://localhost.test.com --name test";
+  const commonInputs = "--component bot --endpoint https://localhost.test.com --alias test";
   const EnvPreFix = "TEAMSFX_API_";
 
   beforeEach(async () => {
@@ -52,12 +52,11 @@ describe("Add Api Connection Tests", function () {
     const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
     const deps = pkgFile.dependencies;
     chai.assert.exists(deps["@microsoft/teamsfx"]);
-    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with aad auth", async () => {
     const aadInputs =
-      "--app-tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111 --app-type anotherapp";
+      "--tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111 --app-type custom";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
@@ -83,13 +82,12 @@ describe("Add Api Connection Tests", function () {
     const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
     const deps = pkgFile.dependencies;
     chai.assert.exists(deps["@microsoft/teamsfx"]);
-    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
-  it("scaffold with apiKey auth", async () => {
-    const apiKeyInputs = "--key-location query --key-name fakename";
+  it("scaffold with apikey auth", async () => {
+    const apiKeyInputs = "--key-location querystring --key-name fakename";
     // action
-    await CliHelper.addApiConnection(projectPath, commonInputs, "apiKey", apiKeyInputs);
+    await CliHelper.addApiConnection(projectPath, commonInputs, "apikey", apiKeyInputs);
     // assert
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
@@ -104,7 +102,6 @@ describe("Add Api Connection Tests", function () {
     const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
     const deps = pkgFile.dependencies;
     chai.assert.exists(deps["@microsoft/teamsfx"]);
-    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with cert auth", async () => {
@@ -124,7 +121,6 @@ describe("Add Api Connection Tests", function () {
     const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
     const deps = pkgFile.dependencies;
     chai.assert.exists(deps["@microsoft/teamsfx"]);
-    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 
   it("scaffold with custom auth", async () => {
@@ -144,6 +140,5 @@ describe("Add Api Connection Tests", function () {
     const pkgFile = await fs.readJson(path.join(projectPath, "bot", "package.json"));
     const deps = pkgFile.dependencies;
     chai.assert.exists(deps["@microsoft/teamsfx"]);
-    chai.assert.exists(deps["@microsoft/teams-js"]);
   });
 });

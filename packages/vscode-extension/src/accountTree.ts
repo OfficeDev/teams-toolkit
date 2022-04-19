@@ -22,7 +22,7 @@ import {
   AccountType,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
 } from "./telemetry/extTelemetryEvents";
 import axios from "axios";
 import * as util from "util";
@@ -180,8 +180,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
       [TelemetryProperty.TriggerFrom]: args
-        ? TelemetryTiggerFrom.TreeView
-        : TelemetryTiggerFrom.Other,
+        ? TelemetryTriggerFrom.TreeView
+        : TelemetryTriggerFrom.Other,
     });
     const askSubRes = await askSubscription(
       tools.tokenProvider.azureAccountProvider,
@@ -254,8 +254,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
         [TelemetryProperty.TriggerFrom]:
           args && args.length > 0
-            ? TelemetryTiggerFrom.TreeView
-            : TelemetryTiggerFrom.CommandPalette,
+            ? TelemetryTriggerFrom.TreeView
+            : TelemetryTriggerFrom.CommandPalette,
         [TelemetryProperty.AccountType]: AccountType.Azure,
       });
     }

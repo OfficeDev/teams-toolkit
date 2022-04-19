@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
+import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   AskSubscriptionQuestion,
@@ -59,7 +60,7 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isDeployManifestEnabled } from "../../../../common/tools";
 import { isBotNotificationEnabled, isGAPreviewEnabled } from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
@@ -67,8 +68,6 @@ import {
   validateCapabilities,
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { AadPlugin } from "../../../resource/localdebug/constants";
-import { AadPluginV2 } from "../../../resource/aad/v2";
 import { Constants } from "../../../resource/aad/constants";
 
 export async function getQuestionsForScaffolding(
@@ -240,6 +239,17 @@ export async function getTabScaffoldQuestionsV2(
   return ok(tabNode);
 }
 
+function getPluginCLIName(name: string): string {
+  const pluginPrefix = "fx-resource-";
+  if (name === ResourcePlugins.Aad) {
+    return "aad-manifest";
+  } else if (name === ResourcePlugins.AppStudio) {
+    return "manifest";
+  } else {
+    return name.replace(pluginPrefix, "");
+  }
+}
+
 export async function getQuestions(
   ctx: v2.Context,
   inputs: Inputs,
@@ -276,6 +286,10 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.deploy) {
+    if (inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes") {
+      return ok(node);
+    }
+
     if (isDynamicQuestion) {
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
@@ -298,6 +312,10 @@ export async function getQuestions(
       plugins = getAllV2ResourcePlugins();
     }
 
+    if (isDeployManifestEnabled() && inputs.platform === Platform.VSCode) {
+      plugins = plugins.filter((plugin) => plugin.name !== ResourcePlugins.AppStudio);
+    }
+
     if (
       isAadManifestEnabled() &&
       (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI)
@@ -318,15 +336,11 @@ export async function getQuestions(
 
     // On VS, users are not expected to select plugins to deploy.
     if (!isVSProject(ctx.projectSetting)) {
-      const pluginPrefix = "fx-resource-";
       const options: OptionItem[] = plugins.map((plugin) => {
         const item: OptionItem = {
           id: plugin.name,
           label: plugin.displayName,
-          cliName:
-            plugin.name === ResourcePlugins.Aad
-              ? "aad-manifest"
-              : plugin.name.replace(pluginPrefix, ""),
+          cliName: getPluginCLIName(plugin.name),
         };
         return item;
       });
@@ -430,6 +444,16 @@ export async function getQuestionsForAddCapability(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (ctx.projectSetting.isM365) {
+    return err(
+      new UserError(
+        SolutionSource,
+        SolutionError.AddCapabilityNotSupport,
+        getDefaultString("core.addCapability.notSupportedForM365Project"),
+        getLocalizedString("core.addCapability.notSupportedForM365Project")
+      )
+    );
+  }
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,

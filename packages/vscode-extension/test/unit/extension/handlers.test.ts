@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
-import * as StringResources from "../../../src/resources/Strings.json";
+import * as StringResources from "../../../package.nls.json";
 import {
   Inputs,
   Platform,
@@ -511,7 +511,9 @@ suite("handlers", () => {
       const showWarningMessage = sinon
         .stub(vscode.window, "showWarningMessage")
         .callsFake((message: string): any => {
-          chai.expect(message).equal(StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant);
+          chai
+            .expect(message)
+            .equal(StringResources["teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"]);
         });
       await handlers.listCollaborator("env");
 

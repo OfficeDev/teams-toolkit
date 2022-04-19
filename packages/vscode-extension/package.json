@@ -782,6 +782,30 @@
         }
       },
       {
+        "name": "teamsfx-func-hosted-bot-watch",
+        "label": "TeamsFx Azure Functions Hosted Bot Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/bot"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+          "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+        }
+      },
+      {
         "name": "teamsfx-auth-watch",
         "label": "TeamsFx SimpleAuth Problems",
         "owner": "Teams Toolkit",

@@ -287,7 +287,7 @@ function startFuncHostedBot(
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
-    problemMatcher: "$teamsfx-backend-watch",
+    problemMatcher: "$teamsfx-func-hosted-bot-watch",
     options: {
       cwd: "${workspaceFolder}/bot",
       env: {

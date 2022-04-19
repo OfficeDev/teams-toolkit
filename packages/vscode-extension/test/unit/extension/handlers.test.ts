@@ -151,6 +151,7 @@ suite("handlers", () => {
 
       await handlers.buildPackageHandler();
 
+      // should show error for invalid project
       sinon.assert.calledOnce(showMessage);
       sinon.restore();
     });

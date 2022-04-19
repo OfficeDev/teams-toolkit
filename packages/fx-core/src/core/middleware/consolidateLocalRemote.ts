@@ -108,7 +108,7 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
   }
 }
 
-// check if config.local.json and manifest.template.json exist
+// check if manifest.template.json exist
 export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   if (!isConfigUnifyEnabled()) {
     return false;

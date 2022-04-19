@@ -149,6 +149,13 @@ The configurations in *.fx/configs/config.local.json* are like:
 
 Note that the `botEndpoint` should use https protocol.
 
+## Sideloading Permission Disabled
+Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams! 
+
+### Solutions: 
+1. Contact your tenant administrator to resolve this issue. Click this [document](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/accounts#teams-custom-app-upload-or-sideload-permission) to learn more about Sideloading.
+2. Please apply for a Microsoft 365 developer tenant by joining Microsoft developer program with [link](https://developer.microsoft.com/en-us/microsoft-365/dev-program).
+
 ## Teams Toolkit Validation Settings
 
 There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](#how-to-install-nodejs) and [.NET SDK installation guide](#how-to-install-net-sdk).

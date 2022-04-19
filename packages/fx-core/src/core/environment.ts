@@ -19,6 +19,8 @@ import {
   EnvInfo,
   Json,
   v3,
+  Inputs,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -44,6 +46,8 @@ import {
   ProjectEnvNotExistError,
   WriteFileError,
 } from "./error";
+import { loadProjectSettings } from "./middleware";
+import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 
 export interface EnvStateFiles {
   envState: string;
@@ -82,9 +86,28 @@ class EnvironmentManager {
     }
 
     envName = envName ?? this.getDefaultEnvName();
-    const configResult = await this.loadEnvConfig(projectPath, envName);
+    let configResult = await this.loadEnvConfig(projectPath, envName);
     if (configResult.isErr()) {
-      return err(configResult.error);
+      if (envName === "local") {
+        const inputs: Inputs = {
+          projectPath: projectPath,
+          platform: Platform.VSCode,
+        };
+        const projectSettings = await loadProjectSettings(inputs, true);
+        if (projectSettings.isOk()) {
+          const appName = getLocalAppName(projectSettings.value.appName);
+          const newEnvConfig = environmentManager.newEnvConfigData(appName);
+          await environmentManager.writeEnvConfig(
+            inputs.projectPath!,
+            newEnvConfig,
+            environmentManager.getLocalEnvName()
+          );
+          configResult = await this.loadEnvConfig(projectPath, envName);
+        }
+      }
+      if (configResult.isErr()) {
+        return err(configResult.error);
+      }
     }
 
     const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider, isV3);

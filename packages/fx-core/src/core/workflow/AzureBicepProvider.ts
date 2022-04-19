@@ -15,6 +15,7 @@ import {
 } from "../../plugins/solution/fx-solution/arm";
 import { Action, ContextV3, MaybePromise } from "./interface";
 import { compileHandlebarsTemplateString } from "../../common/tools";
+import { camelCase } from "lodash";
 
 @Service("azure-bicep")
 export class AzureBicepProvider {
@@ -47,22 +48,79 @@ export class AzureBicepProvider {
       ): Promise<Result<undefined, FxError>> => {
         const azureBicepInputs = inputs["azure-bicep"];
         const resource = azureBicepInputs.resource as string;
-        const dependencies = azureBicepInputs.dependencies as any;
-        let outputBicep = await fs.readFile(
-          path.join(__dirname, "bicep", `${resource}.provision.bicep`),
+        const baseName = generateResourceBaseName(context.projectSetting.appName, "");
+        const bicepOrchestrationTemplate = new BicepOrchestrationContent([resource], baseName);
+        const moduleProvisionFiles = new Map<string, string>();
+        const moduleConfigFiles = new Map<string, string>();
+        const armTemplate: ArmTemplateResult = {};
+        {
+          const filePath = path.join(
+            __dirname,
+            "bicep",
+            `${camelCase(resource)}.provision.orchestration.bicep`
+          );
+          if (await fs.pathExists(filePath)) {
+            const content = await fs.readFile(filePath, "utf-8");
+            armTemplate.Provision = armTemplate.Provision || {};
+            armTemplate.Provision.Orchestration = content;
+          }
+        }
+
+        {
+          const filePath = path.join(
+            __dirname,
+            "bicep",
+            `${camelCase(resource)}.provision.module.bicep`
+          );
+          if (await fs.pathExists(filePath)) {
+            const content = await fs.readFile(filePath, "utf-8");
+            armTemplate.Provision = armTemplate.Provision || {};
+            armTemplate.Provision.Modules[resource] = content;
+          }
+        }
+
+        const provisionOrchestration = await fs.readFile(
+          path.join(__dirname, "bicep", `${camelCase(resource)}.provision.orchestration.bicep`),
           "utf-8"
         );
-        if (dependencies) {
-          outputBicep = compileHandlebarsTemplateString(outputBicep, dependencies);
-        }
-        const outputPath = path.join(
-          inputs.projectPath,
-          "templates",
-          "azure",
-          `${resource}.provision.bicep`
+        const provisionModules = await fs.readFile(
+          path.join(__dirname, "bicep", `${camelCase(resource)}.provision.module.bicep`),
+          "utf-8"
         );
-        await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-        await fs.writeFile(outputPath, outputBicep);
+        const configOrchestration = await fs.readFile(
+          path.join(__dirname, "bicep", `${camelCase(resource)}.config.orchestration.bicep`),
+          "utf-8"
+        );
+        const configModule = await fs.readFile(
+          path.join(__dirname, "bicep", `${camelCase(resource)}.config.module.bicep`),
+          "utf-8"
+        );
+        // const armTemplate: ArmTemplateResult = {
+        //   Provision: {
+        //     Orchestration: provisionOrchestration,
+        //     Modules: { [resource]: provisionModules },
+        //   },
+        //   Configuration: {
+        //     Orchestration: configOrchestration,
+        //     Modules: { [resource]: configModule },
+        //   },
+        // };
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          resource,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
+        const persistRes = await persistBicepTemplates(
+          bicepOrchestrationTemplate,
+          moduleProvisionFiles,
+          moduleConfigFiles,
+          inputs.projectPath
+        );
+        if (persistRes.isErr()) {
+          return err(persistRes.error);
+        }
         return ok(undefined);
       },
     };

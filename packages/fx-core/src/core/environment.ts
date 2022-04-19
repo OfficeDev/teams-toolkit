@@ -86,28 +86,9 @@ class EnvironmentManager {
     }
 
     envName = envName ?? this.getDefaultEnvName();
-    let configResult = await this.loadEnvConfig(projectPath, envName);
+    const configResult = await this.loadEnvConfig(projectPath, envName);
     if (configResult.isErr()) {
-      if (envName === "local") {
-        const inputs: Inputs = {
-          projectPath: projectPath,
-          platform: Platform.VSCode,
-        };
-        const projectSettings = await loadProjectSettings(inputs, true);
-        if (projectSettings.isOk()) {
-          const appName = getLocalAppName(projectSettings.value.appName);
-          const newEnvConfig = environmentManager.newEnvConfigData(appName);
-          await environmentManager.writeEnvConfig(
-            inputs.projectPath!,
-            newEnvConfig,
-            environmentManager.getLocalEnvName()
-          );
-          configResult = await this.loadEnvConfig(projectPath, envName);
-        }
-      }
-      if (configResult.isErr()) {
-        return err(configResult.error);
-      }
+      return err(configResult.error);
     }
 
     const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider, isV3);
@@ -299,7 +280,25 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
-      return err(ProjectEnvNotExistError(envName));
+      if (envName === this.getLocalEnvName()) {
+        const inputs: Inputs = {
+          projectPath: projectPath,
+          platform: Platform.VSCode,
+        };
+        const projectSettings = await loadProjectSettings(inputs, true);
+        if (projectSettings.isOk()) {
+          const appName = getLocalAppName(projectSettings.value.appName);
+          const newEnvConfig = environmentManager.newEnvConfigData(appName);
+          await environmentManager.writeEnvConfig(
+            inputs.projectPath!,
+            newEnvConfig,
+            environmentManager.getLocalEnvName()
+          );
+        }
+      }
+      if (!(await fs.pathExists(envConfigPath))) {
+        return err(ProjectEnvNotExistError(envName));
+      }
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);

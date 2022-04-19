@@ -41,6 +41,15 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
       if (path.endsWith(".fx")) {
         return true;
       }
+      if (path.endsWith("remote.template.json")) {
+        return true;
+      }
+      if (path.endsWith("local.template.json")) {
+        return true;
+      }
+      if (path.endsWith("localSettings.json")) {
+        return true;
+      }
       return false;
     });
     setTools(new MockTools());
@@ -106,43 +115,7 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
     await my.myMethod(inputs2);
   });
 
-  it("consolidate spfx happy path", async () => {
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
-    const appName = randomAppName();
-    const projectSettings: ProjectSettings = MockProjectSettings(appName);
-    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-    sandbox.stub(environmentManager, "writeEnvConfig").resolves(ok(""));
-    sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(fs, "writeFile").resolves();
-    sandbox.stub(fs, "readFile").resolves(Buffer.from("{}", "utf-8"));
-    sandbox.stub(fs, "copy").resolves();
-    sandbox.stub(fs, "copyFile").resolves();
-    sandbox.stub(fs, "remove").resolves();
-    sandbox.stub(projectMigrator, "addPathToGitignore").resolves();
-
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        return ok("");
-      }
-    }
-
-    hooks(MyClass, {
-      myMethod: [ProjectConsolidateMW],
-    });
-    const my = new MyClass();
-    const inputs1: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), appName),
-    };
-    await my.myMethod(inputs1);
-    const inputs2: Inputs = {
-      platform: Platform.CLI_HELP,
-      projectPath: path.join(os.tmpdir(), appName),
-    };
-    await my.myMethod(inputs2);
-  });
-
-  it("consolidate happy path", async () => {
+  it("consolidate SPFx happy path", async () => {
     sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     const appName = randomAppName();
     const projectSettings: ProjectSettings = MockSPFxProjectSettings(appName);

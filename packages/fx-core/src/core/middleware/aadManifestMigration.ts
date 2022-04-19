@@ -18,7 +18,7 @@ import {
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { getTemplatesFolder } from "../../folder";
+import { getResourceFolder, getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import { needConsolidateLocalRemote } from "./consolidateLocalRemote";
@@ -31,8 +31,12 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import * as os from "os";
 
 const upgradeButton = "Upgrade";
+const LearnMore = "Learn More";
+const LearnMoreLink = "https://aka.ms/teamsfx-aad-manifest";
 let userCancelFlag = false;
 const backupFolder = ".backup";
+const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+const upgradeReportName = "aad-manifest-change-logs.md";
 
 interface Permission {
   resource: string;
@@ -50,38 +54,57 @@ export const AadManifestMigrationMW: Middleware = async (
     await next();
   } else if ((await needMigrateToAadManifest(ctx)) && checkMethod(ctx)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-    const res = await TOOLS?.ui.showMessage(
-      "warn",
-      getLocalizedString("core.aadManifestMigration.Message"),
-      true,
-      upgradeButton
-    );
-    const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != upgradeButton) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationNotification, {
-        [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
-      });
-      ctx.result = err(AadManifestMigrationCanceledError());
-      outputCancelMessage(ctx);
-      return;
-    }
 
-    try {
-      await migrate(ctx);
-      await next();
-    } catch (error) {
-      sendTelemetryErrorEvent(
-        Component.core,
-        TelemetryEvent.ProjectAadManifestMigrationError,
-        assembleError(error, CoreSource)
-      );
-      throw error;
+    let showModal = true;
+    if (ctx.method && methods.has(ctx.method)) {
+      showModal = false;
+    }
+    if (showModal) {
+      await upgrade(ctx, next, true);
+    } else {
+      upgrade(ctx, next, false);
     }
   } else {
     await next();
   }
 };
 
+async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
+  let answer: string | undefined = undefined;
+  do {
+    const res = await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.aadManifestMigration.Message"),
+      showModal,
+      upgradeButton,
+      LearnMore
+    );
+    answer = res?.isOk() ? res.value : undefined;
+    if (answer === LearnMore) {
+      TOOLS?.ui.openUrl(LearnMoreLink);
+    }
+  } while (answer === LearnMore);
+  if (!answer || answer != upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+    });
+    ctx.result = err(AadManifestMigrationCanceledError());
+    outputCancelMessage(ctx);
+    return;
+  }
+
+  try {
+    await migrate(ctx);
+    await next();
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectAadManifestMigrationError,
+      assembleError(error, CoreSource)
+    );
+    throw error;
+  }
+}
 async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {
   try {
     if (!isConfigUnifyEnabled() || !isAadManifestEnabled()) {
@@ -280,6 +303,9 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
 
   postMigration(inputs);
+
+  generateUpgradeReport(path.join(inputs.projectPath as string, backupFolder));
+
   return true;
 }
 
@@ -300,5 +326,15 @@ async function postMigration(inputs: Inputs): Promise<void> {
     );
   } else {
     TOOLS?.logProvider.info(getLocalizedString("core.aadManifestMigration.SuccessMessage"));
+  }
+}
+
+async function generateUpgradeReport(backupFolder: string) {
+  try {
+    const target = path.join(backupFolder, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
+  } catch (error) {
+    // do nothing
   }
 }

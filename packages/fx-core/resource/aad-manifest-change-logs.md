@@ -14,7 +14,7 @@ Teams Toolkit continues to improve your Teams application development experience
 After the project upgrade, there are following changes we made:
 1. Update `.fx\configs\projectSettings.json` capabilities to include TabSSO and/or BotSSO based on original project capabilities.
 1. AAD manifest template file will be added to `templates\appPackage\aad.template.json`
-1. The required resource access information in `permissions.json` file will be merged into `aad.template.json` file and `permissions.json file` will be deprecated, please customize `requiredResourceAccess` property in `aad.template.json` file.
+1. The required resource access information in `permissions.json` file will be merged into `aad.template.json` file and `permissions.json` file will be deprecated, please customize `requiredResourceAccess` property in `aad.template.json` file.
 
 ## Know about how to restore your project
 If anything went wrong after the upgrade process, you could restore your old project configuration files by:

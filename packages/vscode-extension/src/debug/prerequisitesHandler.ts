@@ -257,12 +257,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     checkResults.push(accountResult);
 
     // local cert
-    const localCertResult = await resolveLocalCertificate(
-      localEnvManager,
-      `(${currentStep++}/${totalSteps})`
-    );
-    await progressHelper.end(Checker.LocalCertificate);
-    checkResults.push(localCertResult);
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      const localCertResult = await resolveLocalCertificate(
+        localEnvManager,
+        `(${currentStep++}/${totalSteps})`
+      );
+      await progressHelper.end(Checker.LocalCertificate);
+      checkResults.push(localCertResult);
+    }
 
     // deps
     const nonNodeDeps = getNonNodeDeps(enabledCheckers);
@@ -793,7 +795,10 @@ async function getOrderedCheckers(
   if (nodeDeps) {
     checkers.push(nodeDeps);
   }
-  checkers.push(Checker.M365Account, Checker.LocalCertificate);
+  checkers.push(Checker.M365Account);
+  if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+    checkers.push(Checker.LocalCertificate);
+  }
   checkers.push(...nonNodeDeps);
 
   if (ProjectSettingsHelper.isSpfx(projectSettings)) {

@@ -341,9 +341,11 @@ export default class Preview extends YargsCommand {
       }
 
       // check cert
-      const certRes = await this.resolveLocalCertificate(localEnvManager);
-      if (certRes.isErr()) {
-        return err(certRes.error);
+      if (includeFrontend) {
+        const certRes = await this.resolveLocalCertificate(localEnvManager);
+        if (certRes.isErr()) {
+          return err(certRes.error);
+        }
       }
 
       // check deps

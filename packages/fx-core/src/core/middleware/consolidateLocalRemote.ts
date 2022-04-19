@@ -113,7 +113,8 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
   if (!isConfigUnifyEnabled()) {
     return false;
   }
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (!inputs.projectPath) {
     return false;
   }
@@ -137,7 +138,8 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
 function outputCancelMessage(ctx: CoreHookContext) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
@@ -154,7 +156,8 @@ function outputCancelMessage(ctx: CoreHookContext) {
 
 async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgradeStart);
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   const fileList: Array<string> = [];
   const removeMap = new Map<string, string>();
   const loadRes = await loadProjectSettings(inputs, true);

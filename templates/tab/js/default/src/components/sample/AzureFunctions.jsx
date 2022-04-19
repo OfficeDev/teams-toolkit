@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
-import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
+import * as axios from "axios";
+import { TeamsFx } from "@microsoft/teamsfx";
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
@@ -12,11 +13,13 @@ async function callFunction() {
     return;
   }
   try {
-    const credential = teamsfx.getCredential();
-    const apiClient = createApiClient(
-      teamsfx.getConfig("apiEndpoint"),
-      new BearerTokenAuthProvider(async ()=> (await credential.getToken("")).token));
-    const response = await apiClient.get("/api/" + functionName);
+    const accessToken = await teamsfx.getCredential().getToken("");
+    const endpoint = teamsfx.getConfig("apiEndpoint");
+    const response = await axios.default.get(endpoint + "/api/" + functionName, {
+      headers: {
+        authorization: "Bearer " + accessToken.token,
+      },
+    });
     return response.data;
   } catch (err) {
     let funcErrorMsg = "";

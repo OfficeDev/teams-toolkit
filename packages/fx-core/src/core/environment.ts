@@ -46,7 +46,7 @@ import {
   ProjectEnvNotExistError,
   WriteFileError,
 } from "./error";
-import { loadProjectSettings } from "./middleware";
+import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 
 export interface EnvStateFiles {

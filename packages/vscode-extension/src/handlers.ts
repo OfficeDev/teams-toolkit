@@ -84,7 +84,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
@@ -797,7 +797,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     },
   };
 
-  if (args && args.length > 0 && args[0] != TreeViewCommand.TreeViewFlag) {
+  if (args && args.length > 0 && args[0] != TelemetryTriggerFrom.TreeView) {
     func.params.type = args[0];
     const isLocalDebug = args[0] === "localDebug";
     if (isLocalDebug) {
@@ -1436,12 +1436,18 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "general",
+  });
   return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "account",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
 }
 
@@ -1486,22 +1492,34 @@ export async function createAccountHandler(args: any[]): Promise<void> {
 }
 
 export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "environment",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
 }
 
 export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "development",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
 }
 
 export async function openDeploymentLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "deployment",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
 }
 
 export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "help&feedback",
+  });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
@@ -1529,19 +1547,19 @@ async function autoOpenProjectHandler(): Promise<void> {
   if (isOpenWalkThrough) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
-    await openWelcomeHandler([TelemetryTiggerFrom.Auto]);
+    await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
   if (isOpenReadMe === ext.workspaceUri.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
-    await openReadMeHandler([TelemetryTiggerFrom.Auto, false]);
+    await openReadMeHandler([TelemetryTriggerFrom.Auto, false]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
   }
   if (isOpenSampleReadMe) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
-    await openSampleReadmeHandler([TelemetryTiggerFrom.Auto]);
+    await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
 }
@@ -1552,7 +1570,7 @@ export async function openReadMeHandler(args: any[]) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
-        Correlator.run(() => createNewProjectHandler([TelemetryTiggerFrom.Notification]));
+        Correlator.run(() => createNewProjectHandler([TelemetryTriggerFrom.Notification]));
       },
     };
 
@@ -2342,7 +2360,7 @@ export async function cmpAccountsHandler() {
 
 export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other,
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other,
   });
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
@@ -2376,7 +2394,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
 }
 
 export async function openAdaptiveCardExt(
-  args: any[] = [TelemetryTiggerFrom.TreeView]
+  args: any[] = [TelemetryTriggerFrom.TreeView]
 ): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
   const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
@@ -2613,7 +2631,7 @@ export async function openConfigStateFile(args: any[]) {
       const provision = {
         title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
         run: async (): Promise<void> => {
-          Correlator.run(provisionHandler, [TelemetryTiggerFrom.Other]);
+          Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
         },
       };
 
@@ -2739,8 +2757,8 @@ export async function editAadManifestTemplate(args: any[]) {
 export async function signOutAzure(isFromTreeView: boolean) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
     [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette,
+      ? TelemetryTriggerFrom.TreeView
+      : TelemetryTriggerFrom.CommandPalette,
     [TelemetryProperty.AccountType]: AccountType.Azure,
   });
   const result = await AzureAccountManager.signout();
@@ -2765,8 +2783,8 @@ export async function signOutAzure(isFromTreeView: boolean) {
 export async function signOutM365(isFromTreeView: boolean) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
     [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette,
+      ? TelemetryTriggerFrom.TreeView
+      : TelemetryTriggerFrom.CommandPalette,
     [TelemetryProperty.AccountType]: AccountType.M365,
   });
   let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
@@ -3077,7 +3095,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     return err(selectedTutorial.error);
   } else {
     const tutorial = selectedTutorial.value.result as OptionItem;
-    return openTutorialHandler([TelemetryTiggerFrom.Auto, tutorial]);
+    return openTutorialHandler([TelemetryTriggerFrom.Auto, tutorial]);
   }
 }
 

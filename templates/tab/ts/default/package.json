@@ -9,7 +9,7 @@
         "@microsoft/mgt-teamsfx-provider": "2.4.1-next.teamsfx.3511fba",
         "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^1.9.0",
-        "@microsoft/teamsfx": "0.7.0-rc.0",
+        "@microsoft/teamsfx": "^0.6.0",
         "@microsoft/teamsfx-react": "0.1.0",
         "axios": "^0.21.1",
         "msteams-react-base-component": "^3.1.0",

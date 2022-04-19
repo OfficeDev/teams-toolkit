@@ -185,7 +185,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
-        "localSettings.json"
+        "state.local.json"
       );
       return err(
         new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)

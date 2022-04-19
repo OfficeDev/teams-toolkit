@@ -679,7 +679,7 @@ export async function addResource(
         if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
           solutionSettings.capabilities.push(TabSsoItem.id);
         }
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+        if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
           solutionSettings.capabilities.push(BotSsoItem.id);
         }
       } else {

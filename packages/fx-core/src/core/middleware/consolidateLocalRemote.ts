@@ -123,13 +123,10 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
     return false;
   }
 
-  const localEnvExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, ".fx", "configs", "config.local.json")
-  );
   const consolidateManifestExist = await fs.pathExists(
     path.join(inputs.projectPath as string, "templates", "appPackage", "manifest.template.json")
   );
-  if (!localEnvExist && !consolidateManifestExist) {
+  if (!consolidateManifestExist) {
     return true;
   }
   return false;

@@ -146,12 +146,15 @@ describe("Package Command Tests", function () {
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
-    sandbox.stub(Utils, "askTargetEnvironment").resolves(ok("dev"));
+    const askEnv = sandbox.stub(Utils, "askTargetEnvironment").resolves(ok("dev"));
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
     };
     await cmd.handler(args);
+
+    // interactive ask env question if not provided
+    expect(askEnv.calledOnce);
     expect(telemetryEvents).deep.equals([TelemetryEvent.BuildStart, TelemetryEvent.Build]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });

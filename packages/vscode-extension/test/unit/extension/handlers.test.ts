@@ -141,6 +141,20 @@ suite("handlers", () => {
       sinon.assert.calledOnce(publishApplication);
       sinon.restore();
     });
+
+    test("buildPackageHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
+      const showMessage = sinon.spy(vscode.window, "showErrorMessage");
+
+      await handlers.buildPackageHandler();
+
+      // should show error for invalid project
+      sinon.assert.calledOnce(showMessage);
+      sinon.restore();
+    });
   });
 
   suite("runCommand()", function () {

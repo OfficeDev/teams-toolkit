@@ -36,6 +36,20 @@ export async function checkEmptyValue(input: string): Promise<string | undefined
   return getLocalizedString("plugins.apiConnector.Question.validation.EmptyValue");
 }
 
+export async function checkApiNameValid(input: string): Promise<string | undefined> {
+  if (input.match(/[^a-zA-Z0-9]/)) {
+    return getLocalizedString(
+      "plugins.apiConnector.QuestionAppName.validation.ApiNameAlphanumeric"
+    );
+  }
+  if (input.match(/^[0-9]/)) {
+    return getLocalizedString(
+      "plugins.apiConnector.QuestionAppName.validation.ApiNameNumberPrefix"
+    );
+  }
+  return undefined;
+}
+
 export async function checkEmptySelect(input: string[]): Promise<string | undefined> {
   const name = input as string[];
   if (name.length === 0) {

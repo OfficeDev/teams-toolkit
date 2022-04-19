@@ -293,6 +293,8 @@
   "plugins.apiConnector.errorMessage.ApiConnectorFunctionRouteError": "Failed to route function call: %s",
   "plugins.apiConnector.questionComponentSelect.emptySelection": "You have to select at least one component.",
   "plugins.apiConnector.QuestionAppName.validation.ApiNameExist": "Please provide a different API name to avoid conflicts with existing file %s",
+  "plugins.apiConnector.QuestionAppName.validation.ApiNameAlphanumeric": "Please provide a different API name contains alphanumeric only",
+  "plugins.apiConnector.QuestionAppName.validation.ApiNameNumberPrefix": "Please provide a different API name without number beginning",
   "plugins.apiConnector.Question.validation.EmptyValue": "The value should not be empty",
   "plugins.apiConnector.Question.validation.NotGuid": "The value should be guid",
   "plugins.apiConnector.QuestionApiEndpoint.validation.NotHttp": "The API endpoint should be a valid http(s) url",

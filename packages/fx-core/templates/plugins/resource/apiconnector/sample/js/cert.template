@@ -12,4 +12,4 @@ const {{config.APIName}}Client = teamsfxSdk.createApiClient(
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
   authProvider
 );
-export { {{config.APIName}}Client };
+module.exports.{{config.APIName}}Client = {{config.APIName}}Client;

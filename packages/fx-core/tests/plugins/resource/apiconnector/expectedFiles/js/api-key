@@ -24,7 +24,7 @@ const fakeClient = teamsfxSdk.createApiClient(
   teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
   authProvider
 );
-export { fakeClient };
+module.exports.fakeClient = fakeClient;
 
 /* 
 Setting API configuration for cloud environment: 

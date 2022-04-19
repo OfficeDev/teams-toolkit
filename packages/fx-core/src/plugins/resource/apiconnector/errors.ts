@@ -110,4 +110,10 @@ export class ErrorMessage {
         component
       ),
   };
+
+  public static readonly envVarExistError = {
+    name: "envVarExistError",
+    message: (varName: string): ApiConnectionMsg =>
+      ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.envVarExistError.name}`, varName),
+  };
 }

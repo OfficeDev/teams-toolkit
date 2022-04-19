@@ -62,7 +62,7 @@ export class ErrorMessage {
   };
 
   public static readonly NoValidCompoentExistError = {
-    name: "NoValidCompoentExistError",
+    name: "NoBotOrFunctionExistError",
     message: (): ApiConnectionMsg =>
       ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.NoValidCompoentExistError.name}`),
   };

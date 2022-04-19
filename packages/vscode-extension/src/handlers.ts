@@ -716,8 +716,6 @@ export async function connectExistingApiHandler(args?: any[]): Promise<Result<nu
 
   const res = await runUserTask(func, TelemetryEvent.ConnectExistingApi, true);
   if (!res.isOk()) {
-    showError(res.error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConnectExistingApi, res.error);
     return err(res.error);
   }
 

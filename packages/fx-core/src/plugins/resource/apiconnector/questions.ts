@@ -90,6 +90,9 @@ export const basicAuthUsernameQuestion: TextInputQuestion = {
   placeholder: getLocalizedString(
     "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
   ), // Use the placeholder to display some description
+  validation: {
+    validFunc: checkEmptyValue,
+  },
 };
 
 export const appTenantIdQuestion: TextInputQuestion = {

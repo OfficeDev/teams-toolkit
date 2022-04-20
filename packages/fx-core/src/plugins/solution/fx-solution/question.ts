@@ -25,7 +25,7 @@ export const TabNewUIOptionItem: OptionItem = {
   label: getLocalizedString("core.TabOption.labelNew"),
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
+  groupName: getLocalizedString("core.options.separator.basic"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -34,6 +34,14 @@ export const BotOptionItem: OptionItem = {
   cliName: "bot",
   description: getLocalizedString("core.BotOption.description"),
   detail: getLocalizedString("core.BotOption.detail"),
+};
+
+export const BotNewUIOptionItem: OptionItem = {
+  id: "Bot",
+  label: "Bot",
+  cliName: "bot",
+  detail: getLocalizedString("core.BotNewUIOption.detail"),
+  groupName: getLocalizedString("core.options.separator.basic"),
 };
 
 export const NotificationOptionItem: OptionItem = {
@@ -76,7 +84,7 @@ export const MessageExtensionNewUIItem: OptionItem = {
   label: getLocalizedString("core.MessageExtensionOption.labelNew"),
   cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
-  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+  groupName: getLocalizedString("core.options.separator.basic"),
 };
 
 export const TabSPFxItem: OptionItem = {
@@ -169,9 +177,23 @@ export const AzureResourceSQL: OptionItem = {
   description: getLocalizedString("core.AzureResourceSQL.description"),
 };
 
+export const AzureResourceSQLNewUI: OptionItem = {
+  id: "sql",
+  label: getLocalizedString("core.AzureResourceSQLNewUI.label"),
+  detail: getLocalizedString("core.AzureResourceSQLNewUI.detail"),
+  groupName: getLocalizedString("core.options.separator.resource"),
+};
+
 export const AzureResourceFunction: OptionItem = {
   id: "function",
   label: getLocalizedString("core.AzureResourceFunction.label"),
+};
+
+export const AzureResourceFunctionNewUI: OptionItem = {
+  id: "function",
+  label: getLocalizedString("core.AzureResourceFunctionNewUI.label"),
+  detail: getLocalizedString("core.AzureResourceFunctionNewUI.detail"),
+  groupName: getLocalizedString("core.options.separator.resource"),
 };
 
 export const AzureResourceApim: OptionItem = {
@@ -180,10 +202,45 @@ export const AzureResourceApim: OptionItem = {
   description: getLocalizedString("core.AzureResourceApim.description"),
 };
 
+export const AzureResourceApimNewUI: OptionItem = {
+  id: "apim",
+  label: getLocalizedString("core.AzureResourceApimNewUI.label"),
+  detail: getLocalizedString("core.AzureResourceApimNewUI.detail"),
+  groupName: getLocalizedString("core.options.separator.resource"),
+};
+
 export const AzureResourceKeyVault: OptionItem = {
   id: "keyvault",
   label: getLocalizedString("core.AzureResourceKeyVault.label"),
   description: getLocalizedString("core.AzureResourceKeyVault.description"),
+};
+
+export const AzureResourceKeyVaultNewUI: OptionItem = {
+  id: "keyvault",
+  label: getLocalizedString("core.AzureResourceKeyVaultNewUI.label"),
+  detail: getLocalizedString("core.AzureResourceKeyVaultNewUI.detail"),
+  groupName: getLocalizedString("core.options.separator.resource"),
+};
+
+export const SingleSignOnOptionItem: OptionItem = {
+  id: "sso",
+  label: getLocalizedString("core.SingleSignOnOption.label"),
+  detail: getLocalizedString("core.SingleSignOnOption.detail"),
+  groupName: getLocalizedString("core.options.separator.additional"),
+};
+
+export const apiConnectionOptionItem: OptionItem = {
+  id: "api-connection",
+  label: getLocalizedString("core.ApiConnectionOption.label"),
+  detail: getLocalizedString("core.ApiConnectionOption.detail"),
+  groupName: getLocalizedString("core.options.separator.additional"),
+};
+
+export const cicdOptionItem: OptionItem = {
+  id: "cicd",
+  label: getLocalizedString("core.cicdWorkflowOption.label"),
+  detail: getLocalizedString("core.cicdWorkflowOption.detail"),
+  groupName: getLocalizedString("core.options.separator.additional"),
 };
 
 export enum BotScenario {
@@ -252,9 +309,10 @@ export function createAddCloudResourceOptions(
   alreadyHaveAPIM: boolean,
   alreadyHaveKeyVault: boolean
 ): OptionItem[] {
-  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
-  if (!alreadyHaveAPIM) options.push(AzureResourceApim);
-  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
+  const options: OptionItem[] = [AzureResourceFunctionNewUI];
+  if (!alreadyHaveAPIM) options.push(AzureResourceApimNewUI);
+  options.push(AzureResourceSQLNewUI);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVaultNewUI);
   return options;
 }
 

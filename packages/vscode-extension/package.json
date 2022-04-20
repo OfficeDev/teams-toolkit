@@ -294,7 +294,7 @@
       "editor/title": [
         {
           "command": "fx-extension.openPreviewFile",
-          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json",
           "group": "navigation"
         },
         {

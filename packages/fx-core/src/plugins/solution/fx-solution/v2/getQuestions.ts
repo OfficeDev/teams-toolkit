@@ -672,8 +672,8 @@ async function getStaticOptionsForAddCapability(
   const options: OptionItem[] = [];
   if (isBotAddable) {
     if (isBotNotificationEnabled()) {
-      options.push(CommandAndResponseOptionItem);
       options.push(NotificationOptionItem);
+      options.push(CommandAndResponseOptionItem);
     } else {
       options.push(BotOptionItem);
     }
@@ -713,7 +713,7 @@ export async function getQuestionsForAddFeature(
   const options: OptionItem[] = [];
   const addFeatureQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
-    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
+    title: "Features",
     type: "singleSelect",
     staticOptions: [],
     validation: {
@@ -783,26 +783,37 @@ export async function getQuestionsForAddFeature(
     addFeatureNode.addChild(programmingLanguage);
   }
 
-  //traverse plugins' getQuestionsForUserTask
-  const pluginsWithResources = [
-    [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
-    [ResourcePluginsV2.SqlPlugin, AzureResourceSQL.id],
-    [ResourcePluginsV2.ApimPlugin, AzureResourceApim.id],
-    [ResourcePluginsV2.KeyVaultPlugin, AzureResourceKeyVault.id],
-  ];
-  for (const pair of pluginsWithResources) {
-    const pluginName = pair[0];
-    const resourceName = pair[1];
-    const plugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(pluginName);
-    if (plugin.getQuestionsForUserTask) {
-      const res = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const node = res.value as QTreeNode;
-        node.condition = { equals: resourceName };
-        if (node.data) addFeatureNode.addChild(node);
-      }
+  // function plugins' getQuestionsForUserTask
+  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.FunctionPlugin
+  );
+  if (functionPlugin.getQuestionsForUserTask) {
+    const res = await functionPlugin.getQuestionsForUserTask(
+      ctx,
+      inputs,
+      func,
+      envInfo,
+      tokenProvider
+    );
+    if (res.isErr()) return res;
+    if (res.value) {
+      const node = res.value as QTreeNode;
+      // node.condition = { equals: AzureResourceFunction.id };
+      node.condition = {
+        validFunc: (input: string, inputs?: Inputs) => {
+          if (
+            input === AzureResourceFunction.id ||
+            input === AzureResourceSQL.id ||
+            input === AzureResourceApim.id
+          ) {
+            return undefined;
+          }
+          return "Function related is not selected";
+        },
+      };
+      if (node.data) addFeatureNode.addChild(node);
     }
   }
+
   return ok(addFeatureNode);
 }

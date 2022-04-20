@@ -25,7 +25,7 @@ export const TabNewUIOptionItem: OptionItem = {
   label: getLocalizedString("core.TabOption.labelNew"),
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
-  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
 };
 
 export const BotOptionItem: OptionItem = {
@@ -39,18 +39,20 @@ export const BotOptionItem: OptionItem = {
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
   label: getLocalizedString("core.NotificationOption.label"),
+  description: getLocalizedString("core.Option.recommend"),
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
-  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
   // For default option, id and cliName must be the same
   id: "command-bot",
   label: getLocalizedString("core.CommandAndResponseOption.label"),
+  description: getLocalizedString("core.Option.recommend"),
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
-  groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
 };
 
 export const ExistingTabOptionItem: OptionItem = {

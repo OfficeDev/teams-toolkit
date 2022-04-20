@@ -13,6 +13,7 @@ import {
   Platform,
   QTreeNode,
   Result,
+  SingleSelectQuestion,
   Stage,
   TokenProvider,
   UserError,
@@ -46,6 +47,7 @@ import {
   M365SearchAppOptionItem,
   MessageExtensionNewUIItem,
   TabNewUIOptionItem,
+  createAddCloudResourceOptions,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -426,6 +428,9 @@ export async function getQuestionsForUserTask(
   if (func.method === "addResource") {
     return await getQuestionsForAddResource(ctx, inputs, func, envInfo, tokenProvider);
   }
+  if (func.method === "addFeature") {
+    return await getQuestionsForAddFeature(ctx, inputs, func, envInfo, tokenProvider);
+  }
   if (array.length == 2) {
     const pluginName = array[1];
     const pluginMap = getAllV2ResourcePluginMap();
@@ -506,71 +511,15 @@ export async function getQuestionsForAddCapability(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "staticTab"
-  );
-  if (tabExceedRes.isErr()) {
-    return err(tabExceedRes.error);
+  const optionsResult = await getStaticOptionsForAddCapability(ctx, inputs, settings);
+  if (optionsResult.isErr()) {
+    return err(optionsResult.error);
   }
-  const isTabAddable = !tabExceedRes.value;
-  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "Bot"
-  );
-  if (botExceedRes.isErr()) {
-    return err(botExceedRes.error);
-  }
-  const isBotAddable = !botExceedRes.value;
-  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "MessageExtension"
-  );
-  if (meExceedRes.isErr()) {
-    return err(meExceedRes.error);
-  }
-  // for the new bot, messaging extension and other bots are mutally exclusive
-  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
-  if (!(isTabAddable || isBotAddable || isMEAddable)) {
-    ctx.userInteraction?.showMessage(
-      "error",
-      getLocalizedString("core.addCapability.exceedMaxLimit"),
-      false
-    );
+  if (optionsResult.value.length === 0) {
     return ok(undefined);
   }
-  const options = [];
-  if (isBotAddable) {
-    if (isBotNotificationEnabled()) {
-      options.push(CommandAndResponseOptionItem);
-      options.push(NotificationOptionItem);
-    } else {
-      options.push(BotOptionItem);
-    }
-  }
-  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
-  if (isTabAddable) {
-    if (!isAadManifestEnabled()) {
-      options.push(tabOptionItem);
-    } else {
-      if (!settings?.capabilities.includes(TabOptionItem.id)) {
-        options.push(TabNonSsoItem, tabOptionItem);
-      } else {
-        options.push(
-          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
-        );
-      }
-    }
-  }
-  if (isMEAddable) {
-    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
-  }
 
-  addCapQuestion.staticOptions = options;
+  addCapQuestion.staticOptions = optionsResult.value;
   const addCapNode = new QTreeNode(addCapQuestion);
 
   // // mini app can add SPFx tab
@@ -676,4 +625,184 @@ export async function getQuestionsForAddResource(
     }
   }
   return ok(addAzureResourceNode);
+}
+
+async function getStaticOptionsForAddCapability(
+  ctx: v2.Context,
+  inputs: Inputs,
+  settings?: AzureSolutionSettings
+): Promise<Result<OptionItem[], FxError>> {
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "staticTab"
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
+  }
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "Bot"
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "MessageExtension"
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  // for the new bot, messaging extension and other bots are mutally exclusive
+  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
+  if (!(isTabAddable || isBotAddable || isMEAddable)) {
+    ctx.userInteraction?.showMessage(
+      "error",
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
+      false
+    );
+    return ok([]);
+  }
+  const options: OptionItem[] = [];
+  if (isBotAddable) {
+    if (isBotNotificationEnabled()) {
+      options.push(CommandAndResponseOptionItem);
+      options.push(NotificationOptionItem);
+    } else {
+      options.push(BotOptionItem);
+    }
+  }
+  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(tabOptionItem);
+    } else {
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, tabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
+        );
+      }
+    }
+  }
+  if (isMEAddable) {
+    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
+  }
+  return ok(options);
+}
+
+/**
+ * Combines the options of AddCapability and AddResource.
+ * Only works for VS Code.
+ */
+export async function getQuestionsForAddFeature(
+  ctx: v2.Context,
+  inputs: Inputs,
+  func: Func,
+  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+  tokenProvider: TokenProvider
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const options: OptionItem[] = [];
+  const addFeatureQuestion: SingleSelectQuestion = {
+    name: AzureSolutionQuestionNames.Features,
+    title: isBotNotificationEnabled() ? "Capabilities" : "Choose capabilities",
+    type: "singleSelect",
+    staticOptions: [],
+    validation: {
+      validFunc: validateCapabilities,
+    },
+  };
+  const canAddCapabilityResult = canAddCapability(settings, ctx.telemetryReporter);
+  if (canAddCapabilityResult.isOk()) {
+    const optionsResult = await getStaticOptionsForAddCapability(ctx, inputs, settings);
+    if (optionsResult.isErr()) {
+      return err(optionsResult.error);
+    }
+    options.push(...optionsResult.value);
+  }
+  const canAddResourceResult = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
+  if (canAddResourceResult.isOk()) {
+    // resources
+    if (!settings) {
+      return err(new NoCapabilityFoundError(Stage.addResource));
+    }
+    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
+    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
+    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
+    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    const addResourceOptions = createAddCloudResourceOptions(
+      alreadyHaveFunction,
+      alreadyHaveSQL,
+      alreadyHaveAPIM,
+      alreadyHaveKeyVault
+    );
+    options.push(...addResourceOptions);
+  }
+  // Only return error when both of them are errors.
+  if (canAddCapabilityResult.isErr() && canAddResourceResult.isErr()) {
+    return err(canAddCapabilityResult.error);
+  }
+  addFeatureQuestion.staticOptions = options;
+  const addFeatureNode = new QTreeNode(addFeatureQuestion);
+
+  if (isBotNotificationEnabled()) {
+    // Hardcoded to call bot plugin to get notification trigger questions.
+    // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+    // V3 will not need this hardcoding.
+    const pluginMap = getAllV2ResourcePluginMap();
+    const plugin = pluginMap.get(PluginNames.BOT);
+    if (plugin && plugin.getQuestionsForUserTask) {
+      const result = await plugin.getQuestionsForUserTask(
+        ctx,
+        inputs,
+        func,
+        envInfo,
+        tokenProvider
+      );
+      if (result.isErr()) {
+        return result;
+      }
+      const botQuestionNode = result.value;
+      if (botQuestionNode) {
+        addFeatureNode.addChild(botQuestionNode);
+      }
+    }
+  }
+
+  if (!ctx.projectSetting.programmingLanguage) {
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    addFeatureNode.addChild(programmingLanguage);
+  }
+
+  //traverse plugins' getQuestionsForUserTask
+  const pluginsWithResources = [
+    [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
+    [ResourcePluginsV2.SqlPlugin, AzureResourceSQL.id],
+    [ResourcePluginsV2.ApimPlugin, AzureResourceApim.id],
+    [ResourcePluginsV2.KeyVaultPlugin, AzureResourceKeyVault.id],
+  ];
+  for (const pair of pluginsWithResources) {
+    const pluginName = pair[0];
+    const resourceName = pair[1];
+    const plugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(pluginName);
+    if (plugin.getQuestionsForUserTask) {
+      const res = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = { equals: resourceName };
+        if (node.data) addFeatureNode.addChild(node);
+      }
+    }
+  }
+  return ok(addFeatureNode);
 }

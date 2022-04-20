@@ -146,6 +146,7 @@ export enum AzureSolutionQuestionNames {
   ProgrammingLanguage = "programming-language",
   Solution = "solution",
   Scenarios = "scenarios",
+  Features = "features",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -241,6 +242,18 @@ export function createAddAzureResourceQuestion(
       return currentSelectedIds;
     },
   };
+}
+
+export function createAddCloudResourceOptions(
+  alreadyHaveFunction: boolean,
+  alreadyHaveSQL: boolean,
+  alreadyHaveAPIM: boolean,
+  alreadyHaveKeyVault: boolean
+): OptionItem[] {
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
+  if (!alreadyHaveAPIM) options.push(AzureResourceApim);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
+  return options;
 }
 
 export function addCapabilityQuestion(

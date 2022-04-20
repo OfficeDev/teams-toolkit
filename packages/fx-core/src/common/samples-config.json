@@ -1,6 +1,6 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/ga/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/ga.zip",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.0.0/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.0.0.zip",
     "samples": [
         {
             "id": "hello-world-tab",

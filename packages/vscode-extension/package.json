@@ -480,7 +480,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365 && fx-entension.gaPreviewEnabled"
+        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365 && fx-entension.previewFeaturesEnabled"
       },
       {
         "command": "fx-extension.openManifest",
@@ -944,25 +944,10 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
-          "fx-extension.enableGAPreviewFeatures": {
+          "fx-extension.enablePreviewFeatures": {
             "order": 0,
             "type": "boolean",
-            "description": "Enable GA related features including notification bot, M365 app, existing app etc. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableNotification / CommandAndResponseBot": {
-            "type": "boolean",
-            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableM365App": {
-            "type": "boolean",
-            "title": "Enable Microsoft 365 App",
-            "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
-          },
-          "fx-extension.enableExistingApp": {
-            "type": "boolean",
-            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "description": "Enable a set of experimental features, including creating notification bot and command bot, extending apps across Microsoft 365, add sso and call an API. (Requires reload of VS Code)",
             "default": false
           }
         }

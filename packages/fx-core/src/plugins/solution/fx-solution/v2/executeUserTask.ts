@@ -816,6 +816,37 @@ export async function addFeature(
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
+  const featureAnswer = inputs[AzureSolutionQuestionNames.Features] as string;
+  const capabilityAnswers = new Set([
+    TabOptionItem.id,
+    BotOptionItem.id,
+    CommandAndResponseOptionItem.id,
+    NotificationOptionItem.id,
+    TabNonSsoItem.id,
+    MessageExtensionItem.id,
+  ]);
+  const resourceAnswers = new Set([
+    AzureResourceFunction.id,
+    AzureResourceSQL.id,
+    AzureResourceApim.id,
+    AzureResourceKeyVault.id,
+  ]);
+  if (capabilityAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.Capabilities] = [featureAnswer];
+    return addCapability(ctx, inputs, localSettings);
+  }
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
+  if (resourceAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.AddResources] = [featureAnswer];
+    if (
+      (featureAnswer === AzureResourceSQL.id || featureAnswer === AzureResourceApim.id) &&
+      !alreadyHaveFunction
+    ) {
+      inputs[AzureSolutionQuestionNames.AddResources].push(AzureResourceFunction.id);
+    }
+    return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
   return ok({});
 }
 

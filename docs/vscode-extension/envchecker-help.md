@@ -153,7 +153,7 @@ Note that the `botEndpoint` should use https protocol.
 Sideloading Permission is a setting of your Microsoft 365 tenant. It is required to be enblaed before you can install any customized Teams App.
 
 ### Solutions: 
-1. Contact your M365 tenant administrator to turn on sideloading permission for your tenant. Click this [document](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/accounts#teams-custom-app-upload-or-sideload-permission) to learn more about Sideloading.
+1. Contact your M365 tenant administrator to turn on sideloading permission for your tenant. Click this [document](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/accounts#upload-your-custom-app) to learn more about Sideloading.
 2. You can register [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program) to get an instand sanbox tenant. This tenant is auto-enabled with sideloading permission.
 
 ## Teams Toolkit Validation Settings

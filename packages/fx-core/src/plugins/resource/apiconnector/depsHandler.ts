@@ -63,8 +63,12 @@ export class DepsHandler {
   }
 
   private sdkVersionCheck(deps: Json, sdkName: string, sdkVersion: string): boolean {
+    // sdk alpha version
+    if (this.caretPrereleases(deps[sdkName], sdkVersion)) {
+      return false;
+    }
     // sdk not in dependencies.
-    if (!deps[sdkName]) {
+    else if (!deps[sdkName]) {
       return true;
     }
     // local sdk version intersect with sdk version in config.
@@ -84,5 +88,20 @@ export class DepsHandler {
         )
       );
     }
+  }
+
+  private caretPrereleases(ver1: string, ver2: string): boolean {
+    if (!semver.prerelease(ver1) || !semver.prerelease(ver2)) {
+      return false;
+    }
+    // semver.prerelease an prerelease version return alpha, beta or rc.
+    // example: semver.prerelease(0.6.0-alpha.12345.0) return ["alpha", "12345", "0"]
+    if (semver.prerelease(ver1)![0] != semver.prerelease(ver2)![0]) {
+      return false;
+    }
+    if (semver.satisfies(semver.coerce(ver1)!.version, `^${semver.coerce(ver2)!.version}`)) {
+      return true;
+    }
+    return false;
   }
 }

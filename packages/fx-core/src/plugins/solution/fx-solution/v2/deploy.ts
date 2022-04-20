@@ -201,16 +201,16 @@ export async function deploy(
 
   const botTroubleShootLink =
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
-  const botTroubleShootDesc = getLocalizedString("ore.deploy.botTroubleShoot");
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
   const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
   if (result.kind === "success") {
     if (inAzureProject) {
       let msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
       // Append a new sentence for bot trouble shootting.
       if (inBotProject) {
-        msg += ` ${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+        msg += ` ${botTroubleShootDesc}`;
       }
-      ctx.logProvider.info(msg);
+      ctx.logProvider.info(msg + ` ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`);
       if (inBotProject) {
         // Show a `Learn more` action button for bot trouble shooting.
         ctx.userInteraction

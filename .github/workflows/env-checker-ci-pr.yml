@@ -5,6 +5,7 @@ on:
     branches:
       - dev
       - main
+      - ga
       - release/**
     paths:
       - '.github/workflows/env-checker-ci-pr.yml'
@@ -15,6 +16,7 @@ on:
     branches:
       - dev
       - main
+      - ga
       - release/**
     paths:
       - '.github/workflows/env-checker-ci-pr.yml'

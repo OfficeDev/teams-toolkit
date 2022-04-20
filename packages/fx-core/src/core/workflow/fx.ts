@@ -19,13 +19,13 @@ import { getProjectSettingsPath } from "../middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../question";
 import "./aad";
 import "./ApiCodeProvider";
-import "./AzureBicepProvider";
+import "./bicepProvider";
 import "./botService";
 import "./azureFunction";
 import "./azureSql";
 import "./azureStorage";
 import "./azureWebApp";
-import "./BotCodeProvider";
+import "./botCodeProvider";
 import {
   Action,
   Component,
@@ -164,29 +164,29 @@ export class TeamsfxCore {
         targetAction: "bot-code.generate",
       },
       {
-        name: "call:azure-bicep.generate",
+        name: `call:${teamsBotInputs.hostingResource}.generateBicep`,
         type: "call",
         required: false,
-        targetAction: "azure-bicep.generate",
+        targetAction: `${teamsBotInputs.hostingResource}.generateBicep`,
+      },
+      {
+        name: "call:bot-service.generateBicep",
+        type: "call",
+        required: false,
+        targetAction: "bot-service.generateBicep",
         inputs: {
-          "azure-bicep": {
-            resource: camelCase(teamsBotInputs.hostingResource),
+          "bot-service": {
+            endpoint: `provisionOutputs.${camelCase(
+              teamsBotInputs.hostingResource
+            )}.outputs.endpoint`,
           },
         },
       },
       {
-        name: "call:azure-bicep.generate",
+        name: "call:bicep.persist",
         type: "call",
         required: false,
-        targetAction: "azure-bicep.generate",
-        inputs: {
-          "azure-bicep": {
-            resource: "azureBot",
-            dependencies: {
-              endpoint: `${camelCase(teamsBotInputs.hostingResource)}.outputs.webAppEndpoint`,
-            },
-          },
-        },
+        targetAction: "bicep.persist",
       },
       {
         name: "call:teams-manifest.addCapability",

@@ -2,13 +2,67 @@
 // Licensed under the MIT license.
 
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { ArmTemplateResult } from "../../common/armInterface";
+import { getTemplatesFolder } from "../../folder";
 import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
-import * as path from "path";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";
+  generateBicep(
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "azure-web-app.generateBicep",
+      type: "function",
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        return ok(["generate azure-web-app bicep"]);
+      },
+      execute: async (
+        context: ContextV3,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        const armTemplate: ArmTemplateResult = {};
+        armTemplate.Provision = {};
+        armTemplate.Provision.Modules = {};
+        armTemplate.Reference = {
+          resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
+          hostName: "provisionOutputs.azureWebAppOutput.value.domain",
+          endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+        };
+        {
+          const filePath = path.join(
+            getTemplatesFolder(),
+            "demo",
+            "azureWebApp.provision.module.bicep"
+          );
+          if (await fs.pathExists(filePath)) {
+            const content = await fs.readFile(filePath, "utf-8");
+            armTemplate.Provision.Modules["azureWebApp"] = content;
+          }
+        }
+        {
+          const filePath = path.join(
+            getTemplatesFolder(),
+            "demo",
+            "azureWebApp.provision.orchestration.bicep"
+          );
+          if (await fs.pathExists(filePath)) {
+            const content = await fs.readFile(filePath, "utf-8");
+            armTemplate.Provision.Orchestration = content;
+          }
+        }
+        if (!inputs["bicepOutputs"]) inputs["bicepOutputs"] = {};
+        inputs["bicepOutputs"]["azure-web-app"] = armTemplate;
+        return ok(undefined);
+      },
+    };
+    return ok(action);
+  }
   deploy(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

@@ -120,6 +120,10 @@ export interface ContextV3 extends v2.Context {
 export interface CloudResource {
   readonly name: string;
   readonly description?: string;
+  generateBicep?: (
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ) => MaybePromise<Result<Action | undefined, FxError>>;
   provision?: (
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

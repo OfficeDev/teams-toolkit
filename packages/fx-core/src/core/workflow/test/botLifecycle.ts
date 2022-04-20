@@ -18,7 +18,7 @@ import readlineSync from "readline-sync";
 
 const appName = "appv3";
 const projectPath = path.join(os.homedir(), "TeamsApps", appName);
-const debugMode = false;
+const debugMode = true;
 
 async function runAction(action: Action, context: any, inputs: any): Promise<void> {
   await planAction(action, context, cloneDeep(inputs));
@@ -56,9 +56,9 @@ async function init() {
 }
 
 async function addBot() {
-  const scenario = readlineSync.question(
-    "Scenario(default|notification-restify|notification-function-base): "
-  );
+  const scenario = debugMode
+    ? "default"
+    : readlineSync.question("Scenario(default|notification-restify|notification-function-base): ");
   let hostingResource = "azure-web-app";
   if (scenario === "notification-function-base") hostingResource = "azure-function";
   const inputs: v2.InputsWithProjectPath = {
@@ -113,15 +113,15 @@ async function deploy() {
 }
 
 setTools(new MockTools());
-// addBot();
+addBot();
 
-const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
-if (command === "init") {
-  init();
-} else if (command === "addBot") {
-  addBot();
-} else if (command === "provision") {
-  provision();
-} else if (command === "deploy") {
-  deploy();
-}
+// const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
+// if (command === "init") {
+//   init();
+// } else if (command === "addBot") {
+//   addBot();
+// } else if (command === "provision") {
+//   provision();
+// } else if (command === "deploy") {
+//   deploy();
+// }

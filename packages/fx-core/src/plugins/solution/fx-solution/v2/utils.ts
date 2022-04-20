@@ -61,7 +61,7 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function IsBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+export function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return (
     azureSettings !== undefined &&
     (azureSettings.capabilities.includes(BotOptionItem.id) ||

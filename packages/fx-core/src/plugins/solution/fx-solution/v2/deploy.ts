@@ -39,7 +39,7 @@ import {
   getAzureSolutionSettings,
   getSelectedPlugins,
   isAzureProject,
-  IsBotProject,
+  isBotProject,
 } from "./utils";
 
 export async function deploy(
@@ -54,7 +54,7 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const inBotProject = IsBotProject(getAzureSolutionSettings(ctx));
+  const inBotProject = isBotProject(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
@@ -203,18 +203,16 @@ export async function deploy(
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
   const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
   const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
   if (result.kind === "success") {
     if (inAzureProject) {
-      let msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
+      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
       // Append a new sentence for bot trouble shootting.
-      if (inBotProject) {
-        msg += ` ${botTroubleShootDesc}`;
-      }
-      ctx.logProvider.info(msg + ` ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`);
+      ctx.logProvider.info(inBotProject ? `${msg} ${botTroubleShootMsg}` : msg);
       if (inBotProject) {
         // Show a `Learn more` action button for bot trouble shooting.
         ctx.userInteraction
-          .showMessage("info", msg, false, botTroubleShootLearnMore)
+          .showMessage("info", `${msg} ${botTroubleShootDesc}`, false, botTroubleShootLearnMore)
           .then((result) => {
             const userSelected = result.isOk() ? result.value : undefined;
             if (userSelected === botTroubleShootLearnMore) {
@@ -227,11 +225,8 @@ export async function deploy(
     }
     return ok(Void);
   } else {
-    let msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
-    if (inBotProject) {
-      msg += ` ${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
-    }
-    ctx.logProvider.info(msg);
+    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
+    ctx.logProvider.info(inBotProject ? `${msg} ${botTroubleShootMsg}` : msg);
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.Deploy,

@@ -9,10 +9,14 @@ export const tagPrefix = config.tagPrefix;
 export const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 export const tagListURL = config.tagListURL;
 export const alphaVersion = "templates-0.0.0-alpha";
+export const betaVersion = "templates-0.0.0-beta";
 
 export function selectTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
     return alphaVersion;
+  }
+  if (preRelease === "beta") {
+    return betaVersion;
   }
   const versionPattern = preRelease ? `0.0.0-${preRelease}` : templatesVersion;
   const versionList = tags.map((tag: string) => tag.replace(tagPrefix, ""));

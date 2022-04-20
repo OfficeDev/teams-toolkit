@@ -48,6 +48,10 @@ import {
   MessageExtensionNewUIItem,
   TabNewUIOptionItem,
   createAddCloudResourceOptions,
+  BotNewUIOptionItem,
+  cicdOptionItem,
+  SingleSignOnOptionItem,
+  apiConnectionOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -511,15 +515,71 @@ export async function getQuestionsForAddCapability(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const optionsResult = await getStaticOptionsForAddCapability(ctx, inputs, settings);
-  if (optionsResult.isErr()) {
-    return err(optionsResult.error);
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "staticTab"
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
   }
-  if (optionsResult.value.length === 0) {
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "Bot"
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "MessageExtension"
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  // for the new bot, messaging extension and other bots are mutally exclusive
+  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
+  if (!(isTabAddable || isBotAddable || isMEAddable)) {
+    ctx.userInteraction?.showMessage(
+      "error",
+      getLocalizedString("core.addCapability.exceedMaxLimit"),
+      false
+    );
     return ok(undefined);
   }
+  const options = [];
+  if (isBotAddable) {
+    if (isBotNotificationEnabled()) {
+      options.push(CommandAndResponseOptionItem);
+      options.push(NotificationOptionItem);
+    } else {
+      options.push(BotOptionItem);
+    }
+  }
+  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
+  if (isTabAddable) {
+    if (!isAadManifestEnabled()) {
+      options.push(tabOptionItem);
+    } else {
+      if (!settings?.capabilities.includes(TabOptionItem.id)) {
+        options.push(TabNonSsoItem, tabOptionItem);
+      } else {
+        options.push(
+          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
+        );
+      }
+    }
+  }
+  if (isMEAddable) {
+    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
+  }
 
-  addCapQuestion.staticOptions = optionsResult.value;
+  addCapQuestion.staticOptions = options;
   const addCapNode = new QTreeNode(addCapQuestion);
 
   // // mini app can add SPFx tab
@@ -669,38 +729,32 @@ async function getStaticOptionsForAddCapability(
     );
     return ok([]);
   }
+
   const options: OptionItem[] = [];
   if (isBotAddable) {
-    if (isBotNotificationEnabled()) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-    } else {
-      options.push(BotOptionItem);
-    }
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
   }
   const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
   if (isTabAddable) {
-    if (!isAadManifestEnabled()) {
-      options.push(tabOptionItem);
+    if (!settings?.capabilities.includes(TabOptionItem.id)) {
+      options.push(TabNonSsoItem, tabOptionItem);
     } else {
-      if (!settings?.capabilities.includes(TabOptionItem.id)) {
-        options.push(TabNonSsoItem, tabOptionItem);
-      } else {
-        options.push(
-          settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem
-        );
-      }
+      options.push(settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem);
     }
   }
+  if (isBotAddable) {
+    options.push(BotNewUIOptionItem);
+  }
   if (isMEAddable) {
-    options.push(isBotNotificationEnabled() ? MessageExtensionNewUIItem : MessageExtensionItem);
+    options.push(MessageExtensionNewUIItem);
   }
   return ok(options);
 }
 
 /**
  * Combines the options of AddCapability and AddResource.
- * Only works for VS Code.
+ * Only works for VS Code new UI with GA feature flag enabled.
  */
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
@@ -716,9 +770,9 @@ export async function getQuestionsForAddFeature(
     title: "Features",
     type: "singleSelect",
     staticOptions: [],
-    validation: {
-      validFunc: validateCapabilities,
-    },
+    // validation: {
+    //   validFunc: validateCapabilities,
+    // },
   };
   const canAddCapabilityResult = canAddCapability(settings, ctx.telemetryReporter);
   if (canAddCapabilityResult.isOk()) {
@@ -750,30 +804,26 @@ export async function getQuestionsForAddFeature(
   if (canAddCapabilityResult.isErr() && canAddResourceResult.isErr()) {
     return err(canAddCapabilityResult.error);
   }
+
+  // additional features
+  options.push(...[SingleSignOnOptionItem, apiConnectionOptionItem, cicdOptionItem]);
+
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
 
-  if (isBotNotificationEnabled()) {
-    // Hardcoded to call bot plugin to get notification trigger questions.
-    // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
-    // V3 will not need this hardcoding.
-    const pluginMap = getAllV2ResourcePluginMap();
-    const plugin = pluginMap.get(PluginNames.BOT);
-    if (plugin && plugin.getQuestionsForUserTask) {
-      const result = await plugin.getQuestionsForUserTask(
-        ctx,
-        inputs,
-        func,
-        envInfo,
-        tokenProvider
-      );
-      if (result.isErr()) {
-        return result;
-      }
-      const botQuestionNode = result.value;
-      if (botQuestionNode) {
-        addFeatureNode.addChild(botQuestionNode);
-      }
+  // Hardcoded to call bot plugin to get notification trigger questions.
+  // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+  // V3 will not need this hardcoding.
+  const pluginMap = getAllV2ResourcePluginMap();
+  const plugin = pluginMap.get(PluginNames.BOT);
+  if (plugin && plugin.getQuestionsForUserTask) {
+    const result = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+    if (result.isErr()) {
+      return result;
+    }
+    const botQuestionNode = result.value;
+    if (botQuestionNode) {
+      addFeatureNode.addChild(botQuestionNode);
     }
   }
 

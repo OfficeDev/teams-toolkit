@@ -115,15 +115,6 @@ export async function _scaffoldLocalDebugSettings(
             EOL: os.EOL,
           }
         );
-
-        await fs.writeJSON(
-          `${inputs.projectPath}/.vscode/settings.json`,
-          Settings.generateSettings(false),
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
       } else {
         const launchConfigurations = isM365
           ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
@@ -196,7 +187,7 @@ export async function _scaffoldLocalDebugSettings(
 
       await fs.writeJSON(
         `${inputs.projectPath}/.vscode/settings.json`,
-        Settings.generateSettings(includeBackend || includeFuncHostedBot),
+        Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
         {
           spaces: 4,
           EOL: os.EOL,

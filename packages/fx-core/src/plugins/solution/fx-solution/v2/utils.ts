@@ -61,6 +61,14 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
+export function IsBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return (
+    azureSettings !== undefined &&
+    (azureSettings.capabilities.includes(BotOptionItem.id) ||
+      azureSettings.capabilities.includes(MessageExtensionItem.id))
+  );
+}
+
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
   const ret: Record<v2.PluginName, T> = {};
   for (const record of records) {

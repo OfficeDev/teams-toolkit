@@ -39,6 +39,7 @@ import {
   getAzureSolutionSettings,
   getSelectedPlugins,
   isAzureProject,
+  IsBotProject,
 } from "./utils";
 
 export async function deploy(
@@ -53,6 +54,7 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
+  const inBotProject = IsBotProject(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
@@ -197,15 +199,38 @@ export async function deploy(
   ctx.logProvider.info(getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution));
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("ore.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
+      let msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
+      // Append a new sentence for bot trouble shootting.
+      if (inBotProject) {
+        msg += ` ${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+      }
       ctx.logProvider.info(msg);
-      ctx.userInteraction.showMessage("info", msg, false);
+      if (inBotProject) {
+        // Show a `Learn more` action button for bot trouble shooting.
+        ctx.userInteraction
+          .showMessage("info", msg, false, botTroubleShootLearnMore)
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === botTroubleShootLearnMore) {
+              ctx.userInteraction.openUrl(botTroubleShootLink);
+            }
+          });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     }
     return ok(Void);
   } else {
-    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
+    let msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
+    if (inBotProject) {
+      msg += ` ${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+    }
     ctx.logProvider.info(msg);
     return err(
       sendErrorTelemetryThenReturnError(

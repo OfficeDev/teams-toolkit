@@ -846,14 +846,19 @@ export class FxCore implements v3.ICore {
         //for existing app
         if (
           res.isOk() &&
-          func.method === "addCapability" &&
+          (func.method === "addCapability" || func.method === "addFeature") &&
           inputs.capabilities &&
           inputs.capabilities.length > 0
         ) {
           await ensureBasicFolderStructure(inputs);
         }
         // reset provisionSucceeded state for all env
-        if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
+        if (
+          res.isOk() &&
+          (func.method === "addCapability" ||
+            func.method === "addResource" ||
+            func.method === "addFeature")
+        ) {
           if (
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"

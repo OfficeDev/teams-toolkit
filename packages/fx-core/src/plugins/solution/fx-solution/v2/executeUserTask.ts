@@ -101,6 +101,9 @@ export async function executeUserTask(
   if (method === "addResource") {
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
   }
+  if (method === "addFeature") {
+    return addFeature(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
   if (method === "addSso") {
     return addSso(ctx, inputs, localSettings);
   }
@@ -249,6 +252,26 @@ export function canAddResource(
   }
   return ok(Void);
 }
+
+// export function canAddFeature(
+//   azureSolutionSettings: AzureSolutionSettings | undefined,
+//   projectSetting: ProjectSettings,
+//   telemetryReporter: TelemetryReporter
+// ): Result<Void, FxError> {
+//   if (azureSolutionSettings && !(azureSolutionSettings.hostType === HostTypeOptionAzure.id)) {
+//     const e = new UserError(
+//       SolutionSource,
+//       SolutionError.AddCapabilityNotSupport,
+//       getDefaultString("core.addCapability.onlySupportAzure"),
+//       getLocalizedString("core.addCapability.onlySupportAzure")
+//     );
+//     return err(
+//       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddFeature, e, telemetryReporter)
+//     );
+//   }
+
+//   return ok(Void);
+// }
 
 export async function addCapability(
   ctx: v2.Context,
@@ -783,6 +806,17 @@ export async function addResource(
       ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
       : Void
   );
+}
+
+export async function addFeature(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json,
+  func: Func,
+  envInfo: v2.EnvInfoV2,
+  tokenProvider: TokenProvider
+): Promise<Result<unknown, FxError>> {
+  return ok({});
 }
 
 export function extractParamForRegisterTeamsAppAndAad(

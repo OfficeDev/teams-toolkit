@@ -102,9 +102,6 @@ export class DepsHandler {
     if (semver.satisfies(semver.coerce(ver1)!.version, `^${semver.coerce(ver2)!.version}`)) {
       return true;
     }
-    if (semver.satisfies(semver.coerce(ver2)!.version, `^${semver.coerce(ver1)!.version}`)) {
-      return true;
-    }
     return false;
   }
 }

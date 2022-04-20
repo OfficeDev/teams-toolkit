@@ -43,19 +43,14 @@ class SsoDialog extends ComponentDialog {
       this.ssoStep.bind(this),
       this.dedupStep.bind(this),
       async (stepContext) => {
-        try {
-          const tokenResponse = stepContext.result;
-          const context = stepContext.context;
-          if (tokenResponse) {
-            await operation(context, tokenResponse.ssoToken);
-          } else {
-            await context.sendActivity("Failed to retrieve user token from conversation context.");
-          }
-          return await stepContext.endDialog();
-        } catch (error) {
-          console.log(error);
-          return stepContext.endDialog();
+        const tokenResponse = stepContext.result;
+        const context = stepContext.context;
+        if (tokenResponse) {
+          await operation(context, tokenResponse.ssoToken);
+        } else {
+          await context.sendActivity("Failed to retrieve user token from conversation context.");
         }
+        return await stepContext.endDialog();
       },
     ]);
 

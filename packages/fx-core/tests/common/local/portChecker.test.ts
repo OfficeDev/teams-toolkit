@@ -157,5 +157,32 @@ describe("portChecker", () => {
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
     });
+
+    it("func hosted bot", async () => {
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) =>
+          [10000, 10001, 10002].includes(port) ? port + 10 : port,
+      });
+
+      const ports = await portChecker.getPortsInUse(projectPath, {
+        appName: "unit-test1",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          hostType: "Azure",
+          capabilities: ["Bot"],
+        },
+        pluginSettings: {
+          "fx-resource-bot": {
+            "host-type": "azure-functions",
+            capabilities: ["notification"],
+          },
+        },
+      });
+
+      chai.assert.isDefined(ports);
+      chai.assert.sameMembers(ports, [10000, 10001, 10002]);
+    });
   });
 });

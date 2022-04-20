@@ -26,6 +26,7 @@ const backendServicePorts = [7071];
 const botDebugPortRegex = /--inspect[\s]*=[\s"']*9239/im;
 const botDebugPorts = [9239];
 const botServicePorts = [3978];
+const azuritePorts = [10000, 10001, 10002];
 
 async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
   try {
@@ -91,6 +92,11 @@ export async function getPortsInUse(
         ports.push(...botDebugPorts);
       }
     }
+  }
+
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
+  if (includeFuncHostedBot) {
+    ports.push(...azuritePorts);
   }
 
   const portsInUse: number[] = [];

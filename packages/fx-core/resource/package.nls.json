@@ -695,6 +695,7 @@
   "core.addSso.needEnableFeatureFlag": "Need to set 'TEAMSFX_AAD_MANIFEST' in env to use add SSO feature",
   "core.addSso.ssoEnabled": "SSO is already enabled",
   "core.addSso.invalidSsoProject": "Invalid project. You may have modified '.fx/projectSettings.json' file.",
+  "core.addSso.learnMore": "SSO is successfully added in your project. We have generated sample code and README in 'auth/'. Click on '%s' for more detail.",
   "core.addSsoFiles.emptyProjectPath": "Project path is empty",
   "core.addSsoFiles.projectPathNotExists": "Project path does not exist",
   "core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled": "Failed to add non SSO Tab. SSO is enabled in this project",

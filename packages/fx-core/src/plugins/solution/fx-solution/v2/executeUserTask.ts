@@ -1018,6 +1018,28 @@ export async function addSso(
     { name: "WebApplicationInfo" },
   ]);
 
+  if (inputs.platform == Platform.VSCode) {
+    ctx.userInteraction
+      .showMessage(
+        "info",
+        getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore),
+        false,
+        AddSsoParameters.LearnMore
+      )
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === AddSsoParameters.LearnMore) {
+          ctx.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+        }
+      });
+  } else if (inputs.platform == Platform.CLI) {
+    await ctx.userInteraction.showMessage(
+      "info",
+      getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
+      false
+    );
+  }
+
   return ok(undefined);
 }
 

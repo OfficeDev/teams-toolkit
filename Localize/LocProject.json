@@ -5,11 +5,13 @@
       "LocItems": [
         {
           "SourceFile": "packages\\vscode-extension\\package.nls.json",
+          "Languages": "cs;de;es;fr;it;ja;ko;pl;pt-BR;ru;tr;zh-cn;zh-tw",
           "CopyOption": "LangIDOnName",
           "OutputPath": "packages\\vscode-extension"
         },
         {
           "SourceFile": "packages\\fx-core\\resource\\package.nls.json",
+          "Languages": "cs;de;es;fr;it;ja;ko;pl;pt-BR;ru;tr;zh-Hans;zh-Hant;zh-cn;zh-tw",
           "CopyOption": "LangIDOnName",
           "OutputPath": "packages\\fx-core\\resource"
         }

@@ -451,7 +451,6 @@ export function canAddSso(projectSettings: ProjectSettings): boolean {
   const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
   const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
   const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-  const containAadPlugin = solutionSettings.activeResourcePlugins.includes(PluginNames.AAD);
 
   // SSO is already enabled
   if (

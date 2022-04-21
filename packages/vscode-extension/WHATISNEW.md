@@ -1,3 +1,4 @@
+- [3.8.0 - Apr 22 2022](#380---apr-22-2022)
 - [3.7.0 - Apr 06 2022](#370---apr-06-2022)
 - [3.6.0 - Mar 21 2022](#360---mar-21-2022)
 - [3.5.0 - Mar 07 2022](#350---mar-07-2022)
@@ -13,6 +14,19 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 3.8.0 - Apr 22, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+- Optimize the configuration schema and manifest template of project created by Teams Toolkit.
+- Support to use CodeLens to preview variables value in manifest template file. <br>
+ ![manifest preview](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/manifest-codelens-preview.png) <br>
+- Optimize the In-meeting Sample App in sample gallery, shorten the time to run the sample.
+- Improved  "start from sample" experience, show more information of each sample in UI. <br>
+  ![start from sample](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/start-from-sample-improved.png) <br>
+- New Bot sample in sample gallery - Proactive Messaging App.
 
 ## 3.7.0 - Apr 06, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

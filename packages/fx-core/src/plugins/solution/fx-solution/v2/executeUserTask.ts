@@ -947,7 +947,7 @@ export function canAddSso(
   if (
     ((containTabSsoItem && !containBot) ||
       (containBot && containBotSsoItem && !containTab) ||
-      (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
+      (containTabSsoItem && containBot && containBotSsoItem)) &&
     containAadPlugin
   ) {
     // Throw error if sso is already enabled

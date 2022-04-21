@@ -260,6 +260,29 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   };
 }
 
+export function createCapabilityQuestionPreview(): SingleSelectQuestion {
+  // new capabilities question order
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    ExistingTabOptionItem,
+    TabNewUIOptionItem,
+    TabSPFxNewUIItem,
+    TabNonSsoItem,
+    BotNewUIOptionItem,
+    MessageExtensionNewUIItem,
+    M365SsoLaunchPageOptionItem,
+    M365SearchAppOptionItem,
+  ];
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.titleNew"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+  };
+}
+
 export function validateCapabilities(inputs: string[]): string | undefined {
   if (inputs.length === 0) {
     return getLocalizedString("core.createCapabilityQuestion.placeholder");

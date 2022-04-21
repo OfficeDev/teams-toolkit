@@ -36,6 +36,7 @@ import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityQuestion,
+  createCapabilityQuestionPreview,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
@@ -46,6 +47,7 @@ import {
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
+import { isGAPreviewEnabled } from "../../common";
 
 /**
  * This middleware will help to collect input from question flow
@@ -387,8 +389,14 @@ export async function getQuestionsForCreateProjectV2(
   createNew.condition = { equals: ScratchOptionYes.id };
 
   // capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
+  let capNode: QTreeNode;
+  if (isGAPreviewEnabled()) {
+    const capQuestion = createCapabilityQuestionPreview();
+    capNode = new QTreeNode(capQuestion);
+  } else {
+    const capQuestion = createCapabilityQuestion();
+    capNode = new QTreeNode(capQuestion);
+  }
   createNew.addChild(capNode);
 
   const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();

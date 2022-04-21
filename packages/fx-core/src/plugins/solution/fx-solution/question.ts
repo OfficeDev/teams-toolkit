@@ -304,8 +304,6 @@ export function createAddAzureResourceQuestion(
 }
 
 export function createAddCloudResourceOptions(
-  alreadyHaveFunction: boolean,
-  alreadyHaveSQL: boolean,
   alreadyHaveAPIM: boolean,
   alreadyHaveKeyVault: boolean
 ): OptionItem[] {

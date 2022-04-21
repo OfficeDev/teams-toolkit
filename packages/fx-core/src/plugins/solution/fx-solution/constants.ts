@@ -207,9 +207,6 @@ export enum SolutionTelemetryEvent {
   AddCapabilityStart = "add-capability-start",
   AddCapability = "add-capability",
 
-  AddFeatureStart = "add-feature-start",
-  AddFeature = "add-feature",
-
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
 

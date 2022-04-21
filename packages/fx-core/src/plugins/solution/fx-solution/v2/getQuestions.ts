@@ -755,7 +755,7 @@ async function getStaticOptionsForAddCapability(
 
 /**
  * Combines the options of AddCapability and AddResource.
- * Only works for VS Code new UI with GA feature flag enabled.
+ * Only works for VS Code new UI with Preview feature flag enabled.
  */
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
@@ -768,13 +768,11 @@ export async function getQuestionsForAddFeature(
   const options: OptionItem[] = [];
   const addFeatureQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
-    title: "Features",
+    title: getLocalizedString("core.addFeatureQuestion.title"),
     type: "singleSelect",
     staticOptions: [],
-    // validation: {
-    //   validFunc: validateCapabilities,
-    // },
   };
+  // check and generate capability options
   const canAddCapabilityResult = canAddCapability(settings, ctx.telemetryReporter);
   if (canAddCapabilityResult.isOk()) {
     const optionsResult = await getStaticOptionsForAddCapability(ctx, inputs, settings);
@@ -783,22 +781,16 @@ export async function getQuestionsForAddFeature(
     }
     options.push(...optionsResult.value);
   }
+  // check and generate cloud resource options
   const canAddResourceResult = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
   if (canAddResourceResult.isOk()) {
     // resources
     if (!settings) {
       return err(new NoCapabilityFoundError(Stage.addResource));
     }
-    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
-    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
     const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
     const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
-    const addResourceOptions = createAddCloudResourceOptions(
-      alreadyHaveFunction,
-      alreadyHaveSQL,
-      alreadyHaveAPIM,
-      alreadyHaveKeyVault
-    );
+    const addResourceOptions = createAddCloudResourceOptions(alreadyHaveAPIM, alreadyHaveKeyVault);
     options.push(...addResourceOptions);
   }
   // Only return error when both of them are errors.
@@ -806,106 +798,69 @@ export async function getQuestionsForAddFeature(
     return err(canAddCapabilityResult.error);
   }
 
-  // additional features
-  options.push(...[SingleSignOnOptionItem, ApiConnectionOptionItem, CicdOptionItem]);
+  // check and generate additional feature options
+  options.push(SingleSignOnOptionItem, ApiConnectionOptionItem, CicdOptionItem);
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
 
-  // Hardcoded to call bot plugin to get notification trigger questions.
-  // Originally, v2 solution will not call getQuestionForUserTask of plugins on addFeature.
-  // V3 will not need this hardcoding.
-  const pluginMap = getAllV2ResourcePluginMap();
-  const plugin = pluginMap.get(PluginNames.BOT);
-  if (plugin && plugin.getQuestionsForUserTask) {
-    const result = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-    if (result.isErr()) {
-      return result;
-    }
-    const botQuestionNode = result.value;
-    if (botQuestionNode) {
-      addFeatureNode.addChild(botQuestionNode);
-    }
-  }
-
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    programmingLanguage.condition = {
+      containsAny: [
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        TabNewUIOptionItem.id,
+        TabNonSsoItem.id,
+        BotNewUIOptionItem.id,
+        MessageExtensionItem.id,
+      ],
+    };
     addFeatureNode.addChild(programmingLanguage);
   }
 
-  // function plugins' getQuestionsForUserTask
-  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.FunctionPlugin
-  );
-  if (functionPlugin.getQuestionsForUserTask) {
-    const res = await functionPlugin.getQuestionsForUserTask(
-      ctx,
-      inputs,
-      func,
-      envInfo,
-      tokenProvider
-    );
-    if (res.isErr()) return res;
-    if (res.value) {
-      const node = res.value as QTreeNode;
-      const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
-      node.condition = {
-        validFunc: (input: string, inputs?: Inputs) => {
-          if (input === AzureResourceFunction.id) {
-            return undefined;
-          }
-          if (
-            !alreadyHaveFunction &&
-            (input === AzureResourceSQL.id || input === AzureResourceApim.id)
-          ) {
-            return undefined;
-          }
-          return "Function related is not selected";
-        },
-      };
-      if (node.data) addFeatureNode.addChild(node);
-    }
-
-    const apiConnectionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-      ResourcePluginsV2.ApiConnectorPlugin
-    );
-    if (apiConnectionPlugin.getQuestionsForUserTask) {
-      const res = await apiConnectionPlugin.getQuestionsForUserTask(
-        ctx,
-        inputs,
-        func,
-        envInfo,
-        tokenProvider
-      );
+  // traverse plugins' getQuestionsForUserTask
+  const pluginsWithResources = [
+    [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
+    [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
+    // [ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id],
+    [ResourcePluginsV2.CICDPlugin, CicdOptionItem.id],
+  ];
+  const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
+  for (const pair of pluginsWithResources) {
+    const pluginName = pair[0];
+    const resourceName = pair[1];
+    const plugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(pluginName);
+    if (plugin.getQuestionsForUserTask) {
+      const res = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
       if (res.isErr()) return res;
       if (res.value) {
         const node = res.value as QTreeNode;
-        node.condition = {
-          equals: ApiConnectionOptionItem.id,
-        };
-        if (node.data) addFeatureNode.addChild(node);
-      }
-    }
-
-    const cicdPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-      ResourcePluginsV2.CICDPlugin
-    );
-    if (cicdPlugin.getQuestionsForUserTask) {
-      const res = await cicdPlugin.getQuestionsForUserTask(
-        ctx,
-        inputs,
-        func,
-        envInfo,
-        tokenProvider
-      );
-      if (res.isErr()) return res;
-      if (res.value) {
-        const node = res.value as QTreeNode;
-        node.condition = {
-          equals: CicdOptionItem.id,
-        };
-        if (node.data) addFeatureNode.addChild(node);
+        if (!node.condition) {
+          if (resourceName !== AzureResourceFunction.id) {
+            node.condition = { equals: resourceName };
+          } else {
+            // Azure Function question is related to APIM and SQL
+            node.condition = {
+              validFunc: (input: string, inputs?: Inputs) => {
+                if (input === AzureResourceFunction.id) {
+                  return undefined;
+                }
+                if (
+                  !alreadyHaveFunction &&
+                  (input === AzureResourceSQL.id || input === AzureResourceApim.id)
+                ) {
+                  return undefined;
+                }
+                return "Function related is not selected";
+              },
+            };
+          }
+        }
+        if (node.data) {
+          addFeatureNode.addChild(node);
+        }
       }
     }
   }

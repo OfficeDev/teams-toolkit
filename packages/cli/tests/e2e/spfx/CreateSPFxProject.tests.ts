@@ -81,6 +81,15 @@ describe("Start a new project", function () {
     });
     expect(result.stderr).to.eq("");
 
+    // validation local env succeed without local debug
+    command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
+    result = await execAsync(command, {
+      cwd: path.join(testFolder, appName),
+      env: process.env,
+      timeout: 0,
+    });
+    expect(result.stderr).to.eq("");
+
     // provision
     result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,

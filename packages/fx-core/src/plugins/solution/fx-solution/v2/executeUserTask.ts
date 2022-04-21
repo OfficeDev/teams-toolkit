@@ -679,7 +679,7 @@ export async function addResource(
         if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
           solutionSettings.capabilities.push(TabSsoItem.id);
         }
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+        if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
           solutionSettings.capabilities.push(BotSsoItem.id);
         }
       } else {
@@ -882,7 +882,7 @@ export function canAddSso(
   if (
     ((containTabSsoItem && !containBot) ||
       (containBot && containBotSsoItem && !containTab) ||
-      (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
+      (containTabSsoItem && containBot && containBotSsoItem)) &&
     containAadPlugin
   ) {
     // Throw error if sso is already enabled
@@ -1017,6 +1017,28 @@ export async function addSso(
   await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },
   ]);
+
+  if (inputs.platform == Platform.VSCode) {
+    ctx.userInteraction
+      .showMessage(
+        "info",
+        getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore),
+        false,
+        AddSsoParameters.LearnMore
+      )
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === AddSsoParameters.LearnMore) {
+          ctx.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+        }
+      });
+  } else if (inputs.platform == Platform.CLI) {
+    await ctx.userInteraction.showMessage(
+      "info",
+      getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
+      false
+    );
+  }
 
   return ok(undefined);
 }

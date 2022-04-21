@@ -5,7 +5,7 @@ import {
   IdentityType,
 } from "@microsoft/teamsfx";
 
-// Loads current app's configuration and use app for auth, the sample uses client credential flow to acquire token for your API.
+// Loads current app's configuration, the sample uses client credential flow to acquire token for your API.
 {{#if (equals config.AuthConfig.ReuseTeamsApp true)}}
 const teamsFx = new TeamsFx(IdentityType.App);
 {{else}}

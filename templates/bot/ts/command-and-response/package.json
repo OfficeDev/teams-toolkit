@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
+    "@types/node": "^14.18.0",
     "@types/node-cron": "^3.0.1",
     "@types/restify": "8.4.2",
     "env-cmd": "^10.1.0",

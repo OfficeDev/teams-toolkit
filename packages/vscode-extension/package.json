@@ -20,7 +20,7 @@
     ]
   },
   "engines": {
-    "vscode": "^1.58.0"
+    "vscode": "^1.64.0"
   },
   "license": "MIT",
   "keywords": [
@@ -766,6 +766,30 @@
         "fileLocation": [
           "relative",
           "${workspaceFolder}/api"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+          "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+        }
+      },
+      {
+        "name": "teamsfx-func-hosted-bot-watch",
+        "label": "TeamsFx Azure Functions Hosted Bot Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/bot"
         ],
         "pattern": [
           {

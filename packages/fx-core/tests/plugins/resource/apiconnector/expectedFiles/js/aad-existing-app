@@ -2,7 +2,8 @@
 Your next steps:
 1. Run npm install. If your project did not install @microsoft/teamsfx package before, we have added it to package.json for you.
    You need to run the command under "bot" folder instead of project's root folder.
-2. Add your client secret to TEAMSFX_API_FAKE_CLIENT_SECRET in "bot/.env.teamsfx.local".
+2. Replace "<your-api-scope>" in this file with actual scope required by the API.
+3. Add your client secret to TEAMSFX_API_FAKE_CLIENT_SECRET in "bot/.env.teamsfx.local".
 
 You can now import the API client (an Axios instance) in another file and call fake APIs without worrying about authentication.
 Here is an example for a GET request to "relative_path_of_target_api":
@@ -31,7 +32,7 @@ const fakeClient = teamsfxSdk.createApiClient(
   teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
   authProvider
 );
-export { fakeClient };
+module.exports.fakeClient = fakeClient;
 
 /* 
 Setting API configuration for cloud environment: 

@@ -6,11 +6,10 @@ import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/te
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-let teamsfx: TeamsFx | undefined;
 
-async function callFunction() {
+async function callFunction(teamsfx?: TeamsFx) {
   if (!teamsfx) {
-    return;
+    throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
     const credential = teamsfx.getCredential();
@@ -52,8 +51,8 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  teamsfx = useContext(TeamsFxContext).teamsfx;
-  const { loading, data, error, reload } = useData(callFunction, {
+  const teamsfx = useContext(TeamsFxContext).teamsfx;
+  const { loading, data, error, reload } = useData(() => callFunction(teamsfx), {
     autoLoad: false,
   });
   return (

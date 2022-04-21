@@ -14,7 +14,13 @@ import {
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { checkApiNameExist, checkEmptyValue, checkHttp, checkIsGuid } from "./checker";
+import {
+  checkApiNameExist,
+  checkApiNameValid,
+  checkEmptyValue,
+  checkHttp,
+  checkIsGuid,
+} from "./checker";
 
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
@@ -58,7 +64,8 @@ export class ApiNameQuestion extends BaseQuestionService implements IQuestionSer
               previousInputs?.projectPath as string,
               components,
               languageType
-            ))
+            )) ||
+            checkApiNameValid(input)
           );
         },
       },
@@ -83,6 +90,9 @@ export const basicAuthUsernameQuestion: TextInputQuestion = {
   placeholder: getLocalizedString(
     "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
   ), // Use the placeholder to display some description
+  validation: {
+    validFunc: checkEmptyValue,
+  },
 };
 
 export const appTenantIdQuestion: TextInputQuestion = {

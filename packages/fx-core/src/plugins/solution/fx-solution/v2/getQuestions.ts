@@ -735,12 +735,13 @@ async function getStaticOptionsForAddCapability(
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
   }
-  const tabOptionItem = isBotNotificationEnabled() ? TabNewUIOptionItem : TabOptionItem;
   if (isTabAddable) {
     if (!settings?.capabilities.includes(TabOptionItem.id)) {
-      options.push(TabNonSsoItem, tabOptionItem);
+      options.push(TabNewUIOptionItem, TabNonSsoItem);
     } else {
-      options.push(settings?.capabilities.includes(TabSsoItem.id) ? tabOptionItem : TabNonSsoItem);
+      options.push(
+        settings?.capabilities.includes(TabSsoItem.id) ? TabNewUIOptionItem : TabNonSsoItem
+      );
     }
   }
   if (isBotAddable) {
@@ -848,13 +849,15 @@ export async function getQuestionsForAddFeature(
     if (res.isErr()) return res;
     if (res.value) {
       const node = res.value as QTreeNode;
-      // node.condition = { equals: AzureResourceFunction.id };
+      const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
       node.condition = {
         validFunc: (input: string, inputs?: Inputs) => {
+          if (input === AzureResourceFunction.id) {
+            return undefined;
+          }
           if (
-            input === AzureResourceFunction.id ||
-            input === AzureResourceSQL.id ||
-            input === AzureResourceApim.id
+            !alreadyHaveFunction &&
+            (input === AzureResourceSQL.id || input === AzureResourceApim.id)
           ) {
             return undefined;
           }

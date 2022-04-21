@@ -43,14 +43,15 @@ for (let file of depPkgs) {
     }
 }
 
-// only beta and stable release bump up version
+// only alpha,beta and stable release bump up version
 let needBumpUp = process.argv[3] === "yes" ? true : false;
 if (change && needBumpUp) {
     let file = path.join(templateDir, "package.json");
     let pkg_ = fse.readJsonSync(file);
     let ver = pkg_.version;
     if(semver.prerelease(sdkVersion)) {
-        ver = semver.inc(ver, "prerelease", "beta");
+        // semver.prerelease is beta or alpha according to sdk version
+        ver = semver.inc(ver, "prerelease", semver.prerelease(sdkVersion)[0]);
     } else {
         ver = semver.inc(ver, "patch");
     }

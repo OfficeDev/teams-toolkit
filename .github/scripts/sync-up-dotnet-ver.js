@@ -65,7 +65,7 @@ async function syncUpTemplateVer(targetFile,) {
 
 // if templates deps has changed, need to bump up templates version.
 async function bumpUpTargetPkgVer(changed, targetPkgPath) {
-    // only beta and stable release bump up version
+    // only alpha, beta and stable release bump up version
     let needBumpUp = process.argv[3] === "yes" ? true : false;
     console.log('version changed? ', changed, ' need bump up ', needBumpUp);
     if (changed && needBumpUp) {
@@ -74,7 +74,8 @@ async function bumpUpTargetPkgVer(changed, targetPkgPath) {
         let pkg_ = await fse.readJson(file);
         let ver = pkg_.version;
         if (semver.prerelease(pkgVer)) {
-            ver = semver.inc(ver, "prerelease", "beta");
+            // if pkgver is prerelease, then semver.prerelease(pkgVer) return alpha or beta.
+            ver = semver.inc(ver, "prerelease", semver.prerelease(pkgVer)[0]);
         } else {
             ver = semver.inc(ver, "patch");
         }

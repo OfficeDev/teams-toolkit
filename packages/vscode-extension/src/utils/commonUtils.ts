@@ -19,7 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   environmentManager,
-  initializeGAFeatureFlags,
+  initializePreviewFeatureFlags,
   isValidProject,
   PluginNames,
 } from "@microsoft/teamsfx-core";
@@ -257,18 +257,11 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
-    ConfigurationKey.BotNotificationCommandAndResponseEnabled
+  process.env["TEAMSFX_PREVIEW"] = getConfiguration(
+    ConfigurationKey.EnablePreviewFeatures
   ).toString();
 
-  process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
-  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
-
-  process.env["TEAMSFX_GA_PREVIEW"] = getConfiguration(
-    ConfigurationKey.EnableGAPreviewFeatures
-  ).toString();
-
-  initializeGAFeatureFlags();
+  initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
@@ -276,7 +269,7 @@ export class FeatureFlags {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
-  static readonly GeneralAvailablityPreview = "TEAMSFX_GA_PREVIEW";
+  static readonly Preview = "TEAMSFX_PREVIEW";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

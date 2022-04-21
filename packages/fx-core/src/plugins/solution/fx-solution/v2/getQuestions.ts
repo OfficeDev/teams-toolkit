@@ -66,7 +66,12 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { isAadManifestEnabled, isDeployManifestEnabled } from "../../../../common/tools";
+import {
+  canAddApiConnection,
+  canAddSso,
+  isAadManifestEnabled,
+  isDeployManifestEnabled,
+} from "../../../../common/tools";
 import { isBotNotificationEnabled, isGAPreviewEnabled } from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
@@ -799,7 +804,14 @@ export async function getQuestionsForAddFeature(
   }
 
   // check and generate additional feature options
-  options.push(SingleSignOnOptionItem, ApiConnectionOptionItem, CicdOptionItem);
+  if (canAddSso(ctx.projectSetting)) {
+    options.push(SingleSignOnOptionItem);
+  }
+  const isApiConnectionAddable = canAddApiConnection(settings);
+  if (isApiConnectionAddable) {
+    options.push(ApiConnectionOptionItem);
+  }
+  options.push(CicdOptionItem);
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
@@ -824,9 +836,11 @@ export async function getQuestionsForAddFeature(
   const pluginsWithResources = [
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
-    // [ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id],
     [ResourcePluginsV2.CICDPlugin, CicdOptionItem.id],
   ];
+  if (isApiConnectionAddable) {
+    pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
+  }
   const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
   for (const pair of pluginsWithResources) {
     const pluginName = pair[0];

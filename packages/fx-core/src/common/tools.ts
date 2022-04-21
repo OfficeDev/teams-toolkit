@@ -464,6 +464,16 @@ export function canAddSso(projectSettings: ProjectSettings): boolean {
   return true;
 }
 
+export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {
+  const activePlugins = solutionSettings?.activeResourcePlugins;
+  if (!activePlugins) {
+    return false;
+  }
+  return (
+    activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
+  );
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {

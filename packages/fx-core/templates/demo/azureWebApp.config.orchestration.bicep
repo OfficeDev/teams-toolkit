@@ -1,12 +1,9 @@
-@secure()
-param provisionParameters object
-param provisionOutputs object
 // Get existing app settings for merge
-var currentAppSettings = list('${provisionOutputs.webAppOutput.value.webAppResourceId}/config/appsettings', '2021-02-01').properties
+var currentAppSettings = list('${provisionOutputs.azureWebAppOutput.value.resourceId}/config/appsettings', '2021-02-01').properties
 
 // Merge TeamsFx configurations to Bot resources
-module teamsFxWebAppConfig './teamsFx/azureWebApp.config.module.bicep' = {
-  name: 'addTeamsFxWebAppConfiguration'
+module teamsFxAzureWebAppConfig '{{azure-web-app-config.Configuration.azureWebAppConfig.path}}' = {
+  name: 'teamsFxAzureWebAppConfig'
   params: {
     provisionParameters: provisionParameters
     provisionOutputs: provisionOutputs

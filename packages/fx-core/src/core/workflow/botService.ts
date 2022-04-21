@@ -34,24 +34,36 @@ export class BotServiceResource implements CloudResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const componentInput = inputs["bot-service"];
-        const endpoint = componentInput.endpoint;
-        const armTemplate: ArmTemplateResult = {};
+        const armTemplate: ArmTemplateResult = {
+          Configuration: { Modules: {} },
+        };
         {
           const filePath = path.join(
             getTemplatesFolder(),
             "demo",
-            "botService.provision.module.bicep"
+            "botService.config.module.bicep"
           );
           if (await fs.pathExists(filePath)) {
             let content = await fs.readFile(filePath, "utf-8");
-            content = compileHandlebarsTemplateString(content, { endpoint: endpoint });
-            armTemplate.Provision = {};
-            armTemplate.Provision.Modules = {};
-            armTemplate.Provision.Modules["botService"] = content;
+            content = compileHandlebarsTemplateString(content, {
+              hostingResource: componentInput.hostingResource,
+            });
+            armTemplate.Configuration!.Modules!["botService"] = content;
           }
         }
-        if (!inputs["bicepOutputs"]) inputs["bicepOutputs"] = {};
-        inputs["bicepOutputs"]["bot-service"] = armTemplate;
+        {
+          const filePath = path.join(
+            getTemplatesFolder(),
+            "demo",
+            "botService.config.orchestration.bicep"
+          );
+          if (await fs.pathExists(filePath)) {
+            const content = await fs.readFile(filePath, "utf-8");
+            armTemplate.Configuration!.Orchestration = content;
+          }
+        }
+        if (!context.bicep) context.bicep = {};
+        context.bicep["bot-service"] = armTemplate;
         return ok(undefined);
       },
     };

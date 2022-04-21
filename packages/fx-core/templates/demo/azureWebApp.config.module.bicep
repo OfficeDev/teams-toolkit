@@ -6,58 +6,58 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var webAppName = split(provisionOutputs.webAppOutput.value.webAppResourceId, '/')[8]
-
+var webAppName = split(\{{azure-web-app.References.resourceId}} , '/')[8]
 {{#if (contains "aad" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
-var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
+var m365ClientSecret = \{{key-vault.References.m365ClientSecretReference}} 
   {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
   {{/if}}
-
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
-
+var botId = provisionParameters['botAadAppClientId']
   {{#if (contains "teams-tab" connections)}}
     {{#if (contains "bot-service" connections) }}
-var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
     {{/if}}
   {{else}}
 var m365ApplicationIdUri = 'api://botid-${botId}'
   {{/if}}
 {{/if}}
-
+{{#if (contains "teams-bot" connections)}}
 var botAadAppClientId = provisionParameters['botAadAppClientId']
-
-{{#if (contains "fx-resource-key-vault" plugins) }}
-var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretReference}}
-{{else}}
+  {{#if (contains "key-vault" connections) }}
+var botAadAppClientSecret = \{{key-vault.References.botClientSecretReference}}
+  {{else}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
+  {{/if}}
 {{/if}}
 
-var botId = provisionParameters['botAadAppClientId']
-
-resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
+resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: union({
-    {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
-    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    {{#if (contains "aad" connections)}}
+    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.azureWebAppOutput.value.endpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
     M365_TENANT_ID: m365TenantId // Tenant id of AAD application
     M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
     {{/if}}
+    {{#if (contains "teams-bot" connections)}}
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
-    {{#if (contains "fx-resource-function" plugins) }}
-    API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint // Azure Function endpoint
     {{/if}}
-    {{#if (contains "fx-resource-azure-sql" plugins)}}
-    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}} // SQL database name
-    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}} // SQL server endpoint
+    {{#if (contains "azure-function" connections) }}
+    API_ENDPOINT: \{{azure-function.References.functionEndpoint}} // Azure Function endpoint
     {{/if}}
-    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}} // User assigned identity id, the identity is used to access other Azure resources
+    {{#if (contains "azure-sql" connections)}}
+    SQL_DATABASE_NAME: \{{azure-sql.References.sqlDatabaseName}} // SQL database name
+    SQL_ENDPOINT: \{{azure-sql.References.sqlEndpoint}} // SQL server endpoint
+    {{/if}}
+    {{#if (contains "identity" connections)}}
+    IDENTITY_ID: \{{identity.References.identityClientId}} // User assigned identity id, the identity is used to access other Azure resources
+    {{/if}}
   }, currentAppSettings)
 }

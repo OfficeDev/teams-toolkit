@@ -14,7 +14,7 @@ resource azureBot 'Microsoft.BotService/botServices@2021-03-01' = {
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: uri({{endpoint}}, '/api/messages')
+    endpoint: uri(\{{ {{hostingResource}}.References.endpoint}} , '/api/messages')
     msaAppId: botAadAppClientId
   }
   sku: {

@@ -26,13 +26,16 @@ export class AzureWebAppResource implements CloudResource {
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        const armTemplate: ArmTemplateResult = {};
-        armTemplate.Provision = {};
-        armTemplate.Provision.Modules = {};
-        armTemplate.Reference = {
-          resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
-          hostName: "provisionOutputs.azureWebAppOutput.value.domain",
-          endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+        const armTemplate: ArmTemplateResult = {
+          Provision: {
+            Modules: {},
+          },
+          Configuration: {},
+          Reference: {
+            resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
+            hostName: "provisionOutputs.azureWebAppOutput.value.domain",
+            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+          },
         };
         {
           const filePath = path.join(
@@ -42,7 +45,7 @@ export class AzureWebAppResource implements CloudResource {
           );
           if (await fs.pathExists(filePath)) {
             const content = await fs.readFile(filePath, "utf-8");
-            armTemplate.Provision.Modules["azureWebApp"] = content;
+            armTemplate.Provision!.Modules!["azureWebApp"] = content;
           }
         }
         {
@@ -53,11 +56,39 @@ export class AzureWebAppResource implements CloudResource {
           );
           if (await fs.pathExists(filePath)) {
             const content = await fs.readFile(filePath, "utf-8");
-            armTemplate.Provision.Orchestration = content;
+            armTemplate.Provision!.Orchestration = content;
           }
         }
-        if (!inputs["bicepOutputs"]) inputs["bicepOutputs"] = {};
-        inputs["bicepOutputs"]["azure-web-app"] = armTemplate;
+        if (!context.bicep) context.bicep = {};
+        context.bicep["azure-web-app"] = armTemplate;
+        return ok(undefined);
+      },
+    };
+    return ok(action);
+  }
+  updateBicep(
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "azure-web-app.updateBicep",
+      type: "function",
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        return ok(["update azure-web-app bicep"]);
+      },
+      execute: async (
+        context: ContextV3,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<undefined, FxError>> => {
+        const armTemplate: ArmTemplateResult = {
+          Reference: {
+            resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
+            hostName: "provisionOutputs.azureWebAppOutput.value.domain",
+            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+          },
+        };
+        if (!context.bicep) context.bicep = {};
+        context.bicep["azure-web-app"] = armTemplate;
         return ok(undefined);
       },
     };

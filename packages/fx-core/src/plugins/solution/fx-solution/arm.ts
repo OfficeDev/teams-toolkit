@@ -1136,7 +1136,7 @@ export async function persistBicepTemplates(
       );
     }
     bicepOrchestrationProvisionContent +=
-      os.EOL + bicepOrchestrationTemplate.getOrchestractionProvisionContent();
+      os.EOL + bicepOrchestrationTemplate.getOrchestrationProvisionContent();
     await fs.appendFile(
       path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
       bicepOrchestrationProvisionContent.replace(/\r?\n/g, os.EOL)
@@ -1157,7 +1157,7 @@ export async function persistBicepTemplates(
     }
 
     // Skip if no any config part in orchestration.
-    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() !== "") {
+    if (bicepOrchestrationTemplate.getOrchestrationConfigContent() !== "") {
       // Generate config.bicep and module configuration bicep files.
       let bicepOrchestrationConfigContent = "";
       // Configuration Biceps.
@@ -1176,7 +1176,7 @@ export async function persistBicepTemplates(
         );
       }
       bicepOrchestrationConfigContent +=
-        os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
+        os.EOL + bicepOrchestrationTemplate.getOrchestrationConfigContent();
       await fs.appendFile(
         path.join(templateFolderPath, bicepOrchestrationConfigFileName),
         bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
@@ -1336,22 +1336,24 @@ export class BicepOrchestrationContent {
     return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
   }
 
-  public getOrchestractionProvisionContent(): string {
+  public getOrchestrationProvisionContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(
+    const res = compileHandlebarsTemplateString(
       orchestrationTemplate,
       this.RenderContext.Plugins
     ).trim();
+    return res;
   }
 
-  public getOrchestractionConfigContent(): string {
+  public getOrchestrationConfigContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(
+    const res = compileHandlebarsTemplateString(
       orchestrationTemplate,
       this.RenderContext.Plugins
     ).trim();
+    return res;
   }
 
   public getParameterFileContent(): string {

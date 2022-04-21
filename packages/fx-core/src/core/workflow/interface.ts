@@ -11,6 +11,7 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
+import { ArmTemplateResult } from "../../common/armInterface";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -115,6 +116,9 @@ export interface ContextV3 extends v2.Context {
   projectSetting: ProjectSettingsV3;
   envInfo?: v3.EnvInfoV3;
   tokenProvider?: TokenProvider;
+  bicep?: {
+    [k: string]: ArmTemplateResult;
+  };
 }
 
 export interface CloudResource {
@@ -185,6 +189,7 @@ export interface Component extends Json {
   folder?: string;
   build?: boolean;
   provision?: boolean;
+  connections?: string[];
 }
 
 export interface ProjectSettingsV3 extends ProjectSettings {

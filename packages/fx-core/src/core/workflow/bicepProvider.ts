@@ -31,30 +31,32 @@ export class BicepProvider {
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        const bicepOutputs = inputs["bicepOutputs"];
-        const resourceNames = Object.keys(bicepOutputs);
-        const baseName = generateResourceBaseName(context.projectSetting.appName, "");
-        const bicepOrchestrationTemplate = new BicepOrchestrationContent(resourceNames, baseName);
-        const moduleProvisionFiles = new Map<string, string>();
-        const moduleConfigFiles = new Map<string, string>();
-        for (const resource of resourceNames) {
-          const armTemplate = bicepOutputs[resource] as ArmTemplateResult;
-          generateArmFromResult(
-            armTemplate,
+        const bicepOutputs = context.bicep;
+        if (bicepOutputs) {
+          const resourceNames = Object.keys(bicepOutputs);
+          const baseName = generateResourceBaseName(context.projectSetting.appName, "");
+          const bicepOrchestrationTemplate = new BicepOrchestrationContent(resourceNames, baseName);
+          const moduleProvisionFiles = new Map<string, string>();
+          const moduleConfigFiles = new Map<string, string>();
+          for (const resource of resourceNames) {
+            const armTemplate = bicepOutputs[resource];
+            generateArmFromResult(
+              armTemplate,
+              bicepOrchestrationTemplate,
+              resource,
+              moduleProvisionFiles,
+              moduleConfigFiles
+            );
+          }
+          const persistRes = await persistBicepTemplates(
             bicepOrchestrationTemplate,
-            resource,
             moduleProvisionFiles,
-            moduleConfigFiles
+            moduleConfigFiles,
+            inputs.projectPath
           );
-        }
-        const persistRes = await persistBicepTemplates(
-          bicepOrchestrationTemplate,
-          moduleProvisionFiles,
-          moduleConfigFiles,
-          inputs.projectPath
-        );
-        if (persistRes.isErr()) {
-          return err(persistRes.error);
+          if (persistRes.isErr()) {
+            return err(persistRes.error);
+          }
         }
         return ok(undefined);
       },

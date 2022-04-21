@@ -25,6 +25,7 @@ import "./azureFunction";
 import "./azureSql";
 import "./azureStorage";
 import "./azureWebApp";
+import "./azureWebAppConfig";
 import "./botCodeProvider";
 import {
   Action,
@@ -149,6 +150,7 @@ export class TeamsfxCore {
           projectSettings.components.push({
             name: teamsBotInputs.hostingResource,
             provision: true,
+            connections: ["teams-bot"],
           });
           projectSettings.components.push({
             name: "bot-service",
@@ -176,11 +178,15 @@ export class TeamsfxCore {
         targetAction: "bot-service.generateBicep",
         inputs: {
           "bot-service": {
-            endpoint: `provisionOutputs.${camelCase(
-              teamsBotInputs.hostingResource
-            )}.outputs.endpoint`,
+            hostingResource: teamsBotInputs.hostingResource,
           },
         },
+      },
+      {
+        name: `call:${teamsBotInputs.hostingResource}-config.generateBicep`,
+        type: "call",
+        required: false,
+        targetAction: `${teamsBotInputs.hostingResource}-config.generateBicep`,
       },
       {
         name: "call:bicep.persist",
@@ -203,7 +209,84 @@ export class TeamsfxCore {
     const group: GroupAction = {
       type: "group",
       name: "fx.addBot",
-      mode: "parallel",
+      mode: "sequential",
+      actions: actions,
+    };
+    return ok(group);
+  }
+  addSql(
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
+    const actions: Action[] = [
+      {
+        name: "fx.configProjectSettings",
+        type: "function",
+        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
+          return ok(["ensure components 'azure-sql' in projectSettings"]);
+        },
+        execute: async (
+          context: ContextV3,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<undefined, FxError>> => {
+          const projectSettings = context.projectSetting;
+          projectSettings.components.push({
+            name: "azure-sql",
+            provision: true,
+          });
+          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
+          if (webAppComponent) {
+            if (!webAppComponent.connections) webAppComponent.connections = [];
+            webAppComponent.connections.push("azure-sql");
+          }
+          const functionComponent = getComponent(context.projectSetting, "azure-function");
+          if (functionComponent) {
+            if (!functionComponent.connections) functionComponent.connections = [];
+            functionComponent.connections.push("azure-sql");
+          }
+          return ok(undefined);
+        },
+      },
+      {
+        name: "call:azure-sql.generateBicep",
+        type: "call",
+        required: false,
+        targetAction: "azure-sql.generateBicep",
+      },
+    ];
+    const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
+    const set = new Set<string>();
+    if (webAppComponent) {
+      webAppComponent.connections?.forEach((c) => set.add(c));
+      set.add("azure-web-app");
+      set.add("azure-web-app-config");
+    }
+    const functionComponent = getComponent(context.projectSetting, "azure-function");
+    if (functionComponent) {
+      functionComponent.connections?.forEach((c) => set.add(c));
+      set.add("azure-function");
+      set.add("azure-function-config");
+    }
+    for (const connection of set) {
+      actions.push({
+        name: `call:${connection}.updateBicep`,
+        type: "call",
+        required: false,
+        targetAction: `${connection}.updateBicep`,
+      });
+    }
+    actions.push({
+      name: "call:bicep.persist",
+      type: "call",
+      required: false,
+      targetAction: "bicep.persist",
+    });
+    const group: GroupAction = {
+      type: "group",
+      name: "fx.addSql",
+      mode: "sequential",
       actions: actions,
     };
     return ok(group);

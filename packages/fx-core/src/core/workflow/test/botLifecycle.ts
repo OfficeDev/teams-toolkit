@@ -82,7 +82,22 @@ async function addBot() {
     JSON.stringify(context.projectSetting, undefined, 4)
   );
 }
-
+async function addSql() {
+  const inputs: v2.InputsWithProjectPath = {
+    projectPath: projectPath,
+    platform: Platform.VSCode,
+  };
+  const projectSettings = await fs.readJson(getProjectSettingsPath(inputs.projectPath));
+  const context = createV2Context(projectSettings) as ContextV3;
+  const action = await getAction("fx.addSql", context, inputs);
+  if (action) {
+    await runAction(action, context, inputs);
+  }
+  await fs.writeFile(
+    getProjectSettingsPath(inputs.projectPath),
+    JSON.stringify(context.projectSetting, undefined, 4)
+  );
+}
 async function provision() {
   const inputs: v2.InputsWithProjectPath = {
     projectPath: projectPath,
@@ -113,7 +128,7 @@ async function deploy() {
 }
 
 setTools(new MockTools());
-addBot();
+addSql();
 
 // const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
 // if (command === "init") {

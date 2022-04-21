@@ -10,7 +10,6 @@ import {
   Json,
   ok,
   Question,
-  ResourceConfig,
   Result,
   traverse,
   UserError,
@@ -19,7 +18,7 @@ import {
 import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
-import { Action, FunctionAction, ProjectSettingsV3 } from "./interface";
+import { Action, Component, FunctionAction, ProjectSettingsV3 } from "./interface";
 import toposort from "toposort";
 import { merge } from "lodash";
 import { MockUserInteraction } from "./utils";
@@ -33,14 +32,16 @@ export async function getAction(
   const resourceName = arr[0];
   const actionName = arr[1];
   if (!resourceName) throw new Error(`invalid action name: ${name}`);
-  const resource = Container.get(resourceName) as any;
-  if (resource[actionName]) {
-    const res = await resource[actionName](context, inputs);
-    if (res.isOk()) {
-      const action = res.value;
-      return action;
+  try {
+    const resource = Container.get(resourceName) as any;
+    if (resource[actionName]) {
+      const res = await resource[actionName](context, inputs);
+      if (res.isOk()) {
+        const action = res.value;
+        return action;
+      }
     }
-  }
+  } catch (e) {}
   return undefined;
 }
 
@@ -333,7 +334,7 @@ export async function executeAction(action: Action, context: any, inputs: any): 
 export function getComponent(
   projectSettings: ProjectSettingsV3,
   resourceType: string
-): ResourceConfig | undefined {
+): Component | undefined {
   if (!projectSettings.components) return undefined;
   const results = projectSettings.components.filter((r) => r.name === resourceType);
   return results[0];

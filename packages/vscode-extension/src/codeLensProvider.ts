@@ -6,7 +6,13 @@ import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import { Mutex } from "async-mutex";
-import { AdaptiveCardsFolderName, ProjectConfigV3, Json } from "@microsoft/teamsfx-api";
+import {
+  AdaptiveCardsFolderName,
+  ProjectConfigV3,
+  Json,
+  TemplateFolderName,
+  AppPackageFolderName,
+} from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   isConfigUnifyEnabled,
@@ -521,5 +527,31 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
     return codeLenses;
+  }
+}
+
+export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvider {
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      const workspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+
+      const aadTemplateFileExist = fs.pathExistsSync(
+        `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`
+      );
+      if (aadTemplateFileExist) {
+        const editTemplateCmd = {
+          title:
+            "⚠️This file is deprecated and not used any more, and click here to use AAD manifest template file instead",
+          command: "fx-extension.editAadManifestTemplate",
+          arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
+        };
+        codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+        return codeLenses;
+      }
+    }
   }
 }

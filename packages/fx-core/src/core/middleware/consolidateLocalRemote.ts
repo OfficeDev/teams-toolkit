@@ -399,20 +399,28 @@ async function compareLocalAndRemoteManifest(
   localManifestFile: string,
   remoteManifestFile: string
 ) {
-  const localManifestString = (await fs.readFile(localManifestFile))
-    .toString()
-    .replace(manifestRegex, "");
-  const remoteManifestString = (await fs.readFile(remoteManifestFile))
-    .toString()
-    .replace(manifestRegex, "");
-  const localManifestJson = JSON.parse(localManifestString);
-  const remoteManifestJson = JSON.parse(remoteManifestString);
-  if (!diff(localManifestJson, remoteManifestJson)) {
-    TOOLS?.ui.showMessage(
-      "warn",
-      getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
-      false,
-      "OK"
+  try {
+    const localManifestString = (await fs.readFile(localManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const remoteManifestString = (await fs.readFile(remoteManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const localManifestJson = JSON.parse(localManifestString);
+    const remoteManifestJson = JSON.parse(remoteManifestString);
+    if (!diff(localManifestJson, remoteManifestJson)) {
+      TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
+        false,
+        "OK"
+      );
+    }
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectConsolidateCheckManifestError,
+      assembleError(error, CoreSource)
     );
   }
 }

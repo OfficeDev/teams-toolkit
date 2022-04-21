@@ -124,7 +124,6 @@ export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
   label: getLocalizedString("core.TabNonSso.label"),
   cliName: "tab-non-sso",
-  // description: getLocalizedString("core.TabNonSso.description"),
   detail: getLocalizedString("core.TabNonSso.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
 };
@@ -230,14 +229,14 @@ export const SingleSignOnOptionItem: OptionItem = {
   groupName: getLocalizedString("core.options.separator.additional"),
 };
 
-export const apiConnectionOptionItem: OptionItem = {
+export const ApiConnectionOptionItem: OptionItem = {
   id: "api-connection",
   label: getLocalizedString("core.ApiConnectionOption.label"),
   detail: getLocalizedString("core.ApiConnectionOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
 };
 
-export const cicdOptionItem: OptionItem = {
+export const CicdOptionItem: OptionItem = {
   id: "cicd",
   label: getLocalizedString("core.cicdWorkflowOption.label"),
   detail: getLocalizedString("core.cicdWorkflowOption.detail"),

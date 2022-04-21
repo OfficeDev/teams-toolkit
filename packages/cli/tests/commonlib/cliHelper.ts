@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
@@ -210,7 +210,7 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = isGAPreviewEnabled()
+    const command = isPreviewFeaturesEnabled()
       ? `teamsfx add ${capabilityToAdd}`
       : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
@@ -240,7 +240,7 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = isGAPreviewEnabled()
+    const command = isPreviewFeaturesEnabled()
       ? `teamsfx add ${resourceToAdd} ${options}`
       : `teamsfx resource add ${resourceToAdd} ${options}`;
     const timeout = 100000;

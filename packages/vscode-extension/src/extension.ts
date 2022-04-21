@@ -455,8 +455,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.executeCommand(
     "setContext",
-    "fx-entension.gaPreviewEnabled",
-    isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview, false)
+    "fx-entension.previewFeaturesEnabled",
+    isFeatureFlagEnabled(FeatureFlags.Preview, false)
   );
 
   // Setup CodeLens provider for userdata file

@@ -235,7 +235,7 @@ jobs:
       - name: publish beta release to npm org
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid == 'beta')}}
         run: |
-          npx lerna publish from-package --dist-tag=beta --yes --allow-branch dev
+          npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

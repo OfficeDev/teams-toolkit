@@ -88,6 +88,10 @@
 /templates/bot @IvanJobs @eriolchan @Siglud @Yukun-dong
 /templates/bot-msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
 /templates/msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
+/templates/tab/js/m365 @kuojianlu @swatDong @kimizhu
+/templates/tab/ts/m365 @kuojianlu @swatDong @kimizhu
+/templates/bot/js/m365 @kuojianlu @swatDong @kimizhu
+/templates/bot/ts/m365 @kuojianlu @swatDong @kimizhu
 /packages/fx-core/src/common/template-utils @hund030 @IvanJobs @eriolchan
 /packages/fx-core/tests/common/templateFetch.test.ts @hund030 @IvanJobs @eriolchan
 

@@ -813,7 +813,7 @@ export async function getQuestionsForAddFeature(
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
 
   // Hardcoded to call bot plugin to get notification trigger questions.
-  // Originally, v2 solution will not call getQuestionForUserTask of plugins on addCapability.
+  // Originally, v2 solution will not call getQuestionForUserTask of plugins on addFeature.
   // V3 will not need this hardcoding.
   const pluginMap = getAllV2ResourcePluginMap();
   const plugin = pluginMap.get(PluginNames.BOT);
@@ -865,6 +865,48 @@ export async function getQuestionsForAddFeature(
         },
       };
       if (node.data) addFeatureNode.addChild(node);
+    }
+
+    const apiConnectionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.ApiConnectorPlugin
+    );
+    if (apiConnectionPlugin.getQuestionsForUserTask) {
+      const res = await apiConnectionPlugin.getQuestionsForUserTask(
+        ctx,
+        inputs,
+        func,
+        envInfo,
+        tokenProvider
+      );
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = {
+          equals: apiConnectionOptionItem.id,
+        };
+        if (node.data) addFeatureNode.addChild(node);
+      }
+    }
+
+    const cicdPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.CICDPlugin
+    );
+    if (cicdPlugin.getQuestionsForUserTask) {
+      const res = await cicdPlugin.getQuestionsForUserTask(
+        ctx,
+        inputs,
+        func,
+        envInfo,
+        tokenProvider
+      );
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = {
+          equals: cicdOptionItem.id,
+        };
+        if (node.data) addFeatureNode.addChild(node);
+      }
     }
   }
 

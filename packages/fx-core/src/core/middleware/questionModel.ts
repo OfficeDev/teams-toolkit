@@ -425,17 +425,30 @@ export async function getQuestionsForCreateProjectV2(
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = {
-    minItems: 1,
-    excludes: ExistingTabOptionItem.id,
-  };
+  if (isGAPreviewEnabled()) {
+    programmingLanguage.condition = {
+      minItems: 1,
+      notEquals: ExistingTabOptionItem.id,
+    };
+  } else {
+    programmingLanguage.condition = {
+      minItems: 1,
+      excludes: ExistingTabOptionItem.id,
+    };
+  }
   capNode.addChild(programmingLanguage);
 
   // existing tab endpoint
   const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-  existingTabEndpoint.condition = {
-    contains: ExistingTabOptionItem.id,
-  };
+  if (isGAPreviewEnabled()) {
+    existingTabEndpoint.condition = {
+      equals: ExistingTabOptionItem.id,
+    };
+  } else {
+    existingTabEndpoint.condition = {
+      contains: ExistingTabOptionItem.id,
+    };
+  }
   capNode.addChild(existingTabEndpoint);
 
   // only CLI need folder input

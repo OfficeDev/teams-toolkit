@@ -145,6 +145,7 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
+import { isGAPreviewEnabled } from "../common";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -193,6 +194,11 @@ export class FxCore implements v3.ICore {
       } catch (e) {
         throw new ProjectFolderInvalidError(folder);
       }
+    }
+
+    if (isGAPreviewEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      inputs[CoreQuestionNames.Capabilities] = [capability];
     }
 
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];

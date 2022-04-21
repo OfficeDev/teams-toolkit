@@ -197,6 +197,120 @@ export async function getQuestionsForScaffolding(
   return ok(node);
 }
 
+export async function getQuestionsForScaffoldingPreview(
+  ctx: v2.Context,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode({
+    name: "azure-solution-group",
+    type: "func",
+    func: (inputs: Inputs) => {
+      inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
+    },
+  });
+
+  if (!isV3()) {
+    node.condition = {
+      enum: [
+        TabSPFxItem.id,
+        TabOptionItem.id,
+        BotOptionItem.id,
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        MessageExtensionItem.id,
+        ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
+        M365SsoLaunchPageOptionItem.id,
+        M365SearchAppOptionItem.id,
+      ],
+    };
+
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+            if (cap === TabSPFxItem.id) {
+              return undefined;
+            }
+            return "SPFx is not selected";
+          },
+        };
+        if (spfxNode.data) node.addChild(spfxNode);
+      }
+    }
+  } else {
+    node.condition = { enum: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
+  }
+
+  // 1.1.2 Azure Tab
+  const tabRes = await getTabScaffoldQuestionsV2(
+    ctx,
+    inputs,
+    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+  );
+  if (tabRes.isErr()) return tabRes;
+  if (tabRes.value) {
+    const tabNode = tabRes.value;
+    tabNode.condition = {
+      validFunc: (input: any, inputs?: Inputs) => {
+        if (!inputs) {
+          return "Invalid inputs";
+        }
+        const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+        if (cap === TabOptionItem.id || cap === TabNonSsoItem.id) {
+          return undefined;
+        }
+        return "Tab is not selected";
+      },
+    };
+    node.addChild(tabNode);
+  }
+
+  // 1.2 Bot
+  const botPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.BotPlugin
+  );
+  if (botPlugin.getQuestionsForScaffolding) {
+    const res = await botPlugin.getQuestionsForScaffolding(ctx, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      // Create a parent node of the node returned by plugin to prevent overwriting node.condition.
+      const botGroup = new QTreeNode({ type: "group" });
+      botGroup.addChild(res.value);
+      botGroup.condition = {
+        validFunc: (input: any, inputs?: Inputs) => {
+          if (!inputs) {
+            return "Invalid inputs";
+          }
+          const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+          if (
+            cap === BotOptionItem.id ||
+            cap === MessageExtensionItem.id ||
+            cap === NotificationOptionItem.id ||
+            cap === CommandAndResponseOptionItem.id
+          ) {
+            return undefined;
+          }
+          return "Bot/Message Extension is not selected";
+        },
+      };
+      node.addChild(botGroup);
+    }
+  }
+
+  return ok(node);
+}
+
 export async function getTabScaffoldQuestionsV2(
   ctx: v2.Context,
   inputs: Inputs,
@@ -779,7 +893,7 @@ export async function getQuestionsForAddFeature(
   };
   // check and generate capability options
   const canAddCapabilityResult = canAddCapability(settings, ctx.telemetryReporter);
-  if (canAddCapabilityResult.isOk()) {
+  if (canAddCapabilityResult.isOk() && !ctx.projectSetting.isM365) {
     const optionsResult = await getStaticOptionsForAddCapability(ctx, inputs, settings);
     if (optionsResult.isErr()) {
       return err(optionsResult.error);

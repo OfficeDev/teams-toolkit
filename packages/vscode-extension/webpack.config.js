@@ -115,7 +115,7 @@ const config = {
           mangle: false,
           keep_fnames: true,
         },
-        exclude: "../templates/",
+        exclude: "../templates/plugins/resource/aad/auth/",
       }),
     ],
   },

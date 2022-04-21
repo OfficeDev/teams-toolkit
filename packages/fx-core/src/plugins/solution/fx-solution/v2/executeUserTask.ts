@@ -52,6 +52,7 @@ import {
 } from "../constants";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
+  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
@@ -59,19 +60,18 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   BotScenario,
+  BotSsoItem,
+  CicdOptionItem,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
-  TabSsoItem,
-  BotSsoItem,
+  SingleSignOnOptionItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  SingleSignOnOptionItem,
-  apiConnectionOptionItem,
-  cicdOptionItem,
+  TabSsoItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -255,26 +255,6 @@ export function canAddResource(
   }
   return ok(Void);
 }
-
-// export function canAddFeature(
-//   azureSolutionSettings: AzureSolutionSettings | undefined,
-//   projectSetting: ProjectSettings,
-//   telemetryReporter: TelemetryReporter
-// ): Result<Void, FxError> {
-//   if (azureSolutionSettings && !(azureSolutionSettings.hostType === HostTypeOptionAzure.id)) {
-//     const e = new UserError(
-//       SolutionSource,
-//       SolutionError.AddCapabilityNotSupport,
-//       getDefaultString("core.addCapability.onlySupportAzure"),
-//       getLocalizedString("core.addCapability.onlySupportAzure")
-//     );
-//     return err(
-//       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddFeature, e, telemetryReporter)
-//     );
-//   }
-
-//   return ok(Void);
-// }
 
 export async function addCapability(
   ctx: v2.Context,
@@ -852,50 +832,20 @@ export async function addFeature(
   }
   if (featureAnswer === SingleSignOnOptionItem.id) {
     return addSso(ctx, inputs, localSettings);
-  } else if (featureAnswer === apiConnectionOptionItem.id) {
-    // const pluginName = "fx-resource-api-connector";
-    // const pluginMap = getAllV2ResourcePluginMap();
-    // const plugin = pluginMap.get(pluginName);
-    // if (plugin && plugin.executeUserTask) {
-    //   const apiFunction: Func = {
-    //     namespace: "fx-solution-azure/fx-resource-api-connector",
-    //     method: "connectExistingApi",
-    //     params: {},
-    //   };
-    //   return plugin.executeUserTask(
-    //     ctx,
-    //     inputs,
-    //     apiFunction,
-    //     localSettings,
-    //     envInfo,
-    //     tokenProvider
-    //   );
-    // }
+  } else if (featureAnswer === ApiConnectionOptionItem.id) {
     const apiFunction: Func = {
       namespace: "fx-solution-azure/fx-resource-api-connector",
       method: "connectExistingApi",
       params: {},
     };
     return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
-  } else if (featureAnswer === cicdOptionItem.id) {
-    const pluginName = "fx-resource-cicd";
-    const pluginMap = getAllV2ResourcePluginMap();
-    const plugin = pluginMap.get(pluginName);
-    if (plugin && plugin.executeUserTask) {
-      const apiFunction: Func = {
-        namespace: "fx-solution-azure/fx-resource-cicd",
-        method: "addCICDWorkflows",
-        params: {},
-      };
-      return plugin.executeUserTask(
-        ctx,
-        inputs,
-        apiFunction,
-        localSettings,
-        envInfo,
-        tokenProvider
-      );
-    }
+  } else if (featureAnswer === CicdOptionItem.id) {
+    const cicdFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-cicd",
+      method: "addCICDWorkflows",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, cicdFunction, localSettings, envInfo, tokenProvider);
   }
   return ok({});
 }

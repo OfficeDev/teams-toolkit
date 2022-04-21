@@ -24,6 +24,7 @@ import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
 import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
+  ApiConnectionOptionItem,
   AskSubscriptionQuestion,
   AzureResourceApim,
   AzureResourceFunction,
@@ -31,27 +32,26 @@ import {
   AzureResourceSQL,
   AzureResourcesQuestion,
   AzureSolutionQuestionNames,
+  BotNewUIOptionItem,
   BotOptionItem,
+  BotSsoItem,
+  CicdOptionItem,
   CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
+  createAddCloudResourceOptions,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
   NotificationOptionItem,
-  TabSsoItem,
-  BotSsoItem,
+  SingleSignOnOptionItem,
+  TabNewUIOptionItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  M365SsoLaunchPageOptionItem,
-  M365SearchAppOptionItem,
-  MessageExtensionNewUIItem,
-  TabNewUIOptionItem,
-  createAddCloudResourceOptions,
-  BotNewUIOptionItem,
-  cicdOptionItem,
-  SingleSignOnOptionItem,
-  apiConnectionOptionItem,
+  TabSsoItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -807,7 +807,7 @@ export async function getQuestionsForAddFeature(
   }
 
   // additional features
-  options.push(...[SingleSignOnOptionItem, apiConnectionOptionItem, cicdOptionItem]);
+  options.push(...[SingleSignOnOptionItem, ApiConnectionOptionItem, CicdOptionItem]);
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
@@ -882,7 +882,7 @@ export async function getQuestionsForAddFeature(
       if (res.value) {
         const node = res.value as QTreeNode;
         node.condition = {
-          equals: apiConnectionOptionItem.id,
+          equals: ApiConnectionOptionItem.id,
         };
         if (node.data) addFeatureNode.addChild(node);
       }
@@ -903,7 +903,7 @@ export async function getQuestionsForAddFeature(
       if (res.value) {
         const node = res.value as QTreeNode;
         node.condition = {
-          equals: cicdOptionItem.id,
+          equals: CicdOptionItem.id,
         };
         if (node.data) addFeatureNode.addChild(node);
       }

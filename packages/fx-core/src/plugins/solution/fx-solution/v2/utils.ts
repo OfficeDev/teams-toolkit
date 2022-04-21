@@ -268,6 +268,9 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionSPFx.id;
   } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
     capabilities = [TabOptionItem.id];
+    if (isAadManifestEnabled()) {
+      capabilities.push(TabSsoItem.id);
+    }
     hostType = HostTypeOptionAzure.id;
   } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
     capabilities = [MessageExtensionItem.id];

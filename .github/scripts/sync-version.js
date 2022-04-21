@@ -42,7 +42,10 @@ function updateFileDeps(file, deps) {
     let fileChange = false;
     for(let [key,value] of Object.entries(deps)){
         if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc"))){
+            if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))){
+                continue;
+            }
+            if(key === "@microsoft/teamsfx" && dep_[key] === "0.6.0-beta.0") {
                 continue;
             }
             fileChange = true;

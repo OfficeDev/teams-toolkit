@@ -61,7 +61,7 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-export function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return (
     azureSettings !== undefined &&
     (azureSettings.capabilities?.includes(BotOptionItem.id) ||
@@ -69,16 +69,16 @@ export function isBotProject(azureSettings: AzureSolutionSettings | undefined): 
   );
 }
 
-export interface IBotTroubleShootMessage {
+export interface BotTroubleShootMessage {
   troubleShootLink: string;
   textForLogging: string;
   textForMsgBox: string;
   textForActionButton: string;
 }
 
-export function getBotTroubleShootMessages(
+export function getBotTroubleShootMessage(
   azureSettings: AzureSolutionSettings | undefined
-): IBotTroubleShootMessage {
+): BotTroubleShootMessage {
   const botTroubleShootLink =
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
   const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
@@ -90,7 +90,7 @@ export function getBotTroubleShootMessages(
     textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
     textForMsgBox: botTroubleShootDesc,
     textForActionButton: botTroubleShootLearnMore,
-  } as IBotTroubleShootMessage;
+  } as BotTroubleShootMessage;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {

@@ -37,10 +37,9 @@ import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
   getAzureSolutionSettings,
-  getBotTroubleShootMessages,
+  getBotTroubleShootMessage,
   getSelectedPlugins,
-  isAzureProject,
-  isBotProject,
+  isAzureProject
 } from "./utils";
 
 export async function deploy(
@@ -55,8 +54,7 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const inBotProject = isBotProject(getAzureSolutionSettings(ctx));
-  const botTroubleShootMsg = getBotTroubleShootMessages(getAzureSolutionSettings(ctx));
+  const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
@@ -207,7 +205,7 @@ export async function deploy(
         getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
         botTroubleShootMsg.textForLogging;
       ctx.logProvider.info(msg);
-      if (inBotProject) {
+      if (botTroubleShootMsg.textForLogging) {
         // Show a `Learn more` action button for bot trouble shooting.
         ctx.userInteraction
           .showMessage(

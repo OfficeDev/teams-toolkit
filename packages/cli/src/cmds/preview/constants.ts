@@ -146,5 +146,7 @@ export const installApp = {
     configureOutlook: "Configure Outlook",
     configureOutlookDescription:
       "Pop up Bot Framework Portal for you to connect your bot to Outlook channel.",
+    remoteConfigureOutlookDescription:
+      "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
 };

@@ -67,6 +67,10 @@ export async function showInstallAppInTeamsMessage(
   cliLogger.necessaryLog(LogLevel.Warning, message);
   installAppSingleSelect.options = [installOptionItem];
   if (botOutlookChannelLink) {
+    if (!isLocal) {
+      configureOutlookOptionItem.description = installApp.bot.remoteConfigureOutlookDescription;
+      configureOutlookOptionItem.detail = installApp.bot.remoteConfigureOutlookDescription;
+    }
     (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
   }
   (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);

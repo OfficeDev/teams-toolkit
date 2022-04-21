@@ -1,12 +1,10 @@
 # How to use this M365 Messaging Extensions Search app
 
-A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
-
-A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
+A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams and Outlook client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
 Messaging Extensions are implemented on top of the Bot support architecture within Teams.
 
-This is a simple hello world application with both Bot and Messaging extension capabilities.
+This is a simple search application with Messaging extension capabilities.
 
 ![Search App Demo](./images/SearchAppDemo.gif)
 
@@ -18,16 +16,14 @@ This is a simple hello world application with both Bot and Messaging extension c
 
 ## Debug
 ### From Visual Studio Code
-- Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
-- If you select `Debug in Outlook`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Connect to Outlook channel" to connect the bot to Outlook channel, then click "Continue" to continue debugging the app in Outlook.
-
-  ![Install in Teams](./images/InstallInTeamsVSC.png)
+1. Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
+2. If you select `Debug in Outlook`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Configure Outlook" to connect the bot to Outlook channel, then click "Continue" to continue to debug the app in Outlook.
+  ![Install in Teams VSC Local](./images/InstallInTeamsVSCLocal.png)
 
 ### From TeamsFx CLI
-- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams` or `outlook`.
-- If you select `m365-host` as outlook, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Connect to Outlook channel" to connect the bot to Outlook channel, then select "Continue" to continue debugging the app in Outlook or Office.
-
-  ![Install in Teams](./images/InstallInTeamsCLI.png)
+1. From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams` or `outlook`.
+2. If you select `m365-host` as `outlook`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Configure Outlook" to connect the bot to Outlook channel, then select "Continue" to continue to debug the app in Outlook.
+  ![Install in Teams CLI Local](./images/InstallInTeamsCLILocal.png)
 
 ## Edit the manifest
 
@@ -48,15 +44,19 @@ Deploy your project to Azure by following these steps:
 
 ## Preview
 
-Once the provisioning and deployment steps are finished, you can preview your app:
+Once the provisioning and deployment steps are finished, you can preview your app.
 
-- From Visual Studio Code
+### From Visual Studio Code
+1. Open the `Teams Toolkit Activity Panel`.
+2. In `ENVIRONMENTS`, select the environment you want to preview and click the `Preview App` icon.
+3. For the prompted question, select the platform you want to preview in.
+4. If you select `Outlook`, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Configure Outlook" to connect the bot to Outlook channel, then click "Continue" to continue to preview the app in Outlook.
+  ![Install in Teams VSC Remote](./images/InstallInTeamsVSCRemote.png)
 
-  1. Open the `Run and Debug Activity Panel`.
-  1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
-  1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
-
-- From TeamsFx CLI: execute `teamsfx preview --remote` in your project directory to launch your application.
+### From TeamsFx CLI
+- Execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory, where `m365-host` is `teams` or `outlook`.
+2. If you select `m365-host` as `outlook`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Configure Outlook" to connect the bot to Outlook channel, then select "Continue" to continue to debug the app in Outlook.
+  ![Install in Teams CLI Remote](./images/InstallInTeamsCLIRemote.png)
 
 ## Validate manifest file
 

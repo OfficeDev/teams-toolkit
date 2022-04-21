@@ -14,14 +14,16 @@ Microsoft 365 supports the ability to run web-based UI inside "custom tabs" that
 
 ## Debug
 ### From Visual Studio Code
-- Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
-- If you select `Debug in Outlook` or `Debug in Office`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue debugging the app in Outlook or Office.
-![Install in Teams](./images/install-in-teams-vsc.png)
+1. Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
+2. If you select `Debug in Outlook` or `Debug in Office`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue to debug the app in Outlook or Office.
+
+  ![Install in Teams VSC Local](./images/install-in-teams-vsc-local.png)
 
 ### From TeamsFx CLI
-- Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams`, `outlook` or `office`.
-- If you select `m365-host` as `outlook` or `office`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue debugging the app in Outlook or Office.
-![Install in Teams](./images/install-in-teams-cli.png)
+1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams`, `outlook` or `office`.
+2. If you select `m365-host` as `outlook` or `office`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue to debug the app in Outlook or Office.
+
+  ![Install in Teams CLI](./images/install-in-teams-cli.png)
 
 ## Edit the manifest
 
@@ -42,9 +44,21 @@ Deploy your project to Azure by following these steps:
 
 ## Preview
 
-Once the provisioning and deployment steps are finished, you can preview your app:
+Once the provisioning and deployment steps are finished, you can preview your app.
 
-- From TeamsFx CLI: execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory to launch your application, where `m365-host` is `teams`, `outlook` or `office`.
+### From Visual Studio Code
+1. Open the `Teams Toolkit Activity Panel`.
+2. In `ENVIRONMENTS`, select the environment you want to preview and click the `Preview App` icon.
+3. For the prompted question, select the platform you want to preview in.
+4. If you select `Outlook` or `Office`, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue to preview the app in Outlook or Office.
+
+  ![Install in Teams VSC Remote](./images/install-in-teams-vsc-remote.png)
+
+### From TeamsFx CLI
+1. Execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory to launch your application, where `m365-host` is `teams`, `outlook` or `office`.
+2. If you select `m365-host` as `outlook` or `office`, during preview, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue to preview the app in Outlook or Office.
+
+  ![Install in Teams CLI](./images/install-in-teams-cli.png)
 
 ## Validate manifest file
 

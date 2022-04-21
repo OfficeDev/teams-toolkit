@@ -4,7 +4,16 @@
 "use strict";
 
 import * as path from "path";
-import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import {
+  Colors,
+  ConfigFolderName,
+  FxError,
+  InputConfigsFolderName,
+  IProgressHandler,
+  LogLevel,
+  ProjectConfig,
+} from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
 import { TaskResult } from "./task";
@@ -19,7 +28,12 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  getResourceGroupInPortal,
+  isConfigUnifyEnabled,
+  LocalEnvManager,
+} from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
@@ -323,5 +337,44 @@ export async function generateAccountHint(
     return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
+  }
+}
+
+async function getResourceBaseName(
+  workspaceFolder: string,
+  env: string
+): Promise<string | undefined> {
+  try {
+    const azureParametersFilePath = path.join(
+      workspaceFolder,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      `azure.parameters.${env}.json`
+    );
+    const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
+    return azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getBotOutlookChannelLink(
+  workspaceFolder: string,
+  env: string,
+  projectConfig: ProjectConfig | undefined,
+  botId: string | undefined
+): Promise<string> {
+  if (env === environmentManager.getLocalEnvName()) {
+    return `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+  } else {
+    const solutionConfig = projectConfig?.config?.get(constants.solutionPluginName);
+    const subscriptionId = solutionConfig?.get("subscriptionId");
+    const tenantId = solutionConfig?.get("tenantId");
+    const resourceGroupName = solutionConfig?.get("resourceGroupName");
+
+    const resourceGroupLink = getResourceGroupInPortal(subscriptionId, tenantId, resourceGroupName);
+    const resourceBaseName = await getResourceBaseName(workspaceFolder, env);
+
+    return `${resourceGroupLink}/providers/Microsoft.BotService/botServices/${resourceBaseName}/channelsReact`;
   }
 }

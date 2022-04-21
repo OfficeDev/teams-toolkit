@@ -64,9 +64,33 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
 export function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return (
     azureSettings !== undefined &&
-    (azureSettings.capabilities.includes(BotOptionItem.id) ||
-      azureSettings.capabilities.includes(MessageExtensionItem.id))
+    (azureSettings.capabilities?.includes(BotOptionItem.id) ||
+      azureSettings.capabilities?.includes(MessageExtensionItem.id))
   );
+}
+
+export interface IBotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessages(
+  azureSettings: AzureSolutionSettings | undefined
+): IBotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as IBotTroubleShootMessage;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {

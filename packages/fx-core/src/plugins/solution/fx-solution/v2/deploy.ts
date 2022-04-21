@@ -37,6 +37,7 @@ import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
   getAzureSolutionSettings,
+  getBotTroubleShootMessages,
   getSelectedPlugins,
   isAzureProject,
   isBotProject,
@@ -55,6 +56,7 @@ export async function deploy(
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const inBotProject = isBotProject(getAzureSolutionSettings(ctx));
+  const botTroubleShootMsg = getBotTroubleShootMessages(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
@@ -199,24 +201,27 @@ export async function deploy(
   ctx.logProvider.info(getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution));
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
-  const botTroubleShootLink =
-    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
-  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
-  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
-  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
-      // Append a new sentence for bot trouble shootting.
-      ctx.logProvider.info(inBotProject ? `${msg} ${botTroubleShootMsg}` : msg);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
+        botTroubleShootMsg.textForLogging;
+      ctx.logProvider.info(msg);
       if (inBotProject) {
         // Show a `Learn more` action button for bot trouble shooting.
         ctx.userInteraction
-          .showMessage("info", `${msg} ${botTroubleShootDesc}`, false, botTroubleShootLearnMore)
+          .showMessage(
+            "info",
+            `${getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName)} ${
+              botTroubleShootMsg.textForMsgBox
+            }`,
+            false,
+            botTroubleShootMsg.textForActionButton
+          )
           .then((result) => {
             const userSelected = result.isOk() ? result.value : undefined;
-            if (userSelected === botTroubleShootLearnMore) {
-              ctx.userInteraction.openUrl(botTroubleShootLink);
+            if (userSelected === botTroubleShootMsg.textForActionButton) {
+              ctx.userInteraction.openUrl(botTroubleShootMsg.troubleShootLink);
             }
           });
       } else {
@@ -225,8 +230,10 @@ export async function deploy(
     }
     return ok(Void);
   } else {
-    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
-    ctx.logProvider.info(inBotProject ? `${msg} ${botTroubleShootMsg}` : msg);
+    const msg =
+      getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName) +
+      botTroubleShootMsg.textForLogging;
+    ctx.logProvider.info(msg);
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.Deploy,

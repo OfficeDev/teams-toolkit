@@ -183,6 +183,7 @@
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitle": "Validate App Manifest File",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitleNew": "Validate manifest file",
     "teamstoolkit.common.cancel": "Cancel",
+    "teamstoolkit.common.commingSoon": "Tutorials are in active development and will come soon in future release, please stay tuned.",
     "teamstoolkit.common.confirm": "Confirm",
     "teamstoolkit.common.readMore": "Read more",
     "teamstoolkit.common.signin": "Sign in",

@@ -40,6 +40,7 @@ import {
   TabNewUIOptionItem,
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
+  BotNewUIOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -227,10 +228,12 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   if (isBotNotificationEnabled()) {
     // new capabilities question order
     staticOptions = [
-      ...[CommandAndResponseOptionItem, NotificationOptionItem],
+      ...[NotificationOptionItem, CommandAndResponseOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
+      TabNewUIOptionItem,
+      TabSPFxNewUIItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
+      ...[BotNewUIOptionItem, MessageExtensionNewUIItem],
       ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {

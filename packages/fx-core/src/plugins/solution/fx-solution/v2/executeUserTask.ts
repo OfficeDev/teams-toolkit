@@ -69,6 +69,9 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  SingleSignOnOptionItem,
+  apiConnectionOptionItem,
+  cicdOptionItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -846,6 +849,53 @@ export async function addFeature(
       inputs[AzureSolutionQuestionNames.AddResources].push(AzureResourceFunction.id);
     }
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (featureAnswer === SingleSignOnOptionItem.id) {
+    return addSso(ctx, inputs, localSettings);
+  } else if (featureAnswer === apiConnectionOptionItem.id) {
+    // const pluginName = "fx-resource-api-connector";
+    // const pluginMap = getAllV2ResourcePluginMap();
+    // const plugin = pluginMap.get(pluginName);
+    // if (plugin && plugin.executeUserTask) {
+    //   const apiFunction: Func = {
+    //     namespace: "fx-solution-azure/fx-resource-api-connector",
+    //     method: "connectExistingApi",
+    //     params: {},
+    //   };
+    //   return plugin.executeUserTask(
+    //     ctx,
+    //     inputs,
+    //     apiFunction,
+    //     localSettings,
+    //     envInfo,
+    //     tokenProvider
+    //   );
+    // }
+    const apiFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-api-connector",
+      method: "connectExistingApi",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
+  } else if (featureAnswer === cicdOptionItem.id) {
+    const pluginName = "fx-resource-cicd";
+    const pluginMap = getAllV2ResourcePluginMap();
+    const plugin = pluginMap.get(pluginName);
+    if (plugin && plugin.executeUserTask) {
+      const apiFunction: Func = {
+        namespace: "fx-solution-azure/fx-resource-cicd",
+        method: "addCICDWorkflows",
+        params: {},
+      };
+      return plugin.executeUserTask(
+        ctx,
+        inputs,
+        apiFunction,
+        localSettings,
+        envInfo,
+        tokenProvider
+      );
+    }
   }
   return ok({});
 }

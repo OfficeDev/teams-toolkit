@@ -37,8 +37,9 @@ import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
   getAzureSolutionSettings,
+  getBotTroubleShootMessage,
   getSelectedPlugins,
-  isAzureProject,
+  isAzureProject
 } from "./utils";
 
 export async function deploy(
@@ -53,6 +54,7 @@ export async function deploy(
   });
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
+  const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
@@ -199,13 +201,36 @@ export async function deploy(
 
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
+        botTroubleShootMsg.textForLogging;
       ctx.logProvider.info(msg);
-      ctx.userInteraction.showMessage("info", msg, false);
+      if (botTroubleShootMsg.textForLogging) {
+        // Show a `Learn more` action button for bot trouble shooting.
+        ctx.userInteraction
+          .showMessage(
+            "info",
+            `${getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName)} ${
+              botTroubleShootMsg.textForMsgBox
+            }`,
+            false,
+            botTroubleShootMsg.textForActionButton
+          )
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === botTroubleShootMsg.textForActionButton) {
+              ctx.userInteraction.openUrl(botTroubleShootMsg.troubleShootLink);
+            }
+          });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     }
     return ok(Void);
   } else {
-    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
+    const msg =
+      getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName) +
+      botTroubleShootMsg.textForLogging;
     ctx.logProvider.info(msg);
     return err(
       sendErrorTelemetryThenReturnError(

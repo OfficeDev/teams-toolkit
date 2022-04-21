@@ -545,7 +545,7 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
           title:
-            "⚠️This file is deprecated and not used any more, and click here to use AAD manifest template file instead",
+            "⚠️This file is deprecated and not used anymore. Please click here to use AAD manifest template file instead",
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };

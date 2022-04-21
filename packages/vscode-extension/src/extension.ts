@@ -363,7 +363,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(localDebugWithIcon);
 
   const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 

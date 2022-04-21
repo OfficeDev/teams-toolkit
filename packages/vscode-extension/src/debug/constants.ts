@@ -62,3 +62,23 @@ export const skipNgrokRetiredNotification =
   "Property 'skipNgrok' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.ngrok' in VSCode settings instead.";
 export const trustDevCertRetiredNotification =
   "Property 'trustDevCert' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.devCert' in VSCode settings instead.";
+
+export enum Hub {
+  teams = "Teams",
+  outlook = "Outlook",
+  office = "Office",
+}
+
+export class LaunchUrl {
+  public static readonly teams: string =
+    "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
+  public static readonly outlookTab: string =
+    "https://outlook.office.com/host/${teamsAppInternalId}?${account-hint}";
+  public static readonly outlookBot: string = "https://outlook.office.com/mail?${account-hint}";
+  public static readonly officeTab: string =
+    "https://www.office.com/m365apps/${teamsAppInternalId}?auth=2&${account-hint}";
+}
+
+export const teamsAppIdPlaceholder = "${teamsAppId}";
+export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
+export const accountHintPlaceholder = "${account-hint}";

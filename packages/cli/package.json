@@ -28,7 +28,8 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged"
+    "precommit": "npm run check-sensitive && lint-staged",
+    "postinstall": "node deletePS1.js"
   },
   "keywords": [
     "teamsfx",
@@ -137,7 +138,9 @@
   "files": [
     "lib",
     "resource",
-    "templates"
+    "templates",
+    "deletePS1.js",
+    "cli.js"
   ],
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

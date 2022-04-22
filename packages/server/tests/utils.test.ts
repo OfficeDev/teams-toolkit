@@ -12,6 +12,7 @@ import {
 } from "../src/utils";
 import { CustomizeFuncRequestType } from "../src/apis";
 import { ResponseError } from "vscode-jsonrpc";
+import { reset } from "../src/customizedFuncAdapter";
 
 describe("utils", () => {
   describe("getResponseWithErrorHandling", () => {
@@ -98,6 +99,7 @@ describe("utils", () => {
       options: ["option1", "option2"],
       validation: f,
     };
+    reset();
     const res = convertUIConfigToJson(config as UIConfig<string>);
     const exp = {
       name: "test name",

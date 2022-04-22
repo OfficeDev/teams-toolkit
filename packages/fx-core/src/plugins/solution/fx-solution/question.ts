@@ -22,7 +22,7 @@ export const TabOptionItem: OptionItem = {
 
 export const TabNewUIOptionItem: OptionItem = {
   id: "Tab",
-  label: getLocalizedString("core.TabOption.labelNew"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabOption.labelNew")}`,
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -38,7 +38,7 @@ export const BotOptionItem: OptionItem = {
 
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
-  label: getLocalizedString("core.NotificationOption.label"),
+  label: `$(toolkit-notification) ${getLocalizedString("core.NotificationOption.label")}`,
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -47,7 +47,7 @@ export const NotificationOptionItem: OptionItem = {
 export const CommandAndResponseOptionItem: OptionItem = {
   // For default option, id and cliName must be the same
   id: "command-bot",
-  label: getLocalizedString("core.CommandAndResponseOption.label"),
+  label: `$(toolkit-commandBot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -55,7 +55,7 @@ export const CommandAndResponseOptionItem: OptionItem = {
 
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
-  label: getLocalizedString("core.ExistingTabOption.label"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.ExistingTabOption.label")}`,
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -71,7 +71,7 @@ export const MessageExtensionItem: OptionItem = {
 
 export const MessageExtensionNewUIItem: OptionItem = {
   id: "MessagingExtension",
-  label: getLocalizedString("core.MessageExtensionOption.labelNew"),
+  label: `$(toolkit-message) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
   cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -87,7 +87,7 @@ export const TabSPFxItem: OptionItem = {
 
 export const TabSPFxNewUIItem: OptionItem = {
   id: "TabSPFx",
-  label: getLocalizedString("core.TabSPFxOption.labelNew"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
   cliName: "tab-spfx",
   detail: getLocalizedString("core.TabSPFxOption.detailNew"),
   groupName: getLocalizedString("core.TeamsAppSeparatorOptionItem.label"),
@@ -111,7 +111,7 @@ export const BotSsoItem: OptionItem = {
 
 export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
-  label: getLocalizedString("core.TabNonSso.label"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabNonSso.label")}`,
   cliName: "tab-non-sso",
   description: getLocalizedString("core.TabNonSso.description"),
   detail: getLocalizedString("core.TabNonSso.detail"),
@@ -120,7 +120,7 @@ export const TabNonSsoItem: OptionItem = {
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
-  label: "SSO enabled launch page",
+  label: `$(toolkit-tab) SSO enabled launch page`,
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
   groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
@@ -128,7 +128,7 @@ export const M365SsoLaunchPageOptionItem: OptionItem = {
 
 export const M365SearchAppOptionItem: OptionItem = {
   id: "M365SearchApp",
-  label: "Search app",
+  label: `$(toolkit-message) Search app`,
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
   groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),

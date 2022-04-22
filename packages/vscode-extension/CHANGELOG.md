@@ -8,7 +8,7 @@ Enhancement:
 - Optimize the configuration schema and manifest template of project created by Teams Toolkit.
 - Support to use CodeLens to preview variables value in manifest template file.
 - Optimize the In-meeting Sample App in sample gallery, shorten the time to run the sample.
-- Improved  "start from sample" experience, show more information of each sample in UI.
+- Improved  "Start from a sample" UI, show more information of each sample.
 - New Bot sample in sample gallery - Proactive Messaging App.
 
 ## 3.7.0 - Apr 06, 2022

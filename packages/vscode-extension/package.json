@@ -470,12 +470,12 @@
       {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.addFeature",
@@ -493,7 +493,7 @@
       {
         "command": "fx-extension.connectExistingApi",
         "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "fx-extension.isApiConnectEnabled"
+        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -571,6 +571,7 @@
       {
         "command": "fx-extension.addCICDWorkflows",
         "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
+        "enablement": "!fx-entension.gaPreviewEnabled",
         "icon": "$(sync)"
       },
       {
@@ -702,7 +703,7 @@
       {
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",
@@ -1076,7 +1077,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
     "copy-whatisnew-files": "copyfiles WHATISNEW.md out/resource",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-whatisnew-files",
-    "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
+    "build": "tsc -p ./",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",

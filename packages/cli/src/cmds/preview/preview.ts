@@ -157,6 +157,7 @@ export default class Preview extends YargsCommand {
     yargs.option("env", {
       description: "Select an existing env for the project",
       string: true,
+      default: environmentManager.getDefaultEnvName(),
     });
 
     return yargs.version(false);
@@ -470,11 +471,20 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = localBotId
+        ? await commonUtils.getBotOutlookChannelLink(
+            workspaceFolder,
+            environmentManager.getLocalEnvName(),
+            undefined,
+            localBotId
+          )
+        : undefined;
+
       const shouldContinue = await showInstallAppInTeamsMessage(
-        false,
+        true,
         tenantId,
         localTeamsAppId,
-        localBotId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -704,7 +714,7 @@ export default class Preview extends YargsCommand {
 
   private async remotePreview(
     workspaceFolder: string,
-    env: string | undefined,
+    env: string,
     hub: constants.Hub,
     browser: constants.Browser,
     browserArguments: string[] = []
@@ -736,6 +746,9 @@ export default class Preview extends YargsCommand {
       (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
     const includeFrontend = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.frontendHostingPluginName
+    );
+    const includeBot = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.botPluginName
     );
     if (hub === constants.Hub.office && !includeFrontend) {
       throw errors.OnlyLaunchPageSupportedInOffice();
@@ -778,11 +791,14 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = includeBot
+        ? await commonUtils.getBotOutlookChannelLink(workspaceFolder, env, config, undefined)
+        : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
         false,
         tenantId,
         remoteTeamsAppId,
-        undefined,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );

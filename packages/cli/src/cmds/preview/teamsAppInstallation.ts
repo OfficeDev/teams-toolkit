@@ -48,25 +48,29 @@ const installAppSingleSelect: SingleSelectConfig = {
 };
 
 export async function showInstallAppInTeamsMessage(
-  detected: boolean,
-  tenantIdFromConfig: string,
+  isLocal: boolean,
+  tenantId: string,
   appId: string,
-  botId: string | undefined,
+  botOutlookChannelLink: string | undefined,
   browser: constants.Browser,
   browserArguments: string[]
 ): Promise<boolean> {
-  const messages = botId
+  const messages = botOutlookChannelLink
     ? [
         installApp.bot.description,
         installApp.bot.guide1,
-        installApp.bot.guide2,
+        isLocal ? installApp.bot.guide2 : installApp.bot.remoteGuide2,
         installApp.bot.finish,
       ]
     : [installApp.description, installApp.guide, installApp.finish];
   const message = messages.join("\n");
   cliLogger.necessaryLog(LogLevel.Warning, message);
   installAppSingleSelect.options = [installOptionItem];
-  if (botId) {
+  if (botOutlookChannelLink) {
+    if (!isLocal) {
+      configureOutlookOptionItem.description = installApp.bot.remoteConfigureOutlookDescription;
+      configureOutlookOptionItem.detail = installApp.bot.remoteConfigureOutlookDescription;
+    }
     (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
   }
   (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);
@@ -75,30 +79,24 @@ export async function showInstallAppInTeamsMessage(
     if (result.value.result === cancelOptionItem.id) {
       return false;
     } else if (result.value.result === installOptionItem.id) {
-      await openHubWebClient(
-        true,
-        tenantIdFromConfig,
-        appId,
-        constants.Hub.teams,
-        browser,
-        browserArguments
-      );
+      await openHubWebClient(true, tenantId, appId, constants.Hub.teams, browser, browserArguments);
       return await showInstallAppInTeamsMessage(
-        false,
-        tenantIdFromConfig,
+        isLocal,
+        tenantId,
         appId,
-        botId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
     } else if (result.value.result === configureOutlookOptionItem.id) {
-      const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-      await open(url);
+      if (botOutlookChannelLink) {
+        await open(botOutlookChannelLink);
+      }
       return await showInstallAppInTeamsMessage(
-        false,
-        tenantIdFromConfig,
+        isLocal,
+        tenantId,
         appId,
-        botId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -106,10 +104,10 @@ export async function showInstallAppInTeamsMessage(
       const internalId = await getTeamsAppInternalId(appId);
       return internalId === undefined
         ? await showInstallAppInTeamsMessage(
-            true,
-            tenantIdFromConfig,
+            isLocal,
+            tenantId,
             appId,
-            botId,
+            botOutlookChannelLink,
             browser,
             browserArguments
           )

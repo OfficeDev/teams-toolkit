@@ -227,7 +227,7 @@ export class CLIUserInteraction implements UserInteraction {
   private async singleSelect(
     name: string,
     message: string,
-    choices: string[] | ChoiceOptions[],
+    choices: ChoiceOptions[],
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
@@ -239,7 +239,7 @@ export class CLIUserInteraction implements UserInteraction {
   private async multiSelect(
     name: string,
     message: string,
-    choices: string[] | ChoiceOptions[],
+    choices: ChoiceOptions[],
     defaultValue?: string[],
     validate?: ValidationType<string[]>
   ): Promise<Result<string[], FxError>> {
@@ -286,10 +286,7 @@ export class CLIUserInteraction implements UserInteraction {
     return indexes.map((index) => array[index]);
   }
 
-  private toChoices<T>(
-    option: StaticOptions,
-    defaultValue?: T
-  ): [string[] | ChoiceOptions[], T | undefined] {
+  private toChoices<T>(option: StaticOptions, defaultValue?: T): [ChoiceOptions[], T | undefined] {
     if (typeof option[0] === "string") {
       const choices = (option as string[]).map((op) => {
         return {
@@ -373,9 +370,7 @@ export class CLIUserInteraction implements UserInteraction {
       );
       if (result.isOk()) {
         const index = this.findIndex(
-          typeof choices[0] === "string"
-            ? (choices as string[])
-            : (choices as ChoiceOptions[]).map((choice) => choice.name),
+          choices.map((choice) => choice.name),
           result.value
         );
         const anwser = config.options[index];
@@ -409,9 +404,7 @@ export class CLIUserInteraction implements UserInteraction {
       );
       if (result.isOk()) {
         const indexes = this.findIndexes(
-          typeof choices[0] === "string"
-            ? (choices as string[])
-            : (choices as ChoiceOptions[]).map((choice) => choice.name),
+          choices.map((choice) => choice.name),
           result.value
         );
         const anwers = this.getSubArray(config.options as any[], indexes);
@@ -556,11 +549,15 @@ export class CLIUserInteraction implements UserInteraction {
         }
         default: {
           /// default value is set to the first element of items.
+          const [choices, defaultValue] = this.toChoices(
+            modal ? items.concat("Cancel") : items,
+            items[0]
+          );
           const result = await this.singleSelect(
             "MySingleSelectQuestion",
             plainText,
-            modal ? items.concat("Cancel") : items,
-            items[0]
+            choices,
+            defaultValue
           );
           if (result.isOk()) {
             if (result.value !== "Cancel") {

@@ -3,12 +3,9 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
-  EnableExistingApp = "enableExistingApp",
-  BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
   YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
-  enableM365App = "enableM365App",
-  EnableGAPreviewFeatures = "enableGAPreviewFeatures",
+  EnablePreviewFeatures = "enablePreviewFeatures",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

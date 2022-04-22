@@ -425,22 +425,28 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 11
+          node.data.staticOptions.length === 11,
+        "option item count check"
       );
       if (node && node.data && node.data.type === "singleSelect") {
-        assert.deepEqual((node.data as SingleSelectQuestion).staticOptions as OptionItem[], [
-          NotificationOptionItem,
-          CommandAndResponseOptionItem,
-          TabNonSsoItem,
-          BotNewUIOptionItem,
-          MessageExtensionNewUIItem,
-          AzureResourceFunctionNewUI,
-          AzureResourceApimNewUI,
-          AzureResourceSQLNewUI,
-          AzureResourceKeyVaultNewUI,
-          SingleSignOnOptionItem,
-          CicdOptionItem,
-        ]);
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            NotificationOptionItem,
+            CommandAndResponseOptionItem,
+            TabNonSsoItem,
+            BotNewUIOptionItem,
+            MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            SingleSignOnOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
       }
     }
   });

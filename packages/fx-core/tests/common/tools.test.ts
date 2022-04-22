@@ -7,8 +7,9 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
-import { getSideloadingStatus } from "../../src/common/tools";
+import { getSideloadingStatus, canAddApiConnection } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
+import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 
@@ -113,6 +114,53 @@ describe("tools", () => {
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
       chai.assert.equal(errors, 3);
+    });
+  });
+
+  describe("canAddApiConnection()", () => {
+    it("returns true when function is added", async () => {
+      const solutionSettings: AzureSolutionSettings = {
+        activeResourcePlugins: ["fx-resource-function"],
+        hostType: "Azure",
+        capabilities: [],
+        azureResources: [],
+        name: "test",
+      };
+
+      const result = canAddApiConnection(solutionSettings);
+
+      chai.assert.isDefined(result);
+      chai.assert.isTrue(result);
+    });
+
+    it("returns true when bot is added", async () => {
+      const solutionSettings: AzureSolutionSettings = {
+        activeResourcePlugins: ["fx-resource-bot"],
+        hostType: "Azure",
+        capabilities: [],
+        azureResources: [],
+        name: "test",
+      };
+
+      const result = canAddApiConnection(solutionSettings);
+
+      chai.assert.isDefined(result);
+      chai.assert.isTrue(result);
+    });
+
+    it("returns false when bot or function is not added", async () => {
+      const solutionSettings: AzureSolutionSettings = {
+        activeResourcePlugins: [],
+        hostType: "Azure",
+        capabilities: [],
+        azureResources: [],
+        name: "test",
+      };
+
+      const result = canAddApiConnection(solutionSettings);
+
+      chai.assert.isDefined(result);
+      chai.assert.isFalse(result);
     });
   });
 });

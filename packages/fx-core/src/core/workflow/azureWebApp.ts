@@ -12,6 +12,21 @@ import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";
+  readonly outputs = {
+    resourceId: {
+      key: "resourceId",
+      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.resourceId",
+    },
+    hostName: {
+      key: "hostName",
+      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.domain",
+    },
+    endpoint: {
+      key: "endpoint",
+      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.endpoint",
+    },
+  };
+  readonly finalOutputKeys = ["resourceId", "endpoint"];
   generateBicep(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
@@ -26,65 +41,22 @@ export class AzureWebAppResource implements CloudResource {
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
+        const pmPath = path.join(
+          getTemplatesFolder(),
+          "demo",
+          "azureWebApp.provision.module.bicep"
+        );
+        const poPath = path.join(
+          getTemplatesFolder(),
+          "demo",
+          "azureWebApp.provision.orchestration.bicep"
+        );
+        const provisionModule = await fs.readFile(pmPath, "utf-8");
+        const ProvisionOrch = await fs.readFile(poPath, "utf-8");
         const armTemplate: ArmTemplateResult = {
           Provision: {
-            Modules: {},
-          },
-          Configuration: {},
-          Reference: {
-            resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
-            hostName: "provisionOutputs.azureWebAppOutput.value.domain",
-            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
-          },
-        };
-        {
-          const filePath = path.join(
-            getTemplatesFolder(),
-            "demo",
-            "azureWebApp.provision.module.bicep"
-          );
-          if (await fs.pathExists(filePath)) {
-            const content = await fs.readFile(filePath, "utf-8");
-            armTemplate.Provision!.Modules!["azureWebApp"] = content;
-          }
-        }
-        {
-          const filePath = path.join(
-            getTemplatesFolder(),
-            "demo",
-            "azureWebApp.provision.orchestration.bicep"
-          );
-          if (await fs.pathExists(filePath)) {
-            const content = await fs.readFile(filePath, "utf-8");
-            armTemplate.Provision!.Orchestration = content;
-          }
-        }
-        if (!context.bicep) context.bicep = {};
-        context.bicep["azure-web-app"] = armTemplate;
-        return ok(undefined);
-      },
-    };
-    return ok(action);
-  }
-  updateBicep(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-web-app.updateBicep",
-      type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["update azure-web-app bicep"]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        const armTemplate: ArmTemplateResult = {
-          Reference: {
-            resourceId: "provisionOutputs.azureWebAppOutput.value.resourceId",
-            hostName: "provisionOutputs.azureWebAppOutput.value.domain",
-            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+            Modules: { azureWebApp: provisionModule },
+            Orchestration: ProvisionOrch,
           },
         };
         if (!context.bicep) context.bicep = {};

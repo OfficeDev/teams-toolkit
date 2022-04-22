@@ -5,13 +5,14 @@ import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { ArmTemplateResult } from "../../common/armInterface";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
+import { AzureWebAppResource } from "./azureWebApp";
+import { Action, ContextV3, MaybePromise } from "./interface";
 @Service("bot-service")
-export class BotServiceResource implements CloudResource {
+export class BotServiceResource {
   readonly name = "bot-service";
   generateBicep(
     context: ContextV3,
@@ -34,34 +35,23 @@ export class BotServiceResource implements CloudResource {
         inputs: v2.InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
         const componentInput = inputs["bot-service"];
+        const mPath = path.join(getTemplatesFolder(), "demo", "botService.config.module.bicep");
+        const oPath = path.join(
+          getTemplatesFolder(),
+          "demo",
+          "botService.config.orchestration.bicep"
+        );
+        let module = await fs.readFile(mPath, "utf-8");
+        const templateContext: any = {};
+        if (componentInput.hostingResource === "azure-web-app") {
+          const resource = Container.get("azure-web-app") as AzureWebAppResource;
+          templateContext.endpointVarName = resource.outputs.endpoint.bicepVariableName;
+        }
+        module = compileHandlebarsTemplateString(module, templateContext);
+        const orch = await fs.readFile(oPath, "utf-8");
         const armTemplate: ArmTemplateResult = {
-          Configuration: { Modules: {} },
+          Configuration: { Modules: { botService: module }, Orchestration: orch },
         };
-        {
-          const filePath = path.join(
-            getTemplatesFolder(),
-            "demo",
-            "botService.config.module.bicep"
-          );
-          if (await fs.pathExists(filePath)) {
-            let content = await fs.readFile(filePath, "utf-8");
-            content = compileHandlebarsTemplateString(content, {
-              hostingResource: componentInput.hostingResource,
-            });
-            armTemplate.Configuration!.Modules!["botService"] = content;
-          }
-        }
-        {
-          const filePath = path.join(
-            getTemplatesFolder(),
-            "demo",
-            "botService.config.orchestration.bicep"
-          );
-          if (await fs.pathExists(filePath)) {
-            const content = await fs.readFile(filePath, "utf-8");
-            armTemplate.Configuration!.Orchestration = content;
-          }
-        }
         if (!context.bicep) context.bicep = {};
         context.bicep["bot-service"] = armTemplate;
         return ok(undefined);

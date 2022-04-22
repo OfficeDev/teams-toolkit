@@ -9,6 +9,8 @@ import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
 @Service("azure-function")
 export class AzureFunctionResource implements CloudResource {
   readonly name = "azure-function";
+  outputs = {};
+  finalOutputKeys = [];
   configure(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

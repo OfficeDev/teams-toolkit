@@ -121,9 +121,20 @@ export interface ContextV3 extends v2.Context {
   };
 }
 
+export interface ResourceOutput {
+  key: string;
+  bicepVariableName: string;
+}
+
+export interface ResourceOutputs {
+  [k: string]: ResourceOutput;
+}
+
 export interface CloudResource {
   readonly name: string;
   readonly description?: string;
+  readonly outputs: ResourceOutputs;
+  readonly finalOutputKeys: string[];
   generateBicep?: (
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

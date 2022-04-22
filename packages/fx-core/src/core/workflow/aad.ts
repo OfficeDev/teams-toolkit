@@ -10,6 +10,8 @@ import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
 export class Aad implements CloudResource {
   readonly type = "cloud";
   readonly name = "aad";
+  outputs = {};
+  finalOutputKeys = [];
   provision(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

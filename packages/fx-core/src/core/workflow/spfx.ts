@@ -9,6 +9,8 @@ import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
 @Service("spfx")
 export class SpfxResource implements CloudResource {
   readonly name = "spfx";
+  outputs = {};
+  finalOutputKeys = [];
   deploy(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath

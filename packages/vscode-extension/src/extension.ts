@@ -29,6 +29,7 @@ import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  PermissionsJsonFileCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import VsCodeLogInstance from "./commonlib/log";
@@ -363,7 +364,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(localDebugWithIcon);
 
   const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 
@@ -519,6 +520,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/aad.*.json`,
   };
 
+  const permissionsJsonFileCodeLensProvider = new PermissionsJsonFileCodeLensProvider();
+  const permissionsJsonFileSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/permissions.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -547,6 +555,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      permissionsJsonFileSelector,
+      permissionsJsonFileCodeLensProvider
     )
   );
 

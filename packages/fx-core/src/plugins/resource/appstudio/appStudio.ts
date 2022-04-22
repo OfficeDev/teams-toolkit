@@ -109,7 +109,7 @@ export namespace AppStudioClient {
     } catch (e: any) {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
-        `Failed to upload icon due to ${e.name}: ${e.message}` +
+        `Failed to upload icon for app ${teamsAppId}, due to ${e.name}: ${e.message}` +
         (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
       await logProvider?.warning(message);
       const error = new Error(message);

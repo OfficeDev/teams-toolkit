@@ -37,7 +37,7 @@ import {
 import * as crypto from "crypto";
 import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import { PluginNames, SolutionError } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
 import {
   Component,
@@ -50,12 +50,15 @@ import {
   HostTypeOptionAzure,
   TabSsoItem,
   BotSsoItem,
+  BotOptionItem,
+  TabOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
+import { BotHostTypeName, BotHostTypes } from "./local/constants";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -425,6 +428,40 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
     );
   }
+}
+
+export function canAddSso(projectSettings: ProjectSettings): boolean {
+  if (!isAadManifestEnabled()) {
+    return false;
+  }
+
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+    return false;
+  }
+
+  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      return false;
+    }
+  }
+
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+
+  // SSO is already enabled
+  if (
+    (containTabSsoItem && !containBot) ||
+    (containBot && containBotSsoItem && !containTab) ||
+    (containTabSsoItem && containBot && containBotSsoItem)
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export function getRootDirectory(): string {

@@ -1,6 +1,6 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v0.1.0/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v0.1.0.zip",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.0.0/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.0.0.zip",
     "samples": [
         {
             "id": "hello-world-tab",
@@ -150,6 +150,18 @@
             "suggested": false,
             "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
             "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
+        },
+        {
+            "id": "adaptive-card-notification",
+            "title": "Adaptive Card Notification",
+            "shortDescription": "Demonstrates how to send adaptive card notification to users.",
+            "fullDescription": "This is a sample which shows how to send notification with different adaptive cards using Bots.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false
         }
     ]
 }

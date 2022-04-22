@@ -50,6 +50,7 @@ import {
   IProgressHandler,
   ProjectSettingsFileName,
   OptionItem,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -131,13 +132,13 @@ import {
   SpfxManageSiteAdminUrl,
 } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
-import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
-import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
+import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
 import { localize, parseLocale } from "./utils/localizeUtils";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
+import { openHubWebClient } from "./debug/launch";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -533,26 +534,6 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
   }
 
   const debugConfig = await commonUtils.getDebugConfig(true);
-  return launch(debugConfig, progressBar);
-}
-
-async function previewRemote(
-  env: string,
-  progressBar: IProgressHandler
-): Promise<Result<null, FxError>> {
-  const debugConfig = await commonUtils.getDebugConfig(false, env);
-  return launch(debugConfig, progressBar);
-}
-
-async function launch(
-  debugConfig:
-    | {
-        appId: string;
-        env?: string;
-      }
-    | undefined,
-  progressBar: IProgressHandler
-): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = new UserError(
       ExtensionSource,
@@ -561,12 +542,74 @@ async function launch(
     );
     return err(error);
   }
-
   progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-  const accountHint = await generateAccountHint();
-  // eslint-disable-next-line no-secrets/no-secrets
-  const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
-  await vscode.env.openExternal(Uri.parse(uri));
+  await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
+  return ok(null);
+}
+
+async function previewRemote(
+  env: string,
+  progressBar: IProgressHandler
+): Promise<Result<null, FxError>> {
+  try {
+    const debugConfig = await commonUtils.getDebugConfig(false, env);
+    if (!debugConfig?.appId) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.TeamsAppIdNotFoundError,
+        localize("teamstoolkit.handlers.teamsAppIdNotFound")
+      );
+      return err(error);
+    }
+
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+
+    let hub = constants.Hub.teams;
+    if (projectSettings.isM365) {
+      const platformSingleSelect: SingleSelectConfig = {
+        name: "platform",
+        title: localize("teamstoolkit.preview.platform.title"),
+        options: [constants.Hub.teams, constants.Hub.outlook],
+        placeholder: localize("teamstoolkit.preview.platform.placeholder"),
+      };
+      if (includeFrontend) {
+        (platformSingleSelect.options as string[]).push(constants.Hub.office);
+      }
+      const platformResult = await VS_CODE_UI.selectOption(platformSingleSelect);
+      if (platformResult.isErr()) {
+        return err(platformResult.error);
+      }
+
+      hub = platformResult.value.result as constants.Hub;
+    }
+
+    if (hub === constants.Hub.teams) {
+      progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await openHubWebClient(includeFrontend, debugConfig.appId, hub);
+    } else {
+      const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
+      if (!shouldContinue) {
+        return err(UserCancelError);
+      }
+
+      const internalId = await getTeamsAppInternalId(debugConfig.appId);
+      if (internalId !== undefined) {
+        progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await openHubWebClient(includeFrontend, internalId, hub);
+      }
+    }
+  } catch (error) {
+    const assembledError = assembleError(error);
+    showError(assembledError);
+    return err(assembledError);
+  }
+
   return ok(null);
 }
 
@@ -1300,8 +1343,10 @@ export async function installAppInTeams(): Promise<string | undefined> {
         "Debug config not found"
       );
     }
-    const botId = await commonUtils.getLocalBotId();
-    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId, botId);
+    shouldContinue = await showInstallAppInTeamsMessage(
+      environmentManager.getLocalEnvName(),
+      debugConfig.appId
+    );
   } catch (error: any) {
     showError(error);
   }

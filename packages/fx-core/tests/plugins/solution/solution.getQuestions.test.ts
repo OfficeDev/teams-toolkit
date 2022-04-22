@@ -425,7 +425,7 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 11,
+          node.data.staticOptions.length === 10,
         "option item count check"
       );
       if (node && node.data && node.data.type === "singleSelect") {
@@ -442,7 +442,6 @@ describe("getQuestionsForScaffolding()", async () => {
             AzureResourceApimNewUI,
             AzureResourceSQLNewUI,
             AzureResourceKeyVaultNewUI,
-            SingleSignOnOptionItem,
             CicdOptionItem,
           ],
           "option item should match"

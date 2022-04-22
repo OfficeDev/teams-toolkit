@@ -7,9 +7,11 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
-import { getSideloadingStatus, canAddApiConnection } from "../../src/common/tools";
+import { getSideloadingStatus, canAddApiConnection, canAddSso } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import { TabSsoItem } from "../../src/plugins/solution/fx-solution/question";
+import * as featureFlags from "../../src/common/featureFlags";
 
 chai.use(chaiAsPromised);
 
@@ -158,6 +160,53 @@ describe("tools", () => {
       };
 
       const result = canAddApiConnection(solutionSettings);
+
+      chai.assert.isDefined(result);
+      chai.assert.isFalse(result);
+    });
+  });
+
+  describe("canAddSso()", () => {
+    beforeEach(() => {
+      sinon.stub<any, any>(featureFlags, "isFeatureFlagEnabled").returns(true);
+    });
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("returns true when nothing is added", async () => {
+      const projectSettings: ProjectSettings = {
+        solutionSettings: {
+          activeResourcePlugins: ["fx-resource-function"],
+          hostType: "Azure",
+          capabilities: [],
+          azureResources: [],
+          name: "test",
+        },
+        appName: "test",
+        projectId: "projectId",
+      };
+
+      const result = canAddSso(projectSettings);
+
+      chai.assert.isDefined(result);
+      chai.assert.isTrue(result);
+    });
+
+    it("returns false when tab sso is added", async () => {
+      const projectSettings: ProjectSettings = {
+        solutionSettings: {
+          activeResourcePlugins: ["fx-resource-function"],
+          hostType: "Azure",
+          capabilities: [TabSsoItem.id],
+          azureResources: [],
+          name: "test",
+        },
+        appName: "test",
+        projectId: "projectId",
+      };
+
+      const result = canAddSso(projectSettings);
 
       chai.assert.isDefined(result);
       chai.assert.isFalse(result);

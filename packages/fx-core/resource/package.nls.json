@@ -170,7 +170,7 @@
   "plugins.appstudio.lastModifiedTip": "Last Modified: %s\n",
   "plugins.appstudio.updatePublihsedAppConfirm": "Do you want to submit a new update?",
   "plugins.appstudio.teamsAppCreatedNotice": "Teams app created %s",
-  "plugins.appstudio.teamsAppUpdatedNotice": "Teams app updated %s",
+  "plugins.appstudio.teamsAppUpdatedNotice": "Your Teams application manifest has been successfully deployed. Click \"View in Developer Portal\" to view your application in Teams Developer Portal.",
   "plugins.appstudio.relativePathTip": "%s should be a relative path, URL is not supported",
   "plugins.appstudio.updateManifestTip": "The manifest file configurations has been modified already. Do you want to continue to regenerate the manifest file and update to Teams platform?",
   "plugins.appstudio.updateOverwriteTip": "The manifest file on Teams platform has been changed since your last update. Do you want to continue to update and overwrite the manifest file on Teams platform?",

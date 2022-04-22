@@ -9,6 +9,7 @@ import {
   OptionItem,
   Platform,
   ProjectSettings,
+  SingleSelectQuestion,
   Stage,
   TokenProvider,
   v2,
@@ -36,10 +37,21 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
+  AzureResourceApimNewUI,
+  AzureResourceFunctionNewUI,
+  AzureResourceKeyVaultNewUI,
+  AzureResourceSQLNewUI,
+  BotNewUIOptionItem,
   BotOptionItem,
+  CicdOptionItem,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
+  NotificationOptionItem,
+  SingleSignOnOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -243,6 +255,8 @@ describe("getQuestionsForScaffolding()", async () => {
       namespace: "fx-solution-azure",
     };
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox.stub<any, any>(featureFlags, "isBotNotificationEnabled").returns(false);
+    sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(false);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(
@@ -411,8 +425,23 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 12
+          node.data.staticOptions.length === 11
       );
+      if (node && node.data && node.data.type === "singleSelect") {
+        assert.deepEqual((node.data as SingleSelectQuestion).staticOptions as OptionItem[], [
+          NotificationOptionItem,
+          CommandAndResponseOptionItem,
+          TabNonSsoItem,
+          BotNewUIOptionItem,
+          MessageExtensionNewUIItem,
+          AzureResourceFunctionNewUI,
+          AzureResourceApimNewUI,
+          AzureResourceSQLNewUI,
+          AzureResourceKeyVaultNewUI,
+          SingleSignOnOptionItem,
+          CicdOptionItem,
+        ]);
+      }
     }
   });
 });

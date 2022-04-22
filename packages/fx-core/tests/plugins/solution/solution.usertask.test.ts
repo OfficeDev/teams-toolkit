@@ -562,6 +562,45 @@ describe("V2 implementation", () => {
     );
     expect(result.isOk()).to.be.true;
   });
+
+  it("should return ok when adding APIM resource to a project without APIM but with Function using addFeature", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [AzureResourceFunction.id],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+    };
+
+    mockedInputs[AzureSolutionQuestionNames.Features] = AzureResourceApim.id;
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(apimPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(functionPluginV2);
+
+    const result = await executeUserTask(
+      mockedCtx,
+      mockedInputs,
+      { namespace: "solution", method: "addFeature" },
+      {},
+      { envName: "default", config: {}, state: {} },
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
+  });
+
   it("should return ok when adding SQL resource to a project without SQL", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

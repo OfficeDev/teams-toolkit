@@ -8,8 +8,7 @@ import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrp
 import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
 import { Inputs, ok } from "@microsoft/teamsfx-api";
-import { standardizeResult } from "../src/utils";
-import { callFunc, setFunc } from "../src/customizedFuncAdapter";
+import { setFunc } from "../src/customizedFuncAdapter";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {

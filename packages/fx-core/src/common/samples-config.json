@@ -150,6 +150,18 @@
             "suggested": false,
             "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
             "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
+        },
+        {
+            "id": "adaptive-card-notification",
+            "title": "Adaptive Card Notification",
+            "shortDescription": "Demonstrates how to send adaptive card notification to users.",
+            "fullDescription": "This is a sample which shows how to send notification with different adaptive cards using Bots.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false
         }
     ]
 }

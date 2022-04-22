@@ -676,7 +676,8 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
     method: "addFeature",
   };
   let excludeFrontend = true,
-    excludeBot = true;
+    excludeBot = true,
+    excludeBackend = true;
   try {
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
@@ -685,6 +686,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
     );
     const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
     excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
   } catch (error) {
     VsCodeLogInstance.warning(`${error}`);
@@ -692,7 +694,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   const result = await runUserTask(func, TelemetryEvent.AddCap, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
+    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
   }
 

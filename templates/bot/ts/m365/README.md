@@ -27,7 +27,7 @@ This is a simple search application with Messaging extension capabilities.
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains two manifest files:
+You can find the Teams app manifest in `templates/appPackage` folder. The folder contains a manifest template file:
 * `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 Both files contain template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.

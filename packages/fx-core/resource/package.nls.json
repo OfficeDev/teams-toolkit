@@ -476,6 +476,7 @@
   "core.TabOption.detailNew": "Teams identity aware webpages embedded in Microsoft Teams",
   "core.BotOption.description": "Conversational Agent",
   "core.BotOption.detail": "Running simple and repetitive automated tasks through conversations",
+  "core.BotNewUIOption.label": "Bot",
   "core.BotNewUIOption.detail": "Hello world chatbot to run simple and repetitive tasks by user",
   "core.MessageExtensionOption.labelNew": "Message extension",
   "core.MessageExtensionOption.label": "Message Extension",

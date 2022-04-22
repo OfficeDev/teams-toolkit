@@ -22,7 +22,7 @@ export const TabOptionItem: OptionItem = {
 
 export const TabNewUIOptionItem: OptionItem = {
   id: "Tab",
-  label: `$(toolkit-tab) ${getLocalizedString("core.TabOption.labelNew")}`,
+  label: `$(browser) ${getLocalizedString("core.TabOption.labelNew")}`,
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -38,7 +38,7 @@ export const BotOptionItem: OptionItem = {
 
 export const BotNewUIOptionItem: OptionItem = {
   id: "Bot",
-  label: "Bot",
+  label: `$(hubot) ${getLocalizedString("core.BotNewUIOption.label")}`,
   cliName: "bot",
   detail: getLocalizedString("core.BotNewUIOption.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
@@ -46,7 +46,7 @@ export const BotNewUIOptionItem: OptionItem = {
 
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
-  label: `$(toolkit-notification) ${getLocalizedString("core.NotificationOption.label")}`,
+  label: `$(hubot) ${getLocalizedString("core.NotificationOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
@@ -56,7 +56,7 @@ export const NotificationOptionItem: OptionItem = {
 export const CommandAndResponseOptionItem: OptionItem = {
   // For default option, id and cliName must be the same
   id: "command-bot",
-  label: `$(toolkit-commandBot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
+  label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
@@ -65,7 +65,7 @@ export const CommandAndResponseOptionItem: OptionItem = {
 
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
-  label: `$(toolkit-tab) ${getLocalizedString("core.ExistingTabOption.label")}`,
+  label: `$(browser) ${getLocalizedString("core.ExistingTabOption.label")}`,
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -81,7 +81,7 @@ export const MessageExtensionItem: OptionItem = {
 
 export const MessageExtensionNewUIItem: OptionItem = {
   id: "MessagingExtension",
-  label: `$(toolkit-message) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
+  label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
   cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
@@ -97,7 +97,7 @@ export const TabSPFxItem: OptionItem = {
 
 export const TabSPFxNewUIItem: OptionItem = {
   id: "TabSPFx",
-  label: `$(toolkit-tab) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
+  label: `$(browser) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
   cliName: "tab-spfx",
   detail: getLocalizedString("core.TabSPFxOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -122,7 +122,7 @@ export const BotSsoItem: OptionItem = {
 
 export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
-  label: `$(toolkit-tab) ${getLocalizedString("core.TabNonSso.label")}`,
+  label: `$(browser) ${getLocalizedString("core.TabNonSso.label")}`,
   cliName: "tab-non-sso",
   detail: getLocalizedString("core.TabNonSso.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
@@ -130,7 +130,7 @@ export const TabNonSsoItem: OptionItem = {
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
-  label: `$(toolkit-tab) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
+  label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
   groupName: getLocalizedString("core.options.separator.m365"),
@@ -138,7 +138,7 @@ export const M365SsoLaunchPageOptionItem: OptionItem = {
 
 export const M365SearchAppOptionItem: OptionItem = {
   id: "M365SearchApp",
-  label: `$(toolkit-message) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+  label: `$(comment-discussion) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
   groupName: getLocalizedString("core.options.separator.m365"),
@@ -179,7 +179,7 @@ export const AzureResourceSQL: OptionItem = {
 
 export const AzureResourceSQLNewUI: OptionItem = {
   id: "sql",
-  label: getLocalizedString("core.AzureResourceSQLNewUI.label"),
+  label: `$(azure) ${getLocalizedString("core.AzureResourceSQLNewUI.label")}`,
   detail: getLocalizedString("core.AzureResourceSQLNewUI.detail"),
   groupName: getLocalizedString("core.options.separator.resource"),
 };
@@ -191,7 +191,7 @@ export const AzureResourceFunction: OptionItem = {
 
 export const AzureResourceFunctionNewUI: OptionItem = {
   id: "function",
-  label: getLocalizedString("core.AzureResourceFunctionNewUI.label"),
+  label: `$(azure) ${getLocalizedString("core.AzureResourceFunctionNewUI.label")}`,
   detail: getLocalizedString("core.AzureResourceFunctionNewUI.detail"),
   groupName: getLocalizedString("core.options.separator.resource"),
 };
@@ -204,7 +204,7 @@ export const AzureResourceApim: OptionItem = {
 
 export const AzureResourceApimNewUI: OptionItem = {
   id: "apim",
-  label: getLocalizedString("core.AzureResourceApimNewUI.label"),
+  label: `$(azure) ${getLocalizedString("core.AzureResourceApimNewUI.label")}`,
   detail: getLocalizedString("core.AzureResourceApimNewUI.detail"),
   groupName: getLocalizedString("core.options.separator.resource"),
 };
@@ -217,28 +217,28 @@ export const AzureResourceKeyVault: OptionItem = {
 
 export const AzureResourceKeyVaultNewUI: OptionItem = {
   id: "keyvault",
-  label: getLocalizedString("core.AzureResourceKeyVaultNewUI.label"),
+  label: `$(azure) ${getLocalizedString("core.AzureResourceKeyVaultNewUI.label")}`,
   detail: getLocalizedString("core.AzureResourceKeyVaultNewUI.detail"),
   groupName: getLocalizedString("core.options.separator.resource"),
 };
 
 export const SingleSignOnOptionItem: OptionItem = {
   id: "sso",
-  label: getLocalizedString("core.SingleSignOnOption.label"),
+  label: `$(unlock) ${getLocalizedString("core.SingleSignOnOption.label")}`,
   detail: getLocalizedString("core.SingleSignOnOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
 };
 
 export const ApiConnectionOptionItem: OptionItem = {
   id: "api-connection",
-  label: getLocalizedString("core.ApiConnectionOption.label"),
+  label: `$(arrow-swap) ${getLocalizedString("core.ApiConnectionOption.label")}`,
   detail: getLocalizedString("core.ApiConnectionOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
 };
 
 export const CicdOptionItem: OptionItem = {
   id: "cicd",
-  label: getLocalizedString("core.cicdWorkflowOption.label"),
+  label: `$(sync) ${getLocalizedString("core.cicdWorkflowOption.label")}`,
   detail: getLocalizedString("core.cicdWorkflowOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
 };

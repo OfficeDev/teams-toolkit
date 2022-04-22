@@ -22,7 +22,7 @@ export const TabOptionItem: OptionItem = {
 
 export const TabNewUIOptionItem: OptionItem = {
   id: "Tab",
-  label: getLocalizedString("core.TabOption.labelNew"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabOption.labelNew")}`,
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -46,7 +46,7 @@ export const BotNewUIOptionItem: OptionItem = {
 
 export const NotificationOptionItem: OptionItem = {
   id: "Notification",
-  label: getLocalizedString("core.NotificationOption.label"),
+  label: `$(toolkit-notification) ${getLocalizedString("core.NotificationOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
@@ -56,7 +56,7 @@ export const NotificationOptionItem: OptionItem = {
 export const CommandAndResponseOptionItem: OptionItem = {
   // For default option, id and cliName must be the same
   id: "command-bot",
-  label: getLocalizedString("core.CommandAndResponseOption.label"),
+  label: `$(toolkit-commandBot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
@@ -65,7 +65,7 @@ export const CommandAndResponseOptionItem: OptionItem = {
 
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
-  label: getLocalizedString("core.ExistingTabOption.label"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.ExistingTabOption.label")}`,
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -81,7 +81,7 @@ export const MessageExtensionItem: OptionItem = {
 
 export const MessageExtensionNewUIItem: OptionItem = {
   id: "MessagingExtension",
-  label: getLocalizedString("core.MessageExtensionOption.labelNew"),
+  label: `$(toolkit-message) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
   cliName: "messaging-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
@@ -97,7 +97,7 @@ export const TabSPFxItem: OptionItem = {
 
 export const TabSPFxNewUIItem: OptionItem = {
   id: "TabSPFx",
-  label: getLocalizedString("core.TabSPFxOption.labelNew"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
   cliName: "tab-spfx",
   detail: getLocalizedString("core.TabSPFxOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
@@ -122,7 +122,7 @@ export const BotSsoItem: OptionItem = {
 
 export const TabNonSsoItem: OptionItem = {
   id: "TabNonSso",
-  label: getLocalizedString("core.TabNonSso.label"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.TabNonSso.label")}`,
   cliName: "tab-non-sso",
   detail: getLocalizedString("core.TabNonSso.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
@@ -130,7 +130,7 @@ export const TabNonSsoItem: OptionItem = {
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
-  label: getLocalizedString("core.M365SsoLaunchPageOptionItem.label"),
+  label: `$(toolkit-tab) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
   groupName: getLocalizedString("core.options.separator.m365"),
@@ -138,7 +138,7 @@ export const M365SsoLaunchPageOptionItem: OptionItem = {
 
 export const M365SearchAppOptionItem: OptionItem = {
   id: "M365SearchApp",
-  label: getLocalizedString("core.M365SearchAppOptionItem.label"),
+  label: `$(toolkit-message) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
   groupName: getLocalizedString("core.options.separator.m365"),

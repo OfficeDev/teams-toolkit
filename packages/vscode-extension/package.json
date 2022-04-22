@@ -74,6 +74,36 @@
     "onView:teamsfx-help-and-feedback"
   ],
   "contributes": {
+    "icons": {
+      "toolkit-commandBot": {
+        "description": "Command bot icon in capability list",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E000"
+        }
+      },
+      "toolkit-message": {
+        "description": "Message icon in capability list",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E001"
+        }
+      },
+      "toolkit-notification": {
+        "description": "Notification icon in capability list",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E002"
+        }
+      },
+      "toolkit-tab": {
+        "description": "Tab icon in capability list",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E003"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -1093,7 +1123,9 @@
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged"
+    "precommit": "npm run check-sensitive && lint-staged",
+    "updateFont": "node ./scripts/updateFont.js",
+    "previewFont": "start ./media/font/teamstoolkit.html"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
@@ -1177,6 +1209,7 @@
     "uuid": "^8.3.2",
     "verdaccio": "^5.6.2",
     "vsce": "^2.7.0",
+    "webfont": "^11.2.26",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2",
     "winston": "^3.3.3"

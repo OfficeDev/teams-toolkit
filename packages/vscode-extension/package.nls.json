@@ -249,6 +249,7 @@
     "teamstoolkit.handlers.signOutOfAzure": "Sign out of Azure: ",
     "teamstoolkit.handlers.signOutOfM365": "Sign out of M365: ",
     "teamstoolkit.handlers.stateFileNotFound": "State file not found in environment %s. You must run 'Provision in the cloud' first to generate related state file.",
+    "teamstoolkit.handlers.localStateFileNotFound": "State file not found in environment %s. You must run `Local Debug` first to generate related state file.",
     "teamstoolkit.handlers.teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
     "teamstoolkit.handlers.teamsToolkit": "Teams Toolkit",
     "teamstoolkit.handlers.vsCodeEnvironment": "VS Code Environment: %s",

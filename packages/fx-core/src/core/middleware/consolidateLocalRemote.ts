@@ -44,6 +44,16 @@ let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
 const upgradeReportName = "unify-config-change-logs.md";
+const componentIdRegex = /(?<=componentId=)([a-z0-9-]*)(?=%26)/;
+const manifestRegex = /{{{.*}}}|{{.*}}|{.*}/g;
+const ignoreKeys: Set<string> = new Set([
+  "name",
+  "contentUrl",
+  "configurationUrl",
+  "manifestVersion",
+  "$schema",
+  "description",
+]);
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -200,6 +210,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         if (manifest?.staticTabs && manifest.staticTabs.length > 0) {
           manifest.staticTabs.forEach((item) => {
             componentId = item.entityId;
+            if ((item.contentUrl && componentId === undefined) || componentId === "") {
+              componentId = replaceSPFxComponentId(item.contentUrl as string);
+            }
             const contentUrl = util.format(
               ManifestTemplate.REMOTE_CONTENT_URL,
               componentId,
@@ -210,6 +223,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         }
         if (manifest?.configurableTabs && manifest.configurableTabs.length > 0) {
           manifest.configurableTabs.forEach((item) => {
+            if ((item.configurationUrl && componentId === undefined) || componentId === "") {
+              componentId = replaceSPFxComponentId(item.configurationUrl as string);
+            }
             const configurationUrl = util.format(
               ManifestTemplate.REMOTE_CONFIGURATION_URL,
               componentId,
@@ -260,6 +276,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       "appPackage",
       "manifest.local.template.json"
     );
+    if ((await fs.pathExists(localManifestFile)) && (await fs.pathExists(remoteManifestFile))) {
+      await compareLocalAndRemoteManifest(localManifestFile, remoteManifestFile);
+    }
     if (await fs.pathExists(localManifestFile)) {
       await fs.copy(
         localManifestFile,
@@ -366,4 +385,72 @@ async function generateUpgradeReport(backupFolder: string) {
   } catch (error) {
     // do nothing
   }
+}
+
+function replaceSPFxComponentId(content: string): string {
+  const match = componentIdRegex.exec(content);
+  if (match) {
+    return match[0];
+  }
+  return "";
+}
+
+async function compareLocalAndRemoteManifest(
+  localManifestFile: string,
+  remoteManifestFile: string
+) {
+  try {
+    const localManifestString = (await fs.readFile(localManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const remoteManifestString = (await fs.readFile(remoteManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const localManifestJson = JSON.parse(localManifestString);
+    const remoteManifestJson = JSON.parse(remoteManifestString);
+    if (!diff(localManifestJson, remoteManifestJson)) {
+      TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
+        false,
+        "OK"
+      );
+    }
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectConsolidateCheckManifestError,
+      assembleError(error, CoreSource)
+    );
+  }
+}
+
+function diff(a: any, b: any): boolean {
+  const keys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (keys.length != bKeys.length) {
+    return false;
+  }
+  let aValue, bValue, key;
+  for (key of keys) {
+    if (ignoreKeys.has(key)) {
+      continue;
+    }
+    aValue = a[key];
+    bValue = b[key];
+    if (isObject(aValue) && isObject(bValue)) {
+      if (!diff(aValue, bValue)) {
+        return false;
+      }
+    } else {
+      if (aValue !== bValue) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isObject(o: any): boolean {
+  return typeof o === "object" && !!o;
 }

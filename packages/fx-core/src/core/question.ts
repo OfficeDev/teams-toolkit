@@ -228,12 +228,10 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   if (isBotNotificationEnabled()) {
     // new capabilities question order
     staticOptions = [
-      ...[NotificationOptionItem, CommandAndResponseOptionItem],
+      ...[CommandAndResponseOptionItem, NotificationOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-      TabNewUIOptionItem,
-      TabSPFxNewUIItem,
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[BotNewUIOptionItem, MessageExtensionNewUIItem],
+      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
       ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {

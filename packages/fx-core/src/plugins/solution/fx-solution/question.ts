@@ -120,7 +120,7 @@ export const TabNonSsoItem: OptionItem = {
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
-  label: `$(toolkit-tab) SSO enabled launch page`,
+  label: `$(toolkit-tab) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
   cliName: "sso-launch-page",
   detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
   groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),
@@ -128,7 +128,7 @@ export const M365SsoLaunchPageOptionItem: OptionItem = {
 
 export const M365SearchAppOptionItem: OptionItem = {
   id: "M365SearchApp",
-  label: `$(toolkit-message) Search app`,
+  label: `$(toolkit-message) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
   cliName: "search-app",
   detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
   groupName: getLocalizedString("core.TeamsM365AppSeparatorOptionItem.label"),

@@ -146,6 +146,11 @@ export class Retry {
   public static readonly BACKOFF_TIME_MS = 5000;
 }
 
+export class DeployStatus {
+  public static readonly RETRY_TIMES = 120; // Timeout: 20 min
+  public static readonly BACKOFF_TIME_S = 10;
+}
+
 export class ErrorNames {
   // System Exceptions
   public static readonly PRECONDITION_ERROR = "PreconditionError";
@@ -154,6 +159,8 @@ export class ErrorNames {
   public static readonly CONFIG_VALIDATION_ERROR = "ConfigValidationError";
   public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
   public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
+  public static readonly DEPLOY_STATUS_ERROR = "DeployStatusError";
+  public static readonly DEPLOY_TIMEOUT_ERROR = "DeployTimeoutError";
   public static readonly RESTART_WEBAPP_ERROR = "RestartWebappError";
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
   public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";

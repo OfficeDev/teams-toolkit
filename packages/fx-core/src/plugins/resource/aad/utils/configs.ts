@@ -458,7 +458,7 @@ export class SetApplicationInContextConfig {
         .get(Plugins.teamsBot)
         ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
       if (botEndpoint) {
-        this.botEndpoint = format(frontendDomain as string, Formats.Domain);
+        this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
       }
     }
 
@@ -537,7 +537,13 @@ export class SetApplicationInContextConfig {
     if (isAadManifestEnabled()) {
       ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botId, botId);
       ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botEndpoint, botEndpoint);
-      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.frontendEndpoint, `https://${frontendDomain}`);
+      if (frontendDomain) {
+        ConfigUtils.checkAndSaveConfig(
+          ctx,
+          ConfigKeys.frontendEndpoint,
+          `https://${frontendDomain}`
+        );
+      }
     }
   }
 }

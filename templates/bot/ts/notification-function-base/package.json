@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@azure/functions": "^1.2.3",
+    "@types/node": "^14.18.0",
     "azurite": "^3.16.0",
     "env-cmd": "^10.1.0",
     "ts-node": "~9.1.1",

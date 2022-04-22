@@ -25,7 +25,7 @@ import Step_Inactive_5 from "../../media/inactive-5.svg";
 import {
   TelemetryEvent,
   TelemetryProperty,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
   WatchVideoFrom,
 } from "../telemetry/extTelemetryEvents";
 
@@ -320,7 +320,7 @@ export default class QuickStart extends React.Component<any, any> {
       data: {
         eventName: TelemetryEvent.NextStep,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
           [TelemetryProperty.CurrentAction]: step + title,
         },
       },
@@ -339,7 +339,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.CreateProjectStart,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 
@@ -353,7 +353,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.CreateProjectStart,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 
@@ -375,7 +375,7 @@ export default class QuickStart extends React.Component<any, any> {
       data: {
         eventName: TelemetryEvent.ClickQuickStartCard,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
           [TelemetryProperty.CurrentAction]: step + title,
         },
       },
@@ -427,7 +427,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.DisplayCommands,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 
@@ -449,7 +449,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.OpenDownloadNode,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 
@@ -497,7 +497,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.Samples,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 
@@ -512,7 +512,7 @@ export default class QuickStart extends React.Component<any, any> {
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.Samples,
-        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
+        properties: { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview },
       },
     });
 

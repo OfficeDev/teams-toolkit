@@ -243,6 +243,7 @@ export enum TelemetryProperty {
   BlockedCommand = "blocked-command",
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
+  DocumentationName = "documentation-name",
 }
 
 export enum TelemetrySuccess {
@@ -250,9 +251,10 @@ export enum TelemetrySuccess {
   No = "no",
 }
 
-export enum TelemetryTiggerFrom {
+export enum TelemetryTriggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
+  ViewTitleNavigation = "ViewTitleNavigation",
   Webview = "Webview",
   CodeLens = "CodeLens",
   EditorTitle = "EditorTitle",

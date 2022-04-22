@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
-import * as StringResources from "../../../src/resources/Strings.json";
+import * as StringResources from "../../../package.nls.json";
 import {
   Inputs,
   Platform,
@@ -139,6 +139,20 @@ suite("handlers", () => {
       await handlers.publishHandler();
 
       sinon.assert.calledOnce(publishApplication);
+      sinon.restore();
+    });
+
+    test("buildPackageHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
+      const showMessage = sinon.spy(vscode.window, "showErrorMessage");
+
+      await handlers.buildPackageHandler();
+
+      // should show error for invalid project
+      sinon.assert.calledOnce(showMessage);
       sinon.restore();
     });
   });
@@ -511,7 +525,9 @@ suite("handlers", () => {
       const showWarningMessage = sinon
         .stub(vscode.window, "showWarningMessage")
         .callsFake((message: string): any => {
-          chai.expect(message).equal(StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant);
+          chai
+            .expect(message)
+            .equal(StringResources["teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"]);
         });
       await handlers.listCollaborator("env");
 

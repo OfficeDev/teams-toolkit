@@ -35,7 +35,7 @@ import {
   isBotNotificationEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
-  isGAPreviewEnabled,
+  isPreviewFeaturesEnabled,
 } from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
@@ -219,7 +219,7 @@ export default class Add extends YargsCommand {
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [
-    ...(isGAPreviewEnabled()
+    ...(isPreviewFeaturesEnabled()
       ? [
           // Category 1: Add Teams Capability
           ...(isBotNotificationEnabled()

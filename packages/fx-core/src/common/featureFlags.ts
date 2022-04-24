@@ -14,10 +14,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 /**
- * Update feature flags related to GA.
+ * Update all preview feature flags.
  */
-export function initializeGAFeatureFlags(): void {
-  if (isFeatureFlagEnabled(FeatureFlagName.GAPreview, false)) {
+export function initializePreviewFeatureFlags(): void {
+  if (isFeatureFlagEnabled(FeatureFlagName.Preview, false)) {
     process.env[FeatureFlagName.BotNotification] = "true";
     process.env[FeatureFlagName.M365App] = "true";
     process.env[FeatureFlagName.ExistingTabApp] = "true";
@@ -32,6 +32,6 @@ export function isBotNotificationEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
 }
 
-export function isGAPreviewEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.GAPreview, false);
+export function isPreviewFeaturesEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.Preview, false);
 }

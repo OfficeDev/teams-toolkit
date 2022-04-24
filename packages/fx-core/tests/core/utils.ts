@@ -581,6 +581,21 @@ export function MockProjectSettings(appName: string): ProjectSettings {
   };
 }
 
+export function MockSPFxProjectSettings(appName: string): ProjectSettings {
+  return {
+    appName: appName,
+    projectId: uuid.v4(),
+    solutionSettings: {
+      name: PluginNames.SOLUTION,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: ["SPFx"],
+      azureResources: [],
+      activeResourcePlugins: [PluginNames.SPFX, PluginNames.LDEBUG, PluginNames.APPST],
+    } as AzureSolutionSettings,
+  };
+}
+
 export function MockPreviousVersionBefore2_3_0Context(): Json {
   return {
     solution: {

@@ -144,6 +144,12 @@ export class TeamsfxCore {
           const plans = [
             `add components 'teams-bot', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
           ];
+          // connect to azure-sql
+          if (getComponent(context.projectSetting, "azure-sql")) {
+            plans.push(
+              `connect 'azure-sql' to hosting component '${teamsBotInputs.hostingResource}' in projectSettings`
+            );
+          }
           return ok(plans);
         },
         execute: async (
@@ -157,12 +163,6 @@ export class TeamsfxCore {
             name: "teams-bot",
             ...teamsBotInputs,
           });
-          // add bot-code
-          projectSettings.components.push({
-            name: "bot-code",
-            ...teamsBotInputs,
-            build: true,
-          });
           // add hosting component
           const hostingComponent = {
             name: teamsBotInputs.hostingResource,
@@ -175,6 +175,10 @@ export class TeamsfxCore {
             name: "bot-service",
             provision: true,
           });
+          // connect azure-sql to hosting component
+          if (getComponent(context.projectSetting, "azure-sql")) {
+            hostingComponent.connections.push("azure-sql");
+          }
           return ok(undefined);
         },
       },
@@ -256,6 +260,14 @@ export class TeamsfxCore {
             return ok([]);
           }
           const plans: string[] = ["add component 'azure-sql' in projectSettings"];
+          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
+          if (webAppComponent) {
+            plans.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
+          }
+          const functionComponent = getComponent(context.projectSetting, "azure-function");
+          if (functionComponent) {
+            plans.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
+          }
           return ok(plans);
         },
         execute: async (

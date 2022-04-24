@@ -40,6 +40,7 @@ import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
 const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
+const UnifyManifestLearMoreLink = "https://aka.ms/teamsfx-unify-local-remote-manifest-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -426,7 +427,7 @@ async function notifyToUpdateManifest() {
     getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
     false,
     "OK",
-    LearnMore
+    UnifyManifestLearMoreLink
   );
   const answer = res?.isOk() ? res.value : undefined;
   if (answer === LearnMore) {

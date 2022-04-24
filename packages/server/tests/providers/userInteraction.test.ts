@@ -53,15 +53,9 @@ describe("userInteraction", () => {
       return promise;
     });
     const ui = new ServerUserInteraction(msgConn);
-    const utils = require("../../src/utils");
-    const spy = sandbox.spy(utils, "getResponseWithErrorHandling");
-    sandbox.stub(utils, "convertUIConfigToJson").callsFake((p) => {
-      return p;
-    });
 
     afterEach(() => {
       stub.restore();
-      spy.restore();
     });
 
     it("selectOption", () => {
@@ -72,9 +66,9 @@ describe("userInteraction", () => {
       };
       const res = ui.selectOption(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.selectOption, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("selectOptions", () => {
@@ -85,9 +79,9 @@ describe("userInteraction", () => {
       };
       const res = ui.selectOptions(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.selectOptions, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("inputText", () => {
@@ -97,18 +91,18 @@ describe("userInteraction", () => {
       };
       const res = ui.inputText(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.inputText, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("openUrl", () => {
       const url = "test url";
       const res = ui.openUrl(url);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.openUrl, url);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("selectFile", () => {
@@ -118,9 +112,9 @@ describe("userInteraction", () => {
       };
       const res = ui.selectFile(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.selectFile, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("selectFiles", () => {
@@ -130,9 +124,9 @@ describe("userInteraction", () => {
       };
       const res = ui.selectFiles(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.inputText, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("selectFolder", () => {
@@ -142,14 +136,15 @@ describe("userInteraction", () => {
       };
       const res = ui.selectFolder(config);
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(RequestTypes.ui.inputText, config);
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("showMessage", () => {
       const res = ui.showMessage("info", "test message", false, "test item");
       res.then((data) => {
+        expect(data).equal("test");
         expect(stub).is.called.with(
           RequestTypes.ui.showMessage,
           "info",
@@ -158,7 +153,6 @@ describe("userInteraction", () => {
           "test item"
         );
       });
-      assert(spy.calledOnceWith(promise));
     });
 
     it("createProgressBar", () => {

@@ -2686,7 +2686,7 @@ export async function openConfigStateFile(args: any[]) {
       const localdebug = {
         title: localize("teamstoolkit.handlers.localDebugTitle"),
         run: async (): Promise<void> => {
-          Correlator.run(selectAndDebugHandler, [TelemetryTiggerFrom.Other]);
+          Correlator.run(selectAndDebugHandler, [TelemetryTriggerFrom.Other]);
         },
       };
 

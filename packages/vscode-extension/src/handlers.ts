@@ -670,7 +670,7 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
 }
 
 export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddFeatureStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "addFeature",
@@ -691,7 +691,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   } catch (error) {
     VsCodeLogInstance.warning(`${error}`);
   }
-  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
+  const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);

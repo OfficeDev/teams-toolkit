@@ -427,11 +427,11 @@ async function notifyToUpdateManifest() {
     getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
     false,
     "OK",
-    UnifyManifestLearMoreLink
+    LearnMore
   );
   const answer = res?.isOk() ? res.value : undefined;
   if (answer === LearnMore) {
-    TOOLS?.ui.openUrl(LearnMoreLink);
+    TOOLS?.ui.openUrl(UnifyManifestLearMoreLink);
   }
 }
 

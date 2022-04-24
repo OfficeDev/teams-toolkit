@@ -1107,7 +1107,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
     "copy-whatisnew-files": "copyfiles WHATISNEW.md out/resource",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-whatisnew-files",
-    "build": "tsc -p ./",
+    "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",

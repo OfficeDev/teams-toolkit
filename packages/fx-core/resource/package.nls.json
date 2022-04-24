@@ -697,6 +697,7 @@
   "plugins.sa.RegisterRersourceProviderFailed": "Failed to register required resource provider for Simple Auth. Reason: %s. Register required resource provider %s manually.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again.",
   "core.addSso.onlySupportAzure": "Add SSO is only supported for project hosted in Azure",
+  "core.addSso.onlyMeNotSupport": "Add SSO is not supported on Messaging Extension only projects",
   "core.addSso.needCapability": "Add SSO is only supported for project with Tab, Bot and/or Messaging Extension. You need to run 'add component' first",
   "core.addSso.functionNotSupport": "Add SSO is not supported for Bot hosted on Azure Function",
   "core.addSso.needEnableFeatureFlag": "Need to set 'TEAMSFX_AAD_MANIFEST' in env to use add SSO feature",

@@ -142,7 +142,7 @@ export class TeamsfxCore {
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
           const plans = [
-            `add components 'teams-bot', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
+            `add components 'teams-bot', 'bot-code', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
           ];
           if (getComponent(context.projectSetting, "azure-sql")) {
             plans.push(
@@ -161,6 +161,12 @@ export class TeamsfxCore {
           projectSettings.components.push({
             name: "teams-bot",
             ...teamsBotInputs,
+          });
+          // add bot-code
+          projectSettings.components.push({
+            name: "bot-code",
+            ...teamsBotInputs,
+            build: true,
           });
           // add hosting component
           const hostingComponent = {

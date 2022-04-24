@@ -170,7 +170,7 @@
             "fullDescription": "This sample app showcases how to build custom Graph Connector with Azure Functions and query data using Microsoft Graph Client and TeamsFx SDK.",
             "tags": ["Tab", "Azure function", "TS", "SSO"],
             "time": "10min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Manual configurations required",
             "suggested": false
         }
     ]

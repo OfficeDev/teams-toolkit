@@ -409,12 +409,7 @@ async function compareLocalAndRemoteManifest(
     const localManifestJson = JSON.parse(localManifestString);
     const remoteManifestJson = JSON.parse(remoteManifestString);
     if (!diff(localManifestJson, remoteManifestJson)) {
-      TOOLS?.ui.showMessage(
-        "warn",
-        getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
-        false,
-        "OK"
-      );
+      notifyToUpdateManifest();
     }
   } catch (error) {
     sendTelemetryErrorEvent(
@@ -422,6 +417,20 @@ async function compareLocalAndRemoteManifest(
       TelemetryEvent.ProjectConsolidateCheckManifestError,
       assembleError(error, CoreSource)
     );
+  }
+}
+
+async function notifyToUpdateManifest() {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
+    false,
+    "OK",
+    LearnMore
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (answer === LearnMore) {
+    TOOLS?.ui.openUrl(LearnMoreLink);
   }
 }
 

@@ -33,8 +33,6 @@ describe("Register Commands Tests", function () {
     registerCommands(yargs);
     expect(registeredCommands).includes("account");
     expect(registeredCommands).includes("new");
-    expect(registeredCommands).includes("capability");
-    expect(registeredCommands).includes("resource");
     expect(registeredCommands).includes("provision");
     expect(registeredCommands).includes("deploy");
     expect(registeredCommands).includes("package");

@@ -15,7 +15,7 @@ import mockedEnv from "mocked-env";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 
-describe("Add Command Tests", function () {
+describe("Add SSO Command Tests", function () {
   const sandbox = sinon.createSandbox();
   const registeredCommands: string[] = [];
   let options: string[] = [];
@@ -79,7 +79,18 @@ describe("Add Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add <feature>", "cicd", "sso"]);
+    expect(registeredCommands).deep.equals([
+      "add <feature>",
+      "bot",
+      "messaging-extension",
+      "tab",
+      "azure-function",
+      "azure-sql",
+      "azure-apim",
+      "azure-keyvault",
+      "cicd",
+      "sso",
+    ]);
   });
 
   it("Add SSO", async () => {

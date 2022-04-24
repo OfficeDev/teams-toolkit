@@ -69,6 +69,13 @@ describe("Add api-connector Command Tests", () => {
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals([
       "add <feature>",
+      "bot",
+      "messaging-extension",
+      "tab",
+      "azure-function",
+      "azure-sql",
+      "azure-apim",
+      "azure-keyvault",
       "cicd",
       "api-connection [auth-type]",
       "basic",

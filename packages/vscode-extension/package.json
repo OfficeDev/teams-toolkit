@@ -177,7 +177,7 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifest",
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -434,6 +434,10 @@
         {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "when": "false"
         }
       ]
     },
@@ -441,6 +445,11 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
       },
       {

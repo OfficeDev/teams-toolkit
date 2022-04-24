@@ -19,7 +19,7 @@ import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
 import NoneSSOTab from "../../media/hello-world-tab-without-sso.gif";
-import GrapgConnector from "../../media/graph-connector-app.gif";
+import GraphConnector from "../../media/graph-connector-app.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -35,7 +35,7 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-bot": HelloWorldBot,
   "bot-sso": BOTSSO,
   "hello-world-tab-without-sso": NoneSSOTab,
-  "graph-connector-app": GrapgConnector,
+  "graph-connector-app": GraphConnector,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

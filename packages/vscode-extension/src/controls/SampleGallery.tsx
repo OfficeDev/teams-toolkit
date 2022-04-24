@@ -19,7 +19,6 @@ import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
 import NoneSSOTab from "../../media/hello-world-tab-without-sso.gif";
-import SendProactiveMsg from "../../media/send-proactive-messages.gif";
 import GrapgConnector from "../../media/graph-connector-app.gif";
 
 const imageMapping: { [p: string]: any } = {
@@ -36,7 +35,6 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-bot": HelloWorldBot,
   "bot-sso": BOTSSO,
   "hello-world-tab-without-sso": NoneSSOTab,
-  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
   "graph-connector-app": GrapgConnector,
 };
 

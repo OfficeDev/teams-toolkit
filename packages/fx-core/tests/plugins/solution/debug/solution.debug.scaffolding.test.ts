@@ -949,7 +949,7 @@ describe("solution.debug.scaffolding", () => {
         version: "2.0.0",
         tasks: [
           {
-            label: "Pre Debug Check & Start All",
+            label: "Pre Debug Check",
             dependsOn: "dependency check",
           },
           {
@@ -986,6 +986,68 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 9);
+    });
+
+    it("happy path: .vscode exists", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedLaunchFile, {
+        version: "0.2.0",
+        configurations: [
+          {
+            name: "My Launch Configuration 1",
+            foo1: "bar1",
+          },
+        ],
+        compounds: [
+          {
+            name: "My Launch Compound 1",
+            foo2: "bar2",
+          },
+        ],
+      });
+      fs.writeJSONSync(expectedSettingsFile, {
+        "my.setting": "my setting value",
+      });
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "My Task 1",
+            foo: "bar",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(compounds.length, 3);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      chai.assert.equal(tasks.length, 10);
+
+      //assert output settings.json
+      const settingsAll = fs.readJSONSync(expectedSettingsFile);
+      chai.assert.equal(Object.keys(settingsAll).length, 2);
     });
   });
 });

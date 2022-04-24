@@ -122,6 +122,56 @@ export function generateM365Tasks(
   return tasks;
 }
 
+export function mergeTasks(
+  existingData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> {
+  const mergedData = {} as Record<string, unknown>;
+  Object.assign(mergedData, existingData);
+
+  if (mergedData.version === undefined) {
+    mergedData.version = "2.0.0";
+  }
+
+  if (mergedData.tasks === undefined) {
+    mergedData.tasks = newData.tasks;
+  } else {
+    const existingTasks = mergedData.tasks as Record<string, unknown>[];
+    const newTasks = newData.tasks as Record<string, unknown>[];
+    const keptTasks = [];
+    for (const existingTask of existingTasks) {
+      if (
+        !newTasks.some(
+          (newTask) => existingTask.label === newTask.label && existingTask.type === newTask.type
+        )
+      ) {
+        keptTasks.push(existingTask);
+      }
+    }
+    mergedData.tasks = [...keptTasks, ...newTasks];
+  }
+
+  if (mergedData.inputs === undefined) {
+    mergedData.inputs = newData.inputs;
+  } else {
+    const existingInputs = mergedData.inputs as Record<string, unknown>[];
+    const newInputs = newData.inputs as Record<string, unknown>[];
+    const keptInputs = [];
+    for (const existingInput of existingInputs) {
+      if (
+        !newInputs.some(
+          (newInput) => existingInput.id === newInput.id && existingInput.type === newInput.type
+        )
+      ) {
+        keptInputs.push(existingInput);
+      }
+    }
+    mergedData.inputs = [...keptInputs, ...newInputs];
+  }
+
+  return mergedData;
+}
+
 function preDebugCheckAndStartAll(includeBot: boolean): Record<string, unknown> {
   return {
     label: "Pre Debug Check & Start All",

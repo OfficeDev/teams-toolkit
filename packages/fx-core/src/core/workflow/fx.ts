@@ -142,13 +142,8 @@ export class TeamsfxCore {
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const teamsBotInputs = (inputs as TeamsBotInputs)["teams-bot"];
           const plans = [
-            `add components 'teams-bot', 'bot-code', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
+            `add components 'teams-bot', '${teamsBotInputs.hostingResource}', 'bot-service' in projectSettings`,
           ];
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            plans.push(
-              `connect 'azure-sql' to hosting component '${teamsBotInputs.hostingResource}' in projectSettings`
-            );
-          }
           return ok(plans);
         },
         execute: async (
@@ -174,10 +169,6 @@ export class TeamsfxCore {
             provision: true,
             connections: ["teams-bot"],
           };
-          // connect azure-sql to hosting component
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            hostingComponent.connections.push("azure-sql");
-          }
           projectSettings.components.push(hostingComponent);
           //add bot-service
           projectSettings.components.push({
@@ -265,14 +256,6 @@ export class TeamsfxCore {
             return ok([]);
           }
           const plans: string[] = ["add component 'azure-sql' in projectSettings"];
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-          if (webAppComponent) {
-            plans.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
-          }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
-          if (functionComponent) {
-            plans.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
-          }
           return ok(plans);
         },
         execute: async (

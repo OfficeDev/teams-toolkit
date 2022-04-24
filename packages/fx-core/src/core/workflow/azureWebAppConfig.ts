@@ -25,7 +25,12 @@ export class AzureWebAppConfig {
       name: "azure-web-app-config.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["overwrite azure-web-app config bicep"]);
+        const plans = [];
+        if (getComponent(context.projectSetting, "azure-sql")) {
+          plans.push(`connect 'azure-sql' to component 'azure-web-app' in projectSettings`);
+        }
+        plans.push("overwrite azure-web-app config bicep");
+        return ok(plans);
       },
       execute: async (
         context: ContextV3,
@@ -33,8 +38,15 @@ export class AzureWebAppConfig {
       ): Promise<Result<undefined, FxError>> => {
         const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
         if (!webAppComponent) return ok(undefined);
+
+        // connect azure-sql to hosting component
+        webAppComponent.connections = webAppComponent.connections || [];
+        if (getComponent(context.projectSetting, "azure-sql")) {
+          webAppComponent.connections.push("azure-sql");
+        }
+
         const templateContext: any = {};
-        templateContext.connections = webAppComponent?.connections || [];
+        templateContext.connections = webAppComponent.connections;
         for (const ref of this.references) {
           templateContext[ref] = { outputs: {} };
           try {

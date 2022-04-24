@@ -22,6 +22,7 @@ import {
   isConfigUnifyEnabled,
   isDeployManifestEnabled,
   isExistingTabAppEnabled,
+  isPreviewFeaturesEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -52,8 +53,6 @@ import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   canUpgradeToArmAndMultiEnv,
   delay,
-  FeatureFlags,
-  isFeatureFlagEnabled,
   isM365Project,
   isSPFxProject,
   isSupportAutoOpenAPI,
@@ -469,7 +468,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand(
     "setContext",
     "fx-entension.previewFeaturesEnabled",
-    isFeatureFlagEnabled(FeatureFlags.Preview, false)
+    isPreviewFeaturesEnabled()
   );
 
   // Setup CodeLens provider for userdata file

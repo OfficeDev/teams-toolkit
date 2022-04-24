@@ -17,7 +17,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * Update all preview feature flags.
  */
 export function initializePreviewFeatureFlags(): void {
-  if (isFeatureFlagEnabled(FeatureFlagName.Preview, false)) {
+  if (isPreviewFeaturesEnabled()) {
     process.env[FeatureFlagName.BotNotification] = "true";
     process.env[FeatureFlagName.M365App] = "true";
     process.env[FeatureFlagName.ExistingTabApp] = "true";
@@ -33,5 +33,5 @@ export function isBotNotificationEnabled(): boolean {
 }
 
 export function isPreviewFeaturesEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.Preview, false);
+  return true;
 }

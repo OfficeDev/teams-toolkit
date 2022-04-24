@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Renlong Tu <rentu@microsoft.com>
+ */
+
 import path from "path";
 import {
   getTestFolder,

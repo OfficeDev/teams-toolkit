@@ -440,7 +440,10 @@ export function canAddSso(projectSettings: ProjectSettings): boolean {
     return false;
   }
 
-  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+  if (
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !solutionSettings.capabilities.includes(TabOptionItem.id)
+  ) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
     if (botHostType === BotHostTypes.AzureFunctions) {
       return false;

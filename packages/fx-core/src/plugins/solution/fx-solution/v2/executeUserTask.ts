@@ -858,7 +858,13 @@ export function canAddSso(
   }
 
   // Will throw error if bot host type is Azure Function
-  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+  if (
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      solutionSettings.capabilities.includes(TabOptionItem.id) &&
+      !solutionSettings.capabilities.includes(TabSsoItem.id)
+    )
+  ) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
     if (botHostType === BotHostTypes.AzureFunctions) {
       const e = new UserError(
@@ -946,8 +952,11 @@ export async function addSso(
     (solutionSettings.capabilities.includes(TabOptionItem.id) &&
       !solutionSettings.capabilities.includes(TabSsoItem.id));
   const needsBot =
-    (solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)) &&
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      ctx.projectSetting.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName] ===
+      BotHostTypes.AzureFunctions
+    ) &&
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
@@ -961,10 +970,7 @@ export async function addSso(
   ) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
-  if (
-    solutionSettings.capabilities.includes(BotOptionItem.id) &&
-    !solutionSettings.capabilities.includes(BotSsoItem.id)
-  ) {
+  if (needsBot) {
     solutionSettings.capabilities.push(BotSsoItem.id);
   }
 

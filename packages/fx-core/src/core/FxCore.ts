@@ -44,7 +44,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
-  isPureExistingApp,
+  isExistingTabApp,
   isValidProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
@@ -593,7 +593,7 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("deploy input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
+    if (isExistingTabApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
       return err(new OperationNotPermittedError("deploy"));
     }

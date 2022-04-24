@@ -20,6 +20,7 @@ import {
 import {
   environmentManager,
   initializePreviewFeatureFlags,
+  isExistingTabApp as isExistingTabAppCore,
   isValidProject,
   PluginNames,
 } from "@microsoft/teamsfx-core";
@@ -131,10 +132,10 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
 
   if (await fs.pathExists(projectSettingsPath)) {
     const projectSettings = await fs.readJson(projectSettingsPath);
-    return !projectSettings.solutionSettings;
-  } else {
-    return false;
+    return isExistingTabAppCore(projectSettings);
   }
+
+  return false;
 }
 
 export async function isM365Project(workspacePath: string): Promise<boolean> {

@@ -257,9 +257,8 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_PREVIEW"] = getConfiguration(
-    ConfigurationKey.EnablePreviewFeatures
-  ).toString();
+  // enable preview features by default
+  process.env[FeatureFlags.Preview] = "true";
 
   initializePreviewFeatureFlags();
 }

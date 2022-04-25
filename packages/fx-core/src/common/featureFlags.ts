@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as process from "process";
 import { FeatureFlagName } from "./constants";
 
 // Determine whether feature flag is enabled based on environment variable setting

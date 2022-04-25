@@ -128,8 +128,8 @@ async function deploy() {
 }
 
 setTools(new MockTools());
-// addSql();
 addBot();
+// addSql();
 
 // const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
 // if (command === "init") {

@@ -10,7 +10,6 @@ import { ArmTemplateResult } from "../../common/armInterface";
 import { generateBicepFromFile, getUuid } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
-import { getComponent } from "./workflow";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly type = "cloud";
@@ -18,15 +17,15 @@ export class AzureSqlResource implements CloudResource {
   outputs = {
     sqlResourceId: {
       key: "resourceId",
-      bicepVariableName: "provisionOutputs.azureSqlOutput.value.resourceId",
+      bicepVariable: "provisionOutputs.azureSqlOutput.value.resourceId",
     },
     sqlEndpoint: {
       key: "endpoint",
-      bicepVariableName: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
+      bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
     },
     sqlDatabaseName: {
       key: "databaseName",
-      bicepVariableName: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
+      bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
     },
   };
   finalOutputKeys = ["sqlResourceId", "endpoint", "databaseName"];

@@ -45,7 +45,7 @@ export class BotServiceResource {
         const templateContext: any = {};
         if (componentInput.hostingResource === "azure-web-app") {
           const resource = Container.get("azure-web-app") as AzureWebAppResource;
-          templateContext.endpointVarName = resource.outputs.endpoint.bicepVariableName;
+          templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
         }
         module = compileHandlebarsTemplateString(module, templateContext);
         const orch = await fs.readFile(oPath, "utf-8");

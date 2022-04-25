@@ -15,15 +15,15 @@ export class AzureWebAppResource implements CloudResource {
   readonly outputs = {
     resourceId: {
       key: "resourceId",
-      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.resourceId",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
     },
     hostName: {
       key: "hostName",
-      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.domain",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.domain",
     },
     endpoint: {
       key: "endpoint",
-      bicepVariableName: "provisionOutputs.azureWebAppOutput.value.endpoint",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.endpoint",
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];

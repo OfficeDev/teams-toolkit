@@ -123,7 +123,7 @@ export interface ContextV3 extends v2.Context {
 
 export interface ResourceOutput {
   key: string;
-  bicepVariableName: string;
+  bicepVariable?: string;
 }
 
 export interface ResourceOutputs {

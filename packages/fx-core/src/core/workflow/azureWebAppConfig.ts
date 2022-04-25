@@ -43,7 +43,7 @@ export class AzureWebAppConfig {
             if (refResource.outputs) {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];
-                const value = entry.bicepVariableName;
+                const value = entry.bicepVariable;
                 templateContext[ref].outputs[key] = value;
               }
             }
@@ -53,10 +53,10 @@ export class AzureWebAppConfig {
         if (tabConfig) {
           if (tabConfig.hostingResource === "azure-web-app") {
             const azureWebApp = Container.get(tabConfig.hostingResource) as AzureWebAppResource;
-            templateContext.tabDomainVarName = azureWebApp.outputs.endpoint.bicepVariableName;
+            templateContext.tabDomainVarName = azureWebApp.outputs.endpoint.bicepVariable;
           } else if (tabConfig.hostingResource === "azure-storage") {
             const azureStorage = Container.get(tabConfig.hostingResource) as AzureStorageResource;
-            templateContext.tabDomainVarName = azureStorage.outputs.endpoint.bicepVariableName;
+            templateContext.tabDomainVarName = azureStorage.outputs.endpoint.bicepVariable;
           }
         }
         const modulePath = path.join(

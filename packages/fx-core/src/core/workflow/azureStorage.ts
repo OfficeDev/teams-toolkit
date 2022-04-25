@@ -13,7 +13,7 @@ export class AzureStorageResource implements CloudResource {
   readonly outputs = {
     endpoint: {
       key: "endpoint",
-      bicepVariableName: "provisionOutputs.azureStorageOutput.value.endpoint",
+      bicepVariable: "provisionOutputs.azureStorageOutput.value.endpoint",
     },
   };
   readonly finalOutputKeys = ["endpoint"];

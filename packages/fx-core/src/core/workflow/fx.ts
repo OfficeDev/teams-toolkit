@@ -453,9 +453,9 @@ export class TeamsfxCore {
       },
       {
         type: "call",
-        name: "call:azure-bicep.deploy",
+        name: "call:bicep.deploy",
         required: true,
-        targetAction: "azure-bicep.deploy",
+        targetAction: "bicep.deploy",
         inputs: {
           "azure-bicep": {
             "azure-bot": {

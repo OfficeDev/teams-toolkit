@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.7.0",
+  "version": "3.8.0-rc.4",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -177,7 +177,7 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifest",
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -324,7 +324,7 @@
       "editor/title": [
         {
           "command": "fx-extension.openPreviewFile",
-          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json",
           "group": "navigation"
         },
         {
@@ -434,6 +434,10 @@
         {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "when": "false"
         }
       ]
     },
@@ -441,6 +445,11 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
@@ -510,7 +519,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365 && fx-entension.gaPreviewEnabled"
+        "enablement": "!fx-extension.isSPFx && fx-entension.previewFeaturesEnabled"
       },
       {
         "command": "fx-extension.openManifest",
@@ -998,25 +1007,10 @@
         "title": "Experimental Features",
         "order": 3,
         "properties": {
-          "fx-extension.enableGAPreviewFeatures": {
+          "fx-extension.enablePreviewFeatures": {
             "order": 0,
             "type": "boolean",
-            "description": "Enable GA related features including notification bot, M365 app, existing app etc. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableNotification / CommandAndResponseBot": {
-            "type": "boolean",
-            "description": "Enable notification bot and command and response bot. (requires reload of VS Code)",
-            "default": false
-          },
-          "fx-extension.enableM365App": {
-            "type": "boolean",
-            "title": "Enable Microsoft 365 App",
-            "description": "Enable to create a new Microsoft 365 app. (requires reload of VS Code)"
-          },
-          "fx-extension.enableExistingApp": {
-            "type": "boolean",
-            "description": "Enable to create a new app for existing web pages. (requires reload of VS Code)",
+            "description": "Enable a set of experimental features, including creating notification bot and command bot, extending apps across Microsoft 365, add sso and call an API. (Requires reload of VS Code)",
             "default": false
           }
         }
@@ -1217,8 +1211,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.17.2",
-    "@microsoft/teamsfx-core": "^1.7.0",
+    "@microsoft/teamsfx-api": "^0.18.0-rc.0",
+    "@microsoft/teamsfx-core": "^1.8.0-rc.3",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",

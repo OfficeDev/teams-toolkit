@@ -78,6 +78,7 @@ export enum TelemetryEvent {
   ProjectConsolidateGuideStart = "project-Consolidate-guide-start",
   ProjectConsolidateGuide = "project-consolidate-guide",
   ProjectConsolidateError = "project-consolidate-error",
+  ProjectConsolidateCheckManifestError = "project-consolidate-check-manifest-error",
   DetectPortStart = "detect-port-start",
   DetectPort = "detect-port",
 }

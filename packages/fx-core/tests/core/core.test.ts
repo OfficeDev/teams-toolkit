@@ -26,6 +26,7 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { cipher } from "node-forge";
@@ -221,6 +222,10 @@ describe("Core basic APIs", () => {
     );
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
     let res = await core.provisionResources(inputs);
     assert.isTrue(res.isOk());
 
@@ -438,6 +443,10 @@ describe("Core basic APIs", () => {
     const createRes = await core.createProject(inputs);
     assert.isTrue(createRes.isOk());
     projectPath = path.resolve(os.tmpdir(), appName);
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
 
     const newEnvName = "newEnv";
     const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);

@@ -104,6 +104,8 @@ import {
   isTriggerFromWalkThrough,
   getTriggerFromProperty,
   isExistingTabApp,
+  isFeatureFlagEnabled,
+  FeatureFlags,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -1593,7 +1595,7 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe === ext.workspaceUri.fsPath) {
+  if (isOpenReadMe === ext.workspaceUri?.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto, false]);
@@ -2666,10 +2668,14 @@ export async function openConfigStateFile(args: any[]) {
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
       return err(noEnvError);
     } else {
+      const isLocalEnv = env.value === environmentManager.getLocalEnvName();
+      const message = isLocalEnv
+        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env.value)
+        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value);
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value)
+        message
       );
       const provision = {
         title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
@@ -2677,14 +2683,25 @@ export async function openConfigStateFile(args: any[]) {
           Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
         },
       };
+      const localdebug = {
+        title: localize("teamstoolkit.handlers.localDebugTitle"),
+        run: async (): Promise<void> => {
+          Correlator.run(selectAndDebugHandler, [TelemetryTriggerFrom.Other]);
+        },
+      };
 
       const errorCode = `${noEnvError.source}.${noEnvError.name}`;
       const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
       window
-        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
+        .showErrorMessage(
+          `[${errorCode}]: ${notificationMessage}`,
+          isLocalEnv ? localdebug : provision
+        )
         .then((selection) => {
           if (
-            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew")
+            selection?.title ===
+              localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew") ||
+            selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
           ) {
             selection.run();
           }
@@ -3096,6 +3113,10 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
+  if (!isFeatureFlagEnabled(FeatureFlags.Preview)) {
+    VS_CODE_UI.showMessage("info", localize("teamstoolkit.common.commingSoon"), false);
+    return ok(null);
+  }
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: "Tutorials",

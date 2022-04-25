@@ -43,6 +43,7 @@ import {
   validateProjectSettings,
 } from "../../src";
 import { ConstantString } from "../../src/common/constants";
+import * as featureFlags from "../../src/common/featureFlags";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
@@ -74,6 +75,7 @@ describe("Core basic APIs", () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
+    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
   });
   afterEach(async () => {
     sandbox.restore();
@@ -108,6 +110,31 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
+        solution: mockSolutionV2.name,
+        stage: Stage.create,
+      };
+      const res = await core.createProject(inputs);
+      projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
+      assert.isTrue(res.isOk() && res.value === projectPath);
+      const projectSettingsResult = await loadProjectSettings(inputs, true);
+      assert.isTrue(projectSettingsResult.isOk());
+      if (projectSettingsResult.isOk()) {
+        const projectSettings = projectSettingsResult.value;
+        const validSettingsResult = validateProjectSettings(projectSettings);
+        assert.isTrue(validSettingsResult === undefined);
+        assert.isTrue(projectSettings.version === "2.1.0");
+      }
+    });
+
+    it("VSCode without customized default root directory - new UI", async () => {
+      appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: "Tab",
         solution: mockSolutionV2.name,
         stage: Stage.create,
       };

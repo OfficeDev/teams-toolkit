@@ -871,7 +871,7 @@ describe("Teams Bot Resource Plugin", () => {
       botPlugin.teamsBotImpl = botPluginImpl;
     });
 
-    it("Happy Path", async () => {
+    it("Happy Path - addCapability", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
 
@@ -887,7 +887,23 @@ describe("Teams Bot Resource Plugin", () => {
       chai.assert.equal(result._unsafeUnwrap(), undefined);
     });
 
-    it("Lifecycles other than addCapability", async () => {
+    it("Happy Path - addFeature", async () => {
+      // Arrange
+      const pluginContext = testUtils.newPluginContext();
+
+      // Act
+      const func: Func = {
+        namespace: `${BuiltInSolutionNames.azure}/${PluginNames.BOT}`,
+        method: "addFeature",
+      };
+      const result = await botPlugin.getQuestionsForUserTask(func, pluginContext);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(result._unsafeUnwrap(), undefined);
+    });
+
+    it("Lifecycles other than addCapability/AddFeature", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
 

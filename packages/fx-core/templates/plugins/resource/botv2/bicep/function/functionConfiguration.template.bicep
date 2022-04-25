@@ -39,12 +39,12 @@ resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionName}/appsettings'
   properties: union({
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
-  {{#if (contains "dotnet" configurations)}}
+  {{#if (contains "dotnet" configs)}}
     TeamsFx__Authentication__ClientId: m365ClientId
     TeamsFx__Authentication__ClientSecret: m365ClientSecret
     TeamsFx__Authentication__OAuthAuthority: m365OauthAuthorityHost
   {{/if}}
-  {{#if (contains "node" configurations)}}
+  {{#if (contains "node" configs)}}
     INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.functionOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application

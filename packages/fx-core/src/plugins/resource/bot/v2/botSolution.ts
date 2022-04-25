@@ -26,9 +26,9 @@ import { HostTypeTriggerOptions } from "../question";
 import path from "path";
 import { CommandExecutionError } from "../errors";
 
-export type Configurations = string[];
+export type BicepConfigs = string[];
 
-export class CodeTemplateProvider {
+export class BotSolution {
   static getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
     const actRoles = this.resolveActRoles(ctx, inputs);
     const triggers = this.resolveTriggers(inputs);
@@ -47,21 +47,21 @@ export class CodeTemplateProvider {
     });
   }
 
-  static getConfigurations(ctx: Context, inputs: Inputs): Configurations {
+  static getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
     const lang = this.resolveProgrammingLanguage(ctx);
 
-    const configurations: Configurations = [];
+    const bicepConfigs: BicepConfigs = [];
 
     if (lang === "js" || lang === "ts") {
-      configurations.push("node");
+      bicepConfigs.push("node");
     }
     if (lang === "csharp") {
-      configurations.push("dotnet");
+      bicepConfigs.push("dotnet");
     }
 
-    configurations.push("running-on-azure");
+    bicepConfigs.push("running-on-azure");
 
-    return configurations;
+    return bicepConfigs;
   }
 
   static async localBuild(ctx: Context, inputs: Inputs): Promise<string> {

@@ -10,15 +10,16 @@ import {
   ProvisionInputs,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
-import { getGenerators, mergeTemplates } from "./bicep";
+import { mergeTemplates } from "./bicep";
 import { ArmTemplateResult } from "../../../../common/armInterface";
-import { CodeTemplateProvider } from "./codeTemplateProvider";
+import { BotSolution } from "./botSolution";
 import { scaffold } from "./scaffold";
 import * as utils from "../utils/common";
 import { PluginBot } from "../resources/strings";
 import { QuestionNames } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
 import path from "path";
+import { HostingResourceFactory } from "./hostingFactory";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -33,7 +34,7 @@ export class TeamsBotV2Impl {
     }
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
-    const templates = CodeTemplateProvider.getTemplates(ctx, inputs);
+    const templates = BotSolution.getTemplates(ctx, inputs);
     await Promise.all(
       templates.map(async (template) => {
         await scaffold(template, workingPath);
@@ -47,11 +48,11 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    const configuration = CodeTemplateProvider.getConfigurations(ctx, inputs);
+    const bicepConfigs = BotSolution.getBicepConfigs(ctx, inputs);
 
-    const generators = getGenerators(ctx, inputs);
+    const hostingResources = HostingResourceFactory.getHostingResources(ctx, "fx-resource-bot");
     const templates: ArmTemplateResult[] = await Promise.all(
-      generators.map(async (generator) => await generator.generateBicep(ctx, configuration))
+      hostingResources.map(async (hosting) => await hosting.generateBicep(ctx, bicepConfigs))
     );
     const result = mergeTemplates(templates);
 
@@ -62,10 +63,10 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    const configuration = CodeTemplateProvider.getConfigurations(ctx, inputs);
-    const generators = getGenerators(ctx, inputs);
+    const bicepConfigs = BotSolution.getBicepConfigs(ctx, inputs);
+    const hostingResources = HostingResourceFactory.getHostingResources(ctx, "fx-resource-bot");
     const templates: ArmTemplateResult[] = await Promise.all(
-      generators.map(async (generator) => await generator.updateBicep(ctx, configuration))
+      hostingResources.map(async (hosting) => await hosting.updateBicep(ctx, bicepConfigs))
     );
     const result = mergeTemplates(templates);
 
@@ -87,7 +88,7 @@ export class TeamsBotV2Impl {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const packDir = await CodeTemplateProvider.localBuild(ctx, inputs);
+    const packDir = await BotSolution.localBuild(ctx, inputs);
     // TODO: zip packDir and upload to Azure Web App or Azure Function
     return ok(Void);
   }

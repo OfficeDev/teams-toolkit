@@ -192,24 +192,5 @@ describe("tools", () => {
       chai.assert.isDefined(result);
       chai.assert.isTrue(result);
     });
-
-    it("returns false when tab sso is added", async () => {
-      const projectSettings: ProjectSettings = {
-        solutionSettings: {
-          activeResourcePlugins: ["fx-resource-function"],
-          hostType: "Azure",
-          capabilities: [TabSsoItem.id],
-          azureResources: [],
-          name: "test",
-        },
-        appName: "test",
-        projectId: "projectId",
-      };
-
-      const result = canAddSso(projectSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isFalse(result);
-    });
   });
 });

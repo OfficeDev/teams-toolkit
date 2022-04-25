@@ -3153,10 +3153,13 @@
       </Item>
       <Item ItemId=";error.sa.VersionFileNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[`Failed to load version file from %s]]></Val>
+          <Val><![CDATA[Failed to load version file from %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["Fehler beim Laden der Versionsdatei aus %s]]></Val>
+            <Val><![CDATA[Fehler beim Laden der Versionsdatei aus %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[`Failed to load version file from %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -76,6 +76,7 @@ import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
 import * as featureFlags from "../../../src/common/featureFlags";
 import * as os from "os";
 import * as path from "path";
+import mockedEnv from "mocked-env";
 const tool = require("../../../src/common/tools");
 
 chai.use(chaiAsPromised);
@@ -1063,8 +1064,16 @@ describe("V2 implementation", () => {
   });
 
   describe("add sso", async () => {
+    let mockedEnvRestore: () => void;
+
     beforeEach(async () => {
-      mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_AAD_MANIFEST: "true",
+      });
+    });
+
+    afterEach(async () => {
+      mockedEnvRestore();
     });
 
     it("happy path", async () => {

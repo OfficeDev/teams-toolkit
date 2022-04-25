@@ -29,6 +29,7 @@ import * as util from "util";
 import {
   BotHostTypeName,
   BotHostTypes,
+  canAddSso,
   isAADEnabled,
   isAadManifestEnabled,
 } from "../../../../common";
@@ -893,105 +894,6 @@ export type ParamForRegisterTeamsAppAndAad = {
   "root-path": string;
 };
 
-// TODO: handle VS scenario
-export function canAddSso(
-  projectSettings: ProjectSettings,
-  telemetryReporter: TelemetryReporter
-): Result<Void, FxError> {
-  // Can not add sso if feature flag is not enabled
-  if (!isAadManifestEnabled()) {
-    const e = new SystemError(
-      SolutionSource,
-      SolutionError.NeedEnableFeatureFlag,
-      getLocalizedString("core.addSso.needEnableFeatureFlag")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.AddSsoNotSupported,
-      getLocalizedString("core.addSso.onlySupportAzure")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  // Will throw error if only Messaging Extension is selected
-  if (
-    solutionSettings.capabilities.length === 1 &&
-    solutionSettings.capabilities[0] === MessageExtensionItem.id
-  ) {
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.AddSsoNotSupported,
-      getLocalizedString("core.addSso.onlyMeNotSupport")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  // Will throw error if bot host type is Azure Function
-  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
-    if (botHostType === BotHostTypes.AzureFunctions) {
-      const e = new UserError(
-        SolutionSource,
-        SolutionError.AddSsoNotSupported,
-        getLocalizedString("core.addSso.functionNotSupport")
-      );
-      return err(
-        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-      );
-    }
-  }
-
-  // Check whether SSO is enabled
-  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
-  if (
-    ((containTabSsoItem && !containBot) ||
-      (containBot && containBotSsoItem && !containTab) ||
-      (containTabSsoItem && containBot && containBotSsoItem)) &&
-    containAadPlugin
-  ) {
-    // Throw error if sso is already enabled
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.SsoEnabled,
-      getLocalizedString("core.addSso.ssoEnabled")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  } else if (
-    (containBotSsoItem && !containBot) ||
-    (containTabSsoItem || containBotSsoItem) !== containAadPlugin
-  ) {
-    // Throw error if the project is invalid
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.InvalidSsoProject,
-      getLocalizedString("core.addSso.invalidSsoProject")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  return ok(Void);
-}
-
 export async function addSso(
   ctx: v2.Context,
   inputs: Inputs,
@@ -1016,9 +918,15 @@ export async function addSso(
   }
 
   // Check whether can add sso
-  const canProceed = canAddSso(ctx.projectSetting, ctx.telemetryReporter);
+  const canProceed = canAddSso(ctx.projectSetting, true) as Result<Void, FxError>;
   if (canProceed.isErr()) {
-    return err(canProceed.error);
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.AddSso,
+        canProceed.error,
+        ctx.telemetryReporter
+      )
+    );
   }
 
   const needsTab =
@@ -1026,8 +934,11 @@ export async function addSso(
     (solutionSettings.capabilities.includes(TabOptionItem.id) &&
       !solutionSettings.capabilities.includes(TabSsoItem.id));
   const needsBot =
-    (solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)) &&
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      ctx.projectSetting.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName] ===
+      BotHostTypes.AzureFunctions
+    ) &&
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
@@ -1041,10 +952,7 @@ export async function addSso(
   ) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
-  if (
-    solutionSettings.capabilities.includes(BotOptionItem.id) &&
-    !solutionSettings.capabilities.includes(BotSsoItem.id)
-  ) {
+  if (needsBot) {
     solutionSettings.capabilities.push(BotSsoItem.id);
   }
 

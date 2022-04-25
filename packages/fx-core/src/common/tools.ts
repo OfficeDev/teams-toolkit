@@ -18,6 +18,8 @@ import {
   AzureSolutionSettings,
   v2,
   UserError,
+  TelemetryReporter,
+  Void,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -37,7 +39,11 @@ import {
 import * as crypto from "crypto";
 import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
-import { PluginNames, SolutionError } from "../plugins/solution/fx-solution/constants";
+import {
+  PluginNames,
+  SolutionError,
+  SolutionSource,
+} from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
 import {
   Component,
@@ -431,46 +437,113 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   }
 }
 
-export function canAddSso(projectSettings: ProjectSettings): boolean {
+// TODO: handle VS scenario
+export function canAddSso(
+  projectSettings: ProjectSettings,
+  returnError = false
+): boolean | Result<Void, FxError> {
+  // Can not add sso if feature flag is not enabled
   if (!isAadManifestEnabled()) {
-    return false;
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.NeedEnableFeatureFlag,
+            getLocalizedString("core.addSso.needEnableFeatureFlag")
+          )
+        )
+      : false;
   }
 
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
-    return false;
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.AddSsoNotSupported,
+            getLocalizedString("core.addSso.onlySupportAzure")
+          )
+        )
+      : false;
   }
 
-  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
-    if (botHostType === BotHostTypes.AzureFunctions) {
-      return false;
-    }
-  }
-
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-
-  // SSO is already enabled
-  if (
-    (containTabSsoItem && !containBot) ||
-    (containBot && containBotSsoItem && !containTab) ||
-    (containTabSsoItem && containBot && containBotSsoItem)
-  ) {
-    return false;
-  }
-
-  // Only ME project
+  // Will throw error if only Messaging Extension is selected
   if (
     solutionSettings.capabilities.length === 1 &&
     solutionSettings.capabilities[0] === MessageExtensionItem.id
   ) {
-    return false;
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.AddSsoNotSupported,
+            getLocalizedString("core.addSso.onlyMeNotSupport")
+          )
+        )
+      : false;
   }
 
-  return true;
+  // Will throw error if bot host type is Azure Function
+  if (
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      solutionSettings.capabilities.includes(TabOptionItem.id) &&
+      !solutionSettings.capabilities.includes(TabSsoItem.id)
+    )
+  ) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      return returnError
+        ? err(
+            new SystemError(
+              SolutionSource,
+              SolutionError.AddSsoNotSupported,
+              getLocalizedString("core.addSso.functionNotSupport")
+            )
+          )
+        : false;
+    }
+  }
+
+  // Check whether SSO is enabled
+  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
+  if (
+    ((containTabSsoItem && !containBot) ||
+      (containBot && containBotSsoItem && !containTab) ||
+      (containTabSsoItem && containBot && containBotSsoItem)) &&
+    containAadPlugin
+  ) {
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.SsoEnabled,
+            getLocalizedString("core.addSso.ssoEnabled")
+          )
+        )
+      : false;
+  } else if (
+    ((containBotSsoItem && !containBot) ||
+      (containTabSsoItem || containBotSsoItem) !== containAadPlugin) &&
+    returnError
+  ) {
+    // Throw error if the project is invalid
+    // Will not stop showing add sso
+    const e = new UserError(
+      SolutionSource,
+      SolutionError.InvalidSsoProject,
+      getLocalizedString("core.addSso.invalidSsoProject")
+    );
+    return err(e);
+  }
+
+  return returnError ? ok(Void) : true;
 }
 
 export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {

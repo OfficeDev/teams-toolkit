@@ -208,6 +208,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployAadAppManifest);
 
+  const deployAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
+    "fx-extension.deployAadAppManifestFromCtxMenu",
+    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  );
+  context.subscriptions.push(deployAadAppManifestFromCtxMenu);
+
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
   );
@@ -468,8 +474,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.executeCommand(
     "setContext",
-    "fx-entension.gaPreviewEnabled",
-    isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview, false)
+    "fx-entension.previewFeaturesEnabled",
+    isFeatureFlagEnabled(FeatureFlags.Preview, false)
   );
 
   // Setup CodeLens provider for userdata file

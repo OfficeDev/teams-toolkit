@@ -52,6 +52,7 @@ import {
   BotSsoItem,
   BotOptionItem,
   TabOptionItem,
+  MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
@@ -457,6 +458,14 @@ export function canAddSso(projectSettings: ProjectSettings): boolean {
     (containTabSsoItem && !containBot) ||
     (containBot && containBotSsoItem && !containTab) ||
     (containTabSsoItem && containBot && containBotSsoItem)
+  ) {
+    return false;
+  }
+
+  // Only ME project
+  if (
+    solutionSettings.capabilities.length === 1 &&
+    solutionSettings.capabilities[0] === MessageExtensionItem.id
   ) {
     return false;
   }

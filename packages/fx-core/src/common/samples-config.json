@@ -150,6 +150,28 @@
             "suggested": false,
             "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
             "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
+        },
+        {
+            "id": "adaptive-card-notification",
+            "title": "Adaptive Card Notification",
+            "shortDescription": "Demonstrates how to send adaptive card notification to users.",
+            "fullDescription": "This is a sample which shows how to send notification with different adaptive cards using Bots.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false
+        },
+        {
+            "id": "graph-connector-app",
+            "title": "Graph Connector App",
+            "shortDescription": "Showcases how to build custom Graph Connector",
+            "fullDescription": "This sample app showcases how to build custom Graph Connector with Azure Functions and query data using Microsoft Graph Client and TeamsFx SDK.",
+            "tags": ["Tab", "Azure function", "TS", "SSO"],
+            "time": "10min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
         }
     ]
 }

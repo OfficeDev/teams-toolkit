@@ -922,6 +922,21 @@ export function canAddSso(
     );
   }
 
+  // Will throw error if only Messaging Extension is selected
+  if (
+    solutionSettings.capabilities.length === 1 &&
+    solutionSettings.capabilities[0] === MessageExtensionItem.id
+  ) {
+    const e = new UserError(
+      SolutionSource,
+      SolutionError.AddSsoNotSupported,
+      getLocalizedString("core.addSso.onlyMeNotSupport")
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
+    );
+  }
+
   // Will throw error if bot host type is Azure Function
   if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];

@@ -72,7 +72,10 @@ import {
   isAadManifestEnabled,
   isDeployManifestEnabled,
 } from "../../../../common/tools";
-import { isBotNotificationEnabled, isGAPreviewEnabled } from "../../../../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isPreviewFeaturesEnabled,
+} from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
   onChangeSelectionForCapabilities,
@@ -139,7 +142,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isPreviewFeaturesEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
@@ -256,7 +259,7 @@ export async function getQuestionsForScaffoldingPreview(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    !isGAPreviewEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
+    !isPreviewFeaturesEnabled() && CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {

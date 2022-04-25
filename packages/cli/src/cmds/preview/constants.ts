@@ -118,7 +118,7 @@ export const doctorResult = {
 
 export const installApp = {
   description:
-    "To continue to debug your application in Outlook or Office.com, you need to install the app via Teams manually.",
+    "To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.",
   finish: "Once you have finished the installation, please come back and click 'Continue'.",
   guide: "Click 'Install in Teams' will pop up Teams web client for you to install the app.",
   installInTeams: "Install in Teams",
@@ -135,13 +135,18 @@ export const installApp = {
       "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
   },
   bot: {
-    description: "To continue to debug your application in Outlook, you need to follow two steps:",
-    guide1: "First, please click 'Install in Teams' to instapp the app in Teams.",
+    description:
+      "To continue to preview your application in Outlook, you need to follow two steps:",
+    guide1: "First, please click 'Install in Teams' to install the app in Teams.",
     guide2:
       "Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.",
-    finish: "Once you have finished the above two steps, please come back and click 'Continue'",
+    remoteGuide2:
+      "Second, please click 'Configure Outlook', sign in to the portal with the same Azure 365 account you used in Teams Toolkit. Select 'Outlook' in the portal and click the 'Apply' button to connect your bot to the Outlook channel.",
+    finish: "Once you have finished the above two steps, please come back and click 'Continue'.",
     configureOutlook: "Configure Outlook",
     configureOutlookDescription:
       "Pop up Bot Framework Portal for you to connect your bot to Outlook channel.",
+    remoteConfigureOutlookDescription:
+      "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
 };

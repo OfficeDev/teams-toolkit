@@ -51,6 +51,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   BotSsoItem,
+  MessageExtensionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
 import "../../../src/plugins/resource/function/v2";
@@ -1311,6 +1312,122 @@ describe("V2 implementation", () => {
       const readmePath = path.join(testFolder, "auth", "tab", "README.md");
       const readmeExists = await fs.pathExists(readmePath);
       expect(readmeExists).to.be.false;
+    });
+
+    it("should return error when only messaging extension", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name],
+          capabilities: [MessageExtensionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+      console.log(result);
+      expect(result.isErr() && result.error.name === SolutionError.AddSsoNotSupported).to.be.true;
+    });
+
+    it("should success on bot and messaging extension project", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name],
+          capabilities: [BotOptionItem.id, MessageExtensionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          BotSsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "auth", "bot", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
+    });
+
+    it("should success on tab and messaging extension project", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name, frontendPluginV2.name],
+          capabilities: [TabOptionItem.id, MessageExtensionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          TabSsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "auth", "tab", "README.md");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
     });
   });
 });

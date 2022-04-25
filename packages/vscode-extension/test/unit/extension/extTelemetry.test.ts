@@ -117,7 +117,12 @@ suite("ExtTelemetry", () => {
     });
 
     test("sendTelemetryErrorEvent", () => {
-      const error = new UserError("test", "UserTestError", "test error message");
+      const error = new UserError(
+        "test",
+        "UserTestError",
+        "test error message",
+        "displayed test error message"
+      );
       ExtTelemetry.sendTelemetryErrorEvent(
         "sampleEvent",
         error,
@@ -136,6 +141,24 @@ suite("ExtTelemetry", () => {
           "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
+          "error-code": "test.UserTestError",
+        },
+        { numericMeasure: 123 },
+        ["errorProps"]
+      );
+
+      chai.expect(reporterSpy.sendTelemetryErrorEvent).to.not.have.been.called.with(
+        "sampleEvent",
+        {
+          stringProp: "some string",
+          component: "extension",
+          success: "no",
+          "is-existing-user": "",
+          "is-spfx": "false",
+          "error-type": "user",
+          "error-message": `${error.displayMessage}${
+            error.stack ? "\nstack:\n" + error.stack : ""
+          }`,
           "error-code": "test.UserTestError",
         },
         { numericMeasure: 123 },

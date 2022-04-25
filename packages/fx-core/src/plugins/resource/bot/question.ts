@@ -112,6 +112,11 @@ export const showNotificationTriggerCondition = {
     if (Array.isArray(cap) && cap.includes(NotificationOptionItem.id)) {
       return undefined;
     }
+    // Single Select Option for "Add Feature"
+    const feature = inputs[AzureSolutionQuestionNames.Features];
+    if (feature === NotificationOptionItem.id) {
+      return undefined;
+    }
     return "Notification is not selected";
   },
   // Workaround for CLI: it requires containsAny to be set, or it will crash.

@@ -1,21 +1,16 @@
 import { Button } from "@fluentui/react-northstar";
-import { useGraph, useTeamsFx } from "@microsoft/teamsfx-react";
+import { useGraph } from "@microsoft/teamsfx-react";
 
-export function GetUserProfile() {
-  const { teamsfx } = useTeamsFx();
+export function GetUserProfile(props) {
+  const { teamsfx } = {
+    teamsfx: undefined,
+    ...props,
+  };
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
-
-      let photoUrl = "";
-      try {
-        const photo = await graph.api("/me/photo/$value").get();
-        photoUrl = URL.createObjectURL(photo);
-      } catch {
-        // Could not fetch photo from user's profile, return empty string as placeholder.
-      }
-      return { profile, photoUrl };
+      return { profile };
     },
     { scope: ["User.Read"], teamsfx: teamsfx }
   );

@@ -3,16 +3,26 @@ import * as sinon from "sinon";
 import chai from "chai";
 import {
   createCapabilityQuestion,
+  createCapabilityQuestionPreview,
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
 } from "../../src/core/question";
 import { FuncValidation, Inputs, Platform } from "@microsoft/teamsfx-api";
 import {
+  BotNewUIOptionItem,
   BotOptionItem,
+  CommandAndResponseOptionItem,
+  ExistingTabOptionItem,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
   NotificationOptionItem,
+  TabNewUIOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSPFxNewUIItem,
 } from "../../src/plugins/solution/fx-solution/question";
 
 describe("Programming Language Questions", async () => {
@@ -143,6 +153,28 @@ describe("Capability Questions", () => {
         // Assert
         chai.assert.equal(result === undefined, expected, message);
       }
+    });
+  });
+
+  describe("createCapabilityQuestionPreview()", () => {
+    it("should return single select question", () => {
+      // Act
+      const question = createCapabilityQuestionPreview();
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.deepEqual(question.staticOptions, [
+        NotificationOptionItem,
+        CommandAndResponseOptionItem,
+        ExistingTabOptionItem,
+        TabNewUIOptionItem,
+        TabSPFxNewUIItem,
+        TabNonSsoItem,
+        BotNewUIOptionItem,
+        MessageExtensionNewUIItem,
+        M365SsoLaunchPageOptionItem,
+        M365SearchAppOptionItem,
+      ]);
     });
   });
 });

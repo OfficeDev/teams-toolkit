@@ -73,8 +73,10 @@ import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solu
 import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
+import * as featureFlags from "../../../src/common/featureFlags";
 import * as os from "os";
 import * as path from "path";
+import mockedEnv from "mocked-env";
 const tool = require("../../../src/common/tools");
 
 chai.use(chaiAsPromised);
@@ -562,6 +564,45 @@ describe("V2 implementation", () => {
     );
     expect(result.isOk()).to.be.true;
   });
+
+  it("should return ok when adding APIM resource to a project without APIM but with Function using addFeature", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name],
+        capabilities: [TabOptionItem.id],
+        azureResources: [AzureResourceFunction.id],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+    };
+
+    mockedInputs[AzureSolutionQuestionNames.Features] = AzureResourceApim.id;
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(apimPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(functionPluginV2);
+
+    const result = await executeUserTask(
+      mockedCtx,
+      mockedInputs,
+      { namespace: "solution", method: "addFeature" },
+      {},
+      { envName: "default", config: {}, state: {} },
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
+  });
+
   it("should return ok when adding SQL resource to a project without SQL", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
@@ -868,6 +909,74 @@ describe("V2 implementation", () => {
     expect(result.isOk()).to.be.true;
   });
 
+  it("should success when adding non sso tab to bot when aad manifest enabled using addFeature", async () => {
+    mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    mocker.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    mocker
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return ok(false);
+        }
+      );
+    mocker
+      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capabilities: (
+            | { name: "staticTab"; snippet?: IStaticTab }
+            | { name: "configurableTab"; snippet?: IConfigurableTab }
+            | { name: "Bot"; snippet?: IBot }
+            | { name: "MessageExtension"; snippet?: IComposeExtension }
+          )[]
+        ) => {
+          return ok(undefined);
+        }
+      );
+
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [botPluginV2.name],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+    };
+
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+    };
+    mockedInputs[AzureSolutionQuestionNames.Features] = TabNonSsoItem.id;
+
+    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
+    mockScaffoldCodeThatAlwaysSucceeds(frontendPluginV2);
+
+    const result = await executeUserTask(
+      mockedCtx,
+      mockedInputs,
+      { namespace: "solution", method: "addFeature" },
+      {},
+      { envName: "default", config: {}, state: {} },
+      mockedProvider
+    );
+
+    expect(result.isOk()).to.be.true;
+  });
+
   describe("executeUserTask VSpublish", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
@@ -955,8 +1064,16 @@ describe("V2 implementation", () => {
   });
 
   describe("add sso", async () => {
+    let mockedEnvRestore: () => void;
+
     beforeEach(async () => {
-      mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_AAD_MANIFEST: "true",
+      });
+    });
+
+    afterEach(async () => {
+      mockedEnvRestore();
     });
 
     it("happy path", async () => {

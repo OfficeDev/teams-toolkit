@@ -196,7 +196,7 @@ describe("tools", () => {
     it("returns false when tab sso is added", async () => {
       const projectSettings: ProjectSettings = {
         solutionSettings: {
-          activeResourcePlugins: ["fx-resource-function"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           hostType: "Azure",
           capabilities: [TabSsoItem.id],
           azureResources: [],

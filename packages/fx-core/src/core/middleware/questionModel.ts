@@ -427,7 +427,6 @@ export async function getQuestionsForCreateProjectV2(
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {
     programmingLanguage.condition = {
-      minItems: 1,
       notEquals: ExistingTabOptionItem.id,
     };
   } else {

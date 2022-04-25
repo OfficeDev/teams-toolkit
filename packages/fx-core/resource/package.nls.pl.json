@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Nieobsługiwany błąd: %s",
   "error.sa.EndpointInvalidError": "Nie można zweryfikować punktu końcowego: %s. Przyczyna: %s",
   "error.sa.ZipDownloadError": "Nie można pobrać bitów uwierzytelniania prostego: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Nie można załadować pliku wersji z %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Nie można zarejestrować wymaganego dostawcy zasobów na potrzeby uwierzytelniania prostego. Przyczyna: %s. Zarejestruj wymaganego dostawcę zasobów %s ręcznie.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "Maksymalna dozwolona liczba bezpłatnych planów usługi App Service w subskrypcji wynosi 10. Usuń bezpłatny plan usługi App Service i spróbuj ponownie.",
   "core.getUserEmailQuestion.validation3": "Adres e-mail jest nieprawidłowy",

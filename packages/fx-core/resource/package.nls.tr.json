@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "İşlenmemiş hata: %s",
   "error.sa.EndpointInvalidError": "%s uç noktası doğrulanamadı. Nedeni: %s",
   "error.sa.ZipDownloadError": "Basit Kimlik Doğrulama bitleri indirilemedi: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Sürüm dosyası %s konumundan yüklenemedi",
   "plugins.sa.RegisterRersourceProviderFailed": "Basit Kimlik Doğrulaması için gerekli kaynak sağlayıcısı kaydedilemedi. Neden: %s. Gerekli olan %s kaynak sağlayıcısını el ile kaydedin.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "Tek bir Abonelik için en fazla 10 adet App Ücretsiz App Service planına izin verilir. Ücretsiz App Service planlarından birini silin ve yeniden deneyin.",
   "core.getUserEmailQuestion.validation3": "E-posta adresi geçerli değil",

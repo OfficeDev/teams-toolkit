@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "처리되지 않은 오류: %s",
   "error.sa.EndpointInvalidError": "엔드포인트 %s을(를) 확인하지 못했습니다. 이유: %s",
   "error.sa.ZipDownloadError": "단순 인증 비트 %s을(를) 다운로드하지 못했습니다.",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "%s에서 버전 파일을 로드하지 못했습니다.",
   "plugins.sa.RegisterRersourceProviderFailed": "단순 인증에 필요한 리소스 공급자를 등록하지 못했습니다. 이유: %s. 필요한 리소스 공급자 %s을(를) 수동으로 등록합니다.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "구독 하나에 대해 무료 App Service 요금제는 최대 10개까지 허용됩니다. 무료 App Service 요금제를 하나 삭제하고 다시 시도하세요.",
   "core.getUserEmailQuestion.validation3": "전자 메일 주소가 잘못됨",

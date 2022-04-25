@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "ハンドルされないエラー: %s",
   "error.sa.EndpointInvalidError": "エンドポイント %s を確認できませんでした。理由: %s",
   "error.sa.ZipDownloadError": "簡易認証ビット: %s をダウンロードできませんでした",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "%s からバージョン ファイルを読み込めませんでした",
   "plugins.sa.RegisterRersourceProviderFailed": "簡易認証に必要なリソース プロバイダーを登録できませんでした。理由: %s。必要なリソース プロバイダー %s を手動で登録します。",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "サブスクリプションで許可されている無料 App Service プランの最大数は 10 です。無料の App Service プランを削除して、もう一度お試しください。",
   "core.getUserEmailQuestion.validation3": "メール アドレスが無効です",

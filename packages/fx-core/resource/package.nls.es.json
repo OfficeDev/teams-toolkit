@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Error no controlado: %s",
   "error.sa.EndpointInvalidError": "No se pudo comprobar el punto de conexión: %s. Motivo: %s",
   "error.sa.ZipDownloadError": "No se pudieron descargar los bits de autenticación simple: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "No se pudo cargar el archivo de versión desde %s",
   "plugins.sa.RegisterRersourceProviderFailed": "No se pudo registrar el proveedor de recursos necesario para la autenticación simple. Motivo: %s. Registre el proveedor de recursos necesario %s manualmente.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "El número máximo de planes del servicio de aplicaciones gratuitos permitidos en una suscripción es 10. Elimine un plan gratuito del servicio de aplicaciones e inténtelo de nuevo.",
   "core.getUserEmailQuestion.validation3": "La dirección de correo electrónico no es válida",

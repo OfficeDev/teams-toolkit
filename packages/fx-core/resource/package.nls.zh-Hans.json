@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "未处理的错误: %s",
   "error.sa.EndpointInvalidError": "验证终结点失败: %s。原因: %s",
   "error.sa.ZipDownloadError": "未能下载简单身份验证位: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "无法从 %s 加载版本文件",
   "plugins.sa.RegisterRersourceProviderFailed": "无法为简单身份验证注册所需的资源提供程序。原因: %s。手动注册所需的资源提供程序 %s。",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "订阅中允许的最大免费应用服务计划数为 10。请删除免费的应用服务计划，然后重试。",
   "core.getUserEmailQuestion.validation3": "电子邮件地址无效",

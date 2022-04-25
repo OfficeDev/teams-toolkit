@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Необработанная ошибка: %s",
   "error.sa.EndpointInvalidError": "Не удалось проверить конечную точку: %s. Причина: %s",
   "error.sa.ZipDownloadError": "Не удалось скачать биты простой проверки подлинности: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Не удалось загрузить файл версии из %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Не удалось зарегистрировать необходимого поставщика ресурсов для простой проверки подлинности. Причина: %s. Зарегистрируйте требуемого поставщика ресурсов %s вручную.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "В подписке допускается не более 10 бесплатных планов службы приложений. Удалите бесплатный план службы приложений и повторите попытку.",
   "core.getUserEmailQuestion.validation3": "\"Адрес электронной почты недопустим\".",

@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Neošetřená chyba: %s",
   "error.sa.EndpointInvalidError": "Ověření koncového bodu se nezdařilo: %s. Důvod: %s",
   "error.sa.ZipDownloadError": "Nepovedlo se stáhnout jednoduché ověřovací bity: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Nepovedlo se načíst soubor verze z %s.",
   "plugins.sa.RegisterRersourceProviderFailed": "Nepovedlo se zaregistrovat požadovaného poskytovatele prostředků pro jednoduché ověřování. Důvod: %s. Zaregistrujte požadovaného poskytovatele prostředků %s ručně.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "Maximální počet bezplatných App Service plánu povolený v předplatném je 10. Odstraňte bezplatný plán App Service a zkuste to znovu.",
   "core.getUserEmailQuestion.validation3": "E-mailová adresa není správná",

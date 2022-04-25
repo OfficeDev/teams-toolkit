@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Errore non gestito: %s",
   "error.sa.EndpointInvalidError": "Non è stato possibile verificare l'endpoint: %s. Motivo: %s",
   "error.sa.ZipDownloadError": "Non è stato possibile scaricare bit di autenticazione semplici: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Non è stato possibile caricare il file di versione da %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Non è stato possibile registrare il provider di risorse richiesto per l'autenticazione semplice. Motivo: %s. Registrare manualmente il provider di risorse necessario %s.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "Il numero massimo di piani di servizio app gratuiti consentiti in una sottoscrizione è 10. Eliminare un piano di servizio app gratuito e riprovare.",
   "core.getUserEmailQuestion.validation3": "L'indirizzo di posta elettronica non è valido",

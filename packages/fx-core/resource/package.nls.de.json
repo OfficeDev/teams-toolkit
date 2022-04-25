@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Nicht behandelter Fehler: %s",
   "error.sa.EndpointInvalidError": "Fehler beim Überprüfen des Endpunkts: %s. Gründe dafür",
   "error.sa.ZipDownloadError": "Fehler beim Herunterladen einfacher Authentifizierungsbits: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Fehler beim Laden der Versionsdatei aus %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Fehler beim Registrieren des erforderlichen Ressourcenanbieters für simple Auth. Ursache: %s. Registrieren Sie den erforderlichen Ressourcenanbieter manuell %s.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "In einem Abonnement sind maximal 10 kostenlose App Service zulässig. Löschen Sie einen kostenlosen App Service Plan, und versuchen Sie es noch mal.",
   "core.getUserEmailQuestion.validation3": "Die E-Mail-Adresse ist ungültig.",

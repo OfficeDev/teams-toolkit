@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "未處理的錯誤: %s",
   "error.sa.EndpointInvalidError": "無法驗證端點: %s。原因: %s",
   "error.sa.ZipDownloadError": "無法下載簡單驗證位 BITS: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "無法從 %s 載入版本檔案",
   "plugins.sa.RegisterRersourceProviderFailed": "無法註冊 [簡單驗證] 所需的資源提供者。原因: %s。手動註冊必要的資源提供者 %s。",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "訂用帳戶中允許的免費 App Service 方案數目上限為 10。請刪除免費的 App Service 方案，然後再試一次。",
   "core.getUserEmailQuestion.validation3": "電子郵件地址不正確",

@@ -511,7 +511,7 @@
   "error.sa.UnhandledError": "Erro não tratado: %s",
   "error.sa.EndpointInvalidError": "Falha ao verificar o ponto de extremidade: %s. Motivo: %s",
   "error.sa.ZipDownloadError": "Falha ao baixar bits de Autenticação Simples: %s",
-  "error.sa.VersionFileNotExist": "Failed to load version file from %s",
+  "error.sa.VersionFileNotExist": "Falha ao carregar o arquivo de versão de %s",
   "plugins.sa.RegisterRersourceProviderFailed": "Falha ao registrar o provedor de recursos necessário para Autenticação Simples. Motivo: %s. Registre o provedor de recursos necessário %s manualmente.",
   "plugins.sa.FreeServerFarmsQuotaErrorToUser": "O número máximo permitido do Plano do Serviço de Aplicativo Gratuito em uma Assinatura é 10. Exclua um plano gratuito do Serviço de Aplicativo e tente novamente.",
   "core.getUserEmailQuestion.validation3": "O endereço de email não é válido",

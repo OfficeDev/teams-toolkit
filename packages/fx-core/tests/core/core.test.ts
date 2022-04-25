@@ -382,7 +382,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         stage: Stage.getQuestions,
       };
-      expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+      expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
       expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
       sandbox
         .stub<any, any>(tools.ui, "inputText")
@@ -422,18 +422,10 @@ describe("Core basic APIs", () => {
                 type: "success",
                 result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
               });
-            }
-            throw err(InvalidInputError("invalid question"));
-          }
-        );
-      sandbox
-        .stub<any, any>(tools.ui, "selectOptions")
-        .callsFake(
-          async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
-            if (config.name == "capabilities") {
+            } else if (config.name == "capabilities") {
               return ok({
                 type: "success",
-                result: expectedInputs[CoreQuestionNames.Capabilities],
+                result: expectedInputs[CoreQuestionNames.Capabilities] as string,
               });
             }
             throw err(InvalidInputError("invalid question"));
@@ -463,7 +455,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab"],
+      [CoreQuestionNames.Capabilities]: "Tab",
       solution: mockSolutionV2.name,
       stage: Stage.create,
     };

@@ -145,6 +145,7 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
+import { isPreviewFeaturesEnabled } from "../common";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -193,6 +194,11 @@ export class FxCore implements v3.ICore {
       } catch (e) {
         throw new ProjectFolderInvalidError(folder);
       }
+    }
+
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      inputs[CoreQuestionNames.Capabilities] = [capability];
     }
 
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
@@ -846,14 +852,19 @@ export class FxCore implements v3.ICore {
         //for existing app
         if (
           res.isOk() &&
-          func.method === "addCapability" &&
+          (func.method === "addCapability" || func.method === "addFeature") &&
           inputs.capabilities &&
           inputs.capabilities.length > 0
         ) {
           await ensureBasicFolderStructure(inputs);
         }
         // reset provisionSucceeded state for all env
-        if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
+        if (
+          res.isOk() &&
+          (func.method === "addCapability" ||
+            func.method === "addResource" ||
+            func.method === "addFeature")
+        ) {
           if (
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"

@@ -52,6 +52,7 @@ import {
 } from "../constants";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
+  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
@@ -59,16 +60,18 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   BotScenario,
+  BotSsoItem,
+  CicdOptionItem,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
-  TabSsoItem,
-  BotSsoItem,
+  SingleSignOnOptionItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -100,6 +103,9 @@ export async function executeUserTask(
   }
   if (method === "addResource") {
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (method === "addFeature") {
+    return addFeature(ctx, inputs, localSettings, func, envInfo, tokenProvider);
   }
   if (method === "addSso") {
     return addSso(ctx, inputs, localSettings);
@@ -783,6 +789,65 @@ export async function addResource(
       ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
       : Void
   );
+}
+
+export async function addFeature(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json,
+  func: Func,
+  envInfo: v2.EnvInfoV2,
+  tokenProvider: TokenProvider
+): Promise<Result<unknown, FxError>> {
+  const featureAnswer = inputs[AzureSolutionQuestionNames.Features] as string;
+  const capabilityAnswers = new Set([
+    TabOptionItem.id,
+    BotOptionItem.id,
+    CommandAndResponseOptionItem.id,
+    NotificationOptionItem.id,
+    TabNonSsoItem.id,
+    MessageExtensionItem.id,
+  ]);
+  const resourceAnswers = new Set([
+    AzureResourceFunction.id,
+    AzureResourceSQL.id,
+    AzureResourceApim.id,
+    AzureResourceKeyVault.id,
+  ]);
+  if (capabilityAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.Capabilities] = [featureAnswer];
+    return addCapability(ctx, inputs, localSettings);
+  }
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
+  if (resourceAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.AddResources] = [featureAnswer];
+    if (
+      (featureAnswer === AzureResourceSQL.id || featureAnswer === AzureResourceApim.id) &&
+      !alreadyHaveFunction
+    ) {
+      inputs[AzureSolutionQuestionNames.AddResources].push(AzureResourceFunction.id);
+    }
+    return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (featureAnswer === SingleSignOnOptionItem.id) {
+    return addSso(ctx, inputs, localSettings);
+  } else if (featureAnswer === ApiConnectionOptionItem.id) {
+    const apiFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-api-connector",
+      method: "connectExistingApi",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
+  } else if (featureAnswer === CicdOptionItem.id) {
+    const cicdFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-cicd",
+      method: "addCICDWorkflows",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, cicdFunction, localSettings, envInfo, tokenProvider);
+  }
+  return ok({});
 }
 
 export function extractParamForRegisterTeamsAppAndAad(

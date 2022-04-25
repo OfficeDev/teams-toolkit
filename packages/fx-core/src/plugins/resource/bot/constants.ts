@@ -306,6 +306,7 @@ export class BotBicep {
 
 export const CustomizedTasks = {
   addCapability: "addCapability",
+  addFeature: "addFeature",
 } as const;
 
 export type CustomizedTask = typeof CustomizedTasks[keyof typeof CustomizedTasks];

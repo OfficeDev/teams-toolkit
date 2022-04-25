@@ -41,7 +41,7 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
-  isPureExistingApp,
+  isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
 } from "@microsoft/teamsfx-core";
 
@@ -210,7 +210,7 @@ export default class Preview extends YargsCommand {
 
       let result: Result<null, FxError>;
       if (previewType === "local") {
-        if (await this.isExistingApp(workspaceFolder)) {
+        if (await this.isExistingTabApp(workspaceFolder)) {
           result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
         } else {
           result = await this.localPreview(workspaceFolder, hub, browser, browserArguments);
@@ -696,7 +696,7 @@ export default class Preview extends YargsCommand {
     );
   }
 
-  private async isExistingApp(workspacePath: string): Promise<boolean> {
+  private async isExistingTabApp(workspacePath: string): Promise<boolean> {
     const projectSettingsPath = path.resolve(
       workspacePath,
       `.${ConfigFolderName}`,
@@ -706,7 +706,7 @@ export default class Preview extends YargsCommand {
 
     if (await fs.pathExists(projectSettingsPath)) {
       const projectSettings = await fs.readJson(projectSettingsPath);
-      return isPureExistingApp(projectSettings);
+      return isExistingTabAppCore(projectSettings);
     } else {
       return false;
     }

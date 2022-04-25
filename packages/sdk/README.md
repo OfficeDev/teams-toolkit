@@ -286,7 +286,7 @@ dialogs.add(
 );
 ```
 
-### Create API client for existing API
+### Create API client to call existing API in Bot / Azure Function
 
 ```ts
 const teamsfx = new TeamsFx();

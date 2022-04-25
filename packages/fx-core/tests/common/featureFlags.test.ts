@@ -56,9 +56,5 @@ describe("featureFlags", () => {
 
       chai.assert.isTrue(isBotNotificationEnabled());
     });
-
-    it("successfully open all feature flags", async () => {
-      console.log(process.env["TEAMSFX_M365_APP"]);
-    });
   });
 });

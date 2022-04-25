@@ -910,7 +910,7 @@ describe("V2 implementation", () => {
 
   it("should success when adding non sso tab to bot when aad manifest enabled using addFeature", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    mocker.stub<any, any>(featureFlags, "isGAPreviewEnabled").returns(true);
+    mocker.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")

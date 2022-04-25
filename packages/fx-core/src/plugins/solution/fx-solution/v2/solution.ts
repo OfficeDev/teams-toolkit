@@ -12,7 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
-import { isGAPreviewEnabled } from "../../../../common";
+import { isPreviewFeaturesEnabled } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
 import { checkPermission } from "./checkPermission";
@@ -70,7 +70,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   getQuestionsForScaffolding?: (
     ctx: v2.Context,
     inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = isGAPreviewEnabled()
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = isPreviewFeaturesEnabled()
     ? getQuestionsForScaffoldingPreview
     : getQuestionsForScaffolding;
 

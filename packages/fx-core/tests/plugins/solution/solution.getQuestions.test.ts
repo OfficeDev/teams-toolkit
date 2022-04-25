@@ -386,7 +386,7 @@ describe("getQuestionsForScaffolding()", async () => {
   });
 
   it("getQuestionsForUserTask - addFeature success", async () => {
-    sandbox.stub<any, any>(featureFlags, "isGAPreviewEnabled").returns(true);
+    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,

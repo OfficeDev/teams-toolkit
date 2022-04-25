@@ -47,7 +47,7 @@ import {
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
-import { isGAPreviewEnabled } from "../../common";
+import { isPreviewFeaturesEnabled } from "../../common";
 
 /**
  * This middleware will help to collect input from question flow
@@ -390,7 +390,7 @@ export async function getQuestionsForCreateProjectV2(
 
   // capabilities
   let capNode: QTreeNode;
-  if (isGAPreviewEnabled()) {
+  if (isPreviewFeaturesEnabled()) {
     const capQuestion = createCapabilityQuestionPreview();
     capNode = new QTreeNode(capQuestion);
   } else {
@@ -425,7 +425,7 @@ export async function getQuestionsForCreateProjectV2(
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  if (isGAPreviewEnabled()) {
+  if (isPreviewFeaturesEnabled()) {
     programmingLanguage.condition = {
       minItems: 1,
       notEquals: ExistingTabOptionItem.id,
@@ -440,7 +440,7 @@ export async function getQuestionsForCreateProjectV2(
 
   // existing tab endpoint
   const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-  if (isGAPreviewEnabled()) {
+  if (isPreviewFeaturesEnabled()) {
     existingTabEndpoint.condition = {
       equals: ExistingTabOptionItem.id,
     };

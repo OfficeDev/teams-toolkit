@@ -74,13 +74,13 @@ export class TeamsBotV2Impl {
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
     const bicepConfigs = this.getBicepConfigs(ctx, inputs);
-
     const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
-    const hostingResources = HostingResourceFactory.createHosting(hostTypes);
-    const templates: ArmTemplateResult[] = await Promise.all(
-      hostingResources.map(
-        async (hosting) => await hosting.generateBicep(ctx, bicepConfigs, "fx-resource-bot")
-      )
+
+    const templates = await Promise.all(
+      hostTypes.map((hostType) => {
+        const hosting = HostingResourceFactory.createHosting(hostType);
+        return hosting.generateBicep(ctx, bicepConfigs, "fx-resource-bot");
+      })
     );
     const result = mergeTemplates(templates);
 
@@ -93,11 +93,12 @@ export class TeamsBotV2Impl {
   ): Promise<Result<ResourceTemplate, FxError>> {
     const bicepConfigs = this.getBicepConfigs(ctx, inputs);
     const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
-    const hostingResources = HostingResourceFactory.createHosting(hostTypes);
-    const templates: ArmTemplateResult[] = await Promise.all(
-      hostingResources.map(
-        async (hosting) => await hosting.updateBicep(ctx, bicepConfigs, "fx-resource-bot")
-      )
+
+    const templates = await Promise.all(
+      hostTypes.map((hostType) => {
+        const hosting = HostingResourceFactory.createHosting(hostType);
+        return hosting.updateBicep(ctx, bicepConfigs, "fx-resource-bot");
+      })
     );
     const result = mergeTemplates(templates);
 

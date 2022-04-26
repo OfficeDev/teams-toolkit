@@ -4,12 +4,12 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-var functionSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
+var functionSKU = contains(provisionParameters, 'botFunctionAppSKU') ? provisionParameters['botFunctionAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
+var functionAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
 var storageName = contains(provisionParameters, 'botStorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, 'botStorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 
-// Compute resources for your Web App
+// Compute resources for your Function App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'functionapp'
   location: resourceGroup().location
@@ -29,11 +29,11 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
-// Web App that hosts your bot
+// Function App that hosts your bot
 resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'functionapp'
   location: resourceGroup().location
-  name: webAppName
+  name: functionAppName
   properties: {
     serverFarmId: serverfarm.id
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
@@ -92,7 +92,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
 }
 
 output functionSKU string = functionSKU
-output functionName string = webAppName
+output functionName string = functionAppName
 output domain string = functionApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
 output functionResourceId string = functionApp.id

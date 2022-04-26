@@ -52,10 +52,16 @@ export abstract class AzureHosting {
     }
 
     const bicepTemplateDir = this.getBicepTemplateFolder();
-    const modules = bicepFiles.map(async (filename) => {
-      const module = await generateBicepFromFile(path.join(bicepTemplateDir, filename), pluginCtx);
-      return module.replace(/PluginIdPlaceholder/g, pluginId);
-    });
+    const modules = await Promise.all(
+      bicepFiles.map(async (filename) => {
+        const module = await generateBicepFromFile(
+          path.join(bicepTemplateDir, filename),
+          pluginCtx
+        );
+        // TODO: leverage HandleBars to replace plugin id
+        return module.replace(/PluginIdPlaceholder/g, pluginId);
+      })
+    );
 
     // parameters should be undefined if parameter file does not exist
     let parameters;

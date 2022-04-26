@@ -40,6 +40,7 @@ import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
 const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
+const UnifyManifestLearMoreLink = "https://aka.ms/teamsfx-unify-local-remote-manifest-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -409,12 +410,7 @@ async function compareLocalAndRemoteManifest(
     const localManifestJson = JSON.parse(localManifestString);
     const remoteManifestJson = JSON.parse(remoteManifestString);
     if (!diff(localManifestJson, remoteManifestJson)) {
-      TOOLS?.ui.showMessage(
-        "warn",
-        getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
-        false,
-        "OK"
-      );
+      notifyToUpdateManifest();
     }
   } catch (error) {
     sendTelemetryErrorEvent(
@@ -422,6 +418,20 @@ async function compareLocalAndRemoteManifest(
       TelemetryEvent.ProjectConsolidateCheckManifestError,
       assembleError(error, CoreSource)
     );
+  }
+}
+
+async function notifyToUpdateManifest() {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
+    false,
+    "OK",
+    LearnMore
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (answer === LearnMore) {
+    TOOLS?.ui.openUrl(UnifyManifestLearMoreLink);
   }
 }
 

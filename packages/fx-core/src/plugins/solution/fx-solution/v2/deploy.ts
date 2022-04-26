@@ -29,6 +29,7 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetryComponentName,
+  ViewAadAppHelpLink,
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -39,7 +40,7 @@ import {
   getAzureSolutionSettings,
   getBotTroubleShootMessage,
   getSelectedPlugins,
-  isAzureProject
+  isAzureProject,
 } from "./utils";
 
 export async function deploy(
@@ -52,6 +53,9 @@ export async function deploy(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.IncludeAadManifest]: inputs[Constants.INCLUDE_AAD_MANIFEST] ?? "no",
   });
+
+  const isDeployAADManifestFromVSCode =
+    inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
@@ -111,7 +115,7 @@ export async function deploy(
   let optionsToDeploy: string[] = [];
   if (!isVsProject) {
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
-    if (inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode) {
+    if (isDeployAADManifestFromVSCode) {
       optionsToDeploy = [PluginNames.AAD];
     }
 
@@ -201,11 +205,15 @@ export async function deploy(
 
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg =
+      let msg =
         getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
         botTroubleShootMsg.textForLogging;
+
+      if (isDeployAADManifestFromVSCode) {
+        msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      }
       ctx.logProvider.info(msg);
-      if (botTroubleShootMsg.textForLogging) {
+      if (botTroubleShootMsg.textForLogging && !isDeployAADManifestFromVSCode) {
         // Show a `Learn more` action button for bot trouble shooting.
         ctx.userInteraction
           .showMessage(
@@ -223,7 +231,18 @@ export async function deploy(
             }
           });
       } else {
-        ctx.userInteraction.showMessage("info", msg, false);
+        if (isDeployAADManifestFromVSCode) {
+          ctx.userInteraction
+            .showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+            .then((result) => {
+              const userSelected = result.isOk() ? result.value : undefined;
+              if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+                ctx.userInteraction?.openUrl(ViewAadAppHelpLink);
+              }
+            });
+        } else {
+          ctx.userInteraction.showMessage("info", msg, false);
+        }
       }
     }
     return ok(Void);

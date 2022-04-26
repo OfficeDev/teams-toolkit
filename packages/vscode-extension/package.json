@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.8.0-rc.4",
+  "version": "3.8.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -177,7 +177,7 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifest",
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -434,6 +434,10 @@
         {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "when": "false"
         }
       ]
     },
@@ -441,6 +445,11 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
@@ -500,12 +509,12 @@
       {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.addFeature",
@@ -523,7 +532,7 @@
       {
         "command": "fx-extension.connectExistingApi",
         "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "fx-extension.isApiConnectEnabled"
+        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -601,6 +610,7 @@
       {
         "command": "fx-extension.addCICDWorkflows",
         "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
+        "enablement": "!fx-entension.gaPreviewEnabled",
         "icon": "$(sync)"
       },
       {
@@ -732,7 +742,7 @@
       {
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",
@@ -1202,8 +1212,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.18.0-rc.0",
-    "@microsoft/teamsfx-core": "^1.8.0-rc.3",
+    "@microsoft/teamsfx-api": "^0.18.0",
+    "@microsoft/teamsfx-core": "^1.8.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",

@@ -672,80 +672,35 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
 }
 
 export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxError>> {
-  // TODO: move the question model to fx-core addFeature API
-  const addFeatureConfig: SingleSelectConfig = {
-    name: "addFeature",
-    title: "Add features",
-    step: 1,
-    options: [
-      {
-        id: "capability",
-        label: `${localize("teamstoolkit.handlers.addFeature.capability.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.capability.detail"),
-      },
-      {
-        id: "resource",
-        label: `${localize("teamstoolkit.handlers.addFeature.resource.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.resource.detail"),
-      },
-      {
-        id: "additional",
-        label: `${localize("teamstoolkit.handlers.addFeature.additional.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.additional.detail"),
-      },
-    ],
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddFeatureStart, getTriggerFromProperty(args));
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addFeature",
   };
-  const additionalFeatureConfig: SingleSelectConfig = {
-    name: "additionalFeature",
-    title: "Additional features",
-    step: 2,
-    options: [
-      {
-        id: "sso",
-        label: `${localize("teamstoolkit.handlers.addFeature.sso.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.sso.detail"),
-      },
-      {
-        id: "api",
-        label: `${localize("teamstoolkit.handlers.addFeature.api.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.api.detail"),
-      },
-      {
-        id: "cicd",
-        label: `${localize("teamstoolkit.handlers.addFeature.cicd.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.cicd.detail"),
-      },
-    ],
-  };
-  const stack = [addFeatureConfig];
-  while (stack.length > 0) {
-    const config = stack.pop() as SingleSelectConfig;
-    const answer = await VS_CODE_UI.selectOption(config);
-    if (answer.isErr()) {
-      return err(answer.error);
-    }
-    if (answer.value.type === "back") {
-      continue;
-    }
-    if (config.name === "addFeature") {
-      if (answer.value.result === "capability") {
-        return addCapabilityHandler(args);
-      } else if (answer.value.result === "resource") {
-        return addResourceHandler(args);
-      } else if (answer.value.result === "additional") {
-        stack.push(additionalFeatureConfig);
-      }
-    } else if (config.name === "additionalFeature") {
-      if (answer.value.result === "sso") {
-        return addSsoHanlder();
-      } else if (answer.value.result === "api") {
-        return connectExistingApiHandler(args);
-      } else if (answer.value.result === "cicd") {
-        return addCICDWorkflowsHandler(args);
-      }
-    }
+  let excludeFrontend = true,
+    excludeBot = true,
+    excludeBackend = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
   }
-  return Promise.resolve(ok(null));
+  const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
+  if (result.isOk()) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
+    await envTreeProviderInstance.reloadEnvironments();
+  }
+
+  return result;
 }
 
 export async function connectExistingApiHandler(args?: any[]): Promise<Result<null, FxError>> {

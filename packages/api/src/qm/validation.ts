@@ -59,6 +59,10 @@ export interface StringValidation extends StaticValidation {
    * An instance validates successfully against this keyword if its value is equal to the value of the keyword.
    */
   equals?: string;
+  /**
+   * An instance validates successfully against this keyword if its value is not equal to the value of the keyword.
+   */
+  notEquals?: string;
 }
 
 /**
@@ -206,6 +210,11 @@ export async function validate<T extends string | string[] | OptionItem | Option
       if (stringValidation.includes && typeof strToValidate === "string") {
         if (!strToValidate.includes(stringValidation.includes)) {
           return `'${strToValidate}' does not meet includes:'${stringValidation.includes}'`;
+        }
+      }
+      if (stringValidation.notEquals && typeof strToValidate === "string") {
+        if (strToValidate === stringValidation.notEquals) {
+          return `'${strToValidate}' does not meet notEquals:'${stringValidation.notEquals}'`;
         }
       }
     }

@@ -202,7 +202,7 @@ export function mergeLaunches(
     mergedData.configurations = newData.configurations;
   } else {
     const existingConfigurations = mergedData.configurations as Record<string, unknown>[];
-    const newConfigurations = newData.configurations as Record<string, unknown>[];
+    const newConfigurations = (newData.configurations ?? []) as Record<string, unknown>[];
     const keptConfigurations = [];
     for (const existingConfiguration of existingConfigurations) {
       if (
@@ -223,7 +223,7 @@ export function mergeLaunches(
     mergedData.compounds = newData.compounds;
   } else {
     const existingCompounds = mergedData.compounds as Record<string, unknown>[];
-    const newCompounds = newData.compounds as Record<string, unknown>[];
+    const newCompounds = (newData.compounds ?? []) as Record<string, unknown>[];
     const keptCompounds = [];
     for (const existingCompound of existingCompounds) {
       if (!newCompounds.some((newCompound) => existingCompound.name === newCompound.name)) {

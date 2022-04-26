@@ -137,7 +137,7 @@ export function mergeTasks(
     mergedData.tasks = newData.tasks;
   } else {
     const existingTasks = mergedData.tasks as Record<string, unknown>[];
-    const newTasks = newData.tasks as Record<string, unknown>[];
+    const newTasks = (newData.tasks ?? []) as Record<string, unknown>[];
     const keptTasks = [];
     for (const existingTask of existingTasks) {
       if (
@@ -155,7 +155,7 @@ export function mergeTasks(
     mergedData.inputs = newData.inputs;
   } else {
     const existingInputs = mergedData.inputs as Record<string, unknown>[];
-    const newInputs = newData.inputs as Record<string, unknown>[];
+    const newInputs = (newData.inputs ?? []) as Record<string, unknown>[];
     const keptInputs = [];
     for (const existingInput of existingInputs) {
       if (

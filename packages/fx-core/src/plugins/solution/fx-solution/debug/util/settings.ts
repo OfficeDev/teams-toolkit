@@ -40,8 +40,10 @@ export function mergeSettings(
   const mergedData = {} as Record<string, unknown>;
   Object.assign(mergedData, existingData);
 
-  for (const newSetting of Object.entries(newData)) {
-    mergedData[newSetting[0]] = newSetting[1];
+  if (newData !== undefined) {
+    for (const newSetting of Object.entries(newData)) {
+      mergedData[newSetting[0]] = newSetting[1];
+    }
   }
 
   return mergedData;

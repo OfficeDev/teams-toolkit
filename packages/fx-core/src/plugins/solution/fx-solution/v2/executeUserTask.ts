@@ -1035,6 +1035,7 @@ export async function addSso(
 
   ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
   });
 
   return ok({

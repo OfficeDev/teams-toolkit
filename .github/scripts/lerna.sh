@@ -21,6 +21,6 @@ else
     echo ======== deps: $content ==========
     lernaBase=$(jq 'del(.packages)' lerna.json)
     jq --argjson arr1 "$content" --argjson arr2 "$lernaBase" -n '$arr2 + {"package": $arr1}' > tmp.$$.json
-    echo ======== $(cat tmp.$$.json) ============
     mv tmp.$$.json lerna.json
+    cat lerna.json
 fi

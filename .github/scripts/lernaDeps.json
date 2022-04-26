@@ -24,8 +24,7 @@
     ],
     "sdk": [
         "packages/sdk",
-        "packages/sdk-react",
-        "templates"
+        "packages/sdk-react"
     ],
     "template": [
         "templates"

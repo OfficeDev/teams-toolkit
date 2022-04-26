@@ -1016,6 +1016,12 @@ describe("solution.debug.scaffolding", () => {
             foo: "bar",
           },
         ],
+        inputs: [
+          {
+            id: "My Input 1",
+            foo: "bar",
+          },
+        ],
       });
       const projectSetting = {
         appName: "",
@@ -1043,7 +1049,9 @@ describe("solution.debug.scaffolding", () => {
       //assert output tasks.json
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
+      const taskInputs: [] = tasksAll["inputs"];
       chai.assert.equal(tasks.length, 10);
+      chai.assert.equal(taskInputs.length, 1);
 
       //assert output settings.json
       const settingsAll = fs.readJSONSync(expectedSettingsFile);

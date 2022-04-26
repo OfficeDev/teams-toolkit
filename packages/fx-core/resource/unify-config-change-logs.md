@@ -19,6 +19,8 @@ Your existing `localSettings.json`, `manifest.local.template.json`, and `manifes
 ## Know what you need to do
 Since Teams Toolkit will use `manifest.remote.template.json` as a single manifest template file after the upgrade, if you have customized the `manifest.local.template.json`, you will need to update the `manifest.template.json` to include your change.
 
+For how to update the `manifest.template.json`, you can check this [Wiki Page](https://aka.ms/teamsfx-unify-local-remote-manifest-guide).
+
 ## Know about how to restore your project
 If anything went wrong after the upgrade process, you could restore your old project configuration files by:
 * Copy the .backup/.fx folder to your project root path.

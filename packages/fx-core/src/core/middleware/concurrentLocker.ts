@@ -94,9 +94,12 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     }
   }
   if (!acquired) {
-    TOOLS?.logProvider.error(
-      `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`
-    );
+    const log = `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`;
+    if (inputs.loglevel && inputs.loglevel === "Debug") {
+      TOOLS?.logProvider?.debug(log);
+    } else {
+      TOOLS?.logProvider?.error(log);
+    }
     // failed for 10 times and finally failed
     sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
       retry: retryNum + "",

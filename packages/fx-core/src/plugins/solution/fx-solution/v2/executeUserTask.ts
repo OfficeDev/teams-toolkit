@@ -942,7 +942,9 @@ export async function addSso(
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
-  solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  if (!solutionSettings.capabilities.includes(PluginNames.AAD)) {
+    solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  }
   if (solutionSettings.capabilities.length == 0) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
@@ -1018,6 +1020,9 @@ export async function addSso(
         const userSelected = result.isOk() ? result.value : undefined;
         if (userSelected === AddSsoParameters.LearnMore) {
           ctx.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+          ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoReadme, {
+            [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+          });
         }
       });
   } else if (inputs.platform == Platform.CLI) {
@@ -1028,7 +1033,17 @@ export async function addSso(
     );
   }
 
-  return ok(undefined);
+  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+
+  return ok({
+    func: AddSsoParameters.AddSso,
+    capabilities: [
+      ...(needsTab ? [AddSsoParameters.Tab] : []),
+      ...(needsBot ? [AddSsoParameters.Bot] : []),
+    ],
+  });
 }
 
 // TODO: use 'isVsProject' for changes in VS

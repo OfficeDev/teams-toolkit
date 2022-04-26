@@ -1,6 +1,6 @@
 #!/bin/bash
 VAR=$@
-echo ============= $VAR ================
+echo ============= Inputs: $VAR ================
 stringarray=($VAR)
 if [ -z $stringarray ]; then
     echo "for all the pkgs"
@@ -10,9 +10,9 @@ else
     content=$(jq ".common" .github/scripts/lernaDeps.json)
     for i in "${stringarray[@]}"
     do :
-        echo $i
+        echo package name: $i
         if [ $(jq --arg v "$i" 'has($v)' .github/scripts/lernaDeps.json) == 'false' ]; then
-            echo "\n Error Inputs:" $i
+            echo "Get Error Inputs:" $i
             exit -1
         fi
         pkgContent=$(jq ".$i" .github/scripts/lernaDeps.json)

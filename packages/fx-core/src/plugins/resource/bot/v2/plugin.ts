@@ -183,7 +183,7 @@ export class TeamsBotV2Impl {
   private async localBuild(ctx: Context, inputs: Inputs): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = ctx.projectSetting.programmingLanguage;
+    const lang = this.resolveProgrammingLanguage(ctx);
     const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === "ts") {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.

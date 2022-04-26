@@ -5,10 +5,10 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { FeatureFlags, isFeatureFlagEnabled, isSPFxProject } from "../utils/commonUtils";
+import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
@@ -151,7 +151,7 @@ class TreeViewManager {
     );
 
     if (isNonSPFx) {
-      if (isFeatureFlagEnabled(FeatureFlags.Preview)) {
+      if (isPreviewFeaturesEnabled()) {
         developmentCommand.push(
           new TreeViewCommand(
             localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
@@ -272,7 +272,7 @@ class TreeViewManager {
       ),
     ];
 
-    if (!isFeatureFlagEnabled(FeatureFlags.Preview)) {
+    if (!isPreviewFeaturesEnabled()) {
       deployCommand.push(
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle"),
@@ -333,7 +333,7 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
     ];
-    if (isFeatureFlagEnabled(FeatureFlags.Preview)) {
+    if (isPreviewFeaturesEnabled()) {
       helpCommand.push(
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),

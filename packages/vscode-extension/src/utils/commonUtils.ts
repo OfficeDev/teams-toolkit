@@ -258,9 +258,8 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_PREVIEW"] = getConfiguration(
-    ConfigurationKey.EnablePreviewFeatures
-  ).toString();
+  // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
+  process.env[FeatureFlags.Preview] = "true";
 
   initializePreviewFeatureFlags();
 }

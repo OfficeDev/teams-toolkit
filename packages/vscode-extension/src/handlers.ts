@@ -65,6 +65,7 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
+  isPreviewFeaturesEnabled,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -104,8 +105,6 @@ import {
   isTriggerFromWalkThrough,
   getTriggerFromProperty,
   isExistingTabApp,
-  isFeatureFlagEnabled,
-  FeatureFlags,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
@@ -3068,7 +3067,7 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
-  if (!isFeatureFlagEnabled(FeatureFlags.Preview)) {
+  if (!isPreviewFeaturesEnabled()) {
     VS_CODE_UI.showMessage("info", localize("teamstoolkit.common.commingSoon"), false);
     return ok(null);
   }

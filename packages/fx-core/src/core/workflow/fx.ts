@@ -429,116 +429,73 @@ export class TeamsfxCore {
         targetAction: `${r.name}.configure`,
       };
     });
-    const provisionSequences: Action[] = [
-      {
-        type: "function",
-        name: "fx.preProvision",
-        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          return ok(["pre step before provision (tenant, subscription, resource group)"]);
-        },
-        execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          inputs.solution = {
-            tenantId: "MockTenantId",
-            subscriptionId: "MockSubscriptionId",
-            resourceGroup: "MockResourceGroup",
-          };
-          return ok(undefined);
-        },
+    const preProvisionStep: Action = {
+      type: "function",
+      name: "fx.preProvision",
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        return ok(["pre step before provision (tenant, subscription, resource group)"]);
       },
-      {
-        type: "group",
-        name: "resources.provision",
-        mode: "parallel",
-        actions: provisionActions,
+      execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        inputs.solution = {
+          tenantId: "MockTenantId",
+          subscriptionId: "MockSubscriptionId",
+          resourceGroup: "MockResourceGroup",
+        };
+        return ok(undefined);
       },
-      {
-        type: "call",
-        name: "call:bicep.deploy",
-        required: true,
-        targetAction: "bicep.deploy",
-        inputs: {
-          "azure-bicep": {
-            "azure-bot": {
-              botId: "{{bot-service.botId}}",
-              botEndpoint: "{{azure-web-app.endpoint}}", //TODO
-            },
-          },
-        },
+    };
+    const provisionStep: Action = {
+      type: "group",
+      name: "resources.provision",
+      mode: "parallel",
+      actions: provisionActions,
+    };
+    const configureStep: Action = {
+      type: "group",
+      name: "resources.provision",
+      mode: "parallel",
+      actions: configureActions,
+    };
+    const deployBicepStep: Action = {
+      type: "call",
+      name: "call:bicep.deploy",
+      required: true,
+      targetAction: "bicep.deploy",
+    };
+    const prepareInputsForConfigure: Action = {
+      type: "function",
+      name: "prepare inputs for configuration stage",
+      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        return ok(["set inputs for configuration"]);
       },
-    ];
+      execute: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
+        const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
+        const aad = getComponent(projectSettings, "aad");
+        if (aad) {
+          if (teamsTab && teamsBot) {
+            inputs["aad"].m365ApplicationIdUri = `api://${
+              inputs[teamsTab.hostingResource!].endpoint
+            }/botid-${inputs["azure-bot"].botId}`;
+          } else if (teamsTab) {
+            inputs["aad"].m365ApplicationIdUri = `api://${
+              inputs[teamsTab.hostingResource!].endpoint
+            }`;
+          } else {
+            inputs["aad"].m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
+          }
+        }
+        console.log("set inputs for configuration");
+        return ok(undefined);
+      },
+    };
     const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
     const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
-    if (configureActions.length > 0) {
-      const setInputsForConfig: Action = {
-        type: "function",
-        name: "prepare inputs for configuration stage",
-        plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          return ok(["set inputs for configuration"]);
-        },
-        execute: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-          const projectSettings = context.projectSetting as ProjectSettingsV3;
-          const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
-          const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
-          const aad = getComponent(projectSettings, "aad");
-          let aadInputs: any;
-          if (aad) {
-            aadInputs = inputs["aad"];
-            if (teamsTab && teamsBot) {
-              aadInputs.m365ApplicationIdUri = `api://${
-                inputs[teamsTab.hostingResource!].endpoint
-              }/botid-${inputs["azure-bot"].botId}`;
-            } else if (teamsTab) {
-              aadInputs.m365ApplicationIdUri = `api://${
-                inputs[teamsTab.hostingResource!].endpoint
-              }`;
-            } else {
-              aadInputs.m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
-            }
-            inputs["aad"] = aadInputs;
-            if (teamsTab) {
-              inputs[teamsTab.hostingResource!].appSettings = {
-                M365_AUTHORITY_HOST: aadInputs.authAuthorityHost, // AAD authority host
-                M365_CLIENT_ID: aadInputs.clientId, // Client id of AAD application
-                M365_CLIENT_SECRET: aadInputs.clientSecret, // Client secret of AAD application
-                M365_TENANT_ID: aadInputs.tenantId, // Tenant id of AAD application
-                M365_APPLICATION_ID_URI: aadInputs.m365ApplicationIdUri, // Application ID URI of AAD application
-              };
-            }
-            if (teamsBot) {
-              inputs[teamsBot.hostingResource!].appSettings = {
-                BOT_ID: inputs["bot-service"].botId,
-                BOT_PASSWORD: inputs["bot-service"].botPassword,
-                M365_AUTHORITY_HOST: aadInputs.authAuthorityHost, // AAD authority host
-                M365_CLIENT_ID: aadInputs.clientId, // Client id of AAD application
-                M365_CLIENT_SECRET: aadInputs.clientSecret, // Client secret of AAD application
-                M365_TENANT_ID: aadInputs.tenantId, // Tenant id of AAD application
-                M365_APPLICATION_ID_URI: aadInputs.m365ApplicationIdUri, // Application ID URI of AAD application
-              };
-            }
-          } else {
-            if (teamsBot) {
-              inputs[teamsBot.hostingResource!].appSettings = {
-                BOT_ID: inputs["bot-service"].botId,
-                BOT_PASSWORD: inputs["bot-service"].botPassword,
-              };
-            }
-          }
-          console.log("set inputs for configuration");
-          return ok(undefined);
-        },
-      };
-      provisionSequences.push(setInputsForConfig);
-      provisionSequences.push({
-        type: "group",
-        name: "resources.configure",
-        mode: "parallel",
-        actions: configureActions,
-      });
-    }
     const manifestInputs: any = {};
     if (teamsTab) manifestInputs.tabEndpoint = `{{${teamsTab.hostingResource}.endpoint}}`;
     if (teamsBot) manifestInputs.botId = "{{bot-service.botId}}";
-    provisionSequences.push({
+    const provisionManifestStep: Action = {
       type: "call",
       name: "call:teams-manifest.provision",
       required: true,
@@ -546,7 +503,15 @@ export class TeamsfxCore {
       inputs: {
         "teams-manifest": manifestInputs,
       },
-    });
+    };
+    const provisionSequences: Action[] = [
+      preProvisionStep,
+      provisionStep,
+      deployBicepStep,
+      prepareInputsForConfigure,
+      configureStep,
+      provisionManifestStep,
+    ];
     const result: Action = {
       name: "fx.provision",
       type: "group",

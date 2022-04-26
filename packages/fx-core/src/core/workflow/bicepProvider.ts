@@ -71,11 +71,11 @@ export class BicepProvider {
       type: "function",
       name: "azure-bicep.deploy",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const deployInputs = inputs["azure-bicep"];
+        const deployInputs = inputs["bicep"];
         return ok([`deploy bicep, ${JSON.stringify(deployInputs)}`]);
       },
       execute: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const deployInputs = inputs["azure-bicep"];
+        const deployInputs = inputs["bicep"];
         console.log(`deploy bicep, ${JSON.stringify(deployInputs)}`);
         inputs["azure-web-app"] = {
           endpoint: "MockAzureWebAppEndpoint",

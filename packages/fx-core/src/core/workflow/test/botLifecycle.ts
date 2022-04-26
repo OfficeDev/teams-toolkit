@@ -18,7 +18,7 @@ import readlineSync from "readline-sync";
 
 const appName = "appv3";
 const projectPath = path.join(os.homedir(), "TeamsApps", appName);
-const debugMode = true;
+const debugMode = false;
 
 async function runAction(action: Action, context: any, inputs: any): Promise<void> {
   await planAction(action, context, cloneDeep(inputs));
@@ -128,16 +128,18 @@ async function deploy() {
 }
 
 setTools(new MockTools());
-addBot();
-// addSql();
+// addBot();
+// // addSql();
 
-// const command = readlineSync.question("Command(init|addBot|provision|deploy): ");
-// if (command === "init") {
-//   init();
-// } else if (command === "addBot") {
-//   addBot();
-// } else if (command === "provision") {
-//   provision();
-// } else if (command === "deploy") {
-//   deploy();
-// }
+const command = readlineSync.question("Command(init|addBot|addSql|provision|deploy): ");
+if (command === "init") {
+  init();
+} else if (command === "addBot") {
+  addBot();
+} else if (command === "addSql") {
+  addSql();
+} else if (command === "provision") {
+  provision();
+} else if (command === "deploy") {
+  deploy();
+}

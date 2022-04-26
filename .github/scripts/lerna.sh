@@ -1,5 +1,5 @@
 #!/bin/bash
-VAR=$1
+VAR=$@
 echo ============= $VAR ================
 stringarray=($VAR)
 if [ -z $stringarray ]; then

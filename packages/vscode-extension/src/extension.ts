@@ -22,6 +22,7 @@ import {
   isConfigUnifyEnabled,
   isDeployManifestEnabled,
   isExistingTabAppEnabled,
+  isPreviewFeaturesEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -29,6 +30,7 @@ import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  PermissionsJsonFileCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import VsCodeLogInstance from "./commonlib/log";
@@ -51,8 +53,6 @@ import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   canUpgradeToArmAndMultiEnv,
   delay,
-  FeatureFlags,
-  isFeatureFlagEnabled,
   isM365Project,
   isSPFxProject,
   isSupportAutoOpenAPI,
@@ -206,6 +206,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.deployAadAppManifest, args)
   );
   context.subscriptions.push(deployAadAppManifest);
+
+  const deployAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
+    "fx-extension.deployAadAppManifestFromCtxMenu",
+    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  );
+  context.subscriptions.push(deployAadAppManifestFromCtxMenu);
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
@@ -363,7 +369,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(localDebugWithIcon);
 
   const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 
@@ -467,8 +473,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.executeCommand(
     "setContext",
-    "fx-entension.gaPreviewEnabled",
-    isFeatureFlagEnabled(FeatureFlags.GeneralAvailablityPreview, false)
+    "fx-entension.previewFeaturesEnabled",
+    isPreviewFeaturesEnabled()
   );
 
   // Setup CodeLens provider for userdata file
@@ -519,6 +525,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/aad.*.json`,
   };
 
+  const permissionsJsonFileCodeLensProvider = new PermissionsJsonFileCodeLensProvider();
+  const permissionsJsonFileSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/permissions.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -547,6 +560,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       aadAppTemplateSelector,
       aadAppTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      permissionsJsonFileSelector,
+      permissionsJsonFileCodeLensProvider
     )
   );
 

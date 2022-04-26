@@ -19,6 +19,8 @@ import {
   EnvInfo,
   Json,
   v3,
+  Inputs,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -44,6 +46,8 @@ import {
   ProjectEnvNotExistError,
   WriteFileError,
 } from "./error";
+import { loadProjectSettings } from "./middleware/projectSettingsLoader";
+import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 
 export interface EnvStateFiles {
   envState: string;
@@ -276,7 +280,25 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
-      return err(ProjectEnvNotExistError(envName));
+      if (envName === this.getLocalEnvName()) {
+        const inputs: Inputs = {
+          projectPath: projectPath,
+          platform: Platform.VSCode,
+        };
+        const projectSettings = await loadProjectSettings(inputs, true);
+        if (projectSettings.isOk()) {
+          const appName = getLocalAppName(projectSettings.value.appName);
+          const newEnvConfig = environmentManager.newEnvConfigData(appName);
+          await environmentManager.writeEnvConfig(
+            inputs.projectPath!,
+            newEnvConfig,
+            environmentManager.getLocalEnvName()
+          );
+        }
+      }
+      if (!(await fs.pathExists(envConfigPath))) {
+        return err(ProjectEnvNotExistError(envName));
+      }
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);

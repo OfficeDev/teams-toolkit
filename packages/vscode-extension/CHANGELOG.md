@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.8.0 - Apr 22, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+- Optimize the configuration schema and manifest template of project created by Teams Toolkit.
+- Support to use CodeLens to preview variables value in manifest template file.
+- Optimize the In-meeting Sample App in sample gallery, shorten the time to run the sample.
+- Improved  "Start from a sample" UI, show more information of each sample.
+
 ## 3.7.0 - Apr 06, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

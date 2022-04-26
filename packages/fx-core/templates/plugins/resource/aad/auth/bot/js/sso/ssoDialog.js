@@ -45,12 +45,18 @@ class SsoDialog extends ComponentDialog {
       async (stepContext) => {
         const tokenResponse = stepContext.result;
         const context = stepContext.context;
-        if (tokenResponse) {
-          await operation(context, tokenResponse.ssoToken);
-        } else {
+        try {
+          if (tokenResponse) {
+            await operation(context, tokenResponse.ssoToken);
+          } else {
+            await context.sendActivity("Failed to retrieve user token from conversation context.");
+          }
+          return await stepContext.endDialog();
+        } catch (error) {
           await context.sendActivity("Failed to retrieve user token from conversation context.");
+          await context.sendActivity(error.message);
+          return await stepContext.endDialog();
         }
-        return await stepContext.endDialog();
       },
     ]);
 
@@ -95,16 +101,30 @@ class SsoDialog extends ComponentDialog {
   }
 
   async ssoStep(stepContext) {
-    return await stepContext.beginDialog(TEAMS_SSO_PROMPT_ID);
+    try {
+      return await stepContext.beginDialog(TEAMS_SSO_PROMPT_ID);
+    } catch (error) {
+      const context = stepContext.context;
+      await context.sendActivity("Failed to run SSO step");
+      await context.sendActivity(error.message);
+      return await stepContext.endDialog();
+    }
   }
 
   async dedupStep(stepContext) {
-    const tokenResponse = stepContext.result;
-    // Only dedup after ssoStep to make sure that all Teams client would receive the login request
-    if (tokenResponse && (await this.shouldDedup(stepContext.context))) {
-      return Dialog.EndOfTurn;
+    try {
+      const tokenResponse = stepContext.result;
+      // Only dedup after ssoStep to make sure that all Teams client would receive the login request
+      if (tokenResponse && (await this.shouldDedup(stepContext.context))) {
+        return Dialog.EndOfTurn;
+      }
+      return await stepContext.next(tokenResponse);
+    } catch (error) {
+      const context = stepContext.context;
+      await context.sendActivity("Failed to run dedup step");
+      await context.sendActivity(error.message);
+      return await stepContext.endDialog();
     }
-    return await stepContext.next(tokenResponse);
   }
 
   async onEndDialog(context) {

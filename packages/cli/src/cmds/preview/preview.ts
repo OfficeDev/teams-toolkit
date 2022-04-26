@@ -41,7 +41,7 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
-  isPureExistingApp,
+  isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
 } from "@microsoft/teamsfx-core";
 
@@ -157,6 +157,7 @@ export default class Preview extends YargsCommand {
     yargs.option("env", {
       description: "Select an existing env for the project",
       string: true,
+      default: environmentManager.getDefaultEnvName(),
     });
 
     return yargs.version(false);
@@ -209,7 +210,7 @@ export default class Preview extends YargsCommand {
 
       let result: Result<null, FxError>;
       if (previewType === "local") {
-        if (await this.isExistingApp(workspaceFolder)) {
+        if (await this.isExistingTabApp(workspaceFolder)) {
           result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
         } else {
           result = await this.localPreview(workspaceFolder, hub, browser, browserArguments);
@@ -470,11 +471,20 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = localBotId
+        ? await commonUtils.getBotOutlookChannelLink(
+            workspaceFolder,
+            environmentManager.getLocalEnvName(),
+            undefined,
+            localBotId
+          )
+        : undefined;
+
       const shouldContinue = await showInstallAppInTeamsMessage(
-        false,
+        true,
         tenantId,
         localTeamsAppId,
-        localBotId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -686,7 +696,7 @@ export default class Preview extends YargsCommand {
     );
   }
 
-  private async isExistingApp(workspacePath: string): Promise<boolean> {
+  private async isExistingTabApp(workspacePath: string): Promise<boolean> {
     const projectSettingsPath = path.resolve(
       workspacePath,
       `.${ConfigFolderName}`,
@@ -696,7 +706,7 @@ export default class Preview extends YargsCommand {
 
     if (await fs.pathExists(projectSettingsPath)) {
       const projectSettings = await fs.readJson(projectSettingsPath);
-      return isPureExistingApp(projectSettings);
+      return isExistingTabAppCore(projectSettings);
     } else {
       return false;
     }
@@ -704,7 +714,7 @@ export default class Preview extends YargsCommand {
 
   private async remotePreview(
     workspaceFolder: string,
-    env: string | undefined,
+    env: string,
     hub: constants.Hub,
     browser: constants.Browser,
     browserArguments: string[] = []
@@ -736,6 +746,9 @@ export default class Preview extends YargsCommand {
       (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
     const includeFrontend = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.frontendHostingPluginName
+    );
+    const includeBot = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.botPluginName
     );
     if (hub === constants.Hub.office && !includeFrontend) {
       throw errors.OnlyLaunchPageSupportedInOffice();
@@ -778,11 +791,14 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = includeBot
+        ? await commonUtils.getBotOutlookChannelLink(workspaceFolder, env, config, undefined)
+        : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
         false,
         tenantId,
         remoteTeamsAppId,
-        undefined,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );

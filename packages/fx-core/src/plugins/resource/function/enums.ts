@@ -88,4 +88,5 @@ export enum FunctionEvent {
 
 export enum CustomizedTask {
   addResource = "addResource",
+  addFeature = "addFeature",
 }

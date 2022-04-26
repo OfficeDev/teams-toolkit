@@ -235,7 +235,11 @@ export class TeamsBot implements Plugin {
     return await TeamsBot.runWithExceptionCatching(
       context,
       async () => {
-        if (func.method === CustomizedTasks.addCapability && isBotNotificationEnabled()) {
+        if (
+          (func.method === CustomizedTasks.addCapability ||
+            func.method === CustomizedTasks.addFeature) &&
+          isBotNotificationEnabled()
+        ) {
           const res = new QTreeNode({
             type: "group",
           });

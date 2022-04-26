@@ -17,7 +17,9 @@ After the project upgrade, the new file structure will consist:
 Your existing `localSettings.json`, `manifest.local.template.json`, and `manifest.remote.template.json` files will be backed up in `.backup` folder.
 
 ## Know what you need to do
-Since Teams Toolkit will use `manifest.remote.template.json` as a single manifest template file after the upgrade, if you have customized the `manifest.local.template.json` you will need to place your changes in `config.local.json` and pass it to the template.
+Since Teams Toolkit will use `manifest.remote.template.json` as a single manifest template file after the upgrade, if you have customized the `manifest.local.template.json`, you will need to update the `manifest.template.json` to include your change.
+
+For how to update the `manifest.template.json`, you can check this [Wiki Page](https://aka.ms/teamsfx-unify-local-remote-manifest-guide).
 
 ## Know about how to restore your project
 If anything went wrong after the upgrade process, you could restore your old project configuration files by:

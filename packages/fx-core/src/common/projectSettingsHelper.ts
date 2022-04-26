@@ -117,8 +117,21 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   return false;
 }
 
-export function isPureExistingApp(projectSettings: ProjectSettings): boolean {
-  return projectSettings.solutionSettings === undefined;
+export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (!solutionSettings) {
+    return true;
+  }
+
+  // Scenario: SSO is added to existing tab app
+  if (
+    solutionSettings.capabilities?.length === 1 &&
+    solutionSettings.capabilities.includes(TabSsoItem.id)
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export function getProjectSettingsVersion() {

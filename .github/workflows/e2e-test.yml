@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - dev
+      - ga
       - hotfix/**/*
     types:
       - assigned

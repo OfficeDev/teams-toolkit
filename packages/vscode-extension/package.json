@@ -1003,18 +1003,6 @@
             }
           }
         }
-      },
-      {
-        "title": "Experimental Features",
-        "order": 3,
-        "properties": {
-          "fx-extension.enablePreviewFeatures": {
-            "order": 0,
-            "type": "boolean",
-            "description": "Enable a set of experimental features, including creating notification bot and command bot, extending apps across Microsoft 365, add sso and call an API. (Requires reload of VS Code)",
-            "default": false
-          }
-        }
       }
     ],
     "languages": [

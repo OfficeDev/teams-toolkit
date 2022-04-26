@@ -38,7 +38,7 @@ export abstract class AzureHosting {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = {
+    const handlebarsContext = {
       plugins: plugins.map((obj) => obj.name),
       configs: configs,
     };
@@ -56,7 +56,7 @@ export abstract class AzureHosting {
       bicepFiles.map(async (filename) => {
         const module = await generateBicepFromFile(
           path.join(bicepTemplateDir, filename),
-          pluginCtx
+          handlebarsContext
         );
         // TODO: leverage HandleBars to replace plugin id
         return module.replace(/PluginIdPlaceholder/g, pluginId);

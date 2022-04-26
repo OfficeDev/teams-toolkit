@@ -942,7 +942,7 @@ export async function addSso(
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
-  if (!solutionSettings.capabilities.includes(PluginNames.AAD)) {
+  if (!solutionSettings.activeResourcePlugins.includes(PluginNames.AAD)) {
     solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
   }
   if (solutionSettings.capabilities.length == 0) {

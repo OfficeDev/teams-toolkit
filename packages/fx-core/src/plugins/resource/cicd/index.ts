@@ -112,6 +112,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
+        skipSingleOption: true,
       };
       whichEnvironment.staticOptions = envProfilesResult.value;
       cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));

@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Inputs, Json, ok, Result, TokenProvider, v2, Void } from "@microsoft/teamsfx-api";
-
+import {
+  AzureSolutionSettings,
+  FxError,
+  Inputs,
+  Json,
+  ok,
+  Result,
+  TokenProvider,
+  v2,
+  Void,
+} from "@microsoft/teamsfx-api";
 import {
   Context,
   DeepReadonly,
@@ -10,16 +19,32 @@ import {
   ProvisionInputs,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
-import { mergeTemplates } from "./bicep";
 import { ArmTemplateResult } from "../../../../common/armInterface";
-import { BotSolution } from "./botSolution";
 import { scaffold } from "./scaffold";
 import * as utils from "../utils/common";
-import { PluginBot } from "../resources/strings";
-import { QuestionNames } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
 import path from "path";
-import { HostingResourceFactory } from "./hostingFactory";
+import { HostingResourceFactory } from "../../../../common/azure-hosting/hostingFactory";
+import { isBotNotificationEnabled } from "../../../../common";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import {
+  QuestionNames,
+  TemplateProjectsConstants,
+  TemplateProjectsScenarios,
+  TriggerTemplateScenarioMappings,
+} from "../constants";
+import { PluginActRoles } from "../enums/pluginActRoles";
+import {
+  BotTrigger,
+  PluginBot,
+  QuestionBotScenarioToPluginActRoles,
+  CommonStrings,
+  Commands,
+} from "../resources/strings";
+import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
+import { CommandExecutionError } from "../errors";
+import { BicepConfigs, HostType } from "../../../../common/azure-hosting/interface";
+import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -34,7 +59,7 @@ export class TeamsBotV2Impl {
     }
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
-    const templates = BotSolution.getTemplates(ctx, inputs);
+    const templates = this.getTemplates(ctx, inputs);
     await Promise.all(
       templates.map(async (template) => {
         await scaffold(template, workingPath);
@@ -48,11 +73,14 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    const bicepConfigs = BotSolution.getBicepConfigs(ctx, inputs);
+    const bicepConfigs = this.getBicepConfigs(ctx, inputs);
 
-    const hostingResources = HostingResourceFactory.getHostingResources(ctx, "fx-resource-bot");
+    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const hostingResources = HostingResourceFactory.createHosting(hostTypes);
     const templates: ArmTemplateResult[] = await Promise.all(
-      hostingResources.map(async (hosting) => await hosting.generateBicep(ctx, bicepConfigs))
+      hostingResources.map(
+        async (hosting) => await hosting.generateBicep(ctx, bicepConfigs, "fx-resource-bot")
+      )
     );
     const result = mergeTemplates(templates);
 
@@ -63,10 +91,13 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    const bicepConfigs = BotSolution.getBicepConfigs(ctx, inputs);
-    const hostingResources = HostingResourceFactory.getHostingResources(ctx, "fx-resource-bot");
+    const bicepConfigs = this.getBicepConfigs(ctx, inputs);
+    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const hostingResources = HostingResourceFactory.createHosting(hostTypes);
     const templates: ArmTemplateResult[] = await Promise.all(
-      hostingResources.map(async (hosting) => await hosting.updateBicep(ctx, bicepConfigs))
+      hostingResources.map(
+        async (hosting) => await hosting.updateBicep(ctx, bicepConfigs, "fx-resource-bot")
+      )
     );
     const result = mergeTemplates(templates);
 
@@ -88,7 +119,7 @@ export class TeamsBotV2Impl {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const packDir = await BotSolution.localBuild(ctx, inputs);
+    const packDir = await this.localBuild(ctx, inputs);
     // TODO: zip packDir and upload to Azure Web App or Azure Function
     return ok(Void);
   }
@@ -111,6 +142,167 @@ export class TeamsBotV2Impl {
     envInfo?: v2.EnvInfoV2 | undefined
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
+  }
+
+  private getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
+    const actRoles = this.resolveActRoles(ctx, inputs);
+    const triggers = this.resolveTriggers(inputs);
+    const hostType = this.resolveHostType(ctx);
+    const lang = this.resolveProgrammingLanguage(ctx);
+
+    const scenarios = this.resolveScenarios(actRoles, triggers, hostType);
+
+    return scenarios.map((scenario) => {
+      return {
+        group: TemplateProjectsConstants.GROUP_NAME_BOT,
+        language: lang,
+        scenario: scenario,
+        variables: {},
+      };
+    });
+  }
+
+  private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
+    const lang = this.resolveProgrammingLanguage(ctx);
+
+    const bicepConfigs: BicepConfigs = [];
+
+    if (lang === "js" || lang === "ts") {
+      bicepConfigs.push("node");
+    }
+    if (lang === "csharp") {
+      bicepConfigs.push("dotnet");
+    }
+
+    bicepConfigs.push("running-on-azure");
+
+    return bicepConfigs;
+  }
+
+  private async localBuild(ctx: Context, inputs: Inputs): Promise<string> {
+    // Return the folder path to be zipped and uploaded
+
+    const lang = ctx.projectSetting.programmingLanguage;
+    const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
+    if (lang === "ts") {
+      //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
+      try {
+        await utils.execute("npm install", packDir);
+        await utils.execute("npm run build", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+      }
+    }
+
+    if (lang === "js") {
+      try {
+        // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+        await utils.execute("npm install", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+      }
+    }
+
+    if (lang === "csharp") {
+      try {
+        // TODO: build csharp project
+        await utils.execute("dotnet publish", packDir);
+        return packDir;
+      } catch (e) {
+        throw new CommandExecutionError(`dotnet publish`, e);
+      }
+    }
+
+    throw new Error("Invalid programming language");
+  }
+
+  private resolveActRoles(ctx: Context, inputs: Inputs): PluginActRoles[] {
+    let actRoles: PluginActRoles[] = [];
+
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    // Null check solutionSettings
+    const capabilities = solutionSettings.capabilities;
+    if (capabilities?.includes(PluginActRoles.Bot)) {
+      const scenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+      if (isBotNotificationEnabled() && Array.isArray(scenarios)) {
+        const scenarioActRoles = scenarios
+          .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
+          .filter((item): item is PluginActRoles => item !== undefined);
+        // dedup
+        actRoles = [...new Set([...actRoles, ...scenarioActRoles])];
+      } else {
+        // for legacy bot
+        actRoles.push(PluginActRoles.Bot);
+      }
+    }
+
+    if (capabilities?.includes(PluginActRoles.MessageExtension)) {
+      actRoles.push(PluginActRoles.MessageExtension);
+    }
+
+    return actRoles;
+  }
+
+  private resolveHostType(ctx: Context): HostType {
+    const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string;
+
+    switch (rawHostType) {
+      case "app-service":
+        return HostType.AppService;
+      case "azure-functions":
+        return HostType.Function;
+    }
+    throw new Error("Invalid host type");
+  }
+
+  private resolveTriggers(inputs: Inputs): BotTrigger[] {
+    const rawHostTypeTriggers = inputs?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
+    if (!Array.isArray(rawHostTypeTriggers)) {
+      return [];
+    }
+    // convert HostTypeTrigger question to trigger name
+    return rawHostTypeTriggers
+      .map((hostTypeTrigger) => {
+        const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
+        return option?.trigger;
+      })
+      .filter((item): item is BotTrigger => item !== undefined);
+  }
+
+  private resolveProgrammingLanguage(ctx: Context): string {
+    const lang = ctx.projectSetting.programmingLanguage;
+    switch (lang?.toLocaleLowerCase()) {
+      case "javascript":
+        return "js";
+      case "typescript":
+        return "ts";
+      case "csharp":
+        return "csharp";
+    }
+    throw new Error("Invalid programming language");
+  }
+
+  private resolveScenarios(
+    actRoles: PluginActRoles[],
+    triggers: BotTrigger[],
+    hostType: HostType
+  ): string[] {
+    const scenarios: string[] = [];
+    if (hostType === HostType.Function) {
+      if (actRoles.includes(PluginActRoles.Notification)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
+        triggers.map((trigger) => scenarios.push(TriggerTemplateScenarioMappings[trigger]));
+      }
+    }
+    if (hostType === HostType.AppService) {
+      // TODO: support command & respond bot and notification bot
+      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    }
+    return scenarios;
   }
 }
 

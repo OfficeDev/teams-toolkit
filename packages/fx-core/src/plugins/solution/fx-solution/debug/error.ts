@@ -33,12 +33,13 @@ export function NgrokTunnelNotConnected(): UserError {
 }
 
 export function LocalBotEndpointNotConfigured(): UserError {
-  return new UserError(
-    SolutionSource,
-    "LocalBotEndpointNotConfigured",
-    getDefaultString("error.LocalBotEndpointNotConfigured"),
-    getLocalizedString("error.LocalBotEndpointNotConfigured")
-  );
+  return new UserError({
+    source: SolutionSource,
+    name: "LocalBotEndpointNotConfigured",
+    message: getDefaultString("error.LocalBotEndpointNotConfigured"),
+    displayMessage: getLocalizedString("error.LocalBotEndpointNotConfigured"),
+    helpLink: "https://aka.ms/teamsfx-skip-ngrok",
+  });
 }
 
 export function InvalidLocalBotEndpointFormat(localBotEndpoint: string): UserError {

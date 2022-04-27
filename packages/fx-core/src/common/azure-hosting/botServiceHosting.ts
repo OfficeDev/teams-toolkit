@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import { AzureHosting } from "./azureHosting";
+import { HostType } from "./interfaces";
 
-export class BotHosting extends AzureHosting {
+export class BotServiceHosting extends AzureHosting {
   configurable = false;
-  hostType = "botservice";
+  hostType = HostType.BotService;
 }

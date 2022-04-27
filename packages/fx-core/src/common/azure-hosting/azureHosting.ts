@@ -9,7 +9,7 @@ import { generateBicepFromFile } from "..";
 import { ArmTemplateResult } from "../armInterface";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
-import { BicepConfigs, BicepContext } from "./interfaces";
+import { BicepContext } from "./interfaces";
 
 export abstract class AzureHosting {
   abstract hostType: string;

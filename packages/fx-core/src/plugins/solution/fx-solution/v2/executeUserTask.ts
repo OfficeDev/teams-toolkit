@@ -466,6 +466,14 @@ export async function addCapability(
       if (toAddTab && !alreadyHasTabSso) {
         newCapabilitySet.add(TabSsoItem.id);
         pluginNamesToScaffold.add(ResourcePluginsV2.AadPlugin);
+
+        // Add webapplicationInfo in teams app manifest
+        const appStudioPlugin = Container.get<AppStudioPluginV3>(
+          BuiltInFeaturePluginNames.appStudio
+        );
+        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+          { name: "WebApplicationInfo" },
+        ]);
       }
     }
 

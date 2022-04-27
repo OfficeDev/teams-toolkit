@@ -679,16 +679,7 @@ export async function addResource(
     // Since APIM also have dependency on Function, will only add depenedency here.
     if (!isAADEnabled(solutionSettings)) {
       if (isAadManifestEnabled()) {
-        const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-        pluginsToScaffold.push(aadPlugin);
-        pluginsToDoArm.push(aadPlugin);
-
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-          solutionSettings.capabilities.push(TabSsoItem.id);
-        }
-        if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-          solutionSettings.capabilities.push(BotSsoItem.id);
-        }
+        await addSso(ctx, inputs, localSettings);
       } else {
         solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
       }

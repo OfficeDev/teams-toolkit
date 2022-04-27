@@ -11,6 +11,7 @@ import { showError } from "../handlers";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
+  teamsfxIsRemote?: boolean;
   teamsfxEnv?: string;
   teamsfxAppId?: string;
   teamsfxCorrelationId?: string;
@@ -92,6 +93,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
+        debugConfiguration.teamsfxIsRemote = isSideloadingConfiguration;
         debugConfiguration.teamsfxEnv = debugConfig.env;
         debugConfiguration.teamsfxAppId = debugConfig.appId;
 

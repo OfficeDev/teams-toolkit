@@ -164,6 +164,18 @@
             "suggested": false
         },
         {
+            "id": "incoming-webhook-notification",
+            "title": "Incoming Webhook Notification",
+            "shortDescription": "Demonstrates how to send notification via Incoming Webhook.",
+            "fullDescription": "This is a sample which shows how to send notification via Incoming Webhook in Microsoft Teams channels.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+        },
+        {
             "id": "graph-connector-app",
             "title": "Graph Connector App",
             "shortDescription": "Showcases how to build custom Graph Connector",

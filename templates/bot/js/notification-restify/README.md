@@ -15,6 +15,12 @@ Before run this app locally, make sure you have prepared these prerequisites:
 
 Then, you can quickly start local debugging via `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)` debug option of your preferred browser.
 
+> **Note**: This app will setup [Microsoft Bot Framework](https://dev.botframework.com/) or [Azure Bot Service](https://azure.microsoft.com/services/bot-services/) for further running.
+>
+> If your account has no access to such resource(s), there's an alternative way to send notification via **Incoming Webhook**.
+>
+> Try the Incoming Webhook sample via `Create a new Teams app` -> `Start from a sample` -> `Incoming Webhook Notification`. Or browse the code at our [Sample Repo](https://github.com/OfficeDev/TeamsFx-Samples), `incoming-webhook-notification` folder.
+
 ## Develop
 
 This new project folder structure looks like:
@@ -59,6 +65,16 @@ The default notifying logic is located in `bot/src/index.*s`, and you can also c
 You can find the Teams app manifest in `templates/appPackage/manifest.template.json`.
 
 The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+
+## Add authentication for your notification API
+
+The scaffolded notification API does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it for production purpose. Here're some common ways to add authentication / authorization for an API:
+
+1. Use an API Key
+
+2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/authentication/)
+
+There would be more authentication / authorization solutions for an API. You can choose the one that satisfies your requirement best.
 
 ## Deployment
 

@@ -34,7 +34,7 @@ describe("Provision", function () {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CONFIG_UNIFY"] = "true";
   env["BOT_NOTIFICATION_ENABLED"] = "true";
-  env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
+  env["TEAMSFX_TEMPLATE_PRERELEASE"] = "beta";
 
   it("Provision Resource: command and response", async function () {
     await execAsync(

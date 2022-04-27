@@ -20,6 +20,7 @@ import {
   UserInteraction,
   v2,
   v3,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
@@ -34,8 +35,12 @@ import {
   isAadManifestEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { InvalidInputError, OperationNotPermittedError } from "../../../../core/error";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
+import {
+  InvalidInputError,
+  NoCapabilityFoundError,
+  OperationNotPermittedError,
+} from "../../../../core/error";
 import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
@@ -241,6 +246,9 @@ export function canAddResource(
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
     );
+  }
+  if (isExistingTabApp(projectSetting)) {
+    return err(new NoCapabilityFoundError(Stage.addResource));
   }
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
@@ -942,7 +950,9 @@ export async function addSso(
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
-  solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  if (!solutionSettings.activeResourcePlugins.includes(PluginNames.AAD)) {
+    solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  }
   if (solutionSettings.capabilities.length == 0) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
@@ -1018,6 +1028,9 @@ export async function addSso(
         const userSelected = result.isOk() ? result.value : undefined;
         if (userSelected === AddSsoParameters.LearnMore) {
           ctx.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+          ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoReadme, {
+            [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+          });
         }
       });
   } else if (inputs.platform == Platform.CLI) {
@@ -1028,7 +1041,18 @@ export async function addSso(
     );
   }
 
-  return ok(undefined);
+  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+  });
+
+  return ok({
+    func: AddSsoParameters.AddSso,
+    capabilities: [
+      ...(needsTab ? [AddSsoParameters.Tab] : []),
+      ...(needsBot ? [AddSsoParameters.Bot] : []),
+    ],
+  });
 }
 
 // TODO: use 'isVsProject' for changes in VS

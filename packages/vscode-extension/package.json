@@ -509,12 +509,12 @@
       {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.addFeature",
@@ -532,7 +532,7 @@
       {
         "command": "fx-extension.connectExistingApi",
         "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isApiConnectEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -610,7 +610,7 @@
       {
         "command": "fx-extension.addCICDWorkflows",
         "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled",
+        "enablement": "!fx-entension.previewFeaturesEnabled",
         "icon": "$(sync)"
       },
       {
@@ -742,7 +742,7 @@
       {
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isAadManifestEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",

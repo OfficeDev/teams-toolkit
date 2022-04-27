@@ -59,6 +59,7 @@ import {
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import {
+  AddSsoParameters,
   CollaborationState,
   Correlator,
   DepsType,
@@ -702,6 +703,27 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
+
+    if (
+      workspace.workspaceFolders &&
+      workspace.workspaceFolders.length > 0 &&
+      result.value.func == AddSsoParameters.AddSso
+    ) {
+      const capabilities = result.value.capabilities;
+
+      const workspaceFolder = workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const authFolder = await commonUtils.getProjectRoot(workspacePath, "auth");
+
+      for (const capability of capabilities) {
+        const uri = Uri.file(`${authFolder}/${capability}/README.md`);
+        await workspace.openTextDocument(uri).then(async () => {
+          const PreviewMarkdownCommand = "markdown.showPreview";
+          await commands.executeCommand(PreviewMarkdownCommand, uri);
+          await commands.executeCommand("markdown.preview.toggleLock");
+        });
+      }
+    }
   }
 
   return result;
@@ -1599,7 +1621,7 @@ export async function openReadMeHandler(args: any[]) {
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
     if (isSPFxProject(workspacePath)) {
-      targetFolder = `${workspacePath}/SPFx`;
+      targetFolder = workspacePath;
     } else if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
     } else {

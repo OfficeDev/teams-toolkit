@@ -74,7 +74,7 @@ export const ExistingTabOptionItem: OptionItem = {
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: getLocalizedString("core.MessageExtensionOption.label"),
-  cliName: "messaging-extension",
+  cliName: "message-extension",
   description: getLocalizedString("core.MessageExtensionOption.description"),
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
@@ -82,7 +82,7 @@ export const MessageExtensionItem: OptionItem = {
 export const MessageExtensionNewUIItem: OptionItem = {
   id: "MessagingExtension",
   label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
-  cliName: "messaging-extension",
+  cliName: "message-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
 };

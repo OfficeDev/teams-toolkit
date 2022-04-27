@@ -47,6 +47,7 @@ import { BicepConfigs, HostType } from "../../../../common/azure-hosting/interfa
 import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
+import { ResourcePlugins } from "../../../../common/constants";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -88,7 +89,7 @@ export class TeamsBotV2Impl {
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
         const hosting = AzureHostingFactory.createHosting(hostType);
-        return hosting.generateBicep(bicepContext, "fx-resource-bot");
+        return hosting.generateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
     const result = mergeTemplates(templates);
@@ -113,7 +114,7 @@ export class TeamsBotV2Impl {
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
         const hosting = AzureHostingFactory.createHosting(hostType);
-        return hosting.updateBicep(bicepContext, "fx-resource-bot");
+        return hosting.updateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
     const result = mergeTemplates(templates);

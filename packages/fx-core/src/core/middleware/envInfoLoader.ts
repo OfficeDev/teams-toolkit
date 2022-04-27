@@ -321,6 +321,7 @@ export async function useUserSetEnv(
   projectPath: string,
   env: string
 ): Promise<Result<string, FxError>> {
+  await environmentManager.loadEnvConfig(projectPath, env);
   const checkEnv = await environmentManager.checkEnvExist(projectPath, env);
   if (checkEnv.isErr()) {
     return err(checkEnv.error);

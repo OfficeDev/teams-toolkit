@@ -83,6 +83,9 @@ export function createAppNameQuestion(validateProjectPathExistence = true): Text
           if (validateResult.errors[0].name === "pattern") {
             return getLocalizedString("core.QuestionAppName.validation.pattern");
           }
+          if (validateResult.errors[0].name === "maxLength") {
+            return getLocalizedString("core.QuestionAppName.validation.maxlength");
+          }
         }
         if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
           let folder = previousInputs.folder as string;

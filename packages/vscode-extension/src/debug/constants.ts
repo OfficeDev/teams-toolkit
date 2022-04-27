@@ -69,6 +69,12 @@ export enum Hub {
   office = "Office",
 }
 
+export enum Host {
+  teams = "teams.microsoft.com",
+  outlook = "outlook.office.com",
+  office = "www.office.com",
+}
+
 export class LaunchUrl {
   public static readonly teams: string =
     "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";

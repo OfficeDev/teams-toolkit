@@ -150,3 +150,6 @@ export const installApp = {
       "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
 };
+
+export const m365TenantHintMessage =
+  "WARN: Please note that after you enrolled your M365 tenant in Office 365 Target Release, it may take 3-5 days for the enrollment to take effect.";

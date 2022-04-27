@@ -9,12 +9,14 @@ import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 import { showError } from "../handlers";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { Host, Hub } from "./constants";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
   teamsfxEnv?: string;
   teamsfxAppId?: string;
   teamsfxCorrelationId?: string;
+  teamsfxHub?: Hub;
 }
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
@@ -59,9 +61,11 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalId}";
         // NOTE: 1. there is no app id in M365 messaging extension launch url
         //       2. there are no launch remote configurations for M365 app
-        const m365Hosts = ["outlook.office.com", "office.com"];
+        const host = new URL(url).host;
         const isLocalM365SideloadingConfiguration: boolean =
-          url.includes(localTeamsAppInternalIdPlaceholder) || m365Hosts.includes(new URL(url).host);
+          url.includes(localTeamsAppInternalIdPlaceholder) ||
+          host === Host.outlook ||
+          host === Host.office;
         const isLocalSideloading: boolean =
           isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
 
@@ -96,6 +100,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         debugConfiguration.teamsfxIsRemote = isSideloadingConfiguration;
         debugConfiguration.teamsfxEnv = debugConfig.env;
         debugConfiguration.teamsfxAppId = debugConfig.appId;
+        if (host === Host.teams) {
+          debugConfiguration.teamsfxHub = Hub.teams;
+        } else if (host === Host.outlook) {
+          debugConfiguration.teamsfxHub = Hub.outlook;
+        } else if (host === Host.office) {
+          debugConfiguration.teamsfxHub = Hub.office;
+        }
 
         url = url.replace(localTeamsAppIdPlaceholder, debugConfig.appId);
         url = url.replace(teamsAppIdPlaceholder, debugConfig.appId);

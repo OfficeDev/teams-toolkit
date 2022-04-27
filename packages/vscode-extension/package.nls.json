@@ -269,6 +269,7 @@
     "teamstoolkit.localDebug.installApp.installInTeams": "Install in Teams",
     "teamstoolkit.localDebug.installApp.m365AccountInfoNotFound": "M365 account info not found. Please sign in to M365.",
     "teamstoolkit.localDebug.learnMore": "Learn More",
+    "teamstoolkit.localDebug.m365TenantHintMessage": "Please note that after you enrolled your M365 tenant in Office 365 Target Release, it may take 3-5 days for the enrollment to take effect.",
     "teamstoolkit.localDebug.npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.",
     "teamstoolkit.localDebug.openSettings": "Open settings",
     "teamstoolkit.localDebug.portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",

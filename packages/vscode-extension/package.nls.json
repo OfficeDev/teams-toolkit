@@ -40,6 +40,7 @@
     "teamstoolkit.codeFlowLogin.loginTimeoutTitle": "LoginTimeout",
     "teamstoolkit.codeFlowLogin.resultFileNotFound": "Result file not found.",
     "teamstoolkit.codeFlowLogin.silentAcquireToken": "Failed to retrieve token silently: %s",
+    "teamstoolkit.codeLens.projectSettingsNotice": "This file is maintained by Teams Toolkit, please do not modify it",
     "teamstoolkit.commands.accounts.title": "Teams: Accounts",
     "teamstoolkit.commands.accountsLink.title": "Learn more about accounts",
     "teamstoolkit.commands.addAppOwner.title": "Add M365 Teams App (with AAD App) Owners",

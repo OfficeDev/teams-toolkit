@@ -35,7 +35,7 @@ import {
   isAadManifestEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   InvalidInputError,
   NoCapabilityFoundError,
@@ -247,7 +247,7 @@ export function canAddResource(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
     );
   }
-  if (!projectSetting.solutionSettings) {
+  if (isExistingTabApp(projectSetting)) {
     return err(new NoCapabilityFoundError(Stage.addResource));
   }
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;

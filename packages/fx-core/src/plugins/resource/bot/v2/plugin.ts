@@ -24,7 +24,7 @@ import { scaffold } from "./scaffold";
 import * as utils from "../utils/common";
 import { HostTypeTriggerOptions } from "../question";
 import path from "path";
-import { HostingResourceFactory } from "../../../../common/azure-hosting/hostingFactory";
+import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFactory";
 import { isBotNotificationEnabled } from "../../../../common";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 import {
@@ -43,8 +43,10 @@ import {
 } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { CommandExecutionError } from "../errors";
-import { BicepConfigs, HostType } from "../../../../common/azure-hosting/interface";
+import { BicepConfigs, HostType } from "../../../../common/azure-hosting/interfaces";
 import { mergeTemplates } from "../../../../common/azure-hosting/utils";
+import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -73,13 +75,20 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
     const bicepConfigs = this.getBicepConfigs(ctx, inputs);
-    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const bicepContext = {
+      plugins: plugins.map((obj) => obj.name),
+      configs: bicepConfigs,
+    };
 
+    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
-        const hosting = HostingResourceFactory.createHosting(hostType);
-        return hosting.generateBicep(ctx, bicepConfigs, "fx-resource-bot");
+        const hosting = AzureHostingFactory.createHosting(hostType);
+        return hosting.generateBicep(bicepContext, "fx-resource-bot");
       })
     );
     const result = mergeTemplates(templates);
@@ -91,13 +100,20 @@ export class TeamsBotV2Impl {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
     const bicepConfigs = this.getBicepConfigs(ctx, inputs);
-    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const bicepContext = {
+      plugins: plugins.map((obj) => obj.name),
+      configs: bicepConfigs,
+    };
 
+    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
-        const hosting = HostingResourceFactory.createHosting(hostType);
-        return hosting.updateBicep(ctx, bicepConfigs, "fx-resource-bot");
+        const hosting = AzureHostingFactory.createHosting(hostType);
+        return hosting.updateBicep(bicepContext, "fx-resource-bot");
       })
     );
     const result = mergeTemplates(templates);

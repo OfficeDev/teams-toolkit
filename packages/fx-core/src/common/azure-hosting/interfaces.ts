@@ -8,3 +8,4 @@ export enum HostType {
 }
 
 export type BicepConfigs = string[];
+export type BicepContext = { plugins: string[]; configs: BicepConfigs };

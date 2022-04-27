@@ -9,9 +9,7 @@ import { generateBicepFromFile } from "..";
 import { ArmTemplateResult } from "../armInterface";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
-import { getActivatedV2ResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
-import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
-import { BicepConfigs } from "./interface";
+import { BicepConfigs, BicepContext } from "./interfaces";
 
 export abstract class AzureHosting {
   abstract hostType: string;
@@ -30,19 +28,7 @@ export abstract class AzureHosting {
     );
   }
 
-  async generateBicep(
-    ctx: Context,
-    configs: BicepConfigs,
-    pluginId: string
-  ): Promise<ResourceTemplate> {
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const handlebarsContext = {
-      plugins: plugins.map((obj) => obj.name),
-      configs: configs,
-    };
-
+  async generateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
     // * The order matters.
     // * 0: Provision Orchestration, 1: Provision Module, 2: Configuration Orchestration, 3: Configuration Module
     const bicepFiles = [Bicep.ProvisionFileName, `${this.hostType}Provision.template.bicep`];
@@ -56,7 +42,7 @@ export abstract class AzureHosting {
       bicepFiles.map(async (filename) => {
         const module = await generateBicepFromFile(
           path.join(bicepTemplateDir, filename),
-          handlebarsContext
+          bicepContext
         );
         // TODO: leverage HandleBars to replace plugin id
         return module.replace(/PluginIdPlaceholder/g, pluginId);
@@ -86,11 +72,7 @@ export abstract class AzureHosting {
     } as ResourceTemplate;
   }
 
-  async updateBicep(
-    ctx: Context,
-    configuration: BicepConfigs,
-    pluginId: string
-  ): Promise<ResourceTemplate> {
+  async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
     return {} as ArmTemplateResult;
   }
   async configure(ctx: Context): Promise<Void> {

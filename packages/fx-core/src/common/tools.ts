@@ -459,8 +459,7 @@ export function canAddSso(
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (
     isExistingTabApp(projectSettings) &&
-    solutionSettings &&
-    !solutionSettings.capabilities.includes(TabSsoItem.id)
+    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem.id))
   ) {
     return ok(Void);
   }

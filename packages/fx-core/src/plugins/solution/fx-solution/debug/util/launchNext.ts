@@ -187,6 +187,55 @@ export function generateM365Compounds(
   return launchCompounds;
 }
 
+export function mergeLaunches(
+  existingData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> {
+  const mergedData = {} as Record<string, unknown>;
+  Object.assign(mergedData, existingData);
+
+  if (mergedData.version === undefined) {
+    mergedData.version = "0.2.0";
+  }
+
+  if (mergedData.configurations === undefined) {
+    mergedData.configurations = newData.configurations;
+  } else {
+    const existingConfigurations = mergedData.configurations as Record<string, unknown>[];
+    const newConfigurations = (newData.configurations ?? []) as Record<string, unknown>[];
+    const keptConfigurations = [];
+    for (const existingConfiguration of existingConfigurations) {
+      if (
+        !newConfigurations.some(
+          (newConfiguration) =>
+            existingConfiguration.name === newConfiguration.name &&
+            existingConfiguration.type === newConfiguration.type &&
+            existingConfiguration.request === newConfiguration.request
+        )
+      ) {
+        keptConfigurations.push(existingConfiguration);
+      }
+    }
+    mergedData.configurations = [...keptConfigurations, ...newConfigurations];
+  }
+
+  if (mergedData.compounds === undefined) {
+    mergedData.compounds = newData.compounds;
+  } else {
+    const existingCompounds = mergedData.compounds as Record<string, unknown>[];
+    const newCompounds = (newData.compounds ?? []) as Record<string, unknown>[];
+    const keptCompounds = [];
+    for (const existingCompound of existingCompounds) {
+      if (!newCompounds.some((newCompound) => existingCompound.name === newCompound.name)) {
+        keptCompounds.push(existingCompound);
+      }
+    }
+    mergedData.compounds = [...keptCompounds, ...newCompounds];
+  }
+
+  return mergedData;
+}
+
 function launchRemote(
   browserType: string,
   browserName: string,

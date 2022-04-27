@@ -4,7 +4,7 @@ import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
 import { bot } from "./internal/initialize";
 
-// HTTP trigger to send notification.
+// HTTP trigger to send notification. You need to add authentication / authorization for this API. Refer https://aka.ms/teamsfx-notification for more details.
 const httpTrigger: AzureFunction = async function (
   context: Context,
   req: HttpRequest

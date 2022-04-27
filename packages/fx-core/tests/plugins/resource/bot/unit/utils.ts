@@ -7,6 +7,10 @@ import {
   LogLevel,
   Platform,
   GraphTokenProvider,
+  Inputs,
+  AzureSolutionSettings,
+  TelemetryReporter,
+  CryptoProvider,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -18,6 +22,7 @@ import {
   PluginAAD,
   PluginSolution,
   PluginLocalDebug,
+  PluginBot,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
 import {
   Colors,
@@ -45,6 +50,15 @@ import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import faker from "faker";
 import sinon from "sinon";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
+import { FunctionsHttpTriggerOptionItem } from "../../../../../src/plugins/resource/bot/question";
+import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import { ResourcePlugins } from "../../../../../src/common/constants";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -279,6 +293,42 @@ export function newPluginContext(): PluginContext {
       frontend: new ConfigMap(),
       backend: new ConfigMap(),
     },
+  };
+}
+
+export function newPluginContextV2(): Context {
+  return {
+    userInteraction: {} as UserInteraction,
+    logProvider: {} as LogProvider,
+    telemetryReporter: {} as TelemetryReporter,
+    cryptoProvider: {} as CryptoProvider,
+    projectSetting: {
+      appName: "test-app",
+      projectId: "project-id",
+      programmingLanguage: "javascript",
+      solutionSettings: {
+        name: "test-solution",
+        capabilities: [PluginActRoles.Bot],
+        hostType: "azure-functions",
+        azureResources: [],
+        activeResourcePlugins: [ResourcePlugins.Aad, ResourcePlugins.Bot],
+      } as AzureSolutionSettings,
+      pluginSettings: {
+        [ResourcePlugins.Bot]: {
+          [PluginBot.HOST_TYPE]: "azure-functions",
+        },
+      },
+    },
+  };
+}
+
+export function newInputV2(): Inputs {
+  return {
+    platform: Platform.VSCode,
+    env: "test",
+    projectPath: "test-app",
+    [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [FunctionsHttpTriggerOptionItem.id],
+    [AzureSolutionQuestionNames.Scenarios]: [BotScenario.NotificationBot],
   };
 }
 

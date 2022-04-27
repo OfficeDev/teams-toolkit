@@ -59,6 +59,7 @@ The default notifying logic is located in `bot/src/index.*s`, and you can also c
 - Use `target.type` to distinguish different targets
 - Use `target.members()`, `target.channels()` to get more targets
 - Send your own card message
+- Send POST request to the `http://<bot-endpoint>/api/notification` with your favorite tools like postman.
 
 ### Edit Teams App manifest
 
@@ -88,12 +89,8 @@ After finish development and to distribute your app to others, you can [Publish 
 
 ## Reference
 
-[Teams Toolkit Notification](https://aka.ms/teamsfx-notification)
-
-[Teams Toolkit and Step-by-step Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-
-[Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
-
-[TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
-
-[Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
+* [Teams Toolkit Notification Tutorial](https://aka.ms/teamsfx-notification)
+* [Teams Toolkit and Step-by-step Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+* [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+* [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
+* [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

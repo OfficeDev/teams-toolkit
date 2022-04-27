@@ -233,7 +233,15 @@ class EnvironmentManager {
   }
 
   public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
-    const envList = await environmentManager.listAllEnvConfigs(projectPath);
+    let envList = await environmentManager.listAllEnvConfigs(projectPath);
+    if (
+      envList.isOk() &&
+      env === environmentManager.getLocalEnvName() &&
+      envList.value?.indexOf(env) < 0
+    ) {
+      await environmentManager.loadEnvConfig(projectPath, env);
+      envList = await environmentManager.listAllEnvConfigs(projectPath);
+    }
     if (envList.isErr()) {
       return err(envList.error);
     }

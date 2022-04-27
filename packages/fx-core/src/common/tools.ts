@@ -66,6 +66,7 @@ import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
+import { isExistingTabApp } from "./projectSettingsHelper";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -455,9 +456,12 @@ export function canAddSso(
       : false;
   }
 
-  const solutionSettings = projectSettings.solutionSettings;
-  if (!solutionSettings) {
-    // existing tab app without SSO
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (
+    isExistingTabApp(projectSettings) &&
+    solutionSettings &&
+    !solutionSettings.capabilities.includes(TabSsoItem.id)
+  ) {
     return ok(Void);
   }
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {

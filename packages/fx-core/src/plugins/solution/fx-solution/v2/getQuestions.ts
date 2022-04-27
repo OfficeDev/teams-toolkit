@@ -65,7 +65,7 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   canAddApiConnection,
   canAddSso,
@@ -928,7 +928,12 @@ export async function getQuestionsForAddFeature(
   if (isApiConnectionAddable) {
     options.push(ApiConnectionOptionItem);
   }
-  options.push(CicdOptionItem);
+  const isCicdAddable = !(
+    inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)
+  );
+  if (isCicdAddable) {
+    options.push(CicdOptionItem);
+  }
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
@@ -953,8 +958,10 @@ export async function getQuestionsForAddFeature(
   const pluginsWithResources = [
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
-    [ResourcePluginsV2.CICDPlugin, CicdOptionItem.id],
   ];
+  if (isCicdAddable) {
+    pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
+  }
   if (isApiConnectionAddable) {
     pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }

@@ -2,7 +2,7 @@ const notificationTemplate = require("./adaptiveCards/notification-default.json"
 const { bot, server } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 
-// HTTP trigger to send notification.
+// HTTP trigger to send notification. You need to add authentication / authorization for this API. Refer https://aka.ms/teamsfx-notification for more details.
 server.post("/api/notification", async (req, res) => {
   for (const target of await bot.notification.installations()) {
     await target.sendAdaptiveCard(

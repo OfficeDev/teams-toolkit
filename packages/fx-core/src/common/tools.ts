@@ -456,7 +456,10 @@ export function canAddSso(
   }
 
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+  if (
+    !projectSettings.solutionSettings ||
+    !(solutionSettings.hostType === HostTypeOptionAzure.id)
+  ) {
     return returnError
       ? err(
           new SystemError(

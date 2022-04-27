@@ -19,7 +19,6 @@ import {
   ProvisionInputs,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
-import { ArmTemplateResult } from "../../../../common/armInterface";
 import { scaffold } from "./scaffold";
 import * as utils from "../utils/common";
 import { HostTypeTriggerOptions } from "../question";

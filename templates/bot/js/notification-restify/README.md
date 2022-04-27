@@ -59,7 +59,9 @@ The default notifying logic is located in `bot/src/index.*s`, and you can also c
 - Use `target.type` to distinguish different targets
 - Use `target.members()`, `target.channels()` to get more targets
 - Send your own card message
-- Send POST request to the `http://localhost:<port>/api/notification` with your favorite tools like postman.
+- Send POST request to the `http://<endpoint>/api/notification` with your favorite tools like postman.
+  - When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  - When your project is deployed to the cloud, replace `<endpoint>` with the url from your hosting resource.
 
 ### Edit Teams App manifest
 

@@ -64,7 +64,9 @@ The default notifying logic is located in `bot/src/*Trigger.*s`, and you can als
 - Use `target.type` to distinguish different targets
 - Use `target.members()`, `target.channels()` to get more targets
 - Send your own card message
-- If your notification project is based on HTTP Triggers, send POST request to the `http://localhost:<port>/api/notification` with your favorite tools like postman.
+- If your notification project is based on HTTP Triggers, send POST request to the `http://<endpoint>/api/notification` with your favorite tools like postman.
+  - When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  - When your project is deployed to the cloud, replace `<endpoint>` with the url from your hosting resource.
 - If you notification project is based on Timer Triggers, you can visit Azure Function Timer Trigger [documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-javascript#ncrontab-expressions) to learn more about how to write CRON expression.
 
 ### Edit Teams App manifest

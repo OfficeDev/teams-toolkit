@@ -1616,7 +1616,7 @@ export async function openReadMeHandler(args: any[]) {
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
     if (isSPFxProject(workspacePath)) {
-      targetFolder = `${workspacePath}/SPFx`;
+      targetFolder = workspacePath;
     } else if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
     } else {

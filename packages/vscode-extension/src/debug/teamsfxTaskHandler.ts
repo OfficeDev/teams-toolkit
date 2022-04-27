@@ -364,24 +364,13 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
       (debugConfig.url || debugConfig.port) && // it's from launch.json
       !debugConfig.postRestartTask
     ) {
+      allRunningDebugSessions.add(event.id);
+
       // and not a restart one
       // send f5 event telemetry
-      const localAppId = (await getLocalTeamsAppId()) as string;
-      const isLocal =
-        (debugConfig.url as string) &&
-        localAppId &&
-        (debugConfig.url as string).includes(localAppId);
-      let appId = "";
       let env = "";
-      if (isLocal) {
-        appId = localAppId;
-      } else {
-        if (debugConfig.teamsfxAppId) {
-          appId = debugConfig.teamsfxAppId;
-        }
-        if (debugConfig.teamsfxEnv) {
-          env = getHashedEnv(event.configuration.env);
-        }
+      if (debugConfig.teamsfxEnv) {
+        env = getHashedEnv(debugConfig.teamsfxEnv);
       }
 
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
@@ -389,12 +378,10 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugType]: debugConfig.type,
         [TelemetryProperty.DebugRequest]: debugConfig.request,
         [TelemetryProperty.DebugPort]: debugConfig.port + "",
-        [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
-        [TelemetryProperty.DebugAppId]: appId,
+        [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
+        [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
         [TelemetryProperty.Env]: env,
       });
-
-      allRunningDebugSessions.add(event.id);
     }
   }
 }

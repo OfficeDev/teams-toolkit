@@ -11,7 +11,7 @@
     "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
     "start": "node ./lib/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon --watch ./src -e ts --exec \"npm run start\""
+    "watch": "nodemon --watch ./src --exec \"npm run start\""
   },
   "repository": {
     "type": "git",

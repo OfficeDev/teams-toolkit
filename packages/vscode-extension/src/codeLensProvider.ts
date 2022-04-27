@@ -164,6 +164,21 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
   }
 }
 
+export class ProjectSettingsCodeLensProvider implements vscode.CodeLensProvider {
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+
+    const editCmd = {
+      title: "⚠️This file is maintained by Teams Toolkit, please do not modify it",
+      command: "",
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editCmd));
+    return codeLenses;
+  }
+}
+
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
 

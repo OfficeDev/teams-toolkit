@@ -10,6 +10,7 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
+  ProjectSettingsFileName,
   FxError,
   InputConfigsFolderName,
   Result,
@@ -30,6 +31,7 @@ import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  ProjectSettingsCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
@@ -498,6 +500,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: adaptiveCardFilePattern,
   };
 
+  const projectSettingsCodeLensProvider = new ProjectSettingsCodeLensProvider();
+  const projectSettingsSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+  };
+
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
   const manifestTemplateSelector = {
     language: "json",
@@ -542,6 +551,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,
       adaptiveCardCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      projectSettingsSelector,
+      projectSettingsCodeLensProvider
     )
   );
   context.subscriptions.push(

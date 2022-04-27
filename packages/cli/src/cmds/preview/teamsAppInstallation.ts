@@ -10,7 +10,7 @@ import CLIUIInstance from "../../userInteraction";
 import { installApp } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
-import { openHubWebClient } from "./launch";
+import { openHubWebClient, openUrlInPrivateWindow } from "./launch";
 import open from "open";
 
 const installOptionItem: OptionItem = {
@@ -90,7 +90,11 @@ export async function showInstallAppInTeamsMessage(
       );
     } else if (result.value.result === configureOutlookOptionItem.id) {
       if (botOutlookChannelLink) {
-        await open(botOutlookChannelLink);
+        if (isLocal) {
+          await openUrlInPrivateWindow(botOutlookChannelLink);
+        } else {
+          await open(botOutlookChannelLink);
+        }
       }
       return await showInstallAppInTeamsMessage(
         isLocal,

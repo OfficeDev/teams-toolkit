@@ -29,4 +29,5 @@ export enum ExtensionErrors {
   GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
   GetTeamsAppInstallationFailed = "GetTeamsAppInstallationFailed",
+  OpenBrowserFailed = "OpenBrowserFailed",
 }

@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { OpeningBrowserFailed } from "./errors";
+import open from "open";
+
+import { OpenBrowserFailed } from "./errors";
 import CLIUIInstance from "../../userInteraction";
 import * as constants from "./constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
@@ -63,7 +65,7 @@ export async function openHubWebClient(
   try {
     await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
   } catch {
-    const error = OpeningBrowserFailed(browser);
+    const error = OpenBrowserFailed(browser);
     if (telemetryProperties) {
       cliTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.PreviewSideloading,
@@ -82,5 +84,29 @@ export async function openHubWebClient(
       ...telemetryProperties,
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
+  }
+}
+
+export async function openUrlInPrivateWindow(url: string): Promise<void> {
+  try {
+    await open(url, {
+      app: [
+        {
+          name: open.apps.chrome,
+          arguments: ["--incognito"],
+        },
+        {
+          name: open.apps.edge,
+          arguments: ["-inprivate"],
+        },
+        {
+          name: open.apps.firefox,
+          arguments: ["-private"],
+        },
+      ],
+    });
+  } catch {
+    const error = OpenBrowserFailed(undefined, url);
+    cliLogger.warning(`${error.source}.${error.name}: ${error.message}`);
   }
 }

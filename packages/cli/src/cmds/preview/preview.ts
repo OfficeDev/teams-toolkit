@@ -609,7 +609,7 @@ export default class Preview extends YargsCommand {
     try {
       await commonUtils.openBrowser(browser, url, browserArguments);
     } catch {
-      const error = errors.OpeningBrowserFailed(browser);
+      const error = errors.OpenBrowserFailed(browser);
       cliTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.PreviewSPFxOpenBrowser,
         error,

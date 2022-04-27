@@ -86,12 +86,14 @@ export function MissingProgrammingLanguageSetting(): UserError {
   );
 }
 
-export function OpeningBrowserFailed(browser: Browser): UserError {
-  return new UserError(
-    constants.cliSource,
-    "OpeningBrowserFailed",
-    `Failed to open ${browser} browser. Check if ${browser} exists on your system.`
-  );
+export function OpenBrowserFailed(browser?: Browser, url?: string): UserError {
+  let message = browser
+    ? `Failed to open ${browser} browser. Check if ${browser} exists on your system.`
+    : `Failed to open browser.`;
+  if (url) {
+    message += ` You can also open the link manually: ${url}`;
+  }
+  return new UserError(constants.cliSource, "OpenBrowserFailed", message);
 }
 
 export function NoUrlForSPFxRemotePreview(): UserError {

@@ -15,6 +15,12 @@ Before run this app locally, make sure you have prepared these prerequisites:
 
 Then, you can quickly start local debugging via `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)` debug option of your preferred browser.
 
+> **Note**: This app will setup [Microsoft Bot Framework](https://dev.botframework.com/) or [Azure Bot Service](https://azure.microsoft.com/services/bot-services/) for further running.
+>
+> If your account has no access to such resource(s), there's an alternative way to send notification via **Incoming Webhook**.
+>
+> Try the Incoming Webhook sample via `Create a new Teams app` -> `Start from a sample` -> `Incoming Webhook Notification`. Or browse the code at our [Sample Repo](https://github.com/OfficeDev/TeamsFx-Samples), `incoming-webhook-notification` folder.
+
 ## Develop
 
 This new project folder structure looks like:

@@ -65,7 +65,7 @@ You can find the Teams app manifest in `templates/appPackage/manifest.template.j
 
 The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
-## Go production
+## Add authentication for your notification API
 
 If you choose http trigger, the scaffolded notification API does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it for production purpose. Here're some common ways to add authentication / authorization for an API:
 

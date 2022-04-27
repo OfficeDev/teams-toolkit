@@ -455,11 +455,12 @@ export function canAddSso(
       : false;
   }
 
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (
-    !projectSettings.solutionSettings ||
-    !(solutionSettings.hostType === HostTypeOptionAzure.id)
-  ) {
+  const solutionSettings = projectSettings.solutionSettings;
+  if (!solutionSettings) {
+    // existing tab app without SSO
+    return ok(Void);
+  }
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     return returnError
       ? err(
           new SystemError(

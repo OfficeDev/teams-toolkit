@@ -171,7 +171,7 @@ export class ProjectSettingsCodeLensProvider implements vscode.CodeLensProvider 
     const codeLenses: vscode.CodeLens[] = [];
 
     const editCmd = {
-      title: "⚠️This file is maintained by Teams Toolkit, please do not modify it",
+      title: "⚠️" + localize("teamstoolkit.codeLens.projectSettingsNotice"),
       command: "",
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editCmd));

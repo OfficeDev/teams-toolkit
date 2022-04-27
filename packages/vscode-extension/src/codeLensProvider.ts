@@ -164,6 +164,21 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
   }
 }
 
+export class ProjectSettingsCodeLensProvider implements vscode.CodeLensProvider {
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+
+    const editCmd = {
+      title: "⚠️" + localize("teamstoolkit.codeLens.projectSettingsNotice"),
+      command: "",
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editCmd));
+    return codeLenses;
+  }
+}
+
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
 

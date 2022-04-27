@@ -504,7 +504,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const projectSettingsSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
+    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`,
   };
 
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();

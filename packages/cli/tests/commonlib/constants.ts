@@ -41,6 +41,7 @@ export enum Capability {
   TabSso = "TabSSO",
   BotSso = "BotSSO",
   TabNonSso = "tab-non-sso",
+  Notification = "notification",
 }
 
 export enum Resource {

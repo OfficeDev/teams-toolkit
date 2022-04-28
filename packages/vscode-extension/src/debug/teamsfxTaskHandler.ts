@@ -10,7 +10,14 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
-import { errorDetail, Hub, issueChooseLink, issueLink, issueTemplate } from "./constants";
+import {
+  errorDetail,
+  Hub,
+  issueChooseLink,
+  issueLink,
+  issueTemplate,
+  m365AppsPrerequisitesHelpLink,
+} from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSurvey } from "../utils/survey";
@@ -367,8 +374,13 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         VS_CODE_UI.showMessage(
           "info",
           localize("teamstoolkit.localDebug.m365TenantHintMessage"),
-          false
-        );
+          false,
+          localize("teamstoolkit.localDebug.learnMore")
+        ).then(async (result) => {
+          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+            await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+          }
+        });
       }
 
       // and not a restart one

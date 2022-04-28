@@ -16,7 +16,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
-import { OpenBrowserFailed } from "../../../../src/cmds/preview/errors";
+import { TempFolderManager } from "../../../../src/cmds/preview/tempFolderManager";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -113,35 +113,33 @@ describe("launch", () => {
     });
   });
 
-  describe("openUrlInPrivateWindow", () => {
-    let warningMessages: string[] = [];
-    beforeEach(() => {
-      warningMessages = [];
-      sandbox.stub(cliLogger, "warning").callsFake(async (message) => {
-        warningMessages.push(message);
-        return true;
-      });
-    });
-
+  describe("openUrlWithNewProfile", () => {
     it("happy path", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
       const launch = proxyquire("../../../../src/cmds/preview/launch", {
         open: async () => {},
       });
-      await launch.openUrlInPrivateWindow("");
-      expect(warningMessages.length).to.deep.equals(0);
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(true);
     });
 
-    it("exception", async () => {
+    it("getTempFolderPath failed", async () => {
+      sandbox
+        .stub(TempFolderManager.prototype, "getTempFolderPath")
+        .returns(Promise.resolve(undefined));
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {},
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(false);
+    });
+
+    it("getTempFolderPath failed", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
       const launch = proxyquire("../../../../src/cmds/preview/launch", {
         open: async () => {
           throw Error("");
         },
       });
-      const url = "test";
-      await launch.openUrlInPrivateWindow(url);
-      expect(warningMessages.length).to.deep.equals(1);
-      const error = OpenBrowserFailed(undefined, url);
-      expect(warningMessages[0]).to.deep.equals(`${error.source}.${error.name}: ${error.message}`);
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(false);
     });
   });
 });

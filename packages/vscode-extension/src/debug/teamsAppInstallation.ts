@@ -12,7 +12,7 @@ import * as commonUtils from "./commonUtils";
 import axios from "axios";
 import { UserError, SystemError } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { openUrlInPrivateWindow } from "./launch";
+import { openUrlWithNewProfile } from "./launch";
 
 export async function showInstallAppInTeamsMessage(env: string, appId: string): Promise<boolean> {
   const isLocal = env === environmentManager.getLocalEnvName();
@@ -58,7 +58,9 @@ export async function showInstallAppInTeamsMessage(env: string, appId: string): 
       let url: string;
       if (isLocal) {
         url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-        await openUrlInPrivateWindow(url);
+        if (!(await openUrlWithNewProfile(url))) {
+          await VS_CODE_UI.openUrl(url);
+        }
       } else {
         url = await commonUtils.getBotOutlookChannelLink(env);
         await VS_CODE_UI.openUrl(url);

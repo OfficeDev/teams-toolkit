@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 import open from "open";
+import * as os from "os";
+import * as path from "path";
 
-import { OpenBrowserFailed } from "./errors";
+import { OpeningBrowserFailed } from "./errors";
 import CLIUIInstance from "../../userInteraction";
 import * as constants from "./constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
@@ -16,6 +18,8 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { Colors, LogLevel } from "@microsoft/teamsfx-api";
 import { getColorizedString } from "../../utils";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { TempFolderManager } from "./tempFolderManager";
 
 export async function openHubWebClient(
   includeFrontend: boolean,
@@ -65,7 +69,7 @@ export async function openHubWebClient(
   try {
     await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
   } catch {
-    const error = OpenBrowserFailed(browser);
+    const error = OpeningBrowserFailed(browser);
     if (telemetryProperties) {
       cliTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.PreviewSideloading,
@@ -87,26 +91,34 @@ export async function openHubWebClient(
   }
 }
 
-export async function openUrlInPrivateWindow(url: string): Promise<void> {
+export async function openUrlWithNewProfile(url: string): Promise<boolean> {
   try {
+    const basePath = path.join(os.homedir(), `.${ConfigFolderName}`, ".tmp", "browser-profile");
+    const tempFolderManager = new TempFolderManager(basePath, 10);
+    const profileFolderPath = await tempFolderManager.getTempFolderPath();
+    if (profileFolderPath === undefined) {
+      return false;
+    }
     await open(url, {
       app: [
         {
           name: open.apps.chrome,
-          arguments: ["--incognito"],
+          arguments: [`--user-data-dir=${profileFolderPath}`],
         },
         {
           name: open.apps.edge,
-          arguments: ["-inprivate"],
+          arguments: [`--user-data-dir=${profileFolderPath}`],
         },
         {
           name: open.apps.firefox,
-          arguments: ["-private"],
+          arguments: ["-profile", profileFolderPath],
         },
       ],
     });
+
+    return true;
   } catch {
-    const error = OpenBrowserFailed(undefined, url);
-    cliLogger.warning(`${error.source}.${error.name}: ${error.message}`);
+    // ignore any error
+    return false;
   }
 }

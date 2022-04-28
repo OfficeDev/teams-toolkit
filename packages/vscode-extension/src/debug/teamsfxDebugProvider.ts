@@ -57,7 +57,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         const teamsAppIdPlaceholder = "${teamsAppId}";
         const isSideloadingConfiguration: boolean = url.includes(teamsAppIdPlaceholder);
         const localTeamsAppInternalIdPlaceholder = "${localTeamsAppInternalId}";
-        // NOTE: 1. there is no app id in M365 messaging extension launch url
+        // NOTE: 1. there is no app id in M365 message extension launch url
         //       2. there are no launch remote configurations for M365 app
         const m365Hosts = ["outlook.office.com", "office.com"];
         const isLocalM365SideloadingConfiguration: boolean =

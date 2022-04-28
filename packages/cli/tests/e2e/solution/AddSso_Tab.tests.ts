@@ -70,7 +70,7 @@ describe("Add SSO", () => {
     }
 
     // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.CommandBot);
+    await CliHelper.addCapabilityToProject(projectPath, Capability.Notification);
 
     // Assert
     {

@@ -6,8 +6,8 @@
   "license": "MIT",
   "main": "./lib/index.js",
   "scripts": {
-    "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
-    "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
+    "dev:teamsfx": "env-cmd --watch ./src --silent -f .env.teamsfx.local npm run dev",
+    "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
     "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
     "start": "node ./lib/index.js",
     "watch": "nodemon --watch ./src --exec \"npm run start\"",

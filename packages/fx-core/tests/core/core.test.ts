@@ -115,7 +115,7 @@ describe("Core basic APIs", () => {
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.join(os.homedir(), inputs.folder, appName);
+      projectPath = path.join(inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
@@ -141,7 +141,7 @@ describe("Core basic APIs", () => {
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.join(os.homedir(), inputs.folder, appName);
+      projectPath = path.join(inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
@@ -216,11 +216,12 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
       [CoreQuestionNames.Capabilities]: ["Tab"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       solution: mockSolutionV2.name,
       stage: Stage.create,
     };
     const createRes = await core.createProject(inputs);
-    projectPath = path.resolve(os.tmpdir(), appName);
+    projectPath = path.resolve(inputs.folder, appName);
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
     await fs.writeFile(

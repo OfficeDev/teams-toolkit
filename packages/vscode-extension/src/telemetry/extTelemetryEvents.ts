@@ -167,7 +167,6 @@ export enum TelemetryEvent {
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
   ClickLocalPreview = "click-local-preview",
-  ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",

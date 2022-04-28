@@ -51,7 +51,6 @@ import {
 import { TelemetryReporterInstance } from "../common/telemetry";
 import {
   createV2Context,
-  getRootDirectory,
   isAadManifestEnabled,
   isConfigUnifyEnabled,
   mapToJson,
@@ -186,15 +185,7 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode) {
-      folder = getRootDirectory();
-      try {
-        await fs.ensureDir(folder);
-      } catch (e) {
-        throw new ProjectFolderInvalidError(folder);
-      }
-    }
+    const folder = inputs[QuestionRootFolder.name] as string;
 
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
@@ -355,15 +346,7 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.VS) {
-      folder = getRootDirectory();
-      try {
-        await fs.ensureDir(folder);
-      } catch (e) {
-        throw new ProjectFolderInvalidError(folder);
-      }
-    }
+    const folder = inputs[QuestionRootFolder.name] as string;
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }

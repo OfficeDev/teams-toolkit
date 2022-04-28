@@ -110,11 +110,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
         solution: mockSolutionV2.name,
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
+      projectPath = path.join(os.homedir(), inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
@@ -135,11 +136,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: "Tab",
+        [CoreQuestionNames.Folder]: os.tmpdir(),
         solution: mockSolutionV2.name,
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
+      projectPath = path.join(os.homedir(), inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
@@ -151,28 +153,6 @@ describe("Core basic APIs", () => {
       }
     });
 
-    it("VSCode with customized default root directory", async () => {
-      appName = randomAppName();
-      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
-      mockedEnvRestore = mockedEnv(newParam);
-      const core = new FxCore(tools);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
-        solution: mockSolutionV2.name,
-        stage: Stage.create,
-      };
-      const res = await core.createProject(inputs);
-      projectPath = path.resolve(
-        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-        appName
-      );
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      mockedEnvRestore();
-    });
     it("create from new (VSC, SPFx) and telemetry is sent", async () => {
       let sendCreate = false;
       sandbox
@@ -192,7 +172,7 @@ describe("Core basic APIs", () => {
       const spfx = Container.get(ResourcePlugins.SpfxPlugin) as Plugin;
       sandbox.stub<any, any>(appstudio, "scaffold").resolves(ok(undefined));
       sandbox.stub<any, any>(spfx, "postScaffold").resolves(ok(undefined));
-      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+      const newParam = { TEAMSFX_APIV3: "false" };
       mockedEnvRestore = mockedEnv(newParam);
       appName = randomAppName();
       const projectSettings: ProjectSettings = {
@@ -203,10 +183,7 @@ describe("Core basic APIs", () => {
           version: "3.0.0",
         },
       };
-      projectPath = path.resolve(
-        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-        appName
-      );
+      projectPath = path.resolve(os.tmpdir(), appName);
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -230,7 +207,7 @@ describe("Core basic APIs", () => {
 
   it("createProject, provision, deploy, localDebug, publish, executeUserTask, getProjectConfig, getQuestionsForUserTask, encrypt, decrypt", async () => {
     appName = randomAppName();
-    const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+    const newParam = { TEAMSFX_APIV3: "false" };
     mockedEnvRestore = mockedEnv(newParam);
     const core = new FxCore(tools);
     const inputs: Inputs = {
@@ -243,10 +220,7 @@ describe("Core basic APIs", () => {
       stage: Stage.create,
     };
     const createRes = await core.createProject(inputs);
-    projectPath = path.resolve(
-      newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-      appName
-    );
+    projectPath = path.resolve(os.tmpdir(), appName);
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
     await fs.writeFile(

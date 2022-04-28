@@ -1,3 +1,5 @@
+// This file implements a function to call Graph API with TeamsFx SDK to get user profile with SSO token.
+
 import { createMicrosoftGraphClient, TeamsFx } from "@microsoft/teamsfx";
 import { TurnContext } from "botbuilder";
 import { DialogTurnResult } from "botbuilder-dialogs";

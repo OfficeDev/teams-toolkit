@@ -1,3 +1,6 @@
+// This file will use TeamsFx SDK to call Graph API to get user profile.
+// Refer to this link to learn more: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#calling-the-microsoft-graph-api.
+
 import { Button } from "@fluentui/react-northstar";
 import { TeamsFx } from "@microsoft/teamsfx";
 import { useGraph } from "@microsoft/teamsfx-react";
@@ -7,10 +10,21 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
     teamsfx: undefined,
     ...props,
   };
+
+  // For usage of useTeamsFx(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#usegraph.
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
+
+      // You can also add following code to get your photo:
+      // let photoUrl = "";
+      // try {
+      //   const photo = await graph.api("/me/photo/$value").get();
+      //   photoUrl = URL.createObjectURL(photo);
+      // } catch {
+      //   // Could not fetch photo from user's profile, return empty string as placeholder.
+      // }
       return { profile };
     },
     { scope: ["User.Read"], teamsfx: teamsfx }

@@ -911,6 +911,7 @@ export async function addSso(
   });
 
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let existingApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -922,6 +923,7 @@ export async function addSso(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
+    existingApp = true;
   }
 
   // Check whether can add sso
@@ -996,7 +998,7 @@ export async function addSso(
     inputsNew,
     localSettings,
     [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)],
-    [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
+    existingApp ? [] : [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
   );
   if (scaffoldRes.isErr()) {
     ctx.projectSetting.solutionSettings = originalSettings;

@@ -3,17 +3,15 @@
 
 import { assembleError, err, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { isConfigUnifyEnabled, isAadManifestEnabled } from "../../common/tools";
-import { CoreSource, AadManifestMigrationCanceledError } from "../error";
+import { CoreSource } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import {
   Component,
-  ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
-  TelemetryProperty,
 } from "../../common/telemetry";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
@@ -22,27 +20,18 @@ import { getResourceFolder, getTemplatesFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import { needConsolidateLocalRemote } from "./consolidateLocalRemote";
-import {
-  RequiredResourceAccess,
-  AADManifest,
-} from "../../plugins/resource/aad/interfaces/AADManifest";
+import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
 import { Constants } from "../../plugins/resource/aad/constants";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import * as os from "os";
+import { Permission, permissionsToRequiredResourceAccess } from "./MigrationUtils";
 
-const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
 const LearnMoreLink = "https://aka.ms/teamsfx-aad-manifest";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
 const upgradeReportName = "aad-manifest-change-logs.md";
-
-interface Permission {
-  resource: string;
-  delegated: string[];
-  application: string[];
-}
 
 export const AadManifestMigrationMW: Middleware = async (
   ctx: CoreHookContext,
@@ -54,45 +43,13 @@ export const AadManifestMigrationMW: Middleware = async (
     await next();
   } else if ((await needMigrateToAadManifest(ctx)) && checkMethod(ctx)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-
-    let showModal = true;
-    if (ctx.method && methods.has(ctx.method)) {
-      showModal = false;
-    }
-    if (showModal) {
-      await upgrade(ctx, next, true);
-    } else {
-      upgrade(ctx, next, false);
-    }
+    await upgrade(ctx, next);
   } else {
     await next();
   }
 };
 
-async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: boolean) {
-  let answer: string | undefined = undefined;
-  do {
-    const res = await TOOLS?.ui.showMessage(
-      "warn",
-      getLocalizedString("core.aadManifestMigration.Message"),
-      showModal,
-      upgradeButton,
-      LearnMore
-    );
-    answer = res?.isOk() ? res.value : undefined;
-    if (answer === LearnMore) {
-      TOOLS?.ui.openUrl(LearnMoreLink);
-    }
-  } while (answer === LearnMore);
-  if (!answer || answer != upgradeButton) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationNotification, {
-      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
-    });
-    ctx.result = err(AadManifestMigrationCanceledError());
-    outputCancelMessage(ctx);
-    return;
-  }
-
+async function upgrade(ctx: CoreHookContext, next: NextFunction) {
   try {
     await migrate(ctx);
     await next();
@@ -146,43 +103,6 @@ async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> 
   } catch (err) {
     return false;
   }
-}
-
-function outputCancelMessage(ctx: CoreHookContext) {
-  TOOLS?.logProvider.warning(getLocalizedString("core.aadManifestMigration.Canceled"));
-
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (inputs.platform === Platform.VSCode) {
-    TOOLS?.logProvider.warning(
-      getLocalizedString("core.aadManifestMigration.VSCodeCanceledNotice")
-    );
-  } else {
-    TOOLS?.logProvider.warning(getLocalizedString("core.aadManifestMigration.CLICanceledNotice"));
-    TOOLS?.logProvider.warning(
-      getLocalizedString("core.aadManifestMigration.CLINotReadyInstallLatestVersionNotice")
-    );
-  }
-}
-
-function permissionsToRequiredResourceAccess(permissions: Permission[]): RequiredResourceAccess[] {
-  const result: RequiredResourceAccess[] = [];
-  permissions.forEach((permission) => {
-    const res: RequiredResourceAccess = {
-      resourceAppId: permission.resource,
-      resourceAccess: permission.application
-        .map((item) => {
-          return { id: item, type: "Role" };
-        })
-        .concat(
-          permission.delegated.map((item) => {
-            return { id: item, type: "Scope" };
-          })
-        ),
-    };
-
-    result.push(res);
-  });
-  return result;
 }
 
 async function migrate(ctx: CoreHookContext): Promise<boolean> {
@@ -310,7 +230,6 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 }
 
 function checkMethod(ctx: CoreHookContext): boolean {
-  const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
   if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
   userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
@@ -318,14 +237,21 @@ function checkMethod(ctx: CoreHookContext): boolean {
 
 async function postMigration(inputs: Inputs): Promise<void> {
   if (inputs.platform === Platform.VSCode) {
-    await TOOLS?.ui.showMessage(
+    const res = await TOOLS?.ui.showMessage(
       "info",
       getLocalizedString("core.aadManifestMigration.outputMsg"),
       false,
-      "OK"
+      "OK",
+      LearnMore
     );
+    const answer = res?.isOk() ? res.value : undefined;
+    if (answer === LearnMore) {
+      TOOLS?.ui.openUrl(LearnMoreLink);
+    }
   } else {
-    TOOLS?.logProvider.info(getLocalizedString("core.aadManifestMigration.SuccessMessage"));
+    TOOLS?.logProvider.info(
+      getLocalizedString("core.aadManifestMigration.SuccessMessage", LearnMoreLink)
+    );
   }
 }
 

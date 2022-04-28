@@ -227,7 +227,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await envTreeProviderInstance.reloadEnvironments();
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-change-logs.md"
+        "**/unify-config-and-aad-manifest-change-logs.md"
       );
 
       unifyConfigWatcher.onDidCreate(async (event) => {
@@ -326,7 +326,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
-  const unifyConfigMD = "unify-config-change-logs.md";
+  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
   if (changeLogsPath !== filePath) {
     return;

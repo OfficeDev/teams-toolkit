@@ -10,9 +10,9 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  ProjectSettingsFileName,
   FxError,
   InputConfigsFolderName,
+  ProjectSettingsFileName,
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
@@ -31,8 +31,8 @@ import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
-  ProjectSettingsCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
+  ProjectSettingsCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import VsCodeLogInstance from "./commonlib/log";
@@ -429,6 +429,34 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.addSsoHanlder)
   );
   context.subscriptions.push(addSso);
+
+  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
+    Correlator.run(handlers.signinM365Callback, args)
+  );
+  context.subscriptions.push(signinM365);
+
+  const refreshSideloading = vscode.commands.registerCommand(
+    "fx-extension.refreshSideloading",
+    (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
+  );
+  context.subscriptions.push(refreshSideloading);
+
+  const checkSideloading = vscode.commands.registerCommand(
+    "fx-extension.checkSideloading",
+    (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
+  );
+  context.subscriptions.push(checkSideloading);
+
+  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
+    Correlator.run(handlers.signinAzureCallback, args)
+  );
+  context.subscriptions.push(signinAzure);
+
+  const specifySubscription = vscode.commands.registerCommand(
+    "fx-extension.specifySubscription",
+    (...args) => Correlator.run(handlers.selectSubscriptionCallback, args)
+  );
+  context.subscriptions.push(specifySubscription);
 
   const workspacePath = handlers.getWorkspacePath();
   vscode.commands.executeCommand(

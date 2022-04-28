@@ -10,6 +10,7 @@ import { isPreviewFeaturesEnabled, isValidProject } from "@microsoft/teamsfx-cor
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
+import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
@@ -38,10 +39,8 @@ class TreeViewManager {
   public async registerTreeViews(workspacePath?: string): Promise<vscode.Disposable[]> {
     if (isValidProject(workspacePath)) {
       return this.registerTreeViewsForTeamsFxProject(workspacePath);
-    } else {
-      // TODO: remove this logic because walkthrough is enabled.
-      return this.registerTreeViewsForNonTeamsFxProject();
     }
+    return [];
   }
 
   public getTreeView(viewName: string) {
@@ -66,7 +65,7 @@ class TreeViewManager {
       }
     }
     for (const provider of this.treeViewProvidersToUpdate.values()) {
-      provider.refresh([]);
+      provider.refresh();
     }
   }
 
@@ -82,7 +81,7 @@ class TreeViewManager {
       }
     }
     for (const provider of this.treeViewProvidersToUpdate.values()) {
-      provider.refresh([]);
+      provider.refresh();
     }
   }
 
@@ -108,18 +107,11 @@ class TreeViewManager {
     return disposables;
   }
 
-  private async registerTreeViewsForNonTeamsFxProject() {
-    const disposables: vscode.Disposable[] = [];
-
-    this.registerAccount(disposables);
-
-    return disposables;
-  }
-
   private registerAccount(disposables: vscode.Disposable[]) {
-    const accountProvider = new CommandsTreeViewProvider([]);
-    disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
-    this.treeviewMap.set("teamsfx-accounts", accountProvider);
+    disposables.push(
+      vscode.window.registerTreeDataProvider("teamsfx-accounts", accountTreeViewProviderInstance)
+    );
+    this.treeviewMap.set("teamsfx-accounts", accountTreeViewProviderInstance);
   }
 
   private registerEnvironment(disposables: vscode.Disposable[]) {

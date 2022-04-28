@@ -89,45 +89,36 @@ export class CommandResponseMiddleware implements Middleware {
   }
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
-    const type = this.classifyActivity(context.activity);
+    if (context.activity.type === ActivityTypes.Message) {
+      // Invoke corresponding command handler for the command response
+      const commandText = this.getActivityText(context.activity);
 
-    switch (type) {
-      case ActivityType.CurrentBotMessaged:
-        // Invoke corresponding command handler for the command response
-        const commandText = this.getActivityText(context.activity);
+      const message: CommandMessage = {
+        text: commandText,
+      };
 
-        const message: CommandMessage = {
-          text: commandText,
-        };
+      for (const handler of this.commandHandlers) {
+        const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
 
-        for (const handler of this.commandHandlers) {
-          const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
+        // It is important to note that the command bot will stop processing handlers
+        // when the first command handler is matched.
+        if (!!matchResult) {
+          message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+          const response = await handler.handleCommandReceived(context, message);
 
-          // It is important to note that the command bot will stop processing handlers
-          // when the first command handler is matched.
-          if (!!matchResult) {
-            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-
-            const response = await handler.handleCommandReceived(context, message);
+          if (typeof response === "string") {
             await context.sendActivity(response);
-            break;
+          } else {
+            const replyActivity = response as Partial<Activity>;
+            if (replyActivity) {
+              await context.sendActivity(replyActivity);
+            }
           }
         }
-
-        break;
-      default:
-        break;
+      }
     }
 
     await next();
-  }
-
-  private classifyActivity(activity: Activity): ActivityType {
-    if (activity.type === ActivityTypes.Message) {
-      return ActivityType.CurrentBotMessaged;
-    }
-
-    return ActivityType.Unknown;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {

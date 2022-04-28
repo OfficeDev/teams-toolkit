@@ -11,6 +11,7 @@ import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import * as appService from "@azure/arm-appservice";
 import { PluginBot } from "../resources/strings";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 
 export function toBase64(source: string): string {
   return Base64.encode(source);
@@ -107,6 +108,25 @@ export function checkAndSavePluginSetting(
     context.projectSettings.pluginSettings[PluginBot.PLUGIN_NAME] = {};
   }
   context.projectSettings.pluginSettings[PluginBot.PLUGIN_NAME][key] = value;
+}
+
+export function checkAndSavePluginSettingV2(
+  context: Context,
+  key: string,
+  value: ConfigValue
+): void {
+  if (!value || !context.projectSetting) {
+    return;
+  }
+
+  if (!context.projectSetting.pluginSettings) {
+    context.projectSetting.pluginSettings = {};
+  }
+
+  if (!context.projectSetting.pluginSettings[PluginBot.PLUGIN_NAME]) {
+    context.projectSetting.pluginSettings[PluginBot.PLUGIN_NAME] = {};
+  }
+  context.projectSetting.pluginSettings[PluginBot.PLUGIN_NAME][key] = value;
 }
 
 export function existsInEnumValues<T extends string>(

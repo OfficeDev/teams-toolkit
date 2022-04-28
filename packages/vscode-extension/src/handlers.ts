@@ -50,6 +50,7 @@ import {
   IProgressHandler,
   ProjectSettingsFileName,
   OptionItem,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import {
   CollaborationState,
@@ -64,6 +65,7 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
+  isPreviewFeaturesEnabled,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -131,13 +133,13 @@ import {
   SpfxManageSiteAdminUrl,
 } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
-import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
-import { showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
+import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
 import { localize, parseLocale } from "./utils/localizeUtils";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
+import { openHubWebClient } from "./debug/launch";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -533,26 +535,6 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
   }
 
   const debugConfig = await commonUtils.getDebugConfig(true);
-  return launch(debugConfig, progressBar);
-}
-
-async function previewRemote(
-  env: string,
-  progressBar: IProgressHandler
-): Promise<Result<null, FxError>> {
-  const debugConfig = await commonUtils.getDebugConfig(false, env);
-  return launch(debugConfig, progressBar);
-}
-
-async function launch(
-  debugConfig:
-    | {
-        appId: string;
-        env?: string;
-      }
-    | undefined,
-  progressBar: IProgressHandler
-): Promise<Result<null, FxError>> {
   if (!debugConfig?.appId) {
     const error = new UserError(
       ExtensionSource,
@@ -561,12 +543,74 @@ async function launch(
     );
     return err(error);
   }
-
   progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-  const accountHint = await generateAccountHint();
-  // eslint-disable-next-line no-secrets/no-secrets
-  const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
-  await vscode.env.openExternal(Uri.parse(uri));
+  await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
+  return ok(null);
+}
+
+async function previewRemote(
+  env: string,
+  progressBar: IProgressHandler
+): Promise<Result<null, FxError>> {
+  try {
+    const debugConfig = await commonUtils.getDebugConfig(false, env);
+    if (!debugConfig?.appId) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.TeamsAppIdNotFoundError,
+        localize("teamstoolkit.handlers.teamsAppIdNotFound")
+      );
+      return err(error);
+    }
+
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+
+    let hub = constants.Hub.teams;
+    if (projectSettings.isM365) {
+      const platformSingleSelect: SingleSelectConfig = {
+        name: "platform",
+        title: localize("teamstoolkit.preview.platform.title"),
+        options: [constants.Hub.teams, constants.Hub.outlook],
+        placeholder: localize("teamstoolkit.preview.platform.placeholder"),
+      };
+      if (includeFrontend) {
+        (platformSingleSelect.options as string[]).push(constants.Hub.office);
+      }
+      const platformResult = await VS_CODE_UI.selectOption(platformSingleSelect);
+      if (platformResult.isErr()) {
+        return err(platformResult.error);
+      }
+
+      hub = platformResult.value.result as constants.Hub;
+    }
+
+    if (hub === constants.Hub.teams) {
+      progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await openHubWebClient(includeFrontend, debugConfig.appId, hub);
+    } else {
+      const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
+      if (!shouldContinue) {
+        return err(UserCancelError);
+      }
+
+      const internalId = await getTeamsAppInternalId(debugConfig.appId);
+      if (internalId !== undefined) {
+        progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await openHubWebClient(includeFrontend, internalId, hub);
+      }
+    }
+  } catch (error) {
+    const assembledError = assembleError(error);
+    showError(assembledError);
+    return err(assembledError);
+  }
+
   return ok(null);
 }
 
@@ -627,80 +671,35 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
 }
 
 export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxError>> {
-  // TODO: move the question model to fx-core addFeature API
-  const addFeatureConfig: SingleSelectConfig = {
-    name: "addFeature",
-    title: "Add features",
-    step: 1,
-    options: [
-      {
-        id: "capability",
-        label: `${localize("teamstoolkit.handlers.addFeature.capability.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.capability.detail"),
-      },
-      {
-        id: "resource",
-        label: `${localize("teamstoolkit.handlers.addFeature.resource.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.resource.detail"),
-      },
-      {
-        id: "additional",
-        label: `${localize("teamstoolkit.handlers.addFeature.additional.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.additional.detail"),
-      },
-    ],
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddFeatureStart, getTriggerFromProperty(args));
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addFeature",
   };
-  const additionalFeatureConfig: SingleSelectConfig = {
-    name: "additionalFeature",
-    title: "Additional features",
-    step: 2,
-    options: [
-      {
-        id: "sso",
-        label: `${localize("teamstoolkit.handlers.addFeature.sso.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.sso.detail"),
-      },
-      {
-        id: "api",
-        label: `${localize("teamstoolkit.handlers.addFeature.api.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.api.detail"),
-      },
-      {
-        id: "cicd",
-        label: `${localize("teamstoolkit.handlers.addFeature.cicd.label")}`,
-        detail: localize("teamstoolkit.handlers.addFeature.cicd.detail"),
-      },
-    ],
-  };
-  const stack = [addFeatureConfig];
-  while (stack.length > 0) {
-    const config = stack.pop() as SingleSelectConfig;
-    const answer = await VS_CODE_UI.selectOption(config);
-    if (answer.isErr()) {
-      return err(answer.error);
-    }
-    if (answer.value.type === "back") {
-      continue;
-    }
-    if (config.name === "addFeature") {
-      if (answer.value.result === "capability") {
-        return addCapabilityHandler(args);
-      } else if (answer.value.result === "resource") {
-        return addResourceHandler(args);
-      } else if (answer.value.result === "additional") {
-        stack.push(additionalFeatureConfig);
-      }
-    } else if (config.name === "additionalFeature") {
-      if (answer.value.result === "sso") {
-        return addSsoHanlder();
-      } else if (answer.value.result === "api") {
-        return connectExistingApiHandler(args);
-      } else if (answer.value.result === "cicd") {
-        return addCICDWorkflowsHandler(args);
-      }
-    }
+  let excludeFrontend = true,
+    excludeBot = true,
+    excludeBackend = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
   }
-  return Promise.resolve(ok(null));
+  const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
+  if (result.isOk()) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
+    await envTreeProviderInstance.reloadEnvironments();
+  }
+
+  return result;
 }
 
 export async function connectExistingApiHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1300,8 +1299,10 @@ export async function installAppInTeams(): Promise<string | undefined> {
         "Debug config not found"
       );
     }
-    const botId = await commonUtils.getLocalBotId();
-    shouldContinue = await showInstallAppInTeamsMessage(false, debugConfig.appId, botId);
+    shouldContinue = await showInstallAppInTeamsMessage(
+      environmentManager.getLocalEnvName(),
+      debugConfig.appId
+    );
   } catch (error: any) {
     showError(error);
   }
@@ -1548,7 +1549,7 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe === ext.workspaceUri.fsPath) {
+  if (isOpenReadMe === ext.workspaceUri?.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto, false]);
@@ -2621,10 +2622,14 @@ export async function openConfigStateFile(args: any[]) {
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
       return err(noEnvError);
     } else {
+      const isLocalEnv = env.value === environmentManager.getLocalEnvName();
+      const message = isLocalEnv
+        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env.value)
+        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value);
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
-        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value)
+        message
       );
       const provision = {
         title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
@@ -2632,14 +2637,25 @@ export async function openConfigStateFile(args: any[]) {
           Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
         },
       };
+      const localdebug = {
+        title: localize("teamstoolkit.handlers.localDebugTitle"),
+        run: async (): Promise<void> => {
+          Correlator.run(selectAndDebugHandler, [TelemetryTriggerFrom.Other]);
+        },
+      };
 
       const errorCode = `${noEnvError.source}.${noEnvError.name}`;
       const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
       window
-        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, provision)
+        .showErrorMessage(
+          `[${errorCode}]: ${notificationMessage}`,
+          isLocalEnv ? localdebug : provision
+        )
         .then((selection) => {
           if (
-            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew")
+            selection?.title ===
+              localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew") ||
+            selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
           ) {
             selection.run();
           }
@@ -3051,6 +3067,10 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
+  if (!isPreviewFeaturesEnabled()) {
+    VS_CODE_UI.showMessage("info", localize("teamstoolkit.common.commingSoon"), false);
+    return ok(null);
+  }
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: "Tutorials",

@@ -61,6 +61,38 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
+function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return (
+    azureSettings !== undefined &&
+    (azureSettings.capabilities?.includes(BotOptionItem.id) ||
+      azureSettings.capabilities?.includes(MessageExtensionItem.id))
+  );
+}
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(
+  azureSettings: AzureSolutionSettings | undefined
+): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
+}
+
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
   const ret: Record<v2.PluginName, T> = {};
   for (const record of records) {
@@ -185,7 +217,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
-        "localSettings.json"
+        "state.local.json"
       );
       return err(
         new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
@@ -268,6 +300,9 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionSPFx.id;
   } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
     capabilities = [TabOptionItem.id];
+    if (isAadManifestEnabled()) {
+      capabilities.push(TabSsoItem.id);
+    }
     hostType = HostTypeOptionAzure.id;
   } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
     capabilities = [MessageExtensionItem.id];

@@ -34,6 +34,9 @@ export enum TelemetryEvent {
   AddCapStart = "add-capability-start",
   AddCap = "add-capability",
 
+  AddFeatureStart = "add-feature-start",
+  AddFeature = "add-feature",
+
   OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 

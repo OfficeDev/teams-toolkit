@@ -45,7 +45,7 @@ import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
   hasAAD,
   hasAzureResource,
-  isPureExistingApp,
+  isExistingTabApp,
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -144,7 +144,7 @@ export async function provisionResource(
     }
   }
 
-  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  const pureExistingApp = isExistingTabApp(ctx.projectSetting);
 
   envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
   const solutionInputs = extractSolutionInputs(envInfo.state[GLOBAL_CONFIG]);

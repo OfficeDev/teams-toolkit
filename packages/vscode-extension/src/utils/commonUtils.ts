@@ -19,7 +19,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   environmentManager,
-  initializeGAFeatureFlags,
+  initializePreviewFeatureFlags,
+  isExistingTabApp as isExistingTabAppCore,
   isValidProject,
   PluginNames,
 } from "@microsoft/teamsfx-core";
@@ -131,10 +132,10 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
 
   if (await fs.pathExists(projectSettingsPath)) {
     const projectSettings = await fs.readJson(projectSettingsPath);
-    return !projectSettings.solutionSettings;
-  } else {
-    return false;
+    return isExistingTabAppCore(projectSettings);
   }
+
+  return false;
 }
 
 export async function isM365Project(workspacePath: string): Promise<boolean> {
@@ -257,18 +258,10 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  process.env["BOT_NOTIFICATION_ENABLED"] = getConfiguration(
-    ConfigurationKey.BotNotificationCommandAndResponseEnabled
-  ).toString();
+  // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
+  process.env[FeatureFlags.Preview] = "true";
 
-  process.env["TEAMSFX_M365_APP"] = getConfiguration(ConfigurationKey.enableM365App).toString();
-  process.env["TEAMSFX_INIT_APP"] = getConfiguration(ConfigurationKey.EnableExistingApp).toString();
-
-  process.env["TEAMSFX_GA_PREVIEW"] = getConfiguration(
-    ConfigurationKey.EnableGAPreviewFeatures
-  ).toString();
-
-  initializeGAFeatureFlags();
+  initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
@@ -276,7 +269,7 @@ export class FeatureFlags {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
-  static readonly GeneralAvailablityPreview = "TEAMSFX_GA_PREVIEW";
+  static readonly Preview = "TEAMSFX_PREVIEW";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

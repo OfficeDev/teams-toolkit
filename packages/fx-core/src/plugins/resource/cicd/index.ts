@@ -38,7 +38,7 @@ import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { isPureExistingApp } from "../../../common";
+import { isExistingTabApp } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
 
 @Service(ResourcePluginsV2.CICDPlugin)
@@ -69,7 +69,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
     // add CI CD workflows for minimal app is not supported.
-    if (inputs.platform !== Platform.CLI_HELP && isPureExistingApp(ctx.projectSetting)) {
+    if (inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)) {
       throw new NoCapabilityFoundError(Stage.addCiCdFlow);
     }
 
@@ -112,6 +112,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
+        skipSingleOption: true,
       };
       whichEnvironment.staticOptions = envProfilesResult.value;
       cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));

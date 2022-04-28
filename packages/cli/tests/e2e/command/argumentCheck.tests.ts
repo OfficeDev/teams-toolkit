@@ -5,7 +5,7 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
-import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 
 import { execAsync } from "../commonUtils";
@@ -13,7 +13,7 @@ import { execAsync } from "../commonUtils";
 describe("teamsfx command argument check", function () {
   it(`teamsfx add me`, async function () {
     try {
-      const command = isGAPreviewEnabled() ? `teamsfx add me` : `teamsfx capability add me`;
+      const command = isPreviewFeaturesEnabled() ? `teamsfx add me` : `teamsfx capability add me`;
       await execAsync(command, {
         env: process.env,
         timeout: 0,

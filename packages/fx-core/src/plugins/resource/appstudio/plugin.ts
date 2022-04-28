@@ -77,7 +77,7 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import path from "path";
-
+import * as util from "util";
 import {
   getAppDirectory,
   isAADEnabled,
@@ -317,9 +317,7 @@ export class AppStudioPluginImpl {
       return err(result.error);
     }
 
-    ctx.logProvider?.info(
-      getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
-    );
+    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"));
     await postProvisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
@@ -532,14 +530,19 @@ export class AppStudioPluginImpl {
         return err(result.error);
       }
 
-      ctx.logProvider?.info(
-        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value)
-      );
-      ctx.ui?.showMessage(
-        "info",
-        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice", result.value),
-        false
-      );
+      ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"));
+      ctx.ui
+        ?.showMessage(
+          "info",
+          getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
+          false,
+          Constants.VIEW_DEVELOPER_PORTAL
+        )
+        .then((res) => {
+          if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
+            ctx.ui?.openUrl(util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value));
+          }
+        });
       return ok(teamsAppId);
     } catch (error) {
       if (error.message && error.message.includes("404")) {

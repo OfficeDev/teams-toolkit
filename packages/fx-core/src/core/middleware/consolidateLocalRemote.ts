@@ -40,10 +40,21 @@ import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
 const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
+const UnifyManifestLearMoreLink = "https://aka.ms/teamsfx-unify-local-remote-manifest-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
 const upgradeReportName = "unify-config-change-logs.md";
+const componentIdRegex = /(?<=componentId=)([a-z0-9-]*)(?=%26)/;
+const manifestRegex = /{{{.*}}}|{{.*}}|{.*}/g;
+const ignoreKeys: Set<string> = new Set([
+  "name",
+  "contentUrl",
+  "configurationUrl",
+  "manifestVersion",
+  "$schema",
+  "description",
+]);
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -108,12 +119,13 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
   }
 }
 
-// check if config.local.json and manifest.template.json exist
+// check if manifest.template.json exist
 export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   if (!isConfigUnifyEnabled()) {
     return false;
   }
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (!inputs.projectPath) {
     return false;
   }
@@ -122,13 +134,10 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
     return false;
   }
 
-  const localEnvExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, ".fx", "configs", "config.local.json")
-  );
   const consolidateManifestExist = await fs.pathExists(
     path.join(inputs.projectPath as string, "templates", "appPackage", "manifest.template.json")
   );
-  if (!localEnvExist && !consolidateManifestExist) {
+  if (!consolidateManifestExist) {
     return true;
   }
   return false;
@@ -137,7 +146,8 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
 function outputCancelMessage(ctx: CoreHookContext) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
@@ -154,7 +164,8 @@ function outputCancelMessage(ctx: CoreHookContext) {
 
 async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgradeStart);
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const lastArg = ctx.arguments[ctx.arguments.length - 1];
+  const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   const fileList: Array<string> = [];
   const removeMap = new Map<string, string>();
   const loadRes = await loadProjectSettings(inputs, true);
@@ -200,6 +211,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         if (manifest?.staticTabs && manifest.staticTabs.length > 0) {
           manifest.staticTabs.forEach((item) => {
             componentId = item.entityId;
+            if ((item.contentUrl && componentId === undefined) || componentId === "") {
+              componentId = replaceSPFxComponentId(item.contentUrl as string);
+            }
             const contentUrl = util.format(
               ManifestTemplate.REMOTE_CONTENT_URL,
               componentId,
@@ -210,6 +224,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         }
         if (manifest?.configurableTabs && manifest.configurableTabs.length > 0) {
           manifest.configurableTabs.forEach((item) => {
+            if ((item.configurationUrl && componentId === undefined) || componentId === "") {
+              componentId = replaceSPFxComponentId(item.configurationUrl as string);
+            }
             const configurationUrl = util.format(
               ManifestTemplate.REMOTE_CONFIGURATION_URL,
               componentId,
@@ -260,6 +277,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       "appPackage",
       "manifest.local.template.json"
     );
+    if ((await fs.pathExists(localManifestFile)) && (await fs.pathExists(remoteManifestFile))) {
+      await compareLocalAndRemoteManifest(localManifestFile, remoteManifestFile);
+    }
     if (await fs.pathExists(localManifestFile)) {
       await fs.copy(
         localManifestFile,
@@ -366,4 +386,81 @@ async function generateUpgradeReport(backupFolder: string) {
   } catch (error) {
     // do nothing
   }
+}
+
+function replaceSPFxComponentId(content: string): string {
+  const match = componentIdRegex.exec(content);
+  if (match) {
+    return match[0];
+  }
+  return "";
+}
+
+async function compareLocalAndRemoteManifest(
+  localManifestFile: string,
+  remoteManifestFile: string
+) {
+  try {
+    const localManifestString = (await fs.readFile(localManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const remoteManifestString = (await fs.readFile(remoteManifestFile))
+      .toString()
+      .replace(manifestRegex, "");
+    const localManifestJson = JSON.parse(localManifestString);
+    const remoteManifestJson = JSON.parse(remoteManifestString);
+    if (!diff(localManifestJson, remoteManifestJson)) {
+      notifyToUpdateManifest();
+    }
+  } catch (error) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectConsolidateCheckManifestError,
+      assembleError(error, CoreSource)
+    );
+  }
+}
+
+async function notifyToUpdateManifest() {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.consolidateLocalRemote.DifferentManifest"),
+    false,
+    "OK",
+    LearnMore
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (answer === LearnMore) {
+    TOOLS?.ui.openUrl(UnifyManifestLearMoreLink);
+  }
+}
+
+function diff(a: any, b: any): boolean {
+  const keys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (keys.length != bKeys.length) {
+    return false;
+  }
+  let aValue, bValue, key;
+  for (key of keys) {
+    if (ignoreKeys.has(key)) {
+      continue;
+    }
+    aValue = a[key];
+    bValue = b[key];
+    if (isObject(aValue) && isObject(bValue)) {
+      if (!diff(aValue, bValue)) {
+        return false;
+      }
+    } else {
+      if (aValue !== bValue) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isObject(o: any): boolean {
+  return typeof o === "object" && !!o;
 }

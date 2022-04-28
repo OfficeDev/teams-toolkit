@@ -214,7 +214,7 @@ export class FunctionPluginImpl {
       type: "group",
     });
 
-    if (func.method === CustomizedTask.addResource) {
+    if (func.method === CustomizedTask.addResource || func.method === CustomizedTask.addFeature) {
       functionNameQuestion.validation = {
         validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);

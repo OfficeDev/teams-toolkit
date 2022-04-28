@@ -40,6 +40,7 @@ import {
   TabNewUIOptionItem,
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
+  BotNewUIOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -254,6 +255,29 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: validateCapabilities,
     },
     onDidChangeSelection: onChangeSelectionForCapabilities,
+  };
+}
+
+export function createCapabilityQuestionPreview(): SingleSelectQuestion {
+  // new capabilities question order
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    ExistingTabOptionItem,
+    TabNewUIOptionItem,
+    TabSPFxNewUIItem,
+    TabNonSsoItem,
+    BotNewUIOptionItem,
+    MessageExtensionNewUIItem,
+    M365SsoLaunchPageOptionItem,
+    M365SearchAppOptionItem,
+  ];
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.titleNew"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
   };
 }
 

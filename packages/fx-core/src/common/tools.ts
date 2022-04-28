@@ -475,7 +475,7 @@ export function canAddSso(
       : false;
   }
 
-  // Will throw error if only Message Extension is selected
+  // Will throw error if only Messaging Extension is selected
   if (
     solutionSettings.capabilities.length === 1 &&
     solutionSettings.capabilities[0] === MessageExtensionItem.id

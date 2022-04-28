@@ -430,6 +430,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addSso);
 
+  const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
+    Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])
+  );
+  context.subscriptions.push(openTutorial);
+
   const workspacePath = handlers.getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",

@@ -473,6 +473,7 @@
   "core.ProgrammingLanguageQuestion.title": "Programming Language",
   "core.ProgrammingLanguageQuestion.placeholder": "Select a programming language.",
   "core.ProgrammingLanguageQuestion.placeholder.spfx": "SPFx is currently supporting TypeScript only.",
+  "core.option.tutorial": "Open tutorial",
   "core.TabOption.label": "Tab",
   "core.TabOption.labelNew": "SSO-enabled tab",
   "core.TabOption.description": "UI-based app",

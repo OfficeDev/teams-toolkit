@@ -66,7 +66,7 @@ export class BicepProvider {
               }
               if (arm.Configuration.Orchestration) {
                 plan = await appendContentInFilePlan(
-                  path.join(templateFolder, `config.bicep`),
+                  path.join(templateFolder, "config.bicep"),
                   "config orchestration"
                 );
                 plans.push(plan);

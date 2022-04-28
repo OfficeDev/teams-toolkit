@@ -3,6 +3,7 @@
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
+import proxyquire from "proxyquire";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import { openHubWebClient } from "../../../../src/cmds/preview/launch";
@@ -15,6 +16,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
+import { OpenBrowserFailed } from "../../../../src/cmds/preview/errors";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -108,6 +110,38 @@ describe("launch", () => {
         },
       ]);
       expect(sideloadingUrl).to.deep.equals(teamsUrl);
+    });
+  });
+
+  describe("openUrlInPrivateWindow", () => {
+    let warningMessages: string[] = [];
+    beforeEach(() => {
+      warningMessages = [];
+      sandbox.stub(cliLogger, "warning").callsFake(async (message) => {
+        warningMessages.push(message);
+        return true;
+      });
+    });
+
+    it("happy path", async () => {
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {},
+      });
+      await launch.openUrlInPrivateWindow("");
+      expect(warningMessages.length).to.deep.equals(0);
+    });
+
+    it("exception", async () => {
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {
+          throw Error("");
+        },
+      });
+      const url = "test";
+      await launch.openUrlInPrivateWindow(url);
+      expect(warningMessages.length).to.deep.equals(1);
+      const error = OpenBrowserFailed(undefined, url);
+      expect(warningMessages[0]).to.deep.equals(`${error.source}.${error.name}: ${error.message}`);
     });
   });
 });

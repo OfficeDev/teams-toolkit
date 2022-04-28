@@ -112,7 +112,7 @@ describe("Capability Command Tests", function () {
       "add [capability]",
       "tab",
       "bot",
-      "messaging-extension",
+      "message-extension",
     ]);
   });
 

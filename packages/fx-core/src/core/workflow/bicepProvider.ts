@@ -5,13 +5,15 @@ import { err, FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../common/armInterface";
-import {
+import arm, {
   BicepOrchestrationContent,
   generateArmFromResult,
   generateResourceBaseName,
   persistBicepTemplates,
 } from "../../plugins/solution/fx-solution/arm";
 import { Action, ContextV3, MaybePromise } from "./interface";
+import * as path from "path";
+import { appendContentInFilePlan, ensureFilePlan } from "./utils";
 
 @Service("bicep")
 export class BicepProvider {
@@ -24,8 +26,55 @@ export class BicepProvider {
     const action: Action = {
       name: "bicep.persist",
       type: "function",
-      plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["persist bicep"]);
+      plan: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const plans: string[] = [];
+        const templateFolder = path.join(inputs.projectPath, "templates", "azure");
+        let plan = await ensureFilePlan(path.join(templateFolder, "main.bicep"), false);
+        if (plan) plans.push(plan);
+        const bicepOutputs = context.bicep;
+        if (bicepOutputs) {
+          const resources = Object.keys(bicepOutputs);
+          for (const resource of resources) {
+            const arm = bicepOutputs[resource] as ArmTemplateResult;
+            if (arm.Provision) {
+              if (arm.Provision.Modules) {
+                for (const module of Object.keys(arm.Provision.Modules)) {
+                  plan = await ensureFilePlan(
+                    path.join(templateFolder, "provision", `${module}.bicep`),
+                    true
+                  );
+                  if (plan) plans.push(plan);
+                }
+              }
+              if (arm.Provision.Orchestration) {
+                plan = await appendContentInFilePlan(
+                  path.join(templateFolder, `provision.bicep`),
+                  "provision orchestration"
+                );
+                plans.push(plan);
+              }
+            }
+            if (arm.Configuration) {
+              if (arm.Configuration.Modules) {
+                for (const module of Object.keys(arm.Configuration.Modules)) {
+                  plan = await ensureFilePlan(
+                    path.join(templateFolder, "teamsFx", `${module}.bicep`),
+                    true
+                  );
+                  if (plan) plans.push(plan);
+                }
+              }
+              if (arm.Configuration.Orchestration) {
+                plan = await appendContentInFilePlan(
+                  path.join(templateFolder, `config.bicep`),
+                  "config orchestration"
+                );
+                plans.push(plan);
+              }
+            }
+          }
+        }
+        return ok(plans);
       },
       execute: async (
         context: ContextV3,

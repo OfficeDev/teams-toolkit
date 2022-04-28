@@ -252,7 +252,7 @@ export class TeamsfxCore {
     const provisionType = sqlComponent ? "database" : "server";
     const actions: Action[] = [
       {
-        name: "fx.configProjectSettings",
+        name: "fx.configSql",
         type: "function",
         plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
           const sqlComponent = getComponent(context.projectSetting, "azure-sql");

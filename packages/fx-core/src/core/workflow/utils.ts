@@ -39,6 +39,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { DEFAULT_PERMISSION_REQUEST } from "../../plugins/solution/fx-solution/constants";
 import crypto from "crypto";
+import fs from "fs-extra";
 export class MockAzureAccountProvider implements AzureAccountProvider {
   getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     throw new Error("getAccountCredentialAsync Method not implemented.");
@@ -391,4 +392,17 @@ export class MockLogProvider implements LogProvider {
 
 export function randomId(): string {
   return crypto.randomBytes(6).toString("hex");
+}
+
+export async function ensureFilePlan(
+  file: string,
+  forceUpdate = false
+): Promise<string | undefined> {
+  if (await fs.pathExists(file)) return forceUpdate ? `update file: ${file}` : undefined;
+  return `create file: ${file}`;
+}
+
+export async function appendContentInFilePlan(file: string, contentName: string): Promise<string> {
+  if (!(await fs.pathExists(file))) return `create file: ${file} with ${contentName} content`;
+  return `append ${contentName} content in file: ${file}`;
 }

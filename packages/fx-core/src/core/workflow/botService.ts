@@ -22,13 +22,7 @@ export class BotServiceResource {
       name: "bot-service.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const outputPath = path.join(
-          inputs.projectPath,
-          "templates",
-          "azure",
-          "$botService.provision.bicep"
-        );
-        return ok([`create file: ${outputPath}`]);
+        return ok(["generate bicep for bot-service"]);
       },
       execute: async (
         context: ContextV3,

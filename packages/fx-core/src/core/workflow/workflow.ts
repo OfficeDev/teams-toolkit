@@ -190,11 +190,15 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
   if (action.type === "function") {
     const planRes = await action.plan(context, inputs);
     if (planRes.isOk()) {
-      let subStep = 1;
-      for (const plan of planRes.value) {
-        console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+      if (action.name?.endsWith("generateBicep")) {
+        await action.execute(context, inputs);
+      } else {
+        let subStep = 1;
+        for (const plan of planRes.value) {
+          console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+        }
+        inputs.step++;
       }
-      inputs.step++;
     }
   } else if (action.type === "shell") {
     console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);

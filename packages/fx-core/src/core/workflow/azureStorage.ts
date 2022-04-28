@@ -5,7 +5,7 @@ import { FxError, Inputs, ok, Result, TokenProvider, v2, v3 } from "@microsoft/t
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../common/armInterface";
-import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
+import { Action, Bicep, CloudResource, ContextV3, MaybePromise } from "./interface";
 
 @Service("azure-storage")
 export class AzureStorageResource implements CloudResource {
@@ -30,43 +30,14 @@ export class AzureStorageResource implements CloudResource {
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        const armTemplate: ArmTemplateResult = {
+      ): Promise<Result<Bicep, FxError>> => {
+        const armTemplate: Bicep = {
           Provision: {
             Modules: {},
           },
           Configuration: {},
-          Reference: {
-            sqlResourceId: "provisionOutputs.azureSqlOutput.value.resourceId",
-            sqlEndpoint: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
-            sqlDatabaseName: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
-          },
         };
-        // {
-        //   const filePath = path.join(
-        //     getTemplatesFolder(),
-        //     "demo",
-        //     "azureSql.provision.module.bicep"
-        //   );
-        //   if (await fs.pathExists(filePath)) {
-        //     const content = await fs.readFile(filePath, "utf-8");
-        //     armTemplate.Provision!.Modules!["azureSql"] = content;
-        //   }
-        // }
-        // {
-        //   const filePath = path.join(
-        //     getTemplatesFolder(),
-        //     "demo",
-        //     "azureSql.provision.orchestration.bicep"
-        //   );
-        //   if (await fs.pathExists(filePath)) {
-        //     const content = await fs.readFile(filePath, "utf-8");
-        //     armTemplate.Provision!.Orchestration = content;
-        //   }
-        // }
-        if (!context.bicep) context.bicep = {};
-        context.bicep["azure-sql"] = armTemplate;
-        return ok(undefined);
+        return ok(armTemplate);
       },
     };
     return ok(action);

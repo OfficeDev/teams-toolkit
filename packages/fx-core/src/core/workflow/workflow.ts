@@ -22,6 +22,8 @@ import { Action, Component, FunctionAction, ProjectSettingsV3 } from "./interfac
 import toposort from "toposort";
 import { merge } from "lodash";
 import { MockUserInteraction } from "./utils";
+import { Bicep } from "../../common/constants";
+import { persistBicep, persistBicepPlans } from "./bicepUtils";
 
 export async function getAction(
   name: string,
@@ -87,17 +89,6 @@ function _replaceVariables(schema: any, context: Json) {
     return schema;
   }
 }
-// const schema = {
-//   a: { input: { value: "{{b.output.value}}" } },
-//   b: { output: { value: "{{c}}" } },
-//   d: { value: "{{f}}" },
-//   g: { output: { input: "{{b.output.value}}-{{d.value}}" } },
-//   f: "{{e}}",
-//   e: "1",
-//   c: "2",
-// };
-// resolveVariables(schema);
-// console.log(JSON.stringify(schema, undefined, 4));
 
 function extractVariables(obj: any, set: Set<string>) {
   if (!obj) return;
@@ -188,18 +179,28 @@ export async function resolveAction(action: Action, context: any, inputs: any): 
 export async function planAction(action: Action, context: any, inputs: any): Promise<void> {
   if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
-    const planRes = await action.plan(context, inputs);
-    if (planRes.isOk()) {
-      if (action.name?.endsWith("generateBicep")) {
-        await action.execute(context, inputs);
-      } else {
-        let subStep = 1;
-        for (const plan of planRes.value) {
-          console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+    let plans: string[] = [];
+    if (action.name.endsWith(".generateBicep")) {
+      const res = await action.execute(context, inputs);
+      if (res.isOk()) {
+        const bicep = res.value as Bicep | undefined;
+        if (bicep) {
+          plans = await persistBicepPlans(inputs.projectPath, bicep);
         }
-        inputs.step++;
+      } else {
+        throw res.error;
+      }
+    } else {
+      const planRes = await action.plan(context, inputs);
+      if (planRes.isOk()) {
+        plans = planRes.value;
       }
     }
+    let subStep = 1;
+    for (const plan of plans) {
+      console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+    }
+    inputs.step++;
   } else if (action.type === "shell") {
     console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {
@@ -304,7 +305,18 @@ export async function executeFunctionAction(
       if (validationRes.isErr()) throw validationRes.error;
     }
   }
-  await action.execute(context, inputs);
+  const res = await action.execute(context, inputs);
+  if (res.isOk()) {
+    //persist bicep files for 'generateBicep' method
+    if (action.name.endsWith(".generateBicep")) {
+      const bicep = res.value as Bicep | undefined;
+      if (bicep) {
+        await persistBicep(inputs.projectPath, bicep);
+      }
+    }
+  } else {
+    throw res.error;
+  }
   console.log(`##### executed [${inputs.step++}]: [${action.name}]`);
 }
 

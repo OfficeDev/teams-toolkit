@@ -6,11 +6,10 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { ArmTemplateResult } from "../../common/armInterface";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { AzureWebAppResource } from "./azureWebApp";
-import { Action, ContextV3, MaybePromise } from "./interface";
+import { Action, Bicep, ContextV3, MaybePromise } from "./interface";
 @Service("bot-service")
 export class BotServiceResource {
   readonly name = "bot-service";
@@ -27,7 +26,7 @@ export class BotServiceResource {
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<Bicep, FxError>> => {
         const componentInput = inputs["bot-service"];
         const mPath = path.join(getTemplatesFolder(), "demo", "botService.config.module.bicep");
         const oPath = path.join(
@@ -43,12 +42,10 @@ export class BotServiceResource {
         }
         module = compileHandlebarsTemplateString(module, templateContext);
         const orch = await fs.readFile(oPath, "utf-8");
-        const armTemplate: ArmTemplateResult = {
+        const armTemplate: Bicep = {
           Configuration: { Modules: { botService: module }, Orchestration: orch },
         };
-        if (!context.bicep) context.bicep = {};
-        context.bicep["bot-service"] = armTemplate;
-        return ok(undefined);
+        return ok(armTemplate);
       },
     };
     return ok(action);

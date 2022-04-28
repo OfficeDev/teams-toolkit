@@ -2,23 +2,74 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../common/armInterface";
-import arm, {
+import { getTemplatesFolder } from "../../folder";
+import {
   BicepOrchestrationContent,
   generateArmFromResult,
   generateResourceBaseName,
   persistBicepTemplates,
 } from "../../plugins/solution/fx-solution/arm";
 import { Action, ContextV3, MaybePromise } from "./interface";
-import * as path from "path";
 import { appendContentInFilePlan, ensureFilePlan } from "./utils";
-
 @Service("bicep")
 export class BicepProvider {
   readonly type = "bicep";
   readonly name = "bicep";
+  init(
+    context: ContextV3,
+    inputs: v2.InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "bicep.init",
+      type: "function",
+      plan: async (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
+        const plans: string[] = [];
+        const templateFolder = path.join(inputs.projectPath, "templates", "azure");
+        let plan = await ensureFilePlan(path.join(templateFolder, "main.bicep"));
+        if (plan) plans.push(plan);
+        plan = await ensureFilePlan(path.join(templateFolder, "provision.bicep"));
+        if (plan) plans.push(plan);
+        plan = await ensureFilePlan(path.join(templateFolder, "config.bicep"));
+        if (plan) plans.push(plan);
+        return ok(plans);
+      },
+      execute: async (
+        context: ContextV3,
+        inputs: v2.InputsWithProjectPath
+      ): Promise<Result<any, FxError>> => {
+        const sourceTemplateFolder = path.join(getTemplatesFolder(), "core", "bicep");
+        const targetTemplateFolder = path.join(inputs.projectPath, "templates", "azure");
+        await fs.ensureDir(targetTemplateFolder);
+        await fs.ensureDir(path.join(targetTemplateFolder, "provision"));
+        await fs.ensureDir(path.join(targetTemplateFolder, "teamsFx"));
+        if (!(await fs.pathExists(path.join(targetTemplateFolder, "main.bicep")))) {
+          await fs.copyFile(
+            path.join(sourceTemplateFolder, "main.bicep"),
+            path.join(targetTemplateFolder, "main.bicep")
+          );
+        }
+        if (!(await fs.pathExists(path.join(targetTemplateFolder, "provision.bicep")))) {
+          await fs.copyFile(
+            path.join(sourceTemplateFolder, "provision.bicep"),
+            path.join(targetTemplateFolder, "provision.bicep")
+          );
+        }
+        if (!(await fs.pathExists(path.join(targetTemplateFolder, "config.bicep")))) {
+          await fs.copyFile(
+            path.join(sourceTemplateFolder, "config.bicep"),
+            path.join(targetTemplateFolder, "config.bicep")
+          );
+        }
+        return ok(undefined);
+      },
+    };
+    return ok(action);
+  }
   persist(
     context: ContextV3,
     inputs: v2.InputsWithProjectPath
@@ -79,7 +130,7 @@ export class BicepProvider {
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<any, FxError>> => {
         const bicepOutputs = context.bicep;
         if (bicepOutputs) {
           const resourceNames = Object.keys(bicepOutputs);

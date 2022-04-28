@@ -94,6 +94,11 @@ export class TeamsfxCore {
           targetAction: "teams-manifest.init",
           required: true,
         },
+        {
+          type: "call",
+          targetAction: "bicep.init",
+          required: true,
+        },
       ],
     };
     return ok(action);
@@ -166,7 +171,6 @@ export class TeamsfxCore {
           // add hosting component
           const hostingComponent = {
             name: teamsBotInputs.hostingResource,
-            provision: true,
             connections: ["teams-bot"],
           };
           projectSettings.components.push(hostingComponent);
@@ -210,12 +214,6 @@ export class TeamsfxCore {
         type: "call",
         required: false,
         targetAction: `${teamsBotInputs.hostingResource}-config.generateBicep`,
-      },
-      {
-        name: "call:bicep.persist",
-        type: "call",
-        required: false,
-        targetAction: "bicep.persist",
       },
       {
         name: "call:teams-manifest.addCapability",

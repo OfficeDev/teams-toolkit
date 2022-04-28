@@ -8,7 +8,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../common/armInterface";
 import { getTemplatesFolder } from "../../folder";
-import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
+import { Action, Bicep, CloudResource, ContextV3, MaybePromise } from "./interface";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";
@@ -40,7 +40,7 @@ export class AzureWebAppResource implements CloudResource {
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<Bicep, FxError>> => {
         const pmPath = path.join(
           getTemplatesFolder(),
           "demo",
@@ -53,15 +53,13 @@ export class AzureWebAppResource implements CloudResource {
         );
         const provisionModule = await fs.readFile(pmPath, "utf-8");
         const ProvisionOrch = await fs.readFile(poPath, "utf-8");
-        const armTemplate: ArmTemplateResult = {
+        const armTemplate: Bicep = {
           Provision: {
             Modules: { azureWebApp: provisionModule },
             Orchestration: ProvisionOrch,
           },
         };
-        if (!context.bicep) context.bicep = {};
-        context.bicep["azure-web-app"] = armTemplate;
-        return ok(undefined);
+        return ok(armTemplate);
       },
     };
     return ok(action);

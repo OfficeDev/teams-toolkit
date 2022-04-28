@@ -4,7 +4,7 @@
 import { FxError, ok, Result, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
+import { Action, Bicep, CloudResource, ContextV3, MaybePromise } from "./interface";
 import * as path from "path";
 import fs from "fs-extra";
 import { ArmTemplateResult } from "../../common/armInterface";
@@ -25,14 +25,14 @@ export class AzureWebAppConfig {
       name: "azure-web-app-config.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["overwrite azure-web-app config bicep"]);
+        return ok([]);
       },
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<Bicep, FxError>> => {
         const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-        if (!webAppComponent) return ok(undefined);
+        if (!webAppComponent) return ok({});
 
         const templateContext: any = {};
         templateContext.connections = webAppComponent.connections || [];
@@ -72,12 +72,10 @@ export class AzureWebAppConfig {
           "azureWebApp.config.orchestration.bicep"
         );
         const orch = !webAppComponent ? await fs.readFile(orchPath, "utf-8") : undefined;
-        const armTemplate: ArmTemplateResult = {
+        const armTemplate: Bicep = {
           Configuration: { Modules: { azureWebAppConfig: module }, Orchestration: orch },
         };
-        if (!context.bicep) context.bicep = {};
-        context.bicep["azure-web-app-config"] = armTemplate;
-        return ok(undefined);
+        return ok(armTemplate);
       },
     };
     return ok(action);

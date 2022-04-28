@@ -1,5 +1,5 @@
 // Resources web app
-module azureWebAppProvision '{{azure-web-app.Provision.azureWebApp.path}}' = {
+module azureWebAppProvision './provision/azureWebApp.bicep' = {
   name: 'azureWebAppProvision'
   params: {
     provisionParameters: provisionParameters

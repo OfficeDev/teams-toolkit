@@ -2,7 +2,7 @@
 var currentAppSettings = list('${provisionOutputs.azureWebAppOutput.value.resourceId}/config/appsettings', '2021-02-01').properties
 
 // Merge TeamsFx configurations to Bot resources
-module teamsFxAzureWebAppConfig '{{azure-web-app-config.Configuration.azureWebAppConfig.path}}' = {
+module teamsFxAzureWebAppConfig './teamsFx/azureWebAppConfig.bicep' = {
   name: 'teamsFxAzureWebAppConfig'
   params: {
     provisionParameters: provisionParameters

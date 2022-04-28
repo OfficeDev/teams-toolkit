@@ -1,5 +1,5 @@
 // Merge TeamsFx configurations to Bot service
-module teamsFxBotServiceConfig '{{bot-service.Configuration.botService.path}}' = {
+module teamsFxBotServiceConfig './teamsFx/botService.bicep' = {
   name: 'teamsFxBotServiceConfig'
   params: {
     provisionParameters: provisionParameters

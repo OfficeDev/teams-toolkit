@@ -6,10 +6,9 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ArmTemplateResult } from "../../common/armInterface";
 import { generateBicepFromFile, getUuid } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { Action, CloudResource, ContextV3, MaybePromise } from "./interface";
+import { Action, Bicep, CloudResource, ContextV3, MaybePromise } from "./interface";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly type = "cloud";
@@ -43,7 +42,7 @@ export class AzureSqlResource implements CloudResource {
       execute: async (
         context: ContextV3,
         inputs: v2.InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<Bicep, FxError>> => {
         const sqlInputs = inputs["azure-sql"];
         const prefix =
           sqlInputs.provisionType === "database"
@@ -61,15 +60,13 @@ export class AzureSqlResource implements CloudResource {
           module = await generateBicepFromFile(mPath, compileCtx);
           orch = await generateBicepFromFile(oPath, compileCtx);
         }
-        const armTemplate: ArmTemplateResult = {
+        const bicep: Bicep = {
           Provision: {
             Modules: { azureSql: module },
             Orchestration: orch,
           },
         };
-        if (!context.bicep) context.bicep = {};
-        context.bicep["azure-sql"] = armTemplate;
-        return ok(undefined);
+        return ok(bicep);
       },
     };
     return ok(action);

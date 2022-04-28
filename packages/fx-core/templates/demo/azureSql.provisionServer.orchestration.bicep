@@ -1,5 +1,5 @@
 // Resources for Azure SQL
-module azureSqlProvision '{{azure-sql.Provision.azureSql.path}}' = {
+module azureSqlProvision './provision/azureSql.bicep' = {
   name: 'azureSqlProvision'
   params: {
     provisionParameters: provisionParameters

@@ -151,3 +151,13 @@ Root cause of this error is that toolkit can not find Azure AD app with the same
 If you can find your Azure AD app, please check your network status and try again.
 
 If you can not find your Azure AD app, please check whether you logged in with the correct account. You can also remove objectId from env.default.json file and then try again.
+
+## aad.Compliance
+To improve the security of app registration,please refer the [best practices for app](
+https://docs.microsoft.com/en-us/azure/active-directory/develop/security-best-practices-for-app-registration) to get detail. The following are several improvements.
+### Use certificate credentials
+It is strongly recommended that you use x509 certificates as the only credential type for getting tokens for your application. For the Azure AD app created by the toolkit, you can use the certificate credentials.
+> To use certificate credentials, you need to prepare the certificate to authenticate.
+
+Please refer [this](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) to config the certificate for the Azure AD app.
+Please refer the [code sample](https://github.com/OfficeDev/TeamsFx/tree/dev/packages/sdk#use-certificate-based-authentication-in-azure-function) to utilize the sdk to authenticate with certificate.

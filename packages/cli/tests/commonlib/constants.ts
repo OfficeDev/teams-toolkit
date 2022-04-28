@@ -34,7 +34,7 @@ export const fileEncoding = "UTF8";
 export enum Capability {
   Tab = "tab",
   Bot = "bot",
-  MessagingExtension = "messaging-extension",
+  MessageExtension = "message-extension",
   M365SsoLaunchPage = "sso-launch-page",
   M365SearchApp = "search-app",
   ExistingTab = "existing-tab",

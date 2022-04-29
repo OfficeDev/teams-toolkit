@@ -155,6 +155,10 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   skipSingleOption: true,
   default: (inputs: Inputs) => {
     if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return "typescript";
+      }
       const feature = inputs[CoreQuestionNames.Features] as string;
       if (feature && feature === TabSPFxItem.id) {
         return "typescript";
@@ -168,6 +172,10 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   placeholder: (inputs: Inputs): string => {
     if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
       const feature = inputs[CoreQuestionNames.Features] as string;
       if (feature && feature === TabSPFxItem.id) {
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");

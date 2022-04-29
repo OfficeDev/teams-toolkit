@@ -187,7 +187,11 @@ export class ApiConnectorImpl {
       );
     }
     TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
-    return ResultFactory.Success();
+    const result = {
+      component: config.ComponentType,
+      fileName: getSampleFileName(config.APIName, languageType),
+    };
+    return result;
   }
 
   private sendErrorTelemetry(thrownErr: FxError) {

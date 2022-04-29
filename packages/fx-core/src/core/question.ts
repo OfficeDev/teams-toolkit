@@ -24,7 +24,7 @@ import {
   isExistingTabAppEnabled,
   isM365AppEnabled,
 } from "../common/tools";
-import { isBotNotificationEnabled } from "../common/featureFlags";
+import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -50,6 +50,7 @@ export enum CoreQuestionNames {
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   Capabilities = "capabilities",
+  Features = "features",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
@@ -153,15 +154,29 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return "typescript";
+    if (isPreviewFeaturesEnabled()) {
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return "typescript";
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return "typescript";
+    }
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    if (isPreviewFeaturesEnabled()) {
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
   },
 };

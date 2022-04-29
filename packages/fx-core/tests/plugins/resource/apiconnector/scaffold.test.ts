@@ -82,11 +82,10 @@ describe("Api Connector scaffold sample code", async () => {
     expect(await fs.pathExists(path.join(botPath, "test.js"))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, Constants.envFileName))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, "test.js"))).to.be.true;
-    const expectResult = {
-      component: ["api", "bot"],
-      fileName: "test.js",
-    };
-    expect(result).to.deep.equal(expectResult);
+    const expectResult = ["api", "bot"].map((item) => {
+      return path.join(testpath, item, "test.js");
+    });
+    expect(result).to.deep.equal({ generatedFiles: expectResult });
   });
 
   it("restore files meets failure on scaffold", async () => {

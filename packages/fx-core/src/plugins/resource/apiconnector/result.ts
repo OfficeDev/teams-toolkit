@@ -5,7 +5,7 @@ import { FxError, SystemError, UserError, Result, ok, QTreeNode } from "@microso
 import { Constants } from "./constants";
 export type FxResult = Result<any, FxError>;
 export type ApiConnectorResult = Record<string, any>;
-export type QesutionResult = Result<QTreeNode | undefined, FxError>;
+export type QuestionResult = Result<QTreeNode | undefined, FxError>;
 export interface ApiConnectionMsg {
   defaultMsg: string;
   localizedMsg: string;

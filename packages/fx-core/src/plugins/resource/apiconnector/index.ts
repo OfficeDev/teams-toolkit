@@ -7,7 +7,7 @@ import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ApiConnectorImpl } from "./plugin";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
-import { FxResult, ResultFactory } from "./result";
+import { FxResult, ResultFactory, QuestionResult } from "./result";
 import { ErrorMessage } from "./errors";
 import { UserTaskFunctionName } from "../../solution/fx-solution/constants";
 
@@ -27,7 +27,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     func: Func,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<FxResult> {
+  ): Promise<QuestionResult> {
     return await this.apiConnectorImpl.generateQuestion(ctx, inputs);
   }
 

@@ -699,7 +699,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
     await globalStateUpdate("automaticNpmInstall", true);
     automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
-    const workspacePath = getWorkspacePath();
+
     if (
       workspace.workspaceFolders &&
       workspace.workspaceFolders.length > 0 &&
@@ -719,11 +719,10 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           await commands.executeCommand("markdown.preview.toggleLock");
         });
       }
-    } else if (workspacePath && result.value.func == UserTaskFunctionName.ConnectExistingApi) {
-      const components: string[] = result.value.component;
-      for (const item of components) {
-        const apiFilePath = path.join(workspacePath, item, result.value.fileName);
-        workspace.openTextDocument(apiFilePath).then((document) => {
+    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+      const files: string[] = result.value.generatedFiles;
+      for (const generatedFile of files) {
+        workspace.openTextDocument(generatedFile).then((document) => {
           window.showTextDocument(document, { preview: false });
         });
       }

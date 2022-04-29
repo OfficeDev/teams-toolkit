@@ -494,7 +494,7 @@ describe("Core basic APIs", () => {
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+      [CoreQuestionNames.Capabilities]: TabSPFxItem.id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
@@ -509,38 +509,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.Capabilities]: TabOptionItem.id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: BotOptionItem.id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [MessageExtensionItem.id],
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [
-        TabOptionItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-      ],
+      [CoreQuestionNames.Capabilities]: MessageExtensionItem.id,
     });
 
     function languageAssert(inputs: Inputs) {

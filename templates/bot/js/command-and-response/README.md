@@ -111,7 +111,7 @@ The file contains template arguments with `{...}` statements which will be repla
 Teams Toolkit simplifies the process for you when moving this application to the cloud.
 * Provision cloud resource for your app using ARM templates, see: [Use Teams Toolkit to provision cloud resources](https://docs.microsoft.com/microsoftteams/platform/toolkit/provision) for more information.
 * Deploy your application to the cloud with a single command see: [Deploy to the cloud](https://docs.microsoft.com/microsoftteams/platform/toolkit/deploy).
-* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template).
+* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template).
 * With your application running in the cloud, preview your app in Teams via [Run the deployed app](https://docs.microsoft.com/microsoftteams/platform/sbs-gs-javascript?tabs=vscode%2Cvsc%2Cviscode%2Cvcode&tutorial-step=8#run-the-deployed-app).
 * Distribute your application by [Publish Teams apps using Teams Toolkit](https://docs.microsoft.com/microsoftteams/platform/toolkit/publish).
 

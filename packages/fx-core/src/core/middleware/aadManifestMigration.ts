@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { assembleError, err, Inputs, Platform } from "@microsoft/teamsfx-api";
-import { isConfigUnifyEnabled, isAadManifestEnabled } from "../../common/tools";
 import { CoreSource } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
@@ -16,15 +15,17 @@ import {
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { getResourceFolder, getTemplatesFolder } from "../../folder";
+import { getResourceFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import { needConsolidateLocalRemote } from "./consolidateLocalRemote";
-import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import * as os from "os";
-import { Permission, permissionsToRequiredResourceAccess } from "./MigrationUtils";
+import {
+  needMigrateToAadManifest,
+  Permission,
+  permissionsToRequiredResourceAccess,
+} from "./MigrationUtils";
+import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
 
 const LearnMore = "Learn More";
 const LearnMoreLink = "https://aka.ms/teamsfx-aad-manifest";
@@ -62,48 +63,6 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction) {
     throw error;
   }
 }
-async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {
-  try {
-    if (!isConfigUnifyEnabled() || !isAadManifestEnabled()) {
-      return false;
-    }
-
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (!inputs.projectPath) {
-      return false;
-    }
-    const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));
-    if (!fxExist) {
-      return false;
-    }
-
-    const aadManifestTemplateExist = await fs.pathExists(
-      path.join(inputs.projectPath as string, "templates", "appPackage", "aad.template.json")
-    );
-
-    if (aadManifestTemplateExist) {
-      return false;
-    }
-
-    const permissionFileExist = await fs.pathExists(
-      path.join(inputs.projectPath as string, "permissions.json")
-    );
-    const projectSettingsJson = await fs.readJson(
-      path.join(inputs.projectPath as string, ".fx", "configs", "projectSettings.json")
-    );
-    const aadPluginIsActive = projectSettingsJson.solutionSettings.activeResourcePlugins.includes(
-      PluginNames.AAD
-    );
-
-    if (!aadPluginIsActive || !permissionFileExist) {
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
 
 async function migrate(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationStart);
@@ -133,11 +92,6 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
 
     const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
-
-    const templatesFolder = getTemplatesFolder();
-    const aadManifestTemplatePath = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
-    const aadManifestJson: AADManifest = await fs.readJson(aadManifestTemplatePath);
-    aadManifestJson.requiredResourceAccess = requiredResourceAccess;
     const aadManifestPath = path.join(
       inputs.projectPath as string,
       "templates",
@@ -145,59 +99,16 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       "aad.template.json"
     );
     const projectSettingsJson = await fs.readJson(projectSettingsPath);
-
-    if (projectSettingsJson.solutionSettings.capabilities.includes("Tab")) {
-      aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
-        type: "Web",
-      });
-
-      aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
-        type: "Spa",
-      });
-
-      aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html",
-        type: "Spa",
-      });
-    }
-
-    if (projectSettingsJson.solutionSettings.capabilities.includes("Bot")) {
-      aadManifestJson.replyUrlsWithType.push({
-        url: "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html",
-        type: "Web",
-      });
-    }
-
-    await fs.writeJSON(aadManifestPath, aadManifestJson, { spaces: 4, EOL: os.EOL });
+    await generateAadManifestTemplate(
+      inputs.projectPath!,
+      projectSettingsJson,
+      requiredResourceAccess,
+      true
+    );
 
     fileList.push(aadManifestPath);
 
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
-
-    // add SSO
-    sendTelemetryEvent(
-      Component.core,
-      TelemetryEvent.ProjectAadManifestMigrationAddSSOCapabilityStart
-    );
-
-    if (
-      projectSettingsJson.solutionSettings.capabilities.includes("Tab") &&
-      !projectSettingsJson.solutionSettings.capabilities.includes("TabSSO")
-    ) {
-      projectSettingsJson.solutionSettings.capabilities.push("TabSSO");
-    }
-
-    if (
-      projectSettingsJson.solutionSettings.capabilities.includes("Bot") &&
-      !projectSettingsJson.solutionSettings.capabilities.includes("BotSSO")
-    ) {
-      projectSettingsJson.solutionSettings.capabilities.push("BotSSO");
-    }
-
     await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddSSOCapability);
 
     // backup
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationBackupStart);

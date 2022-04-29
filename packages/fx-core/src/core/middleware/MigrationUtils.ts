@@ -64,14 +64,19 @@ export async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<bo
     const permissionFileExist = await fs.pathExists(
       path.join(inputs.projectPath as string, "permissions.json")
     );
+
+    if (!permissionFileExist) {
+      return false;
+    }
+
     const projectSettingsJson = await fs.readJson(
       path.join(inputs.projectPath as string, ".fx", "configs", "projectSettings.json")
     );
-    const aadPluginIsActive = projectSettingsJson.solutionSettings.activeResourcePlugins.includes(
+    const aadPluginIsActive = projectSettingsJson.solutionSettings?.activeResourcePlugins?.includes(
       PluginNames.AAD
     );
 
-    if (!aadPluginIsActive || !permissionFileExist) {
+    if (!aadPluginIsActive) {
       return false;
     }
 

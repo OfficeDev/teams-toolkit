@@ -44,6 +44,7 @@ import {
 } from "./MigrationUtils";
 import { Constants } from "../../plugins/resource/aad/constants";
 import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
+import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
@@ -354,11 +355,6 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
 
       const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
-
-      const templatesFolder = getTemplatesFolder();
-      const aadManifestTemplatePath = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
-      const aadManifestJson: AADManifest = await fs.readJson(aadManifestTemplatePath);
-      aadManifestJson.requiredResourceAccess = requiredResourceAccess;
       const aadManifestPath = path.join(
         inputs.projectPath as string,
         "templates",
@@ -367,46 +363,13 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       );
       const projectSettingsJson = await fs.readJson(projectSettingsPath);
 
-      if (projectSettingsJson.solutionSettings.capabilities.includes("Tab")) {
-        aadManifestJson.replyUrlsWithType.push({
-          url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
-          type: "Web",
-        });
-
-        aadManifestJson.replyUrlsWithType.push({
-          url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}",
-          type: "Spa",
-        });
-
-        aadManifestJson.replyUrlsWithType.push({
-          url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html",
-          type: "Spa",
-        });
-      }
-
-      if (projectSettingsJson.solutionSettings.capabilities.includes("Bot")) {
-        aadManifestJson.replyUrlsWithType.push({
-          url: "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html",
-          type: "Web",
-        });
-      }
-
-      await fs.writeJSON(aadManifestPath, aadManifestJson, { spaces: 4, EOL: os.EOL });
+      await generateAadManifestTemplate(
+        inputs.projectPath!,
+        projectSettingsJson,
+        requiredResourceAccess,
+        true
+      );
       fileList.push(aadManifestPath);
-
-      if (
-        projectSettingsJson.solutionSettings.capabilities.includes("Tab") &&
-        !projectSettingsJson.solutionSettings.capabilities.includes("TabSSO")
-      ) {
-        projectSettingsJson.solutionSettings.capabilities.push("TabSSO");
-      }
-
-      if (
-        projectSettingsJson.solutionSettings.capabilities.includes("Bot") &&
-        !projectSettingsJson.solutionSettings.capabilities.includes("BotSSO")
-      ) {
-        projectSettingsJson.solutionSettings.capabilities.push("BotSSO");
-      }
 
       await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
 

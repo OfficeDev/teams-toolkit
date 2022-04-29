@@ -73,8 +73,20 @@ export class AzureAccountNode extends DynamicNode {
       this.iconPath = loadingIcon;
     } else {
       this.iconPath = {
-        light: path.join(ext.context.extensionPath, "media", "light", "azure.svg"),
-        dark: path.join(ext.context.extensionPath, "media", "dark", "azure.svg"),
+        light: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "azure-light.svg"
+        ),
+        dark: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "azure-dark.svg"
+        ),
       };
     }
     if (this.status === AccountItemStatus.SignedIn) {

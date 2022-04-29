@@ -82,8 +82,14 @@ export class M365AccountNode extends DynamicNode {
       this.label = localize("teamstoolkit.accountTree.signingInM365");
     } else {
       this.iconPath = {
-        light: path.join(ext.context.extensionPath, "media", "light", "M365.svg"),
-        dark: path.join(ext.context.extensionPath, "media", "dark", "M365.svg"),
+        light: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "m365-light.svg"
+        ),
+        dark: path.join(ext.context.extensionPath, "media", "treeview", "account", "m365-dark.svg"),
       };
     }
     return this;

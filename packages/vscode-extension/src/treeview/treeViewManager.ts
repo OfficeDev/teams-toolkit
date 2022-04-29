@@ -37,10 +37,21 @@ class TreeViewManager {
   }
 
   public async registerTreeViews(workspacePath?: string): Promise<vscode.Disposable[]> {
-    if (isValidProject(workspacePath)) {
-      return this.registerTreeViewsForTeamsFxProject(workspacePath);
+    if (!isValidProject(workspacePath)) {
+      return [];
     }
-    return [];
+    const disposables: vscode.Disposable[] = [];
+    const isNonSPFx = (workspacePath && !isSPFxProject(workspacePath)) as boolean;
+    const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
+    const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
+
+    this.registerAccount(disposables);
+    this.registerEnvironment(disposables);
+    this.registerDevelopment(developmentCommands, disposables);
+    this.registerDeployment(disposables);
+    this.registerHelper(disposables);
+
+    return disposables;
   }
 
   public getTreeView(viewName: string) {
@@ -89,22 +100,6 @@ class TreeViewManager {
     this.treeviewMap.forEach((value) => {
       (value as vscode.Disposable).dispose();
     });
-  }
-
-  private async registerTreeViewsForTeamsFxProject(workspacePath?: string) {
-    const disposables: vscode.Disposable[] = [];
-
-    this.registerAccount(disposables);
-    this.registerEnvironment(disposables);
-
-    const isNonSPFx = (workspacePath && !isSPFxProject(workspacePath)) as boolean;
-    const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
-    const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
-    this.registerDevelopment(developmentCommands, disposables);
-    this.registerDeployment(disposables);
-    this.registerHelper(disposables);
-
-    return disposables;
   }
 
   private registerAccount(disposables: vscode.Disposable[]) {
@@ -321,7 +316,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
         undefined,
-        { name: "lightningBolt_16", custom: true },
+        { name: "lightningBolt", custom: true },
         TreeCategory.GettingStarted
       ),
     ];

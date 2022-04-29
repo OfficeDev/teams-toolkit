@@ -40,15 +40,39 @@ export class SideloadingNode extends DynamicNode {
     if (isSideloadingAllowed) {
       this.label = localize("teamstoolkit.accountTree.sideloadingPass");
       this.iconPath = {
-        light: path.join(ext.context.extensionPath, "media", "light", "pass.svg"),
-        dark: path.join(ext.context.extensionPath, "media", "dark", "pass.svg"),
+        light: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "sideloadingPass-light.svg"
+        ),
+        dark: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "sideloadingPass-dark.svg"
+        ),
       };
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingPassTooltip");
     } else {
       this.label = localize("teamstoolkit.accountTree.sideloadingWarning");
       this.iconPath = {
-        light: path.join(ext.context.extensionPath, "media", "light", "error.svg"),
-        dark: path.join(ext.context.extensionPath, "media", "dark", "error.svg"),
+        light: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "sideloadingError-light.svg"
+        ),
+        dark: path.join(
+          ext.context.extensionPath,
+          "media",
+          "treeview",
+          "account",
+          "sideloadingError-dark.svg"
+        ),
       };
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingWarningTooltip");
       this.command = {

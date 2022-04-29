@@ -4,7 +4,7 @@ Microsoft Teams allows you to automate simple and repetitive tasks right inside 
 
 This template implements command and respond as Teams bot application. You can send a `helloWorld` command after running this template and get a response as below:
 
-![Command and Response in Teams](images/command-response.png)
+![Command and Response in Teams](https://user-images.githubusercontent.com/11220663/165891754-16916b68-c1b5-499d-b6a8-bdfb195f1fd0.png)
 
 ## Get Started
 

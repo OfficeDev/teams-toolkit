@@ -207,6 +207,14 @@ The scaffolded notification API does not have authentication / authorization ena
 
 There would be more authentication / authorization solutions for an API. You can choose the one that satisfies your requirement best.
 
+### Extend this app with command and response
+
+1. Go to `bot\src\internal\initialize.ts(js)`, update your `conversationBot` initialization to enable command-response feature:
+
+   ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
+
+1. Follow [this instruction](#How-to-add-more-command-and-response) to add command to your bot.
+
 ### Edit Teams App manifest
 
 You can find the Teams app manifest in `templates/appPackage/manifest.template.json`.

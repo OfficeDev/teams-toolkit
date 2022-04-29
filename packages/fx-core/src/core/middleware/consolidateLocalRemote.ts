@@ -125,7 +125,9 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
 
   try {
     await consolidateLocalRemote(ctx);
-    await next();
+    if (showModal) {
+      await next();
+    }
   } catch (error) {
     sendTelemetryErrorEvent(
       Component.core,

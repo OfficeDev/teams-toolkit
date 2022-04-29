@@ -1,6 +1,6 @@
 # Build command and response
 
-Microsoft Teams allows you to automate simple and repetitive tasks right inside a conversation. You can build a Teams bot that responds to simple commands sent in chats with [cards](https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-cards).
+Microsoft Teams allows you to automate simple and repetitive tasks right inside a conversation. You can build a Teams bot that responds to simple commands sent in chats with [cards](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/what-are-cards).
 
 This template implements command and respond as Teams bot application. You can send a `helloWorld` command after running this template and get a response as below:
 
@@ -63,7 +63,7 @@ For more code snippets and details, you can also refer to [this document](https:
 
     ![enable-notification](https://user-images.githubusercontent.com/10163840/165462039-12bd4f61-3fc2-4fc8-8910-6a4b1e138626.png)
 
-2. Follow [this instruction](https://github.com/OfficeDev/TeamsFx/wiki/%5BDocument%5D-Notification-(Preview-feature)#notify) to send notification to the bot installation target (channel/group chat/personal chat). To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.ts(js)`:
+2. Follow [this instruction](https://aka.ms/teamsfx-notification#notify) to send notification to the bot installation target (channel/group chat/personal chat). To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.ts(js)`:
 
     ```javascript
     server.post("/api/notification", async (req, res) => {
@@ -80,7 +80,7 @@ To explore more details of the notification feature (e.g. send notification with
 
 ### Build adaptive card with dynamic content
 
-Adaptive card provides [Template Language](https://docs.microsoft.com/en-us/adaptive-cards/templating/) to allow users to render dynamic content with the same layout (the template). For example, use the adaptive card to render a list of items (todo items, assigned bugs, etc) that could varies according to different user.
+Adaptive card provides [Template Language](https://docs.microsoft.com/adaptive-cards/templating/) to allow users to render dynamic content with the same layout (the template). For example, use the adaptive card to render a list of items (todo items, assigned bugs, etc) that could varies according to different user.
 
 1. Add your adaptive card template JSON file under `bot/adativeCards` folder
 1. Import the card template to you code file where your command handler exists (e.g. `myCommandHandler.ts`)
@@ -103,8 +103,8 @@ The file contains template arguments with `{...}` statements which will be repla
 
 ### More development documentations
 
-* Manage [multiple environments](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-multi-env)
-* [Collaborate](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
+* Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+* [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
 
 ## Deployment
 

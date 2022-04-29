@@ -493,6 +493,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ViewTitleNavigation };
+    case TelemetryTriggerFrom.QuickPick:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.QuickPick };
     case TelemetryTriggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview };
     case TelemetryTriggerFrom.CodeLens:

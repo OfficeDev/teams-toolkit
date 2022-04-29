@@ -430,6 +430,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addSso);
 
+  const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
+    Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])
+  );
+  context.subscriptions.push(openTutorial);
+
   const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
     Correlator.run(handlers.signinM365Callback, args)
   );

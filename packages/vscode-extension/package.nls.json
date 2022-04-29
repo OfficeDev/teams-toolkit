@@ -348,7 +348,6 @@
     "teamstoolkit.webview.folderExist": "Folder already exists",
     "teamstoolkit.webview.folderExistDialogTitle": "Path %s already exists. Select a different folder.",
     "teamstoolkit.webview.invalidFolder": "Invalid folder",
-    "teamstoolkit.webview.quickStartPageTitle": "Quick Start",
     "teamstoolkit.webview.samplePageTitle": "Samples",
     "teamstoolkit.webview.surveyPageTitle": "Teams Toolkit Survey",
     "teamstoolkit.webview.unzipPackage": "Unzipping the sample package"

@@ -1,10 +1,10 @@
 # Send notification to Teams
 
-Notification in Teams means you can proactively message an individual person, a chat, or a channel via plain text or different [cards](https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference).
+Notification in Teams means you can proactively message an individual person, a chat, or a channel via plain text or different [cards](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference).
 
 This template implements notification as a Teams bot application with restify server. For example, with this template, once notification being triggered, it sends text, card, or other message(s) to Teams:
 
-![Notification Message in Teams](images/notification-message.png)
+![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/165900532-9132644d-0783-422f-8ca8-5aeec626972c.png)
 
 ## Get Started
 
@@ -139,7 +139,7 @@ for (const target of await bot.notification.installations()) {
 
 ### Add more triggers
 
-You can add any Azure Functions trigger(s) with your own `function.json file` and code file(s). See Azure Functions [supported triggers](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
+You can add any Azure Functions trigger(s) with your own `function.json file` and code file(s). See Azure Functions [supported triggers](https://docs.microsoft.com/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
 
 ### Customize adapter
 
@@ -203,7 +203,7 @@ The scaffolded notification API does not have authentication / authorization ena
 
 1. Use an API Key
 
-2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/authentication/)
+2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/azure/active-directory/authentication/)
 
 There would be more authentication / authorization solutions for an API. You can choose the one that satisfies your requirement best.
 
@@ -224,15 +224,15 @@ The file contains template arguments with `{...}` statements which will be repla
 ### More development documentations
 
 * [Frequently asked questions](https://aka.ms/teamsfx-notification##frequently-asked-questions) for sending notifications
-* Manage [multiple environments](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-multi-env)
-* [Collaborate](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
+* Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+* [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
 
 ## Deployment
 
 Teams Toolkit simplifies the process for you when moving this application to the cloud.
 * Provision cloud resource for your app using ARM templates, see: [Use Teams Toolkit to provision cloud resources](https://docs.microsoft.com/microsoftteams/platform/toolkit/provision) for more information.
 * Deploy your application to the cloud with a single command see: [Deploy to the cloud](https://docs.microsoft.com/microsoftteams/platform/toolkit/deploy).
-* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template)
+* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 * With your application running in the cloud, preview your app in Teams via [Run the deployed app](https://docs.microsoft.com/microsoftteams/platform/sbs-gs-javascript?tabs=vscode%2Cvsc%2Cviscode%2Cvcode&tutorial-step=8#run-the-deployed-app).
 * Distribute your application by [Publish Teams apps using Teams Toolkit](https://docs.microsoft.com/microsoftteams/platform/toolkit/publish).
 

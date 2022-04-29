@@ -1,10 +1,10 @@
 # Send notification to Teams
 
-Notification in Teams means you can proactively message an individual person, a chat, or a channel via plain text or different [cards](https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference).
+Notification in Teams means you can proactively message an individual person, a chat, or a channel via plain text or different [cards](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference).
 
 This template implements notification as a Teams bot application with Azure Functions. For example, with this template, once notification being triggered, it sends text, card, or other message(s) to Teams:
 
-![Notification Message in Teams](images/notification-message.png)
+![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/165900532-9132644d-0783-422f-8ca8-5aeec626972c.png)
 
 ## Get Started
 
@@ -82,7 +82,7 @@ The default notifying logic is located in `bot/src/*Trigger.*s`, and you can als
 - If your notification project is based on HTTP Triggers, send POST request to the `http://<endpoint>/api/notification` with your favorite tools like postman.
   - When your project is running locally, replace `<endpoint>` with `localhost:3978`
   - When your project is deployed to the cloud, replace `<endpoint>` with the url from your hosting resource.
-- If you notification project is based on Timer Triggers, you can visit Azure Function Timer Trigger [documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-typescript#ncrontab-expressions) to learn more about how to write CRON expression.
+- If you notification project is based on Timer Triggers, you can visit Azure Function Timer Trigger [documentation](https://docs.microsoft.com/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-typescript#ncrontab-expressions) to learn more about how to write CRON expression.
 
 Below are some code snippets to send notifications in channel, group chat or personal conversation.
 
@@ -145,7 +145,7 @@ for (const target of await bot.notification.installations()) {
 
 ### Add more triggers
 
-You can add any Azure Functions trigger(s) with your own `function.json file` and code file(s). See Azure Functions [supported triggers](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
+You can add any Azure Functions trigger(s) with your own `function.json file` and code file(s). See Azure Functions [supported triggers](https://docs.microsoft.com/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
 
 ### Customize adapter
 
@@ -207,9 +207,9 @@ You usually want to access data or information when building Teams application. 
 
 If you choose http trigger, the scaffolded notification API does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it for production purpose. Here're some common ways to add authentication / authorization for an API:
 
-1. Use an API Key. Azure Functions already provides [function access keys](https://docs.microsoft.com/en-us/azure/azure-functions/security-concepts?tabs=v4#function-access-keys), which may be helpful to you.
+1. Use an API Key. Azure Functions already provides [function access keys](https://docs.microsoft.com/azure/azure-functions/security-concepts?tabs=v4#function-access-keys), which may be helpful to you.
 
-2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/authentication/)
+2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/azure/active-directory/authentication/)
 
 There would be more authentication / authorization solutions for an API. You can choose the one that satisfies your requirement best.
 
@@ -230,15 +230,15 @@ The file contains template arguments with `{...}` statements which will be repla
 ### More development documentations
 
 * [Frequently asked questions](https://aka.ms/teamsfx-notification##frequently-asked-questions) for sending notifications
-* Manage [multiple environments](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-multi-env)
-* [Collaborate](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
+* Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+* [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
 
 ## Deployment
 
 Teams Toolkit simplifies the process for you when moving this application to the cloud.
 * Provision cloud resource for your app using ARM templates, see: [Use Teams Toolkit to provision cloud resources](https://docs.microsoft.com/microsoftteams/platform/toolkit/provision) for more information.
 * Deploy your application to the cloud with a single command see: [Deploy to the cloud](https://docs.microsoft.com/microsoftteams/platform/toolkit/deploy).
-* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template)
+* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 * With your application running in the cloud, preview your app in Teams via [Run the deployed app](https://docs.microsoft.com/microsoftteams/platform/sbs-gs-javascript?tabs=vscode%2Cvsc%2Cviscode%2Cvcode&tutorial-step=8#run-the-deployed-app).
 * Distribute your application by [Publish Teams apps using Teams Toolkit](https://docs.microsoft.com/microsoftteams/platform/toolkit/publish).
 

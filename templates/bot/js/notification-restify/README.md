@@ -1,86 +1,100 @@
-# Send notification to Teams
+# Send notifications to Teams
 
-Notification in Teams means you can proactively message an individual person, a chat, or a channel via plain text or different [cards](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference).
+The Notification in Teams feature enables you to consume, transform  and post events as plain text or [adaptive cards](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference) to an individual, chat, or channel in Teams.
 
-This template implements notification as a Teams bot application with restify server. For example, with this template, once notification being triggered, it sends text, card, or other message(s) to Teams:
+This app is built with the [Microsoft Bot Framework](https://dev.botframework.com/) running on a restify server running on App Service along with the [Azure Bot Service](https://azure.microsoft.com/services/bot-services/).
+
+Here is a screen shot of the app running:
 
 ![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/165900532-9132644d-0783-422f-8ca8-5aeec626972c.png)
 
-## Get Started
+# Getting Started
 
-Before running this app locally, make sure you have prepared these prerequisites:
+Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)`.
 
-- Node.js (Recommended version is 14)
-- An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+**Congratulations**! You are running an application that can now send notifications to Teams.
 
-Then, you can quickly start local debugging via `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)` debug option of your preferred browser.
-
-> **Note**: This app will setup [Microsoft Bot Framework](https://dev.botframework.com/) or [Azure Bot Service](https://azure.microsoft.com/services/bot-services/) for further running.
 >
-> If your account has no access to such resource(s), there's an alternative way to send notification via **Incoming Webhook**.
+> **Prerequisites**
 >
-> Try the Incoming Webhook sample via `Create a new Teams app` -> `Start from a sample` -> `Incoming Webhook Notification`. Or browse the code at our [Sample Repo](https://github.com/OfficeDev/TeamsFx-Samples), `incoming-webhook-notification` folder.
+> To run locally, you will need:
+>
+> - `Node.js` installed locally (recommended version: 14)
+> - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+>
 
-## Develop
+# Understanding the code
 
-This new project folder structure looks like:
+This section walks through the generated code. The project folder contains the following:
 
 | Folder | Contents |
 | - | - |
 | `.fx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
-| `bot` | The bot source code |
-| `templates` |Templates for Teams app manifest and corresponding Azure resources|
+| `bot` | The source code for the notification Teams application |
+| `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
 
-The core notification implementation is in `bot/` folder, containing following content:
+The notification implementation is in `bot` folder.
+
+The following files provide the business logic for notifications. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
+
+| File | Contents |
+| - | - |
+| `src/index.js` | Application entry point and `restify` handlers for notifications |
+| `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
+| `src/cardModels.js` | The default Adaptive Card data model |
+
+The following files implement the core notification on the Bot Framework. You generally will not need to customize these files.
 
 | File / Folder | Contents |
 | - | - |
-| `src/adaptiveCards/` | Adaptive card templates |
-| `src/internal/` | Generated initialize code for notification functionality |
-| `src/cardModels.*s` | Adaptive card data models |
-| `src/index.*s` | The entrypoint to handle bot messages and send notifications |
-| `.gitignore` | The git ignore file to exclude local files from bot project |
-| `package.json` | The NPM package file for bot project |
+| `src/internal/initialize.js` | Application initialization |
 
-### Initializations
+The following files are project-related files. You generally will not need to customize these files.
 
-The default initialization is located in `bot/src/internal/initialize.*s`:
+| File / Folder | Contents |
+| - | - |
+| `.funcignore` | Azure Functions ignore file to exclude local files |
+| `.gitignore` | Git ignore file |
+| `host.json` | Azure Functions host file |
+| `local.settings.json` | Azure Functions settings for local debugging |
+| `package.json` | NPM package file |
 
-``` javascript
-const bot = new ConversationBot({
-    // The bot id and password to create BotFrameworkAdapter.
-    // See https://aka.ms/about-bot-adapter to learn more about adapters.
-    adapterConfig: {
-        appId: process.env.BOT_ID,
-        appPassword: process.env.BOT_PASSWORD,
-    },
-    // Enable notification
-    notification: {
-        enabled: true,
-    },
-});
-```
+# Customizing the business logic
 
-You can also add your own initialization logic to:
+By default the application registers a route with `restify`. When a request is made to this route, the application will send a notification to Teams.
 
-- Set `options.adapter` to use your own `BotFrameworkAdapter` with additional bot logic
-- Set `options.notification.storage` to use your own `NotificationTargetStorage` for persistency on production environment
-- Set `options.{feature}.enabled` to enable more functionalities of `ConversationBot`
+This section outlines some customization you can do to adopt the application for your needs.
 
-### Send notifications
+## Customizing the event source
 
-The default notifying logic is located in `bot/src/index.*s`, and you can also customize the targets and messages:
-- Use `target.type` to distinguish different targets
-- Use `target.members()`, `target.channels()` to get more targets
-- Send your own card message
-- Send POST request to the `http://<endpoint>/api/notification` with your favorite tools like postman.
-  - When your project is running locally, replace `<endpoint>` with `localhost:3978`
-  - When your project is deployed to the cloud, replace `<endpoint>` with the url from your hosting resource.
+By default Teams Toolkit scaffolds a single `restify` entry point in `src/index.js`. When a HTTP request is sent to this entry point, the default implementation sends a hard-coded Adaptive Card to Teams.
 
-Below are some code snippets to send notifications in channel, group chat or personal conversation.
+You can customize this behavior by customizing `src/index.js`. A typical implementation might make an API call to retrieve some events and/or data, and then send an Adaptive Card as appropriate.
 
-#### Send notification in team/channel
+Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
+
+## Customizing the Adaptive Card
+
+You can edit the file `src/adaptiveCards/notification-default.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
+
+The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
+
+You can also add new cards if appropriate for your application.
+
+## Connect to existing APIs
+
+Often you need to connect to existing APIs in order to retrieve data to send to Teams. Teams Toolkit makes it easy for you to configure and manage authentication for existing APIs. 
+
+For more information, [click here](https://aka.ms/teamsfx-connect-api).
+
+## Customizing where notifications are sent
+
+By default, the notification is sent to a new private chat between your M365 user and the application. You can customize where each notification is delivered by editing the notification source file (for example, `src/index.js`).
+
+### Send notifications to a team/channel
+
+Update the code to:
 
 ``` javascript
 // list all installation targets
@@ -105,7 +119,9 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
-#### Send notification in group chat
+### Send notifications to a group chat
+
+Update the code to:
 
 ``` javascript
 // list all installation targets
@@ -124,7 +140,9 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
-#### Send notification in personal chat
+### Send notifications to a personal chat
+
+Update the code to:
 
 ``` javascript
 // list all installation targets
@@ -137,106 +155,60 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
-### Add more triggers
+## Add command and responses to your application
 
-You can add any Azure Functions trigger(s) with your own `function.json file` and code file(s). See Azure Functions [supported triggers](https://docs.microsoft.com/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
+The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message. A response (in the form of an Adaptive Card) is sent back to Teams. You can register multiple commands and have individual responses for each command.
 
-### Customize adapter
+To add the command and response feature:
 
-You can initialize with your own adapter, or customize after initialization.
+1. Go to `src\internal\initialize.js`
+2. Update the `conversationBot` initialization to enable command-response feature: 
+   ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
+3. Follow [these instructions](#How-to-add-more-command-and-response) to add commands to your application.
 
-``` typescript
-// Create your own adapter
-const adapter = new BotFrameworkAdapter(...);
+## Customize the initialization
 
-// Customize your adater, e.g., error handling
-adapter.onTurnError = ...
+The default initialization is located in `bot/src/internal/initialize.js`.
 
-const bot = new ConversationBot({
-    // use your own adapter
-    adapter: adapter;
-    ...
-});
+You can update the initialization logic to:
 
-// Or, customize later
-bot.adapter.onTurnError = ...
-```
+- Set `options.adapter` to use your own `BotFrameworkAdapter`
+- Set `options.notification.storage` to use your own `NotificationTargetStorage`
+- Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
 
-### Customize storage
+To learn more, visit [additional initialization customizations]().
 
-The storage will be used to persist notification connections, you can initialize with your own storage.
+## Testing your notification
 
-``` typescript
-// implement your own storage
-class MyStorage implements NotificationTargetStorage {...}
-const myStorage = new MyStorage(...);
+To test your notification deployed on `restify`:
 
-// initialize ConversationBot with notification enabled and customized storage
-const bot = new ConversationBot({
-    // The bot id and password to create BotFrameworkAdapter.
-    // See https://aka.ms/about-bot-adapter to learn more about adapters.
-    adapterConfig: {
-        appId: process.env.BOT_ID,
-        appPassword: process.env.BOT_PASSWORD,
-    },
-    // Enable notification
-    notification: {
-        enabled: true,
-        storage: myStorage,
-    },
-});
-```
+* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  * When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
 
-**[This Sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/ga/adaptive-card-notification/bot/src/storage/blobsStorage.ts)** provides a reference implementation that persists to Azure Blob Storage.
+## Add authentication to your restify API
 
-> Note: It's recommended to use your own shared storage for production environment. If `storage` is not provided, a default local file storage will be used, which stores notification connections into:
->   - *.notification.localstore.json* if running locally
->   - *${process.env.TEMP}/.notification.localstore.json* if `process.env.RUNNING_ON_AZURE` is set to "1"
-
-### Connect to existing API
-
-You usually want to access data or information when building Teams application. If you do not have an appropriate SDK that helps you make an API request, Teams Toolkit is here to help you bootstrap sample code which handles authentication for your API requests. For more information, you can visit [Connect existing API document](https://aka.ms/teamsfx-connect-api).
-
-### Add authentication for your notification API
-
-The scaffolded notification API does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it for production purpose. Here're some common ways to add authentication / authorization for an API:
+The scaffolded `restify` endpoint does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it in production. Here are some methods to add authentication / authorization to your endpoint.
 
 1. Use an API Key
-
 2. Use an access token issued by [Azure Active Directory](https://docs.microsoft.com/azure/active-directory/authentication/)
+3. There are additional options that may be suitable for your business requirements.
 
-There would be more authentication / authorization solutions for an API. You can choose the one that satisfies your requirement best.
+## Update the Teams application manifest
 
-### Extend this app with command and response
+You can find the Teams application manifest in `templates/appPackage/manifest.template.json`.
 
-1. Go to `bot\src\internal\initialize.ts(js)`, update your `conversationBot` initialization to enable command-response feature:
+The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file.
 
-   ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
+See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
-1. Follow [this instruction](#How-to-add-more-command-and-response) to add command to your bot.
-
-### Edit Teams App manifest
-
-You can find the Teams app manifest in `templates/appPackage/manifest.template.json`.
-
-The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
-
-### More development documentations
+## Additional information
 
 * [Frequently asked questions](https://aka.ms/teamsfx-notification##frequently-asked-questions) for sending notifications
 * Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
 * [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
 
-## Deployment
-
-Teams Toolkit simplifies the process for you when moving this application to the cloud.
-* Provision cloud resource for your app using ARM templates, see: [Use Teams Toolkit to provision cloud resources](https://docs.microsoft.com/microsoftteams/platform/toolkit/provision) for more information.
-* Deploy your application to the cloud with a single command see: [Deploy to the cloud](https://docs.microsoft.com/microsoftteams/platform/toolkit/deploy).
-* Set up automation pipelines with [CI/CD support](https://docs.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
-* With your application running in the cloud, preview your app in Teams via [Run the deployed app](https://docs.microsoft.com/microsoftteams/platform/sbs-gs-javascript?tabs=vscode%2Cvsc%2Cviscode%2Cvcode&tutorial-step=8#run-the-deployed-app).
-* Distribute your application by [Publish Teams apps using Teams Toolkit](https://docs.microsoft.com/microsoftteams/platform/toolkit/publish).
-
-## Reference
+# References
 
 * [Teams Toolkit Notification Tutorial](https://aka.ms/teamsfx-notification)
 * [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)

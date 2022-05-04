@@ -63,7 +63,7 @@ The following files are project-related files. You generally will not need to cu
 | `local.settings.json` | Azure Functions settings for local debugging |
 | `package.json` | NPM package file |
 
-# Customizing the business logic
+# Customize your application
 
 By default:
 
@@ -72,7 +72,7 @@ By default:
 
 This section outlines some customization you can do to adopt the application for your needs.
 
-## Customizing the event source
+## Customize the event source
 
 If you selected `timer` trigger, the default Azure Function timer trigger (`src/timerTrigger.ts`) implementation simply sends a hard-coded Adaptive Card every 30 seconds.
 
@@ -82,7 +82,7 @@ You can customize this behavior by customizing `src/*Trigger.ts`. A typical impl
 
 Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
 
-## Customizing the Adaptive Card
+## Customize the Adaptive Card
 
 You can edit the file `src/adaptiveCards/notification-default.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
 
@@ -90,7 +90,7 @@ The binding between the model and the Adaptive Card is done by name matching (fo
 
 You can also add new cards if appropriate for your application.
 
-## Customizing the trigger schedule
+## Customize the trigger schedule
 
 If you selected `timer` trigger, you can edit the file `notifyTimerTrigger/function.json` to customize the `schedule` property.
 
@@ -103,7 +103,7 @@ Often you need to connect to existing APIs in order to retrieve data to send to 
 
 For more information, [click here](https://aka.ms/teamsfx-connect-api).
 
-## Customizing where notifications are sent
+## Customize where notifications are sent
 
 By default, the notification is sent to a new private chat between your M365 user and the application. You can customize where each notification is delivered by editing the notification source file (for example, `src/*Trigger.ts`).
 
@@ -205,7 +205,7 @@ You can update the initialization logic to:
 
 To learn more, visit [additional initialization customizations]().
 
-## Testing a http trigger
+## Test a http trigger
 
 If you selected `http` trigger, you can test it:
 

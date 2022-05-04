@@ -60,13 +60,13 @@ The following files are project-related files. You generally will not need to cu
 | `local.settings.json` | Azure Functions settings for local debugging |
 | `package.json` | NPM package file |
 
-# Customizing the business logic
+# Customize your application
 
 By default the application registers a route with `restify`. When a request is made to this route, the application will send a notification to Teams.
 
 This section outlines some customization you can do to adopt the application for your needs.
 
-## Customizing the event source
+## Customize the event source
 
 By default Teams Toolkit scaffolds a single `restify` entry point in `src/index.js`. When a HTTP request is sent to this entry point, the default implementation sends a hard-coded Adaptive Card to Teams.
 
@@ -74,7 +74,7 @@ You can customize this behavior by customizing `src/index.js`. A typical impleme
 
 Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
 
-## Customizing the Adaptive Card
+## Customize the Adaptive Card
 
 You can edit the file `src/adaptiveCards/notification-default.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
 
@@ -88,7 +88,7 @@ Often you need to connect to existing APIs in order to retrieve data to send to 
 
 For more information, [click here](https://aka.ms/teamsfx-connect-api).
 
-## Customizing where notifications are sent
+## Customize where notifications are sent
 
 By default, the notification is sent to a new private chat between your M365 user and the application. You can customize where each notification is delivered by editing the notification source file (for example, `src/index.js`).
 
@@ -178,7 +178,7 @@ You can update the initialization logic to:
 
 To learn more, visit [additional initialization customizations]().
 
-## Testing your notification
+## Test your notification
 
 To test your notification deployed on `restify`:
 

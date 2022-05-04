@@ -1,32 +1,44 @@
-# Enable SSO for bot project
+# Enable single sign-on for bot applications
 
-Microsoft Teams has provided a mechanism to minimize the number of times users need to enter their sign in credentials and this is called single sign on. Teams Framework (TeamsFx) added support on top of this mechanism to help developers build single sign feature easily.
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit faciliates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high level APIs. This enalbes you to add single sign-on (SSO) features easily to your Teams application.
 
-## Take a tour of project file structure change
+For a bot application, SSO manifests as an Adaptive Card which the user can interact with to invoke the AAD consent flow.
 
-After you successfully added SSO into your project, Teams Toolkit will create or modify some files that helps you implement SSO feature.
+# Changes to your project
 
-|Type| File | Purpose |
-|-| - | - |
-|Create| `aad.template.json` under `template\appPackage` | This is the Azure Active Directory application manifest used to represent your AAD app. This template will be used to register an AAD app during local debug or provision stage. |
-|Modify | `manifest.template.json` under `template\appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. This change will take effect when you trigger local debug or provision.|
-|Create| `auth/bot` | reference code, auth redirect pages and a `README.md` file will be generated in this path for a bot project. |
+When you added the SSO feature to your application, Teams Toolkit updated your project to support SSO:
 
-## Update code to implement SSO feature
+After you successfully added SSO into your project, Teams Toolkit will create and modify some files that helps you implement SSO feature.
 
-Teams Toolkit has created reference code that helps demonstrate how to implement SSO feature, please follow below instructions to update the code.
+| Action | File | Description |
+| - | - | - |
+| Create| `aad.template.json` under `template\appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
+| Modify | `manifest.template.json` under `template\appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
+| Create | `auth/bot` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
-1. Copy `auth/bot/public` folder to `bot/src`. These folder contains HTML pages used for auth redirect, please note that you need to modify `bot/src/index` file to add routing to these pages.
+# Update your code to add SSO
 
-1. Copy `auth/bot/sso` folder to `bot/src`.
-These folder contains three files as reference for sso implementation:
-    * `showUserInfo`: This implements a function to get user info with SSO token. You can follow this method and create your own method that requires SSO token.
-    * `ssoDialog`: This creates a [ComponentDialog](https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest) that used for SSO.
-    * `teamsSsoBot`: This create a [TeamsActivityHandler](https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.builder.teams.teamsactivityhandler?view=botbuilder-dotnet-stable) with `ssoDialog` and add `showUserInfo` as a command that can be triggered. 
+As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
-1. Register your own command with `addCommand` in this file.
-1. Execute the following commands under `bot/`: `npm install isomorphic-fetch`
-1. After adding the following files, you need to create a new `teamsSsoBot` instance in `bot/src/index` file. Please replace the following code:
+## Set up the AAD redirects
+
+1. Copy the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+2. Modify your `bot/src/index.ts` to add the appropriate `restify` routes to these pages.
+
+## Update your business logic
+
+The sample business logic provides a function `showUserInfo` that requires an AAD token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required; otherwise it will go straight to `showUserInfo`.
+
+To make this work in your application:
+
+1. Copy the `auth/bot/sso` folder to `bot/src`. This folder contains three files that provide a default SSO implementation:
+    * `showUserInfo`: This default sample retrieves user information from Microsoft Graph.
+    * `ssoDialog`: This creates a [ComponentDialog](https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest) that implements the SSO flow.
+    * `teamsSsoBot`: This create a [TeamsActivityHandler](https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.builder.teams.teamsactivityhandler?view=botbuilder-dotnet-stable) with `showUserInfo` as a command. The `ssoDialog` is displayed if needed.
+2. In `src/internal/initialize.ts`, register your command with `addCommand`.
+3. In the `bot` folder, run this command: `npm install isomorphic-fetch`
+4. Create a new `teamsSsoBot` instance in your `bot/src/index.ts` file.
+5. Replace the following code:
 
     ```typescript
     // Process Teams activity with Bot Framework.
@@ -47,7 +59,7 @@ These folder contains three files as reference for sso implementation:
     });
     ```
 
-1. Add routing in `bot/src/index` file as below:
+6. Add the following route to `bot/src/index.ts`:
 
     ```typescript
     server.get(
@@ -58,12 +70,16 @@ These folder contains three files as reference for sso implementation:
     );
     ```
 
-## Debug your application
+# Debug your application
 
-After you have updated the code, the SSO functionality should work. You can debug your application by pressing F5. At this stage, Teams Toolkit will use the AAD manifest file to register a AAD application used to achieve SSO. To learn more about Teams Toolkit local debug functionalities, please refer to this [documentation](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
+You can debug your application by pressing F5.
 
-## Customize AAD applications
+Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
 
-Teams Toolkit will create and update Azure Active Directory application with its [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) file. The manifest file contains a definition of all the attributes of an application object in the Microsoft identity platform. It also serves as a mechanism for updating the application object.
+To learn more about Teams Toolkit local debug functionalities, refer to this [document](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
 
-Follow this [documentation](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) when you need to include additional API permissions with AAD manifest template used in Teams Toolkit.
+# Customize AAD applications
+
+The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
+
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.

@@ -91,6 +91,7 @@ export class AzureAccountNode extends DynamicNode {
     }
     if (this.status === AccountItemStatus.SignedIn) {
       this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+      this.command = undefined;
     } else if (this.status === AccountItemStatus.SigningIn) {
       this.label = localize("teamstoolkit.accountTree.signingInAzure");
     } else {

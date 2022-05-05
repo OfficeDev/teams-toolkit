@@ -3200,7 +3200,7 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
   }
 
   if (AzureAccountManager.getAccountInfo() === undefined) {
-    // TODO: why has this check?
+    // make sure user has not logged in
     const triggerFrom = getTriggerFromProperty(args);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
       [TelemetryProperty.AccountType]: AccountType.Azure,

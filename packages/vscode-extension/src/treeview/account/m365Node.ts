@@ -63,6 +63,7 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public async getTreeItem(): Promise<vscode.TreeItem> {
+    this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     if (this.status !== AccountItemStatus.SignedIn) {
       this.label = localize("teamstoolkit.handlers.signIn365");
       this.command = {
@@ -70,8 +71,7 @@ export class M365AccountNode extends DynamicNode {
         command: "fx-extension.signinM365",
         arguments: [TelemetryTriggerFrom.TreeView, this],
       };
-      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-    } else {
+    } else if (this.sideloadingNode.token !== "") {
       this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     }
     this.tooltip = new vscode.MarkdownString(

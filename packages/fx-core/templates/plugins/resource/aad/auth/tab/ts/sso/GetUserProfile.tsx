@@ -11,7 +11,7 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
     ...props,
   };
 
-  // For usage of useTeamsFx(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#usegraph.
+  // For usage of useGraph(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#usegraph.
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api use `graph` instance to get user profile information

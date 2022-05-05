@@ -1,6 +1,6 @@
-// This file implements a `ComponentDialog` class for Single Sign On
+// This file implements a `ComponentDialog` class for Single Sign On.
 // See https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest for more about `ComponentDialog`.
-// If you are not familiar with this, do not remove or update this file
+// If you are not familiar with this, do not remove or update this file.
 
 import {
   ComponentDialog,

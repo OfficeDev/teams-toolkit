@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 const InstallNode =
-  "Go to https://nodejs.org/about/releases/ to install Node.js (recommended version v14)";
+  "Go to https://nodejs.org/about/releases/ to install Node.js (recommended version v16)";
 
 export const doctorConstant = {
   Tick: "√",
@@ -19,6 +19,8 @@ export const doctorConstant = {
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). ${InstallNode}`,
   NodeSuccess: `Supported Node.js version (@Version) is installed`,
+  BypassNode12: `To continue local debugging with Node.js v12, please go to Visual Studio Code setting page for Teams Toolkit and uncheck Node.js.`,
+  BypassNode12AndFunction: `To continue local debugging with Node.js v12, please go to Visual Studio Code setting page for Teams Toolkit and uncheck Node.js and Azure Function Core Tools. And use your Azure Function Core Tools V3.`,
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certificate for localhost is installed",

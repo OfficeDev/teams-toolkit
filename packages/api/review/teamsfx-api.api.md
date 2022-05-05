@@ -982,6 +982,11 @@ export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSe
 
 // @public
 export interface OptionItem {
+    buttons?: {
+        iconPath: string;
+        tooltip: string;
+        command: string;
+    }[];
     cliName?: string;
     data?: unknown;
     description?: string;

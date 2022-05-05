@@ -26,6 +26,14 @@ export const TabNewUIOptionItem: OptionItem = {
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-add-sso",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const BotOptionItem: OptionItem = {
@@ -51,6 +59,14 @@ export const NotificationOptionItem: OptionItem = {
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-send-notification",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
@@ -61,6 +77,14 @@ export const CommandAndResponseOptionItem: OptionItem = {
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-create-command",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const ExistingTabOptionItem: OptionItem = {
@@ -69,12 +93,20 @@ export const ExistingTabOptionItem: OptionItem = {
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-embed-existing-web",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const MessageExtensionItem: OptionItem = {
   id: "MessagingExtension",
   label: getLocalizedString("core.MessageExtensionOption.label"),
-  cliName: "messaging-extension",
+  cliName: "message-extension",
   description: getLocalizedString("core.MessageExtensionOption.description"),
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
 };
@@ -82,7 +114,7 @@ export const MessageExtensionItem: OptionItem = {
 export const MessageExtensionNewUIItem: OptionItem = {
   id: "MessagingExtension",
   label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
-  cliName: "messaging-extension",
+  cliName: "message-extension",
   detail: getLocalizedString("core.MessageExtensionOption.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
 };

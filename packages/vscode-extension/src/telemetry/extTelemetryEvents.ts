@@ -263,6 +263,7 @@ export enum TelemetryTriggerFrom {
   SideBar = "SideBar",
   WalkThrough = "WalkThrough",
   Notification = "Notification",
+  QuickPick = "QuickPick",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

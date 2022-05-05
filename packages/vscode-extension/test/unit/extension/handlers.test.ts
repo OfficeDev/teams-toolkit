@@ -23,12 +23,12 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
-import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
+import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
@@ -42,7 +42,7 @@ suite("handlers", () => {
     let setStatusChangeMap: any;
 
     this.beforeAll(() => {
-      sandbox.stub(accountTree, "registerAccountTreeHandler");
+      sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       setStatusChangeMap = sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);

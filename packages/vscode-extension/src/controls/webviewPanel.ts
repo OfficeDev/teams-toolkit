@@ -42,7 +42,7 @@ export class WebviewPanel {
   public static currentPanels: WebviewPanel[] = [];
 
   private panel: vscode.WebviewPanel;
-  private panelType: PanelType = PanelType.QuickStart;
+  private panelType: PanelType = PanelType.SampleGallery;
   private disposables: vscode.Disposable[] = [];
 
   public static createOrShow(panelType: PanelType, isToSide?: boolean) {
@@ -209,8 +209,6 @@ export class WebviewPanel {
 
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
-      case PanelType.QuickStart:
-        return localize("teamstoolkit.webview.quickStartPageTitle");
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:

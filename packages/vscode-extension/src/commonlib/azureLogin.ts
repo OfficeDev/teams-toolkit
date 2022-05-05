@@ -42,7 +42,6 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
-import TreeViewManagerInstance from "../treeview/treeViewManager";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
@@ -352,18 +351,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             subscriptionName: item.subscription.displayName!,
             tenantId: item.session.tenantId,
           });
-          TreeViewManagerInstance.getTreeView("teamsfx-accounts")?.refresh([
-            {
-              commandId: "fx-extension.selectSubscription",
-              label: item.subscription.displayName!,
-              callback: () => {
-                return Promise.resolve(ok(null));
-              },
-              parent: "fx-extension.signinAzure",
-              contextValue: "selectSubscription",
-              icon: "subscriptionSelected",
-            },
-          ]);
           return;
         }
       }

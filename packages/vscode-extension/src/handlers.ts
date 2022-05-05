@@ -3,11 +3,6 @@
 
 "use strict";
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as util from "util";
-import * as uuid from "uuid";
-import * as vscode from "vscode";
 import {
   commands,
   debug,
@@ -18,6 +13,11 @@ import {
   window,
   workspace,
 } from "vscode";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as util from "util";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
 
 import {
   AppPackageFolderName,

@@ -247,10 +247,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
-    ConfigurationKey.RootDirectory
-  ).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();

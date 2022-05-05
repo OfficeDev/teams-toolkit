@@ -1772,29 +1772,12 @@ async function showLocalDebugMessage() {
     },
   };
 
-  const config = {
-    title: localize("teamstoolkit.handlers.configTitle"),
-    run: async (): Promise<void> => {
-      commands.executeCommand(
-        "workbench.action.openSettings",
-        "fx-extension.defaultProjectRootDirectory"
-      );
-    },
-  };
-
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   vscode.window
-    .showInformationMessage(
-      util.format(localize("teamstoolkit.handlers.localDebugDescription"), getWorkspacePath()),
-      config,
-      localDebug
-    )
+    .showInformationMessage(localize("teamstoolkit.handlers.localDebugDescription"), localDebug)
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-        selection.run();
-      } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });
@@ -1816,29 +1799,12 @@ async function showLocalPreviewMessage() {
     },
   };
 
-  const config = {
-    title: localize("teamstoolkit.handlers.configTitle"),
-    run: async (): Promise<void> => {
-      commands.executeCommand(
-        "workbench.action.openSettings",
-        "fx-extension.defaultProjectRootDirectory"
-      );
-    },
-  };
-
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
   vscode.window
-    .showInformationMessage(
-      util.format(localize("teamstoolkit.handlers.localPreviewDescription"), getWorkspacePath()),
-      config,
-      localPreview
-    )
+    .showInformationMessage(localize("teamstoolkit.handlers.localPreviewDescription"), localPreview)
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-        selection.run();
-      } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });

@@ -14,6 +14,14 @@ Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edg
 
 **Congratulations**! You are running an application that can now send notifications to Teams.
 
+## Test your notification
+
+To test your notification deployed on `restify`:
+
+* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  * When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
+
 >
 > **Prerequisites**
 >
@@ -80,7 +88,7 @@ You can edit the file `src/adaptiveCards/notification-default.json` to customize
 
 The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
-You can also add new cards if appropriate for your application.
+You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with dynamic contents.
 
 ## Connect to existing APIs
 
@@ -155,6 +163,37 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
+### Customize storage
+
+You can initialize with your own storage. This storage will be used to persist notification connections.
+
+> Note: It's recommended to use your own shared storage for production environment. If `storage` is not provided, a default local file storage will be used, which stores notification connections into:
+>   - *.notification.localstore.json* if running locally
+>   - *${process.env.TEMP}/.notification.localstore.json* if `process.env.RUNNING_ON_AZURE` is set to "1"
+
+``` typescript
+// implement your own storage
+class MyStorage implements NotificationTargetStorage {...}
+const myStorage = new MyStorage(...);
+
+// initialize ConversationBot with notification enabled and customized storage
+const bot = new ConversationBot({
+    // The bot id and password to create BotFrameworkAdapter.
+    // See https://aka.ms/about-bot-adapter to learn more about adapters.
+    adapterConfig: {
+        appId: process.env.BOT_ID,
+        appPassword: process.env.BOT_PASSWORD,
+    },
+    // Enable notification
+    notification: {
+        enabled: true,
+        storage: myStorage,
+    },
+});
+```
+
+**[This Sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/ga/adaptive-card-notification/bot/src/storage/blobsStorage.ts)** provides a sample implementation that persists to Azure Blob Storage.
+
 ## Add command and responses to your application
 
 The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message. A response (in the form of an Adaptive Card) is sent back to Teams. You can register multiple commands and have individual responses for each command.
@@ -178,14 +217,6 @@ You can update the initialization logic to:
 
 To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-notification#initialize).
 
-## Test your notification
-
-To test your notification deployed on `restify`:
-
-* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
-  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
-  * When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
-
 ## Add authentication to your restify API
 
 The scaffolded `restify` endpoint does not have authentication / authorization enabled. We suggest you add authentication / authorization for this API before using it in production. Here are some methods to add authentication / authorization to your endpoint.
@@ -202,7 +233,7 @@ The file contains template arguments with `{...}` statements which will be repla
 
 See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
-## Additional information
+# Additional information
 
 * [Frequently asked questions](https://aka.ms/teamsfx-notification##frequently-asked-questions) for sending notifications
 * Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)

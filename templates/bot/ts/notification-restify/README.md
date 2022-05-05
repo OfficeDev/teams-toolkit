@@ -14,6 +14,14 @@ Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edg
 
 **Congratulations**! You are running an application that can now send notifications to Teams.
 
+## Test your notification
+
+To test your notification deployed on `restify`:
+
+* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  * When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
+
 >
 > **Prerequisites**
 >
@@ -80,7 +88,7 @@ You can edit the file `src/adaptiveCards/notification-default.json` to customize
 
 The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
-You can also add new cards if appropriate for your application.
+You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with dynamic contents.
 
 ## Connect to existing APIs
 
@@ -140,6 +148,52 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
+### Send notifications to a personal chat
+
+Update the code to:
+
+``` javascript
+// list all installation targets
+for (const target of await bot.notification.installations()) {
+    // "Person" means this bot is installed as Personal app
+    if (target.type === "Person") {
+        // Directly notify the individual person
+        await target.sendAdaptiveCard(...);
+    }
+}
+```
+
+### Customize storage
+
+You can initialize with your own storage. This storage will be used to persist notification connections.
+
+> Note: It's recommended to use your own shared storage for production environment. If `storage` is not provided, a default local file storage will be used, which stores notification connections into:
+>   - *.notification.localstore.json* if running locally
+>   - *${process.env.TEMP}/.notification.localstore.json* if `process.env.RUNNING_ON_AZURE` is set to "1"
+
+``` typescript
+// implement your own storage
+class MyStorage implements NotificationTargetStorage {...}
+const myStorage = new MyStorage(...);
+
+// initialize ConversationBot with notification enabled and customized storage
+const bot = new ConversationBot({
+    // The bot id and password to create BotFrameworkAdapter.
+    // See https://aka.ms/about-bot-adapter to learn more about adapters.
+    adapterConfig: {
+        appId: process.env.BOT_ID,
+        appPassword: process.env.BOT_PASSWORD,
+    },
+    // Enable notification
+    notification: {
+        enabled: true,
+        storage: myStorage,
+    },
+});
+```
+
+**[This Sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/ga/adaptive-card-notification/bot/src/storage/blobsStorage.ts)** provides a sample implementation that persists to Azure Blob Storage.
+
 ## Add command and responses to your application
 
 The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message. A response (in the form of an Adaptive Card) is sent back to Teams. You can register multiple commands and have individual responses for each command.
@@ -162,14 +216,6 @@ You can update the initialization logic to:
 - Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
 
 To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-notification#initialize).
-
-## Test your notification
-
-To test your notification deployed on `restify`:
-
-* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
-  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
-  * When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
 
 ## Add authentication to your restify API
 

@@ -14,6 +14,14 @@ Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edg
 
 **Congratulations**! You are running an application that can now send notifications to Teams.
 
+## Test a http trigger
+
+If you selected `http` trigger, you can test it:
+
+* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
+  * When your project is deployed to Azure Functions, replace `<endpoint>` with the url from Azure Functions
+
 >
 > **Prerequisites**
 >
@@ -88,14 +96,13 @@ You can edit the file `src/adaptiveCards/notification-default.json` to customize
 
 The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
-You can also add new cards if appropriate for your application.
+You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with dynamic contents.
 
 ## Customize the trigger schedule
 
-If you selected `timer` trigger, you can edit the file `notifyTimerTrigger/function.json` to customize the `schedule` property.
+If you selected `timer` trigger, you can edit the file `*Trigger/function.json` to customize the `schedule` property.
 
 Refer to the [Azure Function documentation]( https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer) for more details.
-
 
 ## Connect to existing APIs
 
@@ -170,13 +177,44 @@ for (const target of await bot.notification.installations()) {
 }
 ```
 
+### Customize storage
+
+You can initialize with your own storage. This storage will be used to persist notification connections.
+
+> Note: It's recommended to use your own shared storage for production environment. If `storage` is not provided, a default local file storage will be used, which stores notification connections into:
+>   - *.notification.localstore.json* if running locally
+>   - *${process.env.TEMP}/.notification.localstore.json* if `process.env.RUNNING_ON_AZURE` is set to "1"
+
+``` typescript
+// implement your own storage
+class MyStorage implements NotificationTargetStorage {...}
+const myStorage = new MyStorage(...);
+
+// initialize ConversationBot with notification enabled and customized storage
+const bot = new ConversationBot({
+    // The bot id and password to create BotFrameworkAdapter.
+    // See https://aka.ms/about-bot-adapter to learn more about adapters.
+    adapterConfig: {
+        appId: process.env.BOT_ID,
+        appPassword: process.env.BOT_PASSWORD,
+    },
+    // Enable notification
+    notification: {
+        enabled: true,
+        storage: myStorage,
+    },
+});
+```
+
+**[This Sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/ga/adaptive-card-notification/bot/src/storage/blobsStorage.ts)** provides a sample implementation that persists to Azure Blob Storage.
+
 ## Add command and responses to your application
 
 The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message. A response (in the form of an Adaptive Card) is sent back to Teams. You can register multiple commands and have individual responses for each command.
 
 To add the command and response feature:
 
-1. Go to `src\internal\initialize.ts`
+1. Go to `src\internal\initialize.js`
 2. Update the `conversationBot` initialization to enable command-response feature: 
    ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
 3. Follow [these instructions](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add commands to your application.
@@ -199,19 +237,11 @@ The default initialization is located in `bot/src/internal/initialize.js`.
 
 You can update the initialization logic to:
 
-- Set `options.adapter` to use your own `BotFrameworkAdapter` 
+- Set `options.adapter` to use your own `BotFrameworkAdapter`
 - Set `options.notification.storage` to use your own `NotificationTargetStorage`
 - Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
 
 To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-notification#initialize).
-
-## Test a http trigger
-
-If you selected `http` trigger, you can test it:
-
-* Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
-  * When your project is running locally, replace `<endpoint>` with `localhost:3978`
-  * When your project is deployed to Azure Functions, replace `<endpoint>` with the url from Azure Functions
 
 ## Add authentication for your http trigger
 
@@ -228,7 +258,6 @@ You can find the Teams application manifest in `templates/appPackage/manifest.te
 The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file.
 
 See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
-
 
 # Additional information
 

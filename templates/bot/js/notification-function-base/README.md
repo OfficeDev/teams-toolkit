@@ -6,7 +6,7 @@ This app is built with the [Microsoft Bot Framework](https://dev.botframework.co
 
 Here is a screen shot of the app running:
 
-![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/165900532-9132644d-0783-422f-8ca8-5aeec626972c.png)
+![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/166959087-a13abe67-e18a-4979-ab29-a8d7663b3489.png)
 
 # Getting Started
 
@@ -53,7 +53,7 @@ The following files provide the business logic for notifications. These files ca
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 | `src/cardModels.js` | The default Adaptive Card data model |
 
-The following files implement the core notification on the Bot Framework. You generally will not need to customize these files.
+The following files implement the core notification on the Bot Framework. You generally will not need to customize these files except when you want to implement your own storages, see [customize storage](#Customize-storage).
 
 | File / Folder | Contents |
 | - | - |
@@ -96,13 +96,13 @@ You can edit the file `src/adaptiveCards/notification-default.json` to customize
 
 The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
-You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with dynamic contents.
+You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with a list or a table of dynamic contents using `ColumnSet` and `FactSet`.
 
 ## Customize the trigger schedule
 
 If you selected `timer` trigger, you can edit the file `*Trigger/function.json` to customize the `schedule` property.
 
-Refer to the [Azure Function documentation]( https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer) for more details.
+Refer to the [Azure Function documentation](https://docs.microsoft.com/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-javascript#ncrontab-expressions) for more details.
 
 ## Connect to existing APIs
 

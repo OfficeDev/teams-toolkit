@@ -228,9 +228,14 @@ jobs:
             bash ./.github/scripts/download-simpleauth.sh
 
       - name: publish alpha release to npm org
-        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga'}}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch $(git branch --show-current)
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+
+      - name: publish beta release to npm org
+        if: ${{ github.ref == 'refs/heads/ga' }}
+        run: |
+          npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

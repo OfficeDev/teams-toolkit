@@ -4,6 +4,7 @@ import { createMicrosoftGraphClient, TeamsFx } from "@microsoft/teamsfx";
 import { TurnContext } from "botbuilder";
 import { DialogTurnResult } from "botbuilder-dialogs";
 
+// If you need extra parameters, you can include the parameters in `addCommand`as parameter
 export async function showUserInfo(
   context: TurnContext,
   ssoToken: string

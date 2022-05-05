@@ -1,3 +1,7 @@
+// This file implements a `TeamsActivityHandler` class using `ssoDialog` and add `showUserInfo` as a command.
+// See https://docs.microsoft.com/en-us/javascript/api/botbuilder/teamsactivityhandler?view=botbuilder-ts-latest for more about `TeamsActivityHandler`.
+// You can add your own command that requires SSO in this file.
+
 import {
   BotState,
   ConversationState,
@@ -33,8 +37,8 @@ export class TeamsSsoBot extends TeamsActivityHandler {
 
     // Add commands that requires user authentication
     this.dialog.addCommand("ShowUserProfile", "show", showUserInfo);
-    // Call the `addCommand` function to add more customized commands, e.g.
-    // this.dialog.addCommand("ManageToDo", new RegExp("todo\s*.*"), todoCmdHandler);
+    // Call the `addCommand` function to add more customized commands with your own parameters, e.g.
+    // this.dialog.addCommand("ManageToDo", new RegExp("todo\s*.*"), todoCmdHandler, param);
 
     this.onMessage(async (context, next) => {
       console.log("Running with Message Activity.");

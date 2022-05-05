@@ -1,5 +1,5 @@
-// This file implements a ComponentDialog for Single Sign On
-// For ComponentDialog, please refer to: https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest
+// This file implements a `ComponentDialog` class for Single Sign On
+// See https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest for more about `ComponentDialog`.
 // If you are not familiar with this, do not remove or update this file
 
 import {
@@ -114,8 +114,7 @@ export class SsoDialog extends ComponentDialog {
     if (commandId) {
       return await stepContext.beginDialog(commandId);
     }
-    await stepContext.context.sendActivity(`Cannot find command: ${test}`);
-
+    await stepContext.context.sendActivity(`Cannot find command: ${text}`);
     return await stepContext.endDialog();
   }
 

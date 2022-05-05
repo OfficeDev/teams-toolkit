@@ -29,7 +29,7 @@ import {
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult, FileChange } from "./result";
+import { ApiConnectorResult, ResultFactory, QuestionResult, FileChange } from "./result";
 import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
@@ -187,7 +187,10 @@ export class ApiConnectorImpl {
       );
     }
     TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
-    return ResultFactory.Success();
+    const result = config.ComponentType.map((item) => {
+      return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
+    });
+    return { generatedFiles: result };
   }
 
   private sendErrorTelemetry(thrownErr: FxError) {
@@ -355,7 +358,7 @@ export class ApiConnectorImpl {
     return await depsHandler.addPkgDeps();
   }
 
-  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
     const componentOptions = [];
     if (inputs.platform === Platform.CLI_HELP) {
       componentOptions.push(botOption);

@@ -9,7 +9,7 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
   async handleCommandReceived(
     context: TurnContext,
     message: CommandMessage
-  ): Promise<string | Partial<Activity>> {
+  ): Promise<string | Partial<Activity> | void> {
     // verify the command arguments which are received from the client if needed.
     console.log(`Bot received message: ${message.text}`);
 

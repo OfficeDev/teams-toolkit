@@ -181,7 +181,7 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
   if (action.type === "function") {
     let plans: string[] = [];
     if (action.name.endsWith(".generateBicep")) {
-      const res = await action.execute(context, inputs);
+      const res = await action.plan(context, inputs);
       if (res.isOk()) {
         const bicep = res.value as Bicep | undefined;
         if (bicep) {
@@ -193,7 +193,7 @@ export async function planAction(action: Action, context: any, inputs: any): Pro
     } else {
       const planRes = await action.plan(context, inputs);
       if (planRes.isOk()) {
-        plans = planRes.value;
+        plans = planRes.value as string[];
       }
     }
     let subStep = 1;
@@ -341,8 +341,13 @@ export async function executeAction(action: Action, context: any, inputs: any): 
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    for (const act of action.actions) {
-      await executeAction(act, context, inputs);
+    if (action.mode === "parallel") {
+      const promises = action.actions.map((a) => executeAction(a, context, inputs));
+      await Promise.all(promises);
+    } else {
+      for (const act of action.actions) {
+        await executeAction(act, context, inputs);
+      }
     }
   }
 }

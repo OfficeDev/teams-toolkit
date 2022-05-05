@@ -25,7 +25,9 @@ export class AzureWebAppConfig {
       name: "azure-web-app-config.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok([]);
+        return ok({
+          Configuration: { Modules: { azureWebAppConfig: "1" }, Orchestration: "1" },
+        });
       },
       execute: async (
         context: ContextV3,
@@ -35,7 +37,7 @@ export class AzureWebAppConfig {
         if (!webAppComponent) return ok({});
 
         const templateContext: any = {};
-        templateContext.connections = webAppComponent.connections || [];
+        templateContext.connections = webAppComponent?.connections || [];
         for (const ref of this.references) {
           templateContext[ref] = { outputs: {} };
           try {

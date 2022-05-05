@@ -322,12 +322,6 @@ export class TeamsfxCore {
         targetAction: "azure-function-config.generateBicep",
       });
     }
-    actions.push({
-      name: "call:bicep.persist",
-      type: "call",
-      required: false,
-      targetAction: "bicep.persist",
-    });
     const group: GroupAction = {
       type: "group",
       name: "fx.addSql",

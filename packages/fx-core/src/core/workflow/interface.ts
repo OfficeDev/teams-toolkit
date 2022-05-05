@@ -25,15 +25,6 @@ export type MaybePromise<T> = T | Promise<T>;
  * 4. group - a group of actions that can be executed in parallel or in sequence
  */
 export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
-export enum ActionPriority {
-  P0 = 0,
-  P1 = 1,
-  P2 = 2,
-  P3 = 3,
-  P4 = 4,
-  P5 = 5,
-  P6 = 6,
-}
 /**
  * group action: group action make it possible to leverage multiple sub-actions to accomplishment more complex task
  */
@@ -46,10 +37,6 @@ export interface GroupAction {
   mode?: "sequential" | "parallel";
   actions: Action[];
   inputs?: any;
-  /**
-   * execution priority in a sequential group, default is 3
-   */
-  priority?: ActionPriority;
 }
 
 /**
@@ -64,10 +51,6 @@ export interface ShellAction {
   async?: boolean;
   captureStdout?: boolean;
   captureStderr?: boolean;
-  /**
-   * execution priority in a sequential group, default is 3
-   */
-  priority?: ActionPriority;
 }
 
 /**
@@ -81,10 +64,6 @@ export interface CallAction {
   inputs?: {
     [k: string]: any;
   };
-  /**
-   * execution priority in a sequential group, default is 3
-   */
-  priority?: ActionPriority;
 }
 
 /**
@@ -96,7 +75,7 @@ export interface FunctionAction {
   inputs?: {
     [k: string]: any;
   };
-  plan(context: any, inputs: any): MaybePromise<Result<string[], FxError>>;
+  plan(context: any, inputs: any): MaybePromise<Result<string[] | Bicep, FxError>>;
   /**
    * question is to define inputs of the task
    */
@@ -105,10 +84,6 @@ export interface FunctionAction {
    * function body is a function that takes some context and inputs as parameter
    */
   execute: (context: any, inputs: any) => MaybePromise<Result<any, FxError>>;
-  /**
-   * execution priority in a sequential group, default is 3
-   */
-  priority?: ActionPriority;
 }
 
 export interface ContextV3 extends v2.Context {

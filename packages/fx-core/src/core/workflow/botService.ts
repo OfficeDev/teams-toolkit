@@ -21,7 +21,9 @@ export class BotServiceResource {
       name: "bot-service.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["generate bicep for bot-service"]);
+        return ok({
+          Configuration: { Modules: { botService: "1" }, Orchestration: "1" },
+        });
       },
       execute: async (
         context: ContextV3,

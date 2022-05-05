@@ -36,8 +36,12 @@ export class AzureSqlResource implements CloudResource {
       name: "azure-sql.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        const sqlInputs = inputs["azure-sql"];
-        return ok([`generate azure-sql bicep for new sql: ${sqlInputs.provisionType}`]);
+        return ok({
+          Provision: {
+            Modules: { azureSql: "1" },
+            Orchestration: "1",
+          },
+        });
       },
       execute: async (
         context: ContextV3,

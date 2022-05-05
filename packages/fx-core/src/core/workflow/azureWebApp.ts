@@ -35,7 +35,12 @@ export class AzureWebAppResource implements CloudResource {
       name: "azure-web-app.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: v2.InputsWithProjectPath) => {
-        return ok(["generate azure-web-app bicep"]);
+        return ok({
+          Provision: {
+            Modules: { azureWebApp: "1" },
+            Orchestration: "1",
+          },
+        });
       },
       execute: async (
         context: ContextV3,

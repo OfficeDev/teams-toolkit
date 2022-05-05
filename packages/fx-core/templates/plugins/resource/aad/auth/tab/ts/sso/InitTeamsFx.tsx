@@ -5,6 +5,7 @@ import { GetUserProfile } from "./GetUserProfile";
 
 export function InitTeamsFx() {
   // For usage of useTeamsFx(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#useteamsfx.
+  // You need to wait until `loading == false` to use TeamsFx SDK.
   const { loading, error, teamsfx } = useTeamsFx();
 
   return (

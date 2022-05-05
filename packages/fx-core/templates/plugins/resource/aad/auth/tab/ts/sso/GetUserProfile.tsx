@@ -14,7 +14,7 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
   // For usage of useTeamsFx(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#usegraph.
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
-      // Call graph api directly to get user profile information
+      // Call graph api use `graph` instance to get user profile information
       const profile = await graph.api("/me").get();
 
       // You can also add following code to get your photo:
@@ -27,6 +27,8 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
       // }
       return { profile };
     },
+    // Add scope for your Azure AD app. For example: Mail.Read, etc.
+    // Use teamsfx instance from `InitTeamsFx`
     { scope: ["User.Read"], teamsfx: teamsfx }
   );
 

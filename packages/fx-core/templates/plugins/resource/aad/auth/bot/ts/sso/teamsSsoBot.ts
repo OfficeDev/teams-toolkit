@@ -33,7 +33,8 @@ export class TeamsSsoBot extends TeamsActivityHandler {
 
     // Add commands that requires user authentication
     this.dialog.addCommand("ShowUserProfile", "show", showUserInfo);
-    // call the `addCommand` function to add more customized commands
+    // Call the `addCommand` function to add more customized commands, e.g.
+    // this.dialog.addCommand("ManageToDo", new RegExp("todo\s*.*"), todoCmdHandler);
 
     this.onMessage(async (context, next) => {
       console.log("Running with Message Activity.");

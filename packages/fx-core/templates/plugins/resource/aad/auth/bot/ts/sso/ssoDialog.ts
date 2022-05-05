@@ -1,3 +1,7 @@
+// This file implements a ComponentDialog for Single Sign On
+// For ComponentDialog, please refer to: https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest
+// If you are not familiar with this, do not remove or update this file
+
 import {
   ComponentDialog,
   WaterfallDialog,
@@ -45,7 +49,12 @@ export class SsoDialog extends ComponentDialog {
   public addCommand(
     commandId: string,
     commandText: string | RegExp,
-    operation: (context: TurnContext, ssoToken: string) => Promise<DialogTurnResult>
+    operation: (
+      context: TurnContext,
+      ssoToken: string,
+      ...param: any[]
+    ) => Promise<DialogTurnResult>,
+    ...param: any[]
   ): void {
     const dialog = new WaterfallDialog(commandId, [
       this.ssoStep.bind(this),
@@ -55,7 +64,7 @@ export class SsoDialog extends ComponentDialog {
         const context: TurnContext = stepContext.context;
         try {
           if (tokenResponse) {
-            await operation(context, tokenResponse.ssoToken);
+            await operation(context, tokenResponse.ssoToken, param);
           } else {
             await context.sendActivity("Failed to retrieve user token from conversation context.");
           }
@@ -105,6 +114,8 @@ export class SsoDialog extends ComponentDialog {
     if (commandId) {
       return await stepContext.beginDialog(commandId);
     }
+    await stepContext.context.sendActivity(`Cannot find command: ${test}`);
+
     return await stepContext.endDialog();
   }
 

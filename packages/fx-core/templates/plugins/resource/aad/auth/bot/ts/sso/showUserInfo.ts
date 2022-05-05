@@ -9,6 +9,8 @@ export async function showUserInfo(
   ssoToken: string
 ): Promise<DialogTurnResult> {
   await context.sendActivity("Retrieving user information from Microsoft Graph ...");
+
+  // Init TeamsFx instance with SSO token
   const teamsfx = new TeamsFx().setSsoToken(ssoToken);
   const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
   const me = await graphClient.api("/me").get();

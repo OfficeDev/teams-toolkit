@@ -15,6 +15,10 @@ on:
         description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
         required: false
         default: ""
+      pkgs:
+        type: string
+        required: false
+        description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
     - cron: "0 8 * * *"
 
@@ -78,6 +82,11 @@ jobs:
       - name: Setup npm registry
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: manage pkgs to release
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pkgs }}
+        run:
+          bash .github/scripts/lerna.sh ${{github.event.inputs.pkgs}}
 
       - name: Setup project
         run: |

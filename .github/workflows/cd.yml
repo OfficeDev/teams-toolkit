@@ -89,12 +89,12 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
       
       - name: release beta npm packages to npmjs.org
-        if: ${{github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid == 'beta')}}
+        if: ${{ github.ref == 'refs/heads/ga' }}
         run: |
           npx lerna version prerelease --preid=beta.$(git rev-parse --short HEAD) --exact --no-push --allow-branch ga --yes
 
@@ -141,7 +141,7 @@ jobs:
 
       - name: update tempaltes alpha tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
         with:
           tag_name: "templates-0.0.0-alpha"
         env:
@@ -149,14 +149,14 @@ jobs:
 
       - name: update tempaltes beta tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
         with:
           tag_name: "templates-0.0.0-beta"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: release templates' alpha version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -166,7 +166,7 @@ jobs:
           allowUpdates: true
       
       - name: release templates' beta version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -228,14 +228,9 @@ jobs:
             bash ./.github/scripts/download-simpleauth.sh
 
       - name: publish alpha release to npm org
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
+        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga'}}
         run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
-      
-      - name: publish beta release to npm org
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid == 'beta')}}
-        run: |
-          npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch $(git branch --show-current)
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

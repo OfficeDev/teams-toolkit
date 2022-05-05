@@ -77,11 +77,15 @@ describe("Api Connector scaffold sample code", async () => {
     const context = MockContext();
     const fakeInputs: Inputs = { ...inputs, ...expectInputs };
     const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
-    await apiConnector.scaffold(context, fakeInputs);
+    const result = await apiConnector.scaffold(context, fakeInputs);
     expect(await fs.pathExists(path.join(botPath, Constants.envFileName))).to.be.true;
     expect(await fs.pathExists(path.join(botPath, "test.js"))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, Constants.envFileName))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, "test.js"))).to.be.true;
+    const expectResult = ["api", "bot"].map((item) => {
+      return path.join(testpath, item, "test.js");
+    });
+    expect(result).to.deep.equal({ generatedFiles: expectResult });
   });
 
   it("restore files meets failure on scaffold", async () => {

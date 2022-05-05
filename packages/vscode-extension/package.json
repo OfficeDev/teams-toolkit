@@ -66,7 +66,6 @@
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
-    "onView:teamsfx",
     "onView:teamsfx-accounts",
     "onView:teamsfx-environment",
     "onView:teamsfx-development",
@@ -923,11 +922,6 @@
         "title": "General",
         "order": 1,
         "properties": {
-          "fx-extension.defaultProjectRootDirectory": {
-            "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requires reload of VS Code)",
-            "default": "${homeDir}/TeamsApps"
-          },
           "fx-extension.automaticNpmInstall": {
             "type": "boolean",
             "title": "Automatic NPM Install",

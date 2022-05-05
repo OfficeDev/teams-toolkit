@@ -60,6 +60,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
+  askSubscription,
   CollaborationState,
   Correlator,
   DepsType,
@@ -77,9 +78,9 @@ import {
   isValidProject,
   LocalEnvManager,
   ProjectSettingsHelper,
+  UserTaskFunctionName,
 } from "@microsoft/teamsfx-core";
 
-import { registerAccountTreeHandler } from "./accountTree";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -111,7 +112,7 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import { ext } from "./extensionVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -124,6 +125,10 @@ import {
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
+import { AzureAccountNode } from "./treeview/account/azureNode";
+import { AccountItemStatus } from "./treeview/account/common";
+import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
@@ -228,7 +233,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     };
     core = new FxCore(tools);
     registerCoreEvents();
-    await registerAccountTreeHandler();
+    accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
     await envTreeProviderInstance.reloadEnvironments();
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
@@ -721,6 +726,13 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           const PreviewMarkdownCommand = "markdown.showPreview";
           await commands.executeCommand(PreviewMarkdownCommand, uri);
           await commands.executeCommand("markdown.preview.toggleLock");
+        });
+      }
+    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+      const files: string[] = result.value.generatedFiles;
+      for (const generatedFile of files) {
+        workspace.openTextDocument(generatedFile).then((document) => {
+          window.showTextDocument(document, { preview: false });
         });
       }
     }
@@ -1769,29 +1781,12 @@ async function showLocalDebugMessage() {
     },
   };
 
-  const config = {
-    title: localize("teamstoolkit.handlers.configTitle"),
-    run: async (): Promise<void> => {
-      commands.executeCommand(
-        "workbench.action.openSettings",
-        "fx-extension.defaultProjectRootDirectory"
-      );
-    },
-  };
-
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   vscode.window
-    .showInformationMessage(
-      util.format(localize("teamstoolkit.handlers.localDebugDescription"), getWorkspacePath()),
-      config,
-      localDebug
-    )
+    .showInformationMessage(localize("teamstoolkit.handlers.localDebugDescription"), localDebug)
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-        selection.run();
-      } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });
@@ -1813,29 +1808,12 @@ async function showLocalPreviewMessage() {
     },
   };
 
-  const config = {
-    title: localize("teamstoolkit.handlers.configTitle"),
-    run: async (): Promise<void> => {
-      commands.executeCommand(
-        "workbench.action.openSettings",
-        "fx-extension.defaultProjectRootDirectory"
-      );
-    },
-  };
-
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
   vscode.window
-    .showInformationMessage(
-      util.format(localize("teamstoolkit.handlers.localPreviewDescription"), getWorkspacePath()),
-      config,
-      localPreview
-    )
+    .showInformationMessage(localize("teamstoolkit.handlers.localPreviewDescription"), localPreview)
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-        selection.run();
-      } else if (selection?.title === localize("teamstoolkit.handlers.configTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });
@@ -2804,20 +2782,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
   });
   const result = await AzureAccountManager.signout();
   if (result) {
-    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
-      {
-        commandId: "fx-extension.signinAzure",
-        label: localize("teamstoolkit.handlers.signInAzure"),
-        contextValue: "signinAzure",
-      },
-    ]);
-    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.remove([
-      {
-        commandId: "fx-extension.selectSubscription",
-        label: "",
-        parent: "fx-extension.signinAzure",
-      },
-    ]);
+    accountTreeViewProviderInstance.azureAccountNode.setSignedOut();
   }
 }
 
@@ -2835,23 +2800,9 @@ export async function signOutM365(isFromTreeView: boolean) {
   }
   const result = await appstudioLogin.signout();
   if (result) {
-    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
-      {
-        commandId: "fx-extension.signinM365",
-        label: localize("teamstoolkit.handlers.signIn365"),
-        contextValue: "signinM365",
-      },
-    ]);
-    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.remove([
-      {
-        commandId: "fx-extension.checkSideloading",
-        label: "",
-        parent: "fx-extension.signinM365",
-      },
-    ]);
+    accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
+    envTreeProviderInstance.refreshRemoteEnvWarning();
   }
-
-  await envTreeProviderInstance.reloadEnvironments();
 }
 
 export async function signInAzure() {
@@ -3155,4 +3106,108 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
   return VS_CODE_UI.openUrl(tutorial.data as string);
+}
+
+export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {
+  let node: M365AccountNode | undefined;
+  if (args && args.length > 1) {
+    node = args[1] as M365AccountNode;
+    if (node && node.status === AccountItemStatus.SignedIn) {
+      return ok(null);
+    }
+  }
+
+  const triggerFrom = getTriggerFromProperty(args);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+    [TelemetryProperty.AccountType]: AccountType.M365,
+    ...triggerFrom,
+  });
+
+  const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
+  if (token !== undefined && node) {
+    node.setSignedIn((token as any).upn ? (token as any).upn : "");
+  }
+
+  await envTreeProviderInstance.refreshRemoteEnvWarning();
+  return ok(null);
+}
+
+export async function refreshSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
+  const status = await AppStudioTokenInstance.getStatus();
+  if (status.token !== undefined) {
+    accountTreeViewProviderInstance.m365AccountNode.updateSideloading(status.token);
+  }
+
+  return ok(null);
+}
+
+export async function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
+  VS_CODE_UI.showMessage(
+    "error",
+    localize("teamstoolkit.accountTree.sideloadingMessage"),
+    false,
+    localize("teamstoolkit.accountTree.sideloadingJoinM365")
+  )
+    .then(async (result) => {
+      if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {
+        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
+      } else if (
+        result.isOk() &&
+        result.value === localize("teamstoolkit.accountTree.sideloadingJoinM365")
+      ) {
+        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
+      }
+    })
+    .catch((_error) => {});
+  return ok(null);
+}
+
+export async function signinAzureCallback(args?: any[]): Promise<Result<null, FxError>> {
+  let node: AzureAccountNode | undefined;
+  if (args && args.length > 1) {
+    node = args[1] as AzureAccountNode;
+    if (node && node.status === AccountItemStatus.SignedIn) {
+      return ok(null);
+    }
+  }
+
+  if (AzureAccountManager.getAccountInfo() === undefined) {
+    // make sure user has not logged in
+    const triggerFrom = getTriggerFromProperty(args);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
+      [TelemetryProperty.AccountType]: AccountType.Azure,
+      ...triggerFrom,
+    });
+  }
+  const token = await AzureAccountManager.getAccountCredentialAsync(true);
+  if (token && node) {
+    const needSelectSubscription = await node.setSignedIn(
+      (token as any).username ? (token as any).username : ""
+    );
+    if (needSelectSubscription) {
+      const solutionSettings = await getAzureSolutionSettings();
+      if (solutionSettings && "Azure" === solutionSettings.hostType) {
+        await selectSubscriptionCallback();
+      }
+    }
+  }
+  return ok(null);
+}
+
+export async function selectSubscriptionCallback(args?: any[]): Promise<Result<null, FxError>> {
+  tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
+    [TelemetryProperty.TriggerFrom]: args
+      ? TelemetryTriggerFrom.TreeView
+      : TelemetryTriggerFrom.Other,
+  });
+  const askSubRes = await askSubscription(
+    tools.tokenProvider.azureAccountProvider,
+    VS_CODE_UI,
+    undefined
+  );
+  if (askSubRes.isErr()) return err(askSubRes.error);
+  await accountTreeViewProviderInstance.azureAccountNode.setSubscription(askSubRes.value);
+  return ok(null);
 }

@@ -1,9 +1,9 @@
 import * as React from "react";
 import "./tree.scss";
-import publish_dark from "../../../media/dark/publish.svg";
-import publish_light from "../../../media/light/publish.svg";
-import developerPortal_dark from "../../../media/dark/developerPortal.svg";
-import developerPortal_light from "../../../media/light/developerPortal.svg";
+import publish_dark from "../../../media/treeview/command/publish-dark.svg";
+import publish_light from "../../../media/treeview/command/publish-light.svg";
+import developerPortal_dark from "../../../media/treeview/command/developerPortal-dark.svg";
+import developerPortal_light from "../../../media/treeview/command/developerPortal-light.svg";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 import { localize } from "../../utils/localizeUtils";

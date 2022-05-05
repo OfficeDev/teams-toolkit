@@ -357,7 +357,7 @@ export class TeamsFx implements TeamsFxConfiguration {
 
 // @beta
 export interface TeamsFxBotCommandHandler {
-    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 

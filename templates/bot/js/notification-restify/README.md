@@ -164,7 +164,7 @@ To add the command and response feature:
 1. Go to `src\internal\initialize.js`
 2. Update the `conversationBot` initialization to enable command-response feature: 
    ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
-3. Follow [these instructions](#How-to-add-more-command-and-response) to add commands to your application.
+3. Follow [these instructions](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add commands to your application.
 
 ## Customize the initialization
 
@@ -176,7 +176,7 @@ You can update the initialization logic to:
 - Set `options.notification.storage` to use your own `NotificationTargetStorage`
 - Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
 
-To learn more, visit [additional initialization customizations]().
+To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-notification#initialize).
 
 ## Test your notification
 

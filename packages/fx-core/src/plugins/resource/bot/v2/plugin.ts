@@ -166,8 +166,9 @@ export class TeamsBotV2Impl {
     const triggers = this.resolveTriggers(inputs);
     const hostType = this.resolveHostType(ctx);
     const lang = this.resolveProgrammingLanguage(ctx);
+    const isM365 = ctx.projectSetting?.isM365;
 
-    const scenarios = this.resolveScenarios(actRoles, triggers, hostType);
+    const scenarios = this.resolveScenarios(actRoles, triggers, hostType, isM365);
 
     return scenarios.map((scenario) => {
       return {
@@ -272,6 +273,8 @@ export class TeamsBotV2Impl {
         return HostType.AppService;
       case "azure-functions":
         return HostType.Function;
+      case undefined:
+        return HostType.AppService;
     }
     throw new Error("Invalid host type");
   }
@@ -306,19 +309,34 @@ export class TeamsBotV2Impl {
   private resolveScenarios(
     actRoles: PluginActRoles[],
     triggers: BotTrigger[],
-    hostType: HostType
+    hostType: HostType,
+    isM365: boolean | undefined
   ): string[] {
     const scenarios: string[] = [];
-    if (hostType === HostType.Function) {
-      if (actRoles.includes(PluginActRoles.Notification)) {
-        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
-        triggers.map((trigger) => scenarios.push(TriggerTemplateScenarioMappings[trigger]));
+    actRoles.map((actRole) => {
+      switch (actRole) {
+        case PluginActRoles.CommandAndResponse:
+          scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+          break;
+        case PluginActRoles.Notification:
+          if (hostType === HostType.Function) {
+            scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
+            triggers.map((trigger) => scenarios.push(TriggerTemplateScenarioMappings[trigger]));
+          }
+          if (hostType === HostType.AppService) {
+            scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+          }
+          break;
+        case PluginActRoles.Bot || PluginActRoles.MessageExtension:
+          if (isM365) {
+            scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+          } else if (!scenarios.includes(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME)) {
+            scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+          }
+          break;
       }
-    }
-    if (hostType === HostType.AppService) {
-      // TODO: support command & respond bot and notification bot
-      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-    }
+    });
+
     return scenarios;
   }
 }

@@ -7,8 +7,9 @@ import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ApiConnectorImpl } from "./plugin";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { FxResult, ResultFactory, QuestionResult } from "./result";
 import { ErrorMessage } from "./errors";
+import { UserTaskFunctionName } from "../../solution/fx-solution/constants";
 
 @Service(ResourcePluginsV2.ApiConnectorPlugin)
 export class ApiConnectorPluginV2 implements ResourcePlugin {
@@ -26,7 +27,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     func: Func,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<ApiConnectorResult> {
+  ): Promise<QuestionResult> {
     return await this.apiConnectorImpl.generateQuestion(ctx, inputs);
   }
 
@@ -37,14 +38,14 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<ApiConnectorResult> {
-    if (func.method != "connectExistingApi") {
+  ): Promise<FxResult> {
+    if (func.method != UserTaskFunctionName.ConnectExistingApi) {
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorRouteError.name,
         ErrorMessage.ApiConnectorRouteError.message(func.method)
       );
     }
-    await this.apiConnectorImpl.scaffold(ctx, inputs);
-    return ResultFactory.Success();
+    const result = await this.apiConnectorImpl.scaffold(ctx, inputs);
+    return ResultFactory.Success({ func: UserTaskFunctionName.ConnectExistingApi, ...result });
   }
 }

@@ -78,6 +78,7 @@ import {
   isValidProject,
   LocalEnvManager,
   ProjectSettingsHelper,
+  UserTaskFunctionName,
 } from "@microsoft/teamsfx-core";
 
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
@@ -725,6 +726,13 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           const PreviewMarkdownCommand = "markdown.showPreview";
           await commands.executeCommand(PreviewMarkdownCommand, uri);
           await commands.executeCommand("markdown.preview.toggleLock");
+        });
+      }
+    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+      const files: string[] = result.value.generatedFiles;
+      for (const generatedFile of files) {
+        workspace.openTextDocument(generatedFile).then((document) => {
+          window.showTextDocument(document, { preview: false });
         });
       }
     }

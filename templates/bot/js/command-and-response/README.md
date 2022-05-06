@@ -12,7 +12,7 @@ Here is a screen shot of the application running:
 
 Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)`.
 
-**Congratulations**! You are running an application that can now send notifications to Teams.
+**Congratulations**! You are running an application that can now send respond to a chat command in Teams.
 
 >
 > **Prerequisites**
@@ -31,21 +31,21 @@ This section walks through the generated code. The project folder contains the f
 | - | - |
 | `.fx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
-| `bot` | The source code for the notification Teams application |
+| `bot` | The source code for the command and response Teams application |
 | `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
 
 The core command-response implementation is in `bot` folder.
 
-The following files provide the business logic for notifications. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
+The following files provide the business logic for command and response bot. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
 
 | File | Contents |
 | - | - |
-| `src/index.js` | Application entry point and `restify` handlers for notifications |
+| `src/index.js` | Application entry point and `restify` handlers for command and response |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
 | `src/helloworldCommandHandler.js` | The business logic to handle a command |
 | `src/cardModels.js` | The default Adaptive Card data model |
 
-The following files implement the core notification on the Bot Framework. You generally will not need to customize these files.
+The following files implement the core command and response on the Bot Framework. You generally will not need to customize these files.
 
 | File / Folder | Contents |
 | - | - |
@@ -55,10 +55,7 @@ The following files are project-related files. You generally will not need to cu
 
 | File / Folder | Contents |
 | - | - |
-| `.funcignore` | Azure Functions ignore file to exclude local files |
 | `.gitignore` | Git ignore file |
-| `host.json` | Azure Functions host file |
-| `local.settings.json` | Azure Functions settings for local debugging |
 | `package.json` | NPM package file |
 
 # Customize your application
@@ -135,7 +132,7 @@ The default initialization is located in `bot/src/internal/initialize.js`.
 You can update the initialization logic to:
 
 - Set `options.adapter` to use your own `BotFrameworkAdapter`
-- Set `options.notification.storage` to use your own `NotificationTargetStorage`
+- Set `options.command.commands` to include more command handlers
 - Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
 
 To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-command-response#customize-initialization).
@@ -150,7 +147,6 @@ See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/re
 
 ## Additional information
 
-* [Frequently asked questions](https://aka.ms/teamsfx-notification##frequently-asked-questions) for sending notifications
 * Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
 * [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
 

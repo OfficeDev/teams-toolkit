@@ -327,7 +327,8 @@ export class TeamsBotV2Impl {
             scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
           }
           break;
-        case PluginActRoles.Bot || PluginActRoles.MessageExtension:
+        case PluginActRoles.Bot:
+        case PluginActRoles.MessageExtension:
           if (isM365) {
             scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
           } else if (!scenarios.includes(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME)) {

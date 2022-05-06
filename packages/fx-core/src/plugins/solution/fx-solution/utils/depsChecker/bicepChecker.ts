@@ -36,9 +36,9 @@ import { sendErrorTelemetryThenReturnError } from "../util";
 import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
 
 export const BicepName = "Bicep";
-export const installVersion = "v0.4";
-export const installVersionPattern = "^v0.4";
-export const fallbackInstallVersion = "v0.4.1008";
+export const installVersion = "v0.6";
+export const installVersionPattern = "^v0.6";
+export const fallbackInstallVersion = "v0.6.1";
 export const supportedVersions: Array<string> = [installVersion];
 
 const displayBicepName = `${BicepName} (${installVersion})`;

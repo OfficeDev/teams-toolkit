@@ -36,6 +36,16 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
   }
 }
 
+// Connect the bot service to Outlook
+resource botServiceOutlookChannel 'Microsoft.BotService/botServices/channels@2021-05-01-preview' = {
+  parent: botService
+  location: 'global'
+  name: 'OutlookChannel'
+  properties: {
+    channelName: 'OutlookChannel'
+  }
+}
+
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'app'

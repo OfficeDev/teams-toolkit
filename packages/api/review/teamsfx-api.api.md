@@ -284,6 +284,26 @@ export enum Colors {
 }
 
 // @public (undocumented)
+interface Component {
+    // (undocumented)
+    build?: boolean;
+    // (undocumented)
+    connections?: string[];
+    // (undocumented)
+    deployType?: "folder" | "zip";
+    // (undocumented)
+    folder?: string;
+    // (undocumented)
+    hostingResource?: string;
+    // (undocumented)
+    language?: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    provision?: boolean;
+}
+
+// @public (undocumented)
 export class ConcurrentError extends UserError {
     constructor(source: string);
 }
@@ -369,6 +389,18 @@ interface Context_2 {
     telemetryReporter: TelemetryReporter;
     // (undocumented)
     userInteraction: UserInteraction;
+}
+
+// @public (undocumented)
+interface ContextV3 extends Context_2 {
+    // (undocumented)
+    envInfo?: EnvInfoV3;
+    // (undocumented)
+    manifestProvider: AppManifestProvider;
+    // (undocumented)
+    projectSetting: ProjectSettingsV3;
+    // (undocumented)
+    tokenProvider?: TokenProvider;
 }
 
 // @public (undocumented)
@@ -922,6 +954,9 @@ type ManifestCapability = {
 };
 
 // @public (undocumented)
+type MaybePromise<T> = T | Promise<T>;
+
+// @public (undocumented)
 export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
 
 // @public (undocumented)
@@ -1136,6 +1171,12 @@ export interface ProjectSettings {
 
 // @public (undocumented)
 export const ProjectSettingsFileName = "projectSettings.json";
+
+// @public (undocumented)
+interface ProjectSettingsV3 extends ProjectSettings {
+    // (undocumented)
+    components: Component[];
+}
 
 // @public
 export interface ProjectStates {
@@ -1821,6 +1862,10 @@ declare namespace v3 {
     export {
         EnvInfoV3,
         ManifestCapability,
+        Component,
+        ProjectSettingsV3,
+        ContextV3,
+        MaybePromise,
         CloudResource,
         ResourceStates,
         AzureResource,

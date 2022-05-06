@@ -950,6 +950,7 @@ export async function getQuestionsForAddFeature(
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
+        SingleSignOnOptionItem.id,
       ],
     };
     addFeatureNode.addChild(programmingLanguage);

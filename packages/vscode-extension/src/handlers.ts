@@ -237,7 +237,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await envTreeProviderInstance.reloadEnvironments();
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-change-logs.md"
+        "**/unify-config-and-aad-manifest-change-logs.md"
       );
 
       unifyConfigWatcher.onDidCreate(async (event) => {
@@ -336,7 +336,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
-  const unifyConfigMD = "unify-config-change-logs.md";
+  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
   if (changeLogsPath !== filePath) {
     return;
@@ -2169,19 +2169,20 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  if (
-    await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.CustomizeTreeview,
-        true
-      )
-  ) {
-    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", true);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
-  }
+  // Keeping legacy codes because customized treeview is blocked by VS Code bug
+  // if (
+  //   await exp
+  //     .getExpService()
+  //     .getTreatmentVariableAsync(
+  //       TreatmentVariables.VSCodeConfig,
+  //       TreatmentVariables.CustomizeTreeview,
+  //       true
+  //     )
+  // ) {
+  //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", true);
+  // } else {
+  //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
+  // }
   const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
   context.subscriptions.push(...disposables);
 

@@ -689,13 +689,25 @@ export async function addResource(
   const pluginsToScaffold: v2.ResourcePlugin[] = [];
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
   let scaffoldApim = false;
+  let addSsoRes = {};
   // 4. check Function
   if (addFunc) {
     // AAD plugin needs to be activated when adding function.
     // Since APIM also have dependency on Function, will only add depenedency here.
     if (!isAADEnabled(solutionSettings)) {
       if (isAadManifestEnabled()) {
-        await addSso(ctx, inputs, localSettings);
+        const res = await addSso(ctx, inputs, localSettings);
+        if (res.isErr()) {
+          ctx.projectSetting.solutionSettings = originalSettings;
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.AddResource,
+              res.error,
+              ctx.telemetryReporter
+            )
+          );
+        }
+        addSsoRes = res.value as any;
       } else {
         solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
       }
@@ -794,7 +806,11 @@ export async function addResource(
   });
   return ok(
     pluginsToDoArm.length > 0
-      ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
+      ? {
+          solutionSettings: solutionSettings,
+          solutionConfig: { provisionSucceeded: false },
+          ...addSsoRes,
+        }
       : Void
   );
 }

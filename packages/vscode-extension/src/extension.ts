@@ -705,6 +705,7 @@ function initializeContextKey() {
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
   }
+  vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {

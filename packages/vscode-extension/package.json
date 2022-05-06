@@ -1212,7 +1212,7 @@
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
     "vscode-extension-telemetry": "^0.2.9",
-    "vscode-tas-client": "^0.1.22",
+    "vscode-tas-client": "^0.1.47",
     "vscode-test": "^1.5.2"
   },
   "extensionDependencies": [

@@ -2169,19 +2169,20 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  if (
-    await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.CustomizeTreeview,
-        true
-      )
-  ) {
-    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", true);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
-  }
+  // Keeping legacy codes because customized treeview is blocked by VS Code bug
+  // if (
+  //   await exp
+  //     .getExpService()
+  //     .getTreatmentVariableAsync(
+  //       TreatmentVariables.VSCodeConfig,
+  //       TreatmentVariables.CustomizeTreeview,
+  //       true
+  //     )
+  // ) {
+  //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", true);
+  // } else {
+  //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
+  // }
   const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
   context.subscriptions.push(...disposables);
 

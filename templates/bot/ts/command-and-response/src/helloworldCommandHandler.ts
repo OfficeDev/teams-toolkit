@@ -6,7 +6,7 @@ import {
   MessageBuilder,
 } from "@microsoft/teamsfx";
 import helloWorldCard from "./adaptiveCards/helloworldCommand.json";
-import { CardData } from "./cardModel";
+import { CardData } from "./cardModels";
 
 export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
   triggerPatterns: TriggerPatterns = "helloWorld";

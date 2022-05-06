@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": "true",
   "license": "MIT",
+  "scripts": {
+    "version": "../../.github/scripts/pkg-version.sh function-extension && git add .",
+    "postversion": "../../.github/scripts/pkg-postversion.sh templates"
+  },
   "devDependencies": {
     "fs-extra": "^10.0.0",
     "semver": "^7.3.5",

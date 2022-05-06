@@ -18,13 +18,8 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import {
-  getRootDirectory,
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-} from "../common/tools";
-import { isBotNotificationEnabled } from "../common/featureFlags";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
+import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -50,6 +45,7 @@ export enum CoreQuestionNames {
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   Capabilities = "capabilities",
+  Features = "features",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
@@ -88,10 +84,7 @@ export function createAppNameQuestion(validateProjectPathExistence = true): Text
           }
         }
         if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
-          let folder = previousInputs.folder as string;
-          if (previousInputs.platform === Platform.VSCode) {
-            folder = getRootDirectory();
-          }
+          const folder = previousInputs.folder as string;
           if (folder) {
             const projectPath = path.resolve(folder, appName);
             const exists = await fs.pathExists(projectPath);
@@ -153,15 +146,37 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return "typescript";
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return "typescript";
+      }
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return "typescript";
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return "typescript";
+    }
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
   },
 };

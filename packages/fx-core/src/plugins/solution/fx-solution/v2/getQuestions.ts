@@ -942,13 +942,14 @@ export async function getQuestionsForAddFeature(
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
-      containsAny: [
+      enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
+        SingleSignOnOptionItem.id,
       ],
     };
     addFeatureNode.addChild(programmingLanguage);

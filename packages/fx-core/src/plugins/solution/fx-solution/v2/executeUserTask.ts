@@ -474,6 +474,14 @@ export async function addCapability(
       if (toAddTab && !alreadyHasTabSso) {
         newCapabilitySet.add(TabSsoItem.id);
         pluginNamesToScaffold.add(ResourcePluginsV2.AadPlugin);
+
+        // Add webapplicationInfo in teams app manifest
+        const appStudioPlugin = Container.get<AppStudioPluginV3>(
+          BuiltInFeaturePluginNames.appStudio
+        );
+        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+          { name: "WebApplicationInfo" },
+        ]);
       }
     }
 
@@ -681,22 +689,25 @@ export async function addResource(
   const pluginsToScaffold: v2.ResourcePlugin[] = [];
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
   let scaffoldApim = false;
+  let addSsoRes = {};
   // 4. check Function
   if (addFunc) {
     // AAD plugin needs to be activated when adding function.
     // Since APIM also have dependency on Function, will only add depenedency here.
     if (!isAADEnabled(solutionSettings)) {
       if (isAadManifestEnabled()) {
-        const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-        pluginsToScaffold.push(aadPlugin);
-        pluginsToDoArm.push(aadPlugin);
-
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-          solutionSettings.capabilities.push(TabSsoItem.id);
+        const res = await addSso(ctx, inputs, localSettings);
+        if (res.isErr()) {
+          ctx.projectSetting.solutionSettings = originalSettings;
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.AddResource,
+              res.error,
+              ctx.telemetryReporter
+            )
+          );
         }
-        if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-          solutionSettings.capabilities.push(BotSsoItem.id);
-        }
+        addSsoRes = res.value as any;
       } else {
         solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
       }
@@ -795,7 +806,11 @@ export async function addResource(
   });
   return ok(
     pluginsToDoArm.length > 0
-      ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
+      ? {
+          solutionSettings: solutionSettings,
+          solutionConfig: { provisionSucceeded: false },
+          ...addSsoRes,
+        }
       : Void
   );
 }
@@ -912,6 +927,7 @@ export async function addSso(
   });
 
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let existingApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -923,6 +939,7 @@ export async function addSso(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
+    existingApp = true;
   }
 
   // Check whether can add sso
@@ -997,7 +1014,7 @@ export async function addSso(
     inputsNew,
     localSettings,
     [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)],
-    [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
+    existingApp ? [] : [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
   );
   if (scaffoldRes.isErr()) {
     ctx.projectSetting.solutionSettings = originalSettings;

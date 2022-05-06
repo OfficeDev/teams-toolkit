@@ -153,11 +153,12 @@ export interface TeamsFxBotCommandHandler {
    * @param context The bot context.
    * @param message The command message the user types from Teams.
    * @returns A `Promise` representing an activity or text to send as the command response.
+   * Or no return value if developers want to send the response activity by themself in this method.
    */
   handleCommandReceived(
     context: TurnContext,
     message: CommandMessage
-  ): Promise<string | Partial<Activity>>;
+  ): Promise<string | Partial<Activity> | void>;
 }
 
 /**

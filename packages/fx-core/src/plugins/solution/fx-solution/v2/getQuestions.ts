@@ -83,6 +83,7 @@ import {
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
+import { PluginBot } from "../../../resource/bot/resources/strings";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -841,8 +842,14 @@ async function getStaticOptionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  // for the new bot, messaging extension and other bots are mutally exclusive
-  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
+  // For the new bot, messaging extension and other bots are mutally exclusive.
+  // For the old bot, messaging extension can be added when bot exists.
+  const botCapabilities =
+    ctx.projectSetting.pluginSettings?.[PluginNames.BOT]?.[PluginBot.BOT_CAPABILITIES];
+  const hasNewBot = Array.isArray(botCapabilities) && botCapabilities.length > 0;
+  const isMEAddable = isBotNotificationEnabled()
+    ? !meExceedRes.value && !hasNewBot
+    : !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

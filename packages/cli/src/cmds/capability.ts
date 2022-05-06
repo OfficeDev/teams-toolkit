@@ -41,7 +41,6 @@ abstract class CapabilityAddBase extends YargsCommand {
 
   public override modifyArguments(args: { [argName: string]: any }) {
     CLIUIInstance.updatePresetAnswer(Names.Capabilities, args[Names.Capabilities]);
-    delete args[Names.Capabilities];
     return args;
   }
 

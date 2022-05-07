@@ -73,6 +73,7 @@ import {
   globalStateUpdate,
   InvalidProjectError,
   isConfigUnifyEnabled,
+  isExistingTabAppEnabled,
   isPreviewFeaturesEnabled,
   isUserCancelError,
   isValidProject,
@@ -3055,12 +3056,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     title: "Tutorials",
     options: [
       {
-        id: "embedWebPages",
-        label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
-        detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
-        data: "https://aka.ms/teamsfx-embed-existing-web",
-      },
-      {
         id: "sendNotification",
         label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
         detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
@@ -3087,6 +3082,16 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     ],
     returnObject: true,
   };
+
+  if (isExistingTabAppEnabled()) {
+    config.options.splice(0, 0, {
+      id: "embedWebPages",
+      label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
+      detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
+      data: "https://aka.ms/teamsfx-embed-existing-web",
+    });
+  }
+
   const selectedTutorial = await VS_CODE_UI.selectOption(config);
   if (selectedTutorial.isErr()) {
     return err(selectedTutorial.error);

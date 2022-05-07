@@ -61,8 +61,8 @@ export class AzureSqlResource implements CloudResource {
           sqlInputs.provisionType === "database"
             ? "azureSql.provisionDatabase"
             : "azureSql.provisionServer";
-        const mPath = path.join(getTemplatesFolder(), "demo", `${prefix}.module.bicep`);
-        const oPath = path.join(getTemplatesFolder(), "demo", `${prefix}.orchestration.bicep`);
+        const mPath = path.join(getTemplatesFolder(), "bicep", `${prefix}.module.bicep`);
+        const oPath = path.join(getTemplatesFolder(), "bicep", `${prefix}.orchestration.bicep`);
         let module = await fs.readFile(mPath, "utf-8");
         let orch = await fs.readFile(oPath, "utf-8");
         const suffix = getUuid().substring(0, 6);

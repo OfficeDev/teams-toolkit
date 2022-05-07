@@ -48,7 +48,7 @@ export class BicepProvider {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<any, FxError>> => {
-        const sourceTemplateFolder = path.join(getTemplatesFolder(), "core", "bicep");
+        const sourceTemplateFolder = path.join(getTemplatesFolder(), "bicep");
         const targetTemplateFolder = path.join(inputs.projectPath, "templates", "azure");
         if (
           (await fs.pathExists(path.join(targetTemplateFolder, "main.bicep"))) &&

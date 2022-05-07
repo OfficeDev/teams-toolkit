@@ -64,24 +64,24 @@ export class AzureWebAppConfig {
         }
         const tabConfig = getComponent(context.projectSetting, "teams-tab");
         if (tabConfig) {
-          if (tabConfig.hostingResource === "azure-web-app") {
-            const azureWebApp = Container.get(tabConfig.hostingResource) as AzureWebAppResource;
+          if (tabConfig.hosting === "azure-web-app") {
+            const azureWebApp = Container.get(tabConfig.hosting) as AzureWebAppResource;
             templateContext.tabDomainVarName = azureWebApp.outputs.endpoint.bicepVariable;
-          } else if (tabConfig.hostingResource === "azure-storage") {
-            const azureStorage = Container.get(tabConfig.hostingResource) as AzureStorageResource;
+          } else if (tabConfig.hosting === "azure-storage") {
+            const azureStorage = Container.get(tabConfig.hosting) as AzureStorageResource;
             templateContext.tabDomainVarName = azureStorage.outputs.endpoint.bicepVariable;
           }
         }
         const modulePath = path.join(
           getTemplatesFolder(),
-          "demo",
+          "bicep",
           "azureWebApp.config.module.bicep"
         );
         let module = await fs.readFile(modulePath, "utf-8");
         module = compileHandlebarsTemplateString(module, templateContext);
         const orchPath = path.join(
           getTemplatesFolder(),
-          "demo",
+          "bicep",
           "azureWebApp.config.orchestration.bicep"
         );
         const orch = !webAppComponent ? await fs.readFile(orchPath, "utf-8") : undefined;

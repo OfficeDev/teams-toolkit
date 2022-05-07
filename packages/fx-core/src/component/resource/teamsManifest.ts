@@ -59,11 +59,8 @@ export class TeamsManifestResource {
       name: "teams-manifest.addCapability",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsManifestInputs = inputs["teams-manifest"];
         return ok([
-          `add capabilities (${JSON.stringify(
-            teamsManifestInputs.capabilities
-          )}) in manifest file: ${path.join(
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest file: ${path.join(
             inputs.projectPath,
             "templates",
             "appPackage",
@@ -75,36 +72,31 @@ export class TeamsManifestResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<undefined, FxError>> => {
-        const teamsManifestInputs = inputs["teams-manifest"];
         const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-        const addRes = await appStudio.addCapabilities(
-          context,
-          inputs,
-          teamsManifestInputs.capabilities
-        );
+        const addRes = await appStudio.addCapabilities(context, inputs, inputs.capabilities);
         if (addRes.isErr()) return addRes;
         return ok(undefined);
       },
     };
     return ok(action);
   }
-  provision(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "teams-manifest.provision",
-      type: "function",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["provision teams manifest"]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        return ok(undefined);
-      },
-    };
-    return ok(action);
-  }
+  // provision(
+  //   context: ContextV3,
+  //   inputs: InputsWithProjectPath
+  // ): MaybePromise<Result<Action | undefined, FxError>> {
+  //   const action: Action = {
+  //     name: "teams-manifest.provision",
+  //     type: "function",
+  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+  //       return ok(["provision teams manifest"]);
+  //     },
+  //     execute: async (
+  //       context: ContextV3,
+  //       inputs: InputsWithProjectPath
+  //     ): Promise<Result<undefined, FxError>> => {
+  //       return ok(undefined);
+  //     },
+  //   };
+  //   return ok(action);
+  // }
 }

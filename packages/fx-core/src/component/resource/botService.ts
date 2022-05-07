@@ -41,16 +41,15 @@ export class BotServiceResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Bicep, FxError>> => {
-        const componentInput = inputs["bot-service"];
-        const mPath = path.join(getTemplatesFolder(), "demo", "botService.config.module.bicep");
+        const mPath = path.join(getTemplatesFolder(), "bicep", "botService.config.module.bicep");
         const oPath = path.join(
           getTemplatesFolder(),
-          "demo",
+          "bicep",
           "botService.config.orchestration.bicep"
         );
         let module = await fs.readFile(mPath, "utf-8");
         const templateContext: any = {};
-        if (componentInput.hostingResource === "azure-web-app") {
+        if (inputs.hosting === "azure-web-app") {
           const resource = Container.get("azure-web-app") as AzureWebAppResource;
           templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
         }

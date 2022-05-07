@@ -241,8 +241,8 @@ export async function validateQuestion(
   const validationFunc = (question as any).validation
     ? getValidationFunction<string>((question as any).validation, inputs)
     : undefined;
+  const answer = getEmbeddedValueByPath(inputs, question.name);
   if (validationFunc) {
-    const answer = getEmbeddedValueByPath(inputs, question.name);
     if (!answer) return err(new ValidationError(`question ${question.name} has no answer!`));
     let res = await validationFunc(answer);
     if (res) {
@@ -250,7 +250,7 @@ export async function validateQuestion(
       return err(new ValidationError(res));
     }
   }
-  return ok({ type: "success" });
+  return ok({ type: "success", result: answer });
 }
 
 export async function executeFunctionAction(
@@ -267,7 +267,7 @@ export async function executeFunctionAction(
         node,
         inputs,
         context.userInteraction,
-        undefined,
+        context.telemetryReporter,
         validateQuestion
       );
       if (validationRes.isErr()) throw validationRes.error;

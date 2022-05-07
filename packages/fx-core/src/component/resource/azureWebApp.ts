@@ -56,12 +56,12 @@ export class AzureWebAppResource implements CloudResource {
       ): Promise<Result<Bicep, FxError>> => {
         const pmPath = path.join(
           getTemplatesFolder(),
-          "demo",
+          "bicep",
           "azureWebApp.provision.module.bicep"
         );
         const poPath = path.join(
           getTemplatesFolder(),
-          "demo",
+          "bicep",
           "azureWebApp.provision.orchestration.bicep"
         );
         const provisionModule = await fs.readFile(pmPath, "utf-8");

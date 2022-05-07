@@ -60,10 +60,11 @@ export class BotCodeProvider implements SourceCodeProvider {
         const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         const component: Component = {
           name: "bot-code",
-          ...inputs,
+          hosting: inputs.hosting,
           build: true,
           language: language,
           folder: folder,
+          scenario: inputs.scenario,
         };
         projectSettings.components.push(component);
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;

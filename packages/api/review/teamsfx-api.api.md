@@ -331,7 +331,7 @@ export enum Colors {
 }
 
 // @public (undocumented)
-export interface Component {
+export interface Component extends Json {
     // (undocumented)
     build?: boolean;
     // (undocumented)
@@ -341,7 +341,7 @@ export interface Component {
     // (undocumented)
     folder?: string;
     // (undocumented)
-    hostingResource?: string;
+    hosting?: string;
     // (undocumented)
     language?: string;
     // (undocumented)

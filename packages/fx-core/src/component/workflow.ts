@@ -32,8 +32,8 @@ import fs from "fs-extra";
 
 export async function getAction(
   name: string,
-  context: any,
-  inputs: any
+  context: ContextV3,
+  inputs: InputsWithProjectPath
 ): Promise<Action | undefined> {
   const arr = name.split(".");
   const resourceName = arr[0];

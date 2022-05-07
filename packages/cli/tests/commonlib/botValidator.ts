@@ -79,7 +79,7 @@ export class BotValidator {
       typescript: "index.ts",
       javascript: "index.js",
     };
-    const indexPath = path.resolve(projectPath, "bot", indexFile[programmingLanguage]);
+    const indexPath = path.resolve(projectPath, "bot", "src", indexFile[programmingLanguage]);
 
     fs.access(indexPath, fs.constants.F_OK, (err) => {
       // err is null means file exists

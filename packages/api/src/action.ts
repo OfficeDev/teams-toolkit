@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { FxError } from "../error";
-import { QTreeNode } from "../qm/question";
-import { Json } from "../types";
-import { InputsWithProjectPath } from "../v2";
+import { FxError } from "./error";
+import { QTreeNode } from "./qm/question";
+import { Json } from "./types";
+import { InputsWithProjectPath } from "./v2/types";
 import { ContextV3, MaybePromise } from "./types";
 
 /**

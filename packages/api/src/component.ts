@@ -1,9 +1,9 @@
 import { Result } from "neverthrow";
-import { FxError } from "../error";
-import { InputsWithProjectPath } from "../v2/types";
+import { FxError } from "./error";
+import { InputsWithProjectPath } from "./v2/types";
 import { Action } from "./action";
 import { ContextV3, MaybePromise } from "./types";
-
+export { InputsWithProjectPath };
 export interface ResourceOutput {
   key: string;
   bicepVariable?: string;

@@ -45,25 +45,3 @@ export type ManifestCapability =
       snippet?: IWebApplicationInfo;
       existingApp?: boolean;
     };
-
-export interface Component {
-  name: string;
-  hostingResource?: string;
-  deployType?: "folder" | "zip";
-  language?: string;
-  folder?: string;
-  build?: boolean;
-  provision?: boolean;
-  connections?: string[];
-}
-export interface ProjectSettingsV3 extends ProjectSettings {
-  components: Component[];
-}
-export interface ContextV3 extends Context {
-  manifestProvider: AppManifestProvider;
-  projectSetting: ProjectSettingsV3;
-  envInfo?: EnvInfoV3;
-  tokenProvider?: TokenProvider;
-}
-
-export type MaybePromise<T> = T | Promise<T>;

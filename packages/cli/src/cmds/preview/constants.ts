@@ -135,18 +135,18 @@ export const installApp = {
       "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
   },
   bot: {
+    installAppTitle: "Install app in Teams or continue to Outlook",
+    continueDescription: "Continue to preview in Outlook.",
     description:
       "To continue to preview your application in Outlook, you need to follow two steps:",
+    remoteDescription:
+      "To continue to preview your application in Outlook, you need to install the app via Teams manually.",
     guide1: "First, please click 'Install in Teams' to install the app in Teams.",
     guide2:
       "Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.",
-    remoteGuide2:
-      "Second, please click 'Configure Outlook', sign in to the portal with the same Azure 365 account you used in Teams Toolkit. Select 'Outlook' in the portal and click the 'Apply' button to connect your bot to the Outlook channel.",
     finish: "Once you have finished the above two steps, please come back and click 'Continue'.",
     configureOutlook: "Configure Outlook",
     configureOutlookDescription:
       "Pop up Bot Framework Portal for you to connect your bot to Outlook channel.",
-    remoteConfigureOutlookDescription:
-      "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
 };

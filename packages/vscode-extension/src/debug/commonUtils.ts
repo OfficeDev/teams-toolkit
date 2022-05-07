@@ -296,34 +296,6 @@ export async function getBotId(env: string): Promise<string | undefined> {
   }
 }
 
-async function getResourceBaseName(env: string): Promise<string | undefined> {
-  try {
-    const azureParametersFilePath = path.join(
-      ext.workspaceUri.fsPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      `azure.parameters.${env}.json`
-    );
-    const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
-    return azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
-  } catch {
-    return undefined;
-  }
-}
-
-export async function getBotOutlookChannelLink(env: string): Promise<string> {
-  const result = environmentManager.getEnvStateFilesPath(env, ext.workspaceUri.fsPath);
-  const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-  const tenantId = envJson[GLOBAL_CONFIG].tenantId;
-  const subscriptionId = envJson[GLOBAL_CONFIG].subscriptionId;
-  const resourceGroupName = envJson[GLOBAL_CONFIG].resourceGroupName;
-
-  const resourceGroupLink = getResourceGroupInPortal(subscriptionId, tenantId, resourceGroupName);
-  const resourceBaseName = await getResourceBaseName(env);
-
-  return `${resourceGroupLink}/providers/Microsoft.BotService/botServices/${resourceBaseName}/channelsReact`;
-}
-
 export async function loadPackageJson(path: string): Promise<any> {
   if (!(await fs.pathExists(path))) {
     VsCodeLogInstance.error(`Cannot load package.json from ${path}. File not found.`);

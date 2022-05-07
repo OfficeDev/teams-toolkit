@@ -50,12 +50,12 @@ Once the provisioning and deployment steps are finished, you can preview your ap
 1. Open the `Teams Toolkit Activity Panel`.
 2. In `ENVIRONMENTS`, select the environment you want to preview and click the `Preview App` icon.
 3. For the prompted question, select the platform you want to preview in.
-4. If you select `Outlook`, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Configure Outlook" to connect the bot to Outlook channel, then click "Continue" to continue to preview the app in Outlook.
+4. If you select `Outlook`, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue to preview the app in Outlook.
   ![Install in Teams VSC Remote](./images/InstallInTeamsVSCRemote.png)
 
 ### From TeamsFx CLI
 - Execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory, where `m365-host` is `teams` or `outlook`.
-2. If you select `m365-host` as `outlook`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Configure Outlook" to connect the bot to Outlook channel, then select "Continue" to continue to debug the app in Outlook.
+2. If you select `m365-host` as `outlook`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue to debug the app in Outlook.
   ![Install in Teams CLI Remote](./images/InstallInTeamsCLIRemote.png)
 
 ## Validate manifest file

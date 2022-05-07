@@ -51,26 +51,30 @@ export async function showInstallAppInTeamsMessage(
   isLocal: boolean,
   tenantId: string,
   appId: string,
-  botOutlookChannelLink: string | undefined,
+  botId: string | undefined,
   browser: constants.Browser,
   browserArguments: string[]
 ): Promise<boolean> {
-  const messages = botOutlookChannelLink
-    ? [
-        installApp.bot.description,
-        installApp.bot.guide1,
-        isLocal ? installApp.bot.guide2 : installApp.bot.remoteGuide2,
-        installApp.bot.finish,
-      ]
+  const messages = botId
+    ? isLocal
+      ? [
+          installApp.bot.description,
+          installApp.bot.guide1,
+          installApp.bot.guide2,
+          installApp.bot.finish,
+        ]
+      : [installApp.bot.remoteDescription, installApp.guide, installApp.finish]
     : [installApp.description, installApp.guide, installApp.finish];
   const message = messages.join("\n");
   cliLogger.necessaryLog(LogLevel.Warning, message);
+  if (botId) {
+    installAppSingleSelect.name = installApp.bot.installAppTitle;
+    installAppSingleSelect.title = installApp.bot.installAppTitle;
+    continueOptionItem.description = installApp.bot.continueDescription;
+    continueOptionItem.detail = installApp.bot.continueDescription;
+  }
   installAppSingleSelect.options = [installOptionItem];
-  if (botOutlookChannelLink) {
-    if (!isLocal) {
-      configureOutlookOptionItem.description = installApp.bot.remoteConfigureOutlookDescription;
-      configureOutlookOptionItem.detail = installApp.bot.remoteConfigureOutlookDescription;
-    }
+  if (botId && isLocal) {
     (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
   }
   (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);
@@ -84,19 +88,20 @@ export async function showInstallAppInTeamsMessage(
         isLocal,
         tenantId,
         appId,
-        botOutlookChannelLink,
+        botId,
         browser,
         browserArguments
       );
     } else if (result.value.result === configureOutlookOptionItem.id) {
-      if (botOutlookChannelLink) {
-        await open(botOutlookChannelLink);
+      if (botId) {
+        const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+        await open(url);
       }
       return await showInstallAppInTeamsMessage(
         isLocal,
         tenantId,
         appId,
-        botOutlookChannelLink,
+        botId,
         browser,
         browserArguments
       );
@@ -107,7 +112,7 @@ export async function showInstallAppInTeamsMessage(
             isLocal,
             tenantId,
             appId,
-            botOutlookChannelLink,
+            botId,
             browser,
             browserArguments
           )

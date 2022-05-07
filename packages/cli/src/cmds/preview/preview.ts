@@ -471,20 +471,11 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
-      const botOutlookChannelLink = localBotId
-        ? await commonUtils.getBotOutlookChannelLink(
-            workspaceFolder,
-            environmentManager.getLocalEnvName(),
-            undefined,
-            localBotId
-          )
-        : undefined;
-
       const shouldContinue = await showInstallAppInTeamsMessage(
         true,
         tenantId,
         localTeamsAppId,
-        botOutlookChannelLink,
+        localBotId,
         browser,
         browserArguments
       );
@@ -747,9 +738,6 @@ export default class Preview extends YargsCommand {
     const includeFrontend = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.frontendHostingPluginName
     );
-    const includeBot = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.botPluginName
-    );
     if (hub === constants.Hub.office && !includeFrontend) {
       throw errors.OnlyLaunchPageSupportedInOffice();
     }
@@ -775,6 +763,10 @@ export default class Preview extends YargsCommand {
       return err(errors.PreviewWithoutProvision());
     }
 
+    const botId = config?.config
+      ?.get(constants.botPluginName)
+      ?.get(constants.botIdConfigKey) as string;
+
     // launch Teams
     if (hub === constants.Hub.teams) {
       await openHubWebClient(
@@ -791,14 +783,11 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
-      const botOutlookChannelLink = includeBot
-        ? await commonUtils.getBotOutlookChannelLink(workspaceFolder, env, config, undefined)
-        : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
         false,
         tenantId,
         remoteTeamsAppId,
-        botOutlookChannelLink,
+        botId,
         browser,
         browserArguments
       );

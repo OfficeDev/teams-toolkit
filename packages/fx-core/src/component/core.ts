@@ -24,7 +24,7 @@ import { newProjectSettings } from "./../common/projectSettingsHelper";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
 import { getComponent, getEmbeddedValueByPath } from "./workflow";
-
+import "./resource";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

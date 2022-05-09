@@ -43,11 +43,12 @@ import {
   scaffoldSourceCodeAdapter,
   updateResourceTemplateAdapter,
 } from "../../utils4v2";
+import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
 
 @Service(ResourcePluginsV2.BotPlugin)
 export class BotPluginV2 implements ResourcePlugin {
-  name = "fx-resource-bot";
+  name = PluginBot.PLUGIN_NAME;
   displayName = "Bot";
   @Inject(ResourcePlugins.BotPlugin)
   plugin!: TeamsBot;
@@ -143,6 +144,7 @@ export class BotPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    // return this.impl.deploy(ctx, inputs, envInfo, tokenProvider);
     return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 

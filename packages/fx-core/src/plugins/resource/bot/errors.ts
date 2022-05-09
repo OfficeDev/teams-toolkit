@@ -45,10 +45,6 @@ export function isErrorWithMessage(e: InnerError): e is ErrorWithMessage {
   return e instanceof Object && "message" in e;
 }
 
-export function isErrorWithCode(e: InnerError): e is ErrorWithCode {
-  return e instanceof Object && "code" in e && typeof e["code"] === "string";
-}
-
 export function isPluginError(e: unknown): e is PluginError {
   return e instanceof Object && "innerError" in e;
 }
@@ -131,6 +127,13 @@ export class SomethingMissingError extends PreconditionError {
 export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefined): T {
   if (!value) {
     throw new SomethingMissingError(name);
+  }
+  return value;
+}
+
+export function checkPrecondition<T>(message: [string, string], value: T | null | undefined): T {
+  if (!value) {
+    throw new PreconditionError(message, []);
   }
   return value;
 }
@@ -232,63 +235,6 @@ export class PackDirExistenceError extends PluginError {
       ErrorNames.PACK_DIR_EXISTENCE_ERROR,
       Messages.SomethingIsNotExisting("pack directory"),
       [Messages.RecreateTheProject[1]]
-    );
-  }
-}
-
-export class ListPublishingCredentialsError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
-      Messages.FailToListPublishingCredentials,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-export class ZipDeployError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.ZIP_DEPLOY_ERROR,
-      Messages.FailToDoZipDeploy,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-export class DeployStatusError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.DEPLOY_STATUS_ERROR,
-      Messages.FailToCheckDeployStatus,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-export class DeployTimeoutError extends PluginError {
-  constructor() {
-    super(ErrorType.USER, ErrorNames.DEPLOY_TIMEOUT_ERROR, Messages.CheckDeployStatusTimeout, [
-      Messages.CheckOutputLogAndTryToFix,
-      Messages.RetryTheCurrentStep,
-    ]);
-  }
-}
-
-export class RestartWebAppError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.RESTART_WEBAPP_ERROR,
-      Messages.FailToRestartWebApp,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
     );
   }
 }

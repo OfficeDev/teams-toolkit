@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ResourceTemplate, Void } from "@microsoft/teamsfx-api";
+import { Inputs, ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
@@ -17,7 +17,7 @@ export abstract class AzureHosting {
 
   reference: any = undefined;
 
-  private getBicepTemplateFolder(): string {
+  protected getBicepTemplateFolder(): string {
     return path.join(
       getTemplatesFolder(),
       "plugins",
@@ -44,8 +44,7 @@ export abstract class AzureHosting {
           path.join(bicepTemplateDir, filename),
           bicepContext
         );
-        // TODO: leverage HandleBars to replace plugin id
-        return module.replace(/PluginIdPlaceholder/g, pluginId);
+        return AzureHosting.replacePluginId(module, pluginId);
       })
     );
 
@@ -72,13 +71,31 @@ export abstract class AzureHosting {
     } as ResourceTemplate;
   }
 
+  static replacePluginId(module: string, pluginId: string): string {
+    // TODO: leverage HandleBars to replace plugin id
+    return module.replace(/PluginIdPlaceholder/g, pluginId);
+  }
+
   async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
     return {} as ArmTemplateResult;
   }
   async configure(ctx: Context): Promise<Void> {
     return Void;
   }
-  async deploy(ctx: Context, inputs: Inputs): Promise<Void> {
+
+  /**
+   * deploy to Azure
+   * @param inputs environment for user input
+   * @param tokenProvider token environment
+   * @param buffer zip file stream buffer
+   * @param siteName Azure app/function site name
+   */
+  async deploy(
+    inputs: Inputs,
+    tokenProvider: TokenProvider,
+    buffer: Buffer,
+    siteName: string
+  ): Promise<Void> {
     return Void;
   }
 }

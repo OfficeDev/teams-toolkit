@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
-import {
-  DownloadConstants,
-  SourceCodeDir,
-  TemplateProjectsConstants,
-  TemplateProjectsScenarios,
-  TriggerTemplateScenarioMappings,
-} from "./constants";
+import { TemplateProjectsScenarios, TriggerTemplateScenarioMappings } from "./constants";
 import { Commands, HostTypes } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";

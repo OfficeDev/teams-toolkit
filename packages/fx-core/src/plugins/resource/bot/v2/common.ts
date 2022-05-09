@@ -3,14 +3,13 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
-//todo: refactor HostTypes to be enum
-import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
+import { getLanguage, getHostType, getTriggerScenarios } from "./mapping";
+import { ServiceType as HostTypeNew } from "../../../../common/azure-hosting/interfaces";
+import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
@@ -65,9 +64,9 @@ export function resolveHostType(inputs: Inputs): HostType {
   return hostType ? hostType : HostTypes.APP_SERVICE;
 }
 
-export function resolveServiceType(ctx: Context): ServiceType {
+export function resolveServiceType(ctx: Context): HostTypeNew {
   const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
     PluginBot.HOST_TYPE
   ] as string;
-  return getServiceType(rawHostType);
+  return getHostType(rawHostType);
 }

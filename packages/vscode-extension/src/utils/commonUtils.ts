@@ -265,8 +265,9 @@ export function syncFeatureFlags() {
 
   const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
   const tunneling = configuration.get<TeamsfxTunnelingServices>(ConfigurationKey.Tunneling);
-  process.env["TEAMSFX_MICROSOFT_TUNNELING"] =
-    tunneling === TeamsfxTunnelingServices.MicrosoftTunneling ? "true" : "false";
+  if (tunneling === TeamsfxTunnelingServices.MicrosoftTunneling) {
+    process.env["TEAMSFX_MICROSOFT_TUNNELING"] = "true";
+  }
 
   // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
   process.env[FeatureFlags.Preview] = "true";

@@ -3,8 +3,9 @@
 "use strict";
 import { FxError, SystemError, UserError, Result, ok, QTreeNode } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
-export type ApiConnectorResult = Result<any, FxError>;
-export type QesutionResult = Result<QTreeNode | undefined, FxError>;
+export type FxResult = Result<any, FxError>;
+export type ApiConnectorResult = Record<string, any>;
+export type QuestionResult = Result<QTreeNode | undefined, FxError>;
 export interface ApiConnectionMsg {
   defaultMsg: string;
   localizedMsg: string;
@@ -56,7 +57,7 @@ export class ResultFactory {
     });
   }
 
-  public static Success(result?: any): ApiConnectorResult {
+  public static Success(result?: any): FxResult {
     return ok(result);
   }
 }

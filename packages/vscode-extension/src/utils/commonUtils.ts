@@ -247,10 +247,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
-    ConfigurationKey.RootDirectory
-  ).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();
@@ -493,6 +489,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ViewTitleNavigation };
+    case TelemetryTriggerFrom.QuickPick:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.QuickPick };
     case TelemetryTriggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview };
     case TelemetryTriggerFrom.CodeLens:

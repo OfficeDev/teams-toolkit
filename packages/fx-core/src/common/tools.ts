@@ -25,7 +25,6 @@ import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import {
@@ -37,7 +36,6 @@ import {
   ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
-import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
 import {
   PluginNames,
@@ -66,6 +64,7 @@ import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
+import { isExistingTabApp } from "./projectSettingsHelper";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -456,6 +455,12 @@ export function canAddSso(
   }
 
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (
+    isExistingTabApp(projectSettings) &&
+    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem.id))
+  ) {
+    return ok(Void);
+  }
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     return returnError
       ? err(
@@ -554,15 +559,6 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
   return (
     activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
   );
-}
-
-export function getRootDirectory(): string {
-  const root = process.env[FeatureFlagName.rootDirectory];
-  if (root === undefined || root === "") {
-    return path.join(os.homedir(), ConstantString.rootFolder);
-  } else {
-    return path.resolve(root.replace("${homeDir}", os.homedir()));
-  }
 }
 
 export function isYoCheckerEnabled(): boolean {

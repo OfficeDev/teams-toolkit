@@ -1,15 +1,43 @@
-## How to enable SSO in TeamsFx Tab projects
+# Enable single sign-on for tab applications
 
-This doc will show you how to add Single sign-on (SSO) feature to TeamsFx Tab projects. Note that this article is only for Teams Toolkit Visual Studio Code Extension version after x.x.x or TeamsFx CLI version after x.x.x.
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit faciliates this interaction by abstracting some of the Azure Active Directory flows and integrations behind some simple, high level APIs. This enalbes you to add single sign-on (SSO) features easily to your Teams application.
 
-*Note: This article is only for TeamsFx projects by Javascript and Typescript. For Dotnet, please refer to ${help link}.*
+# Changes to your project
 
-For more detail about SSO, please refer to the [wiki](https://aka.ms/teamsfx-add-sso-readme#overview).
+When you added the SSO feature to your application, Teams Toolkit updated your project to support SSO:
 
-### What we have done in 'Add SSO' command
+After you successfully added SSO into your project, Teams Toolkit will create and modify some files that helps you implement SSO feature.
 
-By triggering `Add SSO` command, we will help you to setup your project to enable SSO and create `auth/tab` folder with some code snippet. For detail, please refer to the [wiki](https://aka.ms/teamsfx-add-sso-readme#what-we-will-do-in-add-sso-command).
+| Action | File | Description |
+| - | - | - |
+| Create| `aad.template.json` under `template\appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
+| Modify | `manifest.template.json` under `template\appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
+| Create | `auth/tabs` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
-### What you need to do after triggering 'Add SSO' command
+# Update your code to add SSO
 
-Please follow the [wiki](https://aka.ms/teamsfx-add-sso-readme#what-you-need-to-do-after-triggering-add-sso-command) to update your source code, provision Azure AD app and deploy latest code.
+As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
+
+1. Copy the `auth/tabs/public` folder to `tabs/public`. This folder contains HTML pages that are used for AAD redirects.
+2. Copy the `auth/tabs/sso` folder to `tabs/src/sso`. This folder contains:
+     * `GetUserProfile`: This file implements a function that retrieves user information from Microsoft Graph.
+3. In the `tabs` folder, run this command: `npm install @microsoft/teamsfx-react`
+4. Add the following lines to `tabs/src/components/sample/Welcome.tsx` to import `GetUserProfile`:
+     ```
+     import { GetUserProfile } from "../../sso/GetUserProfile";
+     ```
+5. Replace the following line: `<AddSSO />` with `<GetUserProfile />`.
+
+# Debug your application
+
+You can debug your application by pressing F5.
+
+Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
+
+To learn more about Teams Toolkit local debug functionalities, refer to this [document](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
+
+# Customize AAD applications
+
+The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
+
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.

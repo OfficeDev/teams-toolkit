@@ -135,9 +135,9 @@ export class CapabilityAddBot extends CapabilityAddBotBase {
 }
 
 export class CapabilityAddMessageExtension extends CapabilityAddBotBase {
-  public readonly commandHead = `messaging-extension`;
+  public readonly commandHead = `message-extension`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add Messaging Extensions.";
+  public readonly description = "Add Message Extensions.";
   public readonly yargsHelp = "addCapability-MessagingExtension";
 }
 

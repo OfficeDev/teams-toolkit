@@ -32,3 +32,19 @@ export function generateSettings(
   }
   return settings;
 }
+
+export function mergeSettings(
+  existingData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> {
+  const mergedData = {} as Record<string, unknown>;
+  Object.assign(mergedData, existingData);
+
+  if (newData !== undefined) {
+    for (const newSetting of Object.entries(newData)) {
+      mergedData[newSetting[0]] = newSetting[1];
+    }
+  }
+
+  return mergedData;
+}

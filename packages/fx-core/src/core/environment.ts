@@ -21,6 +21,7 @@ import {
   v3,
   Inputs,
   Platform,
+  Void,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -274,6 +275,29 @@ class EnvironmentManager {
     return { envState: envState, userDataFile };
   }
 
+  public async createLocalEnv(projectPath: string): Promise<Result<Void, FxError>> {
+    const inputs: Inputs = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const projectSettings = await loadProjectSettings(inputs, true);
+    if (projectSettings.isOk()) {
+      const appName = getLocalAppName(projectSettings.value.appName);
+      const newEnvConfig = environmentManager.newEnvConfigData(appName);
+      const res = await environmentManager.writeEnvConfig(
+        inputs.projectPath!,
+        newEnvConfig,
+        environmentManager.getLocalEnvName()
+      );
+      if (res.isErr()) {
+        return res;
+      }
+    } else {
+      return projectSettings;
+    }
+    return ok(Void);
+  }
+
   private async loadEnvConfig(
     projectPath: string,
     envName: string
@@ -281,20 +305,7 @@ class EnvironmentManager {
     const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
       if (envName === this.getLocalEnvName()) {
-        const inputs: Inputs = {
-          projectPath: projectPath,
-          platform: Platform.VSCode,
-        };
-        const projectSettings = await loadProjectSettings(inputs, true);
-        if (projectSettings.isOk()) {
-          const appName = getLocalAppName(projectSettings.value.appName);
-          const newEnvConfig = environmentManager.newEnvConfigData(appName);
-          await environmentManager.writeEnvConfig(
-            inputs.projectPath!,
-            newEnvConfig,
-            environmentManager.getLocalEnvName()
-          );
-        }
+        await this.createLocalEnv(projectPath);
       }
       if (!(await fs.pathExists(envConfigPath))) {
         return err(ProjectEnvNotExistError(envName));

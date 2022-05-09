@@ -4,24 +4,27 @@
 import { ProductName } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import {
-  endLocalDebugSession,
-  getLocalDebugSessionId,
-  getLocalTeamsAppId,
-  getNpmInstallLogInfo,
-} from "./commonUtils";
+import { endLocalDebugSession, getLocalDebugSessionId, getNpmInstallLogInfo } from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
-import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
+import {
+  errorDetail,
+  Hub,
+  issueChooseLink,
+  issueLink,
+  issueTemplate,
+  m365AppsPrerequisitesHelpLink,
+} from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
+import { VS_CODE_UI } from "../extension";
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
@@ -364,24 +367,27 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
       (debugConfig.url || debugConfig.port) && // it's from launch.json
       !debugConfig.postRestartTask
     ) {
+      allRunningDebugSessions.add(event.id);
+
+      // show M365 tenant hint message for Outlook and Office
+      if (debugConfig.teamsfxHub === Hub.outlook || debugConfig.teamsfxHub === Hub.office) {
+        VS_CODE_UI.showMessage(
+          "info",
+          localize("teamstoolkit.localDebug.m365TenantHintMessage"),
+          false,
+          localize("teamstoolkit.localDebug.learnMore")
+        ).then(async (result) => {
+          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+            await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+          }
+        });
+      }
+
       // and not a restart one
       // send f5 event telemetry
-      const localAppId = (await getLocalTeamsAppId()) as string;
-      const isLocal =
-        (debugConfig.url as string) &&
-        localAppId &&
-        (debugConfig.url as string).includes(localAppId);
-      let appId = "";
       let env = "";
-      if (isLocal) {
-        appId = localAppId;
-      } else {
-        if (debugConfig.teamsfxAppId) {
-          appId = debugConfig.teamsfxAppId;
-        }
-        if (debugConfig.teamsfxEnv) {
-          env = getHashedEnv(event.configuration.env);
-        }
+      if (debugConfig.teamsfxEnv) {
+        env = getHashedEnv(debugConfig.teamsfxEnv);
       }
 
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
@@ -389,12 +395,10 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugType]: debugConfig.type,
         [TelemetryProperty.DebugRequest]: debugConfig.request,
         [TelemetryProperty.DebugPort]: debugConfig.port + "",
-        [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
-        [TelemetryProperty.DebugAppId]: appId,
+        [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
+        [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
         [TelemetryProperty.Env]: env,
       });
-
-      allRunningDebugSessions.add(event.id);
     }
   }
 }

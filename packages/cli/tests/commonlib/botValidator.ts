@@ -88,7 +88,7 @@ export class BotValidator {
     });
   }
 
-  public async validateProvision(): Promise<void> {
+  public async validateProvision(includeAAD = true): Promise<void> {
     console.log("Start to validate Bot Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
@@ -114,26 +114,33 @@ export class BotValidator {
       response[BaseConfig.BOT_PASSWORD],
       await getExpectedBotClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
     );
-    chai.assert.equal(
-      response[BaseConfig.M365_AUTHORITY_HOST],
-      this.ctx[PluginId.Aad][StateConfigKey.oauthHost] as string
-    );
-    chai.assert.equal(
-      response[BaseConfig.M365_CLIENT_ID],
-      this.ctx[PluginId.Aad][StateConfigKey.clientId] as string
-    );
-    chai.assert.equal(
-      response[BaseConfig.M365_CLIENT_SECRET],
-      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
-    );
-    chai.assert.equal(
-      response[BaseConfig.M365_TENANT_ID],
-      this.ctx[PluginId.Aad][StateConfigKey.tenantId] as string
-    );
-    chai.assert.equal(
-      response[BaseConfig.M365_APPLICATION_ID_URI],
-      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
-    );
+    if (includeAAD) {
+      chai.assert.equal(
+        response[BaseConfig.M365_AUTHORITY_HOST],
+        this.ctx[PluginId.Aad][StateConfigKey.oauthHost] as string
+      );
+      chai.assert.equal(
+        response[BaseConfig.M365_CLIENT_ID],
+        this.ctx[PluginId.Aad][StateConfigKey.clientId] as string
+      );
+      chai.assert.equal(
+        response[BaseConfig.M365_CLIENT_SECRET],
+        await getExpectedM365ClientSecret(
+          this.ctx,
+          this.projectPath,
+          this.env,
+          activeResourcePlugins
+        )
+      );
+      chai.assert.equal(
+        response[BaseConfig.M365_TENANT_ID],
+        this.ctx[PluginId.Aad][StateConfigKey.tenantId] as string
+      );
+      chai.assert.equal(
+        response[BaseConfig.M365_APPLICATION_ID_URI],
+        getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+      );
+    }
     chai.assert.equal(
       response[BaseConfig.IDENTITY_ID],
       this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string

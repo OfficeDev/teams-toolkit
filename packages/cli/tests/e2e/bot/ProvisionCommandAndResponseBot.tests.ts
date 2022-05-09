@@ -72,7 +72,7 @@ describe("Provision", function () {
 
       // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, envName);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
     }
 
     // deploy

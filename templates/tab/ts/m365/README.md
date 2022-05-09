@@ -10,6 +10,7 @@ Microsoft 365 supports the ability to run web-based UI inside "custom tabs" that
 
 - [NodeJS](https://nodejs.org/en/)
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+- [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 3.8.0 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Debug

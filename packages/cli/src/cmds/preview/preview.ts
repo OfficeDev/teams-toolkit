@@ -500,6 +500,7 @@ export default class Preview extends YargsCommand {
             browserArguments,
             this.telemetryProperties
           );
+          cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
           cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
         }
       } else {
@@ -521,6 +522,7 @@ export default class Preview extends YargsCommand {
           LogLevel.Warning,
           util.format(constants.installApp.nonInteractive.manifestChanges, "--local")
         );
+        cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       } else {
         cliLogger.necessaryLog(

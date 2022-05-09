@@ -295,22 +295,23 @@ export function mergeProcessEnv(
 }
 
 export function getAutomaticNpmInstallSetting(): boolean {
-  try {
-    const result = UserSettings.getConfigSync();
-    if (result.isErr()) {
-      throw result.error;
-    }
+  return false;
+  // try {
+  //   const result = UserSettings.getConfigSync();
+  //   if (result.isErr()) {
+  //     throw result.error;
+  //   }
 
-    const config = result.value;
-    const automaticNpmInstallOption = CliConfigOptions.AutomaticNpmInstall;
-    if (!(automaticNpmInstallOption in config)) {
-      return false;
-    }
-    return config[automaticNpmInstallOption] == CliConfigAutomaticNpmInstall.On;
-  } catch (error: any) {
-    cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
-    return false;
-  }
+  //   const config = result.value;
+  //   const automaticNpmInstallOption = CliConfigOptions.AutomaticNpmInstall;
+  //   if (!(automaticNpmInstallOption in config)) {
+  //     return false;
+  //   }
+  //   return config[automaticNpmInstallOption] == CliConfigAutomaticNpmInstall.On;
+  // } catch (error: any) {
+  //   cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
+  //   return false;
+  // }
 }
 
 export async function generateAccountHint(

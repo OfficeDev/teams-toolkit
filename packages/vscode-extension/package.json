@@ -919,18 +919,6 @@
     ],
     "configuration": [
       {
-        "title": "General",
-        "order": 1,
-        "properties": {
-          "fx-extension.automaticNpmInstall": {
-            "type": "boolean",
-            "title": "Automatic NPM Install",
-            "description": "Automatically execute npm install command for your Teams application.",
-            "default": false
-          }
-        }
-      },
-      {
         "title": "Prerequisite Check",
         "order": 2,
         "properties": {

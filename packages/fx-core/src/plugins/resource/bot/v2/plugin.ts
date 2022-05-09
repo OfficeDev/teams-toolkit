@@ -273,10 +273,9 @@ export class TeamsBotV2Impl {
         return HostType.AppService;
       case "azure-functions":
         return HostType.Function;
-      case undefined:
+      default:
         return HostType.AppService;
     }
-    throw new Error("Invalid host type");
   }
 
   private resolveTriggers(inputs: Inputs): BotTrigger[] {

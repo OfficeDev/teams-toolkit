@@ -73,13 +73,14 @@ export class BotValidator {
 
   public static async validateScaffold(
     projectPath: string,
-    programmingLanguage: string
+    programmingLanguage: string,
+    srcPath = ""
   ): Promise<void> {
     const indexFile: { [key: string]: string } = {
       typescript: "index.ts",
       javascript: "index.js",
     };
-    const indexPath = path.resolve(projectPath, "bot", indexFile[programmingLanguage]);
+    const indexPath = path.resolve(projectPath, "bot", srcPath, indexFile[programmingLanguage]);
 
     fs.access(indexPath, fs.constants.F_OK, (err) => {
       // err is null means file exists

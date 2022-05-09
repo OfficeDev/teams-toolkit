@@ -10,7 +10,7 @@ import CLIUIInstance from "../../userInteraction";
 import { installApp } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
-import { openHubWebClient } from "./launch";
+import { openHubWebClient, openUrlWithNewProfile } from "./launch";
 import open from "open";
 
 const installOptionItem: OptionItem = {
@@ -95,7 +95,9 @@ export async function showInstallAppInTeamsMessage(
     } else if (result.value.result === configureOutlookOptionItem.id) {
       if (botId) {
         const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-        await open(url);
+        if (!(await openUrlWithNewProfile(url))) {
+          await open(url);
+        }
       }
       return await showInstallAppInTeamsMessage(
         isLocal,

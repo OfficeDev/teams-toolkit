@@ -285,13 +285,17 @@ export class FxCore implements v3.ICore {
       if (scaffoldSourceCodeRes.isErr()) {
         return err(scaffoldSourceCodeRes.error);
       }
-      const generateResourceTemplateRes = await solution.generateResourceTemplate(
-        contextV2,
-        inputs
-      );
-      if (generateResourceTemplateRes.isErr()) {
-        return err(generateResourceTemplateRes.error);
+
+      if (capabilities && !capabilities.includes(TabSPFxItem.id)) {
+        const generateResourceTemplateRes = await solution.generateResourceTemplate(
+          contextV2,
+          inputs
+        );
+        if (generateResourceTemplateRes.isErr()) {
+          return err(generateResourceTemplateRes.error);
+        }
       }
+
       // ctx.provisionInputConfig = generateResourceTemplateRes.value;
       if (solution.createEnv) {
         inputs.copy = false;

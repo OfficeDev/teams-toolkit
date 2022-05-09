@@ -20,6 +20,8 @@ import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
 import NoneSSOTab from "../../img/webview/sample/hello-world-tab-without-sso.gif";
 import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
+import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
+import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -36,6 +38,8 @@ const imageMapping: { [p: string]: any } = {
   "bot-sso": BOTSSO,
   "hello-world-tab-without-sso": NoneSSOTab,
   "graph-connector-app": GraphConnector,
+  "adaptive-card-notification": AdaptiveCardNotification,
+  "incoming-webhook-notification": IncomingWebhook,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

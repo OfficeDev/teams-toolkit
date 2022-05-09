@@ -1,5 +1,5 @@
 // This file implements a `TeamsActivityHandler` class using `ssoDialog` and add `showUserInfo` as a command.
-// See https://docs.microsoft.com/en-us/javascript/api/botbuilder/teamsactivityhandler?view=botbuilder-ts-latest for more about `TeamsActivityHandler`.
+// See https://docs.microsoft.com/javascript/api/botbuilder/teamsactivityhandler?view=botbuilder-ts-latest for more about `TeamsActivityHandler`.
 // You can add your own command that requires SSO in this file.
 
 import {

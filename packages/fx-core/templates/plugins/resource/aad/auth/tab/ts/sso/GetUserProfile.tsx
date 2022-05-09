@@ -1,5 +1,5 @@
 // This file will use TeamsFx SDK to call Graph API to get user profile.
-// Refer to this link to learn more: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#calling-the-microsoft-graph-api.
+// Refer to this link to learn more: https://www.npmjs.com/package/@microsoft/teamsfx-react#calling-the-microsoft-graph-api.
 
 import { Button } from "@fluentui/react-northstar";
 import { TeamsFx } from "@microsoft/teamsfx";
@@ -11,7 +11,7 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
     ...props,
   };
 
-  // For usage of useGraph(), please refer to: https://github.com/OfficeDev/TeamsFx/tree/ga/packages/sdk-react#usegraph.
+  // For usage of useGraph(), please refer to: https://www.npmjs.com/package/@microsoft/teamsfx-react#usegraph.
   const { loading, error, data, reload } = useGraph(
     async (graph, teamsfx, scope) => {
       // Call graph api use `graph` instance to get user profile information

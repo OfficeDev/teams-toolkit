@@ -3,6 +3,9 @@
 "use strict";
 
 import { Platform, Stage, VsCodeEnv } from "./constants";
+import { TokenProvider } from "./utils/login";
+import { Context } from "./v2/types";
+import { AppManifestProvider } from "./v3/plugins";
 import { EnvInfoV3 } from "./v3/types";
 
 export type Json = Record<string, any>;
@@ -252,3 +255,25 @@ export interface ProjectConfigV3 {
     [key: string]: EnvInfoV3;
   };
 }
+
+export interface Component extends Json {
+  name: string;
+  hosting?: string;
+  deployType?: "folder" | "zip";
+  language?: string;
+  folder?: string;
+  build?: boolean;
+  provision?: boolean;
+  connections?: string[];
+}
+export interface ProjectSettingsV3 extends ProjectSettings {
+  components: Component[];
+}
+export interface ContextV3 extends Context {
+  manifestProvider: AppManifestProvider;
+  projectSetting: ProjectSettingsV3;
+  envInfo?: EnvInfoV3;
+  tokenProvider?: TokenProvider;
+}
+
+export type MaybePromise<T> = T | Promise<T>;

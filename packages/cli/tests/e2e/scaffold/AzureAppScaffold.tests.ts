@@ -53,7 +53,7 @@ describe("Azure App Scaffold", function () {
 
     {
       await FrontendValidator.validateScaffold(projectPath, lang);
-      await BotValidator.validateScaffold(projectPath, lang);
+      await BotValidator.validateScaffold(projectPath, lang, "src");
       await FunctionValidator.validateScaffold(projectPath, lang);
     }
   });

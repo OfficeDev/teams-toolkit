@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
+import {
+  Activity,
+  ActivityTypes,
+  ConversationReference,
+  Middleware,
+  TurnContext,
+} from "botbuilder";
 import { CommandMessage, TriggerPatterns } from "./interface";
 import { TeamsFxBotCommandHandler } from "./interface";
 import { ConversationReferenceStore } from "./storage";
@@ -44,6 +50,11 @@ export class NotificationMiddleware implements Middleware {
         await this.conversationReferenceStore.set(reference);
         break;
       }
+      case ActivityType.CurrentBotMessaged: {
+        const reference = TurnContext.getConversationReference(context.activity);
+        await this.tryAddMessagedReference(reference);
+        break;
+      }
       case ActivityType.CurrentBotUninstalled:
       case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
@@ -73,9 +84,20 @@ export class NotificationMiddleware implements Middleware {
       } else if (eventType === "teamRestored") {
         return ActivityType.TeamRestored;
       }
+    } else if (activityType === "message") {
+      return ActivityType.CurrentBotMessaged;
     }
 
     return ActivityType.Unknown;
+  }
+
+  private async tryAddMessagedReference(reference: Partial<ConversationReference>): Promise<void> {
+    const conversationType = reference?.conversation?.conversationType;
+    if (conversationType === "personal" || conversationType === "groupChat") {
+      if (!(await this.conversationReferenceStore.check(reference))) {
+        await this.conversationReferenceStore.set(reference);
+      }
+    }
   }
 }
 

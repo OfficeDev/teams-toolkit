@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import {
-  AzureAccountProvider,
   AzureSolutionSettings,
+  err,
   Func,
   FxError,
   Inputs,
@@ -21,7 +21,6 @@ import {
   DeepReadonly,
   ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput,
   ResourceTemplate,
   EnvInfoV2,
 } from "@microsoft/teamsfx-api/build/v2";
@@ -44,6 +43,7 @@ import {
   scaffoldSourceCodeAdapter,
   updateResourceTemplateAdapter,
 } from "../../utils4v2";
+import { TeamsBotV2Impl } from "./plugin";
 
 @Service(ResourcePluginsV2.BotPlugin)
 export class BotPluginV2 implements ResourcePlugin {
@@ -51,6 +51,7 @@ export class BotPluginV2 implements ResourcePlugin {
   displayName = "Bot";
   @Inject(ResourcePlugins.BotPlugin)
   plugin!: TeamsBot;
+  impl = new TeamsBotV2Impl();
 
   activate(projectSettings: ProjectSettings): boolean {
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
@@ -65,6 +66,7 @@ export class BotPluginV2 implements ResourcePlugin {
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+    // return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
@@ -72,14 +74,18 @@ export class BotPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
+    // return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
+
   async updateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    // return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
     return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
+
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
@@ -174,5 +180,15 @@ export class BotPluginV2 implements ResourcePlugin {
       tokenProvider,
       this.plugin
     );
+  }
+}
+
+async function catchAndThrow<T>(
+  fn: () => Promise<Result<T, FxError>>
+): Promise<Result<T, FxError>> {
+  try {
+    return await fn();
+  } catch (error: unknown) {
+    return err(error as FxError);
   }
 }

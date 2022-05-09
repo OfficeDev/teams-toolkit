@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Wenyu Tang <wenyutang@microsoft.com>
+ */
+
 import path from "path";
 import "mocha";
 import * as chai from "chai";

@@ -15,6 +15,9 @@ export * from "./utils";
 export * from "./error";
 export * from "./qm";
 export * from "./schemas";
+export * from "./action";
+export * from "./bicep";
+export * from "./component";
 
 // because there are some same definitions v1/v2/v3 has, use namespace to export them
 export { v2 };

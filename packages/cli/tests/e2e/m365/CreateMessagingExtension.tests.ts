@@ -14,7 +14,7 @@ import { M365Validator } from "../../commonlib/m365Validator";
 import { BotValidator } from "../../commonlib";
 import { Capability } from "../../commonlib/constants";
 
-describe("Create M365 Messaging Extension", function () {
+describe("Create M365 Message Extension", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

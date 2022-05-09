@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@fluentui/react-northstar": "^0.54.0",
+    "@fluentui/react-northstar": "^0.60.1",
     "@microsoft/teams-js": "^1.9.0",
     "@microsoft/teamsfx": "^0.6.0",
     "axios": "^0.21.1",
@@ -11,12 +11,11 @@
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "^4.0.3"
+    "react-scripts": "^5.0.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "env-cmd": "^10.1.0",
-    "react-error-overlay": "6.0.9"
+    "env-cmd": "^10.1.0"
   },
   "scripts": {
     "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",

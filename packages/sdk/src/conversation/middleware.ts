@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
+import {
+  Activity,
+  ActivityTypes,
+  ConversationReference,
+  Middleware,
+  TurnContext,
+} from "botbuilder";
 import { CommandMessage, TriggerPatterns } from "./interface";
 import { TeamsFxBotCommandHandler } from "./interface";
 import { ConversationReferenceStore } from "./storage";
@@ -44,6 +50,11 @@ export class NotificationMiddleware implements Middleware {
         await this.conversationReferenceStore.set(reference);
         break;
       }
+      case ActivityType.CurrentBotMessaged: {
+        const reference = TurnContext.getConversationReference(context.activity);
+        await this.tryAddMessagedReference(reference);
+        break;
+      }
       case ActivityType.CurrentBotUninstalled:
       case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
@@ -73,9 +84,20 @@ export class NotificationMiddleware implements Middleware {
       } else if (eventType === "teamRestored") {
         return ActivityType.TeamRestored;
       }
+    } else if (activityType === "message") {
+      return ActivityType.CurrentBotMessaged;
     }
 
     return ActivityType.Unknown;
+  }
+
+  private async tryAddMessagedReference(reference: Partial<ConversationReference>): Promise<void> {
+    const conversationType = reference?.conversation?.conversationType;
+    if (conversationType === "personal" || conversationType === "groupChat") {
+      if (!(await this.conversationReferenceStore.check(reference))) {
+        await this.conversationReferenceStore.set(reference);
+      }
+    }
   }
 }
 
@@ -89,45 +111,36 @@ export class CommandResponseMiddleware implements Middleware {
   }
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
-    const type = this.classifyActivity(context.activity);
+    if (context.activity.type === ActivityTypes.Message) {
+      // Invoke corresponding command handler for the command response
+      const commandText = this.getActivityText(context.activity);
 
-    switch (type) {
-      case ActivityType.CurrentBotMessaged:
-        // Invoke corresponding command handler for the command response
-        const commandText = this.getActivityText(context.activity);
+      const message: CommandMessage = {
+        text: commandText,
+      };
 
-        const message: CommandMessage = {
-          text: commandText,
-        };
+      for (const handler of this.commandHandlers) {
+        const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
 
-        for (const handler of this.commandHandlers) {
-          const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
+        // It is important to note that the command bot will stop processing handlers
+        // when the first command handler is matched.
+        if (!!matchResult) {
+          message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+          const response = await handler.handleCommandReceived(context, message);
 
-          // It is important to note that the command bot will stop processing handlers
-          // when the first command handler is matched.
-          if (!!matchResult) {
-            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-
-            const response = await handler.handleCommandReceived(context, message);
+          if (typeof response === "string") {
             await context.sendActivity(response);
-            break;
+          } else {
+            const replyActivity = response as Partial<Activity>;
+            if (replyActivity) {
+              await context.sendActivity(replyActivity);
+            }
           }
         }
-
-        break;
-      default:
-        break;
+      }
     }
 
     await next();
-  }
-
-  private classifyActivity(activity: Activity): ActivityType {
-    if (activity.type === ActivityTypes.Message) {
-      return ActivityType.CurrentBotMessaged;
-    }
-
-    return ActivityType.Unknown;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {

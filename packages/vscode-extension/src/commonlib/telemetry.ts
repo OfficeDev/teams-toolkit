@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
-import Reporter from "vscode-extension-telemetry";
+import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getAllFeatureFlags,

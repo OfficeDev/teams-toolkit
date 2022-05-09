@@ -1197,6 +1197,7 @@
     "@microsoft/teamsfx-api": "^0.18.0",
     "@microsoft/teamsfx-core": "^1.8.0",
     "@npmcli/package-json": "^1.0.1",
+    "@vscode/extension-telemetry": "^0.5.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
@@ -1212,7 +1213,6 @@
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-extension-telemetry": "^0.2.9",
     "vscode-tas-client": "^0.1.47",
     "vscode-test": "^1.5.2"
   },

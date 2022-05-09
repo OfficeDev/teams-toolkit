@@ -32,7 +32,7 @@ const reporterSpy = spy.interface({
 });
 
 const mock = require("mock-require");
-mock("vscode-extension-telemetry", {
+mock("@vscode/extension-telemetry", {
   default: function (
     extensionId: string,
     extensionVersion: string,

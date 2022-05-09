@@ -168,7 +168,6 @@ describe("Capability Questions", () => {
       chai.assert.deepEqual(question.staticOptions, [
         NotificationOptionItem,
         CommandAndResponseOptionItem,
-        ExistingTabOptionItem,
         TabNewUIOptionItem,
         TabSPFxNewUIItem,
         TabNonSsoItem,

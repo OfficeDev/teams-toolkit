@@ -281,7 +281,6 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     NotificationOptionItem,
     CommandAndResponseOptionItem,
-    ExistingTabOptionItem,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -290,6 +289,11 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
     M365SsoLaunchPageOptionItem,
     M365SearchAppOptionItem,
   ];
+
+  if (isExistingTabAppEnabled()) {
+    staticOptions.splice(2, 0, ExistingTabOptionItem);
+  }
+
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.titleNew"),

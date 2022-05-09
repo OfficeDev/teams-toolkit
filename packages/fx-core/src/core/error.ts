@@ -332,14 +332,6 @@ export function ConsolidateCanceledError(): UserError {
   );
 }
 
-export function AadManifestMigrationCanceledError(): UserError {
-  return new UserError(
-    "UserCancel",
-    getLocalizedString("error.AadManifestMigrationCanceledError"),
-    CoreSource
-  );
-}
-
 export function NotJsonError(err: Error): UserError {
   return new UserError({ error: err, source: CoreSource });
 }

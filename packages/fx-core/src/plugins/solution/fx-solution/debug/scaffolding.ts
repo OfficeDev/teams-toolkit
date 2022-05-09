@@ -90,30 +90,24 @@ export async function _scaffoldLocalDebugSettings(
 
         //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await fs.writeJSON(
+        await updateJson(
           `${inputs.projectPath}/.vscode/launch.json`,
           {
             version: "0.2.0",
             configurations: launchConfigurations,
             compounds: launchCompounds,
           },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
+          LaunchNext.mergeLaunches
         );
 
-        await fs.writeJSON(
+        await updateJson(
           `${inputs.projectPath}/.vscode/tasks.json`,
           {
             version: "2.0.0",
             tasks: tasks,
             inputs: tasksInputs,
           },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
+          TasksNext.mergeTasks
         );
       } else {
         const launchConfigurations = isM365
@@ -152,29 +146,23 @@ export async function _scaffoldLocalDebugSettings(
 
         //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await fs.writeJSON(
+        await updateJson(
           `${inputs.projectPath}/.vscode/launch.json`,
           {
             version: "0.2.0",
             configurations: launchConfigurations,
             compounds: launchCompounds,
           },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
+          LaunchNext.mergeLaunches
         );
 
-        await fs.writeJSON(
+        await updateJson(
           `${inputs.projectPath}/.vscode/tasks.json`,
           {
             version: "2.0.0",
             tasks: tasks,
           },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
+          TasksNext.mergeTasks
         );
 
         // generate localSettings.json
@@ -185,13 +173,10 @@ export async function _scaffoldLocalDebugSettings(
         }
       }
 
-      await fs.writeJSON(
+      await updateJson(
         `${inputs.projectPath}/.vscode/settings.json`,
         Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
-        {
-          spaces: 4,
-          EOL: os.EOL,
-        }
+        Settings.mergeSettings
       );
     } else if (inputs.platform === Platform.VS) {
       // generate localSettings.json
@@ -264,4 +249,31 @@ async function useNewTasks(projectPath?: string): Promise<boolean> {
   }
 
   return true;
+}
+
+async function updateJson(
+  path: string,
+  newData: Record<string, unknown>,
+  mergeFunc: (
+    existingData: Record<string, unknown>,
+    newData: Record<string, unknown>
+  ) => Record<string, unknown>
+): Promise<void> {
+  let finalData: Record<string, unknown>;
+  if (await fs.pathExists(path)) {
+    try {
+      const existingData = await fs.readJSON(path);
+      finalData = mergeFunc(existingData, newData);
+    } catch (error) {
+      // If failed to parse or edit the existing file, just overwrite completely
+      finalData = newData;
+    }
+  } else {
+    finalData = newData;
+  }
+
+  await fs.writeJSON(path, finalData, {
+    spaces: 4,
+    EOL: os.EOL,
+  });
 }

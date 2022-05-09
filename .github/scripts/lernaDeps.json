@@ -2,6 +2,9 @@
     "common": [
         "packages/eslint-config"
     ],
+    "adaptivecard": [
+        "packages/adaptivecards-tools-sdk"
+    ],
     "cli": [
         "packages/manifest",
         "packages/api",

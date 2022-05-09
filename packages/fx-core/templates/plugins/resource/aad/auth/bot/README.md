@@ -31,16 +31,29 @@ The sample business logic provides a function `showUserInfo` that requires an AA
 
 To make this work in your application:
 
-1. Copy the `auth/bot/sso` folder to `bot/src`. This folder contains three files that provide a default SSO implementation:
-    * `showUserInfo`: This default sample retrieves user information from Microsoft Graph.
-    * `ssoDialog`: This creates a [ComponentDialog](https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest) that implements the SSO flow.
-    * `teamsSsoBot`: This create a [TeamsActivityHandler](https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.builder.teams.teamsactivityhandler?view=botbuilder-dotnet-stable) with `showUserInfo` as a command. The `ssoDialog` is displayed if needed.
-2. In `src/internal/initialize.ts`, register your command with `addCommand`.
-3. In the `bot` folder, run this command: `npm install isomorphic-fetch`
-4. Create a new `teamsSsoBot` instance in your `bot/src/index.ts` file.
-5. Replace the following code:
+1. Copy `auth/bot/public` folder to `bot/src`. 
+These folder contains HTML pages used for auth redirect, please note that you need to modify `bot/src/index` file to add routing to these pages.
 
-    ```typescript
+1. Copy `auth/bot/sso` folder to `bot/src`.
+These folder contains three files as reference for sso implementation:
+    * `showUserInfo`: This implements a function to get user info with SSO token. You can follow this method and create your own method that requires SSO token.
+    * `ssoDialog`: This creates a [ComponentDialog](https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest) that used for SSO.
+    * `teamsSsoBot`: This create a [TeamsActivityHandler](https://docs.microsoft.com/en-us/javascript/api/botbuilder/teamsactivityhandler?view=botbuilder-ts-latest) with `ssoDialog` and add `showUserInfo` as a command that can be triggered. 
+
+1. (Optional) Follow the code sample and register your own command with `addCommand` in this file.
+1. Execute the following commands under `bot/`: `npm install isomorphic-fetch`
+1. Execute the following commands under `bot/`: `npm install copyfiles` and replace following line in package.json:
+    ```
+    "build": "tsc --build",
+    ```
+    with:
+    ```
+    "build": "tsc --build && copyfiles public/*.html lib/",
+    ```
+    By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
+1. After adding the following files, you need to create a new `teamsSsoBot` instance in `bot/src/index` file. 
+Please replace the following code:
+    ```
     // Process Teams activity with Bot Framework.
     server.post("/api/messages", async (req, res) => {
         await commandBot.requestHandler(req, res);
@@ -49,7 +62,7 @@ To make this work in your application:
 
     with:
 
-    ```typescript
+    ```
     const handler = new TeamsSsoBot();
     // Process Teams activity with Bot Framework.
     server.post("/api/messages", async (req, res) => {
@@ -59,15 +72,27 @@ To make this work in your application:
     });
     ```
 
-6. Add the following route to `bot/src/index.ts`:
+1. Add routing in `bot/src/index` file as below:
 
-    ```typescript
+    ```
     server.get(
         "/auth-*.html",
         restify.plugins.serveStatic({
             directory: path.join(__dirname, "public"),
         })
     );
+    ```
+
+1. Add the following lines to `bot/src/index` to import `teamsSsoBot` and `path`:
+
+    ```
+    // For ts:
+    import { TeamsSsoBot } from "./sso/teamsSsoBot";
+    const path = require("path");
+
+    // For js:
+    const { TeamsSsoBot } = require("./sso/teamsSsoBot");
+    const path = require("path");
     ```
 
 # Debug your application

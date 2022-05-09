@@ -73,7 +73,7 @@ export class TeamsBotV2Impl {
       const hostTypes = hostTypeTriggers.map(
         (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
       );
-      hostType = hostTypes[0];
+      hostType = hostTypes ? hostTypes[0] : undefined;
     }
     return hostType ? hostType : HostTypes.APP_SERVICE;
   }

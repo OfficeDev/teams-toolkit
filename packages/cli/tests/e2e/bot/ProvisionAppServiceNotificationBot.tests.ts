@@ -111,6 +111,6 @@ describe("Provision", function () {
 
   this.afterEach(async () => {
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 });

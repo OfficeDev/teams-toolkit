@@ -137,6 +137,7 @@ import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebv
 import {
   anonymizeFilePaths,
   getM365TenantFromEnv,
+  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -164,6 +165,8 @@ export async function activate(): Promise<Result<Void, FxError>> {
     const workspacePath = getWorkspacePath();
     const validProject = isValidProject(workspacePath);
     if (validProject) {
+      const projectId = (await getProjectId()) || "unknown";
+      ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
 

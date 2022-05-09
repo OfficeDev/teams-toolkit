@@ -53,6 +53,7 @@ suite("telemetry", () => {
 
   suiteSetup(() => {
     tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
+    (tester as VSCodeTelemetryReporter).addSharedProperty("project-id", "");
     chai.util.addProperty(tester, "reporter", () => reporterSpy);
   });
 

@@ -70,10 +70,6 @@ describe("Provision", function () {
       // Get context
       const context = await readContextMultiEnv(projectPath, envName);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
       // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, envName);
       await bot.validateProvision();

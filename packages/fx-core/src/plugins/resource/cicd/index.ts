@@ -119,7 +119,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
-        dynamicOptions: (inputs: Inputs): StaticOptions => {
+        dynamicOptions: async (inputs: Inputs): Promise<StaticOptions> => {
           // Remove the env items in which all combinations of templates are scaffolded/existing.
           return envProfilesResult.value.filter((envName: string) => {
             return (
@@ -130,23 +130,21 @@ export class CICDPluginV2 implements ResourcePlugin {
         skipSingleOption: true,
       };
 
-      whichProvider.dynamicOptions = (inputs: Inputs): StaticOptions => {
+      whichProvider.dynamicOptions = async (inputs: Inputs): Promise<StaticOptions> => {
         const envName = inputs[questionNames.Environment];
-        return [githubOption.id, azdoOption.id, jenkinsOption.id].filter((provider) => {
-          const key = ExistingTemplatesStat.genKey(envName, provider);
+        return [githubOption, azdoOption, jenkinsOption].filter((provider) => {
+          const key = ExistingTemplatesStat.genKey(envName, provider.id);
           return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
         });
       };
 
-      whichTemplate.dynamicOptions = (inputs: Inputs): StaticOptions => {
+      whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<StaticOptions> => {
         const envName = inputs[questionNames.Environment];
         const provider = inputs[questionNames.Provider];
-        return [ciOption.id, provisionOption.id, cdOption.id, publishOption.id].filter(
-          (template) => {
-            const key = ExistingTemplatesStat.genKey(envName, provider, template);
-            return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
-          }
-        );
+        return [ciOption, provisionOption, cdOption, publishOption].filter((template) => {
+          const key = ExistingTemplatesStat.genKey(envName, provider, template.id);
+          return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
+        });
       };
 
       // Link question nodes as a tree.

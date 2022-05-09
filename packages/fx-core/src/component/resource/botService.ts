@@ -18,7 +18,7 @@ import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { AzureWebAppResource } from "./azureWebApp";
-import { persistConfigBicepPlans } from "../bicepUtils";
+import { persistConfigBicepPlans } from "../utils";
 
 @Service("bot-service")
 export class BotServiceResource {
@@ -31,16 +31,16 @@ export class BotServiceResource {
       name: "bot-service.generateBicep",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = await persistConfigBicepPlans(inputs.projectPath, {
-          Modules: { botService: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
+        const bicep: Bicep = {
+          type: "bicep",
+          Configuration: {
+            Modules: { botService: "1" },
+            Orchestration: "1",
+          },
+        };
+        return ok([bicep]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const mPath = path.join(getTemplatesFolder(), "bicep", "botService.config.module.bicep");
         const oPath = path.join(
           getTemplatesFolder(),
@@ -55,10 +55,11 @@ export class BotServiceResource {
         }
         module = compileHandlebarsTemplateString(module, templateContext);
         const orch = await fs.readFile(oPath, "utf-8");
-        const armTemplate: Bicep = {
+        const bicep: Bicep = {
+          type: "bicep",
           Configuration: { Modules: { botService: module }, Orchestration: orch },
         };
-        return ok(armTemplate);
+        return ok([bicep]);
       },
     };
     return ok(action);
@@ -71,18 +72,27 @@ export class BotServiceResource {
       name: "bot-service.provision",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["create AAD app for bot service (botId, botPassword)"]);
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          },
+        ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         // create bot aad app by API call
         inputs["bot-service"] = {
           botId: "MockBotId",
           botPassword: "MockBotPassword",
         };
-        return ok(undefined);
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          },
+        ]);
       },
     };
     return ok(provision);

@@ -22,8 +22,9 @@ import { deleteFolder, MockTools, randomAppName } from "./utils";
 import fs from "fs-extra";
 import { getProjectSettingsPath } from "../../src/core/middleware/projectSettingsLoader";
 import "../../src/component/core";
-import Container from "typedi";
-import { BotCodeProvider } from "../../src/component/botCodeProvider";
+import { Container } from "typedi";
+import { BotCodeProvider } from "../../src/component/botCode";
+import * as templateAction from "../../src/common/template-utils/templatesActions";
 
 async function runAction(
   action: Action,
@@ -52,7 +53,8 @@ describe("Workflow test for v3", () => {
 
   afterEach(() => {
     sandbox.restore();
-    deleteFolder(projectPath);
+    console.log(projectPath);
+    // deleteFolder(projectPath);
   });
   it("fx.init + fx.addBot + fx.addSql", async () => {
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
@@ -90,12 +92,7 @@ describe("Workflow test for v3", () => {
         language: "typescript",
       };
 
-      const scaffoldAction = (await getAction(
-        "bot-code.generate",
-        context,
-        inputs
-      )) as FunctionAction;
-      sandbox.stub(scaffoldAction, "execute").resolves(ok(undefined));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
 
       const action = await getAction("fx.addBot", context, inputs);
       assert.isDefined(action);

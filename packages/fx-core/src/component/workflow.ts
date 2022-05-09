@@ -27,7 +27,12 @@ import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
 import { merge } from "lodash";
-import { persistBicep } from "./bicepUtils";
+import {
+  fileEffectPlanStrings,
+  persistBicep,
+  persistBicepPlans,
+  serviceEffectPlanString,
+} from "./utils";
 import fs from "fs-extra";
 
 export async function getAction(
@@ -195,7 +200,17 @@ export async function planAction(
     let plans: string[] = [];
     const planRes = await action.plan(context, inputs);
     if (planRes.isOk()) {
-      plans = planRes.value as string[];
+      for (const effect of planRes.value) {
+        if (typeof effect === "string") {
+          plans.push(effect);
+        } else if (effect.type === "file") {
+          plans = plans.concat(fileEffectPlanStrings(effect));
+        } else if (effect.type === "service") {
+          plans.push(serviceEffectPlanString(effect));
+        } else if (effect.type === "bicep") {
+          plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+        }
+      }
     }
     let subStep = 1;
     for (const plan of plans) {
@@ -275,11 +290,15 @@ export async function executeFunctionAction(
   }
   const res = await action.execute(context, inputs);
   if (res.isOk()) {
-    //persist bicep files for 'generateBicep' method
-    if (action.name.endsWith(".generateBicep")) {
-      const bicep = res.value as Bicep | undefined;
-      if (bicep) {
-        await persistBicep(inputs.projectPath, bicep);
+    if (res.value) {
+      //persist bicep files for bicep effects
+      for (const effect of res.value) {
+        if (typeof effect !== "string" && effect.type === "bicep") {
+          const bicep = effect as Bicep;
+          if (bicep) {
+            await persistBicep(inputs.projectPath, bicep);
+          }
+        }
       }
     }
   } else {
@@ -331,14 +350,4 @@ export function getComponent(
   if (!projectSettings.components) return undefined;
   const results = projectSettings.components.filter((r) => r.name === resourceType);
   return results[0];
-}
-
-export function ensureFilePlan(file: string, forceUpdate = false): string | undefined {
-  if (fs.pathExistsSync(file)) return forceUpdate ? `update file: ${file}` : undefined;
-  return `create file: ${file}`;
-}
-
-export function appendContentInFilePlan(file: string, contentName: string): string {
-  if (!fs.pathExistsSync(file)) return `create file: ${file} with ${contentName} content`;
-  return `append ${contentName} content in file: ${file}`;
 }

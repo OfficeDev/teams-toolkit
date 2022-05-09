@@ -3,9 +3,9 @@
 
 import {
   Action,
-  Component,
   ConfigFolderName,
   ContextV3,
+  err,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -25,9 +25,10 @@ import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader
 import { ProjectNamePattern } from "../core/question";
 import { getComponent, getEmbeddedValueByPath } from "./workflow";
 import "./resource";
-import "./bicepProvider";
-import "./botCodeProvider";
+import "./bicep";
+import "./botCode";
 import "./connection";
+import { environmentManager } from "../core/environment";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -40,10 +41,11 @@ export class TeamsfxCore {
       name: "fx.initConfig",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
-          `ensure folder: ${inputs.projectPath}`,
-          `ensure folder: ${path.join(inputs.projectPath, `.${ConfigFolderName}`)}`,
-          `ensure folder: ${path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs")}`,
-          `create file: ${getProjectSettingsPath(inputs.projectPath)}`,
+          {
+            type: "file",
+            operate: "create",
+            filePath: getProjectSettingsPath(inputs.projectPath),
+          },
         ]);
       },
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -67,7 +69,25 @@ export class TeamsfxCore {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
-        return ok(undefined);
+        const newEnvConfig = environmentManager.newEnvConfigData(
+          projectSettings.appName,
+          undefined
+        );
+        const writeEnvResult = await environmentManager.writeEnvConfig(
+          inputs.projectPath,
+          newEnvConfig,
+          environmentManager.getDefaultEnvName()
+        );
+        if (writeEnvResult.isErr()) {
+          return err(writeEnvResult.error);
+        }
+        return ok([
+          {
+            type: "file",
+            operate: "create",
+            filePath: getProjectSettingsPath(inputs.projectPath),
+          },
+        ]);
       },
     };
     const action: Action = {
@@ -125,21 +145,25 @@ export class TeamsfxCore {
         name: "fx.configBot",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const plans = [
+          const remarks = [
             `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
           ];
           // connect to azure-sql
           if (getComponent(context.projectSetting, "azure-sql")) {
-            plans.push(
+            remarks.push(
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
           }
-          return ok(plans);
+          return ok([
+            {
+              type: "file",
+              operate: "replace",
+              filePath: getProjectSettingsPath(inputs.projectPath),
+              remarks: remarks.join(";"),
+            },
+          ]);
         },
-        execute: async (
-          context: ContextV3,
-          inputs: InputsWithProjectPath
-        ): Promise<Result<undefined, FxError>> => {
+        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;
           // add teams-bot
           projectSettings.components.push({
@@ -162,7 +186,23 @@ export class TeamsfxCore {
           if (getComponent(context.projectSetting, "azure-sql")) {
             hostingComponent.connections.push("azure-sql");
           }
-          return ok(undefined);
+          const remarks = [
+            `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
+          ];
+          // connect to azure-sql
+          if (getComponent(context.projectSetting, "azure-sql")) {
+            remarks.push(
+              `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
+            );
+          }
+          return ok([
+            {
+              type: "file",
+              operate: "replace",
+              filePath: getProjectSettingsPath(inputs.projectPath),
+              remarks: remarks.join(";"),
+            },
+          ]);
         },
       },
       {
@@ -234,24 +274,29 @@ export class TeamsfxCore {
           if (sqlComponent) {
             return ok([]);
           }
-          const plans: string[] = ["add component 'azure-sql' in projectSettings"];
+          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
           const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
-            plans.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
+            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
           }
           const functionComponent = getComponent(context.projectSetting, "azure-function");
           if (functionComponent) {
-            plans.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
+            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
           }
-          return ok(plans);
+          return ok([
+            {
+              type: "file",
+              operate: "replace",
+              filePath: getProjectSettingsPath(inputs.projectPath),
+              remarks: remarks.join(";"),
+            },
+          ]);
         },
-        execute: async (
-          context: ContextV3,
-          inputs: InputsWithProjectPath
-        ): Promise<Result<undefined, FxError>> => {
+        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-          if (sqlComponent) return ok(undefined);
+          if (sqlComponent) return ok([]);
           const projectSettings = context.projectSetting;
+          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
           projectSettings.components.push({
             name: "azure-sql",
             provision: true,
@@ -260,13 +305,22 @@ export class TeamsfxCore {
           if (webAppComponent) {
             if (!webAppComponent.connections) webAppComponent.connections = [];
             webAppComponent.connections.push("azure-sql");
+            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
           }
           const functionComponent = getComponent(context.projectSetting, "azure-function");
           if (functionComponent) {
             if (!functionComponent.connections) functionComponent.connections = [];
             functionComponent.connections.push("azure-sql");
+            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
           }
-          return ok(undefined);
+          return ok([
+            {
+              type: "file",
+              operate: "replace",
+              filePath: getProjectSettingsPath(inputs.projectPath),
+              remarks: remarks.join(";"),
+            },
+          ]);
         },
       },
       {
@@ -277,12 +331,10 @@ export class TeamsfxCore {
       {
         name: "call:azure-sql.generateBicep",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "azure-sql.generateBicep",
         inputs: {
-          "azure-sql": {
-            provisionType: provisionType,
-          },
+          provisionType: provisionType,
         },
       },
     ];

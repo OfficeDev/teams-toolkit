@@ -23,6 +23,7 @@ export interface ConfigurationBicep {
   Modules?: { [moduleFileName: string]: string };
 }
 export interface Bicep {
+  type: "bicep";
   Provision?: ProvisionBicep;
   Configuration?: ConfigurationBicep;
   /*

@@ -241,6 +241,8 @@ export interface Bicep {
     Parameters?: Record<string, string>;
     // (undocumented)
     Provision?: ProvisionBicep;
+    // (undocumented)
+    type: "bicep";
 }
 
 // @public (undocumented)
@@ -286,6 +288,18 @@ export interface CallAction {
     targetAction: string;
     // (undocumented)
     type: "call";
+}
+
+// @public (undocumented)
+export interface CallServiceEffect {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    remarks?: string;
+    // (undocumented)
+    response?: string;
+    // (undocumented)
+    type: "service";
 }
 
 // @public (undocumented)
@@ -537,6 +551,9 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 export const DynamicPlatforms: Platform[];
 
 // @public (undocumented)
+export type Effect = string | FileEffect | CallServiceEffect | Bicep;
+
+// @public (undocumented)
 export class EmptyOptionError extends SystemError {
     constructor(source?: string);
 }
@@ -652,6 +669,21 @@ export interface ExpServiceProvider {
 }
 
 // @public (undocumented)
+export interface FileEffect {
+    // (undocumented)
+    filePath: string | string[];
+    // (undocumented)
+    operate?: FileOperation;
+    // (undocumented)
+    remarks?: string;
+    // (undocumented)
+    type: "file";
+}
+
+// @public
+export type FileOperation = "create" | "replace" | "append" | "delete";
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -685,13 +717,13 @@ export interface FuncQuestion extends BaseQuestion {
 
 // @public
 export interface FunctionAction {
-    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<any, FxError>>;
+    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
     inputs?: Json;
     // (undocumented)
     name: string;
     // (undocumented)
-    plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<string[], FxError>>;
+    plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
     question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "function";

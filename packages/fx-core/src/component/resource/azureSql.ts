@@ -18,7 +18,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { generateBicepFromFile, getUuid } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { persistProvisionBicepPlans } from "../bicepUtils";
+import { persistBicepPlans, persistProvisionBicepPlans } from "../utils";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly type = "cloud";
@@ -46,19 +46,21 @@ export class AzureSqlResource implements CloudResource {
       name: "azure-sql.generateBicep",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = persistProvisionBicepPlans(inputs.projectPath, {
-          Modules: { azureSql: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
+        const bicep: Bicep = {
+          type: "bicep",
+          Provision: {
+            Modules: { azureSql: "1" },
+            Orchestration: "1",
+          },
+        };
+        if (inputs.provisionType === "database") {
+          bicep.Parameters = {};
+        }
+        return ok([bicep]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
-        const sqlInputs = inputs["azure-sql"];
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const prefix =
-          sqlInputs.provisionType === "database"
+          inputs.provisionType === "database"
             ? "azureSql.provisionDatabase"
             : "azureSql.provisionServer";
         const mPath = path.join(getTemplatesFolder(), "bicep", `${prefix}.module.bicep`);
@@ -69,17 +71,23 @@ export class AzureSqlResource implements CloudResource {
         const compileCtx = {
           suffix: suffix,
         };
-        if (sqlInputs.provisionType === "database") {
+        if (inputs.provisionType === "database") {
           module = await generateBicepFromFile(mPath, compileCtx);
           orch = await generateBicepFromFile(oPath, compileCtx);
         }
         const bicep: Bicep = {
+          type: "bicep",
           Provision: {
             Modules: { azureSql: module },
             Orchestration: orch,
           },
         };
-        return ok(bicep);
+        if (inputs.provisionType === "database") {
+          bicep.Parameters = await fs.readJson(
+            path.join(getTemplatesFolder(), "bicep", "azureSql.parameters.json")
+          );
+        }
+        return ok([bicep]);
       },
     };
     return ok(action);
@@ -92,14 +100,10 @@ export class AzureSqlResource implements CloudResource {
       name: "azure-sql.configure",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["configure azure-sql"]);
+        return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log("configure azure-sql");
-        return ok(undefined);
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
       },
     };
     return ok(action);

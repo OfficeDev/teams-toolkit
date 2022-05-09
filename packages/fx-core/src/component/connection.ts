@@ -21,7 +21,6 @@ import { getComponent } from "./workflow";
 import { compileHandlebarsTemplateString } from "../common/tools";
 import { AzureWebAppResource } from "./resource/azureWebApp";
 import { AzureStorageResource } from "./resource/azureStorage";
-import { persistConfigBicepPlans } from "./bicepUtils";
 @Service("azure-web-app-config")
 export class AzureWebAppConfig {
   readonly name = "azure-web-app-config";
@@ -34,19 +33,18 @@ export class AzureWebAppConfig {
       name: "azure-web-app-config.generateBicep",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = persistConfigBicepPlans(inputs.projectPath, {
-          Modules: { azureWebAppConfig: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
+        const bicep: Bicep = {
+          type: "bicep",
+          Configuration: {
+            Modules: { azureWebAppConfig: "1" },
+            Orchestration: "1",
+          },
+        };
+        return ok([bicep]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-        if (!webAppComponent) return ok({});
-
+        if (!webAppComponent) return ok([]);
         const templateContext: any = {};
         templateContext.connections = webAppComponent?.connections || [];
         for (const ref of this.references) {
@@ -85,10 +83,11 @@ export class AzureWebAppConfig {
           "azureWebApp.config.orchestration.bicep"
         );
         const orch = !webAppComponent ? await fs.readFile(orchPath, "utf-8") : undefined;
-        const armTemplate: Bicep = {
+        const bicep: Bicep = {
+          type: "bicep",
           Configuration: { Modules: { azureWebAppConfig: module }, Orchestration: orch },
         };
-        return ok(armTemplate);
+        return ok([bicep]);
       },
     };
     return ok(action);

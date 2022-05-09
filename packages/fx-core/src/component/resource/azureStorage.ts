@@ -14,7 +14,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { persistProvisionBicepPlans } from "../bicepUtils";
 
 @Service("azure-storage")
 export class AzureStorageResource implements CloudResource {
@@ -34,23 +33,22 @@ export class AzureStorageResource implements CloudResource {
       name: "azure-sql.generateBicep",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = persistProvisionBicepPlans(inputs.projectPath, {
-          Modules: { azureStorage: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
-        const armTemplate: Bicep = {
+        const bicep: Bicep = {
+          type: "bicep",
           Provision: {
-            Modules: {},
+            Modules: { azureStorage: "1" },
           },
-          Configuration: {},
         };
-        return ok(armTemplate);
+        return ok([bicep]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const bicep: Bicep = {
+          type: "bicep",
+          Provision: {
+            Modules: { azureStorage: "1" },
+          },
+        };
+        return ok([bicep]);
       },
     };
     return ok(action);
@@ -63,14 +61,22 @@ export class AzureStorageResource implements CloudResource {
       name: "azure-storage.configure",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["configure azure storage (enable static web site)"]);
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "configure azure storage (enable static web site)",
+          },
+        ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log("configure azure storage (enable static web site)");
-        return ok(undefined);
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "configure azure storage (enable static web site)",
+          },
+        ]);
       },
     };
     return ok(action);
@@ -85,18 +91,21 @@ export class AzureStorageResource implements CloudResource {
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const deployInputs = inputs["azure-storage"];
         return ok([
-          `deploy azure storage with path: ${deployInputs.folder}, type: ${deployInputs.type}`,
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure storage with path: ${deployInputs.folder}, type: ${deployInputs.type}`,
+          },
         ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        const deployInputs = inputs["azure-storage"];
-        console.log(
-          `deploy azure storage with path: ${deployInputs.folder}, type: ${deployInputs.type}`
-        );
-        return ok(undefined);
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure storage with path: ${inputs.folder}, type: ${inputs.type}`,
+          },
+        ]);
       },
     };
     return ok(action);

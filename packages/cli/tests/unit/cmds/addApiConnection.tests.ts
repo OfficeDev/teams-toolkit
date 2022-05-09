@@ -70,7 +70,7 @@ describe("Add api-connector Command Tests", () => {
     expect(registeredCommands).deep.equals([
       "add <feature>",
       "bot",
-      "messaging-extension",
+      "message-extension",
       "tab",
       "azure-function",
       "azure-sql",

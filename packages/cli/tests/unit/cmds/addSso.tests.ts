@@ -82,7 +82,7 @@ describe("Add SSO Command Tests", function () {
     expect(registeredCommands).deep.equals([
       "add <feature>",
       "bot",
-      "messaging-extension",
+      "message-extension",
       "tab",
       "azure-function",
       "azure-sql",

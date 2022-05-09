@@ -15,6 +15,8 @@ import {
   SingleSelectQuestion,
   Platform,
   Stage,
+  StaticOptions,
+  MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -40,6 +42,7 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { isExistingTabApp } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
+import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -77,21 +80,21 @@ export class CICDPluginV2 implements ResourcePlugin {
       type: "group",
     });
 
-    const whichProvider = new QTreeNode({
+    const whichProvider: SingleSelectQuestion = {
       name: questionNames.Provider,
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: getLocalizedString("plugins.cicd.whichProvider.title"),
       default: githubOption.id,
-    });
+    };
 
-    const whichTemplate = new QTreeNode({
+    const whichTemplate: MultiSelectQuestion = {
       name: questionNames.Template,
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
       title: getLocalizedString("plugins.cicd.whichTemplate.title"),
       default: [ciOption.id],
-    });
+    };
 
     // TODO: add support for VS/.Net Projects.
     if (inputs.platform === Platform.VSCode) {
@@ -107,19 +110,57 @@ export class CICDPluginV2 implements ResourcePlugin {
         );
       }
 
+      const existingInstance = await ExistingTemplatesStat.getInstance(
+        inputs.projectPath!,
+        envProfilesResult.value
+      );
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
+        dynamicOptions: (inputs: Inputs): StaticOptions => {
+          // Remove the env items in which all combinations of templates are scaffolded/existing.
+          return envProfilesResult.value.filter((envName: string) => {
+            return (
+              existingInstance.existence.has(envName) && !existingInstance.existence.get(envName)
+            );
+          });
+        },
         skipSingleOption: true,
       };
-      whichEnvironment.staticOptions = envProfilesResult.value;
-      cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
-    }
 
-    cicdWorkflowQuestions.addChild(whichProvider);
-    cicdWorkflowQuestions.addChild(whichTemplate);
+      whichProvider.dynamicOptions = (inputs: Inputs): StaticOptions => {
+        const envName = inputs[questionNames.Environment];
+        return [githubOption.id, azdoOption.id, jenkinsOption.id].filter((provider) => {
+          const key = ExistingTemplatesStat.genKey(envName, provider);
+          return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
+        });
+      };
+
+      whichTemplate.dynamicOptions = (inputs: Inputs): StaticOptions => {
+        const envName = inputs[questionNames.Environment];
+        const provider = inputs[questionNames.Provider];
+        return [ciOption.id, provisionOption.id, cdOption.id, publishOption.id].filter(
+          (template) => {
+            const key = ExistingTemplatesStat.genKey(envName, provider, template);
+            return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
+          }
+        );
+      };
+
+      // Link question nodes as a tree.
+      const whichProviderNode = new QTreeNode(whichProvider);
+      whichProviderNode.addChild(new QTreeNode(whichTemplate));
+      const whichEnvironmentNode = new QTreeNode(whichEnvironment);
+      whichEnvironmentNode.addChild(whichProviderNode);
+
+      cicdWorkflowQuestions.addChild(whichEnvironmentNode);
+    } else {
+      // For inputs.platform === CLI or CLI_HELP
+      cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
+      cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));
+    }
 
     return ok(cicdWorkflowQuestions);
   }

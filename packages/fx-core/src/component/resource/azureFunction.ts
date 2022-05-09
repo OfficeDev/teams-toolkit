@@ -11,10 +11,10 @@ import {
   MaybePromise,
   Bicep,
   InputsWithProjectPath,
+  Effect,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { persistProvisionBicepPlans } from "../bicepUtils";
 
 @Service("azure-function")
 export class AzureFunctionResource implements CloudResource {
@@ -38,23 +38,26 @@ export class AzureFunctionResource implements CloudResource {
       name: "azure-sql.generateBicep",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = persistProvisionBicepPlans(inputs.projectPath, {
-          Modules: { azureFunction: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
+        return ok([
+          {
+            type: "bicep",
+            Modules: { azureFunction: "1" },
+            Orchestration: "1",
+          },
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
+      ): Promise<Result<Effect[], FxError>> => {
         const bicep: Bicep = {
+          type: "bicep",
           Provision: {
             Modules: { azureFunction: "" },
             Orchestration: "",
           },
         };
-        return ok(bicep);
+        return ok([bicep]);
       },
     };
     return ok(action);
@@ -67,18 +70,25 @@ export class AzureFunctionResource implements CloudResource {
       name: "azure-function.configure",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["configure azure function"]);
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "config azure function",
+          },
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `configure azure function using appSettings: ${JSON.stringify(
-            inputs["azure-function.appSettings"]
-          )}`
-        );
-        return ok(undefined);
+      ): Promise<Result<Effect[], FxError>> => {
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: "config azure function",
+          },
+        ]);
       },
     };
     return ok(action);

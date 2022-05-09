@@ -5,6 +5,7 @@ import {
   Action,
   CloudResource,
   ContextV3,
+  Effect,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -29,12 +30,18 @@ export class Aad implements CloudResource {
       name: "aad.provision",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["provision aad"]);
+        return ok([
+          {
+            type: "service",
+            name: "M365",
+            remarks: "provision aad",
+          },
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      ): Promise<Result<Effect[], FxError>> => {
         console.log("provision aad");
         inputs.aad = {
           clientId: "mockM365ClientId",
@@ -42,7 +49,13 @@ export class Aad implements CloudResource {
           authAuthorityHost: "mockM365OauthAuthorityHost",
           tenantId: "mockM365TenantId",
         };
-        return ok(undefined);
+        return ok([
+          {
+            type: "service",
+            name: "M365",
+            remarks: "provision aad",
+          },
+        ]);
       },
     };
     return ok(action);
@@ -55,14 +68,25 @@ export class Aad implements CloudResource {
       name: "aad.configure",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([`configure aad`]);
+        return ok([
+          {
+            type: "service",
+            name: "M365",
+            remarks: "configure aad",
+          },
+        ]);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(`configure aad`);
-        return ok(undefined);
+      ): Promise<Result<Effect[], FxError>> => {
+        return ok([
+          {
+            type: "service",
+            name: "M365",
+            remarks: "config aad",
+          },
+        ]);
       },
     };
     return ok(action);

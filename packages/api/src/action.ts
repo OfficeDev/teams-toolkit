@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
+import { Bicep } from "./bicep";
 import { FxError } from "./error";
 import { QTreeNode } from "./qm/question";
-import { Json } from "./types";
+import { Json, ContextV3, MaybePromise } from "./types";
 import { InputsWithProjectPath } from "./v2/types";
-import { ContextV3, MaybePromise } from "./types";
 
 /**
  * Action is the basic concept to finish some lifecycle operation (create, provision, deploy, ...)
@@ -64,7 +64,7 @@ export interface FunctionAction {
   name: string;
   type: "function";
   inputs?: Json;
-  plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<string[], FxError>>;
+  plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
   /**
    * question is to define inputs of the task
    */
@@ -78,5 +78,29 @@ export interface FunctionAction {
   execute: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<any, FxError>>;
+  ) => MaybePromise<Result<Effect[], FxError>>;
 }
+
+/**
+ * create: create a new file if it does not exist; skip if it already exists
+ * replace: create a new file if it does not exist; replace the file with new content if it already exists
+ * append: create a new file with the content if it does not exist; append the content to the end of the file if it already exists
+ * delete: delete the file if it exists; skip if it does not exist;
+ */
+export type FileOperation = "create" | "replace" | "append" | "delete";
+
+export interface FileEffect {
+  type: "file";
+  filePath: string | string[];
+  operate?: FileOperation;
+  remarks?: string;
+}
+
+export interface CallServiceEffect {
+  type: "service";
+  name: string;
+  remarks?: string;
+  response?: string;
+}
+
+export type Effect = string | FileEffect | CallServiceEffect | Bicep;

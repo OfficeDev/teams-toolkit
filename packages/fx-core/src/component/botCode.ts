@@ -50,10 +50,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
         ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const language =
           inputs.language || context.projectSetting.programmingLanguage || "javascript";
@@ -89,7 +86,10 @@ export class BotCodeProvider implements SourceCodeProvider {
             }
           },
         });
-        return ok(undefined);
+        return ok([
+          "add component 'bot-code' in projectSettings",
+          `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
+        ]);
       },
     };
     return ok(action);

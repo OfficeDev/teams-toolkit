@@ -28,17 +28,21 @@ export class SpfxResource implements CloudResource {
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
-          `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`,
+          {
+            type: "service",
+            name: "sharepoint",
+            remarks: `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`,
+          },
         ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        console.log(
-          `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`
-        );
-        return ok(undefined);
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "sharepoint",
+            remarks: `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`,
+          },
+        ]);
       },
     };
     return ok(action);

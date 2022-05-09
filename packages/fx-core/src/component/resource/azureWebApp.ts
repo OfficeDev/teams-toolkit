@@ -17,7 +17,6 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getTemplatesFolder } from "../../folder";
-import { persistProvisionBicepPlans } from "../bicepUtils";
 @Service("azure-web-app")
 export class AzureWebAppResource implements CloudResource {
   readonly name = "azure-web-app";
@@ -44,16 +43,17 @@ export class AzureWebAppResource implements CloudResource {
       name: "azure-web-app.generateBicep",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const plans = persistProvisionBicepPlans(inputs.projectPath, {
-          Modules: { azureWebApp: "1" },
-          Orchestration: "1",
-        });
-        return ok(plans);
+        const bicep: Bicep = {
+          type: "bicep",
+          Provision: {
+            Modules: { azureWebApp: "1" },
+            Orchestration: "1",
+          },
+          Parameters: {},
+        };
+        return ok([bicep]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Bicep, FxError>> => {
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const pmPath = path.join(
           getTemplatesFolder(),
           "bicep",
@@ -66,13 +66,17 @@ export class AzureWebAppResource implements CloudResource {
         );
         const provisionModule = await fs.readFile(pmPath, "utf-8");
         const ProvisionOrch = await fs.readFile(poPath, "utf-8");
-        const armTemplate: Bicep = {
+        const bicep: Bicep = {
+          type: "bicep",
           Provision: {
             Modules: { azureWebApp: provisionModule },
             Orchestration: ProvisionOrch,
           },
+          Parameters: await fs.readJson(
+            path.join(getTemplatesFolder(), "bicep", "azureWebApp.parameters.json")
+          ),
         };
-        return ok(armTemplate);
+        return ok([bicep]);
       },
     };
     return ok(action);
@@ -86,17 +90,27 @@ export class AzureWebAppResource implements CloudResource {
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
-          `deploy azure web app in folder: ${path.join(
-            inputs.projectPath,
-            inputs["azure-web-app"].folder
-          )}`,
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure web app in folder: ${path.join(
+              inputs.projectPath,
+              inputs["azure-web-app"].folder
+            )}`,
+          },
         ]);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<undefined, FxError>> => {
-        return ok(undefined);
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure web app in folder: ${path.join(
+              inputs.projectPath,
+              inputs["azure-web-app"].folder
+            )}`,
+          },
+        ]);
       },
     };
     return ok(action);

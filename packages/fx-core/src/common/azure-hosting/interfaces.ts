@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export enum HostType {
+export enum ServiceType {
   AppService = "webapp",
   Function = "function",
   BotService = "botservice",

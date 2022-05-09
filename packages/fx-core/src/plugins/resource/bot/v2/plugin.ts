@@ -39,10 +39,12 @@ import {
   QuestionBotScenarioToPluginActRoles,
   CommonStrings,
   Commands,
+  HostType,
+  HostTypes,
 } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { CommandExecutionError } from "../errors";
-import { BicepConfigs, HostType } from "../../../../common/azure-hosting/interfaces";
+import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -52,13 +54,7 @@ export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     const workingPath = path.join(inputs.projectPath ?? "", "bot");
     const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    let hostType;
-    if (Array.isArray(hostTypeTriggers)) {
-      const hostTypes = hostTypeTriggers.map(
-        (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
-      );
-      hostType = hostTypes ? hostTypes[0] : undefined;
-    }
+    const hostType = this.resolveHostType(hostTypeTriggers);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
     const templates = this.getTemplates(ctx, inputs);
@@ -69,6 +65,17 @@ export class TeamsBotV2Impl {
     );
 
     return ok(Void);
+  }
+
+  private resolveHostType(hostTypeTriggers: string[]): HostType {
+    let hostType;
+    if (Array.isArray(hostTypeTriggers)) {
+      const hostTypes = hostTypeTriggers.map(
+        (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
+      );
+      hostType = hostTypes[0];
+    }
+    return hostType ? hostType : HostTypes.APP_SERVICE;
   }
 
   async generateResourceTemplate(
@@ -84,7 +91,7 @@ export class TeamsBotV2Impl {
       configs: bicepConfigs,
     };
 
-    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const hostTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
         const hosting = AzureHostingFactory.createHosting(hostType);
@@ -109,7 +116,7 @@ export class TeamsBotV2Impl {
       configs: bicepConfigs,
     };
 
-    const hostTypes = [this.resolveHostType(ctx), HostType.BotService];
+    const hostTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       hostTypes.map((hostType) => {
         const hosting = AzureHostingFactory.createHosting(hostType);
@@ -164,7 +171,9 @@ export class TeamsBotV2Impl {
   private getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
     const actRoles = this.resolveActRoles(ctx, inputs);
     const triggers = this.resolveTriggers(inputs);
-    const hostType = this.resolveHostType(ctx);
+    const hostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as HostType;
     const lang = this.resolveProgrammingLanguage(ctx);
     const isM365 = ctx.projectSetting?.isM365;
 
@@ -263,19 +272,18 @@ export class TeamsBotV2Impl {
     return actRoles;
   }
 
-  private resolveHostType(ctx: Context): HostType {
+  private resolveServiceType(ctx: Context): ServiceType {
     const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
     ] as string;
 
     switch (rawHostType) {
       case "app-service":
-        return HostType.AppService;
+        return ServiceType.AppService;
       case "azure-functions":
-        return HostType.Function;
-      default:
-        return HostType.AppService;
+        return ServiceType.Function;
     }
+    throw new Error("Invalid host type");
   }
 
   private resolveTriggers(inputs: Inputs): BotTrigger[] {
@@ -318,11 +326,11 @@ export class TeamsBotV2Impl {
           scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
           break;
         case PluginActRoles.Notification:
-          if (hostType === HostType.Function) {
+          if (hostType === HostTypes.AZURE_FUNCTIONS) {
             scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
             triggers.map((trigger) => scenarios.push(TriggerTemplateScenarioMappings[trigger]));
           }
-          if (hostType === HostType.AppService) {
+          if (hostType === HostTypes.APP_SERVICE) {
             scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
           }
           break;

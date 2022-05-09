@@ -4,15 +4,15 @@
 import { AzureFunctionHosting } from "./azureFunctionHosting";
 import { AzureHosting } from "./azureHosting";
 import { BotServiceHosting } from "./botServiceHosting";
-import { HostType } from "./interfaces";
+import { ServiceType } from "./interfaces";
 
 const HostingMap: { [key: string]: () => AzureHosting } = {
-  [HostType.Function]: () => new AzureFunctionHosting(),
-  [HostType.BotService]: () => new BotServiceHosting(),
+  [ServiceType.Function]: () => new AzureFunctionHosting(),
+  [ServiceType.BotService]: () => new BotServiceHosting(),
 };
 
 export class AzureHostingFactory {
-  static createHosting(hostType: HostType): AzureHosting {
+  static createHosting(hostType: ServiceType): AzureHosting {
     if (HostingMap[hostType] !== undefined) {
       return HostingMap[hostType]();
     }

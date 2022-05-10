@@ -66,4 +66,4 @@ Once deployed, you may want to distribute your application to your organization'
 
 ## Add Single Sign On feature
 
-Microsoft Teams has provided a mechanism to minimize the number of times users need to enter their sign in credentials and this is called single sign on. Teams Framework (TeamsFx) added support on top of this mechanism to help developers build single sign feature easily. For detail please refer to [Wiki](aka.ms/teamsfx-add-sso).
+Microsoft Teams has provided a mechanism to minimize the number of times users need to enter their sign in credentials and this is called single sign on. Teams Framework (TeamsFx) added support on top of this mechanism to help developers build single sign feature easily. For detail please refer to [Wiki](https://aka.ms/teamsfx-add-sso).

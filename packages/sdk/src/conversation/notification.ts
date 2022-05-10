@@ -438,12 +438,12 @@ export class NotificationBot {
       throw new Error("NotificationBot has not been initialized.");
     }
 
-    const references = (await this.conversationReferenceStore.getAll()).values();
+    const references = await this.conversationReferenceStore.getAll();
     const targets: TeamsBotInstallation[] = [];
     for (const reference of references) {
       // validate connection
       let valid = true;
-      this.adapter.continueConversation(reference, async (context) => {
+      await this.adapter.continueConversation(reference, async (context) => {
         try {
           // try get member to see if the installation is still valid
           await TeamsInfo.getPagedMembers(context, 1);
@@ -457,7 +457,7 @@ export class NotificationBot {
       if (valid) {
         targets.push(new TeamsBotInstallation(this.adapter, reference));
       } else {
-        this.conversationReferenceStore.delete(reference);
+        await this.conversationReferenceStore.delete(reference);
       }
     }
 

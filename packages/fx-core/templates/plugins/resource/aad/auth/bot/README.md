@@ -48,7 +48,7 @@ These folder contains three files as reference for sso implementation:
     ```
     with:
     ```
-    "build": "tsc --build && copyfiles public/*.html lib/",
+    "build": "tsc --build && copyfiles src/public/*.html lib/",
     ```
     By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
 1. After adding the following files, you need to create a new `teamsSsoBot` instance in `bot/src/index` file. 

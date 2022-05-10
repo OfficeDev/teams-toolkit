@@ -171,40 +171,16 @@ describe("Notification Middleware Tests - Node", () => {
     assert.deepStrictEqual(testStorage.items, {});
   });
 
-  it("onTurn should ignore bot messaged in channel (new)", async () => {
+  it("onTurn should correctly handle bot messaged in channel (new)", async () => {
     const testContext = {
       activity: {
         type: "message",
         channelId: "1",
-        conversation: {
-          id: "1",
-          conversationType: "channel",
-          tenantId: "a",
+        channelData: {
+          team: {
+            id: "X",
+          },
         },
-        recipient: {
-          id: "A",
-        },
-      },
-    };
-    await middleware.onTurn(testContext as any, async () => {});
-    assert.deepStrictEqual(testStorage.items, {});
-  });
-
-  it("onTurn should ignore bot messaged in channel (exist)", async () => {
-    testStorage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          conversationType: "channel",
-          tenantId: "a",
-        },
-      },
-    };
-    const testContext = {
-      activity: {
-        type: "message",
-        channelId: "xxxxxxxxx",
         conversation: {
           id: "1",
           conversationType: "channel",
@@ -217,10 +193,53 @@ describe("Notification Middleware Tests - Node", () => {
     };
     await middleware.onTurn(testContext as any, async () => {});
     assert.deepStrictEqual(testStorage.items, {
-      _a_1: {
+      _a_X: {
         channelId: "1",
         conversation: {
+          id: "X",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+      },
+    });
+  });
+
+  it("onTurn should correctly handle bot messaged in channel (exist)", async () => {
+    testStorage.items = {
+      _a_X: {
+        channelId: "1",
+        conversation: {
+          id: "X",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+      },
+    };
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "xxxxxxxxx",
+        channelData: {
+          team: {
+            id: "X",
+          },
+        },
+        conversation: {
           id: "1",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {
+      _a_X: {
+        channelId: "1",
+        conversation: {
+          id: "X",
           conversationType: "channel",
           tenantId: "a",
         },

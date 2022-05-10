@@ -18,7 +18,6 @@ import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { AzureWebAppResource } from "./azureWebApp";
-import { persistConfigBicepPlans } from "../utils";
 
 @Service("bot-service")
 export class BotServiceResource {

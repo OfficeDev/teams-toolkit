@@ -3,6 +3,7 @@
 
 import {
   Action,
+  Component,
   ConfigFolderName,
   ContextV3,
   err,
@@ -29,6 +30,7 @@ import "./bicep";
 import "./botCode";
 import "./connection";
 import { environmentManager } from "../core/environment";
+import { AzureStorageResource } from "./resource/azureStorage";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -182,15 +184,12 @@ export class TeamsfxCore {
             name: "bot-service",
             provision: true,
           });
-          // connect azure-sql to hosting component
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            hostingComponent.connections.push("azure-sql");
-          }
           const remarks = [
             `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
           ];
-          // connect to azure-sql
+          // connect azure-sql to hosting component
           if (getComponent(context.projectSetting, "azure-sql")) {
+            hostingComponent.connections.push("azure-sql");
             remarks.push(
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
@@ -208,7 +207,7 @@ export class TeamsfxCore {
       {
         name: "call:bot-code.generate",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "bot-code.generate",
       },
       {
@@ -219,19 +218,19 @@ export class TeamsfxCore {
       {
         name: `call:${inputs.hosting}.generateBicep`,
         type: "call",
-        required: false,
+        required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
       },
       {
         name: "call:bot-service.generateBicep",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "bot-service.generateBicep",
       },
       {
         name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
-        required: false,
+        required: true,
         targetAction: `${inputs.hosting}-config.generateBicep`,
       },
       {
@@ -343,7 +342,7 @@ export class TeamsfxCore {
       actions.push({
         name: "call:azure-web-app-config.generateBicep",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "azure-web-app-config.generateBicep",
       });
     }
@@ -352,7 +351,7 @@ export class TeamsfxCore {
       actions.push({
         name: "call:azure-function-config.generateBicep",
         type: "call",
-        required: false,
+        required: true,
         targetAction: "azure-function-config.generateBicep",
       });
     }
@@ -428,118 +427,102 @@ export class TeamsfxCore {
   //   };
   //   return ok(group);
   // }
-  // provision(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const resourcesToProvision = projectSettings.components.filter((r) => r.provision);
-  //   const provisionActions: Action[] = resourcesToProvision.map((r) => {
-  //     return {
-  //       type: "call",
-  //       name: `call:${r.name}.provision`,
-  //       required: false,
-  //       targetAction: `${r.name}.provision`,
-  //     };
-  //   });
-  //   const configureActions: Action[] = resourcesToProvision.map((r) => {
-  //     return {
-  //       type: "call",
-  //       name: `call:${r.name}.configure`,
-  //       required: false,
-  //       targetAction: `${r.name}.configure`,
-  //     };
-  //   });
-  //   const preProvisionStep: Action = {
-  //     type: "function",
-  //     name: "fx.preProvision",
-  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(["pre step before provision (tenant, subscription, resource group)"]);
-  //     },
-  //     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       inputs.solution = {
-  //         tenantId: "MockTenantId",
-  //         subscriptionId: "MockSubscriptionId",
-  //         resourceGroup: "MockResourceGroup",
-  //       };
-  //       return ok(undefined);
-  //     },
-  //   };
-  //   const provisionStep: Action = {
-  //     type: "group",
-  //     name: "resources.provision",
-  //     mode: "parallel",
-  //     actions: provisionActions,
-  //   };
-  //   const configureStep: Action = {
-  //     type: "group",
-  //     name: "resources.provision",
-  //     mode: "parallel",
-  //     actions: configureActions,
-  //   };
-  //   const deployBicepStep: Action = {
-  //     type: "call",
-  //     name: "call:bicep.deploy",
-  //     required: true,
-  //     targetAction: "bicep.deploy",
-  //   };
-  //   const prepareInputsForConfigure: Action = {
-  //     type: "function",
-  //     name: "prepare inputs for configuration stage",
-  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(["set inputs for configuration"]);
-  //     },
-  //     execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //       const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
-  //       const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
-  //       const aad = getComponent(projectSettings, "aad");
-  //       if (aad) {
-  //         if (teamsTab && teamsBot) {
-  //           inputs["aad"].m365ApplicationIdUri = `api://${
-  //             inputs[teamsTab.hosting!].endpoint
-  //           }/botid-${inputs["azure-bot"].botId}`;
-  //         } else if (teamsTab) {
-  //           inputs["aad"].m365ApplicationIdUri = `api://${
-  //             inputs[teamsTab.hosting!].endpoint
-  //           }`;
-  //         } else {
-  //           inputs["aad"].m365ApplicationIdUri = `api://botid-${inputs["azure-bot"].botId}`;
-  //         }
-  //       }
-  //       console.log("set inputs for configuration");
-  //       return ok(undefined);
-  //     },
-  //   };
-  //   const teamsBot = getComponent(projectSettings, "teams-bot") as Component;
-  //   const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
-  //   const manifestInputs: any = {};
-  //   if (teamsTab) manifestInputs.tabEndpoint = `{{${teamsTab.hosting}.endpoint}}`;
-  //   if (teamsBot) manifestInputs.botId = "{{bot-service.botId}}";
-  //   const provisionManifestStep: Action = {
-  //     type: "call",
-  //     name: "call:teams-manifest.provision",
-  //     required: true,
-  //     targetAction: "teams-manifest.provision",
-  //     inputs: {
-  //       "teams-manifest": manifestInputs,
-  //     },
-  //   };
-  //   const provisionSequences: Action[] = [
-  //     preProvisionStep,
-  //     provisionStep,
-  //     deployBicepStep,
-  //     prepareInputsForConfigure,
-  //     configureStep,
-  //     provisionManifestStep,
-  //   ];
-  //   const result: Action = {
-  //     name: "fx.provision",
-  //     type: "group",
-  //     actions: provisionSequences,
-  //   };
-  //   return ok(result);
-  // }
+
+  provision(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const resourcesToProvision = projectSettings.components.filter((r) => r.provision);
+    const provisionActions: Action[] = resourcesToProvision.map((r) => {
+      return {
+        type: "call",
+        name: `call:${r.name}.provision`,
+        required: false,
+        targetAction: `${r.name}.provision`,
+      };
+    });
+    const configureActions: Action[] = resourcesToProvision.map((r) => {
+      return {
+        type: "call",
+        name: `call:${r.name}.configure`,
+        required: false,
+        targetAction: `${r.name}.configure`,
+      };
+    });
+    const preProvisionStep: Action = {
+      type: "function",
+      name: "fx.preProvision",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(["pre step before provision (tenant, subscription, resource group)"]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        inputs.solution = {
+          tenantId: "MockTenantId",
+          subscriptionId: "MockSubscriptionId",
+          resourceGroup: "MockResourceGroup",
+        };
+        return ok(["pre step before provision (tenant, subscription, resource group)"]);
+      },
+    };
+    const provisionStep: Action = {
+      type: "group",
+      name: "resources.provision",
+      mode: "parallel",
+      actions: provisionActions,
+    };
+    const configureStep: Action = {
+      type: "group",
+      name: "resources.configure",
+      mode: "parallel",
+      actions: configureActions,
+    };
+    const deployBicepStep: Action = {
+      type: "call",
+      name: "call:bicep.deploy",
+      required: true,
+      targetAction: "bicep.deploy",
+    };
+    const prepareInputsForConfigure: Action = {
+      type: "function",
+      name: "fx.preConfigure",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([]);
+      },
+      execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const teamsTab = getComponent(projectSettings, "teams-tab") as Component;
+        const aad = getComponent(projectSettings, "aad");
+        if (aad) {
+          if (teamsTab) {
+            const tabEndpoint = context.envInfo?.state[teamsTab.hosting!].endpoint;
+            inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
+          }
+        }
+        return ok([]);
+      },
+    };
+    const provisionManifestStep: Action = {
+      type: "call",
+      name: "call:teams-manifest.provision",
+      required: true,
+      targetAction: "teams-manifest.provision",
+    };
+    const provisionSequences: Action[] = [
+      preProvisionStep,
+      provisionStep,
+      deployBicepStep,
+      prepareInputsForConfigure,
+      configureStep,
+      provisionManifestStep,
+    ];
+    const result: Action = {
+      name: "fx.provision",
+      type: "group",
+      actions: provisionSequences,
+    };
+    return ok(result);
+  }
 
   // build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
   //   const projectSettings = context.projectSetting as ProjectSettingsV3;

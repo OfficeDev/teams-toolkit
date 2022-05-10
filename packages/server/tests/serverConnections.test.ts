@@ -97,6 +97,23 @@ describe("serverConnections", () => {
     });
   });
 
+  it("deployTeamsAppManifestRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "executeUserTask", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.deployTeamsAppManifestRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
+
   it("buildArtifactsRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");

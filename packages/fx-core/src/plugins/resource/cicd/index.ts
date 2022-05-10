@@ -40,7 +40,7 @@ import {
 import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isExistingTabApp } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
 import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
@@ -106,12 +106,15 @@ export class CICDPluginV2 implements ResourcePlugin {
       const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
         throw new InternalError(
-          ["Failed to list multi env.", "Failed to list multi env."],
+          [
+            getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+            getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+          ],
           envProfilesResult.error
         );
       }
 
-      const existingInstance = await ExistingTemplatesStat.getInstance(
+      const existingInstance = ExistingTemplatesStat.getInstance(
         inputs.projectPath!,
         envProfilesResult.value
       );

@@ -23,10 +23,7 @@ export class ExistingTemplatesStat {
   public existence = new Map<string, boolean>([]);
   private envNames: string[];
   private projectPath: string;
-  static async getInstance(
-    projectPath: string,
-    envNames: string[]
-  ): Promise<ExistingTemplatesStat> {
+  static getInstance(projectPath: string, envNames: string[]): ExistingTemplatesStat {
     if (!ExistingTemplatesStat.instance) {
       ExistingTemplatesStat.instance = new ExistingTemplatesStat(projectPath, envNames);
     }

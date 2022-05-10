@@ -930,7 +930,7 @@ export async function getQuestionsForAddFeature(
     options.push(ApiConnectionOptionItem);
   }
 
-  const isCicdAddable = canAddCICDWorkflows();
+  const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }

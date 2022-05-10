@@ -2,7 +2,7 @@
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Bot.Connector.Authentication;
 
-namespace {{BlazorAppServer}};
+namespace {{ProjectName}};
 
 public class AdapterWithErrorHandler : CloudAdapter
 {

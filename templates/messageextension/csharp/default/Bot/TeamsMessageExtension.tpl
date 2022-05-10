@@ -5,7 +5,7 @@ using Microsoft.Bot.Schema.Teams;
 
 using Newtonsoft.Json.Linq;
 
-namespace {{BlazorAppServer}}.Bot;
+namespace {{ProjectName}}.Bot;
 
 public class TeamsMessageExtension : TeamsActivityHandler
 {

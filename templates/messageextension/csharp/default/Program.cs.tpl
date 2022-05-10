@@ -1,5 +1,5 @@
-using {{BlazorAppServer}};
-using {{BlazorAppServer}}.Bot;
+using {{ProjectName}};
+using {{ProjectName}}.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 

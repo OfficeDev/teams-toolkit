@@ -6,6 +6,7 @@ export enum ConfigurationKey {
   YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
   EnablePreviewFeatures = "enablePreviewFeatures",
+  Tunneling = "tunnelOptions",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -37,3 +38,8 @@ export enum AadManifestDeployConstants {
 
 export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
 export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
+
+export enum TeamsfxTunnelingServices {
+  Ngrok = "Ngrok",
+  MicrosoftTunneling = "Microsoft Tunneling (Preview)",
+}

@@ -77,6 +77,7 @@ export class FeatureFlagName {
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
+  static readonly MicrosoftTunneling = "TEAMSFX_MICROSOFT_TUNNELING";
 }
 
 export class ManifestVariables {

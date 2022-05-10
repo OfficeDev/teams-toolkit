@@ -26,7 +26,12 @@ import {
 } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
-import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
+import {
+  ConfigurationKey,
+  CONFIGURATION_PREFIX,
+  TeamsfxTunnelingServices,
+  UserState,
+} from "../constants";
 import { execSync } from "child_process";
 import * as versionUtil from "./versionUtil";
 import { TelemetryTriggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -257,6 +262,12 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
+
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  const tunneling = configuration.get<TeamsfxTunnelingServices>(ConfigurationKey.Tunneling);
+  if (tunneling === TeamsfxTunnelingServices.MicrosoftTunneling) {
+    process.env["TEAMSFX_MICROSOFT_TUNNELING"] = "true";
+  }
 
   // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
   process.env[FeatureFlags.Preview] = "true";

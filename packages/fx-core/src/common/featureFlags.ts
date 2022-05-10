@@ -35,3 +35,7 @@ export function isBotNotificationEnabled(): boolean {
 export function isPreviewFeaturesEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.Preview, false);
 }
+
+export function isMicrosoftTunnelingEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MicrosoftTunneling, false);
+}

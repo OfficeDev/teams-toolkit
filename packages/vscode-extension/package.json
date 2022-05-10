@@ -961,7 +961,7 @@
               },
               "ngrok": {
                 "type": "boolean",
-                "description": "Ensure Ngrok is installed and started."
+                "description": "Ensure tunneling tool is installed and started."
               },
               "devCert": {
                 "type": "boolean",
@@ -977,6 +977,19 @@
               "ngrok": true,
               "devCert": true
             }
+          },
+          "fx-extension.tunnelOptions": {
+            "type": "string",
+            "default": "Ngrok",
+            "markdownDescription": "This option is only used when the option **Ensure tunneling tool is installed and started** is checked.\n\nThe tunneling service is used for Teams bot app local debugging. **Microsoft Tunneling** service is in private preview and features are subject to changes. While in preview, only use it if you concern about security issues of ngrok.\n\nIf you choose to opt-in for the preview, fill out [this form](https://aka.ms/tunnels-signup) to on-board.",
+            "enum": [
+              "Ngrok",
+              "Microsoft Tunneling (Preview)"
+            ],
+            "enumDescriptions": [
+              "Use Ngrok tunneling service.",
+              "Use Microsoft Tunneling service (Preview)."
+            ]
           }
         }
       },

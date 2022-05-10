@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import {
-  defaultActionSeq,
   ScaffoldAction,
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../../common/template-utils/templatesActions";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "../errors";
+import { TemplateZipFallbackError, UnzipError } from "../errors";
 import { Logger } from "../logger";
 import { Messages } from "../resources/messages";
 

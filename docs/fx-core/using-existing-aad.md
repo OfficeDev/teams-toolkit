@@ -101,58 +101,26 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 
 1. Open Teams Toolkit extension and click on "Provision in the cloud". Wait until your project is successfully provisioned.
 
+### Upload Azure AD app manifest to Azure portal
 
-### Update permission for Azure AD app
-
-* If Teams Toolkit failed to update permission, there will be an alert says:
-
-  ```
-  Failed in step: Update permission for Azure AD app. You need to go to Azure Protal and mannually update the permission under "API permissions" for the provided Azure AD app.
-  ```
-
-  Please follow the instruction to update permission if you see the above message.
-
-1. Go to app's "API permissions" page, click "Add a permission" under "Configured permissions".
-
-1. Choose the permissions you want to add and click on "Add permissions".
-
-1. If the permission you added requires admin consent, you need to ask your tenant admin to consent the permission by click on "Grant admin consent for ${your-tenant}".
-
-
-### Update redirect uri for Azure AD app
-
-* If Teams Toolkit failed to update redirect uri, there will be an alert says:
+* If Teams Toolkit failed to update Azure AD app, there will be an alert says:
 
   ```
-  Failed in step: Update redirect uri for Azure AD app. You need to go to Azure Protal and mannually set "${redirectUri}" as "Redirect URIs" under "Authentication" for the provided Azure AD app.
+  Failed in step: Update AAD app. You need to go to Azure Protal and mannually update Azure AD app manifest for the provided Azure AD app.
   ```
 
-  Please follow the instruction to update redirect uri if you see the above message.
+   Please follow the instruction to update permission if you see the above message.
 
-1. Copy the **redirectUri** in the alert message. You will need it later.
+1. Open `templates/appPackage/aad.template.json`
 
-2. Go to app's "Authentication" page, and click on Add a platform.
-   * Select "Web".
-   * **Redirect URIs**: Paste the **redirectUri** you copied just now.
-   * **Front-channel logout URL**: Leave it empty.
-   * **Implicit grant and hybrid flows**: Leave all unclicked.
-   * Click on "Configure".
+1. Click on "preview" as shown below:
 
-3. Click on "Save" to save the changes.
+1. Select your env, and you manifest can be found under `build/appPackage/manifest.${env}.json`.
 
+1. Copy the content in the manifest file.
 
-### Update application id uri for Azure AD app
+1. Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 
-* If Teams Toolkit failed to update application id uri, there will be an alert says:
+1.  Select "App Registrations" and find your existing Azure AD app.
 
-  ```
-  Failed in step: Update application id uri for Azure AD app. You need to go to Azure Protal and mannually set "${applicationIdUri}" as "Application ID URI" under "Expose an API" for the provided Azure AD app.
-  ```
-
-  Please follow the instruction to update application id uri if you see the above message.
-
-1. Copy the **applicationIdUri** in the alert message. You will need it later.
-
-1. Go to app's "Expose an API" page, and click on the "Edit" button beside "Application ID URI" above "Scopes defined by this API".
-   * Paste the **applicationIdUri** you copied just now.
-   * Click on "Save".
+1. Go to app's "Manifest" page, paste the manifest content into the editor and Click `Save` to save the changes.

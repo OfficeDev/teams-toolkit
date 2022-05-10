@@ -17,6 +17,7 @@ import {
   Stage,
   StaticOptions,
   MultiSelectQuestion,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -114,23 +115,30 @@ export class CICDPluginV2 implements ResourcePlugin {
         inputs.projectPath!,
         envProfilesResult.value
       );
+      // Refresh status at the beginning of questions.
+      await existingInstance.scan();
+
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
-        dynamicOptions: async (inputs: Inputs): Promise<StaticOptions> => {
+        dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
           // Remove the env items in which all combinations of templates are scaffolded/existing.
-          return envProfilesResult.value.filter((envName: string) => {
+          const filteredEnvs = envProfilesResult.value.filter((envName: string) => {
             return (
               existingInstance.existence.has(envName) && !existingInstance.existence.get(envName)
             );
+          });
+
+          return filteredEnvs.map((envName) => {
+            return { id: envName, label: envName };
           });
         },
         skipSingleOption: true,
       };
 
-      whichProvider.dynamicOptions = async (inputs: Inputs): Promise<StaticOptions> => {
+      whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
         const envName = inputs[questionNames.Environment];
         return [githubOption, azdoOption, jenkinsOption].filter((provider) => {
           const key = ExistingTemplatesStat.genKey(envName, provider.id);
@@ -138,7 +146,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         });
       };
 
-      whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<StaticOptions> => {
+      whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
         const envName = inputs[questionNames.Environment];
         const provider = inputs[questionNames.Provider];
         return [ciOption, provisionOption, cdOption, publishOption].filter((template) => {

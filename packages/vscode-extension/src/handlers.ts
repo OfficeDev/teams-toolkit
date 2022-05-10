@@ -697,13 +697,13 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
+    await automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
 
     if (
       workspace.workspaceFolders &&
       workspace.workspaceFolders.length > 0 &&
-      result.value.func == AddSsoParameters.AddSso
+      result.value?.func == AddSsoParameters.AddSso
     ) {
       const capabilities = result.value.capabilities;
 
@@ -719,7 +719,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           await commands.executeCommand("markdown.preview.toggleLock");
         });
       }
-    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+    } else if (result.value?.func === UserTaskFunctionName.ConnectExistingApi) {
       const files: string[] = result.value.generatedFiles;
       for (const generatedFile of files) {
         workspace.openTextDocument(generatedFile).then((document) => {

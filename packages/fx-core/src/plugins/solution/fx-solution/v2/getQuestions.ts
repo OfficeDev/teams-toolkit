@@ -69,6 +69,7 @@ import { isExistingTabApp, isVSProject } from "../../../../common/projectSetting
 import {
   canAddApiConnection,
   canAddSso,
+  canAddCICDWorkflows,
   isAadManifestEnabled,
   isDeployManifestEnabled,
 } from "../../../../common/tools";
@@ -928,9 +929,8 @@ export async function getQuestionsForAddFeature(
   if (isApiConnectionAddable) {
     options.push(ApiConnectionOptionItem);
   }
-  const isCicdAddable = !(
-    inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)
-  );
+
+  const isCicdAddable = canAddCICDWorkflows();
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }

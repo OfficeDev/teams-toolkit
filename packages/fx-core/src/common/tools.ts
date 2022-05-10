@@ -563,6 +563,13 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
   );
 }
 
+// Conditions required to be met:
+// 1. Not (All templates were existing env x provider x templates)
+// 2. Not minimal app
+export function canAddCICDWorkflows(): boolean {
+  return true;
+}
+
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {

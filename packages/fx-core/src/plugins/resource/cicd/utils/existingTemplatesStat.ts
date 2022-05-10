@@ -29,7 +29,6 @@ export class ExistingTemplatesStat {
   ): Promise<ExistingTemplatesStat> {
     if (!ExistingTemplatesStat.instance) {
       ExistingTemplatesStat.instance = new ExistingTemplatesStat(projectPath, envNames);
-      await ExistingTemplatesStat.instance.scan();
     }
 
     return ExistingTemplatesStat.instance;
@@ -45,6 +44,7 @@ export class ExistingTemplatesStat {
     // (envName, provider, template) -> existing (true or false)
     // (envName,) -> allExisting (true or false)
     // (envName, provider) -> allExisting (true or false)
+    this.existence.clear();
     for (const envName of this.envNames) {
       let envAllExisting = true;
       for (const provider of [githubOption.id, azdoOption.id, jenkinsOption.id]) {

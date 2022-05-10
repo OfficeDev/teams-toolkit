@@ -10,7 +10,7 @@ import { NotificationTargetType } from "./interface";
 export function cloneConversation(
   conversation: Partial<ConversationReference>
 ): ConversationReference {
-  return Object.assign(<ConversationReference>{}, conversation);
+  return JSON.parse(JSON.stringify(conversation));
 }
 
 /**

@@ -322,6 +322,10 @@ export class FunctionPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
+    if (!this.needConfigure(ctx)) {
+      return ResultFactory.Success();
+    }
+
     await this.syncConfigFromContext(ctx);
 
     const functionAppName = this.getFunctionAppName();
@@ -578,6 +582,13 @@ export class FunctionPluginImpl {
     );
   }
 
+  private needConfigure(ctx: PluginContext): boolean {
+    const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
+      DependentPluginInfo.apimPluginName
+    );
+    return this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && !!apimConfig;
+  }
+
   private async getSite(
     ctx: PluginContext,
     client: WebSiteManagementClient,
@@ -594,38 +605,7 @@ export class FunctionPluginImpl {
     }
   }
 
-  private async updateAuthSetting(
-    ctx: PluginContext,
-    client: WebSiteManagementClient,
-    resourceGroupName: string,
-    functionAppName: string
-  ): Promise<void> {
-    const authSettings: SiteAuthSettings | undefined = this.collectFunctionAppAuthSettings(ctx);
-    if (authSettings) {
-      await runWithErrorCatchAndThrow(
-        new ConfigFunctionAppError(),
-        async () =>
-          await step(
-            StepGroup.PostProvisionStepGroup,
-            PostProvisionSteps.updateFunctionSettings,
-            async () =>
-              await client.webApps.updateAuthSettings(
-                resourceGroupName,
-                functionAppName,
-                authSettings
-              )
-          )
-      );
-    }
-    Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
-  }
-
   private collectFunctionAppSettings(ctx: PluginContext, site: Site): void {
-    const functionEndpoint: string = this.checkAndGet(
-      this.config.functionEndpoint,
-      FunctionConfigKey.functionEndpoint
-    );
-
     const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.apimPluginName
     );
@@ -639,48 +619,6 @@ export class FunctionPluginImpl {
 
       FunctionProvision.ensureFunctionAllowAppIds(site, [clientId]);
     }
-  }
-
-  private collectFunctionAppAuthSettings(ctx: PluginContext): SiteAuthSettings | undefined {
-    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-      DependentPluginInfo.aadPluginName
-    );
-    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-      DependentPluginInfo.frontendPluginName
-    );
-
-    if (
-      this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) &&
-      this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) &&
-      aadConfig &&
-      frontendConfig
-    ) {
-      const clientId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.aadClientId) as string,
-        "AAD client Id"
-      );
-      const oauthHost: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.oauthHost) as string,
-        "OAuth Host"
-      );
-      const tenantId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.tenantId) as string,
-        "tenant Id"
-      );
-      const applicationIdUri: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
-        "Application Id URI"
-      );
-
-      return FunctionProvision.constructFunctionAuthSettings(
-        clientId,
-        applicationIdUri,
-        oauthHost,
-        tenantId
-      );
-    }
-
-    return undefined;
   }
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {

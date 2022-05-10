@@ -1,4 +1,5 @@
-# Collaborating 
+# Collaborating for local-debug environment
+> This doc is for sharing local-debug environment, if you want to share remote environment with other developers, you can follow this [doc](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit#collaborating-on-teamsfx-project) for more information.
 
 Multiple developers collaborating on a Teams app should set up their own environments for development including unique [M365 Developer Tenants](https://developer.microsoft.com/en-us/microsoft-365/dev-program) and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. Our extension provide ability for developers to set up their own local-debug environment. **Every developer can simply press `F5` to start his own application locally.**
 

@@ -14,6 +14,7 @@ import * as fs from "fs-extra";
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import { it } from "../../commonlib/it";
 import * as chai from "chai";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
@@ -32,7 +33,11 @@ describe("Add capabilities", function () {
   it("tab project can add tab capability with correct manifest template", async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    if (isPreviewFeaturesEnabled()) {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
+    } else {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    }
 
     const manifest: TeamsAppManifest = await fs.readJSON(
       `${projectPath}/templates/appPackage/manifest.template.json`

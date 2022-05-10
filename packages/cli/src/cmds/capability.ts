@@ -10,6 +10,7 @@ import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/
 import {
   AzureSolutionQuestionNames as Names,
   isBotNotificationEnabled,
+  isPreviewFeaturesEnabled,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
@@ -105,8 +106,12 @@ abstract class CapabilityAddBase extends YargsCommand {
 export class CapabilityAddTab extends CapabilityAddBase {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Hello world webpages embedded in Microsoft Teams";
-  public readonly yargsHelp = "addCapability-TabNonSso";
+  public readonly description = isPreviewFeaturesEnabled()
+    ? "Hello world webpages embedded in Microsoft Teams"
+    : "Teams identity aware webpages embedded in Microsoft Teams";
+  public readonly yargsHelp = isPreviewFeaturesEnabled()
+    ? "addCapability-TabNonSso"
+    : "addCapability-Tab";
 
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
     return {

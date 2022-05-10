@@ -26,14 +26,6 @@ export const TabNewUIOptionItem: OptionItem = {
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-add-sso",
-  buttons: [
-    {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
 };
 
 export const BotOptionItem: OptionItem = {
@@ -259,6 +251,14 @@ export const SingleSignOnOptionItem: OptionItem = {
   label: `$(unlock) ${getLocalizedString("core.SingleSignOnOption.label")}`,
   detail: getLocalizedString("core.SingleSignOnOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
+  data: "https://aka.ms/teamsfx-add-sso",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const ApiConnectionOptionItem: OptionItem = {
@@ -266,6 +266,14 @@ export const ApiConnectionOptionItem: OptionItem = {
   label: `$(arrow-swap) ${getLocalizedString("core.ApiConnectionOption.label")}`,
   detail: getLocalizedString("core.ApiConnectionOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
+  data: "https://aka.ms/teamsfx-connect-api",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const CicdOptionItem: OptionItem = {

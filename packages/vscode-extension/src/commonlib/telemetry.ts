@@ -92,6 +92,10 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
+    if (properties[TelemetryProperty.ProjectId] === "unknown") {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -115,6 +119,10 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
+    if (properties[TelemetryProperty.ProjectId] === "unknown") {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -138,6 +146,10 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
+    if (properties[TelemetryProperty.ProjectId] === "unknown") {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();

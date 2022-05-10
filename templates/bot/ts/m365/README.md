@@ -1,10 +1,10 @@
-# How to use this M365 Messaging Extensions Search app
+# How to use this M365 Message Extensions Search app
 
-A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams and Outlook client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
+A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams and Outlook client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
-Messaging Extensions are implemented on top of the Bot support architecture within Teams.
+Message Extensions are implemented on top of the Bot support architecture within Teams.
 
-This is a simple search application with Messaging extension capabilities.
+This is a simple search application with Message extension capabilities.
 
 ![Search App Demo](./images/SearchAppDemo.gif)
 
@@ -78,7 +78,7 @@ Once deployed, you may want to distribute your application to your organization'
 - From Visual Studio Code: open the Teams Toolkit and click `Publish to Teams` or open the command palette and select: `Teams: Publish to Teams`.
 - From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
-## Play with Messaging Extension
+## Play with Message Extension
 
 This template provides the sample functionality:
 
@@ -86,20 +86,20 @@ This template provides the sample functionality:
 
 To trigger the function in Teams, there are multiple entry points:
 
-- `@mention` Your messaging extension, from the `search box area`.
+- `@mention` Your message extension, from the `search box area`.
 
   ![AtBotFromSearch](./images/AtBotFromSearch.png)
 
-- `@mention` your messaging extension from the `compose message area`.
+- `@mention` your message extension from the `compose message area`.
 
   ![AtBotFromMessage](./images/AtBotInMessage.png)
 
-- Click the `...` under compose message area, find your messaging extension.
+- Click the `...` under compose message area, find your message extension.
 
   ![ComposeArea](./images/ThreeDot.png)
 
 To trigger these functions in Outlook:
-- Click the "More apps" icon under compose email area, find your messaging extension.
+- Click the "More apps" icon under compose email area, find your message extension.
 
   ![InOutlook](./images/InOutlook.png)
 
@@ -111,6 +111,6 @@ To trigger these functions in Outlook:
 - [Bot Framework Documentation](https://docs.botframework.com/)
 - [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
 
-### Messaging Extension
+### Message Extension
 
 - [Search Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/search-commands/define-search-command)

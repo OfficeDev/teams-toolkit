@@ -12,7 +12,7 @@ import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import { expect } from "../utils";
 import Add from "../../../src/cmds/add";
 import mockedEnv from "mocked-env";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 
 describe("Add Command Tests", function () {
@@ -79,7 +79,23 @@ describe("Add Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add <feature>", "cicd", "sso"]);
+    expect(registeredCommands).deep.equals(
+      isPreviewFeaturesEnabled()
+        ? [
+            "add <feature>",
+            "sso-tab",
+            "tab",
+            "bot",
+            "message-extension",
+            "azure-function",
+            "azure-apim",
+            "azure-sql",
+            "azure-keyvault",
+            "sso",
+            "cicd",
+          ]
+        : ["add <feature>", "sso", "cicd"]
+    );
   });
 
   it("Add SSO", async () => {

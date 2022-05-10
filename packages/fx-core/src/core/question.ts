@@ -18,12 +18,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import {
-  getRootDirectory,
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-} from "../common/tools";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
@@ -89,10 +84,7 @@ export function createAppNameQuestion(validateProjectPathExistence = true): Text
           }
         }
         if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
-          let folder = previousInputs.folder as string;
-          if (previousInputs.platform === Platform.VSCode) {
-            folder = getRootDirectory();
-          }
+          const folder = previousInputs.folder as string;
           if (folder) {
             const projectPath = path.resolve(folder, appName);
             const exists = await fs.pathExists(projectPath);
@@ -289,7 +281,6 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     NotificationOptionItem,
     CommandAndResponseOptionItem,
-    ExistingTabOptionItem,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -298,6 +289,11 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
     M365SsoLaunchPageOptionItem,
     M365SearchAppOptionItem,
   ];
+
+  if (isExistingTabAppEnabled()) {
+    staticOptions.splice(2, 0, ExistingTabOptionItem);
+  }
+
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.titleNew"),

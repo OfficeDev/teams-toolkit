@@ -27,7 +27,6 @@ import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import {
@@ -39,7 +38,6 @@ import {
   ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
-import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
 import {
   PluginNames,
@@ -605,15 +603,6 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
   }
 
   return false;
-}
-
-export function getRootDirectory(): string {
-  const root = process.env[FeatureFlagName.rootDirectory];
-  if (root === undefined || root === "") {
-    return path.join(os.homedir(), ConstantString.rootFolder);
-  } else {
-    return path.resolve(root.replace("${homeDir}", os.homedir()));
-  }
 }
 
 export function isYoCheckerEnabled(): boolean {

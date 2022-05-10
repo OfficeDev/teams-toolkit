@@ -167,7 +167,6 @@ export enum TelemetryEvent {
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
   ClickLocalPreview = "click-local-preview",
-  ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",
@@ -192,6 +191,8 @@ export enum TelemetryEvent {
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
+
+  Deactivate = "deactivate",
 }
 
 export enum TelemetryProperty {

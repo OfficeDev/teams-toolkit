@@ -11,7 +11,7 @@ export class TeamsBot extends TeamsActivityHandler {
     super();
   }
 
-  // Messaging extension Code
+  // Message extension Code
   // Search.
   public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
     const searchQuery = query.parameters[0].value;

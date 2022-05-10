@@ -96,7 +96,8 @@ export class ResourceAdd extends YargsCommand {
 export class ResourceAddSql extends YargsCommand {
   public readonly commandHead = `azure-sql`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a new SQL database.";
+  public readonly description =
+    "An always-up-to-date relational database service built for the cloud";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-sql");
@@ -153,7 +154,8 @@ export class ResourceAddSql extends YargsCommand {
 export class ResourceAddApim extends YargsCommand {
   public readonly commandHead = `azure-apim`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a new API Managment service instance.";
+  public readonly description =
+    "A hybrid, multicloud management platform for APIs across all environments";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-apim");
@@ -228,7 +230,8 @@ export class ResourceAddApim extends YargsCommand {
 export class ResourceAddFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a new function app.";
+  public readonly description =
+    "A serverless, event-driven compute solution that allows you to write less code";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-function");
@@ -298,7 +301,7 @@ export class ResourceAddFunction extends YargsCommand {
 export class ResourceAddKeyVault extends YargsCommand {
   public readonly commandHead = `azure-keyvault`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a new Azure Key Vault service.";
+  public readonly description = "A cloud service for securely storing and accessing secrets";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-keyvault");

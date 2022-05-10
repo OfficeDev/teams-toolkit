@@ -287,6 +287,12 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   private toChoices<T>(option: StaticOptions, defaultValue?: T): [ChoiceOptions[], T | undefined] {
+    const labelClean = (label: string) => {
+      return label
+        .replace("$(browser)", "")
+        .replace("$(hubot)", "")
+        .replace("$(comment-discussion)", "");
+    };
     if (typeof option[0] === "string") {
       const choices = (option as string[]).map((op) => {
         return {
@@ -302,7 +308,7 @@ export class CLIUserInteraction implements UserInteraction {
         return {
           name: op.id,
           extra: {
-            title: op.label,
+            title: labelClean(op.label),
             description: op.description,
             detail: op.detail,
           },

@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
-import { CommandMessage, TriggerPatterns } from "./interface";
-import { TeamsFxBotCommandHandler } from "./interface";
+import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns } from "./interface";
 import { ConversationReferenceStore } from "./storage";
+import { cloneConversation } from "./utils";
 
 /**
  * @internal
@@ -44,6 +44,10 @@ export class NotificationMiddleware implements Middleware {
         await this.conversationReferenceStore.set(reference);
         break;
       }
+      case ActivityType.CurrentBotMessaged: {
+        await this.tryAddMessagedReference(context);
+        break;
+      }
       case ActivityType.CurrentBotUninstalled:
       case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
@@ -73,9 +77,30 @@ export class NotificationMiddleware implements Middleware {
       } else if (eventType === "teamRestored") {
         return ActivityType.TeamRestored;
       }
+    } else if (activityType === "message") {
+      return ActivityType.CurrentBotMessaged;
     }
 
     return ActivityType.Unknown;
+  }
+
+  private async tryAddMessagedReference(context: TurnContext): Promise<void> {
+    const reference = TurnContext.getConversationReference(context.activity);
+    const conversationType = reference?.conversation?.conversationType;
+    if (conversationType === "personal" || conversationType === "groupChat") {
+      if (!(await this.conversationReferenceStore.check(reference))) {
+        await this.conversationReferenceStore.set(reference);
+      }
+    } else if (conversationType === "channel") {
+      const teamId = context.activity?.channelData?.team?.id;
+      if (teamId !== undefined) {
+        const teamReference = cloneConversation(reference);
+        teamReference.conversation.id = teamId;
+        if (!(await this.conversationReferenceStore.check(teamReference))) {
+          await this.conversationReferenceStore.set(teamReference);
+        }
+      }
+    }
   }
 }
 

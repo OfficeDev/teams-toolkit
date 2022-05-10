@@ -153,7 +153,7 @@ If you can find your Azure AD app, please check your network status and try agai
 If you can not find your Azure AD app, please check whether you logged in with the correct account. You can also remove objectId from env.default.json file and then try again.
 
 ## aad.Compliance
-To improve the security of app registration,please refer to [Best Practices for app registration](
+To improve the security of app registration, please refer to [Best Practices for app registration](
 https://docs.microsoft.com/en-us/azure/active-directory/develop/security-best-practices-for-app-registration) to get detail. The following are several improvements.
 ### Use certificate credentials
 It is strongly recommended that you use x509 certificates as the only credential type for getting tokens for your application. For the Azure AD app created by the toolkit, you can use the certificate credentials.
@@ -161,3 +161,17 @@ It is strongly recommended that you use x509 certificates as the only credential
 
 Please refer to [this guide](https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform) to config the certificate for the Azure AD app.
 Please refer to this [code sample](https://github.com/OfficeDev/TeamsFx/tree/dev/packages/sdk#use-certificate-based-authentication-in-azure-function) to utilize the sdk to authenticate with certificate.
+
+## aad.CustomDomain
+After provision, you can find the default domain from `fx-resource-frontend-hosting.domain` in `states/state.{envName}.json`. To use custom domain instead of the default one, please follow the instruction as below.
+### Step #1 Config custom domain by CDN
+Please refer to the [Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain) to config custom domain.
+
+### Step #2 Update auth config
+Get the custom domain from `fx-resource-frontend-hosting.domain` in `states/state.{envName}.json`. Add auth field in `configs/config.{envName}.json` as below and replace the value of `frontendDomain` with the custom domain. 
+
+   ![update auth config](../images/fx-core/aad/update-auth-config.png)
+### (Optional) Step #3 Verify aad application publisher domain
+To show the aad application domain in the application's consent scenario, please refer to [this guide](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-configure-publisher-domain).
+After that, the custom domain will show in the application's consent screen as below.
+![update auth ](../images/fx-core/aad/publisher-domain.png)

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import sinon from "sinon";
 import yargs from "yargs";
 
@@ -33,6 +34,10 @@ describe("Register Commands Tests", function () {
     registerCommands(yargs);
     expect(registeredCommands).includes("account");
     expect(registeredCommands).includes("new");
+    if (!isPreviewFeaturesEnabled()) {
+      expect(registeredCommands).includes("capability");
+      expect(registeredCommands).includes("resource");
+    }
     expect(registeredCommands).includes("provision");
     expect(registeredCommands).includes("deploy");
     expect(registeredCommands).includes("package");

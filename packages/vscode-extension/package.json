@@ -1,6 +1,6 @@
 {
   "name": "ms-teams-vscode-extension",
-  "displayName": "Teams Toolkit (Preview)",
+  "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
   "version": "3.8.0",
   "publisher": "TeamsDevApp",
@@ -28,7 +28,7 @@
     "Azure",
     "M365"
   ],
-  "preview": true,
+  "preview": false,
   "categories": [
     "Azure",
     "Extension Packs",

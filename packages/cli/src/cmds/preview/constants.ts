@@ -150,3 +150,6 @@ export const installApp = {
       "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
 };
+
+export const m365TenantHintMessage =
+  "WARN: Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click https://aka.ms/teamsfx-m365-apps-prerequisites for more information about setting up dev environment for extending Teams apps across Microsoft 365.";

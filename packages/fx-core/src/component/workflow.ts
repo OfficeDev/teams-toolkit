@@ -26,7 +26,7 @@ import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
-import { merge } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import {
   fileEffectPlanStrings,
   persistBicep,
@@ -34,6 +34,7 @@ import {
   serviceEffectPlanString,
 } from "./utils";
 import fs from "fs-extra";
+import { getProjectSettingsPath } from "../core/middleware";
 
 export async function getAction(
   name: string,
@@ -197,6 +198,21 @@ export async function planAction(
 ): Promise<void> {
   if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
+    // ask question before plan
+    if (action.question) {
+      const getQuestionRes = await action.question(context, inputs);
+      if (getQuestionRes.isErr()) throw new Error(`get question error: ${action.name}`);
+      const node = getQuestionRes.value;
+      if (node) {
+        const validationRes = await traverse(
+          node,
+          inputs,
+          context.userInteraction,
+          context.telemetryReporter
+        );
+        if (validationRes.isErr()) throw validationRes.error;
+      }
+    }
     if (action.plan) {
       let plans: string[] = [];
       const planRes = await action.plan(context, inputs);
@@ -275,6 +291,7 @@ export async function executeFunctionAction(
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<void> {
+  // validate inputs
   if (action.question) {
     const getQuestionRes = await action.question(context, inputs);
     if (getQuestionRes.isErr()) throw new Error(`get question error: ${action.name}`);
@@ -352,4 +369,22 @@ export function getComponent(
   if (!projectSettings.components) return undefined;
   const results = projectSettings.components.filter((r) => r.name === resourceType);
   return results[0];
+}
+
+export async function runAction(
+  actionName: string,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<void> {
+  console.log(`------------------------run action: ${actionName} start!------------------------`);
+  const action = await getAction(actionName, context, inputs);
+  if (action) {
+    await planAction(action, context, cloneDeep(inputs));
+    await executeAction(action, context, inputs);
+    await fs.writeFile(
+      getProjectSettingsPath(inputs.projectPath),
+      JSON.stringify(context.projectSetting, undefined, 4)
+    );
+  }
+  console.log(`------------------------run action: ${actionName} finish!------------------------`);
 }

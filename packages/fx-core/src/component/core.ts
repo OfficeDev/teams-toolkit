@@ -48,6 +48,7 @@ import { SolutionError } from "../plugins";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common";
 import { getLocalizedString } from "../common/localizeUtils";
+import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -112,34 +113,11 @@ export class TeamsfxCore {
           targetAction: "env-manager.create",
           required: true,
         },
+        WriteProjectSettingsAction,
       ],
     };
     return ok(action);
   }
-  create(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const actions: Action[] = [
-      {
-        type: "call",
-        required: true,
-        targetAction: "fx.init",
-      },
-      {
-        type: "call",
-        required: true,
-        targetAction: "fx.add",
-      },
-    ];
-    const action: GroupAction = {
-      name: "fx.create",
-      type: "group",
-      actions: actions,
-    };
-    return ok(action);
-  }
-
   /**
    * 1. config bot in project settings
    * 2. generate bot source code
@@ -153,6 +131,7 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const actions: Action[] = [
+      LoadProjectSettingsAction,
       {
         name: "fx.configBot",
         type: "function",
@@ -253,6 +232,7 @@ export class TeamsfxCore {
         },
       },
     ];
+    actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "fx.addBot",
@@ -275,6 +255,7 @@ export class TeamsfxCore {
     const sqlComponent = getComponent(context.projectSetting, "azure-sql");
     const provisionType = sqlComponent ? "database" : "server";
     const actions: Action[] = [
+      LoadProjectSettingsAction,
       {
         name: "fx.configSql",
         type: "function",
@@ -365,6 +346,7 @@ export class TeamsfxCore {
         targetAction: "azure-function-config.generateBicep",
       });
     }
+    actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "fx.addSql",
@@ -654,6 +636,7 @@ export class TeamsfxCore {
       },
     };
     const provisionSequences: Action[] = [
+      LoadProjectSettingsAction,
       loadEnvStep,
       preProvisionStep,
       createTeamsAppStep,
@@ -664,6 +647,7 @@ export class TeamsfxCore {
       ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,
       updateTeamsAppStep,
       writeEnvStep,
+      WriteProjectSettingsAction,
     ];
     const result: Action = {
       name: "fx.provision",

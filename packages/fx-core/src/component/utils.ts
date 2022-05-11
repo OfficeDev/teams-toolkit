@@ -6,11 +6,13 @@ import {
   Bicep,
   CallServiceEffect,
   ConfigurationBicep,
+  ContextV3,
   err,
   FileEffect,
   FileOperation,
   FxError,
   ok,
+  ProjectSettingsV3,
   ProvisionBicep,
   Result,
   UserError,
@@ -20,8 +22,13 @@ import os from "os";
 import * as path from "path";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
+import { TOOLS } from "../core/globalVars";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import * as uuid from "uuid";
+import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
+import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -294,4 +301,28 @@ export function fileEffectPlanString(
       return remarks ? `create file: ${file} (${remarks})` : `create file: ${file}`;
     else return undefined;
   }
+}
+
+export function newProjectSettingsV3(): ProjectSettingsV3 {
+  const projectSettings: ProjectSettingsV3 = {
+    appName: "test",
+    projectId: uuid.v4(),
+    version: getProjectSettingsVersion(),
+    components: [],
+  };
+  return projectSettings;
+}
+
+export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 {
+  if (!projectSettings) projectSettings = newProjectSettingsV3();
+  const context: ContextV3 = {
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    cryptoProvider: new LocalCrypto(projectSettings?.projectId),
+    permissionRequestProvider: TOOLS.permissionRequest,
+    projectSetting: projectSettings,
+    manifestProvider: new DefaultManifestProvider(),
+  };
+  return context;
 }

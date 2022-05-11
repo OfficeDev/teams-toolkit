@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { LogProvider } from "@microsoft/teamsfx-api";
+
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import {
   Tunnel,
@@ -11,8 +13,6 @@ import {
   TunnelConnectionMode,
 } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import { v2, LogProvider } from "@microsoft/teamsfx-api";
-import { PluginNames } from "../../constants";
 import * as corePackage from "../../../../../../package.json";
 
 const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.name };
@@ -27,9 +27,14 @@ const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   ],
 };
 
-interface SolutionState {
+interface TunnelInfo {
   tunnelsClusterId?: string;
   tunnelsId?: string;
+}
+
+interface TunnelHostResult {
+  tunnelInfo: TunnelInfo;
+  portEndpoints: Map<number, string>;
 }
 
 export class MicrosoftTunnelingManager {
@@ -44,15 +49,16 @@ export class MicrosoftTunnelingManager {
   }
 
   /**
-   * Create the tunnel/ports and start the tunnel host. Returns when the host is up and running.
+   * Create the tunnel/ports and start the tunnel host. If requested, re-use the existing tunnel info.
+   * Returns when the host is up and running.
    * @returns key value pairs of port and the public URL for that port.
    */
   public async startTunnelHost(
-    localEnvInfo: v2.EnvInfoV2,
     ports: number[],
+    tunnelInfo?: TunnelInfo,
     logProvider?: LogProvider
-  ): Promise<Map<number, string>> {
-    const tunnelInstance = await this.ensureTunnelExist(localEnvInfo, ports);
+  ): Promise<TunnelHostResult> {
+    const tunnelInstance = await this.ensureTunnelExist(ports, tunnelInfo);
     await this.ensurePortsExist(tunnelInstance, ports);
 
     // TODO: Handle cases that host is already up. This happens when last host is not cleaned up (rare case).
@@ -66,7 +72,14 @@ export class MicrosoftTunnelingManager {
     // Start host. This is an non-blocking operations. It does not block on the host service.
     await this.tunnelHost.start(tunnelInstance);
 
-    return await this.getPortEndpoints(tunnelInstance, ports);
+    const portEndpoints = await this.getPortEndpoints(tunnelInstance, ports);
+    return {
+      portEndpoints: portEndpoints,
+      tunnelInfo: {
+        tunnelsClusterId: tunnelInstance.clusterId,
+        tunnelsId: tunnelInstance.tunnelId,
+      },
+    };
   }
 
   public async stopTunnelHost(): Promise<void> {
@@ -117,21 +130,15 @@ export class MicrosoftTunnelingManager {
    * Ensure tunnel exists. After this step:
    *  - the tunnel should exist in the service
    *  - the tunnel and cluster ID should exist in the config
-   * @param localEnvInfo a reference to the local env state. This may be updated on return.
+   * @param tunnelInfo If passed in, will re-use this tunnel.
    * @returns the tunnel created or retrieved.
    */
-  private async ensureTunnelExist(localEnvInfo: v2.EnvInfoV2, ports: number[]): Promise<Tunnel> {
-    if (!localEnvInfo.state[PluginNames.SOLUTION]) {
-      localEnvInfo.state[PluginNames.SOLUTION] = {};
-    }
-    // TODO: check type before converting to SolutionState
-    const solutionState: SolutionState = localEnvInfo.state[PluginNames.SOLUTION];
-
+  private async ensureTunnelExist(ports: number[], tunnelInfo?: TunnelInfo): Promise<Tunnel> {
     let tunnelInstance: Tunnel;
-    if (solutionState.tunnelsClusterId && solutionState.tunnelsId) {
+    if (tunnelInfo?.tunnelsClusterId && tunnelInfo?.tunnelsId) {
       const tunnelResult = await this.tunnelManagementClient.getTunnel({
-        tunnelId: solutionState.tunnelsId,
-        clusterId: solutionState.tunnelsClusterId,
+        tunnelId: tunnelInfo.tunnelsId,
+        clusterId: tunnelInfo.tunnelsClusterId,
       });
       if (tunnelResult === null) {
         // TODO: handle tunnel expiration
@@ -152,8 +159,6 @@ export class MicrosoftTunnelingManager {
         tunnelRequest,
         tunnelRequestOptions
       );
-      solutionState.tunnelsId = tunnelInstance.tunnelId;
-      solutionState.tunnelsClusterId = tunnelInstance.clusterId;
     }
     return tunnelInstance;
   }

@@ -6,11 +6,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import { MicrosoftTunnelingManager } from "../../../../../src/plugins/solution/fx-solution/debug/util/microsoftTunnelingManager";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
-import { Tunnel, TunnelConnectionMode, TunnelPort } from "@vs/tunnels-contracts";
-import { MockedV2Context } from "../../util";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
-import { environmentManager } from "../../../../../src/core/environment";
+import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 
 describe("MicrosoftTunnelingManager", () => {
@@ -49,20 +45,19 @@ describe("MicrosoftTunnelingManager", () => {
           }
         );
       const manager = new MicrosoftTunnelingManager(async () => "fake token");
-      const localEnvInfo: EnvInfoV2 = {
-        envName: environmentManager.getLocalEnvName(),
-        state: {}, // empty state.local.json
-        config: {},
-      };
 
       // Act
-      const portMapping = await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
+      const result = await manager.startTunnelHost([3978, 3000]);
 
       // Assert
-      chai.assert.deepEqual(Array.from(portMapping.entries()).sort(), [
+      chai.assert.deepEqual(Array.from(result.portEndpoints.entries()).sort(), [
         [3000, "3000 url"],
         [3978, "3978 url"],
       ]);
+      chai.assert.deepEqual(result.tunnelInfo, {
+        tunnelsClusterId: createdTunnelClusterId,
+        tunnelsId: createdTunnelId,
+      });
     });
 
     it("Re-use tunnel", async () => {
@@ -90,27 +85,25 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
+      const existingTunnelId = "testtunnel";
+      const existingTunnelClusterId = "testcluster";
       const manager = new MicrosoftTunnelingManager(async () => "fake token");
-      const localEnvInfo: EnvInfoV2 = {
-        envName: environmentManager.getLocalEnvName(),
-        state: {
-          [PluginNames.SOLUTION]: {
-            tunnelsId: "testtunnel",
-            tunnelsClusterId: "testcluster",
-          },
-        },
-        // empty state.local.json
-        config: {},
-      };
 
       // Act
-      const portMapping = await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
+      const result = await manager.startTunnelHost([3978, 3000], {
+        tunnelsClusterId: existingTunnelClusterId,
+        tunnelsId: existingTunnelId,
+      });
 
       // Assert
-      chai.assert.deepEqual(Array.from(portMapping.entries()).sort(), [
+      chai.assert.deepEqual(Array.from(result.portEndpoints.entries()).sort(), [
         [3000, "testtunnel-3000.testcluster.example.com"],
         [3978, "testtunnel-3978.testcluster.example.com"],
       ]);
+      chai.assert.deepEqual(result.tunnelInfo, {
+        tunnelsClusterId: existingTunnelClusterId,
+        tunnelsId: existingTunnelId,
+      });
     });
     it("Tunnel expiration", () => {});
     it("Need onboarding", () => {});
@@ -119,22 +112,7 @@ describe("MicrosoftTunnelingManager", () => {
 
   describe("stopTunnelsHost()", () => {
     const sandbox = sinon.createSandbox();
-    let ctx: MockedV2Context;
-    beforeEach(() => {
-      const projectSetting = {
-        appName: "test app",
-        projectId: "d984d788-6f33-476a-b6ec-d75867891ea7",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          hostType: "Azure",
-          capabilities: ["Bot"],
-          azureResources: [],
-          activeResourcePlugins: ["fx-resource-bot"],
-        },
-        programmingLanguage: "typescript",
-      };
-      ctx = new MockedV2Context(projectSetting);
-    });
+    beforeEach(() => {});
     afterEach(() => {
       sandbox.restore();
     });
@@ -163,20 +141,12 @@ describe("MicrosoftTunnelingManager", () => {
           }
         );
       const manager = new MicrosoftTunnelingManager(async () => "fake token");
-      const localEnvInfo: EnvInfoV2 = {
-        envName: environmentManager.getLocalEnvName(),
-        state: {
-          [PluginNames.SOLUTION]: {
-            tunnelsId: "testtunnel",
-            tunnelsClusterId: "testcluster",
-          },
-        },
-        // empty state.local.json
-        config: {},
-      };
 
       // Act
-      await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
+      await manager.startTunnelHost([3978, 3000], {
+        tunnelsClusterId: "test cluster",
+        tunnelsId: "test tunnel",
+      });
       await manager.stopTunnelHost();
 
       // Assert

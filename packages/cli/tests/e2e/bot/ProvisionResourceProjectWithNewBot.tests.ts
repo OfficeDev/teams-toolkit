@@ -23,7 +23,11 @@ import {
   readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  isBicepEnvCheckerEnabled,
+  isPreviewFeaturesEnabled,
+} from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
 
@@ -67,9 +71,13 @@ describe("Provision", function () {
       // Get context
       const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
+      // Only validate aad when preview flag is turned off
+      // since no sso enabled for bot under preview mode.
+      if (!isPreviewFeaturesEnabled()) {
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
+      }
 
       // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, env);
@@ -122,6 +130,6 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, !isPreviewFeaturesEnabled(), true, false);
   });
 });

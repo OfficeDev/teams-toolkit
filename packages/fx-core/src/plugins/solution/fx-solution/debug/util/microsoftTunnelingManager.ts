@@ -15,7 +15,7 @@ import {
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import * as corePackage from "../../../../../../package.json";
 
-const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.name };
+const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.version };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   entries: [
     {

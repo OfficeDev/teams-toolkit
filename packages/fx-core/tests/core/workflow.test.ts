@@ -154,17 +154,18 @@ describe("Workflow test for v3", () => {
     ]);
   });
 
-  it("fx.provision", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-    };
-    context.envInfo = newEnvInfoV3();
-    const action = await getAction("fx.provision", context, inputs);
-    assert.isDefined(action);
-    if (action) {
-      await runAction(action, context, inputs);
-    }
-    console.log(context.envInfo.state);
-  });
+  // it("fx.provision", async () => {
+  //   const inputs: InputsWithProjectPath = {
+  //     projectPath: projectPath,
+  //     platform: Platform.VSCode,
+  //   };
+  //   context.envInfo = newEnvInfoV3();
+  //   context.tokenProvider = tools.tokenProvider;
+  //   const action = await getAction("fx.provision", context, inputs);
+  //   assert.isDefined(action);
+  //   if (action) {
+  //     await runAction(action, context, inputs);
+  //   }
+  //   console.log(context.envInfo.state);
+  // });
 });

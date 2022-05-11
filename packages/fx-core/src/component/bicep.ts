@@ -21,7 +21,6 @@ import { getTemplatesFolder } from "../folder";
 import { doDeployArmTemplatesV3 } from "../plugins/solution/fx-solution/arm";
 @Service("bicep")
 export class BicepProvider {
-  readonly type = "bicep";
   readonly name = "bicep";
   init(
     context: ContextV3,

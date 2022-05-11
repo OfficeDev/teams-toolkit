@@ -164,7 +164,7 @@ Please refer to this [code sample](https://github.com/OfficeDev/TeamsFx/tree/dev
 
 ## aad.CustomDomain
 After provision, you can find the default domain from `fx-resource-frontend-hosting.domain` in `states/state.{envName}.json`. To use custom domain instead of the default one, please follow the instruction as below.
-### Step #1 Config custom domain by CDN
+### Step #1 Config Custom Domain by CDN
 #### Action 1 Note Frontend Info
 1. Open `.fx\states\state.{envName}.json` file
 2. Note the `domain` and find the resource group in `storageResourceId`.
@@ -194,11 +194,11 @@ After provision, you can find the default domain from `fx-resource-frontend-host
 1. Run "Teams - Provision in the cloud" and "Teams - Deploy to the cloud" or press F5 to start local debug.
 Please refer to the [Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain) to config custom domain.
 
-### Step #2 Update auth config
+### Step #2 Update Auth Config
 Get the custom domain from `fx-resource-frontend-hosting.domain` in `.fx\states\state.{envName}.json`. Add auth field in `.fx\configs\config.{envName}.json` as below and replace the value of `frontendDomain` with the custom domain. 
 
    ![update auth config](../images/fx-core/aad/update-auth-config.png)
-### (Optional) Step #3 Verify aad application publisher domain
+### (Optional) Step #3 Verify Azure AD App Publisher Domain
 To show the aad application domain in the application's consent scenario, please refer to [this guide](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-configure-publisher-domain).
 After that, the custom domain will show in the application's consent screen as below.
 ![update auth ](../images/fx-core/aad/publisher-domain.png)

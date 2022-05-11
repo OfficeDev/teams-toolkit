@@ -13,10 +13,9 @@ import {
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import { v2 } from "@microsoft/teamsfx-api";
 import { PluginNames } from "../../constants";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 const corePackage = require("../../../../../../package.json");
 
-const TeamsfxTunnelsUserAgent = { name: "teamsfx:" + corePackage.name, version: corePackage.name };
+const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.name };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   entries: [
     {
@@ -28,9 +27,7 @@ const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   ],
 };
 
-interface BotPluginState {
-  siteEndpoint?: string;
-  validDomain?: string;
+interface SolutionState {
   tunnelsClusterId?: string;
   tunnelsId?: string;
 }
@@ -123,18 +120,18 @@ export class MicrosoftTunnelingManager {
    * @param localEnvInfo a reference to the local env state. This may be updated on return.
    * @returns the tunnel created or retrieved.
    */
-  private async ensureTunnelExist(localEnvInfo: EnvInfoV2, ports: number[]): Promise<Tunnel> {
+  private async ensureTunnelExist(localEnvInfo: v2.EnvInfoV2, ports: number[]): Promise<Tunnel> {
     if (!localEnvInfo.state[PluginNames.SOLUTION]) {
       localEnvInfo.state[PluginNames.SOLUTION] = {};
     }
-    // TODO: check type before converting to BotPluginState
-    const botState: BotPluginState = localEnvInfo.state[PluginNames.SOLUTION];
+    // TODO: check type before converting to SolutionState
+    const solutionState: SolutionState = localEnvInfo.state[PluginNames.SOLUTION];
 
     let tunnelInstance: Tunnel;
-    if (botState.tunnelsClusterId && botState.tunnelsId) {
+    if (solutionState.tunnelsClusterId && solutionState.tunnelsId) {
       const tunnelResult = await this.tunnelManagementClient.getTunnel({
-        tunnelId: botState.tunnelsId,
-        clusterId: botState.tunnelsClusterId,
+        tunnelId: solutionState.tunnelsId,
+        clusterId: solutionState.tunnelsClusterId,
       });
       if (tunnelResult === null) {
         // TODO: handle tunnel expiration
@@ -155,8 +152,8 @@ export class MicrosoftTunnelingManager {
         tunnelRequest,
         tunnelRequestOptions
       );
-      botState.tunnelsId = tunnelInstance.tunnelId;
-      botState.tunnelsClusterId = tunnelInstance.clusterId;
+      solutionState.tunnelsId = tunnelInstance.tunnelId;
+      solutionState.tunnelsClusterId = tunnelInstance.clusterId;
     }
     return tunnelInstance;
   }

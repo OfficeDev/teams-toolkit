@@ -16,22 +16,7 @@ import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 describe("MicrosoftTunnelingManager", () => {
   describe("startTunnelsHost()", () => {
     const sandbox = sinon.createSandbox();
-    let ctx: MockedV2Context;
-    beforeEach(() => {
-      const projectSetting = {
-        appName: "test app",
-        projectId: "d984d788-6f33-476a-b6ec-d75867891ea7",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          hostType: "Azure",
-          capabilities: ["Bot"],
-          azureResources: [],
-          activeResourcePlugins: ["fx-resource-bot"],
-        },
-        programmingLanguage: "typescript",
-      };
-      ctx = new MockedV2Context(projectSetting);
-    });
+    beforeEach(() => {});
     afterEach(() => {
       sandbox.restore();
     });
@@ -63,7 +48,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager("fake token");
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
       const localEnvInfo: EnvInfoV2 = {
         envName: environmentManager.getLocalEnvName(),
         state: {}, // empty state.local.json
@@ -71,7 +56,7 @@ describe("MicrosoftTunnelingManager", () => {
       };
 
       // Act
-      const portMapping = await manager.startTunnelHost(ctx, localEnvInfo, [3978, 3000]);
+      const portMapping = await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
 
       // Assert
       chai.assert.deepEqual(Array.from(portMapping.entries()).sort(), [
@@ -105,7 +90,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager("fake token");
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
       const localEnvInfo: EnvInfoV2 = {
         envName: environmentManager.getLocalEnvName(),
         state: {
@@ -119,7 +104,7 @@ describe("MicrosoftTunnelingManager", () => {
       };
 
       // Act
-      const portMapping = await manager.startTunnelHost(ctx, localEnvInfo, [3978, 3000]);
+      const portMapping = await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
 
       // Assert
       chai.assert.deepEqual(Array.from(portMapping.entries()).sort(), [
@@ -177,7 +162,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager("fake token");
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
       const localEnvInfo: EnvInfoV2 = {
         envName: environmentManager.getLocalEnvName(),
         state: {
@@ -191,7 +176,7 @@ describe("MicrosoftTunnelingManager", () => {
       };
 
       // Act
-      await manager.startTunnelHost(ctx, localEnvInfo, [3978, 3000]);
+      await manager.startTunnelHost(localEnvInfo, [3978, 3000]);
       await manager.stopTunnelHost();
 
       // Assert

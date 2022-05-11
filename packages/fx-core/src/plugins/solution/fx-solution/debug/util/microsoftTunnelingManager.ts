@@ -11,9 +11,9 @@ import {
   TunnelConnectionMode,
 } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import { v2 } from "@microsoft/teamsfx-api";
+import { v2, LogProvider } from "@microsoft/teamsfx-api";
 import { PluginNames } from "../../constants";
-const corePackage = require("../../../../../../package.json");
+import * as corePackage from "../../../../../../package.json";
 
 const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.name };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
@@ -36,10 +36,10 @@ export class MicrosoftTunnelingManager {
   private tunnelManagementClient: TunnelManagementHttpClient;
   private tunnelHost: TunnelRelayTunnelHost | undefined;
 
-  constructor(tunnnelsAccessToken: string) {
+  constructor(getTunnelsAccessToken: () => Promise<string>) {
     this.tunnelManagementClient = new TunnelManagementHttpClient(
       TeamsfxTunnelsUserAgent,
-      async () => `Bearer ${tunnnelsAccessToken}`
+      async () => `Bearer ${await getTunnelsAccessToken()}`
     );
   }
 
@@ -48,9 +48,9 @@ export class MicrosoftTunnelingManager {
    * @returns key value pairs of port and the public URL for that port.
    */
   public async startTunnelHost(
-    ctx: v2.Context,
     localEnvInfo: v2.EnvInfoV2,
-    ports: number[]
+    ports: number[],
+    logProvider?: LogProvider
   ): Promise<Map<number, string>> {
     const tunnelInstance = await this.ensureTunnelExist(localEnvInfo, ports);
     await this.ensurePortsExist(tunnelInstance, ports);
@@ -60,7 +60,7 @@ export class MicrosoftTunnelingManager {
     this.tunnelHost = new TunnelRelayTunnelHost(this.tunnelManagementClient);
     this.tunnelHost.trace = (level, eventId, msg, err) => {
       // TODO: handle verbose log by passing in log interface.
-      ctx.logProvider.info("MicrosoftTunnelsSDK: " + msg);
+      logProvider?.info("MicrosoftTunnelsSDK: " + msg);
     };
 
     // Start host. This is an non-blocking operations. It does not block on the host service.

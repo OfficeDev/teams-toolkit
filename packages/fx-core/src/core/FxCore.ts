@@ -23,6 +23,7 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
+  InputsWithProjectPath,
   ok,
   Platform,
   ProjectConfig,
@@ -148,9 +149,8 @@ import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
 import { runAction } from "../component/workflow";
 import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
-import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
 import { createContextV3 } from "../component/utils";
-
+import "../component/core";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -371,82 +371,26 @@ export class FxCore implements v3.ICore {
       }
       projectPath = downloadRes.value;
     } else {
+      const context = createContextV3();
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
-
       const validateResult = jsonschema.validate(appName, {
         pattern: ProjectNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
         return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
       }
-
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
-      const folderExist = await fs.pathExists(projectPath);
-      if (folderExist) {
-        return err(new ProjectFolderExistError(projectPath));
+      await runAction("fx.init", context, inputs as InputsWithProjectPath);
+      const feature = inputs.capabilities;
+      if (feature === BotOptionItem.id) {
+        inputs.hosting = "azure-web-app";
+        inputs.scenario = TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
       }
-      await fs.ensureDir(projectPath);
-      await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-
-      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-
-      // init
-      const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
-        ...inputs,
-        folder: projectPath,
-        projectPath: projectPath,
-      };
-      const initRes = await this._init(initInputs, ctx);
-      if (initRes.isErr()) {
-        return err(initRes.error);
-      }
-      // persist projectSettings.json
-      ctx.projectSettings!.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-      ctx.projectSettings!.isFromSample = false;
-      const projectSettingsPath = getProjectSettingsPath(projectPath);
-      await fs.writeFile(projectSettingsPath, JSON.stringify(ctx.projectSettings!, null, 4));
-      if (!inputs.existingAppConfig?.isCreatedFromExistingApp) {
-        // addFeature
-        const features: string[] = [];
-        if (!isAadManifestEnabled() && !capabilities.includes(TabSPFxItem.id)) {
-          features.push(BuiltInFeaturePluginNames.aad);
-        }
-        if (
-          isAadManifestEnabled() &&
-          (capabilities.includes(TabSsoItem.id) || capabilities.includes(BotSsoItem.id))
-        ) {
-          features.push(BuiltInFeaturePluginNames.aad);
-        }
-        if (inputs.platform === Platform.VS) {
-          features.push(BuiltInFeaturePluginNames.dotnet);
-        } else {
-          if (capabilities.includes(TabOptionItem.id)) {
-            features.push(BuiltInFeaturePluginNames.frontend);
-          } else if (capabilities.includes(TabSPFxItem.id)) {
-            features.push(BuiltInFeaturePluginNames.spfx);
-          }
-          if (
-            capabilities.includes(BotOptionItem.id) ||
-            capabilities.includes(MessageExtensionItem.id) ||
-            capabilities.includes(NotificationOptionItem.id) ||
-            capabilities.includes(CommandAndResponseOptionItem.id)
-          ) {
-            features.push(BuiltInFeaturePluginNames.bot);
-          }
-        }
-        const addFeatureInputs: v3.SolutionAddFeatureInputs = {
-          ...inputs,
-          projectPath: projectPath,
-          features: features,
-        };
-        const addFeatureRes = await this.addFeature(addFeatureInputs);
-        if (addFeatureRes.isErr()) {
-          return err(addFeatureRes.error);
-        }
-      }
+      delete inputs.folder;
+      await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
@@ -896,51 +840,20 @@ export class FxCore implements v3.ICore {
     }
     return err(FunctionRouterError(func));
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    LocalSettingsLoaderMW,
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
   async executeUserTaskV3(
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
-    setCurrentStage(Stage.userTask);
-    inputs.stage = Stage.userTask;
-    const namespace = func.namespace;
-    const array = namespace ? namespace.split("/") : [];
-    if ("" !== namespace && array.length > 0) {
-      if (!ctx || !ctx.solutionV3 || !ctx.envInfoV3) {
-        const name = undefinedName(
-          [ctx, ctx?.solutionV3, ctx?.envInfoV3],
-          ["ctx", "ctx.solutionV3", "ctx.envInfoV3"]
-        );
-        return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
+    if (func.method === "addFeature") {
+      const features = inputs.features;
+      if (features === "sql") {
+        const context = createContextV3();
+        await runAction("fx.addSql", context, inputs as InputsWithProjectPath);
       }
-      if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
-      if (ctx.solutionV3.executeUserTask) {
-        const res = await ctx.solutionV3.executeUserTask(
-          ctx.contextV2,
-          inputs,
-          func,
-          ctx.envInfoV3,
-          this.tools.tokenProvider
-        );
-        return res;
-      } else return err(FunctionRouterError(func));
     }
-    return err(FunctionRouterError(func));
+    return ok(undefined);
   }
   @hooks([
     ErrorHandlerMW,
@@ -1611,19 +1524,11 @@ export class FxCore implements v3.ICore {
   @hooks([ErrorHandlerMW, ConcurrentLockerMW])
   async addFeature(inputs: v2.InputsWithProjectPath): Promise<Result<Void, FxError>> {
     const context = createContextV3();
-    return await this._addFeature(inputs);
-  }
-
-  async _addFeature(
-    context: ContextV3,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void, FxError>> {
     const feature = inputs.features;
     if (feature === BotOptionItem.id) {
       inputs.hosting = "azure-web-app";
       inputs.scenario = TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
     }
-
     await runAction("fx.addBot", context, inputs);
     return ok(Void);
   }

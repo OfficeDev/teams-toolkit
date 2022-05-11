@@ -61,7 +61,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProjectV2") {
     getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "createProjectV3") {
-    getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
+    getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (

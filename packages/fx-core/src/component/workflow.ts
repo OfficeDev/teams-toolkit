@@ -231,12 +231,14 @@ export async function planAction(
       }
       let subStep = 1;
       for (const plan of plans) {
-        console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+        context.logProvider.info(
+          `---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`
+        );
       }
       inputs.step++;
     }
   } else if (action.type === "shell") {
-    console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
+    context.logProvider.info(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
@@ -323,7 +325,7 @@ export async function executeFunctionAction(
   } else {
     throw res.error;
   }
-  console.log(`##### executed [${inputs.step++}]: [${action.name}]`);
+  context.logProvider.info(`##### executed [${inputs.step++}]: [${action.name}]`);
 }
 
 export async function executeAction(
@@ -335,7 +337,7 @@ export async function executeAction(
   if (action.type === "function") {
     await executeFunctionAction(action, context, inputs);
   } else if (action.type === "shell") {
-    console.log(`##### shell executed [${inputs.step++}]: ${action.command}`);
+    context.logProvider.info(`##### shell executed [${inputs.step++}]: ${action.command}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
@@ -376,7 +378,9 @@ export async function runAction(
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<void> {
-  console.log(`------------------------run action: ${actionName} start!------------------------`);
+  context.logProvider.info(
+    `------------------------run action: ${actionName} start!------------------------`
+  );
   const action = await getAction(actionName, context, inputs);
   if (action) {
     await planAction(action, context, cloneDeep(inputs));
@@ -386,5 +390,7 @@ export async function runAction(
       JSON.stringify(context.projectSetting, undefined, 4)
     );
   }
-  console.log(`------------------------run action: ${actionName} finish!------------------------`);
+  context.logProvider.info(
+    `------------------------run action: ${actionName} finish!------------------------`
+  );
 }

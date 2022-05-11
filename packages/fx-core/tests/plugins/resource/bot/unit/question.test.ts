@@ -158,7 +158,7 @@ describe("Test question", () => {
       // Arrange
       const inputs: Inputs = { platform: Platform.VSCode };
       // Act
-      inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
+      inputs[AzureSolutionQuestionNames.Capabilities] = NotificationOptionItem.id;
       // Assert
       chai.assert.isUndefined(showNotificationTriggerCondition.validFunc(undefined, inputs));
     });
@@ -166,7 +166,7 @@ describe("Test question", () => {
       // Arrange
       const inputs: Inputs = { platform: Platform.VSCode };
       // Act
-      inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
+      inputs[AzureSolutionQuestionNames.Capabilities] = CommandAndResponseOptionItem.id;
       // Assert
       chai.assert.isTrue(
         showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined

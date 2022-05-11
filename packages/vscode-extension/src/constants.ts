@@ -4,7 +4,6 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
   YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
-  EnablePreviewFeatures = "enablePreviewFeatures",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

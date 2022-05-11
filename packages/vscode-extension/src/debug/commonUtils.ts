@@ -374,20 +374,27 @@ export async function getProjectComponents(): Promise<string | undefined> {
   try {
     const projectPath = ext.workspaceUri.fsPath;
     const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    const components: string[] = [];
+    const result: { [key: string]: any } = { components: [] };
     if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-      components.push("spfx");
+      result.components.push("spfx");
     }
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      components.push("frontend");
+      result.components.push("frontend");
     }
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      components.push("bot");
+      result.components.push(`bot`);
+      result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+        ? "azure-functions"
+        : "app-service";
+      result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
     }
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      components.push("backend");
+      result.components.push("backend");
     }
-    return components.join("+");
+    if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+      result.components.push("aad");
+    }
+    return JSON.stringify(result);
   } catch (error: any) {
     return undefined;
   }

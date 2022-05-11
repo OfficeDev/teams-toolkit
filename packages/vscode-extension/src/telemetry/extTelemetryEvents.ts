@@ -239,6 +239,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   IsSpfx = "is-spfx",
   IsM365 = "is-m365",
+  IsCreatingM365 = "is-creating-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",

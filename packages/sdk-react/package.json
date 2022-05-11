@@ -59,7 +59,7 @@
   "peerDependencies": {
     "@fluentui/react-northstar": "^0.60.1",
     "@microsoft/microsoft-graph-client": "^3.0.1",
-    "@microsoft/teamsfx": "^0.6.0",
+    "@microsoft/teamsfx": "^1.0.0",
     "msteams-react-base-component": "^3.1.1",
     "react": "^16.8.6"
   },

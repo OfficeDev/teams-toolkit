@@ -8,6 +8,10 @@ Azure Functions are a great way to add server-side behaviors to any Teams applic
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
+## Single Sign On
+
+Microsoft Teams has provided a mechanism to minimize the number of times users need to enter their sign in credentials and this is called single sign on. Teams Framework (TeamsFx) added support on top of this mechanism to help developers build single sign feature easily. To support authentication in Azure Function, Single Sign On will be added to your project when you add Azure Function. See [Wiki](https://aka.ms/teamsfx-add-sso) to learn more about Single Sign On feature.
+
 ## Develop
 
 The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Function.

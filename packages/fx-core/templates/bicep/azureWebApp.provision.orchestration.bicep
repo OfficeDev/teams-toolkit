@@ -8,7 +8,7 @@ module azureWebAppProvision './provision/azureWebApp.bicep' = {
 
 
 output azureWebAppOutput object = {
-  componentId: 'azure-web-app'
+  teamsFxPluginId: 'azure-web-app'
   sku: azureWebAppProvision.outputs.sku
   appName: azureWebAppProvision.outputs.appName
   domain: azureWebAppProvision.outputs.domain

@@ -11,12 +11,14 @@ import {
   InputsWithProjectPath,
   FileEffect,
   ProvisionContextV3,
+  err,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getTemplatesFolder } from "../folder";
+import { doDeployArmTemplatesV3 } from "../plugins/solution/fx-solution/arm";
 @Service("bicep")
 export class BicepProvider {
   readonly type = "bicep";
@@ -107,14 +109,21 @@ export class BicepProvider {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        ctx.envInfo.state["azure-web-app"] = ctx.envInfo.state["azure-web-app"] || {};
-        ctx.envInfo.state["azure-sql"] = ctx.envInfo.state["azure-sql"] || {};
-        ctx.envInfo.state["azure-web-app"].endpoint = "MockAzureWebAppEndpoint";
-        ctx.envInfo.state["azure-web-app"].resourceId = "MockAzureWebAppResourceId";
-        ctx.envInfo.state["azure-web-app"].domain = "MockAzureWebAppDomain";
-        ctx.envInfo.state["azure-sql"].sqlResourceId = "MockSqlResourceId";
-        ctx.envInfo.state["azure-sql"].sqlEndpoint = "MockSqlEndpoint";
-        ctx.envInfo.state["azure-sql"].sqlDatabaseName = "MockSqlDatabaseName";
+        const res = await doDeployArmTemplatesV3(
+          ctx,
+          inputs,
+          ctx.envInfo,
+          ctx.tokenProvider.azureAccountProvider
+        );
+        if (res.isErr()) return err(res.error);
+        // ctx.envInfo.state["azure-web-app"] = ctx.envInfo.state["azure-web-app"] || {};
+        // ctx.envInfo.state["azure-sql"] = ctx.envInfo.state["azure-sql"] || {};
+        // ctx.envInfo.state["azure-web-app"].endpoint = "MockAzureWebAppEndpoint";
+        // ctx.envInfo.state["azure-web-app"].resourceId = "MockAzureWebAppResourceId";
+        // ctx.envInfo.state["azure-web-app"].domain = "MockAzureWebAppDomain";
+        // ctx.envInfo.state["azure-sql"].sqlResourceId = "MockSqlResourceId";
+        // ctx.envInfo.state["azure-sql"].sqlEndpoint = "MockSqlEndpoint";
+        // ctx.envInfo.state["azure-sql"].sqlDatabaseName = "MockSqlDatabaseName";
         return ok([
           {
             type: "service",

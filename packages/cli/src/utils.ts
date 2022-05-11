@@ -400,6 +400,24 @@ export function getSettingsVersion(rootFolder: string | undefined): string | und
   return undefined;
 }
 
+// Only used for telemetry
+export function getIsM365(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk()) {
+        return `${result.value.isM365}`;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
 export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   if (!rootfolder) {
     return undefined;

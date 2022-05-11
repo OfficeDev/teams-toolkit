@@ -48,7 +48,7 @@
 
             Adapter = options.Adapter ?? throw new ArgumentException("Adapter is null.", nameof(options));
 
-            if (options.Notification != null && options.Notification.Enabled)
+            if (options.Notification != null)
             {
                 Notification = new NotificationBot(Adapter, options.Notification);
             }

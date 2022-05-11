@@ -6,11 +6,6 @@
     public class NotificationOptions
     {
         /// <summary>
-        /// Whether to enable notification or not. Default true.
-        /// </summary>
-        public bool Enabled { get; set; } = true;
-
-        /// <summary>
         /// The application ID of the bot.
         /// </summary>
         public string BotAppId { get; set; } = string.Empty;

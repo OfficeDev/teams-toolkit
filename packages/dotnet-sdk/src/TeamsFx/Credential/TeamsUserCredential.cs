@@ -192,7 +192,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <remarks>
     /// Can only be used within Teams.
     /// </remarks>
-    public async override ValueTask<Azure.Core.AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    public async override ValueTask<global::Azure.Core.AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
         await EnsureTeamsSdkInitialized().ConfigureAwait(false);
         var scopes = requestContext.Scopes;
@@ -213,7 +213,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <summary>
     /// Sync version is not supported now. Please use GetTokenAsync instead.
     /// </summary>
-    public override Azure.Core.AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+    public override global::Azure.Core.AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
@@ -331,7 +331,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <param name="ssoToken">token returned from Teams SDK</param>
     /// <param name="scopes">required scopes</param>
     /// <returns></returns>
-    private async ValueTask<Azure.Core.AccessToken> GetAccessTokenByOnBehalfOfFlow(string ssoToken, IEnumerable<string> scopes)
+    private async ValueTask<global::Azure.Core.AccessToken> GetAccessTokenByOnBehalfOfFlow(string ssoToken, IEnumerable<string> scopes)
     {
         _logger.LogTrace($"Get access token from authentication server with scopes: {string.Join(' ', scopes)}");
 
@@ -342,7 +342,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
                 .GetAccessToken(ssoToken, scopes)
                 .ConfigureAwait(false);
 
-            var accessToken = new Azure.Core.AccessToken(result.AccessToken, result.ExpiresOn);
+            var accessToken = new global::Azure.Core.AccessToken(result.AccessToken, result.ExpiresOn);
             return accessToken;
         }
         catch (MsalUiRequiredException) // Need user interaction

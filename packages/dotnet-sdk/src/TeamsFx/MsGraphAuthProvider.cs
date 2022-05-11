@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 namespace Microsoft.TeamsFx;
 
-using Azure.Core;
+using global::Azure.Core;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;

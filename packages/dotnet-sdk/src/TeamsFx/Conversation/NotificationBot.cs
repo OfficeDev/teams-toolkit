@@ -28,11 +28,6 @@
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (!options.Enabled)
-            {
-                throw new ArgumentException("Enabled should be true.", nameof(options));
-            }
-
             _botAppId = options.BotAppId;
 
             if (options.Storage != null)

@@ -13,7 +13,7 @@
         public BotAdapter Adapter { get; set; }
 
         /// <summary>
-        /// The notification options.
+        /// The notification options. Null means notification is disabled.
         /// </summary>
         public NotificationOptions Notification { get; set; }
     }

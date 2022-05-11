@@ -103,6 +103,7 @@ export class AzureSqlResource implements CloudResource {
         return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        context.envInfo!.state["azure-sql"].password = "MockSqlPassword";
         return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
       },
     };

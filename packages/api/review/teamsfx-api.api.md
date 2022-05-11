@@ -723,7 +723,7 @@ export interface FunctionAction {
     // (undocumented)
     name: string;
     // (undocumented)
-    plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
+    plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
     question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "function";
@@ -1317,6 +1317,14 @@ export interface ProvisionBicep {
     };
     // (undocumented)
     Orchestration?: string;
+}
+
+// @public (undocumented)
+export interface ProvisionContextV3 extends ContextV3 {
+    // (undocumented)
+    envInfo: EnvInfoV3;
+    // (undocumented)
+    tokenProvider: TokenProvider;
 }
 
 // @public (undocumented)

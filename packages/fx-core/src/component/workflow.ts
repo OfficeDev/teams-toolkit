@@ -197,26 +197,28 @@ export async function planAction(
 ): Promise<void> {
   if (!inputs.step) inputs.step = 1;
   if (action.type === "function") {
-    let plans: string[] = [];
-    const planRes = await action.plan(context, inputs);
-    if (planRes.isOk()) {
-      for (const effect of planRes.value) {
-        if (typeof effect === "string") {
-          plans.push(effect);
-        } else if (effect.type === "file") {
-          plans = plans.concat(fileEffectPlanStrings(effect));
-        } else if (effect.type === "service") {
-          plans.push(serviceEffectPlanString(effect));
-        } else if (effect.type === "bicep") {
-          plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+    if (action.plan) {
+      let plans: string[] = [];
+      const planRes = await action.plan(context, inputs);
+      if (planRes.isOk()) {
+        for (const effect of planRes.value) {
+          if (typeof effect === "string") {
+            plans.push(effect);
+          } else if (effect.type === "file") {
+            plans = plans.concat(fileEffectPlanStrings(effect));
+          } else if (effect.type === "service") {
+            plans.push(serviceEffectPlanString(effect));
+          } else if (effect.type === "bicep") {
+            plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+          }
         }
       }
+      let subStep = 1;
+      for (const plan of plans) {
+        console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
+      }
+      inputs.step++;
     }
-    let subStep = 1;
-    for (const plan of plans) {
-      console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
-    }
-    inputs.step++;
   } else if (action.type === "shell") {
     console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {

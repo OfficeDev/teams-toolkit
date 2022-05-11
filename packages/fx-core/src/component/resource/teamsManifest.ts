@@ -9,16 +9,26 @@ import {
   MaybePromise,
   InputsWithProjectPath,
   FileEffect,
+  ProvisionContextV3,
+  CloudResource,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { AppStudioPluginV3 } from "../../plugins/resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
-import { fileEffectPlanString } from "../utils";
 @Service("teams-manifest")
-export class TeamsManifestResource {
+export class TeamsManifestResource implements CloudResource {
   name = "teams-manifest";
+  outputs = {
+    teamsAppId: {
+      key: "teamsAppId",
+    },
+    tenantId: {
+      key: "tenantId",
+    },
+  };
+  finalOutputKeys = ["teamsAppId", "tenantId"];
   init(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -74,23 +84,30 @@ export class TeamsManifestResource {
     };
     return ok(action);
   }
-  // provision(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const action: Action = {
-  //     name: "teams-manifest.provision",
-  //     type: "function",
-  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(["provision teams manifest"]);
-  //     },
-  //     execute: async (
-  //       context: ContextV3,
-  //       inputs: InputsWithProjectPath
-  //     ): Promise<Result<undefined, FxError>> => {
-  //       return ok(undefined);
-  //     },
-  //   };
-  //   return ok(action);
-  // }
+  provision(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "teams-manifest.provision",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(["register teams app"]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state["teams-manifest"] = ctx.envInfo.state["teams-manifest"] || {};
+        const config = ctx.envInfo.state["teams-manifest"];
+        config.teamsAppId = "MockTeamsAppId";
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "register teams app",
+          },
+        ]);
+      },
+    };
+    return ok(action);
+  }
 }

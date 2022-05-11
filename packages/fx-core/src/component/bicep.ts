@@ -10,6 +10,7 @@ import {
   Result,
   InputsWithProjectPath,
   FileEffect,
+  ProvisionContextV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -105,16 +106,20 @@ export class BicepProvider {
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployInputs = inputs["bicep"];
-        console.log(`deploy bicep, ${JSON.stringify(deployInputs)}`);
-        inputs["azure-web-app"] = {
-          endpoint: "MockAzureWebAppEndpoint",
-        };
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state["azure-web-app"] = ctx.envInfo.state["azure-web-app"] || {};
+        ctx.envInfo.state["azure-sql"] = ctx.envInfo.state["azure-sql"] || {};
+        ctx.envInfo.state["azure-web-app"].endpoint = "MockAzureWebAppEndpoint";
+        ctx.envInfo.state["azure-web-app"].resourceId = "MockAzureWebAppResourceId";
+        ctx.envInfo.state["azure-web-app"].domain = "MockAzureWebAppDomain";
+        ctx.envInfo.state["azure-sql"].sqlResourceId = "MockSqlResourceId";
+        ctx.envInfo.state["azure-sql"].sqlEndpoint = "MockSqlEndpoint";
+        ctx.envInfo.state["azure-sql"].sqlDatabaseName = "MockSqlDatabaseName";
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy bicep, ${JSON.stringify(deployInputs)}`,
+            remarks: "deploy bicep",
           },
         ]);
       },

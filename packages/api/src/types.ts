@@ -284,5 +284,8 @@ export interface ContextV3 extends Context {
   envInfo?: EnvInfoV3;
   tokenProvider?: TokenProvider;
 }
-
+export interface ProvisionContextV3 extends ContextV3 {
+  envInfo: EnvInfoV3;
+  tokenProvider: TokenProvider;
+}
 export type MaybePromise<T> = T | Promise<T>;

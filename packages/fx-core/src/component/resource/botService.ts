@@ -10,6 +10,8 @@ import {
   ContextV3,
   MaybePromise,
   InputsWithProjectPath,
+  ProvisionContextV3,
+  CloudResource,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -20,7 +22,16 @@ import { getTemplatesFolder } from "../../folder";
 import { AzureWebAppResource } from "./azureWebApp";
 
 @Service("bot-service")
-export class BotServiceResource {
+export class BotServiceResource implements CloudResource {
+  outputs = {
+    botId: {
+      key: "botId",
+    },
+    botPassword: {
+      key: "botPassword",
+    },
+  };
+  finalOutputKeys = ["botId", "botPassword"];
   readonly name = "bot-service";
   generateBicep(
     context: ContextV3,
@@ -67,7 +78,7 @@ export class BotServiceResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const provision: Action = {
+    const action: Action = {
       name: "bot-service.provision",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -81,19 +92,20 @@ export class BotServiceResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         // create bot aad app by API call
-        inputs["bot-service"] = {
-          botId: "MockBotId",
-          botPassword: "MockBotPassword",
-        };
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state["bot-service"] = ctx.envInfo.state["bot-service"] || {};
+        const config = ctx.envInfo.state["bot-service"];
+        config.botId = "MockBotId";
+        config.botPassword = "MockBotPassword";
         return ok([
           {
             type: "service",
-            name: "azure",
+            name: "graph.microsoft.com",
             remarks: "create AAD app for bot service (botId, botPassword)",
           },
         ]);
       },
     };
-    return ok(provision);
+    return ok(action);
   }
 }

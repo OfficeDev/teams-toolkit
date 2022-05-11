@@ -10,6 +10,7 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  ProvisionContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -42,8 +43,8 @@ export class Aad implements CloudResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Effect[], FxError>> => {
-        console.log("provision aad");
-        inputs.aad = {
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state["aad"] = {
           clientId: "mockM365ClientId",
           clientSecret: "mockM365ClientId",
           authAuthorityHost: "mockM365OauthAuthorityHost",
@@ -80,6 +81,8 @@ export class Aad implements CloudResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Effect[], FxError>> => {
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state["aad"].m365ApplicationIdUri = inputs.m365ApplicationIdUri;
         return ok([
           {
             type: "service",

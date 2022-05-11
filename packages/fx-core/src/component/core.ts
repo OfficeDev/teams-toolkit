@@ -6,13 +6,13 @@ import {
   Component,
   ConfigFolderName,
   ContextV3,
-  err,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
   ProjectSettingsV3,
+  ProvisionContextV3,
   QTreeNode,
   Result,
   TextInputQuestion,
@@ -29,8 +29,7 @@ import "./resource";
 import "./bicep";
 import "./botCode";
 import "./connection";
-import { environmentManager } from "../core/environment";
-import { AzureStorageResource } from "./resource/azureStorage";
+import "./envManager";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -71,18 +70,6 @@ export class TeamsfxCore {
         await fs.ensureDir(inputs.projectPath);
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
         await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
-        const newEnvConfig = environmentManager.newEnvConfigData(
-          projectSettings.appName,
-          undefined
-        );
-        const writeEnvResult = await environmentManager.writeEnvConfig(
-          inputs.projectPath,
-          newEnvConfig,
-          environmentManager.getDefaultEnvName()
-        );
-        if (writeEnvResult.isErr()) {
-          return err(writeEnvResult.error);
-        }
         return ok([
           {
             type: "file",
@@ -100,6 +87,11 @@ export class TeamsfxCore {
         {
           type: "call",
           targetAction: "teams-manifest.init",
+          required: true,
+        },
+        {
+          type: "call",
+          targetAction: "env-manager.create",
           required: true,
         },
       ],
@@ -427,7 +419,6 @@ export class TeamsfxCore {
   //   };
   //   return ok(group);
   // }
-
   provision(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -457,10 +448,14 @@ export class TeamsfxCore {
         return ok(["pre step before provision (tenant, subscription, resource group)"]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        inputs.solution = {
+        const ctx = context as ProvisionContextV3;
+        ctx.envInfo.state.solution = {
           tenantId: "MockTenantId",
           subscriptionId: "MockSubscriptionId",
           resourceGroup: "MockResourceGroup",
+        };
+        ctx.envInfo.state["teams-manifest"] = {
+          tenantId: "MockTenantId",
         };
         return ok(["pre step before provision (tenant, subscription, resource group)"]);
       },
@@ -509,12 +504,22 @@ export class TeamsfxCore {
       targetAction: "teams-manifest.provision",
     };
     const provisionSequences: Action[] = [
+      {
+        type: "call",
+        targetAction: "env-manager.read",
+        required: true,
+      },
       preProvisionStep,
       provisionStep,
       deployBicepStep,
       prepareInputsForConfigure,
       configureStep,
       provisionManifestStep,
+      {
+        type: "call",
+        targetAction: "env-manager.write",
+        required: true,
+      },
     ];
     const result: Action = {
       name: "fx.provision",

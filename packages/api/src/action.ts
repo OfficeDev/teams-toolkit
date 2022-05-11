@@ -64,7 +64,7 @@ export interface FunctionAction {
   name: string;
   type: "function";
   inputs?: Json;
-  plan(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
+  plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
   /**
    * question is to define inputs of the task
    */

@@ -25,8 +25,8 @@ export class AzureWebAppResource implements CloudResource {
       key: "resourceId",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
     },
-    hostName: {
-      key: "hostName",
+    domain: {
+      key: "domain",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.domain",
     },
     endpoint: {

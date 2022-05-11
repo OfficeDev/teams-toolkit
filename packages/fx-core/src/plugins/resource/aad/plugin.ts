@@ -191,16 +191,18 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
-    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     if (manifest.id) {
-      if (!skip) {
+      const existingOauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
+
+      if (!skip || !existingOauth2PermissionScopeId) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadAppUsingManifest(
           telemetryMessage,
           manifest.id,
           config.password,
+          manifest.oauth2Permissions[0]?.id,
           ctx.graphTokenProvider,
           ctx.envInfo.envName
         );
@@ -214,6 +216,7 @@ export class AadAppForTeamsImpl {
           AadManifestMissingName.message()
         );
       }
+      config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
       await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
@@ -284,7 +287,7 @@ export class AadAppForTeamsImpl {
 
   public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
-      return await this.postProvisionUsingManifest(ctx, isLocalDebug);
+      return await this.postProvisionUsingManifest(ctx);
     }
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
@@ -342,16 +345,13 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public async postProvisionUsingManifest(
-    ctx: PluginContext,
-    isLocalDebug = false
-  ): Promise<AadResult> {
+  public async postProvisionUsingManifest(ctx: PluginContext): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.StartPostProvision,
       Messages.StartPostLocalDebug,
-      isLocalDebug
+      false
     );
 
     const skip = Utils.skipAADProvision(ctx, false);
@@ -368,7 +368,7 @@ export class AadAppForTeamsImpl {
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
 
     await AadAppClient.updateAadAppUsingManifest(
-      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
+      Messages.EndPostProvision.telemetry,
       manifest,
       skip
     );
@@ -381,7 +381,7 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
-      isLocalDebug,
+      false,
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
 

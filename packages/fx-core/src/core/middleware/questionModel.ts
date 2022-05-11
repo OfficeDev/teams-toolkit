@@ -48,7 +48,6 @@ import {
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
   ProgrammingLanguageQuestion,
-  ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
   RuntimeOptionDotNet,
   RuntimeOptionNodeJs,

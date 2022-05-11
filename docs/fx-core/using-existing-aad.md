@@ -5,7 +5,7 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 
 ### Create an Azure AD app
 
-* You may skip this part if you are using an existing Azure AD app.
+> You may skip this part if you already has an Azure AD app.
 
 1. Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 
@@ -17,9 +17,7 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 
 1. When the app is registered, you'll be taken to the app's "Overview" page. Copy the **Application (client) ID** and **Object ID**; we will need it later. Verify that the "Supported account types" is set to **My organization only**.
 
-### Create client secret for Azure AD app
-
-* You may skip this part if you are using an existing Azure AD app.
+### Create client secret for Azure AD app (Required)
 
 1. Go to app's "Certificates & secrets" page, select "Client Secret" and Click on "New client secret".
    * **Description**: The descirption of your client secret.
@@ -29,9 +27,9 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 1. When the client secret is added, press the copy button under the "Value" column to copy the **Client Secret**.
 
 
-### Create Access As User Scope for Azure AD app
+### Create Access As User Scope for Azure AD app (Optional)
 
-* You may skip this part if you are using an existing Azure AD app.
+> You can skip this part if your M365 account has permission to update this Azure AD app. We will create the scope for you.
 
 1. Go to app's "Expose an API" page, click on "Add a scope" under "Scopes defined by this API".
    * Click on "Save and continue".
@@ -69,9 +67,7 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 
 1. Go to app's "Certificates & secrets" page, press the copy button under the "Value" column to copy the **Client Secret**. Note: if you can not copy the secret, please follow the [instruction](#create-client-secret-for-azure-ad-app) to create a new client secret.
 
-1. Go to app's "Expose an API" page, make sure you have already add "access_as_user" scope under "Scopes defined by this API" and pre-auth the two Teams Client Ids. If not, please follow the [instruction](#create-access-as-user-scope-for-azure-ad-app).
-
-1. Go to app's "Manifest" page, copy the "id" under "oauth2Permissions" as **Access As User Scope ID**.
+1. Go to app's "Expose an API" page. If you have already add "access_as_user" scope under "Scopes defined by this API" and pre-auth the two Teams Client Ids, go to app's "Manifest" page, copy the "id" under "oauth2Permissions" as **Access As User Scope ID**.
 
 
 ### Set necessary info in TeamsFx project
@@ -95,7 +91,7 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
        "objectId": **Object ID**,
        "clientId": **Application (client) ID**,
        "clientSecret": {{ $env.AAD_APP_CLIENT_SECRET }},
-       "accessAsUserScopeId": **Access As User Scope ID**
+       (optional) "accessAsUserScopeId": **Access As User Scope ID**
      }
      ```
 
@@ -114,6 +110,8 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 1. Open `templates/appPackage/aad.template.json`
 
 1. Click on "preview" as shown below:
+
+   ![image](../images/fx-core/aad/preview-aad-manifest.png)
 
 1. Select your env, and you manifest can be found under `build/appPackage/manifest.${env}.json`.
 

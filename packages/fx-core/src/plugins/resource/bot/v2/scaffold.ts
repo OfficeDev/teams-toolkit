@@ -24,7 +24,7 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
       }
     },
     onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
-      Logger.info(error.toString());
+      Logger.error(error.toString());
       switch (action.name) {
         case ScaffoldActionName.FetchTemplatesUrlWithTag:
         case ScaffoldActionName.FetchTemplatesZipFromUrl:

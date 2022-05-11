@@ -189,8 +189,6 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
         workspaceFolder
       ) as string;
-      this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
-        (await utils.getProjectComponents(workspaceFolder)) ?? "";
 
       cliTelemetry
         .withRootFolder(workspaceFolder)

@@ -8,7 +8,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, BotValidator } from "../../commonlib";
+import { BotValidator } from "../../commonlib";
 
 import {
   execAsync,
@@ -16,18 +16,11 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setBotSkuNameToB1,
   cleanUp,
-  readContext,
   setBotSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import {
-  environmentManager,
-  isBicepEnvCheckerEnabled,
-  isPreviewFeaturesEnabled,
-} from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
 
@@ -70,14 +63,6 @@ describe("Provision", function () {
       // Validate provision
       // Get context
       const context = await readContextMultiEnv(projectPath, env);
-
-      // Only validate aad when preview flag is turned off
-      // since no sso enabled for bot under preview mode.
-      if (!isPreviewFeaturesEnabled()) {
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, AppStudioLogin);
-        await AadValidator.validate(aad);
-      }
 
       // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, env);
@@ -130,6 +115,6 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    await cleanUp(appName, projectPath, !isPreviewFeaturesEnabled(), true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 });

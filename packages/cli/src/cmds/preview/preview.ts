@@ -189,6 +189,8 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
         workspaceFolder
       ) as string;
+      this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
+        (await utils.getProjectComponents(workspaceFolder)) ?? "";
 
       cliTelemetry
         .withRootFolder(workspaceFolder)
@@ -275,7 +277,6 @@ export default class Preview extends YargsCommand {
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-
     if (hub !== constants.Hub.teams && !projectSettings.isM365) {
       throw NotM365Project();
     }

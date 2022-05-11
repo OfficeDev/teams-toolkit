@@ -114,6 +114,7 @@ export enum TelemetryProperty {
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
   PreviewPrerequisitesCheckTime = "preview-prerequisites-check-time",
+  PreviewProjectComponents = "preview-project-components",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",

@@ -12,8 +12,8 @@ import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
+import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 
 class TreeViewManager {
   private static instance: TreeViewManager;

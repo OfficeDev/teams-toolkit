@@ -254,9 +254,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
-  process.env[FeatureFlags.Preview] = "true";
-
   initializePreviewFeatureFlags();
 }
 

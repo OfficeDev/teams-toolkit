@@ -44,6 +44,8 @@ import {
   PluginNames,
   isValidProject,
   isConfigUnifyEnabled,
+  ProjectSettingsHelper,
+  LocalEnvManager,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
@@ -400,6 +402,24 @@ export function getSettingsVersion(rootFolder: string | undefined): string | und
   return undefined;
 }
 
+// Only used for telemetry
+export function getIsM365(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk()) {
+        return `${result.value.isM365}`;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
 export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   if (!rootfolder) {
     return undefined;
@@ -432,6 +452,38 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   }
 
   return undefined;
+}
+
+// for telemetry use only
+export async function getProjectComponents(workspaceFolder: string): Promise<string | undefined> {
+  try {
+    const localEnvManager = new LocalEnvManager();
+    const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+
+    const result: { [key: string]: any } = { components: [] };
+    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+      result.components.push("spfx");
+    }
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      result.components.push("frontend");
+    }
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      result.components.push(`bot`);
+      result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+        ? "azure-functions"
+        : "app-service";
+      result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
+    }
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      result.components.push("backend");
+    }
+    if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+      result.components.push("aad");
+    }
+    return JSON.stringify(result);
+  } catch (error: any) {
+    return undefined;
+  }
 }
 
 export function getProjectId(rootfolder: string | undefined): any {

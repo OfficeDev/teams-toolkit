@@ -317,7 +317,9 @@ export class AppStudioPluginImpl {
       return err(result.error);
     }
 
-    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"));
+    ctx.logProvider?.info(
+      getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", remoteTeamsAppId)
+    );
     await postProvisionProgress?.end(true);
     return ok(remoteTeamsAppId);
   }
@@ -530,7 +532,7 @@ export class AppStudioPluginImpl {
         return err(result.error);
       }
 
-      ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"));
+      ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
       ctx.ui
         ?.showMessage(
           "info",

@@ -26,7 +26,11 @@ import { Container } from "typedi";
 import { createV2Context, deepCopy } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  ExistingTabOptionItem,
+  TabSPFxItem,
+} from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -44,6 +48,7 @@ import {
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
   ProgrammingLanguageQuestion,
+  ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
   RuntimeOptionDotNet,
   RuntimeOptionNodeJs,
@@ -54,6 +59,7 @@ import {
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
+import { TeamsAppSolutionNameV2 } from "../../plugins/solution/fx-solution/v2/constants";
 
 /**
  * This middleware will help to collect input from question flow
@@ -505,10 +511,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   };
   runtimeNode.addChild(dotnetCapNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
-  }
+  inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
   inputs[CoreQuestionNames.ProgrammingLanguage] = "csharp";
 
   // only CLI need folder input
@@ -517,14 +520,14 @@ async function getQuestionsForCreateProjectWithDotNet(
   }
   runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
 
-  return ok(runtimeNode);
+  return ok(runtimeNode.trim());
 }
 
 //////V2 questions
 export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (isCLIDotNetEnabled() && inputs.platform === Platform.CLI) {
+  if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform)) {
     return getQuestionsForCreateProjectWithDotNet(inputs);
   } else {
     return getQuestionsForCreateProjectWithoutDotNet(inputs);

@@ -503,13 +503,13 @@ export const ScratchOptionNoVSC: OptionItem = {
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {
-  id: "runtime-nodejs",
+  id: "nodejs",
   label: "Node.js",
   detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
 };
 
 export const RuntimeOptionDotNet: OptionItem = {
-  id: "runtime-dotnet",
+  id: "dotnet",
   label: ".NET Core",
   detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
 };

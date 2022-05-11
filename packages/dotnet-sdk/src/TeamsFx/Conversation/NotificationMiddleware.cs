@@ -49,7 +49,7 @@
         private ActivityType ClassifyActivity(Activity activity)
         {
             var activityType = activity?.Type;
-            if ("installationUpdate".Equals(activityType, StringComparison.OrdinalIgnoreCase))
+            if (ActivityTypes.InstallationUpdate.Equals(activityType, StringComparison.OrdinalIgnoreCase))
             {
                 var action = activity.Action;
                 if ("add".Equals(action, StringComparison.OrdinalIgnoreCase))
@@ -61,7 +61,7 @@
                     return ActivityType.CurrentBotUninstalled;
                 }
             }
-            else if ("conversationUpdate".Equals(activityType, StringComparison.OrdinalIgnoreCase))
+            else if (ActivityTypes.ConversationUpdate.Equals(activityType, StringComparison.OrdinalIgnoreCase))
             {
                 var eventType = activity.GetChannelData<TeamsChannelData>()?.EventType;
                 if ("teamDeleted".Equals(eventType, StringComparison.OrdinalIgnoreCase))
@@ -73,7 +73,7 @@
                     return ActivityType.TeamRestored;
                 }
             }
-            else if ("message".Equals(activityType, StringComparison.OrdinalIgnoreCase))
+            else if (ActivityTypes.Message.Equals(activityType, StringComparison.OrdinalIgnoreCase))
             {
                 return ActivityType.CurrentBotMessaged;
             }

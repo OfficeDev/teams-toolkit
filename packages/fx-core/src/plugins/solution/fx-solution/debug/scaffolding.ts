@@ -28,8 +28,7 @@ import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
-
-const PackageJson = require("@npmcli/package-json");
+import { BotHostTypes } from "../../../../common";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -63,7 +62,9 @@ export async function _scaffoldLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
+  const isM365 = projectSetting.isM365;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -72,6 +73,7 @@ export async function _scaffoldLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
+    botHostType: includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);
@@ -123,18 +125,30 @@ export async function _scaffoldLocalDebugSettings(
           }
         );
       } else {
-        const launchConfigurations = (await useNewTasks(inputs.projectPath))
+        const launchConfigurations = isM365
+          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
           : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
-        const launchCompounds = (await useNewTasks(inputs.projectPath))
+        const launchCompounds = isM365
+          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
           ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
           : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-        const tasks = (await useNewTasks(inputs.projectPath))
+        const tasks = isM365
+          ? TasksNext.generateM365Tasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              programmingLanguage
+            )
+          : (await useNewTasks(inputs.projectPath))
           ? TasksNext.generateTasks(
               includeFrontend,
               includeBackend,
               includeBot,
+              includeFuncHostedBot,
               programmingLanguage
             )
           : Tasks.generateTasks(
@@ -178,43 +192,11 @@ export async function _scaffoldLocalDebugSettings(
             ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
             : undefined;
         }
-
-        // add 'npm install' scripts into root package.json
-        const packageJsonPath = inputs.projectPath;
-        let packageJson: any = undefined;
-        try {
-          packageJson = await PackageJson.load(packageJsonPath);
-        } catch (error) {
-          logProvider.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
-        }
-
-        if (packageJson !== undefined) {
-          const scripts = packageJson.content.scripts ?? {};
-          const installAll: string[] = [];
-
-          if (includeBackend) {
-            scripts["install:api"] = "cd api && npm install";
-            installAll.push("npm run install:api");
-          }
-          if (includeBot) {
-            scripts["install:bot"] = "cd bot && npm install";
-            installAll.push("npm run install:bot");
-          }
-          if (includeFrontend) {
-            scripts["install:tabs"] = "cd tabs && npm install";
-            installAll.push("npm run install:tabs");
-          }
-
-          scripts["installAll"] = installAll.join(" & ");
-
-          packageJson.update({ scripts: scripts });
-          await packageJson.save();
-        }
       }
 
       await fs.writeJSON(
         `${inputs.projectPath}/.vscode/settings.json`,
-        Settings.generateSettings(includeBackend),
+        Settings.generateSettings(includeBackend || includeFuncHostedBot),
         {
           spaces: 4,
           EOL: os.EOL,
@@ -250,6 +232,8 @@ async function scaffoldLocalSettingsJson(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource
@@ -257,12 +241,20 @@ async function scaffoldLocalSettingsJson(
       localSettings,
       includeBackend,
       includeBot,
-      includeFrontend
+      includeFrontend,
+      includeAAD,
+      includeSimpleAuth
     );
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   } else {
     // Initialize a local settings on scaffolding
-    localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
+    localSettings = localSettingsProvider.initV2(
+      includeFrontend,
+      includeBackend,
+      includeBot,
+      includeSimpleAuth,
+      includeAAD
+    );
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
   return localSettings;

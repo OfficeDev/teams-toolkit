@@ -9,49 +9,17 @@ import {
   ListPublishingCredentialsError,
   ZipDeployError,
   MessageEndpointUpdatingError,
-  MissingSubscriptionRegistrationError,
-  FreeServerFarmsQuotaError,
-  InvalidBotDataError,
+  RestartWebAppError,
+  DeployStatusError,
+  DeployTimeoutError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
-import { ErrorMessagesForChecking } from "./constants";
+import { waitSeconds } from "../../../common";
+import { DeployStatus } from "./constants";
 
 export class AzureOperations {
-  public static async CreateBotChannelRegistration(
-    botClient: AzureBotService,
-    resourceGroup: string,
-    botChannelRegistrationName: string,
-    msaAppId: string,
-    displayName?: string
-  ): Promise<void> {
-    let botResponse = undefined;
-    try {
-      botResponse = await botClient.bots.create(resourceGroup, botChannelRegistrationName, {
-        location: "global",
-        kind: "bot",
-        properties: {
-          displayName: displayName ?? botChannelRegistrationName,
-          endpoint: "",
-          msaAppId: msaAppId,
-        },
-      });
-    } catch (e) {
-      if (e.code === "MissingSubscriptionRegistration") {
-        throw new MissingSubscriptionRegistrationError();
-      } else if (e.code === "InvalidBotData") {
-        throw new InvalidBotDataError(e);
-      } else {
-        throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
-      }
-    }
-
-    if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-      throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION);
-    }
-  }
-
   public static async UpdateBotChannelRegistration(
     botClient: AzureBotService,
     resourceGroup: string,
@@ -106,32 +74,6 @@ export class AzureOperations {
 
     if (!channelResponse || !utils.isHttpCodeOkOrCreated(channelResponse._response.status)) {
       throw new ProvisionError(CommonStrings.MS_TEAMS_CHANNEL);
-    }
-  }
-
-  public static async CreateOrUpdateAppServicePlan(
-    webSiteMgmtClient: appService.WebSiteManagementClient,
-    resourceGroup: string,
-    appServicePlanName: string,
-    appServicePlan: appService.WebSiteManagementModels.AppServicePlan
-  ): Promise<void> {
-    let planResponse = undefined;
-    try {
-      planResponse = await webSiteMgmtClient.appServicePlans.createOrUpdate(
-        resourceGroup,
-        appServicePlanName,
-        appServicePlan
-      );
-    } catch (e) {
-      if (e.message?.includes(ErrorMessagesForChecking.FreeServerFarmsQuotaErrorFromAzure)) {
-        throw new FreeServerFarmsQuotaError(e);
-      } else {
-        throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN, e);
-      }
-    }
-
-    if (!planResponse || !utils.isHttpCodeOkOrCreated(planResponse._response.status)) {
-      throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN);
     }
   }
 
@@ -194,7 +136,7 @@ export class AzureOperations {
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: any
-  ): Promise<void> {
+  ): Promise<string> {
     let res = undefined;
     try {
       res = await axios.post(zipDeployEndpoint, zipBuffer, config);
@@ -202,8 +144,50 @@ export class AzureOperations {
       throw new ZipDeployError(e);
     }
 
-    if (!res || !utils.isHttpCodeOkOrCreated(res?.status)) {
+    if (!res || !utils.isHttpCodeAccepted(res?.status)) {
       throw new ZipDeployError();
+    }
+
+    return res.headers.location;
+  }
+
+  public static async CheckDeployStatus(location: string, config: any): Promise<void> {
+    let res = undefined;
+    for (let i = 0; i < DeployStatus.RETRY_TIMES; ++i) {
+      try {
+        res = await axios.get(location, config);
+      } catch (e) {
+        throw new DeployStatusError(e);
+      }
+
+      if (res) {
+        if (utils.isHttpCodeAccepted(res?.status)) {
+          await waitSeconds(DeployStatus.BACKOFF_TIME_S);
+        } else if (utils.isHttpCodeOkOrCreated(res?.status)) {
+          return;
+        } else {
+          throw new DeployStatusError();
+        }
+      }
+    }
+
+    throw new DeployTimeoutError();
+  }
+
+  public static async RestartWebApp(
+    webSiteMgmtClient: appService.WebSiteManagementClient,
+    resourceGroup: string,
+    siteName: string
+  ): Promise<void> {
+    let res = undefined;
+    try {
+      res = await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);
+    } catch (e) {
+      throw new RestartWebAppError(e);
+    }
+
+    if (!res || !utils.isHttpCodeOkOrCreated(res?._response.status)) {
+      throw new RestartWebAppError();
     }
   }
 }

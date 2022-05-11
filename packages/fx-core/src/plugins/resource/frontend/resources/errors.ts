@@ -5,6 +5,7 @@ import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 import { ConfigFolderName, FxError } from "@microsoft/teamsfx-api";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export enum ErrorType {
   User,
@@ -12,30 +13,45 @@ export enum ErrorType {
 }
 
 export const tips = {
-  checkLog: "Check log for more information.",
-  reScaffold: `Run 'Start A New Project' again.`,
-  doProvision: `Run 'Provision Resource' before this command.`,
-  doLogin: "Login to Azure.",
-  reLogin: "Sign out and login to Azure again.",
-  reProvision: `Run 'Provision Resource' again.`,
-  doNpmInstall: `Run 'npm install' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
-  doBuild: `Run 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
-  ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
-  ensureResourceGroup: "Ensure your resource group exists.",
-  ensureAppNameValid:
-    "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
-  deleteSameNameStorage:
-    "Delete your Azure Storage Account with same name in another resource group or subscription.",
-  checkNetwork: "Check your network connection.",
-  checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
-  checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
-  checkSystemTime: "You may get expired credentials, check if your system time is correct.",
-  restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
+  checkLog: getLocalizedString("plugins.frontend.checkLogTip"),
+  reScaffold: getLocalizedString("plugins.frontend.reScaffoldTip"),
+  doProvision: getLocalizedString("plugins.frontend.doProvisionTip"),
+  doLogin: getLocalizedString("plugins.frontend.doLoginTip"),
+  reLogin: getLocalizedString("plugins.frontend.reLoginTip"),
+  reProvision: getLocalizedString("plugins.frontend.reProvisionTip"),
+  doNpmInstall: getLocalizedString("plugins.frontend.doNpmInstallTip", FrontendPathInfo.WorkingDir),
+  doBuild: getLocalizedString("plugins.frontend.doBuildTip", FrontendPathInfo.WorkingDir),
+  ensureBuildPath: getLocalizedString(
+    "plugins.frontend.ensureBuildPathTip",
+    FrontendPathInfo.BuildFolderName
+  ),
+  ensureResourceGroup: getLocalizedString("plugins.frontend.ensureResourceGroupTip"),
+  ensureAppNameValid: getLocalizedString("plugins.frontend.ensureAppNameValidTip"),
+  deleteSameNameStorage: getLocalizedString("plugins.frontend.deleteSameNameStorageTip"),
+  checkNetwork: getLocalizedString("plugins.frontend.checkNetworkTip"),
+  checkFsPermissions: getLocalizedString("plugins.frontend.checkFsPermissionsTip"),
+  checkStoragePermissions: getLocalizedString("plugins.frontend.checkStoragePermissionsTip"),
+  checkSystemTime: getLocalizedString("plugins.frontend.checkSystemTimeTip"),
+  restoreEnvironment: getLocalizedString(
+    "plugins.frontend.restoreEnvironmentTip",
+    ConfigFolderName
+  ),
 };
+
+export class ErrorMessages {
+  static readonly FailedSaveEnv = (envPath: string): [string, string] => [
+    getDefaultString("error.frontend.FailedSaveEnv", envPath),
+    getLocalizedString("error.frontend.FailedSaveEnv", envPath),
+  ];
+  static readonly FailedLoadEnv = (envPath: string): [string, string] => [
+    getDefaultString("error.frontend.FailedLoadEnv", envPath),
+    getLocalizedString("error.frontend.FailedLoadEnv", envPath),
+  ];
+}
 
 export class FrontendPluginError extends Error {
   public code: string;
-  public message: string;
+  public messages: [string, string];
   public suggestions: string[];
   public errorType: ErrorType;
   public helpLink?: string;
@@ -44,22 +60,32 @@ export class FrontendPluginError extends Error {
   constructor(
     errorType: ErrorType,
     code: string,
-    message: string,
+    messages: [string, string],
     suggestions: string[],
     helpLink?: string
   ) {
-    super(message);
+    super(messages[0]);
     this.code = code;
-    this.message = message;
+    this.messages = messages;
     this.suggestions = suggestions;
     this.errorType = errorType;
     this.helpLink = helpLink;
   }
 
   getMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
+    return getLocalizedString(
+      "plugins.baseErrorMessage",
+      this.message[0],
+      this.suggestions.join(" ")
+    );
   }
-
+  getDefaultMessage(): string {
+    return getDefaultString(
+      "plugins.baseErrorMessage",
+      this.message[1],
+      this.suggestions.join(" ")
+    );
+  }
   setInnerError(error: Error): void {
     this.innerError = error;
   }
@@ -71,34 +97,58 @@ export class FrontendPluginError extends Error {
 
 export class UnauthenticatedError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [
-      tips.doLogin,
-    ]);
+    super(
+      ErrorType.User,
+      "UnauthenticatedError",
+      [
+        getDefaultString("error.frontend.UnauthenticatedError"),
+        getLocalizedString("error.frontend.UnauthenticatedError"),
+      ],
+      [tips.doLogin]
+    );
   }
 }
 
 export class InvalidConfigError extends FrontendPluginError {
   constructor(key: string, detailedErrorMessage?: string) {
-    const detailedMsg = detailedErrorMessage ? ` Error message: ${detailedErrorMessage}` : "";
-    super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.${detailedMsg}`, [
-      tips.restoreEnvironment,
-    ]);
+    const detailedMsg = detailedErrorMessage ?? "";
+    super(
+      ErrorType.User,
+      "InvalidConfigError",
+      [
+        `${getDefaultString("error.frontend.InvalidConfigError", key)}${detailedMsg}`,
+        `${getLocalizedString("error.frontend.InvalidConfigError", key)}${detailedMsg}`,
+      ],
+      [tips.restoreEnvironment]
+    );
   }
 }
 
 export class CheckResourceGroupError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "CheckResourceGroupError",
+      [
+        getDefaultString("error.frontend.CheckResourceGroupError"),
+        getLocalizedString("error.frontend.CheckResourceGroupError"),
+      ],
+      [tips.checkLog]
+    );
   }
 }
 
 export class NoResourceGroupError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [
-      tips.ensureResourceGroup,
-    ]);
+    super(
+      ErrorType.User,
+      "NoResourceGroupError",
+      [
+        getDefaultString("error.frontend.NoResourceGroupError"),
+        getLocalizedString("error.frontend.NoResourceGroupError"),
+      ],
+      [tips.ensureResourceGroup]
+    );
   }
 }
 
@@ -107,7 +157,10 @@ export class CheckStorageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "CheckStorageError",
-      "Failed to check Azure Storage Account availability.",
+      [
+        getDefaultString("error.frontend.CheckStorageError"),
+        getLocalizedString("error.frontend.CheckStorageError"),
+      ],
       [tips.checkSystemTime, tips.checkLog]
     );
   }
@@ -115,9 +168,15 @@ export class CheckStorageError extends FrontendPluginError {
 
 export class NoStorageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NoStorageError", "Failed to find Azure Storage Account.", [
-      tips.reProvision,
-    ]);
+    super(
+      ErrorType.User,
+      "NoStorageError",
+      [
+        getDefaultString("error.frontend.NoStorageError"),
+        getLocalizedString("error.frontend.NoStorageError"),
+      ],
+      [tips.reProvision]
+    );
   }
 }
 
@@ -126,7 +185,10 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
     super(
       ErrorType.User,
       "StaticWebsiteDisableError",
-      "Static website hosting feature is disabled for Azure Storage Account.",
+      [
+        getDefaultString("error.frontend.StaticWebsiteDisabledError"),
+        getLocalizedString("error.frontend.StaticWebsiteDisabledError"),
+      ],
       [tips.reProvision],
       FrontendPluginInfo.HelpLink
     );
@@ -135,9 +197,15 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
 
 export class InvalidStorageNameError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
-      tips.ensureAppNameValid,
-    ]);
+    super(
+      ErrorType.User,
+      "InvalidStorageNameError",
+      [
+        getDefaultString("error.frontend.InvalidStorageNameError"),
+        getLocalizedString("error.frontend.InvalidStorageNameError"),
+      ],
+      [tips.ensureAppNameValid]
+    );
   }
 }
 
@@ -146,7 +214,10 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
     super(
       ErrorType.User,
       "EnableStaticWebsiteError",
-      "Failed to enable static website feature for Azure Storage Account.",
+      [
+        getDefaultString("error.frontend.EnableStaticWebsiteError"),
+        getLocalizedString("error.frontend.EnableStaticWebsiteError"),
+      ],
       [tips.checkSystemTime, tips.checkStoragePermissions],
       FrontendPluginInfo.HelpLink
     );
@@ -155,10 +226,15 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
 
 export class ClearStorageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "ClearStorageError", "Failed to clear Azure Storage Account.", [
-      tips.checkSystemTime,
-      tips.checkNetwork,
-    ]);
+    super(
+      ErrorType.User,
+      "ClearStorageError",
+      [
+        getDefaultString("error.frontend.ClearStorageError"),
+        getLocalizedString("error.frontend.ClearStorageError"),
+      ],
+      [tips.checkSystemTime, tips.checkNetwork]
+    );
   }
 }
 
@@ -167,10 +243,16 @@ export class UploadToStorageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "UploadToStorageError",
-      `Failed to upload local path ${path.join(
-        FrontendPathInfo.WorkingDir,
-        FrontendPathInfo.BuildPath
-      )} to Azure Storage Account.`,
+      [
+        getDefaultString(
+          "error.frontend.UploadToStorageError",
+          path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath)
+        ),
+        getLocalizedString(
+          "error.frontend.UploadToStorageError",
+          path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath)
+        ),
+      ],
       [tips.checkSystemTime, tips.checkNetwork]
     );
   }
@@ -181,7 +263,10 @@ export class GetContainerError extends FrontendPluginError {
     super(
       ErrorType.User,
       "GetContainerError",
-      `Failed to get container '${Constants.AzureStorageWebContainer}' from Azure Storage Account.`,
+      [
+        getDefaultString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+        getLocalizedString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+      ],
       [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork]
     );
   }
@@ -192,19 +277,11 @@ export class UnknownScaffoldError extends FrontendPluginError {
     super(
       ErrorType.System,
       "UnknownScaffoldError",
-      "Failed to scaffold project causes unknown reason.",
+      [
+        getDefaultString("error.frontend.UnknownScaffoldError"),
+        getLocalizedString("error.frontend.UnknownScaffoldError"),
+      ],
       [tips.checkLog]
-    );
-  }
-}
-
-export class TemplateManifestError extends FrontendPluginError {
-  constructor(msg: string) {
-    super(
-      ErrorType.User,
-      "TemplateManifestError ",
-      `Failed to find template from manifest: ${msg}`,
-      [tips.checkNetwork]
     );
   }
 }
@@ -214,7 +291,10 @@ export class TemplateZipFallbackError extends FrontendPluginError {
     super(
       ErrorType.System,
       "TemplateZipFallbackError",
-      "Failed to download zip package and open local zip package.",
+      [
+        getDefaultString("error.frontend.TemplateZipFallbackError"),
+        getLocalizedString("error.frontend.TemplateZipFallbackError"),
+      ],
       [tips.checkLog, tips.checkNetwork]
     );
   }
@@ -222,39 +302,63 @@ export class TemplateZipFallbackError extends FrontendPluginError {
 
 export class UnzipTemplateError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [
-      tips.checkFsPermissions,
-    ]);
+    super(
+      ErrorType.User,
+      "UnzipTemplateError",
+      [
+        getDefaultString("error.frontend.UnzipTemplateError"),
+        getLocalizedString("error.frontend.UnzipTemplateError"),
+      ],
+      [tips.checkFsPermissions]
+    );
   }
 }
 
-export class FileSystemError extends FrontendPluginError {
-  constructor(message: string) {
-    super(ErrorType.System, "FileSystemError", message, [tips.checkLog]);
+export class FileIOError extends FrontendPluginError {
+  constructor(messages: [string, string]) {
+    super(ErrorType.System, "FileIOError", messages, [tips.checkLog]);
   }
 }
 
 export class NoBuildPathError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NoBuildPathError", `Failed to find 'build' folder.`, [
-      tips.doBuild,
-      tips.ensureBuildPath,
-    ]);
+    super(
+      ErrorType.User,
+      "NoBuildPathError",
+      [
+        getDefaultString("error.frontend.NoBuildPathError", FrontendPathInfo.BuildFolderName),
+        getLocalizedString("error.frontend.NoBuildPathError", FrontendPathInfo.BuildFolderName),
+      ],
+      [tips.doBuild, tips.ensureBuildPath]
+    );
   }
 }
 
 export class BuildError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "BuildError", "Failed to build Tab app.", [tips.doBuild, tips.checkLog]);
+    super(
+      ErrorType.User,
+      "BuildError",
+      [
+        getDefaultString("error.frontend.BuildError"),
+        getLocalizedString("error.frontend.BuildError"),
+      ],
+      [tips.doBuild, tips.checkLog]
+    );
   }
 }
 
 export class NpmInstallError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.User, "NpmInstallError", `Failed to run 'npm install' for Tab app.`, [
-      tips.doNpmInstall,
-      tips.checkLog,
-    ]);
+    super(
+      ErrorType.User,
+      "NpmInstallError",
+      [
+        getDefaultString("error.frontend.NpmInstallError"),
+        getLocalizedString("error.frontend.NpmInstallError"),
+      ],
+      [tips.doNpmInstall, tips.checkLog]
+    );
   }
 }
 
@@ -263,7 +367,10 @@ export class InvalidTabLanguageError extends FrontendPluginError {
     super(
       ErrorType.User,
       "InvalidTabLanguageError",
-      "The selected programming language yet is not supported by Tab.",
+      [
+        getDefaultString("error.frontend.InvalidTabLanguageError"),
+        getLocalizedString("error.frontend.InvalidTabLanguageError"),
+      ],
       [tips.restoreEnvironment, tips.reScaffold]
     );
   }
@@ -271,12 +378,20 @@ export class InvalidTabLanguageError extends FrontendPluginError {
 
 export class NotImplemented extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "NotImplemented", "Not Implemented", []);
+    super(
+      ErrorType.System,
+      "NotImplemented",
+      [
+        getDefaultString("error.frontend.NotImplemented"),
+        getLocalizedString("error.frontend.NotImplemented"),
+      ],
+      []
+    );
   }
 }
 
 export const UnhandledErrorCode = "UnhandledError";
-export const UnhandledErrorMessage = "Unhandled error.";
+export const UnhandledErrorMessage = getLocalizedString("error.frontend.UnhandledError");
 
 export async function runWithErrorCatchAndThrow<T>(
   error: FrontendPluginError | FxError,

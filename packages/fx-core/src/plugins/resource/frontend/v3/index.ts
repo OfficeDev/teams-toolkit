@@ -46,7 +46,7 @@ import {
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
 } from "../constants";
-import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "../env";
+import { envFilePath, EnvKeys, saveEnvFile } from "../env";
 import { FrontendDeployment } from "../ops/deploy";
 import {
   TemplateZipFallbackError,
@@ -56,6 +56,7 @@ import {
 import { Messages } from "../resources/messages";
 import { DeployProgress, PostProvisionProgress, ScaffoldProgress } from "../resources/steps";
 import { Scenario, TemplateInfo } from "../resources/templateInfo";
+import { ProgressHelper } from "../utils/progress-helper";
 import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 
 @Service(BuiltInFeaturePluginNames.frontend)
@@ -71,12 +72,8 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     if (solutionSettings.activeResourcePlugins.includes(this.name)) return ok(Void);
     ctx.logProvider.info(Messages.StartScaffold(this.name));
-    const progress = ctx.userInteraction.createProgressBar(
-      Messages.ScaffoldProgressTitle,
-      Object.entries(ScaffoldProgress.steps).length
-    );
-    await progress.start(Messages.ProgressStart);
-    await progress.next(ScaffoldProgress.steps.Scaffold);
+    const progress = await ProgressHelper.startProgress(ctx.userInteraction, ScaffoldProgress);
+    await progress?.next(ScaffoldProgress.steps.Scaffold);
     const language = ctx.projectSetting.programmingLanguage === "typescript" ? "ts" : "js";
     const componentPath = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
     const hasFunction = solutionSettings
@@ -89,7 +86,6 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
       group: TemplateInfo.TemplateGroupName,
       lang: language,
       scenario: Scenario.Default,
-      templatesFolderName: FrontendPathInfo.TemplateFolderName,
       dst: componentPath,
       fileNameReplaceFn: removeTemplateExtReplaceFn,
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
@@ -114,7 +110,7 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
         }
       },
     });
-    await progress.end(true);
+    await ProgressHelper.endProgress(true);
     ctx.logProvider.info(Messages.EndScaffold(this.name));
     return ok(Void);
   }
@@ -269,12 +265,8 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
       return ok(Void);
     }
     ctx.logProvider.info(Messages.StartPostProvision(this.name));
-    const progress = ctx.userInteraction.createProgressBar(
-      Messages.PostProvisionProgressTitle,
-      Object.entries(PostProvisionProgress.steps).length
-    );
-    await progress.start(Messages.ProgressStart);
-    await progress.next(PostProvisionProgress.steps.EnableStaticWebsite);
+    const progress = await ProgressHelper.startProgress(ctx.userInteraction, PostProvisionProgress);
+    await progress?.next(PostProvisionProgress.steps.EnableStaticWebsite);
     const frontendConfigRes = await this.buildFrontendConfig(
       envInfo,
       tokenProvider.azureAccountProvider
@@ -289,7 +281,7 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
       return err(new EnableStaticWebsiteError());
     }
     await this.updateDotEnv(ctx, inputs, envInfo);
-    await progress.end(true);
+    await ProgressHelper.endProgress(true);
     ctx.logProvider.info(Messages.EndPostProvision(this.name));
     return ok(Void);
   }
@@ -301,11 +293,7 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.StartDeploy(this.name));
-    const progress = ctx.userInteraction.createProgressBar(
-      Messages.DeployProgressTitle,
-      Object.entries(DeployProgress.steps).length
-    );
-    await progress.start(Messages.ProgressStart);
+    await ProgressHelper.startProgress(ctx.userInteraction, DeployProgress);
     const frontendConfigRes = await this.buildFrontendConfig(
       envInfo,
       tokenProvider.azureAccountProvider
@@ -319,12 +307,10 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
       : path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
     const envName = envInfo.envName;
 
-    const envs = await loadEnvFile(envFilePath(envName, componentPath));
-
-    await FrontendDeployment.doFrontendBuildV3(componentPath, envs, envName, progress);
+    await FrontendDeployment.doFrontendBuildV3(componentPath, envName);
     await FrontendDeployment.doFrontendDeploymentV3(client, componentPath, envName);
 
-    await progress.end(true);
+    await ProgressHelper.endProgress(true);
     ctx.logProvider.info(Messages.EndDeploy(this.name));
     return ok(Void);
   }

@@ -34,7 +34,6 @@ import {
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { ResourcePlugins } from "../../../../common/constants";
 
 export async function setupLocalDebugSettings(
@@ -177,13 +176,14 @@ export async function setupLocalDebugSettings(
 export async function setupLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -192,7 +192,7 @@ export async function setupLocalEnvironment(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -223,6 +223,16 @@ export async function setupLocalEnvironment(
         localFuncEndpoint = "http://localhost:7071";
       }
 
+      if (includeAAD) {
+        if (!envInfo.state[ResourcePlugins.SimpleAuth]) {
+          envInfo.state[ResourcePlugins.SimpleAuth] = {};
+        }
+
+        if (includeSimpleAuth) {
+          envInfo.state[ResourcePlugins.SimpleAuth].endpoint = localAuthEndpoint;
+        }
+      }
+
       if (includeFrontend) {
         if (!envInfo.state[ResourcePlugins.FrontendHosting]) {
           envInfo.state[ResourcePlugins.FrontendHosting] = {};
@@ -244,7 +254,7 @@ export async function setupLocalEnvironment(
         }
 
         if (skipNgrok) {
-          const localBotEndpoint = envInfo.state[ResourcePlugins.Bot].siteEndPoint as string;
+          const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -403,14 +413,18 @@ export async function configLocalDebugSettings(
         const botPassword = localSettings?.bot?.botPassword as string;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "https://login.microsoftonline.com";
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-          localSettings?.bot?.botEndpoint as string
-        }/auth-start.html`;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+
+        if (includeAAD) {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
+            "https://login.microsoftonline.com";
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+            localSettings?.bot?.botEndpoint as string
+          }/auth-start.html`;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+        }
 
         if (includeBackend) {
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;
@@ -433,12 +447,13 @@ export async function configLocalDebugSettings(
 export async function configLocalEnvironment(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: EnvInfoV2
+  envInfo: v2.EnvInfoV2
 ): Promise<Result<Void, FxError>> {
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -446,7 +461,7 @@ export async function configLocalEnvironment(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -471,6 +486,10 @@ export async function configLocalEnvironment(
       const localTabEndpoint = envInfo.state[ResourcePlugins.FrontendHosting]?.endpoint;
       const localFuncEndpoint = envInfo.state[ResourcePlugins.Function]?.functionEndpoint;
 
+      const localAuthEndpoint = envInfo.state[ResourcePlugins.SimpleAuth]?.endpoint as string;
+      const localAuthPackagePath = envInfo.state[ResourcePlugins.SimpleAuth]
+        ?.simpleAuthFilePath as string;
+
       if (includeFrontend) {
         frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
@@ -479,6 +498,11 @@ export async function configLocalEnvironment(
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+          await prepareLocalAuthService(localAuthPackagePath);
         }
 
         if (includeBackend) {
@@ -507,7 +531,20 @@ export async function configLocalEnvironment(
           const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
 
           const localCert = await certManager.setupCertificate(trustDevCert);
-          if (localCert) {
+          if (
+            envInfo.config.frontend &&
+            envInfo.config.frontend.sslCertFile &&
+            envInfo.config.frontend.sslKeyFile
+          ) {
+            envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile =
+              envInfo.config.frontend.sslCertFile;
+            envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile =
+              envInfo.config.frontend.sslKeyFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] =
+              envInfo.config.frontend.sslCertFile;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] =
+              envInfo.config.frontend.sslKeyFile;
+          } else if (localCert) {
             envInfo.state[ResourcePlugins.FrontendHosting].sslCertFile = localCert.certPath;
             envInfo.state[ResourcePlugins.FrontendHosting].sslKeyFile = localCert.keyPath;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;
@@ -524,14 +561,18 @@ export async function configLocalEnvironment(
 
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "https://login.microsoftonline.com";
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-          envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
-        }/auth-start.html`;
-        botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+
+        if (includeAAD) {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
+            "https://login.microsoftonline.com";
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+            envInfo.state[ResourcePlugins.Bot]?.siteEndpoint as string
+          }/auth-start.html`;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+        }
 
         if (includeBackend) {
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;

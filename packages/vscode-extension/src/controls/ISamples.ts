@@ -8,10 +8,10 @@ interface SampleInfo {
   configuration: string;
   link: string;
   suggested: boolean;
+  url: string;
 }
 
 interface SampleCollection {
-  baseUrl: string;
   samples: SampleInfo[];
 }
 
@@ -22,12 +22,11 @@ type SampleCardProps = SampleDetailProps & {
 
 type SampleListProps = {
   samples: Array<SampleInfo>;
-  baseUrl: string;
   highlightSample: (id: string) => void;
 };
 
 type SampleDetailProps = {
-  baseUrl: string;
+  url: string;
   image: any;
   tags: string[];
   time: string;

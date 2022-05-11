@@ -2,11 +2,17 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
-import { ProgressTitleMessage, PreDeployProgressMessage, DeployProgressMessage } from "./constants";
+import {
+  ProgressTitleMessage,
+  PreDeployProgressMessage,
+  DeployProgressMessage,
+  ScaffoldProgressMessage,
+} from "./constants";
 
 export class ProgressHelper {
   static preDeployProgress: IProgressHandler | undefined;
   static deployProgress: IProgressHandler | undefined;
+  static scaffoldProgress: IProgressHandler | undefined;
 
   static async startPreDeployProgressHandler(
     ui: UserInteraction | undefined
@@ -42,5 +48,21 @@ export class ProgressHelper {
   static async endDeployProgress(success: boolean): Promise<void> {
     await this.deployProgress?.end(success);
     this.deployProgress = undefined;
+  }
+
+  static async startScaffoldProgressHandler(
+    ui: UserInteraction | undefined
+  ): Promise<IProgressHandler | undefined> {
+    this.scaffoldProgress = ui?.createProgressBar(
+      ProgressTitleMessage.ScaffoldProgressTitle,
+      Object.entries(ScaffoldProgressMessage).length
+    );
+    await this.scaffoldProgress?.start("");
+    return this.scaffoldProgress;
+  }
+
+  static async endScaffoldProgress(success: boolean): Promise<void> {
+    await this.scaffoldProgress?.end(success);
+    this.scaffoldProgress = undefined;
   }
 }

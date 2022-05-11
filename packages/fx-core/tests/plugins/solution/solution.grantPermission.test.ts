@@ -13,7 +13,6 @@ import {
   Result,
   FxError,
   err,
-  returnUserError,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -30,10 +29,11 @@ import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import { CollaborationState } from "../../../src/common/permissionInterface";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { CollaborationUtil } from "../../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import { aadPlugin, appStudioPlugin } from "../../constants";
+import { UserError } from "../../../../api/src/error";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -276,10 +276,10 @@ describe("grantPermission() for Teamsfx projects", () => {
       _ctx: PluginContext
     ): Promise<Result<any, FxError>> {
       return err(
-        returnUserError(
-          new Error(`Grant permission failed.`),
+        new UserError(
           "AppStudioPlugin",
-          SolutionError.FailedToGrantPermission
+          SolutionError.FailedToGrantPermission,
+          "Grant permission failed."
         )
       );
     };

@@ -12,12 +12,12 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import { LocalStateSimpleAuthKeys } from "../../../common/localStateConstants";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -26,13 +26,15 @@ export class SimpleAuthPluginImpl {
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-    if (isMultiEnvEnabled()) {
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(Constants.SimpleAuthPlugin.id)
+        ?.set(LocalSettingsSimpleAuthKeys.SimpleAuthFilePath, simpleAuthFilePath);
+    } else {
       ctx.localSettings?.auth?.set(
         LocalSettingsSimpleAuthKeys.SimpleAuthFilePath,
         simpleAuthFilePath
       );
-    } else {
-      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
     }
 
     await Utils.downloadZip(simpleAuthFilePath);
@@ -45,21 +47,25 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostLocalDebug);
 
-    const configs = Utils.getWebAppConfig(ctx, true);
+    let configs: any;
+    if (isConfigUnifyEnabled()) {
+      configs = Utils.getWebAppConfig(ctx, false);
+    } else {
+      configs = Utils.getWebAppConfig(ctx, true);
+    }
 
     const configArray = [];
     for (const [key, value] of Object.entries(configs)) {
       configArray.push(`${key}="${value}"`);
     }
 
-    if (isMultiEnvEnabled()) {
+    if (isConfigUnifyEnabled()) {
+      ctx.envInfo.state
+        .get(Constants.SimpleAuthPlugin.id)
+        ?.set(LocalStateSimpleAuthKeys.EnvironmentVariableParams, configArray.join(" "));
+    } else {
       ctx.localSettings?.auth?.set(
         LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams,
-        configArray.join(" ")
-      );
-    } else {
-      ctx.config.set(
-        Constants.SimpleAuthPlugin.configKeys.environmentVariableParams,
         configArray.join(" ")
       );
     }

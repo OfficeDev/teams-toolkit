@@ -15,7 +15,6 @@ import {
   ok,
   Platform,
   Result,
-  returnSystemError,
   SolutionConfig,
   SolutionContext,
   Void,
@@ -39,7 +38,7 @@ import _ from "lodash";
 import * as uuid from "uuid";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   fehostPlugin,
@@ -48,6 +47,7 @@ import {
   functionPlugin,
   apimPlugin,
 } from "../../constants";
+import { SystemError } from "../../../../api/src/error";
 
 function mockSolutionContext(): SolutionContext {
   return {
@@ -291,7 +291,7 @@ describe("update()", () => {
       _ctx: SolutionContext,
       _selectedPlugins
     ): Promise<Result<any, FxError>> {
-      return err(returnSystemError(new Error("Some fake error"), "SolutionTest", "FakeError"));
+      return err(new SystemError("SolutionTest", "FakeError", "Some fake error"));
     };
     let confirmDialogDisplayed = false;
     mockedCtx.ui = new MockUserInteraction();

@@ -142,7 +142,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(envs);
         } else {
-          return err(PathNotExistError(projectPath));
+          return err(new PathNotExistError(projectPath));
         }
       });
     sandbox
@@ -151,7 +151,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(allEnvs);
         } else {
-          return err(PathNotExistError(projectPath));
+          return err(new PathNotExistError(projectPath));
         }
       });
     sandbox

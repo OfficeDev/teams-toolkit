@@ -16,6 +16,7 @@ import {
   ok,
   LocalSettings,
   ConfigMap,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -24,18 +25,19 @@ import {
   Plugins,
 } from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";
-import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
+import { Utils } from "../../../../src/plugins/resource/aad/utils/configs";
 import { MockUserInteraction } from "../../../core/utils";
-import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/plugins/solution/fx-solution/constants";
+import {
+  DEFAULT_PERMISSION_REQUEST,
+  ARM_TEMPLATE_OUTPUT,
+} from "../../../../src/plugins/solution/fx-solution/constants";
 import { newEnvInfo } from "../../../../src";
 import { IUserList } from "../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
-import { ARM_TEMPLATE_OUTPUT } from "../../../../src/plugins/solution/fx-solution/constants";
 import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-import { EnvConfig } from "@microsoft/teamsfx-api";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -165,6 +167,12 @@ export class TestHelper {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       projectSettings: {
         appName: "aad-plugin-unit-test",
+        solutionSettings: {
+          capabilities: ["Tab"],
+          hostType: "Azure",
+          azureResources: [],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
       },
       permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;

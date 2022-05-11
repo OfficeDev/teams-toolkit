@@ -18,9 +18,10 @@ import {
   SingleSelectQuestion,
   MultiSelectQuestion,
   OptionItem,
+  StringValidation,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isM365AppEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -30,6 +31,7 @@ import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
 import { Options } from "yargs";
 import {
+  azureSolutionGroupNodeName,
   CollaboratorEmailNode,
   EnvNodeNoCreate,
   RootFolderNode,
@@ -51,6 +53,7 @@ export class HelpParamGenerator {
     Stage.checkPermission,
     "validate",
     "update",
+    "addCICDWorkflows",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",
@@ -96,9 +99,27 @@ export class HelpParamGenerator {
     }
   }
 
+  private getNamespaceFromStage(stage: string): string {
+    let res = "";
+    switch (stage) {
+      case "addCICDWorkflows": {
+        res = "fx-solution-azure/fx-resource-cicd";
+        break;
+      }
+      case "connectExistingApi": {
+        res = "fx-solution-azure/fx-resource-api-connector";
+        break;
+      }
+      default: {
+        res = "fx-solution-azure";
+      }
+    }
+    return res;
+  }
+
   private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
-      namespace: "fx-solution-azure",
+      namespace: this.getNamespaceFromStage(stage),
       method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);
@@ -110,8 +131,11 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  public getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public getQuestionRootNodeForHelp(stage: string, inputs?: Inputs): QTreeNode | undefined {
     if (this.questionsMap.has(stage)) {
+      if (stage === Stage.create && inputs?.isM365) {
+        return this.questionsMap.get(`${stage}-m365`);
+      }
       return this.questionsMap.get(stage);
     }
     return undefined;
@@ -130,7 +154,18 @@ export class HelpParamGenerator {
         this.setQuestionNodes(stage, result.value);
       }
     }
-    const userTasks = ["addCapability", "addResource"];
+    if (isM365AppEnabled()) {
+      const result = await this.core.getQuestions(Stage.create, {
+        ...systemInput,
+        isM365: true,
+      });
+      if (result.isErr()) {
+        return err(result.error);
+      } else {
+        this.setQuestionNodes(`${Stage.create}-m365`, result.value);
+      }
+    }
+    const userTasks = ["addCapability", "addResource", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
@@ -142,20 +177,24 @@ export class HelpParamGenerator {
     return ok(true);
   }
 
-  public getYargsParamForHelp(stage: string): { [_: string]: Options } {
+  public getYargsParamForHelp(stage: string, inputs?: Inputs): { [_: string]: Options } {
     if (!this.initialized) {
       throw NoInitializedHelpGenerator();
     }
     let resourceName: string | undefined;
     let capabilityId: string | undefined;
+    let authType: string | undefined;
     if (stage.startsWith("addResource")) {
       resourceName = stage.split("-")[1];
       stage = "addResource";
     } else if (stage.startsWith("addCapability")) {
       capabilityId = stage.split("-")[1];
       stage = "addCapability";
+    } else if (stage.startsWith("connectExistingApi")) {
+      authType = stage.split("-")[1];
+      stage = "connectExistingApi";
     }
-    const root = this.getQuestionRootNodeForHelp(stage);
+    const root = this.getQuestionRootNodeForHelp(stage, inputs);
     let nodes: QTreeNode[] = [];
     if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
@@ -194,6 +233,21 @@ export class HelpParamGenerator {
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
       nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
+    } else if (authType && root?.children) {
+      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
+      const authNodes = rootCopy.children!.filter((node: any) => node.data.name === "auth-type")[0];
+      const mustHaveNodes = rootCopy.children!.filter((node: any) => node.data.name != "auth-type");
+      const authNode = authNodes.children!.filter((node: any) =>
+        ((node.condition as any).equals as string).includes(authType as string)
+      )[0];
+      rootCopy.children = undefined;
+      nodes = [rootCopy].concat(mustHaveNodes).concat(authNode ? flattenNodes(authNode) : []);
+    } else if (root && stage === Stage.create) {
+      const condition = "yes";
+      root.children = root?.children?.filter(
+        (value) => (value.condition as StringValidation).equals === condition
+      );
+      nodes = flattenNodes(root);
     } else if (root) {
       nodes = flattenNodes(root);
     }
@@ -237,6 +291,15 @@ export class HelpParamGenerator {
     // Add user email node for grant permission
     if (stage === Stage.grantPermission) {
       nodes = nodes.concat([CollaboratorEmailNode]);
+    }
+
+    if (stage === Stage.create) {
+      for (const node of nodes) {
+        // hide --azure-solution-group
+        if (node.data.name === azureSolutionGroupNodeName) {
+          (node.data as any).hide = true;
+        }
+      }
     }
 
     const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");

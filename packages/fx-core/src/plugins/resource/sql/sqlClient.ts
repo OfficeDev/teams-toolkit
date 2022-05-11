@@ -6,6 +6,7 @@ import { SqlConfig } from "./config";
 import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
+import { getLocalizedString } from "../../../common/localizeUtils";
 export class SqlClient {
   config: SqlConfig;
   token: string;
@@ -44,11 +45,10 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [errorMessage[0], errorMessage[1] + `. ${ErrorMessage.GuestAdminError}`],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.GuestAdminError}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -59,11 +59,10 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [errorMessage[0], errorMessage[1] + `. ${getLocalizedString("error.sql.GetDetail")}`],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.GetDetail}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -80,15 +79,15 @@ export class SqlClient {
     if (!credential) {
       const link = HelpLinks.default;
       const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, databaseNames);
-      let message = ErrorMessage.DatabaseUserCreateError.message(databaseNames, config.identity);
-      message += `. ${reason}`;
+      const message = ErrorMessage.DatabaseUserCreateError.message(databaseNames, config.identity);
+      message[0] += `. ${reason}`;
+      message[1] += `. ${reason}`;
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseUserCreateError.name,
-        message + ` ${ErrorMessage.LinkHelpMessage(link)}`,
+        [message[0] + ` ${ErrorMessage.LinkHelpMessage(link)}`, message[1]],
         undefined,
         undefined,
-        link,
-        message
+        link
       );
     }
     try {
@@ -103,11 +102,13 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [
+            errorMessage[0] + `. ${ErrorMessage.DomainError}`,
+            errorMessage[1] + `. ${ErrorMessage.DomainError}`,
+          ],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.DomainError}`
+          link
         );
         e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
@@ -118,13 +119,12 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          errorMessage,
+          [errorMessage[0], errorMessage[1] + `. ${getLocalizedString("error.sql.GetDetail")}`],
           error,
           undefined,
-          link,
-          errorMessage + `. ${ErrorMessage.GetDetail}`
+          link
         );
-        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        e.message += `Reason: ${error.message}. ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
       }
     }
@@ -156,6 +156,11 @@ export class SqlClient {
     };
     const connection = new tedious.Connection(config);
     return new Promise((resolve, reject) => {
+      connection.connect((err: any) => {
+        if (err) {
+          reject(err);
+        }
+      });
       connection.on("connect", (err: any) => {
         if (err) {
           reject(err);

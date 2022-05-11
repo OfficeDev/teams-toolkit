@@ -4,6 +4,7 @@
 import {
   err,
   Func,
+  FunctionRouter,
   FxError,
   Inputs,
   InputTextConfig,
@@ -25,8 +26,10 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { cipher } from "node-forge";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -37,21 +40,23 @@ import {
   FxCore,
   InvalidInputError,
   setTools,
-  validateSettings,
+  validateProjectSettings,
 } from "../../src";
 import { ConstantString } from "../../src/common/constants";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
-  BotOptionItem,
   CoreQuestionNames,
-  MessageExtensionItem,
   ProgrammingLanguageQuestion,
   ScratchOptionYesVSC,
-  TabOptionItem,
-  TabSPFxItem,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
@@ -113,7 +118,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(projectSettingsResult.isOk());
       if (projectSettingsResult.isOk()) {
         const projectSettings = projectSettingsResult.value;
-        const validSettingsResult = validateSettings(projectSettings);
+        const validSettingsResult = validateProjectSettings(projectSettings);
         assert.isTrue(validSettingsResult === undefined);
         assert.isTrue(projectSettings.version === "2.1.0");
       }
@@ -217,6 +222,10 @@ describe("Core basic APIs", () => {
     );
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
     let res = await core.provisionResources(inputs);
     assert.isTrue(res.isOk());
 
@@ -434,6 +443,10 @@ describe("Core basic APIs", () => {
     const createRes = await core.createProject(inputs);
     assert.isTrue(createRes.isOk());
     projectPath = path.resolve(os.tmpdir(), appName);
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
 
     const newEnvName = "newEnv";
     const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
@@ -530,4 +543,33 @@ describe("Core basic APIs", () => {
       }
     }
   });
+
+  // it("init + add spfx tab", async () => {
+  //   const appName = randomAppName();
+  //   projectPath = path.join(os.tmpdir(), appName);
+  //   const inputs: Inputs = {
+  //     platform: Platform.VSCode,
+  //     folder: projectPath,
+  //     "app-name": appName,
+  //   };
+  //   const core = new FxCore(tools);
+  //   const initRes = await core.init(inputs);
+  //   assert.isTrue(initRes.isOk());
+  //   if (initRes.isOk()) {
+  //     const addInputs: Inputs = {
+  //       platform: Platform.VSCode,
+  //       projectPath: projectPath,
+  //       capabilities: [TabSPFxItem.id],
+  //       "spfx-framework-type": "react",
+  //       "spfx-webpart-name": "helloworld",
+  //       "spfx-webpart-desp": "helloworld",
+  //     };
+  //     const func: Func = {
+  //       namespace: "fx-solution-azure",
+  //       method: "addCapability",
+  //     };
+  //     const addRes = await core.executeUserTaskV2(func, addInputs);
+  //     assert(addRes.isOk());
+  //   }
+  // });
 });

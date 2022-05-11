@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
-import { ProjectConstants, ConfigRetryOperations, TeamsToolkitComponent } from "./constants";
+import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { ConfigRetryOperations, ProjectConstants, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {
   User,
@@ -11,7 +12,7 @@ enum ErrorType {
 export interface IApimPluginError {
   type: ErrorType;
   code: string;
-  message: (...args: string[]) => string;
+  message: (...args: string[]) => [string, string];
   helpLink?: string;
 }
 
@@ -19,130 +20,183 @@ export interface IApimPluginError {
 export const NoValidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "NoValidOpenApiDocument",
-  message: () => "No valid OpenApi document in the current workspace.",
+  message: () => [
+    getDefaultString("plugins.apim.error.NoValidOpenApiDocument"),
+    getLocalizedString("plugins.apim.error.NoValidOpenApiDocument"),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidOpenApiDocument",
-  message: (filePath: string) => `The file '${filePath}' is not a valid OpenApi document.`,
+  message: (filePath: string) => [
+    getDefaultString("plugins.apim.error.InvalidOpenApiDocument", filePath),
+    getLocalizedString("plugins.apim.error.InvalidOpenApiDocument", filePath),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const EmptyTitleInOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyTitleInOpenApiDocument",
-  message: (filePath: string) =>
-    `The property 'title' cannot be empty in the OpenApi document '${filePath}'.`,
+  message: (filePath: string) => [
+    getDefaultString("plugins.apim.error.EmptyTitleInOpenApiDocument", filePath),
+    getLocalizedString("plugins.apim.error.EmptyTitleInOpenApiDocument", filePath),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const EmptyVersionInOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyVersionInOpenApiDocument",
-  message: (filePath: string) =>
-    `The property 'version' cannot be empty in the OpenApi document '${filePath}'.`,
+  message: (filePath: string) => [
+    getDefaultString("plugins.apim.error.EmptyVersionInOpenApiDocument", filePath),
+    getLocalizedString("plugins.apim.error.EmptyVersionInOpenApiDocument", filePath),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidAadObjectId: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidAadObjectId",
-  message: (objectId: string) =>
-    `The Azure Active Directory application with object id '${objectId}' could not be found.`,
+  message: (objectId: string) => [
+    getDefaultString("plugins.apim.error.InvalidAadObjectId", objectId),
+    getLocalizedString("plugins.apim.error.InvalidAadObjectId", objectId),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const EmptyConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyConfigValue",
-  message: (component: string, name: string, filePath: string, retryOperation: string) =>
-    `Project configuration '${name}' of '${component}' is missing in '${filePath}'. Retry ${retryOperation} or set the value manually.`,
+  message: (component: string, name: string, filePath: string, retryOperation: string) => [
+    getDefaultString(
+      "plugins.apim.error.EmptyConfigValue",
+      name,
+      component,
+      filePath,
+      retryOperation
+    ),
+    getLocalizedString(
+      "plugins.apim.error.EmptyConfigValue",
+      name,
+      component,
+      filePath,
+      retryOperation
+    ),
+  ],
 };
 
 export const NoPluginConfig: IApimPluginError = {
   type: ErrorType.User,
   code: "NoPluginConfig",
-  message: (component: string, retryOperation: string) =>
-    `Cannot found ${component} configuration. Retry ${retryOperation}.`,
+  message: (component: string, retryOperation: string) => [
+    getDefaultString("plugins.apim.error.NoPluginConfig", component, retryOperation),
+    getLocalizedString("plugins.apim.error.NoPluginConfig", component, retryOperation),
+  ],
 };
 
 export const InvalidConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidConfigValue",
-  message: (component: string, name: string, message: string) =>
-    `Project configuration '${name}' of '${component}' is invalid. ${message}`,
+  message: (component: string, name: string, message: string) => [
+    getDefaultString("plugins.apim.error.InvalidConfigValue", name, component, message),
+    getLocalizedString("plugins.apim.error.InvalidConfigValue", name, component, message),
+  ],
 };
 
 export const ApimOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "ApimOperationError",
-  message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+  message: (operation: string, resourceType: string) => [
+    getDefaultString("plugins.apim.error.ApimOperationError", operation, resourceType),
+    getLocalizedString("plugins.apim.error.ApimOperationError", operation, resourceType),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const AadOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "AadOperationError",
-  message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+  message: (operation: string, resourceType: string) => [
+    getDefaultString("plugins.apim.error.AadOperationError", operation, resourceType),
+    getLocalizedString("plugins.apim.error.AadOperationError", operation, resourceType),
+  ],
   helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidCliOptionError: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidCliOptionError",
-  message: (reason) => `Option is invalid. ${reason}`,
+  message: (reason) => [
+    getDefaultString("plugins.apim.error.InvalidCliOptionError", reason),
+    getLocalizedString("plugins.apim.error.InvalidCliOptionError", reason),
+  ],
 };
 
 // System error
 export const NotImplemented: IApimPluginError = {
   type: ErrorType.System,
   code: "NotImplemented",
-  message: () => `Not implemented.`,
+  message: () => [
+    getDefaultString("plugins.apim.error.NotImplemented"),
+    getLocalizedString("plugins.apim.error.NotImplemented"),
+  ],
 };
 
 export const InvalidFunctionEndpoint: IApimPluginError = {
   type: ErrorType.System,
   code: "InvalidFunctionEndpoint",
-  message: () => `The function endpoint scheme should be 'http' or 'https'.`,
-};
-
-export const InvalidAzureResourceId: IApimPluginError = {
-  type: ErrorType.System,
-  code: "InvalidAzureResourceId",
-  message: (resourceId: string) => `Invalid Azure resource id ${resourceId}.`,
+  message: () => [
+    getDefaultString("plugins.apim.error.InvalidFunctionEndpoint"),
+    getLocalizedString("plugins.apim.error.InvalidFunctionEndpoint"),
+  ],
 };
 
 export const EmptyProperty: IApimPluginError = {
   type: ErrorType.System,
   code: "EmptyProperty",
-  message: (name: string) => `Property '${name}' is empty.`,
+  message: (name: string) => [
+    getDefaultString("plugins.apim.error.EmptyProperty", name),
+    getLocalizedString("plugins.apim.error.EmptyProperty", name),
+  ],
 };
 
 export const InvalidPropertyType: IApimPluginError = {
   type: ErrorType.System,
   code: "InvalidPropertyType",
-  message: (name: string, type: string) => `Property '${name}' is not type '${type}'`,
+  message: (name: string, type: string) => [
+    getDefaultString("plugins.apim.error.InvalidPropertyType", name, type),
+    getLocalizedString("plugins.apim.error.InvalidPropertyType", name, type),
+  ],
 };
 
 export const ShortenToEmpty: IApimPluginError = {
   type: ErrorType.System,
   code: "ShortenToEmpty",
-  message: (value: string) => `The value '${value}' cannot be shorten to empty.`,
+  message: (value: string) => [
+    getDefaultString("plugins.apim.error.ShortenToEmpty", value),
+    getLocalizedString("plugins.apim.error.ShortenToEmpty", value),
+  ],
 };
 
 export const UnhandledError: IApimPluginError = {
   type: ErrorType.System,
   code: "UnhandledError",
-  message: () => `Unhandled error.`,
+  message: () => [
+    getDefaultString("plugins.apim.error.UnhandledError"),
+    getLocalizedString("plugins.apim.error.UnhandledError"),
+  ],
 };
 
 export const FailedToParseResourceIdError: IApimPluginError = {
   type: ErrorType.User,
   code: "FailedToParseResourceId",
-  message: (name: string, resourceId: string) =>
-    `Failed to get '${name}' from resource id: '${resourceId}'`,
+  message: (name: string, resourceId: string) => [
+    getDefaultString("plugins.apim.error.FailedToParseResourceIdError", name, resourceId),
+    getLocalizedString("plugins.apim.error.FailedToParseResourceIdError", name, resourceId),
+  ],
 };
 
 export function BuildError(
@@ -156,27 +210,29 @@ export function BuildError(pluginError: IApimPluginError, ...params: any[]): FxE
   if (params.length > 0 && params[0] instanceof Error) {
     innerError = params.shift();
   }
-
-  const message = !innerError
-    ? pluginError.message(...params)
-    : `${pluginError.message(...params)} ${innerError?.message}`;
+  const msgs = pluginError.message(...params);
+  const message = innerError
+    ? [`${msgs[0]} ${innerError?.message}`, `${msgs[1]} ${innerError?.message}`]
+    : msgs;
   switch (pluginError.type) {
     case ErrorType.User:
-      return returnUserError(
-        new Error(message),
-        ProjectConstants.pluginShortName,
-        pluginError.code,
-        pluginError.helpLink,
-        innerError
-      );
+      return new UserError({
+        name: pluginError.code,
+        source: ProjectConstants.pluginShortName,
+        message: message[0],
+        displayMessage: message[1],
+        error: innerError,
+        helpLink: pluginError.helpLink,
+      });
     case ErrorType.System:
-      return returnSystemError(
-        new Error(message),
-        ProjectConstants.pluginShortName,
-        pluginError.code,
-        pluginError.helpLink,
-        innerError
-      );
+      return new SystemError({
+        name: pluginError.code,
+        source: ProjectConstants.pluginShortName,
+        message: message[0],
+        displayMessage: message[1],
+        error: innerError,
+        issueLink: pluginError.helpLink,
+      });
   }
 }
 

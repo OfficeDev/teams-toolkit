@@ -18,41 +18,42 @@ import {
   Stage,
   SystemError,
   traverse,
-  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { Container } from "typedi";
-import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import { deepCopy } from "../../common";
+import { createV2Context, deepCopy } from "../../common/tools";
+import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import { TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
+import { CoreSource, FunctionRouterError } from "../error";
+import { TOOLS } from "../globalVars";
 import {
+  createAppNameQuestion,
   createCapabilityQuestion,
+  ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
-  QuestionAppName,
   QuestionRootFolder,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
-import { getAllSolutionPluginsV2, getGlobalSolutionsV3 } from "../SolutionPluginContainer";
-import { getProjectSettingsPath } from "./projectSettingsLoader";
+import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "../types";
+
 /**
  * This middleware will help to collect input from question flow
  */
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
+  const core = ctx.self as any;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV2") {
@@ -303,37 +304,22 @@ export async function getQuestionsForPublish(
 export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.projectPath) {
-    const projectSettingsPath = getProjectSettingsPath(inputs.projectPath);
-    if (await fs.pathExists(projectSettingsPath)) {
-      const res = await TOOLS.ui.showMessage(
-        "warn",
-        "projectSettings.json already exists, 'init' operation will replace it, please confirm!",
-        true,
-        "Confirm"
-      );
-      if (!(res.isOk() && res.value === "Confirm")) {
-        return err(UserCancelError);
-      }
-    }
-  }
   const node = new QTreeNode({ type: "group" });
-  const globalSolutions = getGlobalSolutionsV3();
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
+  // no need to ask workspace folder for CLI.
+  if (inputs.platform !== Platform.CLI) {
+    node.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  node.addChild(new QTreeNode(createAppNameQuestion(false)));
+  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
   const context = createV2Context(newProjectSettings());
-  for (const solution of globalSolutions) {
-    if (solution.getQuestionsForInit) {
-      const res = await solution.getQuestionsForInit(context, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        if (solutionNode.data) capNode.addChild(solutionNode);
-      }
+  if (solution.getQuestionsForInit) {
+    const res = await solution.getQuestionsForInit(context, inputs);
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      if (solutionNode.data) node.addChild(solutionNode);
     }
   }
-  node.addChild(new QTreeNode(QuestionAppName));
   return ok(node.trim());
 }
 
@@ -377,7 +363,7 @@ export async function getQuestionsForCreateProjectV3(
   if (inputs.platform === Platform.CLI) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
@@ -394,6 +380,7 @@ export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+
   // create new
   const createNew = new QTreeNode({ type: "group" });
   node.addChild(createNew);
@@ -412,27 +399,42 @@ export async function getQuestionsForCreateProjectV2(
     res = v2plugin.getQuestionsForScaffolding
       ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
       : ok(undefined);
-    if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
+    if (res.isErr())
+      return err(
+        new SystemError({ source: CoreSource, name: "QuestionModelFail", error: res.error })
+      );
     if (res.value) {
       const solutionNode = Array.isArray(res.value)
         ? (res.value as QTreeNode[])
         : [res.value as QTreeNode];
       for (const node of solutionNode) {
-        if (node.data) capNode.addChild(node);
+        if (node.data) {
+          capNode.addChild(node);
+        }
       }
     }
   }
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = { minItems: 1 };
-  createNew.addChild(programmingLanguage);
+  programmingLanguage.condition = {
+    minItems: 1,
+    excludes: ExistingTabOptionItem.id,
+  };
+  capNode.addChild(programmingLanguage);
+
+  // existing tab endpoint
+  const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+  existingTabEndpoint.condition = {
+    contains: ExistingTabOptionItem.id,
+  };
+  capNode.addChild(existingTabEndpoint);
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
-  createNew.addChild(new QTreeNode(QuestionAppName));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

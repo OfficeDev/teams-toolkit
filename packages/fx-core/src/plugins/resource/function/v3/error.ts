@@ -2,17 +2,25 @@
 // Licensed under the MIT license.
 
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { FunctionPluginInfo } from "../constants";
 import { tips } from "../resources/errors";
 
 export class ValidationError extends UserError {
   constructor(key: string) {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Invalid ${key}. Suggestions: ${[tips.recoverTeamsfxConfigFiles, tips.recreateProject].join(
-        " "
-      )}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.ValidationError", key),
+        [tips.recoverTeamsFxConfigFiles, tips.recreateProject].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.ValidationError", key),
+        [tips.recoverTeamsFxConfigFiles, tips.recreateProject].join(" ")
+      )
     );
   }
 }
@@ -20,12 +28,18 @@ export class ValidationError extends UserError {
 export class FetchConfigError extends UserError {
   constructor(key: string) {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to find ${key} from configuration. Suggestions: ${[
-        tips.recoverTeamsfxConfigFiles,
-        tips.recreateProject,
-      ].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.FetchConfigError", key),
+        [tips.recoverTeamsFxConfigFiles, tips.recreateProject].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.FetchConfigError", key),
+        [tips.recoverTeamsFxConfigFiles, tips.recreateProject].join(" ")
+      )
     );
   }
 }
@@ -33,9 +47,18 @@ export class FetchConfigError extends UserError {
 export class FunctionNameConflictError extends UserError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      "Function already exists, please choose another name.",
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.FunctionNameConfigError"),
+        tips.checkLog
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.FunctionNameConfigError"),
+        tips.checkLog
+      )
     );
   }
 }
@@ -43,9 +66,18 @@ export class FunctionNameConflictError extends UserError {
 export class FindAppError extends SystemError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to find the function app. Suggestions: ${[tips.doProvision].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.FunctionAppError"),
+        [tips.doProvision].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.FunctionAppError"),
+        [tips.doProvision].join(" ")
+      )
     );
   }
 }
@@ -53,12 +85,18 @@ export class FindAppError extends SystemError {
 export class InitAzureSDKError extends UserError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to initialize Azure SDK Client. Suggestions: ${[
-        tips.checkCredential,
-        tips.checkSubscriptionId,
-      ].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.InitAzureSDKError"),
+        [tips.checkCredential, tips.checkSubscriptionId].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.InitAzureSDKError"),
+        [tips.checkCredential, tips.checkSubscriptionId].join(" ")
+      )
     );
   }
 }
@@ -66,9 +104,18 @@ export class InitAzureSDKError extends UserError {
 export class InstallNpmPackageError extends UserError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to install NPM packages. Suggestions: ${[tips.checkPackageJson].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.InstallNpmPackageError"),
+        [tips.checkPackageJson].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.InstallNpmPackageError"),
+        [tips.checkPackageJson].join(" ")
+      )
     );
   }
 }
@@ -76,25 +123,37 @@ export class InstallNpmPackageError extends UserError {
 export class ConfigFunctionAppError extends UserError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to retrieve or update function app settings. Suggestions: ${[
-        tips.checkSubscriptionId,
-        tips.checkNetwork,
-        tips.retryRequest,
-      ].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.ConfigFunctionAppError"),
+        [tips.checkSubscriptionId, tips.checkNetwork, tips.retryRequest].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.ConfigFunctionAppError"),
+        [tips.checkSubscriptionId, tips.checkNetwork, tips.retryRequest].join(" ")
+      )
     );
   }
 }
 
-export class InstallTeamsfxBindingError extends UserError {
+export class InstallTeamsFxBindingError extends UserError {
   constructor() {
     super(
+      FunctionPluginInfo.alias,
       new.target.name,
-      `Failed to install Azure Functions bindings. Suggestions: ${[
-        tips.checkFunctionExtVersion,
-      ].join(" ")}`,
-      FunctionPluginInfo.alias
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.function.InstallTeamsFxBindingError"),
+        [tips.checkFunctionExtVersion].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.function.InstallTeamsFxBindingError"),
+        [tips.checkFunctionExtVersion].join(" ")
+      )
     );
   }
 }

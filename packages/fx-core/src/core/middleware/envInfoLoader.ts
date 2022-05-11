@@ -14,19 +14,19 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
+  Stage,
   Tools,
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
+import { TOOLS } from "../globalVars";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
 } from "../error";
 import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
+import { environmentManager, newEnvInfo } from "../environment";
 import {
   DEFAULT_FUNC_NAME,
   GLOBAL_CONFIG,
@@ -38,11 +38,12 @@ import {
   QuestionSelectSourceEnvironment,
   QuestionSelectTargetEnvironment,
 } from "../question";
-import { desensitize } from "./questionModel";
 import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo } from "../tools";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
+import { CoreHookContext } from "../types";
+import { isConfigUnifyEnabled } from "../..";
+import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -55,6 +56,12 @@ export type CreateEnvCopyInput = {
 
 export function EnvInfoLoaderMW(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
+    // if the feature flag TEAMSFX_CONFIG_UNIFY is enabled,
+    // don't skip the middleware for local debug.
+    if (ctx.method === "localDebug" || ctx.method === "localDebugV2") {
+      skip = !isConfigUnifyEnabled();
+    }
+
     if (shouldIgnored(ctx)) {
       await next();
       return;
@@ -67,7 +74,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 
@@ -163,7 +170,7 @@ export async function loadSolutionContext(
   ignoreEnvInfo = false
 ): Promise<Result<SolutionContext, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
 
   const cryptoProvider = new LocalCrypto(projectSettings.projectId);
@@ -257,13 +264,6 @@ export async function askTargetEnvironment(
       tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
       return err(res.error);
     }
-
-    const desensitized = desensitize(node, inputs);
-    tools.logProvider.info(
-      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
-        desensitized
-      )}`
-    );
   }
 
   if (!inputs.targetEnvName) {
@@ -283,7 +283,6 @@ export async function askNewEnvironment(
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
-  const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     TOOLS.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
@@ -302,13 +301,6 @@ export async function askNewEnvironment(
       ctx.result = err(res.error);
       return undefined;
     }
-
-    const desensitized = desensitize(node, inputs);
-    TOOLS.logProvider.info(
-      `[core:env] success to run question model for target environment, answers:${JSON.stringify(
-        desensitized
-      )}`
-    );
   }
 
   const sourceEnvName = inputs.sourceEnvName!;
@@ -347,7 +339,7 @@ async function getQuestionsForTargetEnv(
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
 
   const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
@@ -374,7 +366,7 @@ async function getQuestionsForNewEnv(
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
-    return err(NoProjectOpenedError());
+    return err(new NoProjectOpenedError());
   }
   const group = new QTreeNode({ type: "group" });
 

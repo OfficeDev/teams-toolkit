@@ -13,10 +13,10 @@ describe("ListPrompt Tests", function () {
   const sandbox = sinon.createSandbox();
   const question: Question = {
     choices: [
-      { name: "a", extra: { detail: "aaa" } },
+      { name: "a", extra: { title: "aa", detail: "aaa" } },
       { type: "separator" },
-      { name: "c", disabled: true },
-      { name: "d", extra: { detail: "ddd" } },
+      { name: "c", disabled: true, extra: { title: "cc" } },
+      { name: "d", extra: { title: "dd", detail: "ddd" } },
     ],
     name: "question",
     default: "d",
@@ -52,6 +52,6 @@ describe("ListPrompt Tests", function () {
     const prompt = new ListPrompt(question, rl as any, {});
     prompt.status = "answered";
     prompt.render();
-    expect(content).includes(chalk.cyan("d"));
+    expect(content).includes(chalk.cyan("dd"));
   });
 });

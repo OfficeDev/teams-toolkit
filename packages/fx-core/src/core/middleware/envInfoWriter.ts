@@ -3,11 +3,12 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
-import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, TOOLS } from "..";
-import { getStrings } from "../../common";
+import { Inputs, Stage, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { isConfigUnifyEnabled } from "../../common/tools";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
@@ -15,11 +16,17 @@ import { shouldIgnored } from "./projectSettingsLoader";
  */
 export function EnvInfoWriterMW(skip = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
+    // if the feature flag TEAMSFX_CONFIG_UNIFY is enabled,
+    // don't skip the middleware for local debug.
+    if (ctx.method === "localDebug" || ctx.method === "localDebugV2") {
+      skip = !isConfigUnifyEnabled();
+    }
+
     let error1: any = undefined;
     try {
       await next();
     } catch (e) {
-      if ((e as any)["name"] === getStrings().solution.CancelProvision) throw e;
+      if ((e as any)["name"] === "CancelProvision") throw e;
       error1 = e;
     }
     let error2: any = undefined;

@@ -30,11 +30,11 @@ As the person creating the project (creator), follow these steps to allow others
 
 ### Share the project
 1. [Creator] Upload your project to Github.
-2. [Creator] The required **.fx/config/localSettings.json** file is not committed to Github. You need to share this file with your collaborators.
+2. [Creator] The required **.fx/config/config.local.json** file is not committed to Github. You need to share this file with your collaborators.
 
 ### Collaborators
 1. [Collaborators] Clone the project.
-2. [Collaborators] Copy **.fx/config/localSettings.json** file to the project.
+2. [Collaborators] Copy **.fx/config/config.local.json** file to the project.
 3. [Collaborators] Login M365 account which has been added as collaborator.
 
 Now collaborators can start the application and debug locally on their machines.

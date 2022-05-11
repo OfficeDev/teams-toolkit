@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  CreateAccountStart = "create-account-start",
+  CreateAccount = "create-account",
+
   QuickStart = "quick-start",
 
   Samples = "samples",
@@ -18,6 +21,9 @@ export enum TelemetryEvent {
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
+
+  InitProjectStart = "init-project-start",
+  InitProject = "init-project",
 
   RunIconDebugStart = "run-icon-debug-start",
   RunIconDebug = "run-icon-debug",
@@ -37,12 +43,19 @@ export enum TelemetryEvent {
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
 
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
+
   EditManifestTemplate = "edit-manifest-template",
+  EditAadManifestTemplate = "edit-aad-manifest-template",
 
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
   Build = "build",
+
+  BuildAadManifestStart = "build-aad-manifest-start",
+  BuildAadManifest = "build-aad-manifest",
 
   ProvisionStart = "provision-start",
   Provision = "provision",
@@ -50,14 +63,17 @@ export enum TelemetryEvent {
   DeployStart = "deploy-start",
   Deploy = "deploy",
 
+  DeployAadManifestStart = "deploy-aad-manifest-start",
+  DeployAadManifest = "deploy-aad-manifest",
+
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
 
   PublishStart = "publish-start",
   Publish = "publish",
 
-  CICDGuide = "cicd-guide",
-  CICDInsiderGuide = "cicd-insider-guide",
+  AddCICDWorkflowsStart = "add-cicd-workflows-start",
+  AddCICDWorkflows = "add-cicd-workflows",
 
   ManageTeamsApp = "manage-teams-app",
 
@@ -83,6 +99,18 @@ export enum TelemetryEvent {
 
   ClickQuickStartCard = "click-quick-start-card",
 
+  ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
+  ClickValidatePrerequisites = "click-validate-prerequisites",
+  ClickOpenReadMe = "click-open-read-me",
+  ViewGuidedTutorials = "view-guided-tutorials",
+  OpenTutorial = "open-tutorial",
+
+  GetStartedPrerequisitesStart = "get-started-prerequisites-start",
+  GetStartedPrerequisites = "get-started-prerequisites",
+
+  DebugEnvCheckStart = "debug-envcheck-start",
+  DebugEnvCheck = "debug-envcheck",
+  DebugPreCheckStart = "debug-precheck-start",
   DebugPreCheck = "debug-precheck",
   DebugPrerequisitesStart = "debug-prerequisites-start",
   DebugPrerequisites = "debug-prerequisites",
@@ -90,6 +118,8 @@ export enum TelemetryEvent {
   DebugStop = "debug-stop",
   DebugNpmInstallStart = "debug-npm-install-start",
   DebugNpmInstall = "debug-npm-install",
+  DebugServiceStart = "debug-service-start",
+  DebugService = "debug-service",
 
   AutomaticNpmInstallStart = "automatic-npm-install-start",
   AutomaticNpmInstall = "automatic-npm-install",
@@ -103,6 +133,9 @@ export enum TelemetryEvent {
 
   OpenManifestConfigStateStart = "open-manifest-config-state-start",
   OpenManifestConfigState = "open-manifest-config-state",
+
+  OpenAadConfigStateStart = "open-aad-config-state-start",
+  OpenAadConfigState = "open-aad-config-state",
 
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
@@ -128,11 +161,14 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
+  ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickLocalPreview = "click-local-preview",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",
+  PreviewAadManifestFile = "preview-aad-manifest",
 
   MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
   MigrateTeamsTabApp = "migrate-teams-tab-app",
@@ -144,6 +180,15 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  ShowOutputChannel = "show-output-channel",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
+
+  // To track the effect of UX changes
+  // that prevents user performing concurrent operations.
+  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 }
 
 export enum TelemetryProperty {
@@ -165,11 +210,14 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
+  DebugProjectComponents = "debug-project-components",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
   DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
+  DebugServiceName = "debug-service-name",
+  DebugServiceExitCode = "debug-service-exit-code",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -185,9 +233,16 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  IsSpfx = "is-spfx",
+  IsM365 = "is-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
+  // Used with TreeViewCommandConcurrentExecution
+  RunningCommand = "running-command",
+  BlockedCommand = "blocked-command",
+  // Used with OpenTutorial
+  TutorialName = "tutorial-name",
 }
 
 export enum TelemetrySuccess {
@@ -202,7 +257,10 @@ export enum TelemetryTiggerFrom {
   CodeLens = "CodeLens",
   EditorTitle = "EditorTitle",
   SideBar = "SideBar",
+  WalkThrough = "WalkThrough",
+  Notification = "Notification",
   Other = "Other",
+  Auto = "Auto",
   Unknow = "Unknow",
 }
 

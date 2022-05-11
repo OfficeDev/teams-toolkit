@@ -1,11 +1,13 @@
 import * as chai from "chai";
 import * as spies from "chai-spies";
-import { Stage, returnUserError } from "@microsoft/teamsfx-api";
+import { Stage, UserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
-import { NoneFxError } from "../../../../fx-core/build";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
+import * as fs from "fs-extra";
+import { ext } from "../../../src/extensionVariables";
+import { Uri } from "vscode";
 
 chai.use(spies);
 const spy = chai.spy;
@@ -82,10 +84,17 @@ suite("ExtTelemetry", () => {
   });
 
   suite("Send Telemetry", () => {
+    const sandbox = sinon.createSandbox();
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-      const sandbox = sinon.createSandbox();
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
+      sandbox.stub(commonUtils, "isSPFxProject").returns(false);
+      sandbox.stub(fs, "pathExistsSync").returns(false);
+      ext.workspaceUri = Uri.file("test");
+    });
+
+    suiteTeardown(() => {
+      sandbox.restore();
     });
 
     test("sendTelemetryEvent", () => {
@@ -101,13 +110,14 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
+          "is-spfx": "false",
         },
         { numericMeasure: 123 }
       );
     });
 
     test("sendTelemetryErrorEvent", () => {
-      const error = returnUserError(new Error("test error message"), "test", "UserTestError");
+      const error = new UserError("test", "UserTestError", "test error message");
       ExtTelemetry.sendTelemetryErrorEvent(
         "sampleEvent",
         error,
@@ -123,6 +133,7 @@ suite("ExtTelemetry", () => {
           component: "extension",
           success: "no",
           "is-existing-user": "",
+          "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
@@ -133,7 +144,7 @@ suite("ExtTelemetry", () => {
     });
 
     test("sendTelemetryException", () => {
-      const error = returnUserError(new Error("test error message"), "test", "UserTestError");
+      const error = new UserError("test", "UserTestError", "test error message");
       ExtTelemetry.sendTelemetryException(
         error,
         { stringProp: "some string" },
@@ -146,6 +157,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
+          "is-spfx": "false",
         },
         { numericMeasure: 123 }
       );

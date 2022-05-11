@@ -7,6 +7,43 @@ import * as dotenv from "dotenv";
 import { AuthenticationConfiguration } from "../../src";
 const urljoin = require("url-join");
 
+export function extractIntegrationEnvVariables() {
+  dotenv.config();
+  if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_ACCOUNT");
+  }
+  const accountData = process.env.SDK_INTEGRATION_TEST_ACCOUNT.split(";");
+  if (accountData.length === 2) {
+    process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME = accountData[0];
+    process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD = accountData[1];
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_SQL) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_SQL");
+  }
+  const sqlData = process.env.SDK_INTEGRATION_TEST_SQL.split(";");
+  if (sqlData.length === 4) {
+    process.env.SDK_INTEGRATION_SQL_ENDPOINT = sqlData[0];
+    process.env.SDK_INTEGRATION_SQL_DATABASE_NAME = sqlData[1];
+    process.env.SDK_INTEGRATION_SQL_USER_NAME = sqlData[2];
+    process.env.SDK_INTEGRATION_SQL_PASSWORD = sqlData[3];
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_AAD) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_AAD");
+  }
+  const aadData = process.env.SDK_INTEGRATION_TEST_AAD.split(";");
+  if (aadData.length === 6) {
+    process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST = aadData[0];
+    process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID = aadData[1];
+    process.env.SDK_INTEGRATION_TEST_USER_OBJECT_ID = aadData[2];
+    process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID = aadData[3];
+    process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET = aadData[4];
+    process.env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT = aadData[5];
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_API_CERTPROVIDER) {
+    throw new Error("Please set env SDK_INTEGRATION_TEST_API_CERTPROVIDER");
+  }
+}
+
 /**
  * Get Access Token from a specific AAD app client id.
  * @param clientId - remote or local AAD App id.
@@ -84,7 +121,6 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
-  dotenv.config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
@@ -101,7 +137,6 @@ export function MockEnvironmentVariable(): () => void {
 }
 
 export function MockAuthenticationConfiguration(): AuthenticationConfiguration {
-  dotenv.config();
   return {
     clientId: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     clientSecret: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

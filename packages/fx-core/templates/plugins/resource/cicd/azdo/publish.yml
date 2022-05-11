@@ -1,0 +1,45 @@
+{{=<% %>=}}
+# This is just an example workflow for publishing Teams app.
+# You should customize it to meet your own requirements.
+trigger: none
+# Manually trigger this workflow, and you should pick the right branch.
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# Setup environment.
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.17.0'
+    checkLatest: true
+
+- task: Bash@3
+  env:
+    M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+    M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
+    M365_TENANT_ID: $(M365_TENANT_ID)
+    # To enable M365 account login by non-interactive mode. 
+    CI_ENABLED: 'true'
+    TEAMSFX_ENV_NAME: <%env_name%>
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -evuxo pipefail
+      
+      # Install the local dev dependency of @microsoft/teamsfx-cli. 
+      # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+      npm ci
+
+      # This step is to pack the Teams App as zip file,
+      # which can be used to be uploaded onto Teams Client for installation.
+      # Build Teams App's Package.
+      npx teamsfx package --env ${TEAMSFX_ENV_NAME}
+
+      # Upload Teams App's Package as artifacts.
+      # Choose what your workflow/pipeline platform provided to
+      # upload build/appPackage/appPackage.staging.zip as artifacts.
+
+      # Publish Teams App.
+      npx teamsfx publish --env ${TEAMSFX_ENV_NAME} 

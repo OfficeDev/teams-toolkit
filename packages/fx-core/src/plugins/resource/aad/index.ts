@@ -11,15 +11,17 @@ import {
   ok,
   Result,
   FxError,
+  AzureSolutionSettings,
+  Stage,
+  Platform,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
-import { Messages, Plugins, Telemetry } from "./constants";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
+import { Constants, Messages, Plugins, Telemetry } from "./constants";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
@@ -27,17 +29,14 @@ import { AadOwner, ResourcePermission } from "../../../common/permissionInterfac
 import "./v2";
 import "./v3";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { isAADEnabled } from "../../../common";
+import { getLocalizedString } from "../../../common/localizeUtils";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
-      // For scaffold, activeResourecPlugins is undefined
-      (!solutionSettings.activeResourcePlugins ||
-        solutionSettings.activeResourcePlugins?.includes(Plugins.pluginNameComplex))
-    );
+    return isAADEnabled(solutionSettings);
   }
 
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
@@ -94,15 +93,17 @@ export class AadAppForTeamsPlugin implements Plugin {
       const isLocal: boolean =
         func.params && func.params.isLocal !== undefined ? (func.params.isLocal as boolean) : false;
       return Promise.resolve(this.setApplicationInContext(ctx, isLocal));
+    } else if (func.method === "buildAadManifest") {
+      await this.pluginImpl.loadAndBuildManifest(ctx);
+      return ResultFactory.Success();
     }
     return err(
-      new SystemError(
-        "FunctionRouterError",
-        `Failed to route function call:${JSON.stringify(func)}`,
-        Plugins.pluginNameShort,
-        undefined,
-        Links.ISSUE_LINK
-      )
+      new SystemError({
+        source: Plugins.pluginNameShort,
+        name: "FunctionRouterError",
+        message: `Failed to route function call:${JSON.stringify(func)}`,
+        issueLink: Links.ISSUE_LINK,
+      })
     );
   }
 
@@ -134,6 +135,47 @@ export class AadAppForTeamsPlugin implements Plugin {
       ctx,
       Messages.EndListCollaborator.telemetry
     );
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.scaffold(ctx),
+      ctx,
+      Messages.EndScaffold.telemetry
+    );
+  }
+
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.runWithExceptionCatchingAsync(
+      () => this.pluginImpl.deploy(ctx),
+      ctx,
+      Messages.EndDeploy.telemetry
+    );
+  }
+
+  async getQuestions(
+    stage: Stage,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const aadQuestions = new QTreeNode({
+      type: "group",
+    });
+
+    if (
+      stage === Stage.deploy &&
+      (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
+    ) {
+      const node = new QTreeNode({
+        name: Constants.INCLUDE_AAD_MANIFEST,
+        type: "singleSelect",
+        staticOptions: ["yes", "no"],
+        title: getLocalizedString("core.aad.includeAadQuestionTitle"),
+        default: "no",
+      });
+      aadQuestions.addChild(node);
+    }
+
+    return ok(aadQuestions);
   }
 
   private async runWithExceptionCatchingAsync(
@@ -208,3 +250,4 @@ export class AadAppForTeamsPlugin implements Plugin {
 }
 
 export default new AadAppForTeamsPlugin();
+export { getPermissionMap } from "./permissions";

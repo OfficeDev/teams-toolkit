@@ -8,9 +8,9 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
-import { ConfigMap, PluginContext, ok, Platform, Plugin } from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
-import { newEnvInfo } from "../../../../../src/core/tools";
+import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { mockTokenProvider } from "./../../aad/helper";
 import { v4 as uuid } from "uuid";
@@ -87,8 +87,9 @@ describe("Provision Teams app with Azure", () => {
 
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: undefined,
+      tabEndpoint: "https://www.endpoint.com/",
       tabDomain: undefined,
+      tabIndexPath: "/index",
       aadId: uuid(),
       botDomain: "botDomain",
       botId: uuid(),
@@ -96,6 +97,7 @@ describe("Provision Teams app with Azure", () => {
       teamsAppId: uuid(),
     });
 
+    // TODO: why get capabilities via manifest
     const teamsAppId = await plugin.postProvision(ctx);
     console.log(teamsAppId);
     chai.assert.isTrue(teamsAppId.isOk());

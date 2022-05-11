@@ -10,7 +10,7 @@ import * as path from "path";
 import AdmZip from "adm-zip";
 import { v2, v3, ProjectSettings, Platform } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/v3/plugin";
-import { newEnvInfoV3 } from "../../../../../src/core/tools";
+import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { MockUserInteraction, getAzureProjectRoot } from "../helper";

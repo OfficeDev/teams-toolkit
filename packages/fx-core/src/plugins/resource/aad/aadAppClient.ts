@@ -4,15 +4,7 @@
 import { FxError, GraphTokenProvider, PluginContext, v2 } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import {
-  ConfigFilePath,
-  ConfigKeys,
-  Constants,
-  Messages,
-  ProgressDetail,
-  Telemetry,
-  UILevels,
-} from "./constants";
+import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -27,18 +19,20 @@ import {
   CheckPermissionError,
   GrantPermissionError,
   ListCollaboratorError,
+  UpdateAadAppError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinition";
 import { ResultFactory } from "./results";
-import { Utils } from "./utils/common";
-import { ProvisionConfig } from "./utils/configs";
+import { ProvisionConfig, Utils } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 import { getAllowedAppIds } from "../../../common/tools";
-import { TOOLS } from "../../../core";
+import { TOOLS } from "../../../core/globalVars";
+import { AADManifest } from "./interfaces/AADManifest";
+import { AadAppManifestManager } from "./aadAppManifestManager";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -46,6 +40,23 @@ function delay(ms: number) {
 }
 
 export class AadAppClient {
+  public static async createAadAppUsingManifest(
+    stage: string,
+    manifest: AADManifest,
+    config: ProvisionConfig
+  ): Promise<void> {
+    try {
+      manifest = (await this.retryHanlder(stage, () =>
+        AadAppManifestManager.createAadApp(TokenProvider.token as string, manifest)
+      )) as AADManifest;
+
+      config.clientId = manifest.appId!;
+      config.objectId = manifest.id!;
+    } catch (error) {
+      throw AadAppClient.handleError(error, CreateAppError);
+    }
+  }
+
   public static async createAadApp(stage: string, config: ProvisionConfig): Promise<void> {
     try {
       const provisionObject = AadAppClient.getAadAppProvisionObject(
@@ -87,6 +98,30 @@ export class AadAppClient {
       throw AadAppClient.handleError(error, CreateSecretError);
     }
   }
+
+  public static async updateAadAppUsingManifest(
+    stage: string,
+    manifest: AADManifest,
+    skip = false
+  ): Promise<void> {
+    try {
+      await AadAppClient.retryHanlder(stage, () =>
+        AadAppManifestManager.updateAadApp(TokenProvider.token as string, manifest)
+      );
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateAadApp,
+          Messages.UpdateAadHelpMessage()
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateAadAppError, error.message);
+      }
+    }
+  }
+
   public static async updateAadAppRedirectUri(
     stage: string,
     objectId: string,
@@ -193,6 +228,46 @@ export class AadAppClient {
       }
     }
   }
+
+  public static async getAadAppUsingManifest(
+    stage: string,
+    objectId: string,
+    clientSecret: string | undefined,
+    graphTokenProvider?: GraphTokenProvider,
+    envName?: string,
+    skip = false
+  ): Promise<ProvisionConfig> {
+    let manifest: AADManifest;
+    try {
+      manifest = (await this.retryHanlder(stage, () =>
+        AadAppManifestManager.getAadAppManifest(TokenProvider.token as string, objectId)
+      )) as AADManifest;
+    } catch (error) {
+      const tenantId = await Utils.getCurrentTenantId(graphTokenProvider);
+      const fileName = Utils.getConfigFileName(envName);
+      throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
+    }
+
+    const config = new ProvisionConfig(!envName);
+    if (
+      manifest.oauth2Permissions &&
+      manifest.oauth2Permissions[0] &&
+      manifest.oauth2Permissions[0].id
+    ) {
+      config.oauth2PermissionScopeId = manifest.oauth2Permissions[0].id;
+    } else {
+      const fileName = Utils.getConfigFileName(envName);
+      throw ResultFactory.UserError(
+        GetAppConfigError.name,
+        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
+      );
+    }
+    config.objectId = objectId;
+    config.clientId = manifest.appId!;
+    config.password = clientSecret;
+    return config;
+  }
+
   public static async getAadApp(
     stage: string,
     objectId: string,
@@ -312,7 +387,7 @@ export class AadAppClient {
       }
     }
 
-    throw new Error(AppStudioErrorMessage.ReachRetryLimit);
+    throw new Error(AppStudioErrorMessage.ReachRetryLimit[0]);
   }
   private static getAadAppProvisionObject(
     displayName: string,

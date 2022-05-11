@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
-import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
+import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
@@ -24,7 +24,7 @@ const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
   "todo-list-SPFx": ToDoListSharepoint,
   "share-now": ShareNow,
-  "in-meeting-app": InMeetingApp,
+  "hello-world-in-meeting": InMeetingApp,
   "faq-plus": FAQPlus,
   "todo-list-with-Azure-backend-M365": ToDoListM365,
   "NPM-search-connector-M365": NpmSearchConnectorM365,
@@ -40,7 +40,6 @@ export default class SampleGallery extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
     this.state = {
-      baseUrl: "",
       samples: [],
       highlightSample: "",
     };
@@ -80,7 +79,6 @@ export default class SampleGallery extends React.Component<any, any> {
             <div className="sample-stack">
               <SampleAppCardList
                 samples={this.state.samples}
-                baseUrl={this.state.baseUrl}
                 highlightSample={this.highlightSample}
               />
             </div>
@@ -88,7 +86,7 @@ export default class SampleGallery extends React.Component<any, any> {
         )}
         {this.state.highlightSample != "" && (
           <SampleDetailPage
-            baseUrl={this.state.baseUrl}
+            url={hightSample.url}
             image={imageMapping[hightSample.id]}
             tags={hightSample.tags}
             time={hightSample.time}
@@ -110,7 +108,6 @@ export default class SampleGallery extends React.Component<any, any> {
       case EventMessages.LoadSampleCollection:
         const sampleCollection = event.data.data as SampleCollection;
         this.setState({
-          baseUrl: sampleCollection.baseUrl,
           samples: sampleCollection.samples,
         });
         break;
@@ -134,11 +131,10 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
   render() {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
-      const baseUrl = this.props.baseUrl;
       return samples.map((sample, index) => {
         return (
           <SampleCard
-            baseUrl={baseUrl}
+            url={sample.url}
             image={imageMapping[sample.id]}
             tags={sample.tags}
             time={sample.time}

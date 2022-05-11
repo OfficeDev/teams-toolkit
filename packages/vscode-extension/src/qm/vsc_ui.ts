@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { remove } from "lodash";
 import {
   Disposable,
   InputBox,
-  QuickInputButton,
   QuickInputButtons,
   QuickPick,
   QuickPickItem,
@@ -15,6 +15,9 @@ import {
   ExtensionContext,
   commands,
   extensions,
+  QuickInputButton,
+  ThemeIcon,
+  QuickPickItemKind,
 } from "vscode";
 import {
   UserCancelError,
@@ -28,7 +31,6 @@ import {
   SelectFolderResult,
   OptionItem,
   Result,
-  returnSystemError,
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
@@ -44,15 +46,17 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  SystemError,
+  StaticOptions,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
-import * as StringResources from "../resources/Strings.json";
 import { ProgressHandler } from "../progressHandler";
-import { exp } from "../exp";
+import * as exp from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
 import * as packageJson from "../../package.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -69,20 +73,41 @@ function getOptionItem(item: FxQuickPickItem): OptionItem {
   };
 }
 
-function getFxQuickPickItem(item: string | OptionItem): FxQuickPickItem {
-  if (typeof item === "string")
-    return {
-      id: item,
-      label: item,
-    };
-  else
-    return {
-      id: item.id,
-      label: item.label,
-      description: item.description,
-      detail: item.detail,
-      data: item.data,
-    };
+function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
+  if (options && options.length > 0 && typeof options[0] === "string") {
+    return (options as string[]).map((option: string) => {
+      return { id: option, label: option };
+    });
+  } else {
+    const result: FxQuickPickItem[] = [];
+    const candidates = [...options];
+    while (candidates.length > 0) {
+      const groupName = (candidates[0] as OptionItem).groupName;
+      const group = remove(
+        candidates as OptionItem[],
+        (option: OptionItem) => option.groupName === groupName
+      );
+      if (groupName) {
+        result.push({
+          id: groupName,
+          label: groupName,
+          kind: QuickPickItemKind.Separator,
+        });
+      }
+      result.push(
+        ...group.map((option) => {
+          return {
+            id: option.id,
+            label: option.label,
+            description: option.description,
+            detail: option.detail,
+            data: option.data,
+          };
+        })
+      );
+    }
+    return result;
+  }
 }
 
 function toIdSet(items: ({ id: string } | string)[]): Set<string> {
@@ -119,23 +144,31 @@ export class VsCodeUI implements UserInteraction {
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(StringResources.vsc.qm.emptySelection),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
-      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      const buttons: QuickInputButton[] = option.buttons
+        ? option.buttons.map((button) => {
+            return {
+              iconPath: new ThemeIcon(button.icon),
+              tooltip: button.tooltip,
+            } as QuickInputButton;
+          })
+        : [];
+      if (option.step && option.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back, ...buttons];
+      } else {
+        quickPick.buttons = buttons;
+      }
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
@@ -144,7 +177,7 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
+          quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -182,7 +215,16 @@ export class VsCodeUI implements UserInteraction {
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              else {
+              else if (option.buttons && buttons.indexOf(button) !== -1) {
+                const curButton = option.buttons?.find((btn) => {
+                  return (
+                    btn.icon === (button.iconPath as ThemeIcon).id && btn.tooltip === button.tooltip
+                  );
+                });
+                if (curButton) {
+                  commands.executeCommand(curButton.command);
+                }
+              } else {
                 quickPick.selectedItems = quickPick.activeItems;
                 onDidAccept();
               }
@@ -203,26 +245,24 @@ export class VsCodeUI implements UserInteraction {
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     if (option.options.length === 0) {
       return err(
-        returnSystemError(
-          new Error(StringResources.vsc.qm.emptySelection),
+        new SystemError(
           ExtensionSource,
-          ExtensionErrors.EmptySelectOption
+          ExtensionErrors.EmptySelectOption,
+          getDefaultString("teamstoolkit.qm.emptySelection"),
+          localize("teamstoolkit.qm.emptySelection")
         )
       );
     }
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
-      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      if (option.step && option.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.placeholder = option.placeholder
-        ? option.placeholder + StringResources.vsc.qm.multiSelectKeyboard
-        : StringResources.vsc.qm.multiSelectKeyboard;
+        ? option.placeholder + localize("teamstoolkit.qm.multiSelectKeyboard")
+        : localize("teamstoolkit.qm.multiSelectKeyboard");
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
@@ -231,7 +271,7 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
+          quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -320,16 +360,13 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async inputText(option: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
       inputBox.title = option.title;
-      if (option.step && option.step > 1) inputBox.buttons = [QuickInputButtons.Back, okButton];
-      else inputBox.buttons = [okButton];
+      if (option.step && option.step > 1) {
+        inputBox.buttons = [QuickInputButtons.Back];
+      }
       inputBox.placeholder = option.placeholder;
       inputBox.value = option.default || "";
       inputBox.ignoreFocusOut = true;
@@ -413,16 +450,13 @@ export class VsCodeUI implements UserInteraction {
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
     /// TODO: use generic constraints.
-    const okButton: QuickInputButton = {
-      iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
-      tooltip: StringResources.vsc.qm.ok,
-    };
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       quickPick.title = config.title;
-      if (config.step && config.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
+      if (config.step && config.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.ignoreFocusOut = true;
       quickPick.placeholder = config.placeholder;
       quickPick.matchOnDescription = false;
@@ -454,7 +488,11 @@ export class VsCodeUI implements UserInteraction {
         /// set items
         quickPick.items = [
           {
-            label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+            label:
+              config.prompt ||
+              localize(
+                type === "folder" ? "teamstoolkit.qm.selectFolder" : "teamstoolkit.qm.selectFile"
+              ),
             detail: defaultValue,
           },
         ];
@@ -474,7 +512,7 @@ export class VsCodeUI implements UserInteraction {
               const resultString = results.join(";");
               quickPick.items = [
                 {
-                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  label: config.prompt || localize("teamstoolkit.qm.selectFile"),
                   detail: resultString,
                 },
               ];
@@ -483,12 +521,20 @@ export class VsCodeUI implements UserInteraction {
               const result = uriList[0].fsPath;
               quickPick.items = [
                 {
-                  label: config.prompt || StringResources.vsc.qm.selectFileOrFolder,
+                  label:
+                    config.prompt ||
+                    localize(
+                      type === "folder"
+                        ? "teamstoolkit.qm.selectFolder"
+                        : "teamstoolkit.qm.selectFile"
+                    ),
                   detail: result,
                 },
               ];
               resolve(ok({ type: "success", result: result }));
             }
+          } else {
+            resolve(err(UserCancelError));
           }
         };
         const onDidChangeSelection = async function (
@@ -593,9 +639,7 @@ export class VsCodeUI implements UserInteraction {
           let lastReport = 0;
           const showProgress = config.showProgress === true;
           const total = task.total ? task.total : 1;
-          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${
-            task.name ? task.name : ""
-          }`;
+          const head = task.name ? task.name : "";
           const report = (task: RunnableTask<T>) => {
             const current = task.current ? task.current : 0;
             const body = showProgress
@@ -603,7 +647,7 @@ export class VsCodeUI implements UserInteraction {
               : `: [${current + 1}/${total}]`;
             const tail = task.message
               ? ` ${task.message}`
-              : StringResources.vsc.progressHandler.prepareTask;
+              : localize("teamstoolkit.progressHandler.prepareTask");
             const message = `${head}${body}${tail}`;
             if (showProgress)
               progress.report({

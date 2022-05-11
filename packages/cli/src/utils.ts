@@ -29,6 +29,7 @@ import {
   ProjectSettingsFileName,
   EnvStateFileNameTemplate,
   InputConfigsFolderName,
+  SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
@@ -42,8 +43,10 @@ import {
   isSPFxProject,
   PluginNames,
   isValidProject,
+  isConfigUnifyEnabled,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import CLIUIInstance from "./userInteraction";
 
 export type Json = { [_: string]: any };
 
@@ -94,7 +97,6 @@ export function toYargsOptions(data: Question): Options {
       hidden: !!(data as any).hide,
       global: false,
       type: "string",
-      coerce: choices ? toLocaleLowerCase : undefined,
     };
   }
   return {
@@ -105,7 +107,6 @@ export function toYargsOptions(data: Question): Options {
     hidden: !!(data as any).hide,
     global: false,
     type: "string",
-    coerce: choices ? toLocaleLowerCase : undefined,
   };
 }
 
@@ -224,6 +225,24 @@ export function readLocalSettingsJsonFile(projectFolder: string): Result<Json, F
   }
 }
 
+export function readLocalStateJsonFile(projectFolder: string): Result<Json, FxError> {
+  const localStatePath = path.join(
+    projectFolder,
+    `.${ConfigFolderName}`,
+    `${StatesFolderName}`,
+    "state.local.json"
+  );
+  if (!fs.existsSync(localStatePath)) {
+    return err(ConfigNotFoundError(localStatePath));
+  }
+  try {
+    const config = fs.readJsonSync(localStatePath);
+    return ok(config);
+  } catch (e) {
+    return err(ReadFileError(e));
+  }
+}
+
 export function readSettingsFileSync(projectFolder: string): Result<Json, FxError> {
   const filePath = getSettingsFilePath(projectFolder);
   if (!fs.existsSync(filePath)) {
@@ -306,7 +325,6 @@ export function isWorkspaceSupported(workspace: string): boolean {
 
   const checklist: string[] = [
     p,
-    `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
   ];
@@ -343,6 +361,27 @@ export function getTeamsAppTelemetryInfoByEnv(
   }
 }
 
+/**
+ * Ask user to select environment, local is included
+ */
+export async function askTargetEnvironment(projectDir: string): Promise<Result<string, FxError>> {
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectDir);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+  const config: SingleSelectConfig = {
+    name: "targetEnvName",
+    title: "Select an environment",
+    options: envProfilesResult.value.concat([environmentManager.getLocalEnvName()]),
+  };
+  const selectedEnv = await CLIUIInstance.selectOption(config);
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  } else {
+    return ok(selectedEnv.value.result as string);
+  }
+}
+
 // Only used for telemetry
 export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
   if (!rootFolder) {
@@ -367,15 +406,28 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   }
 
   if (isWorkspaceSupported(rootfolder)) {
-    const result = readLocalSettingsJsonFile(rootfolder);
-    if (result.isErr()) {
-      return undefined;
-    }
-    const localSettings = result.value;
-    try {
-      return localSettings.teamsApp.appId;
-    } catch (error) {
-      return undefined;
+    if (isConfigUnifyEnabled()) {
+      const result = readLocalStateJsonFile(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
+      const localState = result.value;
+      try {
+        return localState[PluginNames.APPST].teamsAppId;
+      } catch (error) {
+        return undefined;
+      }
+    } else {
+      const result = readLocalSettingsJsonFile(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
+      const localSettings = result.value;
+      try {
+        return localSettings.teamsApp.appId;
+      } catch (error) {
+        return undefined;
+      }
     }
   }
 

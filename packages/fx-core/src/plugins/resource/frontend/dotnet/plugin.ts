@@ -6,6 +6,8 @@ import {
   ok,
   ReadonlyPluginConfig,
   SolutionSettings,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
@@ -19,7 +21,6 @@ import {
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { scaffoldFromZipPackage } from "./ops/scaffold";
-import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
 import { DotnetConfigKey as ConfigKey } from "./enum";
@@ -60,6 +61,7 @@ import {
 import { PluginNames } from "../../../solution/fx-solution/constants";
 
 type Site = WebSiteManagementModels.Site;
+type TeamsFxResult = Result<any, FxError>;
 
 export interface DotnetPluginConfig {
   /* Config from solution */
@@ -297,7 +299,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy);
-    await ProgressHelper.startProgress(ctx, DeployProgress);
+    await ProgressHelper.startProgress(ctx.ui, DeployProgress);
 
     const config = this.syncConfigFromContext(ctx);
 

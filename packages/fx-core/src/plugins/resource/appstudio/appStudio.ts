@@ -7,7 +7,8 @@ import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { getAppStudioEndpoint } from "../../..";
+import { getAppStudioEndpoint } from "../../../common/tools";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -65,9 +66,11 @@ export namespace AppStudioClient {
     } catch (e: any) {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
-        `Cannot create teams app due to ${e.name}: ${e.message}` +
+        (e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "") +
         (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
-      const error = new Error(message);
+      const error = new Error(
+        getLocalizedString("error.appstudio.teamsAppCreateFailed", e.name, e.message, message)
+      );
       if (e.response?.status) {
         error.name = e.response?.status;
       }

@@ -10,6 +10,9 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  InitProjectStart = "init-project-start",
+  InitProject = "init-project",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 
@@ -28,6 +31,12 @@ export enum TelemetryEvent {
   BuildStart = "build-start",
   Build = "build",
 
+  AddCICDStart = "add-cicd-start",
+  AddCICD = "add-cicd",
+
+  ConnectExistingApiStart = "connect-existing-api-start",
+  ConnectExistingApi = "connect-existing-api",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 
@@ -39,9 +48,6 @@ export enum TelemetryEvent {
 
   PublishStart = "publish-start",
   Publish = "publish",
-
-  InitStart = "init-start",
-  Init = "init",
 
   PreviewStart = "preview-start",
   Preview = "preview",
@@ -72,6 +78,9 @@ export enum TelemetryEvent {
   EnvList = "env-list",
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
+
+  AddSsoStart = "add-sso-start",
+  AddSso = "add-sso",
 }
 
 export enum TelemetryProperty {
@@ -94,6 +103,7 @@ export enum TelemetryProperty {
   PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
   PreviewBrowser = "preview-browser",
+  PreviewHub = "preview-hub",
   PreviewNpmInstallName = "preview-npm-install-name",
   PreviewGulpCertName = "preview-gulp-cert-name",
   PreviewNpmInstallExitCode = "preview-npm-install-exit-code",
@@ -103,11 +113,13 @@ export enum TelemetryProperty {
   PreviewServiceName = "preview-service-name",
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
+  PreviewPrerequisitesCheckTime = "preview-prerequisites-check-time",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
   NewProjectId = "new-project-id",
+  IsM365 = "is-m365",
 }
 
 export enum TelemetrySuccess {

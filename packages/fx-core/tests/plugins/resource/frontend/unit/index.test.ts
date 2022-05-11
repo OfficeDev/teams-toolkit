@@ -17,10 +17,7 @@ import {
   NoStorageError,
   StaticWebsiteDisabledError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
-import {
-  FrontendConfigInfo,
-  FrontendPathInfo,
-} from "../../../../../src/plugins/resource/frontend/constants";
+import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
@@ -55,15 +52,8 @@ describe("FrontendPlugin", () => {
 
     before(() => {
       const config: any = {};
-      config[
-        path.join(
-          getTemplatesFolder(),
-          "plugins",
-          "resource",
-          FrontendPathInfo.TemplateFolderName,
-          "tab.js.default.zip"
-        )
-      ] = new AdmZip().toBuffer();
+      config[path.join(getTemplatesFolder(), "fallback", "tab.js.default.zip")] =
+        new AdmZip().toBuffer();
       mock(config);
     });
 

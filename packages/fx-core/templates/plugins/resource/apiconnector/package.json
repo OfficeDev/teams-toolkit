@@ -1,0 +1,5 @@
+{
+    "dependencies": {
+        "@microsoft/teamsfx": "^0.7.0"
+    }
+}

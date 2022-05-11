@@ -4,14 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import {
-  Platform,
-  PluginContext,
-  ProjectSettings,
-  TokenProvider,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, ProjectSettings, TokenProvider, v3 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import {
   mockTokenProviderAzure,
@@ -39,13 +32,12 @@ import * as uuid from "uuid";
 import {
   MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
   MockedSharepointProvider,
   MockedV2Context,
 } from "../../../solution/util";
-import * as path from "path";
-import { randomAppName } from "../../../../core/utils";
-import os from "os";
+import * as tool from "../../../../../src/common/tools";
+import fs from "fs-extra";
+import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -173,6 +165,55 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(postProvision.isOk());
   });
 
+  it("provision: using manifest", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    context = await TestHelper.pluginContext(new Map(), true, false, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    sinon
+      .stub<any, any>(AadAppManifestManager, "loadAadManifest")
+      .resolves({ id: "", name: "fake-aad-name", oauth2Permissions: [{}] });
+    sinon
+      .stub<any, any>(AadAppManifestManager, "createAadApp")
+      .resolves({ appId: "fake-appId", id: "fake-object-id" });
+
+    const provision = await plugin.provision(context);
+    chai.assert.isTrue(provision.isOk());
+
+    mockProvisionResult(context);
+    const setAppId = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppId.isOk());
+
+    sinon.stub(AadAppManifestManager, "updateAadApp").resolves();
+    const postProvision = await plugin.postProvision(context);
+    chai.assert.isTrue(postProvision.isOk());
+  });
+
+  it("setApplicationInContext: using manifest", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    context = await TestHelper.pluginContext(new Map(), true, true, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    mockProvisionResult(context);
+    const setAppId = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppId.isOk());
+    chai.assert.equal(
+      context.envInfo.state.get("fx-resource-aad-app-for-teams").frontendEndpoint,
+      context.envInfo.state.get("fx-resource-frontend-hosting").endpoint
+    );
+    chai.assert.equal(
+      context.envInfo.state.get("fx-resource-aad-app-for-teams").botId,
+      context.envInfo.state.get("fx-resource-bot").botId
+    );
+
+    chai.assert.equal(
+      context.envInfo.state.get("fx-resource-aad-app-for-teams").botEndpoint,
+      context.envInfo.state.get("fx-resource-bot").siteEndpoint
+    );
+  });
+
   it("local debug: tab and bot", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, true);
     context.appStudioToken = mockTokenProvider();
@@ -295,6 +336,103 @@ describe("AadAppForTeamsPlugin: CI", () => {
       chai.assert.equal(res.value[0].userObjectId, "id");
     }
   });
+
+  it("scaffold without bot", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    sinon.stub(fs, "ensureDir").resolves();
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const fakeManifest = {
+      id: "{{state.fx-resource-aad-app-for-teams.objectId}}",
+      appId: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+      replyUrlsWithType: [
+        {
+          url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
+          type: "Web",
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(fakeManifest);
+    sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 3);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
+      chai.assert.equal(
+        data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html"
+      );
+    });
+    const result = await plugin.scaffold(context);
+    chai.assert.equal(result.isOk(), true);
+  });
+
+  it("scaffold with bot", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    sinon.stub(fs, "ensureDir").resolves();
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    (context.projectSettings!.solutionSettings as any).capabilities.push("Bot");
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const fakeManifest = {
+      id: "{{state.fx-resource-aad-app-for-teams.objectId}}",
+      appId: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+      replyUrlsWithType: [
+        {
+          url: "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html",
+          type: "Web",
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(fakeManifest);
+    sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 4);
+      chai.assert.deepEqual(fakeManifest.replyUrlsWithType[0], data.replyUrlsWithType[0]);
+      chai.assert.equal(
+        data.replyUrlsWithType[1].url,
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[2].url,
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html"
+      );
+      chai.assert.equal(
+        data.replyUrlsWithType[3].url,
+        "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html"
+      );
+    });
+    const result = await plugin.scaffold(context);
+
+    chai.assert.equal(result.isOk(), true);
+  });
+
+  it("deploy", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
+    sinon.stub<any, any>(AadAppManifestManager, "loadAadManifest").resolves({
+      id: "fake-aad-id",
+      name: "fake-aad-name",
+      replyUrlsWithType: [{ url: "fake-url", type: "Web" }],
+      identifierUris: ["fake-identifier-uri"],
+    });
+    sinon.stub(AadAppManifestManager, "updateAadApp").resolves();
+    sinon.stub(fs, "ensureDir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    await plugin.deploy(context);
+  });
 });
 
 describe("AadAppForTeamsPlugin: Azure", () => {
@@ -327,7 +465,6 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
     context.graphTokenProvider = mockTokenProviderAzureGraph(graphToken as string);
-
     const provision = await plugin.provision(context);
     chai.assert.isTrue(provision.isOk());
 

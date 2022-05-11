@@ -18,7 +18,7 @@ import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtensionContext } from "vscode";
 
 suite("Mock Tests", () => {
-  suite("User Input", () => {
+  suite("User Input", function () {
     test("Creation", () => {
       const ui: TestUserInput = new TestUserInput();
       chai.assert(ui["inputs"].length === 0);

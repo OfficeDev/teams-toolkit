@@ -1,26 +1,6 @@
-## BT.FreeServerFarmsQuotaError
-
-### Error Message
-
-The maximum number of Free App Service Plan allowed in a Subscription is 10.
-
-### Mitigation
-
-There are two methods to mitigate this issue:
-
-#### Method #1
-1. Delete other Free App Service Plan. Just go to [Azure Portal](https://portal.azure.com/), find some useless Free App Service Plans and delete them. To quickly filter Free App Service Plan, use Azure Cli Command: `az appservice plan list --query "[?sku.tier=='Free']"`. 
-2. Run `Provision` command again.
-
-
-#### Method #2
-1. Open `.fx\env.default.json` file.
-2. Set value of 'skuName' config of 'fx-resource-bot' to, for example, B1.
-3. Run `Provision` command again.
-
 ## BT.MissingSubscriptionRegistrationError
 
-### Eror Message
+### Error Message
 
 The subscription didn't register to use namespace 'Microsoft.BotService'.
 
@@ -52,3 +32,24 @@ Suppose an existing AAD has been registered, you can reuse this AAD by configuri
     }
 ```
 4. Provision the Bot, then it will reuse this AAD and won't create a new one.
+
+## How can I troubleshoot issues when Teams Bot isn't responding on Azure?
+ 
+For general troubleshooting guidance, please refer to [Bot Framework Troubleshooting Index](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-troubleshoot-index?view=azure-bot-service-4).
+
+When Teams Bot isn't responding, you probably want to check its status on Azure. There're two fundamental points you'd better check first:
+### 1. Is the Teams Bot deployed successfully? Is the Teams Bot up and running? Is the basic communication good?
+1. Log into Azure by [portal](https://portal.azure.com/) and find your Azure Bot's app service.
+1. Check if the deployment artifacts are existing under the folder of `wwwroot` by Console in control panel:
+![image](../images/fx-core/bot/check-console.png)
+or the scm website `<yourwebsite>.scm.azurewebsites.net/DebugConsole`:
+![image](../images/fx-core/bot/check-scm.png)
+1. If you also host some static pages with the Bot, you can try to access the target urls to see if they're available. 
+### 2. Is there anything wrong in the server log or application log?
+1. As above, you have to log into Azure first.
+1. Turn on app service logs.
+![image](../images/fx-core/bot/app-service-logs.png)
+1. Click `Log stream`, then try to send some messages to the Teams Bot.
+1. Try to see if there any logs streamed out after a short delay.
+![image](../images/fx-core/bot/log-stream.png)
+1. Hopefully, you may find some insights about the reason why the Teams Bot isn't responding.

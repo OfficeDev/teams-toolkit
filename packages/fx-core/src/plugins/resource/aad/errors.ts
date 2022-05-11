@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { ConfigKeys, Plugins } from "./constants";
 
 const referHelpLink = "Please refer to the help link for further steps.";
@@ -8,173 +9,417 @@ const aadHelpLink = "https://aka.ms/teamsfx-aad-help";
 
 export interface AadError {
   name: string;
-  message: (...args: string[]) => string;
+  message: (...args: string[]) => [string, string];
   helpLink?: string;
 }
 
 export const GetAppError: AadError = {
   name: "AadGetAppError",
-  message: (objectId: string, tenantId: string, fileName: string) =>
-    `Failed to get AAD app with Object Id "${objectId}" in tenant "${tenantId}". ` +
-    "Please make sure the object id is valid, " +
-    `or delete 'objectId' under ${Plugins.pluginNameComplex} in ${fileName} and try again.`,
+  message: (objectId: string, tenantId: string, fileName: string) => [
+    getDefaultString(
+      "error.aad.GetAppError",
+      objectId,
+      tenantId,
+      Plugins.pluginNameComplex,
+      fileName
+    ),
+    getLocalizedString(
+      "error.aad.GetAppError",
+      objectId,
+      tenantId,
+      Plugins.pluginNameComplex,
+      fileName
+    ),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const GetAppConfigError: AadError = {
   name: "AadGetAppConfigError",
-  message: (config: string, fileName: string) =>
-    `Failed to get ${config} from Azure AD app settings.` +
-    "Please make sure Azure AD app is correctly configured, " +
-    `or delete 'objectId' under ${Plugins.pluginNameComplex} in ${fileName} and try again.`,
+  message: (config: string, fileName: string) => [
+    getDefaultString("error.aad.GetAppConfigError", config, Plugins.pluginNameComplex, fileName),
+    getLocalizedString("error.aad.GetAppConfigError", config, Plugins.pluginNameComplex, fileName),
+  ],
 };
 
 export const GetSkipAppConfigError: AadError = {
   name: "AadGetSkipAppConfigError",
-  message: (fileName: string) =>
-    `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
-    `${ConfigKeys.accessAsUserScopeId} under ${Plugins.auth} in ${fileName}.`,
+  message: (fileName: string) => [
+    getDefaultString(
+      "error.aad.GetSkipAppConfigError",
+      ConfigKeys.objectId,
+      ConfigKeys.clientId,
+      ConfigKeys.clientSecret,
+      ConfigKeys.accessAsUserScopeId,
+      Plugins.auth,
+      fileName
+    ),
+    getLocalizedString(
+      "error.aad.GetSkipAppConfigError",
+      ConfigKeys.objectId,
+      ConfigKeys.clientId,
+      ConfigKeys.clientSecret,
+      ConfigKeys.accessAsUserScopeId,
+      Plugins.auth,
+      fileName
+    ),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const CreateAppError: AadError = {
   name: "AadCreateAppError",
-  message: () => `Failed to create an app in Azure Active Directory.`,
+  message: () => [
+    getDefaultString("error.aad.CreateAppError"),
+    getLocalizedString("error.aad.CreateAppError"),
+  ],
 };
 
 export const CreateSecretError: AadError = {
   name: "AadCreateSecretError",
-  message: () => `Failed to create an application secret in Azure Active Directory.`,
+  message: () => [
+    getDefaultString("error.aad.CreateSecretError"),
+    getLocalizedString("error.aad.CreateSecretError"),
+  ],
 };
 
 export const UpdateRedirectUriError: AadError = {
   name: "UpdateRedirectUriError",
-  message: () => `Failed to update application redirect URI in Azure Active Directory.`,
+  message: () => [
+    getDefaultString("error.aad.UpdateRedirectUriError"),
+    getLocalizedString("error.aad.UpdateRedirectUriError"),
+  ],
+};
+
+export const UpdateAadAppError: AadError = {
+  name: "UpdateAadAppError",
+  message: (reason: string): [string, string] => [
+    getDefaultString("error.aad.UpdateAadAppError", reason),
+    getLocalizedString("error.aad.UpdateAadAppError", reason),
+  ],
 };
 
 export const UpdateAppIdUriError: AadError = {
   name: "UpdateAppIdUriError",
-  message: () => `Failed to update Application ID URI in Azure Active Directory. ${referHelpLink}`,
+  message: () => [
+    getDefaultString("error.aad.UpdateAppIdUriError", referHelpLink),
+    getLocalizedString("error.aad.UpdateAppIdUriError", referHelpLink),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const UpdatePermissionError: AadError = {
   name: "AadUpdatePermissionError",
-  message: () => `Failed to update application permission in Azure Active Directory.`,
+  message: () => [
+    getDefaultString("error.aad.UpdatePermissionError"),
+    getLocalizedString("error.aad.UpdatePermissionError"),
+  ],
 };
 
 export const AppIdUriInvalidError: AadError = {
   name: "AadAppIdUriInvalid",
-  message: () => "Invalid Application ID URI. Provision your application before continuing.",
+  message: () => [
+    getDefaultString("error.aad.AppIdUriInvalidError"),
+    getLocalizedString("error.aad.AppIdUriInvalidError"),
+  ],
+};
+
+export const CannotGenerateIdentifierUrisError: AadError = {
+  name: "CannotGenerateIdentifierUris",
+  message: () => [
+    getDefaultString("error.aad.CannotGenerateIdentifierUris"),
+    getLocalizedString("error.aad.CannotGenerateIdentifierUris"),
+  ],
 };
 
 export const InvalidSelectedPluginsError: AadError = {
   name: "InvalidSelectedPlugins",
-  message: (message) => `Invalid selected plugins. ${message}`,
+  message: (message) => [
+    getDefaultString("error.aad.InvalidSelectedPlugins", message),
+    getLocalizedString("error.aad.InvalidSelectedPlugins", message),
+  ],
 };
 
 export const ParsePermissionError: AadError = {
   name: "ParsePermissionError",
-  message: () => "Failed to parse permission request.",
+  message: () => [
+    getDefaultString("error.aad.ParsePermissionError"),
+    getLocalizedString("error.aad.ParsePermissionError"),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const UnhandledError: AadError = {
   name: "UnhandledError",
-  message: () => "Unhandled Error. ",
+  message: () => [
+    getDefaultString("error.aad.UnhandledError"),
+    getLocalizedString("error.aad.UnhandledError"),
+  ],
 };
 
 export const UnknownPermissionName: AadError = {
   name: "UnknownPermissionName",
-  message: (name: string) => `Failed to find resource: ${name}. ${referHelpLink}`,
+  message: (name: string) => [
+    getDefaultString("error.aad.UnknownPermissionName", name, referHelpLink),
+    getLocalizedString("error.aad.UnknownPermissionName", name, referHelpLink),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const UnknownPermissionRole: AadError = {
   name: "UnknownPermissionRole",
-  message: (roleName: string, resourceName: string) =>
-    `Failed to find role "${roleName}" for resource "${resourceName}". ${referHelpLink}`,
+  message: (roleName: string, resourceName: string) => [
+    getDefaultString("error.aad.UnknownPermissionRole", roleName, resourceName, referHelpLink),
+    getLocalizedString("error.aad.UnknownPermissionRole", roleName, resourceName, referHelpLink),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const UnknownPermissionScope: AadError = {
   name: "UnknownPermissionScope",
-  message: (scopeName: string, resourceName: string) =>
-    `Failed to find scope "${scopeName}" for resource "${resourceName}". ${referHelpLink}`,
+  message: (scopeName: string, resourceName: string) => [
+    getDefaultString("error.aad.UnknownPermissionScope", scopeName, resourceName, referHelpLink),
+    getLocalizedString("error.aad.UnknownPermissionScope", scopeName, resourceName, referHelpLink),
+  ],
   helpLink: aadHelpLink,
 };
 
 export const GetTokenError: AadError = {
   name: "GetTokenError",
-  message: (audience: string) => `Failed to get user login information for ${audience}.`,
+  message: (audience: string) => [
+    getDefaultString("error.aad.GetTokenError", audience),
+    getLocalizedString("error.aad.GetTokenError", audience),
+  ],
 };
 
 export const TenantNotExistError: AadError = {
   name: "TenantNotExistError",
-  message: () => "Failed to get tenant information from user login.",
+  message: () => [
+    getDefaultString("error.aad.TenantNotExistError"),
+    getLocalizedString("error.aad.TenantNotExistError"),
+  ],
 };
 
 export const GetConfigError: AadError = {
   name: "GetConfigError",
-  message: (message: string) => message,
+  message: (message: string) => [message, message],
 };
 
 export const MissingPermissionsRequestProvider: AadError = {
   name: "MissingPermissionsRequestProvider",
-  message: () => "permissionRequestProvider is missing in plugin context",
+  message: () => [
+    getDefaultString("error.aad.MissingPermissionsRequestProvider"),
+    getLocalizedString("error.aad.MissingPermissionsRequestProvider"),
+  ],
 };
 
 export const CheckPermissionError: AadError = {
   name: "CheckPermissionError",
-  message: () => "Failed to check permission.",
+  message: () => [
+    getDefaultString("error.aad.CheckPermissionError"),
+    getLocalizedString("error.aad.CheckPermissionError"),
+  ],
 };
 
 export const GrantPermissionError: AadError = {
-  name: "CheckPermissionError",
-  message: (resource: string, id: string) => `${resource}: ${id}. Failed to grant permission.`,
+  name: "GrantPermissionError",
+  message: (resource: string, id: string) => [
+    getDefaultString("error.aad.GrantPermissionError", resource, id),
+    getLocalizedString("error.aad.GrantPermissionError", resource, id),
+  ],
 };
 
 export const ListCollaboratorError: AadError = {
   name: "ListCollaboratorError",
-  message: () => "Failed to list collaborator.",
+  message: () => [
+    getDefaultString("error.aad.ListCollaboratorError"),
+    getLocalizedString("error.aad.ListCollaboratorError"),
+  ],
+};
+
+export const AadManifestNotFoundError: AadError = {
+  name: "AadManifestNotFoundError",
+  message: () => [
+    getDefaultString("error.aad.AadManifestNotFoundError"),
+    getLocalizedString("error.aad.AadManifestNotFoundError"),
+  ],
+};
+
+export const AadManifestLoadError: AadError = {
+  name: "AadManifestLoadError",
+  message: (manifestPath: string, reason: string) => [
+    getDefaultString("error.aad.AadManifestLoadError", manifestPath, reason),
+    getLocalizedString("error.aad.AadManifestLoadError", manifestPath, reason),
+  ],
+};
+
+export const AadManifestMissingName: AadError = {
+  name: "AadManifestMissingName",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingName"),
+    getLocalizedString("error.aad.AadManifestMissingName"),
+  ],
+};
+
+export const AadManifestMissingObjectId: AadError = {
+  name: "AadManifestMissingObjectId",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingObjectId"),
+    getLocalizedString("error.aad.AadManifestMissingObjectId"),
+  ],
+};
+
+export const AadManifestMissingReplyUrlsWithType: AadError = {
+  name: "AadManifestMissingReplyUrlsWithType",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingReplyUrlsWithType"),
+    getLocalizedString("error.aad.AadManifestMissingReplyUrlsWithType"),
+  ],
+};
+
+export const AadManifestMissingIdentifierUris: AadError = {
+  name: "AadManifestMissingIdentifierUris",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingIdentifierUris"),
+    getLocalizedString("error.aad.AadManifestMissingIdentifierUris"),
+  ],
+};
+
+export const AadManifestNotProvisioned: AadError = {
+  name: "AadManifestNotProvisioned",
+  message: () => [
+    getDefaultString("error.aad.AadManifestNotProvisioned"),
+    getLocalizedString("error.aad.AadManifestNotProvisioned"),
+  ],
 };
 
 export class ConfigErrorMessages {
-  static readonly GetDisplayNameError = "Failed to get display name.";
-  static readonly GetConfigError = (configName: string, plugin: string) =>
-    `Failed to get configuration value "${configName}" for ${plugin}.`;
-  static readonly FormatError = (type: string, value: string) =>
-    `Invalid format for ${type}. Value: ${value}.`;
+  static readonly GetDisplayNameError: [string, string] = [
+    getDefaultString("error.aad.GetDisplayNameError"),
+    getLocalizedString("error.aad.GetDisplayNameError"),
+  ];
+  static readonly GetConfigError = (configName: string, plugin: string): [string, string] => [
+    getDefaultString("error.aad.GetConfigError", configName, plugin),
+    getLocalizedString("error.aad.GetConfigError", configName, plugin),
+  ];
+  static readonly FormatError = (type: string, value: string): [string, string] => [
+    getDefaultString("error.aad.FormatError", type, value),
+    getLocalizedString("error.aad.FormatError", type, value),
+  ];
 }
 
 export class AppStudioErrorMessage {
-  static readonly CreateFailed =
-    "Failed to create an application registration in Azure Active Directory.";
-  static readonly UpdateFailed =
-    "Failed to update application registration in Azure Active Directory.";
-  static readonly CreateSecretFailed =
-    "Failed to create an application secret in Azure Active Directory.";
-  static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
+  static readonly CreateFailed: [string, string] = [
+    getDefaultString("error.aad.client.CreateFailed"),
+    getLocalizedString("error.aad.client.CreateFailed"),
+  ];
+  static readonly UpdateFailed: [string, string] = [
+    getDefaultString("error.aad.client.UpdateFailed"),
+    getLocalizedString("error.aad.client.UpdateFailed"),
+  ];
+  static readonly CreateSecretFailed: [string, string] = [
+    getDefaultString("error.aad.client.CreateSecretFailed"),
+    getLocalizedString("error.aad.client.CreateSecretFailed"),
+  ];
+  static readonly GetFailed: [string, string] = [
+    getDefaultString("error.aad.client.GetFailed"),
+    getLocalizedString("error.aad.client.GetFailed"),
+  ];
 
-  static readonly AppDefinitionIsNull = "Missing application definition.";
-  static readonly AppObjectIdIsNull = "Missing Object ID.";
-  static readonly EmptyResponse = "Missing response.";
-  static readonly ReachRetryLimit = "Exceeded retry limit.";
+  static readonly AppDefinitionIsNull: [string, string] = [
+    getDefaultString("error.aad.client.AppDefinitionIsNull"),
+    getLocalizedString("error.aad.client.AppDefinitionIsNull"),
+  ];
+  static readonly AppObjectIdIsNull: [string, string] = [
+    getDefaultString("error.aad.client.AppObjectIdIsNull"),
+    getLocalizedString("error.aad.client.AppObjectIdIsNull"),
+  ];
+  static readonly EmptyResponse: [string, string] = [
+    getDefaultString("error.aad.client.EmptyResponse"),
+    getLocalizedString("error.aad.client.EmptyResponse"),
+  ];
+  static readonly ReachRetryLimit: [string, string] = [
+    getDefaultString("error.aad.client.ReachRetryLimit"),
+    getLocalizedString("error.aad.client.ReachRetryLimit"),
+  ];
 }
 
 export class GraphClientErrorMessage {
-  static readonly CreateFailed =
-    "Failed to create an application registration in Azure Active Directory.";
-  static readonly UpdateFailed =
-    "Failed to update application registration in Azure Active Directory.";
-  static readonly CreateSecretFailed =
-    "Failed to create an application secret in Azure Active Directory.";
-  static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
-  static readonly CheckPermissionFailed = "Failed to check permission in Azure Active Directory.";
-  static readonly GrantPermissionFailed = "Failed to grant permission in Azure Active Directory.";
+  static readonly CreateFailed: [string, string] = [
+    getDefaultString("error.aad.client.CreateFailed"),
+    getLocalizedString("error.aad.client.CreateFailed"),
+  ];
+  static readonly UpdateFailed: [string, string] = [
+    getDefaultString("error.aad.client.UpdateFailed"),
+    getLocalizedString("error.aad.client.UpdateFailed"),
+  ];
+  static readonly CreateSecretFailed: [string, string] = [
+    getDefaultString("error.aad.client.CreateSecretFailed"),
+    getLocalizedString("error.aad.client.CreateSecretFailed"),
+  ];
+  static readonly GetFailed: [string, string] = [
+    getDefaultString("error.aad.client.GetFailed"),
+    getLocalizedString("error.aad.client.GetFailed"),
+  ];
+  static readonly CheckPermissionFailed: [string, string] = [
+    getDefaultString("error.aad.client.CheckPermissionFailed"),
+    getLocalizedString("error.aad.client.CheckPermissionFailed"),
+  ];
+  static readonly GrantPermissionFailed: [string, string] = [
+    getDefaultString("error.aad.client.GrantPermissionFailed"),
+    getLocalizedString("error.aad.client.GrantPermissionFailed"),
+  ];
 
-  static readonly AppDefinitionIsNull = "Missing application definition.";
-  static readonly AppObjectIdIsNull = "Missing Object ID.";
-  static readonly EmptyResponse = "Missing response.";
-  static readonly UserObjectIdIsNull = "Missing User's Object ID.";
+  static readonly AppDefinitionIsNull: [string, string] = [
+    getDefaultString("error.aad.client.AppDefinitionIsNull"),
+    getLocalizedString("error.aad.client.AppDefinitionIsNull"),
+  ];
+  static readonly AppObjectIdIsNull: [string, string] = [
+    getDefaultString("error.aad.client.AppObjectIdIsNull"),
+    getLocalizedString("error.aad.client.AppObjectIdIsNull"),
+  ];
+  static readonly EmptyResponse: [string, string] = [
+    getDefaultString("error.aad.client.EmptyResponse"),
+    getLocalizedString("error.aad.client.EmptyResponse"),
+  ];
+  static readonly UserObjectIdIsNull: [string, string] = [
+    getDefaultString("error.aad.client.ReachRetryLimit"),
+    getLocalizedString("error.aad.client.ReachRetryLimit"),
+  ];
+}
+
+export class AadManifestErrorMessage {
+  static readonly NameIsMissing = getLocalizedString("error.aad.manifest.NameIsMissing");
+  static readonly SignInAudienceIsMissing = getLocalizedString(
+    "error.aad.manifest.SignInAudienceIsMissing"
+  );
+  static readonly RequiredResourceAccessIsMissing = getLocalizedString(
+    "error.aad.manifest.RequiredResourceAccessIsMissing"
+  );
+  static readonly Oauth2PermissionsIsMissing = getLocalizedString(
+    "error.aad.manifest.Oauth2PermissionsIsMissing"
+  );
+  static readonly PreAuthorizedApplicationsIsMissing = getLocalizedString(
+    "error.aad.manifest.PreAuthorizedApplicationsIsMissing"
+  );
+  static readonly AccessTokenAcceptedVersionIs1 = getLocalizedString(
+    "error.aad.manifest.AccessTokenAcceptedVersionIs1"
+  );
+  static readonly OptionalClaimsIsMissing = getLocalizedString(
+    "error.aad.manifest.OptionalClaimsIsMissing"
+  );
+  static readonly OptionalClaimsMissingIdtypClaim = getLocalizedString(
+    "error.aad.manifest.OptionalClaimsMissingIdtypClaim"
+  );
+  static readonly AADManifestIssues = getLocalizedString("error.aad.manifest.AADManifestIssues");
+
+  static readonly UnknownResourceAppId = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAppId"
+  );
+  static readonly UnknownResourceAccessType = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAccessType"
+  );
+  static readonly UnknownResourceAccessId = getLocalizedString(
+    "error.aad.manifest.UnknownResourceAccessId"
+  );
 }

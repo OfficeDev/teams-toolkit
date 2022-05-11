@@ -2,10 +2,78 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
-import * as StringResources from "./resources/Strings.json";
+import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import * as fs from "fs-extra";
-import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
+import * as parser from "jsonc-parser";
+import { Mutex } from "async-mutex";
+import { AdaptiveCardsFolderName, ProjectConfigV3, Json } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
+import {
+  isConfigUnifyEnabled,
+  getPermissionMap,
+  getAllowedAppMaps,
+  environmentManager,
+  getPropertyByPath,
+} from "@microsoft/teamsfx-core";
+import { localize } from "./utils/localizeUtils";
+import { core, getSystemInputs } from "./handlers";
+import isUUID from "validator/lib/isUUID";
+
+async function resolveStateAndConfigCodeLens(
+  lens: vscode.CodeLens,
+  projectConfigs: ProjectConfigV3 | undefined,
+  mutex: Mutex,
+  from: string
+) {
+  if (isConfigUnifyEnabled() && lens instanceof PlaceholderCodeLens) {
+    const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "");
+    if (!projectConfigs) {
+      const release = await mutex.acquire();
+      try {
+        if (!projectConfigs) {
+          const inputs = getSystemInputs();
+          inputs.loglevel = "Debug";
+          const getConfigRes = await core.getProjectConfigV3(inputs);
+          if (getConfigRes.isErr()) throw getConfigRes.error;
+          projectConfigs = getConfigRes.value;
+        }
+      } finally {
+        release();
+      }
+    }
+
+    if (projectConfigs) {
+      let title = "👉";
+      const localEnvInfo = projectConfigs.envInfos[environmentManager.getLocalEnvName()];
+      const defaultEnvInfo = projectConfigs.envInfos[environmentManager.getDefaultEnvName()];
+
+      const localValue = getPropertyByPath(localEnvInfo, key);
+      title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+
+      const defaultValue = getPropertyByPath(defaultEnvInfo, key);
+      title = `${title}, ${defaultEnvInfo.envName}: ${defaultValue}`;
+
+      lens.command = {
+        title: title,
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: key.startsWith("state") ? "state" : "config", from: from }],
+      };
+      return lens;
+    }
+  }
+
+  return lens;
+}
+
+export class PlaceholderCodeLens extends vscode.CodeLens {
+  constructor(
+    public readonly placeholder: string,
+    range: vscode.Range,
+    command?: vscode.Command | undefined
+  ) {
+    super(range, command);
+  }
+}
 
 /**
  * CodelensProvider
@@ -81,7 +149,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     const codeLenses: vscode.CodeLens[] = [];
     const topOfFile = new vscode.Range(0, 0, 0, 0);
     const command = {
-      title: `👀${StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard}`,
+      title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
       command: "fx-extension.OpenAdaptiveCardExt",
       arguments: [TelemetryTiggerFrom.CodeLens],
     };
@@ -92,17 +160,27 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
-  private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
-  private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
+
+  private projectConfigs: ProjectConfigV3 | undefined = undefined;
+  private mutex = new Mutex();
 
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
     if (document.fileName.endsWith("template.json")) {
+      // env info needs to be reloaded
+      this.projectConfigs = undefined;
       return this.computeTemplateCodeLenses(document);
     } else {
       return this.computePreviewCodeLenses(document);
     }
+  }
+
+  public async resolveCodeLens(
+    lens: vscode.CodeLens,
+    _token: vscode.CancellationToken
+  ): Promise<vscode.CodeLens> {
+    return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "manifest");
   }
 
   private computeTemplateCodeLenses(document: vscode.TextDocument) {
@@ -135,26 +213,41 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
     }
 
-    if (document.fileName.endsWith("manifest.remote.template.json")) {
-      const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
-        title: "✏️Edit the config file",
-        command: "fx-extension.openConfigState",
-        arguments: [{ type: "config" }],
-      });
-      codeLenses.push(...configCodelenses);
+    if (isConfigUnifyEnabled()) {
+      if (document.fileName.endsWith("manifest.template.json")) {
+        // code lens will be resolved later
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
+        codeLenses.push(...configCodelenses);
 
-      const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
-        title: "👀View the state file",
-        command: "fx-extension.openConfigState",
-        arguments: [{ type: "state" }],
-      });
-      codeLenses.push(...stateCodelenses);
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
+        codeLenses.push(...stateCodelenses);
+      }
+    } else {
+      if (document.fileName.endsWith("manifest.remote.template.json")) {
+        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex, {
+          title: "✏️Edit the config file",
+          command: "fx-extension.openConfigState",
+          arguments: [{ type: "config", from: "manifest" }],
+        });
+        codeLenses.push(...configCodelenses);
+
+        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex, {
+          title: "👀View the state file",
+          command: "fx-extension.openConfigState",
+          arguments: [{ type: "state", from: "manifest" }],
+        });
+        codeLenses.push(...stateCodelenses);
+      }
     }
 
     return codeLenses;
   }
 
-  private calculateCodeLens(document: vscode.TextDocument, regex: RegExp, command: vscode.Command) {
+  private calculateCodeLens(
+    document: vscode.TextDocument,
+    regex: RegExp,
+    command?: vscode.Command
+  ) {
     let matches;
     const codeLenses: vscode.CodeLens[] = [];
     const text = document.getText();
@@ -165,7 +258,11 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       const range = document.getWordRangeAtPosition(position, new RegExp(regex));
 
       if (range) {
-        codeLenses.push(new vscode.CodeLens(range, command));
+        if (command) {
+          codeLenses.push(new vscode.CodeLens(range, command));
+        } else {
+          codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+        }
       }
     }
     return codeLenses;
@@ -183,6 +280,243 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     const editTemplateCmd = {
       title: "⚠️This file is auto-generated, click here to edit the manifest template file",
       command: "fx-extension.editManifestTemplate",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+    return codeLenses;
+  }
+}
+
+export interface PropertyPair {
+  name: parser.Node;
+  value: parser.Node;
+}
+
+export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
+  constructor() {}
+  private projectConfigs: ProjectConfigV3 | undefined = undefined;
+  private mutex = new Mutex();
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (document.fileName.endsWith("template.json")) {
+      this.projectConfigs = undefined;
+      return this.computeTemplateCodeLenses(document);
+    } else {
+      return this.computeAadManifestCodeLenses(document);
+    }
+  }
+
+  private getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
+    if (node.type !== "object" || !node.children) {
+      return undefined;
+    }
+    let propertyPair: PropertyPair | undefined;
+    for (const child of node.children) {
+      propertyPair = this.parseProperty(child);
+      if (!propertyPair) {
+        continue;
+      }
+      if (propertyPair.name.value === key) {
+        return propertyPair.value;
+      }
+    }
+    return undefined;
+  }
+
+  private parseProperty(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== "property" || !node.children || node.children.length !== 2) {
+      return undefined;
+    }
+    return { name: node.children[0], value: node.children[1] };
+  }
+
+  private computeRequiredResAccessCodeLenses(
+    document: vscode.TextDocument,
+    jsonNode: parser.Node
+  ): vscode.CodeLens[] {
+    const codeLenses: vscode.CodeLens[] = [];
+    const requiredResourceAccessNode = parser.findNodeAtLocation(jsonNode, [
+      "requiredResourceAccess",
+    ]);
+    const map = getPermissionMap();
+    requiredResourceAccessNode?.children?.forEach((requiredResource) => {
+      const resIdNode = this.getPropertyValueOfObjectByKey("resourceAppId", requiredResource);
+      if (resIdNode) {
+        const range = new vscode.Range(
+          document.positionAt(resIdNode.offset),
+          document.positionAt(resIdNode.offset + resIdNode.length)
+        );
+
+        const resIdOrName = resIdNode.value;
+
+        let title = "";
+        if (isUUID(resIdNode.value)) {
+          title = map[resIdOrName]?.displayName;
+        } else {
+          title = map[resIdOrName]?.id;
+        }
+
+        if (title) {
+          codeLenses.push(
+            new vscode.CodeLens(range, {
+              command: "",
+              title: `👉 resourceAppId: "${title}"`,
+            })
+          );
+        }
+
+        const resAccessArrNode = this.getPropertyValueOfObjectByKey(
+          "resourceAccess",
+          requiredResource
+        );
+
+        resAccessArrNode?.children?.forEach((resAccessNode) => {
+          const resAccessIdNode = this.getPropertyValueOfObjectByKey("id", resAccessNode);
+          if (resAccessIdNode) {
+            const type = this.getPropertyValueOfObjectByKey("type", resAccessNode);
+            let title = "";
+            if (isUUID(resAccessIdNode?.value)) {
+              if (type?.value === "Scope") {
+                title = map[resIdOrName]?.scopeIds[resAccessIdNode?.value];
+              } else if (type?.value === "Role") {
+                title = map[resIdOrName]?.roleIds[resAccessIdNode?.value];
+              }
+            } else {
+              if (type?.value === "Scope") {
+                title = map[resIdOrName]?.scopes[resAccessIdNode?.value];
+              } else if (type?.value === "Role") {
+                title = map[resIdOrName]?.roles[resAccessIdNode?.value];
+              }
+            }
+            const range = new vscode.Range(
+              document.positionAt(resAccessIdNode.offset),
+              document.positionAt(resAccessIdNode.offset + resAccessIdNode.length)
+            );
+
+            if (title) {
+              codeLenses.push(
+                new vscode.CodeLens(range, {
+                  command: "",
+                  title: `👉 id: "${title}"`,
+                })
+              );
+            }
+          }
+        });
+      }
+    });
+
+    return codeLenses;
+  }
+
+  private computePreAuthAppCodeLenses(
+    document: vscode.TextDocument,
+    jsonNode: parser.Node
+  ): vscode.CodeLens[] {
+    const preAuthAppArrNode = parser.findNodeAtLocation(jsonNode, ["preAuthorizedApplications"]);
+    const map = getAllowedAppMaps();
+    const codeLenses: vscode.CodeLens[] = [];
+
+    preAuthAppArrNode?.children?.forEach((preAuthAppNode) => {
+      const appIdNode = this.getPropertyValueOfObjectByKey("appId", preAuthAppNode);
+      if (appIdNode) {
+        const range = new vscode.Range(
+          document.positionAt(appIdNode.offset),
+          document.positionAt(appIdNode.offset + appIdNode.length)
+        );
+        const appName = map[appIdNode.value];
+        if (appName) {
+          codeLenses.push(
+            new vscode.CodeLens(range, {
+              command: "",
+              title: `👉 resource name: "${appName}"`,
+            })
+          );
+        }
+      }
+    });
+    return codeLenses;
+  }
+
+  public async resolveCodeLens(
+    lens: vscode.CodeLens,
+    _token: vscode.CancellationToken
+  ): Promise<vscode.CodeLens> {
+    return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
+  }
+
+  private calculateCodeLensByRegex(document: vscode.TextDocument, regex: RegExp) {
+    let matches;
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    while ((matches = regex.exec(text)) !== null) {
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(matches[0]);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = document.getWordRangeAtPosition(position, new RegExp(regex));
+
+      if (range) {
+        codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+      }
+    }
+    return codeLenses;
+  }
+
+  private computeStateAndConfigCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const codeLenses = [];
+    const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
+    codeLenses.push(...configCodelenses);
+
+    const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
+    codeLenses.push(...stateCodelenses);
+
+    return codeLenses;
+  }
+
+  private computePreviewCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const codeLenses = [];
+    const command = {
+      title: "🖼️Preview",
+      command: "fx-extension.openPreviewAadFile",
+      arguments: [{ fsPath: document.fileName }],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+    return codeLenses;
+  }
+
+  private computeTemplateCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const text = document.getText();
+    const jsonNode: parser.Node | undefined = parser.parseTree(text);
+    if (jsonNode) {
+      const resAccessCodeLenses = this.computeRequiredResAccessCodeLenses(document, jsonNode);
+      const preAuthAppCodeLenses = this.computePreAuthAppCodeLenses(document, jsonNode);
+      const previewCodeLenses = this.computePreviewCodeLenses(document);
+      const stateAndConfigCodelenses = this.computeStateAndConfigCodeLenses(document);
+      return [
+        ...resAccessCodeLenses,
+        ...preAuthAppCodeLenses,
+        ...previewCodeLenses,
+        ...stateAndConfigCodelenses,
+      ];
+    }
+
+    return [];
+  }
+
+  private computeAadManifestCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
+    const codeLenses: vscode.CodeLens[] = [];
+    const updateCmd = {
+      title: "🔄Deploy AAD manifest",
+      command: "fx-extension.deployAadAppManifest",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
+
+    const editTemplateCmd = {
+      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+      command: "fx-extension.editAadManifestTemplate",
       arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));

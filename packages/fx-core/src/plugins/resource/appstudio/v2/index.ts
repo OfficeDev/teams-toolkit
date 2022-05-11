@@ -4,7 +4,7 @@
 import {
   AppStudioTokenProvider,
   AzureSolutionSettings,
-  ConfigMap,
+  Plugin,
   err,
   Func,
   FxError,
@@ -25,12 +25,9 @@ import {
   EnvInfoV2,
   ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput,
-  ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { AppStudioPlugin } from "..";
-import { newEnvInfo } from "../../../..";
+import { isDeployManifestEnabled } from "../../../../common";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -40,6 +37,7 @@ import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
   convert2PluginContext,
+  deployAdapter,
   executeUserTaskAdapter,
   getQuestionsAdapter,
   provisionResourceAdapter,
@@ -52,7 +50,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
   @Inject(ResourcePlugins.AppStudioPlugin)
-  plugin!: AppStudioPlugin;
+  plugin!: Plugin;
 
   activate(projectSettings: ProjectSettings): boolean {
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
@@ -61,6 +59,17 @@ export class AppStudioPluginV2 implements ResourcePlugin {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
+  }
+
+  deploy = isDeployManifestEnabled() ? this._deploy : undefined;
+
+  async _deploy(
+    ctx: v2.Context,
+    inputs: v2.DeploymentInputs,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async provisionResource(
@@ -148,7 +157,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     //   }
     // }
     //TODO pass provisionInputConfig into config??
-    const postRes = await this.plugin.publish(pluginContext);
+    const postRes = await this.plugin.publish!(pluginContext);
     if (postRes.isErr()) {
       return err(postRes.error);
     }

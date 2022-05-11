@@ -1,14 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { ConfigValue, PluginContext, AzureSolutionSettings, Stage } from "@microsoft/teamsfx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";
 import { ScaffoldConfig } from "./scaffoldConfig";
-import { PluginSolution, PluginAAD } from "../resources/strings";
+import {
+  PluginSolution,
+  PluginAAD,
+  QuestionBotScenarioToPluginActRoles,
+} from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import { isBotNotificationEnabled } from "../../../../common";
 
 export class TeamsBotConfig {
   public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -23,11 +29,15 @@ export class TeamsBotConfig {
   public actRoles: PluginActRoles[] = [];
   public resourceNameSuffix = "";
 
-  public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    await this.scaffold.restoreConfigFromContext(context);
+  public isM365: boolean | undefined = undefined;
+
+  public async restoreConfigFromContext(context: PluginContext, isScaffold = false): Promise<void> {
+    await this.scaffold.restoreConfigFromContext(context, isScaffold);
     await this.provision.restoreConfigFromContext(context);
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
+
+    this.isM365 = context.projectSettings?.isM365;
 
     this.teamsAppClientId = context.envInfo.state
       .get(PluginAAD.PLUGIN_NAME)
@@ -48,8 +58,18 @@ export class TeamsBotConfig {
     const capabilities = (context.projectSettings?.solutionSettings as AzureSolutionSettings)
       .capabilities;
 
-    if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
-      this.actRoles.push(PluginActRoles.Bot);
+    if (capabilities?.includes(PluginActRoles.Bot)) {
+      const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
+      if (isBotNotificationEnabled() && Array.isArray(scenarios)) {
+        const scenarioActRoles = scenarios
+          .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
+          .filter((item): item is PluginActRoles => item !== undefined);
+        // dedup
+        this.actRoles = [...new Set([...this.actRoles, ...scenarioActRoles])];
+      } else {
+        // for legacy bot
+        this.actRoles.push(PluginActRoles.Bot);
+      }
     }
 
     if (

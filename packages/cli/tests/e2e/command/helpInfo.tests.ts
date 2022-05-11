@@ -5,6 +5,7 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 
 import { execAsync } from "../commonUtils";
@@ -18,8 +19,11 @@ describe("teamsfx command help", function () {
     expect(result.stdout).not.includes("--action");
   });
 
-  it(`teamsfx resource add azure-apim -h`, async function () {
-    const result = await execAsync(`teamsfx resource add azure-apim -h`, {
+  it(`teamsfx add azure-apim -h`, async function () {
+    const command = isPreviewFeaturesEnabled()
+      ? `teamsfx add azure-apim -h`
+      : `teamsfx resource add azure-apim -h`;
+    const result = await execAsync(command, {
       env: process.env,
       timeout: 0,
     });

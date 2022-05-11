@@ -13,6 +13,14 @@ export class telemetryHelper {
       (ctx.envInfo.state
         .get(PluginSolution.PLUGIN_NAME)
         ?.get(PluginSolution.REMOTE_TEAMS_APPID) as string) || "";
+    properties[TelemetryKeys.HostType] =
+      (ctx.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+        PluginBot.HOST_TYPE
+      ] as string) ?? "";
+    // bot-capabilities is an array
+    const capabilities =
+      ctx.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.BOT_CAPABILITIES];
+    properties[TelemetryKeys.BotCapabilities] = capabilities ? JSON.stringify(capabilities) : "";
   }
 
   static sendStartEvent(

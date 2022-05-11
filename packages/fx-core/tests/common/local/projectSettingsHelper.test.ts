@@ -127,6 +127,7 @@ describe("ProjectSettingsHelper", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Unknown"],
         foo: "bar",
+        activeResourcePlugins: ["fx-resource-frontend-hosting"],
       },
     } as ProjectSettings;
 

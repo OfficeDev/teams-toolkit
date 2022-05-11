@@ -10,6 +10,7 @@ import CheckboxPrompt from "inquirer/lib/prompts/checkbox";
 
 import ScreenManager from "../console/screen";
 import { addChoiceDetail } from "./utils";
+import Choice from "inquirer/lib/objects/choice";
 
 /**
  * The question-options for the `ChoicePrompt<T>`.
@@ -17,7 +18,6 @@ import { addChoiceDetail } from "./utils";
 export type Question = inquirer.CheckboxQuestionOptions<inquirer.Answers>;
 
 export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
-  private spaceKeyPressed = false;
   private selection: string[] = [];
 
   constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
@@ -33,7 +33,7 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
     let message = this.getQuestion();
     let bottomContent = "";
 
-    if (!this.spaceKeyPressed) {
+    if (this.status !== "answered") {
       message +=
         "(Press " +
         chalk.magentaBright("<space>") +
@@ -46,7 +46,10 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
 
     // Render choices or answer depending on the state
     if (this.status === "answered") {
-      message += chalk.cyan(this.selection.join(", "));
+      const selection = this.selection
+        .map((sel) => this.opt.choices.realChoices.find((ch) => ch.name === sel))
+        .map((ch) => (ch as Choice).extra.title);
+      message += chalk.cyan(selection.join(", "));
     } else {
       const choicesStr = renderChoices(this.opt.choices, this.pointer);
       const indexPosition = this.opt.choices.indexOf(
@@ -97,7 +100,7 @@ function renderChoices(choices: any, pointer: number): string {
   choices.forEach((choice: any) => {
     prefixWidth = Math.max(
       prefixWidth,
-      choice.disabled || !choice.name ? 0 : choice.name.length + 1
+      choice.disabled || !choice.extra?.title ? 0 : choice.extra.title.length + 1
     );
   });
 
@@ -110,17 +113,22 @@ function renderChoices(choices: any, pointer: number): string {
 
     if (choice.disabled) {
       separatorOffset++;
-      output += " - " + choice.name;
+      output += " - " + choice.extra.title;
       output += " (" + (_.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
     } else {
       if (i - separatorOffset === pointer) {
-        output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.name);
+        output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.extra.title);
       } else {
-        output += getCheckbox(choice.checked) + " " + chalk.whiteBright(choice.name);
+        output += getCheckbox(choice.checked) + " " + chalk.whiteBright(choice.extra.title);
       }
 
-      if (choice.extra?.detail) {
-        output = addChoiceDetail(output, choice.extra.detail, choice.name.length, prefixWidth);
+      if (choice.extra.detail) {
+        output = addChoiceDetail(
+          output,
+          choice.extra.detail,
+          choice.extra.title.length,
+          prefixWidth
+        );
       }
     }
 

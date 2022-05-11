@@ -14,6 +14,12 @@ import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
 import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../src/plugins/solution/fx-solution/question";
+import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
+import { BotHostTypes } from "../../../../src/common";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;
@@ -103,8 +109,6 @@ describe("solution.debug.scaffolding", () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
         chai.assert.equal(Object.keys(settings).length, 4);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -157,8 +161,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
 
       it(`happy path: tab with Simple Auth and without function (${parameter.programmingLanguage})`, async () => {
@@ -193,12 +195,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
-        );
       });
 
       it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -233,13 +229,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        // When AAD plugin is not activated, loginUrl and clientId will not be added.
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs - numAADLocalEnvs
-        );
       });
     });
 
@@ -291,8 +280,108 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
+      });
 
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      it(`happy path: app service hosted command and response bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+          pluginSettings: {
+            [PluginBot.PLUGIN_NAME]: {
+              [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
+              [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.COMMAND_AND_RESPONSE],
+            },
+          },
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+      });
+    });
+    const parameters99: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 7,
+        numLocalEnvs: 12,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+    ];
+    parameters99.forEach((parameter) => {
+      it(`happy path: func hosted bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+          pluginSettings: {
+            [PluginBot.PLUGIN_NAME]: {
+              [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
+              [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
+            },
+          },
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        // settings is the same as function projects
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.isTrue(
+          Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
+        );
+        chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
+        chai.assert.equal(Object.keys(settings).length, 4);
       });
     });
 
@@ -350,8 +439,6 @@ describe("solution.debug.scaffolding", () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
         chai.assert.equal(Object.keys(settings).length, 4);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
     });
 
@@ -404,8 +491,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
 
       it(`happy path: tab with Simple Auth and without function and bot (${parameter.programmingLanguage})`, async () => {
@@ -440,12 +525,6 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
-
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
-        );
       });
 
       it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -480,12 +559,111 @@ describe("solution.debug.scaffolding", () => {
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
+      });
+    });
 
-        await assertLocalDebugLocalEnvs(
-          v2Context,
-          inputs,
-          parameter.numLocalEnvs - numAADLocalEnvs
-        );
+    const parameters6: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 6,
+        numCompounds: 6,
+        numTasks: 7,
+        numLocalEnvs: 7,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 6,
+        numCompounds: 6,
+        numTasks: 7,
+        numLocalEnvs: 7,
+      },
+    ];
+    parameters6.forEach((parameter) => {
+      it(`happy path: m365 tab without function (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          isM365: true,
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+      });
+    });
+
+    const parameters7: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 5,
+        numCompounds: 4,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 5,
+        numCompounds: 4,
+        numTasks: 8,
+        numLocalEnvs: 12,
+      },
+    ];
+    parameters7.forEach((parameter) => {
+      it(`happy path: m365 bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          isM365: true,
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Bot"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
       });
     });
 
@@ -507,7 +685,7 @@ describe("solution.debug.scaffolding", () => {
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
       const compounds: [] = launch["compounds"];
-      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(configurations.length, 4);
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
@@ -547,7 +725,6 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.isTrue(fs.existsSync(expectedLaunchFile));
       chai.assert.isTrue(fs.existsSync(expectedTasksFile));
       chai.assert.isTrue(fs.existsSync(expectedSettingsFile));
-      chai.assert.isTrue(fs.existsSync(expectedLocalSettingsFile));
     });
 
     it("vs", async () => {
@@ -587,17 +764,8 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);
-
-      const packageJsonPath = path.resolve(__dirname, "./data/package.json");
-      fs.writeFileSync(packageJsonPath, "{}");
-
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
-
-      //assert output package
-      const packageJson = fs.readJSONSync(packageJsonPath);
-      const scripts: [] = packageJson["scripts"];
-      chai.assert.isTrue(scripts !== undefined);
     });
 
     it("happy path: add capability", async () => {
@@ -643,8 +811,6 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 7);
-
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
 
     it("happy path: add capability to old project", async () => {
@@ -690,26 +856,6 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 9);
-
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
   });
-
-  async function assertLocalDebugLocalEnvs(
-    ctx: v2.Context,
-    inputs: Inputs,
-    numLocalEnvs: number
-  ): Promise<void> {
-    // assert output: localSettings.json
-    chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
-
-    const localEnvManager = new LocalEnvManager();
-    const localSettings = await localEnvManager.getLocalSettings(inputs.projectPath!);
-    const result = await localEnvManager.getLocalDebugEnvs(
-      inputs.projectPath!,
-      ctx.projectSetting,
-      localSettings
-    );
-    chai.assert.equal(Object.keys(result).length, numLocalEnvs);
-  }
 });

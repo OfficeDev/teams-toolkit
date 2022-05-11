@@ -22,8 +22,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import * as util from "util";
-import { getStrings, isFeatureFlagEnabled } from "../../../../common/tools";
-import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { OperationNotPermittedError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
   AzureResourceApim,
@@ -50,7 +51,7 @@ export async function getQuestionsForUserTask(
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (func.method === "addCapability") {
-    return await getQuestionsForAddCapability(ctx, inputs);
+    return await getQuestionsForAddCapability(ctx, inputs, func, envInfo, tokenProvider);
   }
   if (func.method === "addResource") {
     return await getQuestionsForAddResource(ctx, inputs);
@@ -69,7 +70,7 @@ export async function getQuestionsForAddResource(
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
     if (!settings) {
-      return err(new OperationNotSupportedForExistingAppError("addResource"));
+      return err(new OperationNotPermittedError("addResource"));
     }
     const alreadyHaveFunction = settings.activeResourcePlugins.includes(
       BuiltInFeaturePluginNames.function
@@ -163,11 +164,11 @@ export async function addCapability(
       const template =
         inputs.platform === Platform.CLI
           ? single
-            ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
-            : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
+            ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+            : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
           : single
-          ? getStrings().solution.addCapability.AddCapabilityNotice
-          : getStrings().solution.addCapability.AddCapabilitiesNotice;
+          ? getLocalizedString("core.addCapability.addCapabilityNotice")
+          : getLocalizedString("core.addCapability.addCapabilitiesNotice");
       const msg = util.format(template, addNames);
       ctx.userInteraction.showMessage("info", msg, false);
     }
@@ -213,11 +214,11 @@ export async function addResource(
       const template =
         inputs.platform === Platform.CLI
           ? single
-            ? getStrings().solution.addResource.AddResourceNoticeForCli
-            : getStrings().solution.addResource.AddResourcesNoticeForCli
+            ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+            : getLocalizedString("core.addResource.addResourcesNoticeForCli")
           : single
-          ? getStrings().solution.addResource.AddResourceNotice
-          : getStrings().solution.addResource.AddResourcesNotice;
+          ? getLocalizedString("core.addResource.addResourceNotice")
+          : getLocalizedString("core.addResource.addResourcesNotice");
       ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
     }
   }

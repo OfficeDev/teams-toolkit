@@ -5,20 +5,22 @@ import {
   Inputs,
   ok,
   Result,
-  returnUserError,
+  UserError,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import * as util from "util";
+import { Container } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getStrings } from "../../../../common/tools";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
 import {
   GLOBAL_CONFIG,
   SolutionError,
-  SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { executeConcurrently } from "./executor";
 import { getAzureSolutionSettings, getSelectedPlugins, isAzureProject } from "./utils";
 
@@ -33,17 +35,20 @@ export async function publishApplication(
 
   if (inAzureProject && !provisioned) {
     return err(
-      returnUserError(
-        new Error(
-          util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
-        ),
+      new UserError(
         SolutionSource,
-        SolutionError.CannotDeployBeforeProvision
+        SolutionError.CannotDeployBeforeProvision,
+        getDefaultString("core.NotProvisionedNotice", ctx.projectSetting.appName),
+        getLocalizedString("core.NotProvisionedNotice", ctx.projectSetting.appName)
       )
     );
   }
 
-  const plugins = getSelectedPlugins(ctx.projectSetting);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const thunks = plugins
     .filter((plugin) => !isUndefined(plugin.publishApplication))
     .map((plugin) => {
@@ -55,14 +60,12 @@ export async function publishApplication(
       };
     });
 
-  ctx.logProvider.info(
-    util.format(getStrings().solution.PublishStartNotice, PluginDisplayName.Solution)
-  );
+  ctx.logProvider.info(getLocalizedString("core.publish.startNotice", PluginDisplayName.Solution));
 
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind !== "success") {
-    const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSetting.appName);
+    const msg = getLocalizedString("core.publish.failNotice", ctx.projectSetting.appName);
     ctx.logProvider?.info(msg);
     return err(result.error);
   }

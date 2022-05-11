@@ -12,10 +12,13 @@ import {
   TokenProvider,
   BuildFolderName,
   AppPackageFolderName,
+  AppStudioTokenProvider,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import path from "path";
 import AdmZip from "adm-zip";
+import { v4 } from "uuid";
+import isUUID from "validator/lib/isUUID";
 import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
 import { AppStudioResultFactory } from "../results";
@@ -132,7 +135,7 @@ export class AppStudioPluginImpl {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider
+    tokenProvider: AppStudioTokenProvider
   ): Promise<Result<{ appName: string; publishedAppId: string; update: boolean }, FxError>> {
     let archivedFile;
     // User provided zip file
@@ -170,7 +173,7 @@ export class AppStudioPluginImpl {
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
 
     // manifest.id === externalID
-    const appStudioToken = await tokenProvider.appStudioToken?.getAccessToken();
+    const appStudioToken = await tokenProvider?.getAccessToken();
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
     if (existApp) {
       let executePublishUpdate = false;
@@ -221,6 +224,9 @@ export class AppStudioPluginImpl {
       return err(appDefinitionRes.error);
     }
     const manifest: TeamsAppManifest = appDefinitionRes.value[1];
+    if (!isUUID(manifest.id)) {
+      manifest.id = v4();
+    }
     // manifest.bots = undefined;
     // manifest.composeExtensions = undefined;
 

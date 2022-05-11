@@ -24,15 +24,14 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("should generate correct localSettings file", async () => {
+  it("should generate correct local config file", async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
-    const localSettingsPath = path.resolve(projectPath, ".fx", "configs", "localSettings.json");
-    const localSettings = await fs.readJSON(localSettingsPath);
-    chai.assert.isTrue(localSettings["backend"] != undefined);
-    chai.assert.hasAllKeys(localSettings["backend"], ["functionEndpoint", "functionName"]);
+    const localConfigPath = path.resolve(projectPath, ".fx", "configs", "config.local.json");
+    const localConfig = await fs.readJSON(localConfigPath);
+    chai.assert.isTrue(localConfig != undefined);
   });
 });

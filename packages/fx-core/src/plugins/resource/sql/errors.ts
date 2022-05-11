@@ -1,102 +1,135 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "./constants";
 
 export class ErrorMessage {
-  public static readonly GetDetail = "Get the detailed error message in output.";
-
-  public static readonly LinkHelpMessage = (link: string) => `You can follow ${link} to handle it.`;
+  public static readonly LinkHelpMessage = (link: string) =>
+    getLocalizedString("error.sql.LinkHelpMessage", link);
 
   public static readonly SqlInputError = {
     name: "SqlInputError",
-    message: () => "SQL admin name or password is empty",
+    message: (): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlInputError.name}`),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlInputError.name}`),
+    ],
   };
 
   public static readonly SqlAskInputError = {
     name: "SqlAskInputError",
-    message: () => "Failed to get answer for SQL questions",
+    message: (): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlAskInputError.name}`),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlAskInputError.name}`),
+    ],
   };
 
   public static readonly SqlEndpointError = {
     name: "SqlEndpointError",
-    message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`,
+    message: (sqlName: string): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlEndpointError.name}`, sqlName),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlEndpointError.name}`, sqlName),
+    ],
   };
 
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (database: string, user: string) =>
-      `Failed to create user '${user}' in database ${database}`,
+    message: (database: string, user: string): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.DatabaseUserCreateError.name}`, user, database),
+      getLocalizedString(`error.sql.${ErrorMessage.DatabaseUserCreateError.name}`, user, database),
+    ],
   };
 
   public static readonly SqlAddAdminError = {
     name: "SqlAddAdminError",
-    message: (account: string, detail = "") => `Failed to add AAD admin '${account}'. ${detail}`,
+    message: (account: string, detail = ""): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlAddAdminError.name}`, account, detail),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlAddAdminError.name}`, account, detail),
+    ],
   };
 
   public static readonly SqlLocalFirwallError = {
     name: "SqlLocalFirwallError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to add local firewall for '${sqlName}'. ${detail}`,
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlLocalFirwallError.name}`, sqlName, detail),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlLocalFirwallError.name}`, sqlName, detail),
+    ],
   };
 
   public static readonly SqlDeleteLocalFirwallError = {
     name: "SqlDeleteLocalFirwallError",
-    message: (sqlName: string, detail = "") =>
-      `Failed to delete local firewall for '${sqlName}'. Delete '${Constants.firewall.localRule}' manually. ${detail}`,
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(
+        `error.sql.${ErrorMessage.SqlDeleteLocalFirwallError.name}`,
+        sqlName,
+        Constants.firewall.localRule,
+        detail
+      ),
+      getLocalizedString(
+        `error.sql.${ErrorMessage.SqlDeleteLocalFirwallError.name}`,
+        sqlName,
+        Constants.firewall.localRule,
+        detail
+      ),
+    ],
   };
 
   public static readonly SqlUserInfoError = {
     name: "SqlUserInfoError",
-    message: () => "Failed to get login user info.",
+    message: (): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlUserInfoError.name}`),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlUserInfoError.name}`),
+    ],
   };
 
   public static readonly SqlGetConfigError = {
     name: "SqlGetConfigError",
-    message: (pluginId: string, configKey: string) =>
-      `Failed to get config value of '${configKey}' from '${pluginId}'.`,
+    message: (pluginId: string, configKey: string): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlGetConfigError.name}`, configKey, pluginId),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlGetConfigError.name}`, configKey, pluginId),
+    ],
   };
 
   public static readonly SqlInvalidConfigError = {
     name: "SqlInvalidConfigError",
-    message: (configKey: string, reason: string) =>
-      `The config value of '${configKey}' is invalid for ${reason}.`,
+    message: (configKey: string, reason: string): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlInvalidConfigError.name}`, configKey, reason),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlInvalidConfigError.name}`, configKey, reason),
+    ],
   };
 
   public static readonly SqlCheckError = {
     name: "SqlCheckError",
-    message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`,
+    message: (sqlName: string, detail = ""): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlCheckError.name}`, sqlName, detail),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlCheckError.name}`, sqlName, detail),
+    ],
   };
 
   public static readonly SqlCheckAdminError = {
     name: "SqlCheckAdminError",
-    message: (identity: string, detail = "") =>
-      `Failed to check AAD admin '${identity}'. ${detail}`,
-  };
-
-  public static readonly SqlCheckDBUserError = {
-    name: "SqlCheckDBUserError",
-    message: (user: string, detail = "") => `Failed to check database user '${user}'. ${detail}`,
-  };
-
-  public static readonly SqlAccessError = {
-    name: "SqlAccessError",
-    message: (sqlName: string, detail = "") => `Failed to access server '${sqlName}'. ${detail}`,
+    message: (identity: string, detail = ""): [string, string] => [
+      getDefaultString(`error.sql.${ErrorMessage.SqlCheckAdminError.name}`, identity, detail),
+      getLocalizedString(`error.sql.${ErrorMessage.SqlCheckAdminError.name}`, identity, detail),
+    ],
   };
 
   public static readonly UnhandledError = {
     name: "UnhandledError",
-    message: () => "Unhandled Error",
+    message: (): [string, string] => ["Unhandled Error", "Unhandled Error"],
   };
 
   public static readonly IdentityCredentialUndefine = (user: string, databaseName: string) =>
-    `Cannot access database to add managed identity user ${user}. Please add the user for database ${databaseName} manually`;
+    getLocalizedString(`error.sql.IdentityCredentialUndefine`, user, databaseName);
 
   public static readonly ServicePrincipalWarning = (user: string, databaseName: string) =>
-    `service principal admin in azure sql can't add database user <${user}>. You can add the user for ${databaseName} manually`;
+    getLocalizedString(`error.sql.ServicePrincipalWarning`, user, databaseName);
 
   public static readonly DomainCode = "AADSTS53000";
 
-  public static readonly DomainError = `Conditional Access policy requires a compliant device, and the device is not compliant. ${ErrorMessage.GetDetail}`;
+  public static readonly DomainError = getLocalizedString(
+    `error.sql.DomainError`,
+    getLocalizedString("error.sql.GetDetail")
+  );
 
   public static readonly GuestAdminMessage =
     "Server identity does not have Azure Active Directory Readers permission";
@@ -104,7 +137,8 @@ export class ErrorMessage {
   public static readonly FirewallErrorReg =
     /Client with IP address .*? is not allowed to access the server./g;
 
-  public static readonly GuestAdminError = `SQL admin does not have enough permission to add database user. ${ErrorMessage.GetDetail}`;
-
-  public static readonly AccessMessage = "is not allowed to access the server";
+  public static readonly GuestAdminError = getLocalizedString(
+    `error.sql.GuestAdminError`,
+    getLocalizedString("error.sql.GetDetail")
+  );
 }

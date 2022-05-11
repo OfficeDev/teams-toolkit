@@ -1,5 +1,37 @@
 # Changelog
 
+## 3.8.0 - Apr 22, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+- Optimize the configuration schema and manifest template of project created by Teams Toolkit.
+- Support to use CodeLens to preview variables value in manifest template file.
+- Optimize the In-meeting Sample App in sample gallery, shorten the time to run the sample.
+- Improved  "Start from a sample" UI, show more information of each sample.
+
+## 3.7.0 - Apr 06, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
+
+Enhancement:
+- Improved SPFx Project scaffolding experience by using Yeoman Generator. 
+
+## 3.6.1 - Mar 23, 2022
+Hotfix version for Teams Toolkit with multiple bugs fixed.
+
+## 3.6.0 - Mar 21, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Optimized Get Started page for Teams Toolkit. User can check environment prerequisites from Get started now.
+- User can use Teams Toolkit to create workflow automation templates for Github, Azure DevOps and Jenkins.
+
+Enhancement:
+- Enhance TeamsFx SDK.
+
 ## 3.5.0 - Mar 07, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

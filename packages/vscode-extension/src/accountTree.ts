@@ -26,10 +26,10 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import axios from "axios";
 import * as util from "util";
-import * as StringResources from "./resources/Strings.json";
-import { StringContext } from "./utils/stringContext";
-import { registerEnvTreeHandler } from "./envTree";
-import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
+import { localize } from "./utils/localizeUtils";
+import { getTriggerFromProperty } from "./utils/commonUtils";
+import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -67,13 +67,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       const valid = await isValid();
       if (activeSubscriptionId === undefined || activeSubscription === undefined) {
         selectSubLabel = util.format(
-          StringResources.vsc.accountTree.totalSubscriptions,
+          localize("teamstoolkit.accountTree.totalSubscriptions"),
           subscriptions.length
         );
         icon = "subscriptions";
         if (subscriptions.length === 0) {
           contextValue = "emptySubscription";
-          selectSubLabel = StringResources.vsc.accountTree.noSubscriptions;
+          selectSubLabel = localize("teamstoolkit.accountTree.noSubscriptions");
           return [
             {
               commandId: "fx-extension.selectSubscription",
@@ -86,7 +86,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
               icon: "warning",
               tooltip: {
                 isMarkdown: false,
-                value: StringResources.vsc.accountTree.noSubscriptionsTooltip,
+                value: localize("teamstoolkit.accountTree.noSubscriptionsTooltip"),
               },
             },
             true,
@@ -142,7 +142,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return [
         {
           commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingPass,
+          label: localize("teamstoolkit.accountTree.sideloadingPass"),
           callback: () => {
             return Promise.resolve(ok(null));
           },
@@ -151,7 +151,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           icon: "pass",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingPassTooltip,
+            value: localize("teamstoolkit.accountTree.sideloadingPassTooltip"),
           },
         },
       ];
@@ -160,17 +160,17 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return [
         {
           commandId: "fx-extension.checkSideloading",
-          label: StringResources.vsc.accountTree.sideloadingWarning,
+          label: localize("teamstoolkit.accountTree.sideloadingWarning"),
           callback: () => {
             showSideloadingWarning();
             return Promise.resolve(ok(null));
           },
           parent: "fx-extension.signinM365",
           contextValue: "checkSideloading",
-          icon: "warning",
+          icon: "error",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingWarningTooltip,
+            value: localize("teamstoolkit.accountTree.sideloadingWarningTooltip"),
           },
         },
       ];
@@ -215,15 +215,15 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    const triggerFrom = getTriggerFromProperty(args);
     if (args && args.length > 1) {
       const command: TreeViewCommand = args[1];
       if (command && command.contextValue === "signedinM365") return ok(null);
     }
 
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-      [TelemetryProperty.TriggerFrom]:
-        args && args.length > 0 ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
       [TelemetryProperty.AccountType]: AccountType.M365,
+      ...triggerFrom,
     });
 
     const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
@@ -240,7 +240,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return ok(null);
   };
 
@@ -284,7 +284,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       }
     }
 
-    await registerEnvTreeHandler();
+    await envTreeProviderInstance.reloadEnvironments();
     return ok(null);
   };
 
@@ -312,6 +312,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           treeItem.label += " ";
           tools.treeProvider?.refresh([treeItem]);
         }
+        await envTreeProviderInstance.reloadEnvironments();
       } else if (accountInfo !== undefined) {
         const treeItem = {
           commandId: "fx-extension.signinM365",
@@ -323,11 +324,12 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         };
         tools.treeProvider?.refresh([treeItem]);
       }
+      await envTreeProviderInstance.reloadEnvironments();
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([
         {
           commandId: "fx-extension.signinM365",
-          label: StringResources.vsc.accountTree.signingInM365,
+          label: localize("teamstoolkit.accountTree.signingInM365"),
           callback: signinM365Callback,
           parent: TreeCategory.Account,
           icon: "spinner",
@@ -337,7 +339,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       tools.treeProvider?.refresh([
         {
           commandId: "fx-extension.signinM365",
-          label: StringResources.vsc.handlers.signIn365,
+          label: localize("teamstoolkit.handlers.signIn365"),
           callback: signinM365Callback,
           parent: TreeCategory.Account,
           icon: "M365",
@@ -352,6 +354,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ]);
     }
+    await envTreeProviderInstance.reloadEnvironments();
     return Promise.resolve();
   };
 
@@ -377,13 +380,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ]);
           const subItem = await getSelectSubItem!(token);
           tools.treeProvider?.add([subItem[0]]);
-          await registerEnvTreeHandler();
+          await envTreeProviderInstance.reloadEnvironments();
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",
-            label: StringResources.vsc.accountTree.signingInAzure,
+            label: localize("teamstoolkit.accountTree.signingInAzure"),
             callback: signinAzureCallback,
             parent: TreeCategory.Account,
             icon: "spinner",
@@ -393,7 +396,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",
-            label: StringContext.getSignInAzureContext(),
+            label: localize("teamstoolkit.handlers.signInAzure"),
             callback: signinAzureCallback,
             parent: TreeCategory.Account,
             icon: "azure",
@@ -407,7 +410,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure",
           },
         ]);
-        await registerEnvTreeHandler();
+        await envTreeProviderInstance.reloadEnvironments();
       }
 
       return Promise.resolve();
@@ -416,7 +419,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   const signinM365TreeItem: TreeItem = {
     commandId: "fx-extension.signinM365",
-    label: StringResources.vsc.handlers.signIn365,
+    label: localize("teamstoolkit.handlers.signIn365"),
     callback: signinM365Callback,
     parent: TreeCategory.Account,
     contextValue: "signinM365",
@@ -424,20 +427,20 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     icon: "M365",
     tooltip: {
       isMarkdown: true,
-      value: StringResources.vsc.accountTree.m365AccountTooltip,
+      value: localize("teamstoolkit.accountTree.m365AccountTooltip"),
     },
   };
 
   const refreshSideloadingTreeItem: TreeItem = {
     commandId: "fx-extension.refreshSideloading",
-    label: StringResources.vsc.accountTree.sideloadingRefresh,
+    label: localize("teamstoolkit.accountTree.sideloadingRefresh"),
     callback: refreshSideloadingCallback,
     parent: undefined,
   };
 
   const signinAzureTreeItem: TreeItem = {
     commandId: "fx-extension.signinAzure",
-    label: StringContext.getSignInAzureContext(),
+    label: localize("teamstoolkit.handlers.signInAzure"),
     callback: async (args?: any[]) => {
       return signinAzureCallback(args);
     },
@@ -447,13 +450,13 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     icon: "azure",
     tooltip: {
       isMarkdown: true,
-      value: StringResources.vsc.accountTree.azureAccountTooltip,
+      value: localize("teamstoolkit.accountTree.azureAccountTooltip"),
     },
   };
 
   const specifySubscriptionTreeItem: TreeItem = {
     commandId: "fx-extension.specifySubscription",
-    label: StringResources.vsc.accountTree.specifySubscription,
+    label: localize("teamstoolkit.accountTree.specifySubscription"),
     callback: selectSubscriptionCallback,
     parent: undefined,
   };
@@ -504,19 +507,18 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
 
 function showSideloadingWarning() {
   VS_CODE_UI.showMessage(
-    "warn",
-    StringResources.vsc.accountTree.sideloadingMessage,
+    "error",
+    localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
-    StringResources.vsc.accountTree.sideloadingJoinM365,
-    StringResources.vsc.common.readMore
+    localize("teamstoolkit.accountTree.sideloadingJoinM365")
   )
     .then(async (result) => {
-      if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
+      if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
       } else if (
         result.isOk() &&
-        result.value === StringResources.vsc.accountTree.sideloadingJoinM365
+        result.value === localize("teamstoolkit.accountTree.sideloadingJoinM365")
       ) {
         await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);

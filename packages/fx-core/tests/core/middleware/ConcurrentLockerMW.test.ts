@@ -19,7 +19,7 @@ import "mocha";
 import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
-import { getLockFolder } from "../../../src";
+import { getLockFolder } from "../../../src/core/middleware/concurrentLocker";
 import { CallbackRegistry } from "../../../src/core/callback";
 import {
   CoreSource,
@@ -125,7 +125,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     inputs.projectPath = undefined;
     const my = new MyClass();
     const res = await my.methodReturnOK(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error instanceof NoProjectOpenedError);
     assert.isTrue(my.count === 0);
   });
 
@@ -134,7 +134,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res = await my.methodReturnOK(inputs);
-    assert.isTrue(res.isErr() && res.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res.isErr() && res.error instanceof PathNotExistError);
     assert.isTrue(my.count === 0);
   });
 
@@ -145,7 +145,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     try {
       await fs.ensureDir(inputs.projectPath);
       const res = await my.methodReturnOK(inputs);
-      assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
+      assert.isTrue(res.isErr() && res.error instanceof InvalidProjectError);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

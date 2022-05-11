@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   FxError,
@@ -18,6 +18,7 @@ import {
   Inputs,
   TokenProvider,
   SubscriptionInfo,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -38,17 +39,19 @@ import {
   MockedAzureAccountProvider,
   MockedGraphTokenProvider,
   MockedSharepointProvider,
+  MockedUserInteraction,
   MockedV2Context,
   validManifest,
 } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
 
 chai.use(chaiAsPromised);
@@ -257,6 +260,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -290,6 +294,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -326,6 +331,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       programmingLanguage: "csharp",
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -361,6 +367,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -398,6 +405,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -438,6 +446,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -477,6 +486,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     class FakeAzureAccountProvider extends MockedAzureAccountProvider {
       async listSubscriptions(): Promise<SubscriptionInfo[]> {
@@ -514,3 +524,14 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.SubscriptionNotFound);
   });
 });
+
+class MockedUserInteractionForDeploy extends MockedUserInteraction {
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | { content: string; color: Colors }[],
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string, FxError>> {
+    return ok("Deploy");
+  }
+}

@@ -3,6 +3,9 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
+  YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
+  generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
+  EnablePreviewFeatures = "enablePreviewFeatures",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -18,3 +21,19 @@ export enum SyncedState {
 export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
+
+export enum GlobalKey {
+  OpenWalkThrough = "fx-extension.openWalkThrough",
+  OpenReadMe = "fx-extension.openReadMe",
+  OpenSampleReadMe = "fx-extension.openSampleReadMe",
+  ShowLocalDebugMessage = "ShowLocalDebugMessage",
+  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
+}
+
+export enum AadManifestDeployConstants {
+  DEPLOY_AAD_FROM_CODELENS = "deploy-aad-from-codelens",
+  INCLUDE_AAD_MANIFEST = "include-aad-manifest",
+}
+
+export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
+export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;

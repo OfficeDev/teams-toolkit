@@ -11,8 +11,14 @@ import {
   AppPackageFolderName,
   v3,
   IStaticTab,
+  Inputs,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory } from "../../../common";
+import {
+  getAppDirectory,
+  isConfigUnifyEnabled,
+  deepCopy,
+  isBotNotificationEnabled,
+} from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -34,42 +40,72 @@ import {
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
+  WEB_APPLICATION_INFO_MULTI_ENV,
+  WEB_APPLICATION_INFO_LOCAL_DEBUG,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
+  BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
+import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
-  return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  if (isConfigUnifyEnabled()) {
+    return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
+  } else {
+    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+  }
 }
 
-export async function init(projectRoot: string, appName: string): Promise<Result<any, FxError>> {
+export async function init(
+  projectRoot: string,
+  appName: string,
+  existingApp: boolean
+): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-  const suffix = "-local-debug";
-  let localAppName = appName;
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    localAppName = localAppName + suffix;
-  }
-  localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
-  const localManifest = JSON.parse(localManifestString);
-  await saveManifest(projectRoot, localManifest, true);
+  if (isConfigUnifyEnabled()) {
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const manifest = JSON.parse(manifestString);
+    if (existingApp) {
+      manifest.developer = {
+        name: "Teams App, Inc.",
+        websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
+        privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
+        termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+      };
+    }
+    await saveManifest(projectRoot, manifest);
+  } else {
+    let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+    const suffix = "-local-debug";
+    let localAppName = appName;
+    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+      localAppName = localAppName + suffix;
+    }
+    localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
+    const localManifest = JSON.parse(localManifestString);
+    await saveManifest(projectRoot, localManifest, true);
 
-  let remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-  remoteManifestString = replaceConfigValue(remoteManifestString, "appName", appName);
-  const remoteManifest = JSON.parse(remoteManifestString);
-  await saveManifest(projectRoot, remoteManifest, false);
+    const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+    const remoteManifest = JSON.parse(remoteManifestString);
+    await saveManifest(projectRoot, remoteManifest, false);
+  }
 
   return ok(undefined);
 }
 
 export async function loadManifest(
   projectRoot: string,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<Result<TeamsAppManifest, FxError>> {
   const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
   if (!(await fs.pathExists(manifestFilePath))) {
@@ -109,11 +145,39 @@ export async function loadManifest(
 export async function saveManifest(
   projectRoot: string,
   manifest: TeamsAppManifest,
-  isLocalDebug: boolean
+  isLocalDebug = false
 ): Promise<Result<any, FxError>> {
   const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
   await fs.writeFile(manifestFilePath, JSON.stringify(manifest, null, 4));
   return ok(manifestFilePath);
+}
+
+/**
+ * Only works for manifest.template.json
+ * @param projectRoot
+ * @returns
+ */
+export async function getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
+  if (!isConfigUnifyEnabled()) return ok([]);
+
+  const manifestRes = await loadManifest(projectRoot);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const capabilities: string[] = [];
+  if (manifestRes.value.staticTabs && manifestRes.value.staticTabs!.length > 0) {
+    capabilities.push("staticTab");
+  }
+  if (manifestRes.value.configurableTabs && manifestRes.value.configurableTabs!.length > 0) {
+    capabilities.push("configurableTab");
+  }
+  if (manifestRes.value.bots && manifestRes.value.bots!.length > 0) {
+    capabilities.push("Bot");
+  }
+  if (manifestRes.value.composeExtensions) {
+    capabilities.push("MessageExtension");
+  }
+  return ok(capabilities);
 }
 
 export async function capabilityExceedLimit(
@@ -176,14 +240,9 @@ export async function capabilityExceedLimit(
 
 export async function addCapabilities(
   projectRoot: string,
-  capabilities: v3.ManifestCapability[]
+  capabilities: v3.ManifestCapability[],
+  inputs: Inputs
 ): Promise<Result<any, FxError>> {
-  const localManifestRes = await loadManifest(projectRoot, true);
-  if (localManifestRes.isErr()) {
-    return err(localManifestRes.error);
-  }
-  const localManifest = localManifestRes.value;
-
   const remoteManifestRes = await loadManifest(projectRoot, false);
   if (remoteManifestRes.isErr()) {
     return err(remoteManifestRes.error);
@@ -195,59 +254,36 @@ export async function addCapabilities(
   capabilities.map((capability) => {
     switch (capability.name) {
       case "staticTab":
-        if (!localManifest.staticTabs) {
-          Object.assign(localManifest, { staticTabs: [] });
-        }
         if (!remoteManifest.staticTabs) {
           Object.assign(remoteManifest, { staticTabs: [] });
         }
         if (capability.snippet) {
-          localManifest.staticTabs!.push(capability.snippet.local);
-          remoteManifest.staticTabs!.push(capability.snippet.remote);
+          remoteManifest.staticTabs!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            STATIC_TABS_TPL_EXISTING_APP[0].entityId = "index" + staticTabIndex;
-            localManifest.staticTabs = localManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_EXISTING_APP
-            );
-            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_EXISTING_APP
-            );
+            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
+            template.entityId = "index" + staticTabIndex;
+            remoteManifest.staticTabs!.push(template);
           } else {
-            STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
-            STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
-            localManifest.staticTabs = localManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_LOCAL_DEBUG
-            );
-            remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
-              STATIC_TABS_TPL_FOR_MULTI_ENV
-            );
+            const template = deepCopy(STATIC_TABS_TPL_FOR_MULTI_ENV[0]);
+            template.entityId = "index" + staticTabIndex;
+            remoteManifest.staticTabs!.push(template);
           }
           staticTabIndex++;
         }
         break;
       case "configurableTab":
-        if (!localManifest.configurableTabs) {
-          Object.assign(localManifest, { configurableTabs: [] });
-        }
         if (!remoteManifest.configurableTabs) {
           Object.assign(remoteManifest, { configurableTabs: [] });
         }
         if (capability.snippet) {
-          localManifest.configurableTabs!.push(capability.snippet.local);
-          remoteManifest.configurableTabs!.push(capability.snippet.remote);
+          remoteManifest.configurableTabs!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_EXISTING_APP
-            );
             remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
               CONFIGURABLE_TABS_TPL_EXISTING_APP
             );
           } else {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
-            );
             remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
               CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
             );
@@ -255,62 +291,146 @@ export async function addCapabilities(
         }
         break;
       case "Bot":
-        if (!localManifest.bots) {
-          Object.assign(localManifest, { bots: [] });
-        }
         if (!remoteManifest.bots) {
           Object.assign(remoteManifest, { bots: [] });
         }
         if (capability.snippet) {
-          localManifest.bots!.push(capability.snippet.local);
-          remoteManifest.bots!.push(capability.snippet.remote);
+          remoteManifest.bots!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
             remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
           } else {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
-            remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+            if (remoteManifest.bots === undefined) {
+              remoteManifest.bots = [];
+            }
+
+            if (isBotNotificationEnabled()) {
+              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
+              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
+
+              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
+                // command and response bot
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
+              } else if (scenarios.includes(BotScenario.NotificationBot)) {
+                // notification
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION);
+              } else {
+                // legacy bot
+                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+              }
+            } else {
+              remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+            }
           }
         }
         break;
       case "MessageExtension":
-        if (!localManifest.composeExtensions) {
-          Object.assign(localManifest, { composeExtensions: [] });
-        }
         if (!remoteManifest.composeExtensions) {
           Object.assign(remoteManifest, { composeExtensions: [] });
         }
         if (capability.snippet) {
-          localManifest.composeExtensions!.push(capability.snippet.local);
-          remoteManifest.composeExtensions!.push(capability.snippet.remote);
+          remoteManifest.composeExtensions!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
-            );
             remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
               COMPOSE_EXTENSIONS_TPL_EXISTING_APP
             );
           } else {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
-            );
             remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
               COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
             );
           }
         }
         break;
+      case "WebApplicationInfo":
+        if (capability.snippet) {
+          remoteManifest.webApplicationInfo = capability.snippet;
+        } else {
+          remoteManifest.webApplicationInfo = WEB_APPLICATION_INFO_MULTI_ENV;
+        }
+        break;
     }
   });
-  let res = await saveManifest(projectRoot, localManifest, true);
+  const res = await saveManifest(projectRoot, remoteManifest, false);
   if (res.isErr()) {
     return err(res.error);
   }
-  res = await saveManifest(projectRoot, remoteManifest, false);
-  if (res.isErr()) {
-    return err(res.error);
+
+  if (!isConfigUnifyEnabled()) {
+    const localManifestRes = await loadManifest(projectRoot, true);
+    if (localManifestRes.isErr()) {
+      return err(localManifestRes.error);
+    }
+    const localManifest = localManifestRes.value;
+
+    let staticTabIndex = localManifest.staticTabs?.length ?? 0;
+    capabilities.map((capability) => {
+      switch (capability.name) {
+        case "staticTab":
+          if (!localManifest.staticTabs) {
+            Object.assign(localManifest, { staticTabs: [] });
+          }
+          if (capability.existingApp) {
+            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
+            template.entityId = "index" + staticTabIndex;
+            localManifest.staticTabs!.push(template);
+          } else {
+            const template = deepCopy(STATIC_TABS_TPL_LOCAL_DEBUG[0]);
+            template.entityId = "index" + staticTabIndex;
+            localManifest.staticTabs!.push(template);
+          }
+          staticTabIndex++;
+          break;
+        case "configurableTab":
+          if (!localManifest.configurableTabs) {
+            Object.assign(localManifest, { configurableTabs: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
+            );
+          }
+          break;
+        case "Bot":
+          if (!localManifest.bots) {
+            Object.assign(localManifest, { bots: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
+          } else {
+            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
+          }
+          break;
+        case "MessageExtension":
+          if (!localManifest.composeExtensions) {
+            Object.assign(localManifest, { composeExtensions: [] });
+          }
+          if (capability.existingApp) {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
+            );
+          } else {
+            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
+            );
+          }
+          break;
+        case "WebApplicationInfo":
+          if (!localManifest.webApplicationInfo) {
+            Object.assign(localManifest, { webApplicationInfo: [] });
+          }
+          localManifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
+          break;
+      }
+    });
+    const res = await saveManifest(projectRoot, localManifest, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
   }
   return ok(undefined);
 }
@@ -327,10 +447,10 @@ export async function updateCapability(
   switch (capability.name) {
     case "staticTab":
       // find the corresponding static Tab with entity id
-      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const entityId = (capability.snippet as IStaticTab).entityId;
       const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
       if (index !== undefined && index !== -1) {
-        manifest.staticTabs![index] = capability.snippet!.remote;
+        manifest.staticTabs![index] = capability.snippet!;
       } else {
         return err(
           AppStudioResultFactory.SystemError(
@@ -342,7 +462,7 @@ export async function updateCapability(
       break;
     case "configurableTab":
       if (manifest.configurableTabs && manifest.configurableTabs.length) {
-        manifest.configurableTabs[0] = capability.snippet!.remote;
+        manifest.configurableTabs[0] = capability.snippet!;
       } else {
         return err(
           AppStudioResultFactory.SystemError(
@@ -354,7 +474,7 @@ export async function updateCapability(
       break;
     case "Bot":
       if (manifest.bots && manifest.bots.length > 0) {
-        manifest.bots[0] = capability.snippet!.remote;
+        manifest.bots[0] = capability.snippet!;
       } else {
         return err(
           AppStudioResultFactory.SystemError(
@@ -366,7 +486,7 @@ export async function updateCapability(
       break;
     case "MessageExtension":
       if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-        manifest.composeExtensions[0] = capability.snippet!.remote;
+        manifest.composeExtensions[0] = capability.snippet!;
       } else {
         return err(
           AppStudioResultFactory.SystemError(
@@ -400,7 +520,7 @@ export async function deleteCapability(
   switch (capability.name) {
     case "staticTab":
       // find the corresponding static Tab with entity id
-      const entityId = (capability.snippet!.remote as IStaticTab).entityId;
+      const entityId = (capability.snippet! as IStaticTab).entityId;
       const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
       if (index !== undefined && index !== -1) {
         manifest.staticTabs!.slice(index, 1);

@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   FxError,
@@ -83,7 +83,7 @@ import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plu
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { newEnvInfo } from "../../../src/core/tools";
+import { newEnvInfo } from "../../../src";
 import Container from "typedi";
 import {
   askResourceGroupInfo,
@@ -104,6 +104,7 @@ import { AadAppForTeamsPlugin } from "../../../src";
 import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
+import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -421,7 +422,7 @@ describe("provision() with permission.json file missing", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, aadPlugin.name],
       },
     };
     const result = await solution.provision(mockedCtx);
@@ -1149,6 +1150,50 @@ describe("API v2 implementation", () => {
         mockedEnvInfo,
         mockedTokenProvider
       );
+      expect(result.isOk()).equals(true);
+    });
+
+    it("should not call arm deployment when there is no Azure resource to provision", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        isForUT: false,
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        appStudioToken: new MockedAppStudioTokenProvider(),
+        graphTokenProvider: new MockedGraphTokenProvider(),
+        sharepointTokenProvider: new MockedSharepointProvider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {},
+      };
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+
+      const solution = new TeamsAppSolutionV2();
+      const armSpy = sinon.spy(arm, "deployArmTemplates");
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      chai.assert.equal(armSpy.callCount, 0);
       expect(result.isOk()).equals(true);
     });
   });

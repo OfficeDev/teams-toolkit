@@ -10,8 +10,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvent } from "./constants";
 import { Utils } from "./utils";
 import { Logger } from "./utils/logger";
-import { FileSystemError } from "./resources/errors";
-import { Messages } from "./resources/messages";
+import { ErrorMessages as Messages, FileIOError } from "./resources/errors";
 
 export interface RemoteEnvs {
   teamsfxRemoteEnvs: { [key: string]: string };
@@ -43,7 +42,7 @@ export async function loadEnvFile(envPath: string): Promise<RemoteEnvs> {
     return await _loadEnvFile(envPath);
   } catch (e: any) {
     Logger.error(e.toString());
-    const error = new FileSystemError(Messages.FailedLoadEnv(envPath));
+    const error = new FileIOError(Messages.FailedLoadEnv(envPath));
     Logger.error(error.toString());
     TelemetryHelper.sendErrorEvent(TelemetryEvent.LoadEnvFile, error);
   }
@@ -74,7 +73,7 @@ export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<vo
     return await _saveEnvFile(envPath, envs, configs);
   } catch (e: any) {
     Logger.error(e.toString());
-    const error = new FileSystemError(Messages.FailedSaveEnv(envPath));
+    const error = new FileIOError(Messages.FailedSaveEnv(envPath));
     Logger.error(error.toString());
     TelemetryHelper.sendErrorEvent(TelemetryEvent.SaveEnvFile, error);
   }
@@ -88,9 +87,10 @@ async function _saveEnvFile(envPath: string, envs: RemoteEnvs, configs: RemoteEn
 
   if (
     Utils.isKvPairEqual(newConfigs.teamsfxRemoteEnvs, configs.teamsfxRemoteEnvs) &&
-    Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs)
+    Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs) &&
+    (await fs.pathExists(envPath))
   ) {
-    // Avoid updating dotenv file's modified time if nothing changes.
+    // Avoid updating dotenv file's modified time if path already exists and nothing changes.
     // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
     return;
   }

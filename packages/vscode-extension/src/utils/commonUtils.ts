@@ -17,12 +17,18 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, isValidProject, PluginNames } from "@microsoft/teamsfx-core";
+import {
+  environmentManager,
+  initializePreviewFeatureFlags,
+  isValidProject,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 import { execSync } from "child_process";
 import * as versionUtil from "./versionUtil";
+import { TelemetryTiggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -114,8 +120,41 @@ export function getProjectId(): string | undefined {
   }
 }
 
-export async function isSPFxProject(workspacePath: string): Promise<boolean> {
-  if (await fs.pathExists(`${workspacePath}/SPFx`)) {
+export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
+  // Check if solution settings is empty.
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return !projectSettings.solutionSettings;
+  } else {
+    return false;
+  }
+}
+
+export async function isM365Project(workspacePath: string): Promise<boolean> {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return projectSettings.isM365;
+  } else {
+    return false;
+  }
+}
+
+export function isSPFxProject(workspacePath: string): boolean {
+  if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
     return true;
   }
 
@@ -210,11 +249,27 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
     ConfigurationKey.RootDirectory
   ).toString();
+
+  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.YoEnvCheckerEnable
+  ).toString();
+  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
+    ConfigurationKey.generatorEnvCheckerEnable
+  ).toString();
+
+  process.env["TEAMSFX_PREVIEW"] = getConfiguration(
+    ConfigurationKey.EnablePreviewFeatures
+  ).toString();
+
+  initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
+  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly Preview = "TEAMSFX_PREVIEW";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
@@ -327,7 +382,7 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
     return undefined;
   }
 
-  return provisionResult.solution.provisionSucceeded;
+  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
@@ -410,4 +465,49 @@ export function delay(ms: number) {
 
 export function isSupportAutoOpenAPI(): boolean {
   return versionUtil.compare(vscode.version, "1.64.2") > 0;
+}
+
+export function isTriggerFromWalkThrough(args?: any[]): boolean {
+  if (!args || (args && args.length === 0)) {
+    return false;
+  } else if (
+    args[0].toString() === TelemetryTiggerFrom.WalkThrough ||
+    args[0].toString() === TelemetryTiggerFrom.Notification
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export function getTriggerFromProperty(args?: any[]) {
+  // if not args are not supplied, by default, it is trigger from "CommandPalette"
+  // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
+  // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
+  if (!args || (args && args.length === 0)) {
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+  }
+
+  switch (args[0].toString()) {
+    case TelemetryTiggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
+    case TelemetryTiggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    case TelemetryTiggerFrom.CodeLens:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
+    case TelemetryTiggerFrom.EditorTitle:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
+    case TelemetryTiggerFrom.SideBar:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
+    case TelemetryTiggerFrom.Notification:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
+    case TelemetryTiggerFrom.WalkThrough:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
+    case TelemetryTiggerFrom.Auto:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
+    case TelemetryTiggerFrom.Other:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+    default:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
+  }
 }

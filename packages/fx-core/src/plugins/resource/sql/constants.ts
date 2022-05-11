@@ -38,23 +38,13 @@ export class Constants {
   public static readonly solutionPluginFullName = "fx-solution-azure";
 
   public static readonly solutionConfigKey = {
-    subscriptionId: "subscriptionId",
-    resourceGroupName: "resourceGroupName",
     resourceNameSuffix: "resourceNameSuffix",
     location: "location",
     tenantId: "tenantId",
-    remoteTeamsAppId: "remoteTeamsAppId",
   };
 
   public static readonly identityPlugin: string = "fx-resource-identity";
   public static readonly identityName: string = "identityName";
-
-  public static readonly userQuestion = {
-    adminName: "Admin name of SQL",
-    adminPassword: "Admin password of SQL",
-    confirmPassword: "Confirm admin password of SQL",
-    skipAddingUser: "Skip adding database user",
-  };
 
   public static readonly questionKey = {
     adminName: "sql-admin-name",
@@ -74,10 +64,10 @@ export class Telemetry {
 
   static readonly stage = {
     preProvision: "pre-provision",
-    provision: "provision",
     postProvision: "post-provision",
     getQuestion: "get-question",
     generateArmTemplates: "generate-arm-templates",
+    updateArmTemplates: "update-arm-templates",
   };
 
   static readonly properties = {
@@ -89,6 +79,7 @@ export class Telemetry {
     appid: "appid",
     skipAddingUser: "skip-adding-user",
     dbCount: "db-count",
+    dbOnly: "db-only",
   };
 }
 

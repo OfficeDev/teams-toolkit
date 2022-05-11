@@ -6,8 +6,6 @@ import {
   Platform,
   PluginContext,
   Result,
-  returnSystemError,
-  returnUserError,
   SolutionContext,
   v2,
   Plugin,
@@ -19,13 +17,14 @@ import {
   LogProvider,
   Colors,
   ConfigMap,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   AadOwner,
   CollaborationState,
   Collaborator,
   getHashedEnv,
-  getStrings,
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";
@@ -38,8 +37,8 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
+  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import { ResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -48,8 +47,9 @@ import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
-import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 import * as util from "util";
+import { PluginsWithContext } from "../types";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -169,10 +169,11 @@ async function listCollaboratorImpl(
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ListCollaborator,
-        returnSystemError(
-          new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
+        new SystemError(
           SolutionSource,
-          SolutionError.FailedToGetEnvName
+          SolutionError.FailedToGetEnvName,
+          getDefaultString("core.collaboration.FailedToGetEnvName"),
+          getLocalizedString("core.collaboration.FailedToGetEnvName")
         ),
         telemetryReporter
       )
@@ -192,7 +193,7 @@ async function listCollaboratorImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += getStrings().solution.Collaboration.FailedToListCollaborators;
+    errorMsg += getLocalizedString("core.collaboration.FailedToListCollaborators");
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -202,11 +203,7 @@ async function listCollaboratorImpl(
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ListCollaborator,
-        returnUserError(
-          new Error(errorMsg),
-          SolutionSource,
-          SolutionError.FailedToListCollaborator
-        ),
+        new UserError(SolutionSource, SolutionError.FailedToListCollaborator, errorMsg),
         telemetryReporter
       )
     );
@@ -240,28 +237,34 @@ async function listCollaboratorImpl(
   if (platform === Platform.CLI || platform === Platform.VSCode) {
     const message = [
       {
-        content: getStrings().solution.Collaboration.ListingM365Permission,
+        content: getLocalizedString("core.collaboration.ListingM365Permission"),
         color: Colors.BRIGHT_WHITE,
       },
       {
-        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        content: getLocalizedString("core.collaboration.AccountUsedToCheck"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: getStrings().solution.Collaboration.StartingListAllTeamsAppOwners,
+        content: getLocalizedString("core.collaboration.StartingListAllTeamsAppOwners"),
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
+      { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-      { content: getStrings().solution.Collaboration.M365TeamsAppId, color: Colors.BRIGHT_WHITE },
+      {
+        content: getLocalizedString("core.collaboration.M365TeamsAppId"),
+        color: Colors.BRIGHT_WHITE,
+      },
       { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
     ];
 
     if (isAadActivated) {
       message.push(
-        { content: getStrings().solution.Collaboration.SsoAadAppId, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.SsoAadAppId"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
         { content: `)\n`, color: Colors.BRIGHT_WHITE }
       );
@@ -271,14 +274,17 @@ async function listCollaboratorImpl(
 
     for (const collaborator of collaborators) {
       message.push(
-        { content: getStrings().solution.Collaboration.TeamsAppOwner, color: Colors.BRIGHT_WHITE },
+        {
+          content: getLocalizedString("core.collaboration.TeamsAppOwner"),
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
         { content: `. `, color: Colors.BRIGHT_WHITE }
       );
 
       if (isAadActivated && !collaborator.isAadOwner) {
         message.push({
-          content: getStrings().solution.Collaboration.NotOwnerOfSsoAadApp,
+          content: getLocalizedString("core.collaboration.NotOwnerOfSsoAadApp"),
           color: Colors.BRIGHT_YELLOW,
         });
       }
@@ -291,11 +297,11 @@ async function listCollaboratorImpl(
     } else if (platform === Platform.VSCode) {
       ui?.showMessage(
         "info",
-        util.format(
-          getStrings().solution.Collaboration.ListCollaboratorsSuccess,
+        getLocalizedString(
+          "core.collaboration.ListCollaboratorsSuccess",
           CollaborationUtil.isSpfxProject(param.ctx)
             ? ""
-            : getStrings().solution.Collaboration.WithAadApp
+            : getLocalizedString("core.collaboration.WithAadApp")
         ),
         false
       );
@@ -345,13 +351,13 @@ export async function listCollaborator(
     const configMap = ConfigMap.fromJSON(param.envInfo.state);
     if (!configMap) {
       return err(
-        returnSystemError(
-          new Error(
-            getStrings().solution.Collaboration.FailedToConvertProfile +
-              JSON.stringify(param.envInfo.state)
-          ),
+        new SystemError(
           PluginNames.SOLUTION,
-          SolutionError.InternelError
+          SolutionError.InternelError,
+          getDefaultString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state),
+          getLocalizedString("core.collaboration.FailedToConvertProfile") +
+            JSON.stringify(param.envInfo.state)
         )
       );
     }

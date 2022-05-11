@@ -79,6 +79,15 @@ export interface BaseQuestion {
    * if true, the toolkit will not remember the value as default value
    */
   forgetLastValue?: boolean;
+
+  /**
+   * Actions that can be made within the question.
+   * @param An array of actions
+   * @param `icon` is the icon id of the action item
+   * @param `tooltip` is the hint of the action item
+   * @param `command` is the command name that will be executed when current action triggered
+   */
+  buttons?: { icon: string; tooltip: string; command: string }[];
 }
 
 /**
@@ -355,8 +364,11 @@ export class QTreeNode {
     if (this.data.type === "group") {
       if (!this.children || this.children.length === 0) return undefined;
       if (this.children.length === 1) {
-        this.children[0].condition = this.condition;
-        return this.children[0];
+        const child = this.children[0];
+        if (!(this.condition && child.condition)) {
+          child.condition ||= this.condition;
+          return child;
+        }
       }
     }
     return this;

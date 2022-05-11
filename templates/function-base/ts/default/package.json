@@ -8,12 +8,13 @@
         "build": "tsc",
         "watch": "tsc -w",
         "prestart": "npm run build",
-        "start": "npx func start"
+        "start": "npx func start",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
         "@azure/functions": "^1.2.2",
         "@microsoft/microsoft-graph-client": "^3.0.0",
-        "@microsoft/teamsfx": "^0.5.0",
+        "@microsoft/teamsfx": "^0.6.1",
         "isomorphic-fetch": "^3.0.0"
     },
     "devDependencies": {

@@ -2,6 +2,7 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { getTemplatesFolder } from "../../folder";
+import { FeatureFlagName } from "../constants";
 import { fetchTemplateUrl, fetchZipFromUrl, renderTemplateContent, unzip } from "./templatesUtils";
 
 // The entire progress has following actions:
@@ -26,7 +27,7 @@ export interface ScaffoldContext {
   timeoutInMs?: number;
 
   // Used by fallback zip.
-  templatesFolderName?: string;
+  templatesFolderPath?: string;
 
   // Used by rendering template file.
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
@@ -57,12 +58,12 @@ export enum ScaffoldActionName {
 }
 
 // * This action is only for debug purpose
-export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
+export const fetchTemplateZipFromSourceCodeAction: ScaffoldAction = {
   name: ScaffoldActionName.FetchTemplateZipFromSourceCode,
   run: async (context: ScaffoldContext) => {
     const isDebugMode = () => {
-      const DebugTemplateFlag = process.env.DEBUG_TEMPLATE;
-      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.VSCODE_PID;
+      const DebugTemplateFlag = process.env[FeatureFlagName.DebugTemplate];
+      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.NODE_ENV === "development";
     };
 
     if (!isDebugMode()) {
@@ -167,19 +168,12 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
       throw new Error(missKeyErrorInfo("scenario"));
     }
 
-    if (!context.templatesFolderName) {
-      throw new Error(missKeyErrorInfo("templatesFolderName"));
+    if (!context.templatesFolderPath) {
+      context.templatesFolderPath = path.join(getTemplatesFolder(), "fallback");
     }
 
     const fileName: string = [context.group, context.lang, context.scenario, "zip"].join(".");
-
-    const zipPath: string = path.join(
-      getTemplatesFolder(),
-      "plugins",
-      "resource",
-      context.templatesFolderName,
-      fileName
-    );
+    const zipPath: string = path.join(context.templatesFolderPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
     context.zip = new AdmZip(data);
@@ -202,7 +196,7 @@ export const unzipAction: ScaffoldAction = {
 };
 
 export const defaultActionSeq: ScaffoldAction[] = [
-  fetchTemplateZipFromSourceCode,
+  fetchTemplateZipFromSourceCodeAction,
   fetchTemplatesUrlWithTagAction,
   fetchTemplatesZipFromUrlAction,
   fetchTemplateZipFromLocalAction,
@@ -213,14 +207,14 @@ export function genTemplateRenderReplaceFn(variable: { [key: string]: string }) 
   return (name: string, data: Buffer) => renderTemplateContent(name, data, variable);
 }
 
-export function removeTemplateExtReplaceFn(name: string, data: Buffer) {
+export function removeTemplateExtReplaceFn(name: string, data: Buffer): string {
   return name.replace(/\.tpl/, "");
 }
 
 export async function scaffoldFromTemplates(
   context: ScaffoldContext,
   actions: ScaffoldAction[] = defaultActionSeq
-) {
+): Promise<void> {
   for (const action of actions) {
     try {
       await context.onActionStart?.(action, context);

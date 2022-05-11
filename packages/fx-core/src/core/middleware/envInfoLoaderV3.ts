@@ -13,11 +13,10 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "..";
-import { CoreHookContext } from "../..";
 import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
+import { environmentManager, newEnvInfoV3 } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
+import { CoreHookContext } from "../types";
 import { getTargetEnvName } from "./envInfoLoader";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -35,7 +34,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = err(new NoProjectOpenedError());
       return;
     }
 

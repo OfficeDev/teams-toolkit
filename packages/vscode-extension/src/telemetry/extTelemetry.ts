@@ -13,7 +13,8 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser } from "../utils/commonUtils";
+import { getIsExistingUser, isSPFxProject } from "../utils/commonUtils";
+import { ext } from "../extensionVariables";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -48,6 +49,8 @@ export namespace ExtTelemetry {
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
+      case Stage.init:
+        return TelemetryEvent.InitProject;
       case Stage.update:
         return TelemetryEvent.AddResource;
       case Stage.provision:
@@ -81,6 +84,11 @@ export namespace ExtTelemetry {
 
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+
+    if (ext.workspaceUri) {
+      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    }
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
@@ -122,6 +130,11 @@ export namespace ExtTelemetry {
       error.stack ? "\nstack:\n" + error.stack : ""
     }`;
 
+    if (ext.workspaceUri) {
+      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    }
+
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
@@ -147,6 +160,11 @@ export namespace ExtTelemetry {
 
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+
+    if (ext.workspaceUri) {
+      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
+      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    }
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();

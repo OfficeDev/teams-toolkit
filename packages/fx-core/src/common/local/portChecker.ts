@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { LogProvider, ProjectSettings, returnUserError } from "@microsoft/teamsfx-api";
+import { LogProvider, ProjectSettings, UserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 
@@ -30,7 +30,12 @@ const botServicePorts = [3978];
 async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
   try {
     sendTelemetryEvent(Component.core, TelemetryEvent.DetectPortStart, { port: port.toString() });
-    const portChosen = await detectPort(port);
+    const race = Promise.race([
+      detectPort(port),
+      // in case `detectPort` hangs, set 10 seconds timeout
+      new Promise<number>((resolve) => setTimeout(() => resolve(port), 10 * 1000)),
+    ]);
+    const portChosen = await race;
     sendTelemetryEvent(Component.core, TelemetryEvent.DetectPort, {
       portChosen: portChosen.toString(),
       port: port.toString(),
@@ -41,7 +46,7 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
     sendTelemetryErrorEvent(
       Component.core,
       TelemetryEvent.DetectPort,
-      returnUserError(error, CoreSource, "DetectPortError")
+      new UserError({ error, source: CoreSource, name: "DetectPortError" })
     );
     logger?.warning(`Failed to detect port. ${error?.message} `);
     return false;

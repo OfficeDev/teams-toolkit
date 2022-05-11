@@ -4,8 +4,7 @@
 
 "use strict";
 
-import { UserError } from "@microsoft/teamsfx-api";
-import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+import { UserError, GraphTokenProvider } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
@@ -13,7 +12,6 @@ import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import * as StringResources from "../resources/Strings.json";
 import { CryptoCachePlugin } from "./cacheAccess";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -23,9 +21,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 const accountName = "appStudio";
-const scopes = ["Application.ReadWrite.All"];
+const scopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 
 const cachePlugin = new CryptoCachePlugin(accountName);
 
@@ -97,13 +96,18 @@ export class GraphLogin extends login implements GraphTokenProvider {
             [TelemetryProperty.UserId]: "",
             [TelemetryProperty.Internal]: "",
             [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${StringResources.vsc.codeFlowLogin.loginComponent}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${StringResources.vsc.common.userCancel}`,
+            [TelemetryProperty.ErrorCode]: `${getDefaultString(
+              "teamstoolkit.codeFlowLogin.loginComponent"
+            )}.${ExtensionErrors.UserCancel}`,
+            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
+              "teamstoolkit.common.userCancel"
+            )}`,
           });
           throw new UserError(
+            "Login",
             ExtensionErrors.UserCancel,
-            StringResources.vsc.common.userCancel,
-            "Login"
+            getDefaultString("teamstoolkit.common.userCancel"),
+            localize("teamstoolkit.common.userCancel")
           );
         }
       }
@@ -146,8 +150,8 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = StringResources.vsc.graphLogin.warningMsg;
-    const confirm = StringResources.vsc.common.confirm;
+    const warningMsg = localize("teamstoolkit.graphLogin.warningMsg");
+    const confirm = localize("teamstoolkit.common.confirm");
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
       { modal: true },
@@ -157,6 +161,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    await GraphLogin.codeFlowInstance.reloadCache();
     if (GraphLogin.codeFlowInstance.account) {
       const loginToken = await GraphLogin.codeFlowInstance.getToken(false);
       const tokenJson = await this.getJsonObject();

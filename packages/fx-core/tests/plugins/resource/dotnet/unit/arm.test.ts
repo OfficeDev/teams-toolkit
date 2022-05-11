@@ -8,7 +8,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
-import * as core from "../../../../../../fx-core/src/core";
+import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import { FrontendPlugin as WebappPlugin } from "../../../../../src";
 import { mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 import {
@@ -41,6 +41,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   properties: {
     serverFarmId: serverFarms.id
     keyVaultReferenceIdentity: userAssignedIdentityId
+    httpsOnly: true
     siteConfig: {
       appSettings: [
         {
@@ -48,6 +49,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1'
         }
       ]
+      ftpsState: 'FtpsOnly'
     }
   }
   identity: {
@@ -135,7 +137,7 @@ describe("WebappPlugin", () => {
   beforeEach(() => {
     plugin = new WebappPlugin();
     pluginContext = TestHelper.getFakePluginContext();
-    sinon.stub(core, <any>"isVSProject").returns(true);
+    sinon.stub(projectSettingsHelper, <any>"isVSProject").returns(true);
   });
 
   afterEach(() => {

@@ -16,12 +16,12 @@ import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEven
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
-import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
+import { localize } from "../utils/localizeUtils";
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
@@ -89,7 +89,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
     }
     if (commandLine !== undefined) {
-      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
+      return /(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine);
     }
   }
 
@@ -163,7 +163,7 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
         vscode.window
           .showWarningMessage(
             util.format(
-              StringResources.vsc.localDebug.portWarning,
+              localize("teamstoolkit.localDebug.portWarning"),
               component,
               path.join(componentRoot, "package.json")
             ),
@@ -217,19 +217,18 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
+        [TelemetryProperty.DebugServiceName]: task.name,
+      });
     } else if (isNpmInstallTask(task)) {
-      try {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
-          [TelemetryProperty.DebugNpmInstallName]: task.name,
-        });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
+      });
 
-        if (TreatmentVariableValue.isEmbeddedSurvey) {
-          // Survey triggering point
-          const survey = ExtensionSurvey.getInstance();
-          survey.activate();
-        }
-      } catch {
-        // ignore telemetry error
+      if (TreatmentVariableValue.isEmbeddedSurvey) {
+        // Survey triggering point
+        const survey = ExtensionSurvey.getInstance();
+        survey.activate();
       }
 
       activeNpmInstallTasks.add(task.name);
@@ -254,6 +253,10 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete(getTaskKey(task));
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugService, {
+      [TelemetryProperty.DebugServiceName]: task.name,
+      [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
+    });
   } else if (isNpmInstallTask(task)) {
     try {
       activeNpmInstallTasks.delete(task.name);
@@ -319,7 +322,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             url = issueChooseLink;
           }
           const issue = {
-            title: StringResources.vsc.handlers.reportIssue,
+            title: localize("teamstoolkit.handlers.reportIssue"),
             run: async (): Promise<void> => {
               vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
             },
@@ -327,7 +330,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           vscode.window
             .showErrorMessage(
               util.format(
-                StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+                localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
                 task.name,
                 task.name
               ),
@@ -338,7 +341,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             });
           await VsCodeLogInstance.error(
             util.format(
-              StringResources.vsc.localDebug.npmInstallFailedHintMessage,
+              localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
               task.name,
               task.name
             )
@@ -363,37 +366,33 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
     ) {
       // and not a restart one
       // send f5 event telemetry
-      try {
-        const localAppId = (await getLocalTeamsAppId()) as string;
-        const isLocal =
-          (debugConfig.url as string) &&
-          localAppId &&
-          (debugConfig.url as string).includes(localAppId);
-        let appId = "";
-        let env = "";
-        if (isLocal) {
-          appId = localAppId;
-        } else {
-          if (debugConfig.teamsfxAppId) {
-            appId = debugConfig.teamsfxAppId;
-          }
-          if (debugConfig.teamsfxEnv) {
-            env = getHashedEnv(event.configuration.env);
-          }
+      const localAppId = (await getLocalTeamsAppId()) as string;
+      const isLocal =
+        (debugConfig.url as string) &&
+        localAppId &&
+        (debugConfig.url as string).includes(localAppId);
+      let appId = "";
+      let env = "";
+      if (isLocal) {
+        appId = localAppId;
+      } else {
+        if (debugConfig.teamsfxAppId) {
+          appId = debugConfig.teamsfxAppId;
         }
-
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
-          [TelemetryProperty.DebugSessionId]: event.id,
-          [TelemetryProperty.DebugType]: debugConfig.type,
-          [TelemetryProperty.DebugRequest]: debugConfig.request,
-          [TelemetryProperty.DebugPort]: debugConfig.port + "",
-          [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
-          [TelemetryProperty.DebugAppId]: appId,
-          [TelemetryProperty.Env]: env,
-        });
-      } catch {
-        // ignore telemetry error
+        if (debugConfig.teamsfxEnv) {
+          env = getHashedEnv(event.configuration.env);
+        }
       }
+
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
+        [TelemetryProperty.DebugSessionId]: event.id,
+        [TelemetryProperty.DebugType]: debugConfig.type,
+        [TelemetryProperty.DebugRequest]: debugConfig.request,
+        [TelemetryProperty.DebugPort]: debugConfig.port + "",
+        [TelemetryProperty.DebugRemote]: isLocal ? "false" : "true",
+        [TelemetryProperty.DebugAppId]: appId,
+        [TelemetryProperty.Env]: env,
+      });
 
       allRunningDebugSessions.add(event.id);
     }
@@ -415,13 +414,9 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
   if (allRunningDebugSessions.has(event.id)) {
     // a valid debug session
     // send stop-debug event telemetry
-    try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
-        [TelemetryProperty.DebugSessionId]: event.id,
-      });
-    } catch {
-      // ignore telemetry error
-    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
+      [TelemetryProperty.DebugSessionId]: event.id,
+    });
 
     terminateAllRunningTeamsfxTasks();
 

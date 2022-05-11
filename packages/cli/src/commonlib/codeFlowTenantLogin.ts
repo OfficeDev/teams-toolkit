@@ -7,7 +7,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { LogLevel, returnSystemError, UserError, Colors } from "@microsoft/teamsfx-api";
+import { LogLevel, UserError, Colors, SystemError } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -134,10 +134,10 @@ export class CodeFlowTenantLogin {
 
     const codeTimer = setTimeout(() => {
       deferredRedirect.reject(
-        returnSystemError(
-          new Error(ErrorMessage.timeoutMessage),
+        new SystemError(
           ErrorMessage.component,
-          ErrorMessage.loginError
+          ErrorMessage.loginError,
+          ErrorMessage.timeoutMessage
         )
       );
     }, 5 * 60 * 1000);
@@ -150,6 +150,7 @@ export class CodeFlowTenantLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+        response += "#";
         if (this.accountName == "azure") {
           const message = [
             {
@@ -237,10 +238,10 @@ export class CodeFlowTenantLogin {
     );
     const portTimer = setTimeout(() => {
       defferedPort.reject(
-        returnSystemError(
-          new Error(ErrorMessage.portConflictMessage),
+        new SystemError(
           ErrorMessage.component,
-          ErrorMessage.loginError
+          ErrorMessage.loginError,
+          ErrorMessage.portConflictMessage
         )
       );
     }, 5000);
@@ -288,14 +289,12 @@ function sendFile(
 }
 
 export function LoginFailureError(innerError?: any): UserError {
-  return new UserError(
-    "LoginFailure",
-    "Cannot get user login information. Please login correct account via browser.",
-    "Login",
-    new Error().stack,
-    undefined,
-    innerError
-  );
+  return new UserError({
+    name: "LoginFailure",
+    message: "Cannot get user login information. Please login correct account via browser.",
+    source: "Login",
+    error: innerError,
+  });
 }
 
 export function ConvertTokenToJson(token: string): any {

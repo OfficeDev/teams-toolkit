@@ -7,15 +7,24 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
+  assembleError,
   AzureSolutionSettings,
   Colors,
+  ConfigFolderName,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   LogLevel,
   ok,
   Platform,
+  ProjectSettings,
+  ProjectSettingsFileName,
   Result,
+  SystemError,
+  UnknownError,
+  UserCancelError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   DepsType,
@@ -28,12 +37,19 @@ import {
   TaskDefinition,
   ProgrammingLanguage,
   isConfigUnifyEnabled,
+  environmentManager,
+  DepsManager,
+  getSideloadingStatus,
+  NodeNotSupportedError,
+  isPureExistingApp,
+  isM365AppEnabled,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
+import { doctorResult } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
@@ -52,6 +68,40 @@ import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { URL } from "url";
 import { CliDepsChecker } from "./depsChecker/cliChecker";
 import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
+import { signedOut } from "../../commonlib/common/constant";
+import { cliSource } from "../../constants";
+import { performance } from "perf_hooks";
+import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
+import { NotM365Project } from "./errors";
+import * as util from "util";
+import { openHubWebClient } from "./launch";
+
+enum Checker {
+  M365Account = "M365 Account",
+  LocalCertificate = "Development certificate for localhost",
+  Ports = "Ports",
+}
+
+const DepsDisplayName = {
+  [DepsType.FunctionNode]: "Node.js",
+  [DepsType.SpfxNode]: "Node.js",
+  [DepsType.AzureNode]: "Node.js",
+  [DepsType.Dotnet]: ".NET Core SDK",
+  [DepsType.Ngrok]: "Ngrok",
+  [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+};
+
+const ProgressMessage: { [key: string]: string } = Object.freeze({
+  [Checker.M365Account]: `Checking ${Checker.M365Account}`,
+  [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
+  [Checker.Ports]: `Checking ${Checker.Ports}`,
+  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
+  [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
+  [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
+  [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
+});
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -60,9 +110,18 @@ export default class Preview extends YargsCommand {
 
   private backgroundTasks: Task[] = [];
   private readonly telemetryProperties: { [key: string]: string } = {};
+  private readonly telemetryMeasurements: { [key: string]: number } = {};
   private serviceLogWriter: ServiceLogWriter | undefined;
   private sharepointSiteUrl: string | undefined;
   public builder(yargs: Argv): Argv<any> {
+    if (isM365AppEnabled()) {
+      yargs.option("m365-host", {
+        description: "Preview the application in Teams, Outlook or Office",
+        string: true,
+        choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
+        default: constants.Hub.teams,
+      });
+    }
     yargs.option("local", {
       description: "Preview the application from local, exclusive with --remote",
       boolean: true,
@@ -85,9 +144,9 @@ export default class Preview extends YargsCommand {
       default: constants.Browser.default,
     });
     yargs.option("browser-arg", {
-      description:
-        'Argument to pass to the browser, requires --browser, can be used multiple times (e.g. --browser-args="--guest")',
+      description: 'Argument to pass to the browser (e.g. --browser-args="--guest")',
       string: true,
+      array: true,
     });
     yargs.option("sharepoint-site", {
       description:
@@ -107,13 +166,23 @@ export default class Preview extends YargsCommand {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
     try {
-      let previewType = "";
-      if ((args.local && !args.remote) || (!args.local && !args.remote)) {
-        previewType = "local";
-      } else if (!args.local && args.remote) {
-        previewType = "remote";
+      if (args.local && args.remote) {
+        throw errors.ExclusiveLocalRemoteOptions();
       }
+      const previewType = args.remote ? "remote" : "local";
       this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
+
+      let hub = args["m365-host"] as constants.Hub;
+      // TODO: remove this when TEAMSFX_M365_APP retires
+      if (hub === undefined) {
+        hub = constants.Hub.teams;
+      }
+      this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+
+      const browser = args.browser as constants.Browser;
+      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+
+      const browserArguments = args["browser-arg"] as string[];
 
       const workspaceFolder = path.resolve(args.folder as string);
       this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
@@ -123,18 +192,6 @@ export default class Preview extends YargsCommand {
       cliTelemetry
         .withRootFolder(workspaceFolder)
         .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
-
-      const browser = args.browser as constants.Browser;
-      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
-
-      const browserArguments: string[] = [];
-      if (args["browser-arg"]) {
-        if (Array.isArray(args["browser-arg"])) {
-          args["browser-arg"].forEach((x) => browserArguments.push(x));
-        } else {
-          browserArguments.push(args["browser-arg"] as string);
-        }
-      }
 
       // parse sharepoint site url to get workbench url
       if (args["sharepoint-site"]) {
@@ -149,21 +206,35 @@ export default class Preview extends YargsCommand {
           throw errors.InvalidSharePointSiteURL(error);
         }
       }
-      if (args.local && args.remote) {
-        throw errors.ExclusiveLocalRemoteOptions();
+
+      let result: Result<null, FxError>;
+      if (previewType === "local") {
+        if (await this.isExistingApp(workspaceFolder)) {
+          result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
+        } else {
+          result = await this.localPreview(workspaceFolder, hub, browser, browserArguments);
+        }
+      } else {
+        result = await this.remotePreview(
+          workspaceFolder,
+          args.env as string,
+          hub,
+          browser,
+          browserArguments
+        );
       }
 
-      const result =
-        previewType === "local"
-          ? await this.localPreview(workspaceFolder, browser, browserArguments)
-          : await this.remotePreview(workspaceFolder, browser, args.env as any, browserArguments);
       if (result.isErr()) {
         throw result.error;
       }
-      cliTelemetry.sendTelemetryEvent(TelemetryEvent.Preview, {
-        ...this.telemetryProperties,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+      cliTelemetry.sendTelemetryEvent(
+        TelemetryEvent.Preview,
+        {
+          ...this.telemetryProperties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        },
+        this.telemetryMeasurements
+      );
       return ok(null);
     } catch (error: any) {
       cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
@@ -174,6 +245,7 @@ export default class Preview extends YargsCommand {
 
   private async localPreview(
     workspaceFolder: string,
+    hub: constants.Hub,
     browser: constants.Browser,
     browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
@@ -197,17 +269,31 @@ export default class Preview extends YargsCommand {
         skipNgrok: skipNgrok,
         trustDevCert: trustDevCert,
       },
+      env: isConfigUnifyEnabled() ? environmentManager.getLocalEnvName() : undefined,
     };
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-    let localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
+    if (hub !== constants.Hub.teams && !projectSettings.isM365) {
+      throw NotM365Project();
+    }
+
+    let localSettings = undefined;
+    let configResult = undefined;
+    if (!isConfigUnifyEnabled()) {
+      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
+    }
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
+
+    if (hub === constants.Hub.office && !includeFrontend) {
+      throw errors.OnlyLaunchPageSupportedInOffice();
+    }
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
@@ -239,11 +325,48 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    const envCheckerResult = await this.handleDependences(includeBackend, includeBot);
-    if (envCheckerResult.isErr()) {
-      return err(envCheckerResult.error);
+    const start = performance.now();
+    const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
+    try {
+      // check node
+      const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+      if (nodeRes.isErr()) {
+        return err(nodeRes.error);
+      }
+
+      // check account
+      const accountRes = await this.checkM365Account();
+      if (accountRes.isErr()) {
+        return err(accountRes.error);
+      }
+
+      // check cert
+      const certRes = await this.resolveLocalCertificate(localEnvManager);
+      if (certRes.isErr()) {
+        return err(certRes.error);
+      }
+
+      // check deps
+      const envCheckerResult = await this.handleDependences(
+        projectSettings,
+        localEnvManager,
+        depsManager
+      );
+      if (envCheckerResult.isErr()) {
+        return err(envCheckerResult.error);
+      }
+
+      /* === check ports === */
+      const portsRes = await this.checkPorts(workspaceFolder);
+      if (portsRes.isErr()) {
+        return portsRes;
+      }
+    } finally {
+      // use seconds
+      this.telemetryMeasurements[TelemetryProperty.PreviewPrerequisitesCheckTime] = Number(
+        ((performance.now() - start) / 1000).toFixed(2)
+      );
     }
-    const depsChecker: CliDepsChecker = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -253,7 +376,7 @@ export default class Preview extends YargsCommand {
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {
-      const result = await this.startNgrok(workspaceFolder, depsChecker);
+      const result = await this.startNgrok(workspaceFolder, depsManager);
       if (result.isErr()) {
         return result;
       }
@@ -267,7 +390,7 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      depsChecker
+      depsManager
     );
     if (result.isErr()) {
       return result;
@@ -276,12 +399,6 @@ export default class Preview extends YargsCommand {
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
       workspaceFolder
     ) as string;
-
-    /* === check ports === */
-    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
-    if (portsInUse.length > 0) {
-      return err(errors.PortsAlreadyInUse(portsInUse));
-    }
 
     /* === start services === */
     const programmingLanguage = projectSettings.programmingLanguage as string;
@@ -295,7 +412,8 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      depsChecker,
+      includeFuncHostedBot,
+      depsManager,
       includeSimpleAuth
     );
     if (result.isErr()) {
@@ -304,28 +422,115 @@ export default class Preview extends YargsCommand {
 
     /* === get local teams app id === */
     // re-load local settings
-    localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
+    let tenantId = undefined;
+    let localTeamsAppId = undefined;
+    let localBotId = undefined;
+    if (isConfigUnifyEnabled()) {
+      configResult = await core.getProjectConfig(inputs);
+      if (configResult.isErr()) {
+        return err(configResult.error);
+      }
+      const config = configResult.value;
+      tenantId = config?.config
+        ?.get(constants.solutionPluginName)
+        ?.get(constants.teamsAppTenantIdConfigKey) as string;
+      localTeamsAppId = config?.config
+        ?.get(constants.appstudioPluginName)
+        ?.get(constants.remoteTeamsAppIdConfigKey);
+      localBotId = config?.config
+        ?.get(constants.botPluginName)
+        ?.get(constants.botIdConfigKey) as string;
+    } else {
+      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
-    const tenantId = localSettings?.teamsApp?.tenantId as string;
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+      tenantId = localSettings?.teamsApp?.tenantId as string;
+      localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+      localBotId = localSettings?.bot?.botId as string;
+    }
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
     }
 
-    /* === open teams web client === */
-    result = await this.openTeamsWebClient(
-      tenantId.length === 0 ? undefined : tenantId,
-      localTeamsAppId,
-      browser,
-      browserArguments
-    );
-    if (result.isErr()) {
-      return result;
+    // launch Teams
+    if (hub === constants.Hub.teams) {
+      await openHubWebClient(
+        includeFrontend,
+        tenantId,
+        localTeamsAppId,
+        constants.Hub.teams,
+        browser,
+        browserArguments,
+        this.telemetryProperties
+      );
+      return ok(null);
     }
 
-    cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+    // launch Outlook or Office
+    if (CLIUIInstance.interactive) {
+      const shouldContinue = await showInstallAppInTeamsMessage(
+        false,
+        tenantId,
+        localTeamsAppId,
+        localBotId,
+        browser,
+        browserArguments
+      );
+      if (shouldContinue) {
+        const internalId = await getTeamsAppInternalId(localTeamsAppId);
+        if (internalId) {
+          await openHubWebClient(
+            includeFrontend,
+            tenantId,
+            internalId,
+            hub,
+            browser,
+            browserArguments,
+            this.telemetryProperties
+          );
+          cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+        }
+      } else {
+        return err(UserCancelError);
+      }
+    } else {
+      const internalId = await getTeamsAppInternalId(localTeamsAppId);
+      if (internalId) {
+        await openHubWebClient(
+          includeFrontend,
+          tenantId,
+          internalId,
+          hub,
+          browser,
+          browserArguments,
+          this.telemetryProperties
+        );
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.manifestChanges, "--local")
+        );
+        cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      } else {
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.notInstalled, "--local")
+        );
+      }
+    }
 
+    return ok(null);
+  }
+
+  private async checkPorts(workspaceFolder: string): Promise<Result<null, FxError>> {
+    const portsBar = CLIUIInstance.createProgressBar(Checker.Ports, 1);
+    await portsBar.start(ProgressMessage[Checker.Ports]);
+    await portsBar.next(ProgressMessage[Checker.Ports]);
+    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
+    if (portsInUse.length > 0) {
+      await portsBar.end(false);
+      return err(errors.PortsAlreadyInUse(portsInUse));
+    }
+    await portsBar.end(true);
     return ok(null);
   }
 
@@ -389,17 +594,6 @@ export default class Preview extends YargsCommand {
     const previewBar = CLIUIInstance.createProgressBar(constants.previewSPFxTitle, 1);
     await previewBar.start(constants.previewSPFxStartMessage);
     await previewBar.next(constants.previewSPFxStartMessage);
-    const message = [
-      {
-        content: `preview url: `,
-        color: Colors.WHITE,
-      },
-      {
-        content: url,
-        color: Colors.BRIGHT_CYAN,
-      },
-    ];
-    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
     try {
       await commonUtils.openBrowser(browser, url, browserArguments);
     } catch {
@@ -414,7 +608,19 @@ export default class Preview extends YargsCommand {
       await previewBar.end(false);
       return ok(null);
     }
+
     await previewBar.end(true);
+    const message = [
+      {
+        content: `preview url: `,
+        color: Colors.WHITE,
+      },
+      {
+        content: url,
+        color: Colors.BRIGHT_CYAN,
+      },
+    ];
+    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
 
     cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSPFxOpenBrowser, {
       ...this.telemetryProperties,
@@ -446,10 +652,59 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async remotePreview(
+  private async localPreviewMinimalApp(
     workspaceFolder: string,
     browser: constants.Browser,
+    browserArguments: string[] = []
+  ): Promise<Result<null, FxError>> {
+    const coreResult = await activate();
+    if (coreResult.isErr()) {
+      return err(coreResult.error);
+    }
+    const core = coreResult.value;
+
+    const inputs: Inputs = {
+      projectPath: workspaceFolder,
+      platform: Platform.CLI,
+      env: environmentManager.getLocalEnvName(),
+    };
+
+    /* === register teams app === */
+    const result = await core.localDebug(inputs);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    return await this.remotePreview(
+      workspaceFolder,
+      environmentManager.getLocalEnvName(),
+      constants.Hub.teams,
+      browser,
+      browserArguments
+    );
+  }
+
+  private async isExistingApp(workspacePath: string): Promise<boolean> {
+    const projectSettingsPath = path.resolve(
+      workspacePath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (await fs.pathExists(projectSettingsPath)) {
+      const projectSettings = await fs.readJson(projectSettingsPath);
+      return isPureExistingApp(projectSettings);
+    } else {
+      return false;
+    }
+  }
+
+  private async remotePreview(
+    workspaceFolder: string,
     env: string | undefined,
+    hub: constants.Hub,
+    browser: constants.Browser,
     browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
     /* === get remote teams app id === */
@@ -471,8 +726,18 @@ export default class Preview extends YargsCommand {
     }
     const config = configResult.value;
 
-    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
+    if (hub !== constants.Hub.teams && !config?.settings?.isM365) {
+      throw NotM365Project();
+    }
+
+    const activeResourcePlugins =
+      (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
+    const includeFrontend = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.frontendHostingPluginName
+    );
+    if (hub === constants.Hub.office && !includeFrontend) {
+      throw errors.OnlyLaunchPageSupportedInOffice();
+    }
     const includeSpfx = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.spfxPluginName
     );
@@ -495,15 +760,68 @@ export default class Preview extends YargsCommand {
       return err(errors.PreviewWithoutProvision());
     }
 
-    /* === open teams web client === */
-    const result = await this.openTeamsWebClient(
-      tenantId.length === 0 ? undefined : tenantId,
-      remoteTeamsAppId,
-      browser,
-      browserArguments
-    );
-    if (result.isErr()) {
-      return result;
+    // launch Teams
+    if (hub === constants.Hub.teams) {
+      await openHubWebClient(
+        includeFrontend,
+        tenantId,
+        remoteTeamsAppId,
+        hub,
+        browser,
+        browserArguments,
+        this.telemetryProperties
+      );
+      return ok(null);
+    }
+
+    // launch Outlook or Office
+    if (CLIUIInstance.interactive) {
+      const shouldContinue = await showInstallAppInTeamsMessage(
+        false,
+        tenantId,
+        remoteTeamsAppId,
+        undefined,
+        browser,
+        browserArguments
+      );
+      if (shouldContinue) {
+        const internalId = await getTeamsAppInternalId(remoteTeamsAppId);
+        if (internalId) {
+          await openHubWebClient(
+            includeFrontend,
+            tenantId,
+            internalId,
+            hub,
+            browser,
+            browserArguments,
+            this.telemetryProperties
+          );
+        }
+      } else {
+        return err(UserCancelError);
+      }
+    } else {
+      const internalId = await getTeamsAppInternalId(remoteTeamsAppId);
+      if (internalId) {
+        await openHubWebClient(
+          includeFrontend,
+          tenantId,
+          internalId,
+          hub,
+          browser,
+          browserArguments,
+          this.telemetryProperties
+        );
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.manifestChanges, "--remote")
+        );
+      } else {
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.notInstalled, "--remote")
+        );
+      }
     }
 
     return ok(null);
@@ -511,7 +829,7 @@ export default class Preview extends YargsCommand {
 
   private async startNgrok(
     workspaceFolder: string,
-    depsChecker: CliDepsChecker
+    depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     // bot npm install
     const botInstallTask = this.prepareTask(
@@ -524,7 +842,7 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
-    const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
+    const ngrok = (await depsManager.getStatus([DepsType.Ngrok]))[0];
     const ngrokBinFolders = ngrok.details.binFolders;
     const ngrokStartTask = this.prepareTask(
       TaskDefinition.ngrokStart(workspaceFolder, false, ngrokBinFolders),
@@ -550,7 +868,7 @@ export default class Preview extends YargsCommand {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    depsChecker: CliDepsChecker
+    depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     const frontendInstallTask = includeFrontend
       ? this.prepareTask(
@@ -566,7 +884,7 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
 
-    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     const dotnetExecPath = dotnet.command;
     const backendExtensionsInstallTask = includeBackend
       ? this.prepareTask(
@@ -604,13 +922,137 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
+  /**
+   * Create a promise that run tasks sequentially.
+   * @param tasks The tasks to run
+   * @returns An array of the results if all tasks succeed, or the FxError of the first failed task.
+   *          Tasks after the first failed tasks will not be executed
+   * Example:
+   *  sequatialTasks(t1, t2, t3)
+   *
+   *  If t1 succeeds and t2 fails, the result is the error of t2, and t3 is never executed.
+   *  If they all succeed, the result is [t1Result, t2Result, t3Result].
+   */
+  public static async sequentialTasks<T>(
+    ...tasks: (() => Promise<Result<T, FxError>> | undefined)[]
+  ): Promise<Result<(T | undefined)[], FxError>> {
+    const results: (T | undefined)[] = [];
+    for (const createTask of tasks) {
+      const result = await createTask();
+      if (result) {
+        if (result.isErr()) {
+          return err(result.error);
+        } else {
+          results.push(result.value);
+        }
+      } else {
+        results.push(undefined);
+      }
+    }
+    return ok(results);
+  }
+
+  public async createBotTasksForStartServices(
+    workspaceFolder: string,
+    programmingLanguage: string,
+    includeBot: boolean,
+    includeFuncHostedBot: boolean,
+    localEnv: { [key: string]: string } | undefined,
+    funcEnv: { [key: string]: string } | undefined
+  ): Promise<(Promise<Result<unknown, FxError>> | undefined)[]> {
+    // The following task logic aligns with the vscode extension.
+    // Bot task order:
+    //  - for legacy bot: botStart
+    //  - for func hosted bot: [botWatch (ts only) -> botStart] | botAzurite
+    // "|" for concurrent
+    // "->" for sequential
+    let botTaskPromises: (Promise<Result<unknown, FxError>> | undefined)[] = [];
+    if (includeBot) {
+      const hasTeamsFxDevScript =
+        (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
+      const botWatchTask =
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+          ? hasTeamsFxDevScript
+            ? this.prepareTaskNext(
+                TaskDefinition.funcHostedBotWatch(workspaceFolder),
+                constants.botWatchStartMessage,
+                true
+              )
+            : this.prepareTask(
+                TaskDefinition.funcHostedBotWatch(workspaceFolder),
+                constants.botWatchStartMessage,
+                commonUtils.getBotLocalEnv(localEnv)
+              )
+          : undefined;
+      const botStartTask = includeFuncHostedBot
+        ? // For func hosted bot, always use the new task (prepareTaskNext).
+          this.prepareTaskNext(
+            TaskDefinition.funcHostedBotStart(workspaceFolder),
+            constants.botStartStartMessageNext,
+            false,
+            funcEnv
+          )
+        : hasTeamsFxDevScript
+        ? this.prepareTaskNext(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessageNext,
+            false
+          )
+        : this.prepareTask(
+            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
+            constants.botStartStartMessage,
+            commonUtils.getBotLocalEnv(localEnv)
+          );
+
+      const botAzuriteTask = this.prepareTask(
+        TaskDefinition.funcHostedBotAzurite(workspaceFolder),
+        constants.botWatchStartMessage
+      );
+
+      botTaskPromises = [
+        Preview.sequentialTasks(
+          () =>
+            botWatchTask?.task.waitFor(
+              constants.funcHostedBotWatchPattern,
+              botWatchTask.startCb,
+              botWatchTask.stopCb,
+              undefined,
+              this.serviceLogWriter
+            ),
+          () =>
+            botStartTask?.task.waitFor(
+              includeFuncHostedBot
+                ? constants.funcHostedBotStartPattern
+                : constants.botStartPattern,
+              botStartTask.startCb,
+              botStartTask.stopCb,
+              30000,
+              this.serviceLogWriter
+            )
+        ),
+        includeFuncHostedBot
+          ? botAzuriteTask?.task.waitFor(
+              constants.funcHostedBotAzuritePattern,
+              botAzuriteTask?.startCb,
+              botAzuriteTask?.stopCb,
+              30000,
+              this.serviceLogWriter
+            )
+          : undefined,
+      ];
+    }
+
+    return botTaskPromises;
+  }
+
   private async startServices(
     workspaceFolder: string,
     programmingLanguage: string,
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    depsChecker: CliDepsChecker,
+    includeFuncHostedBot: boolean,
+    depsManager: DepsManager,
     includeSimpleAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
@@ -629,7 +1071,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
 
-    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     const authStartTask =
       includeFrontend && includeSimpleAuth
         ? this.prepareTask(
@@ -639,7 +1081,7 @@ export default class Preview extends YargsCommand {
           )
         : undefined;
 
-    const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
+    const func = (await depsManager.getStatus([DepsType.FuncCoreTools]))[0];
     const funcCommand = func.command;
     let funcEnv = undefined;
     if (func.details.binFolders !== undefined) {
@@ -677,19 +1119,37 @@ export default class Preview extends YargsCommand {
             )
         : undefined;
 
-    const botStartTask = includeBot
-      ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined
-        ? this.prepareTaskNext(
-            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
-            constants.botStartStartMessageNext,
-            false
-          )
-        : this.prepareTask(
-            TaskDefinition.botStart(workspaceFolder, programmingLanguage, true),
-            constants.botStartStartMessage,
-            commonUtils.getBotLocalEnv(localEnv)
-          )
-      : undefined;
+    // For TypeScript projects, backendStart depends on backendWatch.
+    // backendStart runs `func start ...` which uses `bot/{funcName}/function.json`,
+    //  which refers to the JavaScript files built from TypeScript files.
+    // As a result, running backendStart before backendWatch succeeds will result in JavaScript file not found error.
+    const backendTaskPromise = Preview.sequentialTasks(
+      () =>
+        backendStartTask?.task.waitFor(
+          constants.backendStartPattern,
+          backendStartTask.startCb,
+          backendStartTask.stopCb,
+          undefined,
+          this.serviceLogWriter
+        ),
+      () =>
+        backendWatchTask?.task.waitFor(
+          constants.backendWatchPattern,
+          backendWatchTask.startCb,
+          backendWatchTask.stopCb,
+          undefined,
+          this.serviceLogWriter
+        )
+    );
+
+    const botTaskPromises = await this.createBotTasksForStartServices(
+      workspaceFolder,
+      programmingLanguage,
+      includeBot,
+      includeFuncHostedBot,
+      localEnv,
+      funcEnv
+    );
 
     const results = await Promise.all([
       frontendStartTask?.task.waitFor(
@@ -706,27 +1166,8 @@ export default class Preview extends YargsCommand {
         undefined,
         this.serviceLogWriter
       ),
-      backendStartTask?.task.waitFor(
-        constants.backendStartPattern,
-        backendStartTask.startCb,
-        backendStartTask.stopCb,
-        undefined,
-        this.serviceLogWriter
-      ),
-      backendWatchTask?.task.waitFor(
-        constants.backendWatchPattern,
-        backendWatchTask.startCb,
-        backendWatchTask.stopCb,
-        undefined,
-        this.serviceLogWriter
-      ),
-      botStartTask?.task.waitFor(
-        constants.botStartPattern,
-        botStartTask.startCb,
-        botStartTask.stopCb,
-        30000,
-        this.serviceLogWriter
-      ),
+      backendTaskPromise,
+      ...botTaskPromises,
     ]);
     const fxErrors: FxError[] = [];
     for (const result of results) {
@@ -740,83 +1181,6 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async openTeamsWebClient(
-    tenantIdFromConfig: string | undefined,
-    teamsAppId: string,
-    browser: constants.Browser,
-    browserArguments: string[] = []
-  ): Promise<Result<null, FxError>> {
-    cliTelemetry.sendTelemetryEvent(
-      TelemetryEvent.PreviewSideloadingStart,
-      this.telemetryProperties
-    );
-
-    let sideloadingUrl = constants.sideloadingUrl.replace(
-      constants.teamsAppIdPlaceholder,
-      teamsAppId
-    );
-
-    let tenantId, loginHint: string | undefined;
-    try {
-      const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
-      if (tokenObject) {
-        // user signed in
-        tenantId = tokenObject.tid as string;
-        loginHint = tokenObject.upn as string;
-      } else {
-        // no signed user
-        tenantId = tenantIdFromConfig;
-        loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
-      }
-    } catch {
-      // ignore error
-    }
-
-    if (tenantId && loginHint) {
-      sideloadingUrl = sideloadingUrl.replace(
-        constants.accountHintPlaceholder,
-        `appTenantId=${tenantId}&login_hint=${loginHint}`
-      );
-    } else {
-      sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, "");
-    }
-
-    const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
-    await previewBar.start(constants.previewStartMessage);
-    await previewBar.next(constants.previewStartMessage);
-    const message = [
-      {
-        content: `preview url: `,
-        color: Colors.WHITE,
-      },
-      {
-        content: sideloadingUrl,
-        color: Colors.BRIGHT_CYAN,
-      },
-    ];
-    cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
-    try {
-      await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
-    } catch {
-      const error = errors.OpeningBrowserFailed(browser);
-      cliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PreviewSideloading,
-        error,
-        this.telemetryProperties
-      );
-      cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
-      await previewBar.end(false);
-      return ok(null);
-    }
-    await previewBar.end(true);
-
-    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
-      ...this.telemetryProperties,
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-    return ok(null);
-  }
-
   private async terminateTasks(): Promise<void> {
     for (const task of this.backgroundTasks) {
       await task.terminate();
@@ -825,32 +1189,187 @@ export default class Preview extends YargsCommand {
   }
 
   private async handleDependences(
-    hasBackend: boolean,
-    hasBot: boolean
-  ): Promise<Result<CliDepsChecker, FxError>> {
-    const depsChecker = new CliDepsChecker(
-      cliEnvCheckerLogger,
-      cliEnvCheckerTelemetry,
-      hasBackend,
-      hasBot
+    projectSettings: ProjectSettings,
+    localEnvManager: LocalEnvManager,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    let shouldContinue = true;
+    const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
+    const enabledDeps = await CliDepsChecker.getEnabledDeps(
+      availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
     );
-    let node = DepsType.AzureNode;
-    if (hasBackend) {
-      node = DepsType.FunctionNode;
-    }
 
-    const shouldContinue = await depsChecker.resolve([
-      node,
-      DepsType.Dotnet,
-      DepsType.FunctionNode,
-      DepsType.Ngrok,
-    ]);
+    for (const dep of enabledDeps) {
+      const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
+      await bar.start(ProgressMessage[dep]);
+      await bar.next(ProgressMessage[dep]);
+      const depStatus = (
+        await depsManager.ensureDependencies([dep], {
+          fastFail: false,
+          doctor: true,
+        })
+      )[0];
+
+      let result;
+      let summaryMsg;
+
+      if (depStatus.isInstalled) {
+        result = true;
+        summaryMsg = depStatus.details.binFolders
+          ? `${depStatus.name} (installed at ${depStatus.details.binFolders?.[0]})`
+          : DepsDisplayName[dep];
+      } else {
+        result = false;
+        summaryMsg = depStatus.error ? depStatus.error.message : DepsDisplayName[dep];
+      }
+      shouldContinue = shouldContinue && result;
+      await bar.next(summaryMsg);
+      await bar.end(result);
+      if (!result && depStatus.error && depStatus.error.helpLink) {
+        cliLogger.necessaryLog(
+          LogLevel.Info,
+          doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
+        );
+      }
+    }
 
     if (!shouldContinue) {
       return err(errors.DependencyCheckerFailed());
     }
 
-    return ok(depsChecker);
+    return ok(null);
+  }
+
+  private async checkNode(
+    hasBackend: boolean,
+    hasFuncHostedBot: boolean,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
+    await nodeBar.start(ProgressMessage[node]);
+
+    let nodeStatus;
+    let result = true;
+    let summaryMsg = doctorResult.NodeSuccess;
+    let helpLink = undefined;
+
+    try {
+      nodeStatus = (
+        await depsManager.ensureDependencies([node], {
+          fastFail: false,
+          doctor: true,
+        })
+      )[0];
+
+      if (!nodeStatus.isInstalled) {
+        summaryMsg = doctorResult.NodeNotFound;
+        result = false;
+        if (nodeStatus.error) {
+          helpLink = nodeStatus.error.helpLink;
+        }
+        if (nodeStatus.error instanceof NodeNotSupportedError) {
+          const supportedVersions = nodeStatus?.details.supportedVersions
+            .map((v) => "v" + v)
+            .join(" ,");
+          summaryMsg = doctorResult.NodeNotSupported.split("@CurrentVersion")
+            .join(nodeStatus?.details.installVersion)
+            .split("@SupportedVersions")
+            .join(supportedVersions);
+        }
+      }
+    } catch (err) {
+      result = false;
+      summaryMsg = doctorResult.NodeNotFound;
+    }
+
+    await nodeBar.next(summaryMsg);
+    await nodeBar.end(result);
+    if (!result) {
+      cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
+      return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
+    }
+
+    return ok(null);
+  }
+
+  private async checkM365Account(): Promise<Result<null, FxError>> {
+    let result = true;
+    let summaryMsg = `${Checker.M365Account}`;
+    let error = undefined;
+    const accountBar = CLIUIInstance.createProgressBar(Checker.M365Account, 1);
+    await accountBar.start(ProgressMessage[Checker.M365Account]);
+    await accountBar.next(ProgressMessage[Checker.M365Account]);
+    let loginHint = undefined;
+    try {
+      const loginStatus = await AppStudioTokenInstance.getStatus();
+      let token = loginStatus.token;
+      if (loginStatus.status === signedOut) {
+        token = await AppStudioTokenInstance.getAccessToken(true);
+      }
+
+      if (token === undefined) {
+        result = false;
+        summaryMsg = doctorResult.NotSignIn;
+      } else {
+        const isSideloadingEnabled = await getSideloadingStatus(token);
+        if (isSideloadingEnabled === false) {
+          // sideloading disabled
+          result = false;
+          summaryMsg = doctorResult.SideLoadingDisabled;
+        }
+      }
+
+      const tokenObject = loginStatus.accountInfo;
+      if (tokenObject && tokenObject.upn) {
+        loginHint = tokenObject.upn;
+      }
+    } catch (err: any) {
+      result = false;
+      error = this.assembleError(err, cliSource);
+    }
+
+    if (result && loginHint) {
+      summaryMsg = doctorResult.SignInSuccess.split("@account").join(`${loginHint}`);
+    }
+    await accountBar.next(summaryMsg);
+    await accountBar.end(result);
+
+    if (!result) {
+      return error ? err(error) : err(errors.PrerequisitesValidationError(summaryMsg));
+    }
+    return ok(null);
+  }
+
+  private async resolveLocalCertificate(
+    localEnvManager: LocalEnvManager
+  ): Promise<Result<null, FxError>> {
+    let result = true;
+    let summaryMsg;
+    let error = undefined;
+    const certBar = CLIUIInstance.createProgressBar(Checker.LocalCertificate, 1);
+    await certBar.start(ProgressMessage[Checker.LocalCertificate]);
+    await certBar.next(ProgressMessage[Checker.LocalCertificate]);
+    try {
+      const trustDevCert = await isTrustDevCertEnabled();
+      const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+      if (localCertResult.isTrusted === false) {
+        result = false;
+        error = localCertResult.error;
+      } else if (typeof localCertResult.isTrusted === "undefined") {
+        summaryMsg = doctorResult.SkipTrustingCert;
+      }
+    } catch (err: any) {
+      result = false;
+      error = assembleError(err);
+    }
+
+    await certBar.next(summaryMsg);
+    await certBar.end(result);
+    if (!result && error) {
+      return err(error);
+    }
+    return ok(null);
   }
 
   private prepareTask(
@@ -926,5 +1445,21 @@ export default class Preview extends YargsCommand {
       this.backgroundTasks.push(task);
     }
     return { task: task, startCb: startCb, stopCb: stopCb };
+  }
+
+  private assembleError(e: any, source?: string): FxError {
+    if (e instanceof UserError || e instanceof SystemError) return e;
+    if (!source) source = "unknown";
+    const type = typeof e;
+    if (type === "string") {
+      return new UnknownError(source, e as string);
+    } else if (e instanceof Error) {
+      const err = e as Error;
+      const fxError = new SystemError({ error: err, source });
+      fxError.stack = err.stack;
+      return fxError;
+    } else {
+      return new UnknownError(source, JSON.stringify(e));
+    }
   }
 }

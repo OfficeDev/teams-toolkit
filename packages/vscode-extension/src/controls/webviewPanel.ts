@@ -20,9 +20,9 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import { GlobalKey } from "../constants";
 import { ext } from "../extensionVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
-import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   AccountType,
@@ -32,6 +32,7 @@ import {
   TelemetryTiggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { isMacOS } from "../utils/commonUtils";
+import { localize } from "../utils/localizeUtils";
 import { Commands } from "./Commands";
 import { EventMessages } from "./messages";
 import { PanelType } from "./PanelType";
@@ -44,7 +45,7 @@ export class WebviewPanel {
   private panelType: PanelType = PanelType.QuickStart;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(panelType: PanelType) {
+  public static createOrShow(panelType: PanelType, isToSide?: boolean) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -56,7 +57,13 @@ export class WebviewPanel {
         .find((panel) => panel.panelType === panelType)!
         .panel.reveal(column);
     } else {
-      WebviewPanel.currentPanels.push(new WebviewPanel(panelType, column || vscode.ViewColumn.One));
+      isToSide
+        ? WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.Two)
+          )
+        : WebviewPanel.currentPanels.push(
+            new WebviewPanel(panelType, column || vscode.ViewColumn.One)
+          );
     }
   }
 
@@ -129,7 +136,7 @@ export class WebviewPanel {
             await this.updateGlobalStepsDone(msg.data);
             break;
           case Commands.GetGlobalStepsDone:
-            this.getGlobalStepsDone();
+            await this.getGlobalStepsDone();
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
@@ -165,6 +172,8 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+      await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
+      await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
       await ExtTelemetry.dispose();
       setTimeout(() => {
         vscode.commands.executeCommand("vscode.openFolder", res.value);
@@ -179,8 +188,8 @@ export class WebviewPanel {
     await globalStateUpdate("globalStepsDone", data);
   }
 
-  private getGlobalStepsDone() {
-    const globalStepsDone = globalStateGet("globalStepsDone", []);
+  private async getGlobalStepsDone() {
+    const globalStepsDone = await globalStateGet("globalStepsDone", []);
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: "updateStepsDone",
@@ -201,11 +210,11 @@ export class WebviewPanel {
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
       case PanelType.QuickStart:
-        return StringResources.vsc.webview.quickStartPageTitle;
+        return localize("teamstoolkit.webview.quickStartPageTitle");
       case PanelType.SampleGallery:
-        return StringResources.vsc.webview.samplePageTitle;
+        return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:
-        return StringResources.vsc.webview.surveyPageTitle;
+        return localize("teamstoolkit.webview.surveyPageTitle");
     }
   }
 

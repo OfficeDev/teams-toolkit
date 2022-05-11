@@ -5,40 +5,61 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { tips } from "../resources/errors";
 import * as path from "path";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+
 export class UnauthenticatedError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to get user login information. Suggestions: ${tips.doLogin}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.UnauthenticatedError"),
+        tips.doLogin
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.UnauthenticatedError"),
+        tips.doLogin
+      )
     );
   }
 }
 
 export class EnableStaticWebsiteError extends UserError {
   constructor() {
-    super(
-      new.target.name,
-      `Failed to enable static website feature for Azure Storage Account. Suggestions: ${[
-        tips.checkSystemTime,
-        tips.checkStoragePermissions,
-      ].join(" ")}`,
-      FrontendPluginInfo.ShortName,
-      undefined,
-      FrontendPluginInfo.HelpLink
-    );
+    super({
+      message: getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.EnableStaticWebsiteError"),
+        [tips.checkSystemTime, tips.checkStoragePermissions].join(" ")
+      ),
+      displayMessage: getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.EnableStaticWebsiteError"),
+        [tips.checkSystemTime, tips.checkStoragePermissions].join(" ")
+      ),
+      source: FrontendPluginInfo.ShortName,
+      helpLink: FrontendPluginInfo.HelpLink,
+    });
   }
 }
 
 export class NpmInstallError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to run 'npm install' for Tab app. Suggestions: ${[
-        tips.doNpmInstall,
-        tips.checkLog,
-      ].join(" ")}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.NpmInstallError"),
+        [tips.doNpmInstall, tips.checkLog].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.NpmInstallError"),
+        [tips.doNpmInstall, tips.checkLog].join(" ")
+      )
     );
   }
 }
@@ -46,9 +67,18 @@ export class NpmInstallError extends UserError {
 export class BuildError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to build Tab app. Suggestions: ${[tips.doBuild, tips.checkLog].join(" ")}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.BuildError"),
+        [tips.doBuild, tips.checkLog].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.BuildError"),
+        [tips.doBuild, tips.checkLog].join(" ")
+      )
     );
   }
 }
@@ -56,15 +86,18 @@ export class BuildError extends UserError {
 export class GetContainerError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to get container. '${
-        Constants.AzureStorageWebContainer
-      }' from Azure Storage Account. Suggestions: ${[
-        tips.checkSystemTime,
-        tips.checkStoragePermissions,
-        tips.checkNetwork,
-      ].join(" ")}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+        [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.GetContainerError", Constants.AzureStorageWebContainer),
+        [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork].join(" ")
+      )
     );
   }
 }
@@ -72,12 +105,18 @@ export class GetContainerError extends UserError {
 export class ClearStorageError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to clear Azure Storage Account. Suggestions: ${[
-        tips.checkSystemTime,
-        tips.checkNetwork,
-      ].join(" ")}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        getDefaultString("error.frontend.ClearStorageError"),
+        [tips.checkSystemTime, tips.checkNetwork].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        getLocalizedString("error.frontend.ClearStorageError"),
+        [tips.checkSystemTime, tips.checkNetwork].join(" ")
+      )
     );
   }
 }
@@ -85,14 +124,18 @@ export class ClearStorageError extends UserError {
 export class UploadToStorageError extends UserError {
   constructor() {
     super(
+      FrontendPluginInfo.ShortName,
       new.target.name,
-      `Failed to upload local path ${path.join(
-        FrontendPathInfo.WorkingDir,
-        FrontendPathInfo.BuildPath
-      )} to Azure Storage Account. Suggestions: ${[tips.checkSystemTime, tips.checkNetwork].join(
-        " "
-      )}`,
-      FrontendPluginInfo.ShortName
+      getDefaultString(
+        "plugins.baseErrorMessage",
+        path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath),
+        [tips.checkSystemTime, tips.checkNetwork].join(" ")
+      ),
+      getLocalizedString(
+        "plugins.baseErrorMessage",
+        path.join(FrontendPathInfo.WorkingDir, FrontendPathInfo.BuildPath),
+        [tips.checkSystemTime, tips.checkNetwork].join(" ")
+      )
     );
   }
 }

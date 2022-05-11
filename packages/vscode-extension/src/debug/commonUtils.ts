@@ -12,7 +12,16 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
-import { LocalEnvManager, FolderName, isV3 } from "@microsoft/teamsfx-core";
+import {
+  LocalEnvManager,
+  FolderName,
+  isV3,
+  isConfigUnifyEnabled,
+  environmentManager,
+  ProjectSettingsHelper,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
+import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -115,11 +124,11 @@ export async function getDebugConfig(
       if (getConfigRes.isErr()) throw getConfigRes.error;
       const config = getConfigRes.value;
       if (!config)
-        throw new UserError("GetConfigError", "Failed to get project config", "extension");
+        throw new UserError("extension", "GetConfigError", "Failed to get project config");
       if (isLocalSideloadingConfiguration) {
         const envInfo = config.envInfos["local"];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", "Local Env config not exist", "extension");
+          throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
@@ -136,21 +145,27 @@ export async function getDebugConfig(
         }
         if (!env)
           throw new UserError(
+            "extension",
             "GetSelectedEnvError",
-            "Failed to get selected Env name",
-            "extension"
+            "Failed to get selected Env name"
           );
         const envInfo = config.envInfos[env];
         if (!envInfo)
-          throw new UserError("EnvConfigNotExist", `Env '${env} ' config not exist`, "extension");
+          throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
         const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
         return { appId: appId, env: env };
       }
     } else {
       if (isLocalSideloadingConfiguration) {
-        const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-        const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-        return { appId: localSettings?.teamsApp?.teamsAppId as string };
+        if (isConfigUnifyEnabled()) {
+          // load local env app info
+          const appInfo = getTeamsAppTelemetryInfoByEnv(environmentManager.getLocalEnvName());
+          return { appId: appInfo?.appId as string, env: env };
+        } else {
+          const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+          const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+          return { appId: localSettings?.teamsApp?.teamsAppId as string };
+        }
       } else {
         // select env
         if (env === undefined) {
@@ -205,8 +220,19 @@ export async function getPortsInUse(): Promise<number[]> {
 export async function getTeamsAppTenantId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return localSettings?.teamsApp?.tenantId as string;
+    if (isConfigUnifyEnabled()) {
+      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
+        projectId: projectSettings.projectId,
+      });
+      if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.AAD]) {
+        return localEnvInfo["state"][PluginNames.APPST].tenantId as string;
+      }
+      return undefined;
+    } else {
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.teamsApp?.tenantId as string;
+    }
   } catch {
     // in case structure changes
     return undefined;
@@ -216,10 +242,40 @@ export async function getTeamsAppTenantId(): Promise<string | undefined> {
 export async function getLocalTeamsAppId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return localSettings?.teamsApp?.teamsAppId as string;
+    if (isConfigUnifyEnabled()) {
+      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
+        projectId: projectSettings.projectId,
+      });
+      if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.APPST]) {
+        return localEnvInfo["state"][PluginNames.APPST].teamsAppId as string;
+      }
+      return undefined;
+    } else {
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.teamsApp?.teamsAppId as string;
+    }
   } catch {
     // in case structure changes
+    return undefined;
+  }
+}
+
+export async function getLocalBotId(): Promise<string | undefined> {
+  try {
+    if (isConfigUnifyEnabled()) {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
+    } else {
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      return localSettings?.bot?.botId as string;
+    }
+  } catch {
     return undefined;
   }
 }
@@ -240,16 +296,55 @@ export async function loadPackageJson(path: string): Promise<any> {
 }
 
 // Helper functions for local debug correlation-id, only used for telemetry
-let localDebugCorrelationId: string | undefined = undefined;
+// Use a 2-element tuple to handle concurrent F5
+const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+let current = 0;
 export function startLocalDebugSession(): string {
-  localDebugCorrelationId = uuid.v4();
+  current = (current + 1) % 2;
+  localDebugCorrelationIds[current] = uuid.v4();
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationId = undefined;
+  localDebugCorrelationIds[current] = "no-session-id";
+  current = (current + 1) % 2;
 }
 
 export function getLocalDebugSessionId(): string {
-  return localDebugCorrelationId || "no-session-id";
+  return localDebugCorrelationIds[current];
+}
+
+export function checkAndSkipDebugging(): boolean {
+  // skip debugging if there is already a debug session
+  if (allRunningDebugSessions.size > 0) {
+    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    endLocalDebugSession();
+    return true;
+  }
+  return false;
+}
+
+// for telemetry use only
+export async function getProjectComponents(): Promise<string | undefined> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  try {
+    const projectPath = ext.workspaceUri.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    const components: string[] = [];
+    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+      components.push("spfx");
+    }
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      components.push("frontend");
+    }
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      components.push("bot");
+    }
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      components.push("backend");
+    }
+    return components.join("+");
+  } catch (error: any) {
+    return undefined;
+  }
 }

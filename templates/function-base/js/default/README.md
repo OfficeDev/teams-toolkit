@@ -21,10 +21,10 @@ You can add your logic to the single Azure Function created by this template, as
 To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. The token can be retrieved using the TeamsFx SDK from your app's client (custom tab). Here is an example:
 
 ```js
-const { TeamsUserCredential } = require("@microsoft/teamsfx");
+const { TeamsFx } = require("@microsoft/teamsfx");
 
-var credential = new TeamsUserCredential();
-var accessToken = await credential.getToken("");
+var teamsfx = new TeamsFx();
+var accessToken = await teamsfx.getCredential().getToken("");
 // note: empty string argument on the previous line is required for now, this will be fixed in a later release
 var response = await fetch(`${functionEndpoint}/api/${functionName}`, {
   headers: {
@@ -57,11 +57,10 @@ Then following requests sent to the Azure function app will be handled by new no
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains two manifest files:
-* `manifest.local.template.json`: Manifest file for Teams app running locally.
-* `manifest.remote.template.json`: Manifest file for Teams app running remotely (After deployed to Azure).
+You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
+* `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
-Both files contain template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 

@@ -7,22 +7,23 @@ import {
   err,
   AzureSolutionSettings,
   Void,
-  returnUserError,
   PermissionRequestProvider,
-  returnSystemError,
   Json,
   SolutionContext,
   Plugin,
   AppStudioTokenProvider,
   ProjectSettings,
+  UserError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import {
   AzureResourceApim,
@@ -30,17 +31,23 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  BotScenario,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
+  NotificationOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
-import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
-import * as util from "util";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PluginsWithContext } from "../types";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -89,17 +96,19 @@ export async function ensurePermissionRequest(
 ): Promise<Result<Void, FxError>> {
   if (!isAzureProject(solutionSettings)) {
     return err(
-      returnUserError(
-        new Error("Cannot update permission for SPFx project"),
+      new UserError(
         SolutionSource,
-        SolutionError.CannotUpdatePermissionForSPFx
+        SolutionError.CannotUpdatePermissionForSPFx,
+        "Cannot update permission for SPFx project"
       )
     );
   }
 
-  const result = await permissionRequestProvider.checkPermissionRequest();
-  if (result && result.isErr()) {
-    return result.map(err);
+  if (!isAadManifestEnabled()) {
+    const result = await permissionRequestProvider.checkPermissionRequest();
+    if (result && result.isErr()) {
+      return result.map(err);
+    }
   }
 
   return ok(Void);
@@ -110,10 +119,10 @@ export function parseTeamsAppTenantId(
 ): Result<string, FxError> {
   if (appStudioToken === undefined) {
     return err(
-      returnSystemError(
-        new Error("Graph token json is undefined"),
+      new SystemError(
         SolutionSource,
-        SolutionError.NoAppStudioToken
+        SolutionError.NoAppStudioToken,
+        "Graph token json is undefined"
       )
     );
   }
@@ -125,10 +134,11 @@ export function parseTeamsAppTenantId(
     teamsAppTenantId.length === 0
   ) {
     return err(
-      returnSystemError(
-        new Error("Cannot find teams app tenant id"),
+      new SystemError(
         SolutionSource,
-        SolutionError.NoTeamsAppTenantId
+        SolutionError.NoTeamsAppTenantId,
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
       )
     );
   }
@@ -138,21 +148,17 @@ export function parseTeamsAppTenantId(
 export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
   if (appStudioToken === undefined) {
     return err(
-      returnSystemError(
-        new Error("Graph token json is undefined"),
-        "Solution",
-        SolutionError.NoAppStudioToken
-      )
+      new SystemError("Solution", SolutionError.NoAppStudioToken, "Graph token json is undefined")
     );
   }
 
   const userName = appStudioToken["upn"];
   if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
     return err(
-      returnSystemError(
-        new Error("Cannot find user name from App Studio token."),
+      new SystemError(
         "Solution",
-        SolutionError.NoUserName
+        SolutionError.NoUserName,
+        "Cannot find user name from App Studio token."
       )
     );
   }
@@ -164,30 +170,25 @@ export async function checkWhetherLocalDebugM365TenantMatches(
   appStudioTokenProvider?: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const m365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
-    if (m365TenantId.isErr()) {
-      throw err(m365TenantId.error);
+    const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365TenantId.isErr()) {
+      return maybeM365TenantId;
     }
 
-    const m365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
-    if (m365UserAccount.isErr()) {
-      throw err(m365UserAccount.error);
+    const maybeM365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    if (maybeM365UserAccount.isErr()) {
+      return maybeM365UserAccount;
     }
 
-    if (m365TenantId.value !== localDebugTenantId) {
-      const errorMessage: string = util.format(
-        getStrings().solution.LocalDebugTenantConfirmNotice,
+    if (maybeM365TenantId.value !== localDebugTenantId) {
+      const errorMessage = getLocalizedString(
+        "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
-        m365UserAccount.value,
-        "localSettings.json"
+        maybeM365UserAccount.value,
+        "state.local.json"
       );
-
       return err(
-        returnUserError(
-          new Error(errorMessage),
-          "Solution",
-          SolutionError.CannotLocalDebugInDifferentTenant
-        )
+        new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
       );
     }
   }
@@ -199,7 +200,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
   appStudioToken?: Record<string, unknown>,
-  envInfo?: EnvInfoV2
+  envInfo?: v2.EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
@@ -219,17 +220,43 @@ export function fillInSolutionSettings(
 ): Result<Void, FxError> {
   const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
+  if (isAadManifestEnabled()) {
+    if (capabilities.includes(TabOptionItem.id)) {
+      capabilities.push(TabSsoItem.id);
+    } else if (capabilities.includes(TabNonSsoItem.id)) {
+      const index = capabilities.indexOf(TabNonSsoItem.id);
+      capabilities.splice(index, 1);
+      capabilities.push(TabOptionItem.id);
+    }
+  }
   if (!capabilities || capabilities.length === 0) {
     return err(
-      returnSystemError(
-        new Error("capabilities is empty"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
+      new SystemError(SolutionSource, SolutionError.InternelError, "capabilities is empty")
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
   if (
+    capabilities.includes(NotificationOptionItem.id) ||
+    capabilities.includes(CommandAndResponseOptionItem.id)
+  ) {
+    // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
+    const scenarios: BotScenario[] = [];
+    const notificationIndex = capabilities.indexOf(NotificationOptionItem.id);
+    if (notificationIndex !== -1) {
+      capabilities[notificationIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.NotificationBot);
+    }
+    const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
+    if (commandAndResponseIndex !== -1) {
+      capabilities[commandAndResponseIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.CommandAndResponseBot);
+    }
+    answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
+    // dedup
+    capabilities = [...new Set(capabilities)];
+
+    hostType = HostTypeOptionAzure.id;
+  } else if (
     capabilities.includes(BotOptionItem.id) ||
     capabilities.includes(MessageExtensionItem.id) ||
     capabilities.includes(TabOptionItem.id)
@@ -239,14 +266,16 @@ export function fillInSolutionSettings(
     // set capabilities to TabOptionItem in case of TabSPFx item, so donot impact capabilities.includes() check overall
     capabilities = [TabOptionItem.id];
     hostType = HostTypeOptionSPFx.id;
+  } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
+    capabilities = [TabOptionItem.id];
+    hostType = HostTypeOptionAzure.id;
+  } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
+    capabilities = [MessageExtensionItem.id];
+    hostType = HostTypeOptionAzure.id;
   }
   if (!hostType) {
     return err(
-      returnSystemError(
-        new Error("hostType is undefined"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
+      new SystemError(SolutionSource, SolutionError.InternelError, "hostType is undefined")
     );
   }
   solutionSettings.hostType = hostType;

@@ -1,0 +1,19 @@
+{
+  "Projects": [
+    {
+      "LanguageSet": "VS_Main_Languages",
+      "LocItems": [
+        {
+          "SourceFile": "packages\\vscode-extension\\package.nls.json",
+          "CopyOption": "LangIDOnName",
+          "OutputPath": "packages\\vscode-extension"
+        },
+        {
+          "SourceFile": "packages\\fx-core\\resource\\package.nls.json",
+          "CopyOption": "LangIDOnName",
+          "OutputPath": "packages\\fx-core\\resource"
+        }
+      ]
+    }
+  ]
+}

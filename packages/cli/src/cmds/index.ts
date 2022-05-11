@@ -5,9 +5,12 @@
 
 import { Argv } from "yargs";
 
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
+import Add from "./add";
 import Capability from "./capability";
 import Resource from "./resource";
 import Provision from "./provision";
@@ -16,20 +19,23 @@ import Publish from "./publish";
 import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
-import Manifest from "./manifest";
 import { isRemoteCollaborationEnabled } from "../utils";
+import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
+import { ManifestValidate } from "./validate";
+import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
-  new Capability(),
-  new Resource(),
+  new Add(),
+  ...(isPreviewFeaturesEnabled() ? [] : [new Capability(), new Resource()]),
   new Provision(),
   new Deploy(),
   new Package(),
-  new Manifest(),
+  ...(isDeployManifestEnabled() ? [] : [new Manifest()]),
+  new ManifestValidate(),
   new Publish(),
   new Config(),
   new Preview(),

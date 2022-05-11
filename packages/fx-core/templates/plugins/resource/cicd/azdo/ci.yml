@@ -1,0 +1,37 @@
+{{=<% %>=}}
+# This is just an example workflow for continuous integration.
+# You should customize it to meet your own requirements.
+pr:
+# When pull requests targeting the dev branch created.
+- dev 
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# Setup environment.
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.17.0'
+    checkLatest: true
+  
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -evuxo pipefail
+
+      # This is just an example workflow for continuous integration.
+      # You should customize it to meet your own requirements.
+
+      # Build the project.
+      # The way to build the current project depends on how you scaffold it.
+      # Different folder structures require different commands set.
+      # 'npm ci' may be used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+      <%build_script%>
+
+      # Run unit test.
+      # Currently, no opinionated solution for unit test provided during scaffolding, so,
+      # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+      # npm run test

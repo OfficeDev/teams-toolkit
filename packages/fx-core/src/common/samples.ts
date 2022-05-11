@@ -10,10 +10,10 @@ export interface SampleInfo {
   configuration: string;
   link: string;
   suggested: boolean;
+  url: string;
 }
 
 export interface SampleCollection {
-  baseUrl: string;
   samples: SampleInfo[];
 }
 
@@ -33,11 +33,11 @@ class SampleProvider {
           configuration: sample.configuration,
           link: sampleConfig.defaultPackageLink,
           suggested: sample.suggested,
+          url: sampleConfig.baseUrl,
         } as SampleInfo;
       });
 
       this.sampleCollection = {
-        baseUrl: sampleConfig.baseUrl,
         samples,
       };
     }

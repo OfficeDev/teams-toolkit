@@ -5,8 +5,6 @@ import * as chai from "chai";
 
 import {
   PluginError,
-  ErrorType,
-  UserInputsError,
   AADAppCheckingError,
   ConfigUpdatingError,
   ConfigValidationError,
@@ -15,6 +13,7 @@ import {
   UnzipError,
   CreateAADSecretError,
   CreateAADAppError,
+  ErrorType,
 } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("Test Errors", () => {
@@ -25,28 +24,18 @@ describe("Test Errors", () => {
       const details = "some error occurs";
       const suggestions: string[] = ["suggestions"];
       // Act
-      const pluginError = new PluginError(ErrorType.System, errorName, details, suggestions);
+      const pluginError = new PluginError(
+        ErrorType.SYSTEM,
+        errorName,
+        [details, details],
+        suggestions
+      );
 
       // Assert
       chai.assert.isTrue(pluginError instanceof PluginError);
       chai.assert.isTrue(
         pluginError.genMessage() === `${pluginError.message} Suggestions: ${suggestions.join(" ")}`
       );
-    });
-  });
-
-  describe("UserInputsError", () => {
-    it("Happy Path", () => {
-      // Arrange
-      const input = "Bot Id";
-      const value = "123";
-
-      // Act
-      const myError = new UserInputsError(input, value);
-
-      // Assert
-      chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
     });
   });
 
@@ -87,7 +76,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType == ErrorType.System);
+      chai.assert.isTrue(myError.errorType === ErrorType.SYSTEM);
     });
   });
 
@@ -117,7 +106,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType == ErrorType.System);
+      chai.assert.isTrue(myError.errorType === ErrorType.SYSTEM);
     });
   });
 
@@ -129,7 +118,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
+      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 
@@ -141,7 +130,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
+      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 
@@ -155,7 +144,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
+      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 
@@ -170,7 +159,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
+      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 
@@ -182,7 +171,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.User);
+      chai.assert.isTrue(myError.errorType === ErrorType.USER);
     });
   });
 });

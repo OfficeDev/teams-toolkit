@@ -21,13 +21,13 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
   PathNotExistError,
   setTools,
 } from "../../../src";
+import * as tools from "../../../src/common/tools";
 import {
   ContextInjectorMW,
   LocalSettingsLoaderMW,
@@ -35,10 +35,12 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import mockLocalSettings from "./localSettings.json";
 
 describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => {
+  const sandbox = sinon.createSandbox();
   class MyClass {
     async getQuestions(
       stage: Stage,
@@ -61,25 +63,31 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ __TEAMSFX_INSIDER_PREVIEW: "true" });
+    sandbox.stub(tools, "isConfigUnifyEnabled").returns(false);
   });
 
   afterEach(() => {
     mockedEnvRestore();
+    sandbox.restore();
   });
 
   it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     const res = await my.other(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error instanceof NoProjectOpenedError);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res2 = await my.other(inputs);
-    assert.isTrue(res2.isErr() && res2.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res2.isErr() && res2.error instanceof PathNotExistError);
   });
 });
 
 describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => {
   const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    sandbox.stub(tools, "isConfigUnifyEnabled").returns(false);
+  });
   afterEach(() => {
     sandbox.restore();
   });
@@ -197,6 +205,9 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
 
 describe("Middleware - LocalSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
+  beforeEach(function () {
+    sandbox.stub(tools, "isConfigUnifyEnabled").returns(false);
+  });
   afterEach(function () {
     sandbox.restore();
   });

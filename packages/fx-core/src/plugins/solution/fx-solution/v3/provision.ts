@@ -12,6 +12,7 @@ import {
   FxError,
   Json,
   ok,
+  Platform,
   QTreeNode,
   Result,
   SystemError,
@@ -21,29 +22,23 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { isUndefined } from "lodash";
+import { isUndefined, snakeCase } from "lodash";
 import { Container } from "typedi";
-import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
+import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
-import { hasAzureResource } from "../../../../core/collaborator";
+import { getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
-import {
-  configLocalDebugSettings,
-  configLocalEnvironment,
-  setupLocalDebugSettings,
-  setupLocalEnvironment,
-} from "../debug/provisionLocal";
-import { TabSPFxItem } from "../question";
+import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
@@ -100,9 +95,9 @@ export async function provisionResources(
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
+        "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`
       )
     );
   }
@@ -179,7 +174,7 @@ export async function provisionResources(
         };
       });
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.StartNotice", PluginDisplayName.Solution)
     );
     const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
     if (provisionResult.kind !== "success") {
@@ -187,7 +182,7 @@ export async function provisionResources(
     }
 
     ctx.logProvider.info(
-      util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.ProvisionFinishNotice", PluginDisplayName.Solution)
     );
 
     if (envInfo.envName === "local") {
@@ -199,10 +194,7 @@ export async function provisionResources(
     } else {
       //5.2 deploy arm templates for remote
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.StartNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
       );
       const armRes = await arm.deployArmTemplates(
         ctx,
@@ -214,10 +206,7 @@ export async function provisionResources(
         return err(armRes.error);
       }
       ctx.logProvider.info(
-        util.format(
-          getStrings().solution.DeployArmTemplates.SuccessNotice,
-          PluginDisplayName.Solution
-        )
+        getLocalizedString("core.deployArmTemplates.SuccessNotice", PluginDisplayName.Solution)
       );
     }
 
@@ -241,14 +230,11 @@ export async function provisionResources(
       ctx.logProvider
     );
     ctx.logProvider.info(
-      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+      getLocalizedString("core.provision.configurationFinishNotice", PluginDisplayName.Solution)
     );
     const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
     if (configureResourceResult.kind !== "success") {
-      const msg = util.format(
-        getStrings().solution.ProvisionFailNotice,
-        ctx.projectSetting.appName
-      );
+      const msg = getLocalizedString("core.provision.failNotice", ctx.projectSetting.appName);
       ctx.logProvider.error(msg);
       envStates.solution.provisionSucceeded = false;
       return err(configureResourceResult.error);
@@ -267,7 +253,7 @@ export async function provisionResources(
         envStates.solution.tenantId,
         envStates.solution.resourceGroupName
       );
-      const msg = getStrings().solution.ProvisionSuccessAzure;
+      const msg = getLocalizedString("core.provision.successAzure");
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -287,10 +273,7 @@ export async function provisionResources(
     return err(updateTeamsAppRes.error);
   }
   if (envInfo.envName !== "local") {
-    const msg = util.format(
-      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-      ctx.projectSetting.appName
-    );
+    const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
     ctx.userInteraction.showMessage("info", msg, false);
     ctx.logProvider.info(msg);
   }
@@ -320,9 +303,9 @@ export async function checkAzureSubscription(
     } else {
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.SubscriptionNotFound,
-          "Failed to select subscription",
-          SolutionSource
+          "Failed to select subscription"
         )
       );
     }
@@ -337,6 +320,7 @@ export async function checkAzureSubscription(
   if (!targetSubInfo) {
     return err(
       new UserError(
+        SolutionSource,
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionIdInConfig}'(${
           envInfo.state.solution.subscriptionName
@@ -345,8 +329,7 @@ export async function checkAzureSubscription(
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
-        )}' file.`,
-        SolutionSource
+        )}' file.`
       )
     );
   }
@@ -383,9 +366,9 @@ export async function fillInAzureConfigs(
   if (azureToken === undefined) {
     return err(
       new UserError(
+        SolutionSource,
         SolutionError.NotLoginToAzure,
-        "Login to Azure using the Azure Account extension",
-        SolutionSource
+        "Login to Azure using the Azure Account extension"
       )
     );
   }
@@ -399,6 +382,7 @@ export async function fillInAzureConfigs(
   const rmClient = new ResourceManagementClient(azureToken, envInfo.state.solution.subscriptionId);
 
   // Resource group info precedence are:
+  //   0. ctx.answers, for VS targetResourceGroupName and targetResourceLocationName to create a new rg
   //   1. ctx.answers, for CLI --resource-group argument, only support existing resource group
   //   2. env config (config.{envName}.json), for user customization, only support existing resource group
   //   3. states (state.{envName}.json), for re-provision
@@ -407,7 +391,7 @@ export async function fillInAzureConfigs(
   const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
   const resourceGroupLocationFromState = envInfo.state.solution.location;
   const appName = ctx.projectSetting.appName;
-  const defaultResourceGroupName = `${appName.replace(" ", "_")}${"-" + envInfo.envName}-rg`;
+  const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   const telemetryProperties: { [key: string]: string } = {};
   if (inputs.env) {
@@ -419,20 +403,30 @@ export async function fillInAzureConfigs(
       inputs.targetResourceGroupName,
       rmClient
     );
-    if (getRes.isErr()) return err(getRes.error);
-    if (!getRes.value) {
-      // Currently we do not support creating resource group from command line arguments
-      return err(
-        new UserError(
-          SolutionError.ResourceGroupNotFound,
-          `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`,
-          SolutionSource
-        )
-      );
+    if (getRes.isErr()) {
+      // support vs to create a new resource group
+      if (inputs.platform === Platform.VS && inputs.targetResourceLocationName) {
+        resourceGroupInfo = {
+          createNewResourceGroup: true,
+          name: inputs.targetResourceGroupName,
+          location: inputs.targetResourceLocationName,
+        };
+      } else return err(getRes.error);
+    } else {
+      if (!getRes.value) {
+        // Currently we do not support creating resource group from command line arguments
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.ResourceGroupNotFound,
+            `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`
+          )
+        );
+      }
+      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+        CustomizeResourceGroupType.CommandLine;
+      resourceGroupInfo = getRes.value;
     }
-    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-      CustomizeResourceGroupType.CommandLine;
-    resourceGroupInfo = getRes.value;
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
     const getRes = await resourceGroupHelper.getResourceGroupInfo(resourceGroupName, rmClient);
@@ -442,9 +436,9 @@ export async function fillInAzureConfigs(
       const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
       return err(
         new UserError(
+          SolutionSource,
           SolutionError.ResourceGroupNotFound,
-          `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`,
-          SolutionSource
+          `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
         )
       );
     }
@@ -512,6 +506,33 @@ export async function fillInAzureConfigs(
   return ok(Void);
 }
 
+export async function askForDeployConsent(
+  ctx: v2.Context,
+  azureAccountProvider: AzureAccountProvider,
+  envInfo: v3.EnvInfoV3
+): Promise<Result<Void, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username || "";
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
+  const msg = getLocalizedString(
+    "core.deploy.confirmEnvNotice",
+    envInfo.envName,
+    username,
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  const deployOption = "Deploy";
+  const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
+  const choice = result?.isOk() ? result.value : undefined;
+
+  if (choice === deployOption) {
+    return ok(Void);
+  }
+  return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
+}
+
 export async function askForProvisionConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
@@ -523,8 +544,8 @@ export async function askForProvisionConsent(
   const username = (azureToken as any).username || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
-  const msgNew = util.format(
-    getStrings().solution.ProvisionConfirmEnvNotice,
+  const msgNew = getLocalizedString(
+    "core.provision.confirmEnvNotice",
     envInfo.envName,
     username,
     subscriptionName ? subscriptionName : subscriptionId
@@ -536,13 +557,7 @@ export async function askForProvisionConsent(
     if (confirm === "Pricing calculator") {
       ctx.userInteraction.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
     }
-    return err(
-      new UserError(
-        getStrings().solution.CancelProvision,
-        getStrings().solution.CancelProvision,
-        SolutionSource
-      )
-    );
+    return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
   }
   return ok(Void);
 }
@@ -558,9 +573,10 @@ export async function getM365TenantId(
   if (appstudioTokenJson === undefined) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoAppStudioToken,
-        "Graph token json is undefined",
-        SolutionSource
+        getDefaultString("error.NoAppStudioToken"),
+        getLocalizedString("error.NoAppStudioToken")
       )
     );
   }
@@ -568,9 +584,10 @@ export async function getM365TenantId(
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId,
-        "Cannot find Teams app tenant id",
-        SolutionSource
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
       )
     );
   }

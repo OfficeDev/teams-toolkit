@@ -3,7 +3,6 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
-import * as factory from "./clientFactory";
 import * as utils from "./utils/common";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
@@ -12,22 +11,25 @@ import {
   ProgressBarConstants,
   DeployConfigs,
   FolderNames,
-  WebAppConstants,
   TemplateProjectsConstants,
   MaxLengths,
-  AzureConstants,
   PathInfo,
   BotBicep,
-  Alias,
   ConfigKeys,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
 import {
-  CheckThrowSomethingMissing,
+  CommonStrings,
+  PluginBot,
+  ConfigNames,
+  PluginLocalDebug,
+  HostTypes,
+} from "./resources/strings";
+import {
+  checkAndThrowIfMissing,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
@@ -54,15 +56,16 @@ import {
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
 
 export class TeamsBotImpl implements PluginImpl {
-  // Made config plubic, because expect the upper layer to fill inputs.
+  // Made config public, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
-  private ctx?: PluginContext;
+  protected ctx?: PluginContext;
 
-  private async getAzureAccountCredenial(): Promise<TokenCredentialsBase> {
+  protected async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
     const serviceClientCredentials =
       await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
     if (!serviceClientCredentials) {
@@ -73,7 +76,7 @@ export class TeamsBotImpl implements PluginImpl {
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context, true);
     Logger.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(
@@ -83,9 +86,13 @@ export class TeamsBotImpl implements PluginImpl {
     );
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
 
+    if (isBotNotificationEnabled()) {
+      this.config.scaffold.hostType = HostTypes.APP_SERVICE;
+    }
+
     // 1. Copy the corresponding template project into target directory.
     // Get group name.
-    const group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
+    const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
     if (!this.config.actRoles || this.config.actRoles.length === 0) {
       throw new SomethingMissingError("act roles");
     }
@@ -101,7 +108,7 @@ export class TeamsBotImpl implements PluginImpl {
     // }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    await LanguageStrategy.getTemplateProject(group_name, this.config);
+    await LanguageStrategy.scaffoldProject(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);
@@ -115,7 +122,7 @@ export class TeamsBotImpl implements PluginImpl {
     Logger.info(Messages.PreProvisioningBot);
 
     // Preconditions checking.
-    CheckThrowSomethingMissing(
+    checkAndThrowIfMissing(
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
@@ -138,18 +145,9 @@ export class TeamsBotImpl implements PluginImpl {
     );
     await handler?.start(ProgressBarConstants.PROVISION_STEP_START);
 
-    // 0. Check Resource Provider
-    const azureCredential = await this.getAzureAccountCredenial();
-    const rpClient = factory.createResourceProviderClient(
-      azureCredential,
-      this.config.provision.subscriptionId!
-    );
-    await factory.ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
-
     // 1. Do bot registration.
     await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
-    const botAuthCreds = await this.createOrGetBotAppRegistration();
-
+    await this.registerBotApp();
     return ResultFactory.Success();
   }
 
@@ -184,7 +182,10 @@ export class TeamsBotImpl implements PluginImpl {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = {
+      plugins: plugins.map((obj) => obj.name),
+      enableAlwaysOn: isBotNotificationEnabled(),
+    };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDir, Bicep.ProvisionFileName),
@@ -228,68 +229,6 @@ export class TeamsBotImpl implements PluginImpl {
     return ResultFactory.Success(result);
   }
 
-  private async provisionWebApp() {
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
-
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
-
-    // Suppose we get creds and subs from context.
-    const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-      serviceClientCredentials,
-      this.config.provision.subscriptionId!
-    );
-
-    // 1. Provsion app service plan.
-    const appServicePlanName =
-      this.config.provision.appServicePlan ??
-      ResourceNameFactory.createCommonName(
-        this.config.resourceNameSuffix,
-        this.ctx?.projectSettings?.appName,
-        MaxLengths.APP_SERVICE_PLAN_NAME
-      );
-    Logger.info(Messages.ProvisioningAzureAppServicePlan);
-    await AzureOperations.CreateOrUpdateAppServicePlan(
-      webSiteMgmtClient,
-      this.config.provision.resourceGroup!,
-      appServicePlanName,
-      utils.generateAppServicePlanConfig(
-        this.config.provision.location!,
-        this.config.provision.skuName!
-      )
-    );
-    Logger.info(Messages.SuccessfullyProvisionedAzureAppServicePlan);
-
-    // 2. Provision web app.
-    const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
-      this.config.scaffold.programmingLanguage!,
-      appServicePlanName,
-      this.config.provision.location!
-    );
-
-    Logger.info(Messages.ProvisioningAzureWebApp);
-    const webappResponse = await AzureOperations.CreateOrUpdateAzureWebApp(
-      webSiteMgmtClient,
-      this.config.provision.resourceGroup!,
-      this.config.provision.siteName!,
-      siteEnvelope
-    );
-    Logger.info(Messages.SuccessfullyProvisionedAzureWebApp);
-
-    if (!this.config.provision.siteEndpoint) {
-      this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
-    }
-
-    if (!this.config.provision.appServicePlan) {
-      this.config.provision.appServicePlan = appServicePlanName;
-    }
-
-    // Update config for manifest.json
-    this.ctx!.config.set(
-      PluginBot.VALID_DOMAIN,
-      `${this.config.provision.siteName}.${WebAppConstants.WEB_APP_SITE_DOMAIN}`
-    );
-  }
-
   public async postProvision(context: PluginContext): Promise<FxResult> {
     return ResultFactory.Success();
   }
@@ -305,17 +244,17 @@ export class TeamsBotImpl implements PluginImpl {
       throw new PackDirExistenceError();
     }
 
-    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
-    CheckThrowSomethingMissing(
+    checkAndThrowIfMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
+    checkAndThrowIfMissing(
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
-    CheckThrowSomethingMissing(
+    checkAndThrowIfMissing(
       ConfigNames.BOT_SERVICE_RESOURCE_ID,
       this.config.provision.botWebAppResourceId
     );
-    CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-    CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
+    checkAndThrowIfMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
+    checkAndThrowIfMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
     this.config.saveConfigIntoContext(context);
 
@@ -368,13 +307,14 @@ export class TeamsBotImpl implements PluginImpl {
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
+
     const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
       `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
     ]);
 
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
-      await this.getAzureAccountCredenial(),
+      await this.getAzureAccountCredential(),
       this.config.provision.subscriptionId!
     );
     const listResponse = await AzureOperations.ListPublishingCredentials(
@@ -401,7 +341,8 @@ export class TeamsBotImpl implements PluginImpl {
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.CheckDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
@@ -436,7 +377,7 @@ export class TeamsBotImpl implements PluginImpl {
     await this.config.restoreConfigFromContext(context);
 
     if (isConfigUnifyEnabled()) {
-      CheckThrowSomethingMissing(
+      checkAndThrowIfMissing(
         ConfigNames.LOCAL_ENDPOINT,
         context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)
       );
@@ -446,7 +387,7 @@ export class TeamsBotImpl implements PluginImpl {
         }`
       );
     } else {
-      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
+      checkAndThrowIfMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
       await this.updateMessageEndpointOnAppStudio(
         `${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
@@ -458,9 +399,11 @@ export class TeamsBotImpl implements PluginImpl {
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {
-    const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    CheckThrowSomethingMissing(
+    const appStudioToken = checkAndThrowIfMissing(
+      ConfigNames.APPSTUDIO_TOKEN,
+      await this.ctx?.appStudioToken?.getAccessToken()
+    );
+    checkAndThrowIfMissing(
       ConfigNames.LOCAL_BOT_ID,
       isConfigUnifyEnabled()
         ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
@@ -478,42 +421,22 @@ export class TeamsBotImpl implements PluginImpl {
       callingEndpoint: "",
     };
 
-    await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
+    await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
   }
-
-  private async updateMessageEndpointOnAzure(endpoint: string) {
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
-
-    const botClient = factory.createAzureBotServiceClient(
-      serviceClientCredentials,
-      this.config.provision.subscriptionId!
+  private async createNewBotRegistrationOnAppStudio() {
+    const token = checkAndThrowIfMissing(
+      ConfigNames.GRAPH_TOKEN,
+      await this.ctx?.graphTokenProvider?.getAccessToken()
     );
-
-    if (!this.config.provision.botChannelRegName) {
-      throw new SomethingMissingError(CommonStrings.BOT_CHANNEL_REGISTRATION);
-    }
-    const botChannelRegistrationName = this.config.provision.botChannelRegName;
-    Logger.info(Messages.UpdatingBotMessageEndpoint);
-    await AzureOperations.UpdateBotChannelRegistration(
-      botClient,
-      this.config.provision.resourceGroup!,
-      botChannelRegistrationName,
-      this.config.scaffold.botId!,
-      endpoint,
+    const name = checkAndThrowIfMissing(
+      CommonStrings.SHORT_APP_NAME,
       this.ctx?.projectSettings?.appName
     );
-    Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
-  }
 
-  private async createNewBotRegistrationOnAppStudio() {
-    const token = await this.ctx?.graphTokenProvider?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
-
-    // 1. Create a new AAD App Registraion with client secret.
+    // 1. Create a new AAD App Registration with client secret.
     const aadDisplayName = ResourceNameFactory.createCommonName(
       this.config.resourceNameSuffix,
-      this.ctx?.projectSettings?.appName,
+      name,
       MaxLengths.AAD_DISPLAY_NAME
     );
 
@@ -544,7 +467,7 @@ export class TeamsBotImpl implements PluginImpl {
     } else {
       Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
-        token!,
+        token,
         aadDisplayName,
         this.config.localDebug.localObjectId,
         this.config.localDebug.localBotId
@@ -563,9 +486,12 @@ export class TeamsBotImpl implements PluginImpl {
     };
 
     Logger.info(Messages.ProvisioningBotRegistration);
-    const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    await AppStudio.createBotRegistration(appStudioToken!, botReg);
+    const appStudioToken = checkAndThrowIfMissing(
+      ConfigNames.APPSTUDIO_TOKEN,
+      await this.ctx?.appStudioToken?.getAccessToken()
+    );
+
+    await AppStudio.createBotRegistration(appStudioToken, botReg);
     Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
     if (isConfigUnifyEnabled()) {
@@ -593,80 +519,38 @@ export class TeamsBotImpl implements PluginImpl {
     }
   }
 
-  private async createOrGetBotAppRegistration(): Promise<BotAuthCredential> {
-    const token = await this.ctx?.graphTokenProvider?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
+  private async registerBotApp() {
+    const token = checkAndThrowIfMissing(
+      ConfigNames.GRAPH_TOKEN,
+      await this.ctx?.graphTokenProvider?.getAccessToken()
+    );
+    const name = checkAndThrowIfMissing(
+      CommonStrings.SHORT_APP_NAME,
+      this.ctx?.projectSettings?.appName
+    );
+    const ctx = checkAndThrowIfMissing(ConfigNames.GRAPH_TOKEN, this.ctx);
 
-    let botAuthCreds = new BotAuthCredential();
+    let botAuthCredential = new BotAuthCredential();
 
     if (!this.config.scaffold.botAADCreated()) {
       const aadDisplayName = ResourceNameFactory.createCommonName(
         this.config.resourceNameSuffix,
-        this.ctx?.projectSettings?.appName,
+        name,
         MaxLengths.AAD_DISPLAY_NAME
       );
-      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
-        token!,
+      botAuthCredential = await AADRegistration.registerAADAppAndGetSecretByGraph(
+        token,
         aadDisplayName,
         this.config.scaffold.objectId,
         this.config.scaffold.botId
       );
 
-      this.config.scaffold.botId = botAuthCreds.clientId;
-      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-      this.config.scaffold.objectId = botAuthCreds.objectId;
+      this.config.scaffold.botId = botAuthCredential.clientId;
+      this.config.scaffold.botPassword = botAuthCredential.clientSecret;
+      this.config.scaffold.objectId = botAuthCredential.objectId;
 
-      this.config.saveConfigIntoContext(this.ctx!); // Checkpoint for aad app provision.
+      this.config.saveConfigIntoContext(ctx); // Checkpoint for aad app provision.
       Logger.info(Messages.SuccessfullyCreatedBotAadApp);
-    } else {
-      botAuthCreds.clientId = this.config.scaffold.botId;
-      botAuthCreds.clientSecret = this.config.scaffold.botPassword;
-      botAuthCreds.objectId = this.config.scaffold.objectId;
-      Logger.info(Messages.SuccessfullyGetExistingBotAadAppCredential);
-    }
-
-    return botAuthCreds;
-  }
-
-  private async provisionBotServiceOnAzure(botAuthCreds: BotAuthCredential) {
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
-
-    // Provision a bot channel registration resource on azure.
-    const botClient = factory.createAzureBotServiceClient(
-      serviceClientCredentials,
-      this.config.provision.subscriptionId!
-    );
-
-    const botChannelRegistrationName = this.config.provision.botChannelRegName
-      ? this.config.provision.botChannelRegName
-      : ResourceNameFactory.createCommonName(
-          this.config.resourceNameSuffix,
-          this.ctx?.projectSettings?.appName,
-          MaxLengths.BOT_CHANNEL_REG_NAME
-        );
-
-    Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
-    await AzureOperations.CreateBotChannelRegistration(
-      botClient,
-      this.config.provision.resourceGroup!,
-      botChannelRegistrationName,
-      botAuthCreds.clientId!,
-      this.ctx?.projectSettings?.appName
-    );
-    Logger.info(Messages.SuccessfullyProvisionedAzureBotChannelRegistration);
-
-    // Add Teams Client as a channel to the resource above.
-    Logger.info(Messages.ProvisioningMsTeamsChannel);
-    await AzureOperations.LinkTeamsChannel(
-      botClient,
-      this.config.provision.resourceGroup!,
-      botChannelRegistrationName
-    );
-    Logger.info(Messages.SuccessfullyProvisionedMsTeamsChannel);
-
-    if (!this.config.provision.botChannelRegName) {
-      this.config.provision.botChannelRegName = botChannelRegistrationName;
     }
   }
 }

@@ -11,27 +11,21 @@ import {
   ok,
   OptionItem,
   Result,
-  returnSystemError,
-  returnUserError,
   SubscriptionInfo,
   SystemError,
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
-  SolutionContext,
-  v3,
-  PluginContext,
+  v2,
+  UserError,
 } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as Handlebars from "handlebars";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
-import { getResourceFolder } from "../folder";
 import {
   ConstantString,
   FeatureFlagName,
@@ -52,6 +46,16 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
+import {
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+} from "../plugins/solution/fx-solution/question";
+import { TOOLS } from "../core/globalVars";
+import { LocalCrypto } from "../core/crypto";
+import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { isFeatureFlagEnabled } from "./featureFlags";
+import _ from "lodash";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -60,6 +64,9 @@ Handlebars.registerHelper("contains", (value, array) => {
 Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) == -1 ? this : "";
+});
+Handlebars.registerHelper("equals", (value, target) => {
+  return value === target ? this : "";
 });
 
 export const Executor = {
@@ -274,17 +281,10 @@ export const deepCopy = <T>(target: T): T => {
   return target;
 };
 
-export function getStrings(): any {
-  const filepath = path.resolve(getResourceFolder(), "strings.json");
-  return fs.readJSONSync(filepath);
-}
-
 export function isUserCancelError(error: Error): boolean {
   const errorName = "name" in error ? (error as any)["name"] : "";
   return (
-    errorName === "User Cancel" ||
-    errorName === getStrings().solution.CancelProvision ||
-    errorName === "UserCancel"
+    errorName === "User Cancel" || errorName === "CancelProvision" || errorName === "UserCancel"
   );
 }
 
@@ -305,7 +305,12 @@ export async function askSubscription(
 
   if (subscriptions.length === 0) {
     return err(
-      returnUserError(new Error("Failed to find a subscription."), "Core", "NoSubscriptionFound")
+      new UserError(
+        "Core",
+        "NoSubscriptionFound",
+        getDefaultString("error.NoSubscriptionFound"),
+        getLocalizedString("error.NoSubscriptionFound")
+      )
     );
   }
   let resultSub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
@@ -337,7 +342,12 @@ export async function askSubscription(
     }
     if (selectedSub === undefined) {
       return err(
-        returnSystemError(new Error("Subscription not found"), "Core", "NoSubscriptionFound")
+        new SystemError(
+          "Core",
+          "NoSubscriptionFound",
+          getDefaultString("error.NoSubscriptionFound"),
+          getLocalizedString("error.NoSubscriptionFound")
+        )
       );
     }
     resultSub = selectedSub;
@@ -357,16 +367,6 @@ export function getResourceGroupInPortal(
   }
 }
 
-// Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
-  const flag = process.env[featureFlagName];
-  if (flag === undefined) {
-    return defaultValue; // allows consumer to set a default value when environment variable not set
-  } else {
-    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
-  }
-}
-
 /**
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
@@ -374,12 +374,57 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
+// TODO: move other feature flags to featureFlags.ts to prevent import loop
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
 export function isConfigUnifyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ConfigUnify, false);
+  return true;
+}
+
+export function isExistingTabAppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
+}
+
+export function isAadManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
+}
+
+export function isDeployManifestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.DeployManifest, false);
+}
+
+export function isM365AppEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
+}
+
+export function isApiConnectEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
+}
+
+// This method is for deciding whether AAD should be activated.
+// Currently AAD plugin will always be activated when scaffold.
+// This part will be updated when we support adding aad separately.
+export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+  if (!solutionSettings) {
+    return false;
+  }
+
+  if (isAadManifestEnabled()) {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
+        solutionSettings.capabilities.includes(BotSsoItem.id))
+    );
+  } else {
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      // For scaffold, activeResourecPlugins is undefined
+      (!solutionSettings.activeResourcePlugins ||
+        solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
+    );
+  }
 }
 
 export function getRootDirectory(): string {
@@ -391,6 +436,14 @@ export function getRootDirectory(): string {
   }
 }
 
+export function isYoCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+}
+
+export function isGeneratorCheckerEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any
@@ -400,10 +453,11 @@ export async function generateBicepFromFile(
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
     return updatedBicepFile;
   } catch (error) {
-    throw returnSystemError(
-      new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+    throw new SystemError(
       "Core",
-      "BicepGenerationError"
+      "BicepGenerationError",
+      getDefaultString("error.BicepGenerationError", templateFilePath, error.message),
+      getLocalizedString("error.BicepGenerationError", templateFilePath, error.message)
     );
   }
 }
@@ -603,6 +657,19 @@ export function getAllowedAppIds(): string[] {
   ];
 }
 
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
+}
+
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   const instance = axios.create({
     baseURL: getAppStudioEndpoint(),
@@ -631,9 +698,9 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
           Component.core,
           TelemetryEvent.CheckSideloading,
           new SystemError(
+            "M365Account",
             "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`,
-            "M365Account"
+            `AppStudio response code: ${response.status}, body: ${response.data}`
           )
         );
       }
@@ -643,11 +710,36 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
       sendTelemetryErrorEvent(
         Component.core,
         TelemetryEvent.CheckSideloading,
-        new SystemError(error as Error, "M365Account")
+        new SystemError({ error, source: "M365Account" })
       );
       await waitSeconds((retry + 1) * retryIntervalSeconds);
     }
   } while (++retry < 3);
 
   return undefined;
+}
+
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
+  const context: v2.Context = {
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: TOOLS.permissionRequest,
+    projectSetting: projectSettings,
+  };
+  return context;
+}
+
+export function undefinedName(objs: any[], names: string[]) {
+  for (let i = 0; i < objs.length; ++i) {
+    if (objs[i] === undefined) {
+      return names[i];
+    }
+  }
+  return undefined;
+}
+
+export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
+  return _.get(obj, path, defaultValue);
 }

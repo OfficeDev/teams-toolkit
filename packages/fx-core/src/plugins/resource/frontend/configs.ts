@@ -14,7 +14,7 @@ import {
   getResourceGroupNameFromResourceId,
   getStorageAccountNameFromResourceId,
   getSubscriptionIdFromResourceId,
-} from "../../..";
+} from "../../../common/tools";
 
 export class FrontendConfig {
   subscriptionId: string;

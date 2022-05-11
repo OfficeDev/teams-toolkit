@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - dev
+      - hotfix/**/*
     types:
       - assigned
       - opened
@@ -39,7 +40,11 @@ jobs:
           declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
           if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            if [[ "${{ github.event.pull_request.body }}" == *"E2E TEST:"* ]]; then
+            if (cat <<- 'EOF_HEREDOC' |
+              ${{ github.event.pull_request.body }}
+          EOF_HEREDOC
+              grep -q 'E2E TEST:'
+            ); then
               echo "::set-output name=passed::true"
             else
               echo "::set-output name=passed::false"
@@ -125,6 +130,12 @@ jobs:
         run: |
           npm run test:e2e:clean
 
+      - name: Create new test plan
+        if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' }}
+        run: |
+          version=$(node -p -e "require('./packages/cli/package.json').version")
+          npx ts-node .github/scripts/testPlan.ts new cli $version
+
   execute-case:
     if: ${{ needs.setup.outputs.cases }}
     env:
@@ -192,7 +203,7 @@ jobs:
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter mochawesome $file --parallel
+            npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 
       - name: get report name
@@ -278,19 +289,29 @@ jobs:
               author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
             fi
 
+            lable=""
             if [ "$status" == "success" ]; then
               passed=$((passed+1))
               label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">PASSED</span>"
-              lists="$lists <tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr>"
             else
               failed=$((failed+1))
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
-              lists="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> </tr> $lists"
+            fi
+
+            url=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url="<a href=\\\"$url\\\">For Detail</a>"
+
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$url</td> </tr>"
+
+            if [ "$status" == "success" ]; then
+              lists="$lists $row"
+            else
+              lists="$row $lists"
             fi
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> </tr> $lists </table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 

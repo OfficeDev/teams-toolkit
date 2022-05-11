@@ -6,7 +6,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Used SharePoint Framework Version
 
-![version](https://img.shields.io/badge/version-1.12.1-green.svg)
+![version](https://img.shields.io/badge/version-1.14.0-green.svg)
 
 ## Applies to
 
@@ -15,7 +15,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Prerequisites
 
-> - Node.js v10/12/14
+> - Node.js v12/14
 > - An M365 account. Get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution
@@ -39,7 +39,7 @@ Version|Date|Comments
 
 ## Minimal Path to Awesome
 
-1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.12.1 support Node.js v10/12/14)
+1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.14.0 support Node.js v12/14)
 2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
 3. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
 
@@ -71,7 +71,6 @@ Version|Date|Comments
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
 - `Teams workbench` is the default debug configuration. Using this configuration, you can install the SPFx app within Teams context as a Teams app.
-- `Local workbench` providing a SPFx local workbench to view and debug the webpart locally on your machine before actually deploying solutions to the tenant.
 - `Hosted workbench`. You need to navigate to [launch.json](.vscode/launch.json), replace `enter-your-SharePoint-site` with your SharePoint site, eg. `https://{your-tenant-name}.sharepoint.com/sites/{your-team-name}/_layouts/workbench.aspx`.
 
 ## References

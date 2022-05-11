@@ -23,11 +23,15 @@ export function generateConfigurations(
   ];
 
   if (includeFrontend) {
-    launchConfigurations.push(startAndAttachToFrontend(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(startAndAttachToFrontend(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(
+      startAndAttachToFrontend(LaunchBrowser.edge, "Edge", includeBackend, includeBot)
+    );
+    launchConfigurations.push(
+      startAndAttachToFrontend(LaunchBrowser.chrome, "Chrome", includeBackend, includeBot)
+    );
   } else if (includeBot) {
-    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge"));
-    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome"));
+    launchConfigurations.push(launchBot(LaunchBrowser.edge, "Edge", includeBackend));
+    launchConfigurations.push(launchBot(LaunchBrowser.chrome, "Chrome", includeBackend));
   }
 
   if (includeBot) {
@@ -68,49 +72,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
     chromeOrder = 2;
   }
 
-  return [
-    {
-      name: "Local workbench (Edge)",
-      type: LaunchBrowser.edge,
-      request: "launch",
-      url: "https://localhost:5432/workbench",
-      webRoot: "${workspaceRoot}/SPFx",
-      sourceMaps: true,
-      sourceMapPathOverrides: {
-        "webpack:///.././src/*": "${webRoot}/src/*",
-        "webpack:///../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../../src/*": "${webRoot}/src/*",
-      },
-      runtimeArgs: ["--remote-debugging-port=9222"],
-      preLaunchTask: "gulp serve",
-      postDebugTask: "Terminate All Tasks",
-      presentation: {
-        group: "local",
-        order: edgeOrder,
-      },
-    },
-    {
-      name: "Local workbench (Chrome)",
-      type: LaunchBrowser.chrome,
-      request: "launch",
-      url: "https://localhost:5432/workbench",
-      webRoot: "${workspaceRoot}/SPFx",
-      sourceMaps: true,
-      sourceMapPathOverrides: {
-        "webpack:///.././src/*": "${webRoot}/src/*",
-        "webpack:///../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../../src/*": "${webRoot}/src/*",
-      },
-      runtimeArgs: ["--remote-debugging-port=9222"],
-      preLaunchTask: "gulp serve",
-      postDebugTask: "Terminate All Tasks",
-      presentation: {
-        group: "local",
-        order: chromeOrder,
-      },
-    },
+  const configurations: Record<string, unknown>[] = [
     {
       name: "Hosted workbench (Edge)",
       type: LaunchBrowser.edge,
@@ -190,6 +152,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       },
     },
   ];
+  return configurations;
 }
 
 export function generateSpfxCompounds(): Record<string, unknown>[] {
@@ -244,14 +207,24 @@ function launchRemote(
 
 function startAndAttachToFrontend(
   browserType: string,
-  browserName: string
+  browserName: string,
+  includeBackend: boolean,
+  includeBot: boolean
 ): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = [];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
+  if (includeBot) {
+    cascadeTerminateToConfigurations.push("Attach to Bot");
+  }
   return {
     name: `Start and Attach to Frontend (${browserName})`,
     type: browserType,
     request: "launch",
     url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
     preLaunchTask: "Start Frontend",
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,
@@ -259,12 +232,21 @@ function startAndAttachToFrontend(
   };
 }
 
-function launchBot(browserType: string, browserName: string): Record<string, unknown> {
+function launchBot(
+  browserType: string,
+  browserName: string,
+  includeBackend: boolean
+): Record<string, unknown> {
+  const cascadeTerminateToConfigurations = ["Attach to Bot"];
+  if (includeBackend) {
+    cascadeTerminateToConfigurations.push("Attach to Backend");
+  }
   return {
     name: `Launch Bot (${browserName})`,
     type: browserType,
     request: "launch",
     url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+    cascadeTerminateToConfigurations,
     presentation: {
       group: "all",
       hidden: true,

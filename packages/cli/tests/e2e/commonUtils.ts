@@ -10,6 +10,8 @@ import {
   StatesFolderName,
   Result,
   ok,
+  TemplateFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { exec } from "child_process";
 import fs from "fs-extra";
@@ -196,6 +198,30 @@ export async function setSkipAddingSqlUserToConfig(projectPath: string, envName:
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
 }
 
+export async function setFrontendDomainToConfig(projectPath: string, envName: string) {
+  const configFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `config.${envName}.json`
+  );
+  const configFilePath = path.resolve(projectPath, configFile);
+  const config = await fs.readJSON(configFilePath);
+  config["auth"] = {};
+  config["auth"]["frontendDomain"] = "xxx.com";
+  return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
+export async function setAadManifestIdentifierUris(projectPath: string, identifierUri: string) {
+  const aadManifestPath = path.join(
+    projectPath,
+    `${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`
+  );
+
+  const aadTemplate = await fs.readJSON(aadManifestPath);
+  aadTemplate.identifierUris = [identifierUri];
+  await fs.writeJSON(aadManifestPath, aadTemplate, { spaces: 4 });
+}
+
 export async function cleanupSharePointPackage(appId: string) {
   if (appId) {
     try {
@@ -267,9 +293,8 @@ export async function cleanUpResourceGroup(appName: string, envName?: string): P
 }
 
 export async function deleteResourceGroupByName(name: string): Promise<boolean> {
-  const manager = await ResourceGroupManager.init();
-  if (await manager.hasResourceGroup(name)) {
-    const result = await manager.deleteResourceGroup(name);
+  if (await ResourceGroupManager.hasResourceGroup(name)) {
+    const result = await ResourceGroupManager.deleteResourceGroup(name);
     if (result) {
       console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
     } else {
@@ -319,50 +344,8 @@ export async function cleanUp(
   ]);
 }
 
-export async function cleanUpResourcesCreatedHoursAgo(
-  type: "aad" | "rg",
-  contains: string,
-  hours?: number,
-  retryTimes = 5
-) {
-  if (type === "aad") {
-    const aadManager = await AadManager.init();
-    await aadManager.deleteAadApps(contains, hours, retryTimes);
-  } else {
-    const rgManager = await ResourceGroupManager.init();
-    const groups = await rgManager.searchResourceGroups(contains);
-    const filteredGroups =
-      hours && hours > 0
-        ? groups.filter((group) => {
-            const name = group.name!;
-            const startPos = name.indexOf(contains) + contains.length;
-            const createdTime = Number(name.slice(startPos, startPos + 13));
-            return Date.now() - createdTime > hours * 3600 * 1000;
-          })
-        : groups;
-
-    const promises = filteredGroups.map((rg) =>
-      rgManager.deleteResourceGroup(rg.name!, retryTimes)
-    );
-    const results = await Promise.all(promises);
-    results.forEach((result, index) => {
-      if (result) {
-        console.log(
-          `[Successfully] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
-        );
-      } else {
-        console.error(
-          `[Failed] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
-        );
-      }
-    });
-    return results;
-  }
-}
-
 export async function createResourceGroup(name: string, location: string) {
-  const manager = await ResourceGroupManager.init();
-  const result = await manager.createOrUpdateResourceGroup(name, location);
+  const result = await ResourceGroupManager.createOrUpdateResourceGroup(name, location);
   if (result) {
     console.log(`[Successfully] create resource group ${name}.`);
   } else {
@@ -434,6 +417,13 @@ export async function getActivePluginsFromProjectSetting(projectPath: string): P
   ];
 }
 
+export async function getCapabilitiesFromProjectSetting(projectPath: string): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
+}
+
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
@@ -456,24 +446,29 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
       EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
-  const userdataContent = await fs.readFile(
-    path.join(projectPath, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`),
-    "utf8"
+  const userDataFile = path.join(
+    projectPath,
+    `.${ConfigFolderName}`,
+    StatesFolderName,
+    `${env}.userdata`
   );
-  const userdata = dotenv.parse(userdataContent);
-
-  const regex = /\{\{([^{}]+)\}\}/;
-  for (const component in context) {
-    for (const key in context[component]) {
-      const matchResult = regex.exec(context[component][key]);
-      if (matchResult) {
-        const userdataKey = matchResult[1];
-        if (userdataKey in userdata) {
-          context[component][key] = userdata[userdataKey];
+  if (await fs.pathExists(userDataFile)) {
+    const userdataContent = await fs.readFile(userDataFile, "utf8");
+    const userdata = dotenv.parse(userdataContent);
+    const regex = /\{\{([^{}]+)\}\}/;
+    for (const component in context) {
+      for (const key in context[component]) {
+        const matchResult = regex.exec(context[component][key]);
+        if (matchResult) {
+          const userdataKey = matchResult[1];
+          if (userdataKey in userdata) {
+            context[component][key] = userdata[userdataKey];
+          }
         }
       }
     }
   }
+
   return ok(context);
 }
 

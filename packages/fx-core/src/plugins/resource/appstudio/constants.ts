@@ -7,6 +7,7 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
+  public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = "Read more";
   public static readonly LEARN_MORE = "Learn more";
   public static readonly ADMIN_PORTAL = "Admin portal";
@@ -42,6 +43,7 @@ export class ErrorMessages {
 export const REMOTE_MANIFEST = "manifest.source.json";
 export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
 export const MANIFEST_LOCAL = "manifest.local.template.json";
+export const MANIFEST_TEMPLATE_CONSOLIDATE = "manifest.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_INDEX_PATH = "indexPath";
@@ -323,6 +325,29 @@ export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
   },
 ];
 
+export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365: IComposeExtension[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    commands: [
+      {
+        id: "searchQuery",
+        context: ["compose", "commandBox"],
+        description: "Test command to run query",
+        title: "Search",
+        type: "query",
+        parameters: [
+          {
+            name: "searchQuery",
+            title: "Search Query",
+            description: "Your search query",
+            inputType: "text",
+          },
+        ],
+      },
+    ],
+  },
+];
+
 export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
   {
     botId: "{{config.manifest.botId}}",
@@ -355,6 +380,35 @@ export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
           {
             title: "learn",
             description: "Learn about Adaptive Card and Bot Command",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const BOTS_TPL_FOR_NOTIFICATION: IBot[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+  },
+];
+
+export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE: IBot[] = [
+  {
+    botId: "{{state.fx-resource-bot.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [
+          {
+            title: "helloWorld",
+            description: "A helloworld command to send a welcome message",
           },
         ],
       },
@@ -494,6 +548,16 @@ export const BOTS_TPL_LOCAL_DEBUG: IBot[] = [
   },
 ];
 
+export const WEB_APPLICATION_INFO_LOCAL_DEBUG = {
+  id: "{{localSettings.auth.clientId}}",
+  resource: "{{{localSettings.auth.applicationIdUris}}}",
+};
+
+export const WEB_APPLICATION_INFO_MULTI_ENV = {
+  id: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+  resource: "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
+};
+
 // Default values for the developer fields in manifest.
 export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";
 export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termofuse";
@@ -501,3 +565,7 @@ export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
+
+export const DEVELOPER_PREVIEW_SCHEMA =
+  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
+export const M365_DEVELOPER_PREVIEW_MANIFEST_VERSION = "m365DevPreview";

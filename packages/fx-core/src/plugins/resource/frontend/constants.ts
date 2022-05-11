@@ -36,14 +36,15 @@ export class FrontendPluginInfo {
 }
 
 export class Commands {
-  static InstallNodePackages = "npm install";
-  static BuildFrontend = "npm run build";
+  static DefaultInstallNodePackages = "npm install";
+  static InstallNodePackages = "npm run install:teamsfx";
+  static DefaultBuildFrontend = "npm run build";
+  static BuildFrontend = "npm run build:teamsfx";
 }
 
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
-  static TemplateFolderName = "frontend";
   static BicepTemplateRelativeDir = path.join(FrontendPathInfo.TemplateRelativeDir, "bicep");
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
@@ -54,6 +55,7 @@ export class FrontendPathInfo {
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
   static TabEnvironmentFilePath = ".env";
   static NodePackageFolderName = "node_modules";
+  static NodePackageFile = "package.json";
   static TabDeploymentFolderName = ".deployment";
   static TabDeploymentInfoFileName = "deployment.json";
   static TabDeployIgnoreFolder = [
@@ -112,6 +114,7 @@ export class TelemetryEvent {
   static readonly Deploy = "deploy";
   static readonly SkipDeploy = "skip-deploy";
   static readonly DeploymentInfoNotFound = "deployment-info-not-found";
+  static readonly InstallScriptNotFound = "install-script-not-found";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";

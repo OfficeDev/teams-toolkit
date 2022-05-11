@@ -23,14 +23,15 @@ import {
   mockSolutionGenerateArmTemplates,
   mockSolutionUpdateArmTemplates,
 } from "../../util";
-import { isMultiEnvEnabled } from "../../../../../src";
 import { LocalSettingsSimpleAuthKeys } from "../../../../../src/common/localSettingsConstants";
+import { LocalStateSimpleAuthKeys } from "../../../../../src/common/localStateConstants";
 import { getAllowedAppIds } from "../../../../../src/common/tools";
 import {
   AzureResourceKeyVault,
   HostTypeOptionAzure,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../util";
+import { PluginNames } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -68,32 +69,20 @@ describe("simpleAuthPlugin", () => {
     await simpleAuthPlugin.postLocalDebug(pluginContext);
 
     // Assert
-    let filePath: string;
-    if (isMultiEnvEnabled()) {
-      filePath = pluginContext.localSettings?.auth?.get(
-        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
-      ) as string;
-    } else {
-      filePath = pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.filePath) as string;
-    }
+    const filePath: string = pluginContext.envInfo.state
+      ?.get(PluginNames.SA)
+      ?.get(LocalStateSimpleAuthKeys.SimpleAuthFilePath);
     chai.assert.isOk(filePath);
     chai.assert.isTrue(await fs.pathExists(filePath));
-    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="${getAllowedAppIds().join(
+    const expectedEnvironmentVariableParams = `CLIENT_ID="mock-clientId" CLIENT_SECRET="mock-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-applicationIdUris" ALLOWED_APP_IDS="${getAllowedAppIds().join(
       ";"
     )}" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"`;
-    if (isMultiEnvEnabled()) {
-      chai.assert.strictEqual(
-        pluginContext.localSettings?.auth?.get(
-          LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams
-        ),
-        expectedEnvironmentVariableParams
-      );
-    } else {
-      chai.assert.strictEqual(
-        pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.environmentVariableParams),
-        expectedEnvironmentVariableParams
-      );
-    }
+    chai.assert.strictEqual(
+      pluginContext.envInfo.state
+        ?.get(PluginNames.SA)
+        ?.get(LocalStateSimpleAuthKeys.EnvironmentVariableParams),
+      expectedEnvironmentVariableParams
+    );
   });
 
   it("generate arm templates: only simple auth plugin", async function () {

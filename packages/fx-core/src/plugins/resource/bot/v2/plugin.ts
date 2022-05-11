@@ -6,6 +6,7 @@ import {
   Inputs,
   Json,
   ok,
+  Platform,
   Result,
   TokenProvider,
   v2,
@@ -52,7 +53,12 @@ import { ResourcePlugins } from "../../../../common/constants";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    const workingPath = path.join(inputs.projectPath ?? "", "bot");
+    let workingPath: string;
+    if (inputs.platform === Platform.VS) {
+      workingPath = path.join(inputs.projectPath ?? "", "bot");
+    } else {
+      workingPath = path.join(inputs.projectPath ?? "", "bot");
+    }
     const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     const hostType = this.resolveHostType(hostTypeTriggers);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);

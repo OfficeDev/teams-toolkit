@@ -4,9 +4,20 @@ Your next steps:
    You need to run the command under "bot" folder instead of project's root folder.
 2. Refer sample code and comments in this file to implement your auth provider.
 
-You can now import the API client (an Axios instance) in another file and call fake APIs without worrying about authentication.
+You can now import the API client (an Axios instance) in another file and call test APIs without worrying about authentication.
 Here is an example for a GET request to "relative_path_of_target_api":
-const result = await fakeClient.get("relative_path_of_target_api");
+```
+const { testClient } = require("{relative_path_to_this_file}");
+
+const response = await testClient.get("relative_path_of_target_api");
+// You only need to enter the relative path for your API.
+// For example, if you want to call api https://my-api-endpoint/test, and inputted https://my-api-endpoint as API endpoint,
+// the code will looks like: const response = await testClient.get("test");
+
+const responseBody = response.data;
+```
+
+If you added this API while local debugging, please stop local debugging and start again because local debugging will not hot reload changes to .env.teamsfx.local
 
 You can refer https://aka.ms/teamsfx-connect-api to learn more.
 */

@@ -13,7 +13,7 @@ import {
 } from "../../plugins/solution/fx-solution/question";
 import { isAADEnabled, IsSimpleAuthEnabled } from "../tools";
 import { ResourcePlugins } from "../constants";
-import { BotHostTypeName, BotHostTypes } from "./constants";
+import { BotCapabilities, BotHostTypeName, BotHostTypes } from "./constants";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
@@ -53,4 +53,9 @@ export class ProjectSettingsHelper {
   public static includeSimpleAuth = (projectSettings: ProjectSettings | undefined): boolean =>
     // TODO: update this when retiring simple auth service
     !!IsSimpleAuthEnabled(projectSettings);
+
+  public static getBotCapabilities(projectSettings: ProjectSettings | undefined): string[] {
+    return (projectSettings?.pluginSettings?.[ResourcePlugins.Bot]?.[BotCapabilities] ||
+      []) as string[];
+  }
 }

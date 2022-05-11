@@ -253,6 +253,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
+    ExtTelemetry.isM365 = await getIsM365();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -299,6 +300,19 @@ async function getIsFromSample() {
     await core.getProjectConfig(input);
 
     return core.isFromSample;
+  }
+  return undefined;
+}
+
+async function getIsM365(): Promise<boolean | undefined> {
+  if (core) {
+    const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+    const res = await core.getProjectConfig(input);
+
+    if (res.isOk()) {
+      return res?.value?.settings?.isM365;
+    }
   }
   return undefined;
 }
@@ -1183,7 +1197,7 @@ async function processResult(
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
   }
   if (eventName === TelemetryEvent.CreateProject && inputs?.isM365) {
-    createProperty[TelemetryProperty.IsM365] = "true";
+    createProperty[TelemetryProperty.IsCreatingM365] = "true";
   }
 
   if (eventName === TelemetryEvent.Deploy && inputs && inputs["include-aad-manifest"] === "yes") {

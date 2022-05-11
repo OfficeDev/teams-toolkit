@@ -15,7 +15,7 @@ import mockedEnv from "mocked-env";
 import { FxCore, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 
-describe("Add Command Tests", function () {
+describe("Add SSO Command Tests", function () {
   const sandbox = sinon.createSandbox();
   const registeredCommands: string[] = [];
   let options: string[] = [];

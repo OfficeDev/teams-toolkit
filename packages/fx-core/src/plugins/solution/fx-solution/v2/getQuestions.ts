@@ -65,7 +65,7 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   canAddApiConnection,
   canAddSso,
@@ -83,6 +83,7 @@ import {
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
+import { PluginBot } from "../../../resource/bot/resources/strings";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -841,8 +842,14 @@ async function getStaticOptionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  // for the new bot, messaging extension and other bots are mutally exclusive
-  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
+  // For the new bot, messaging extension and other bots are mutally exclusive.
+  // For the old bot, messaging extension can be added when bot exists.
+  const botCapabilities =
+    ctx.projectSetting.pluginSettings?.[PluginNames.BOT]?.[PluginBot.BOT_CAPABILITIES];
+  const hasNewBot = Array.isArray(botCapabilities) && botCapabilities.length > 0;
+  const isMEAddable = isBotNotificationEnabled()
+    ? !meExceedRes.value && !hasNewBot
+    : !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
@@ -928,7 +935,12 @@ export async function getQuestionsForAddFeature(
   if (isApiConnectionAddable) {
     options.push(ApiConnectionOptionItem);
   }
-  options.push(CicdOptionItem);
+  const isCicdAddable = !(
+    inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)
+  );
+  if (isCicdAddable) {
+    options.push(CicdOptionItem);
+  }
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
@@ -937,13 +949,14 @@ export async function getQuestionsForAddFeature(
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
-      containsAny: [
+      enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
+        SingleSignOnOptionItem.id,
       ],
     };
     addFeatureNode.addChild(programmingLanguage);
@@ -953,8 +966,10 @@ export async function getQuestionsForAddFeature(
   const pluginsWithResources = [
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
-    [ResourcePluginsV2.CICDPlugin, CicdOptionItem.id],
   ];
+  if (isCicdAddable) {
+    pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
+  }
   if (isApiConnectionAddable) {
     pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }

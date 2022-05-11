@@ -20,7 +20,6 @@ export function initializePreviewFeatureFlags(): void {
   if (isFeatureFlagEnabled(FeatureFlagName.Preview, false)) {
     process.env[FeatureFlagName.BotNotification] = "true";
     process.env[FeatureFlagName.M365App] = "true";
-    process.env[FeatureFlagName.ExistingTabApp] = "true";
     process.env[FeatureFlagName.ConfigUnify] = "true";
     process.env[FeatureFlagName.AadManifest] = "true";
     process.env[FeatureFlagName.ApiConnect] = "true";

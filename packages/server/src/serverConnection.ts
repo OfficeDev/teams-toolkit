@@ -3,7 +3,7 @@
 
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
 
-import { FxError, Inputs, Void, Tools, Result } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Void, Tools, Result, Func } from "@microsoft/teamsfx-api";
 import { FxCore, Correlator } from "@microsoft/teamsfx-core";
 
 import { IServerConnection, Namespaces } from "./apis";
@@ -13,6 +13,7 @@ import TelemetryReporter from "./providers/telemetry";
 import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
 import { standardizeResult } from "./utils";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -37,6 +38,7 @@ export default class ServerConnection implements IServerConnection {
       this.deployArtifactsRequest.bind(this),
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
+      this.deployTeamsAppManifestRequest.bind(this),
 
       this.customizeLocalFuncRequest.bind(this),
       this.customizeValidateFuncRequest.bind(this),
@@ -124,6 +126,27 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.publishApplication(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async deployTeamsAppManifestRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<any, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+      params: {
+        envName: environmentManager.getDefaultEnvName(),
+      },
+    };
+    const res = await Correlator.runWithId(
+      corrId,
+      (func, inputs) => this.core.executeUserTask(func, inputs),
+      func,
       inputs
     );
     return standardizeResult(res);

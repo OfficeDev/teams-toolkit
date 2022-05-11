@@ -472,19 +472,15 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   capNode.addChild(existingTabEndpoint);
 
-  // only CLI need folder input
-  if (CLIPlatforms.includes(inputs.platform)) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
-  }
+  createNew.addChild(new QTreeNode(QuestionRootFolder));
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
-  if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  }
+  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
   return ok(node.trim());
 }
 

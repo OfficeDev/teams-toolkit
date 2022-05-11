@@ -49,7 +49,7 @@
     "teamstoolkit.commands.addCloudResource.title": "Teams: Add cloud resources",
     "teamstoolkit.commands.addFeature.title": "Teams: Add features",
     "teamstoolkit.commands.addSso.title": "Teams: Add SSO",
-    "teamstoolkit.commands.connectExistingApi.title": "Teams: Add Connection to an API",
+    "teamstoolkit.commands.connectExistingApi.title": "Teams: Add connection to an API",
     "teamstoolkit.commands.createAccount.azure": "Create an Azure account",
     "teamstoolkit.commands.createAccount.free": "Free",
     "teamstoolkit.commands.createAccount.m365": "Create a M365 testing tenant",

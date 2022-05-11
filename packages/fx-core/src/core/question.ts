@@ -52,6 +52,7 @@ export enum CoreQuestionNames {
   Capabilities = "capabilities",
   Solution = "solution",
   CreateFromScratch = "scratch",
+  Runtime = "runtime",
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
@@ -255,6 +256,20 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: validateCapabilities,
     },
     onDidChangeSelection: onChangeSelectionForCapabilities,
+  };
+}
+
+export function createCapabilityForDotNet(): MultiSelectQuestion {
+  const staticOptions: StaticOptions = [TabOptionItem, BotOptionItem];
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "multiSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    validation: {
+      minItems: 1,
+    },
   };
 }
 
@@ -487,6 +502,18 @@ export const ScratchOptionNoVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
+export const RuntimeOptionNodeJs: OptionItem = {
+  id: "runtime-nodejs",
+  label: "Node.js",
+  detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
+};
+
+export const RuntimeOptionDotNet: OptionItem = {
+  id: "runtime-dotnet",
+  label: ".NET Core",
+  detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
+};
+
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
   label: getLocalizedString("core.ScratchOptionYes.label"),
@@ -498,6 +525,18 @@ export const ScratchOptionNo: OptionItem = {
   label: getLocalizedString("core.ScratchOptionNo.label"),
   detail: getLocalizedString("core.ScratchOptionNo.detail"),
 };
+
+// This question should only exist on CLI
+export function getRuntimeQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.Runtime,
+    title: getLocalizedString("core.getRuntimeQuestion.title"),
+    staticOptions: [RuntimeOptionNodeJs, RuntimeOptionDotNet],
+    default: RuntimeOptionNodeJs.id,
+    placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
+  };
+}
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];

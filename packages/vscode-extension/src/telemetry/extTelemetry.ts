@@ -94,7 +94,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (isM365 != undefined) {
+    if (isM365 !== undefined) {
       properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
@@ -142,7 +142,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (isM365 != undefined) {
+    if (isM365 !== undefined) {
       properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
@@ -176,7 +176,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (isM365 != undefined) {
+    if (isM365 !== undefined) {
       properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {

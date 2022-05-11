@@ -277,6 +277,7 @@ export default class Preview extends YargsCommand {
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+
     if (hub !== constants.Hub.teams && !projectSettings.isM365) {
       throw NotM365Project();
     }

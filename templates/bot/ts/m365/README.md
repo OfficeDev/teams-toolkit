@@ -32,6 +32,7 @@ Follow below instructions to get started with this application template for loca
 
 1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
 1. If you select `m365-host` as `outlook`, follow the instructions in the command dialog.
+
   ![CLI Pop up](https://user-images.githubusercontent.com/11220663/167869249-c1238ab7-d0eb-4bda-87cc-22ac8bad743b.png)
 
 1. Select **Install in Teams** first and install the app in a Teams web client.
@@ -45,18 +46,22 @@ This template provides a simple functionality to search for `npm` packages and r
 ### Use this app in Teams
 
 - `@mention` Your message extension from the `search box area`.
+
     ![AtBotFromSearch](https://user-images.githubusercontent.com/11220663/167869365-3828ef85-64f7-43bf-9f75-99d882370154.png)
 
 - `@mention` your message extension from the `compose message area`.
+
     ![AtBotFromMessage](https://user-images.githubusercontent.com/11220663/167869475-528736fa-d0f1-4bf8-9c23-fdffae984802.png)
 
 - Click the `...` under compose message area, find your message extension.
+
     ![ComposeArea](https://user-images.githubusercontent.com/11220663/167869578-ce33b2ef-f5f2-4be7-a7a0-57e53b6f7c36.png)
 
 ### Use this app in Outlook
 
 - Click the "More apps" icon under compose email area, find your message extension.
-  ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
+  
+    ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
 
 ## References
 

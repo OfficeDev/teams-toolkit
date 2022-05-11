@@ -30,11 +30,11 @@ Follow below instructions to get started with this application template for loca
 
 1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams`, `outlook` or `office`.
 1. If you select `m365-host` as `outlook` or `office`, follow the instructions in the command dialog.
+
     ![Debug pop up CLI](https://user-images.githubusercontent.com/11220663/167839636-de3a71db-caa6-4571-91a4-05428779b1fa.png)
+
 1. Select **Install in Teams** first and install the app in a Teams web client.
 1. After installed the app in Teams, come back and select **Continue** to continue to debug the app in Outlook web client or office.com.
-
-
 
 ## References
 

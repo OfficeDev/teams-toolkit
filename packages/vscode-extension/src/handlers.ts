@@ -304,13 +304,15 @@ async function getIsFromSample() {
   return undefined;
 }
 
-async function getIsM365() {
+async function getIsM365(): Promise<boolean | undefined> {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
-    await core.getProjectConfig(input);
+    const res = await core.getProjectConfig(input);
 
-    return core.isM365;
+    if (res.isOk()) {
+      return res?.value?.settings?.isM365;
+    }
   }
   return undefined;
 }

@@ -150,7 +150,6 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
-  isM365?: boolean;
   settingsVersion?: string;
 
   constructor(tools: Tools) {

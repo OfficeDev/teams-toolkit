@@ -177,6 +177,38 @@ export class CliHelper {
     }
   }
 
+  static async createDotNetProject(
+    appName: string,
+    testFolder: string,
+    capability: "tab" | "bot",
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
+  ): Promise<void> {
+    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
   static async createProjectWithCapability(
     appName: string,
     testFolder: string,

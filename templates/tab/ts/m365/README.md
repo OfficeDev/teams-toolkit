@@ -1,81 +1,45 @@
-# How to use this M365 Launch Page HelloWorld app
+# Personal tab across Microsoft 365
 
-> Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
+Personal tabs provide a great way to enhance the Microsoft Teams experience. Using personal tabs, you can provide a user access to their application right within Teams, without the user having to leave the experience or sign in again. Now, personal tabs can light up within other Microsoft 365 applications. You can build and run your personal tabs in Teams, both Outlook desktop and web experiences, and also Office on the web (office.com).
 
-Microsoft 365 supports the ability to run web-based UI inside "custom tabs" that users can install for themselves (personal tabs). Please be advised that mgt-teamsfx-provider library in this app is currently in preview stage, please expect breaking changes in the future release.
-
-![Launch Page Demo](./images/launch-page-demo.gif)
+![Personal tab demo](https://user-images.githubusercontent.com/11220663/167839153-0aef6adc-450e-4b8c-a28f-7d27005d1093.png)
 
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/)
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/microsoft-365/dev-program)
 - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 3.8.0 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+> Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
-## Debug
-### From Visual Studio Code
-1. Use the `Run and Debug Activity Panel` in Visual Studio Code, select `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
-2. If you select `Debug in Outlook` or `Debug in Office`, during debugging, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue to debug the app in Outlook or Office.
+## Getting Started
 
-  ![Install in Teams VSC Local](./images/install-in-teams-vsc-local.png)
+Follow below instructions to get started with this application template for local debugging.
 
-### From TeamsFx CLI
-1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where `m365-host` is `teams`, `outlook` or `office`.
-2. If you select `m365-host` as `outlook` or `office`, during debugging, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue to debug the app in Outlook or Office.
+### Test your application with Visual Studio Code
 
-  ![Install in Teams CLI](./images/install-in-teams-cli.png)
+1. Press `F5` or use the `Run and Debug Activity Panel` in Visual Studio Code.
+1. Select a target Microsoft 365 application where the personal tabs can run: `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
+1. If you select `Debug in Outlook` or `Debug in Office`, follow the instructions in a Visual Studio Code pop-up dialog.
+1. Click **Install in Teams** first and install the app in a Teams web client.
+1. After installing the app in Teams, come back and click **Continue** to continue to debug the app in Outlook web client or office.com.
 
-## Edit the manifest
+    ![Debug pop up VSC](https://user-images.githubusercontent.com/11220663/167839258-0ee73600-ce32-4c8f-9876-826d90716510.png)
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
-* `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
+### Test your application with TeamsFx CLI
 
-This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams`, `outlook` or `office`.
+1. If you select `m365-host` as `outlook` or `office`, follow the instructions in the command dialog.
 
-## Deploy to Azure
+    ![Debug pop up CLI](https://user-images.githubusercontent.com/11220663/167839636-de3a71db-caa6-4571-91a4-05428779b1fa.png)
 
-Deploy your project to Azure by following these steps:
+1. Select **Install in Teams** first and install the app in a Teams web client.
+1. After installed the app in Teams, come back and select **Continue** to continue to debug the app in Outlook web client or office.com.
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision in the cloud` from DEVELOPMENT section or open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the Teams Toolkit and click `Deploy to the cloud` or open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
+## References
 
-> Note: Provisioning and deployment may incur charges to your Azure Subscription.
-
-## Preview
-
-Once the provisioning and deployment steps are finished, you can preview your app.
-
-### From Visual Studio Code
-1. Open the `Teams Toolkit Activity Panel`.
-2. In `ENVIRONMENTS`, select the environment you want to preview and click the `Preview App` icon.
-3. For the prompted question, select the platform you want to preview in.
-4. If you select `Outlook` or `Office`, a VS Code dialog will be popped up as the image below. Please click "Install in Teams" first to install the app in Teams, then click "Continue" to continue to preview the app in Outlook or Office.
-
-  ![Install in Teams VSC Remote](./images/install-in-teams-vsc-remote.png)
-
-### From TeamsFx CLI
-1. Execute `teamsfx preview --remote --m365-host <m365-host>` in your project directory to launch your application, where `m365-host` is `teams`, `outlook` or `office`.
-2. If you select `m365-host` as `outlook` or `office`, during preview, a dialog will be popped up as the image below. Please select "Install in Teams" first to install the app in Teams, then select "Continue" to continue to preview the app in Outlook or Office.
-
-  ![Install in Teams CLI](./images/install-in-teams-cli.png)
-
-## Validate manifest file
-
-To check that your manifest file is valid:
-
-- From Visual Studio Code: open the Teams Toolkit and click `Validate manifest file` or open the command palette and select: `Teams: Validate manifest file`.
-- From TeamsFx CLI: run command `teamsfx validate` in your project directory.
-
-## Package
-
-- From Visual Studio Code: open the command palette and select `Teams: Zip Teams metadata package`.
-- Alternatively, from the command line run `teamsfx package` in the project directory.
-
-## Publish to Teams
-
-Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
-
-- From Visual Studio Code: open the Teams Toolkit and click `Publish to Teams` or open the command palette and select: `Teams: Publish to Teams`.
-- From TeamsFx CLI: run command `teamsfx publish` in your project directory.
+* [Extend a Teams personal tabs across Microsoft 365](https://docs.microsoft.com/microsoftteams/platform/m365-apps/extend-m365-teams-personal-tab?tabs=manifest-teams-toolkit)
+* [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+* [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+* [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
+* [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

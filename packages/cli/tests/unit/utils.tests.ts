@@ -725,12 +725,12 @@ describe("Utils Tests", function () {
 
     it("isM365 == true", async () => {
       const result = getIsM365("real.isM365=true");
-      expect(result).equals(true);
+      expect(result).equals("true");
     });
 
     it("isM365 == false", async () => {
       const result = getIsM365("real.isM365=false");
-      expect(result).equals(false);
+      expect(result).equals("false");
     });
 
     it("isM365 == undefined", async () => {

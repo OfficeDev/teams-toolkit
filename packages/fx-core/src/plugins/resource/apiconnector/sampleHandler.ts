@@ -49,6 +49,7 @@ export class SampleHandler {
         config: config,
         capitalName: config.APIName.toUpperCase(),
         component: this.component,
+        languageExt: this.languageExt,
       };
       const codeFileName: string = config.APIName + "." + fileSuffix;
       const codeFilePath = path.join(this.projectRoot, this.component, codeFileName);

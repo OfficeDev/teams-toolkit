@@ -64,4 +64,6 @@ Once deployed, you may want to distribute your application to your organization'
 
 ## Add Single Sign On feature
 
-Microsoft Teams has provided a mechanism to minimize the number of times users need to enter their sign in credentials and this is called single sign on. Teams Framework (TeamsFx) added support on top of this mechanism to help developers build single sign feature easily. For detail please refer to [Wiki](https://aka.ms/teamsfx-add-sso).
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high-level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
+
+Please follow this [document](https://aka.ms/teamsfx-add-sso) to add single sign on for your project.

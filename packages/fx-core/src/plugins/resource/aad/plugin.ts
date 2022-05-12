@@ -37,6 +37,7 @@ import {
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
   AadManifestNotProvisioned,
+  AADManifestMissingScopeIdForTeamsApp,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -191,16 +192,18 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
-    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     if (manifest.id) {
-      if (!skip) {
+      const existingOauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
+
+      if (!skip || !existingOauth2PermissionScopeId) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadAppUsingManifest(
           telemetryMessage,
           manifest.id,
           config.password,
+          await this.getScopeIdForTeams(manifest),
           ctx.graphTokenProvider,
           ctx.envInfo.envName
         );
@@ -214,6 +217,7 @@ export class AadAppForTeamsImpl {
           AadManifestMissingName.message()
         );
       }
+      config.oauth2PermissionScopeId = await this.getScopeIdForTeams(manifest);
       await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
@@ -236,6 +240,26 @@ export class AadAppForTeamsImpl {
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
+  }
+
+  private getScopeIdForTeams(manifest: AADManifest) {
+    let scopeId;
+    let findAccessAsUser;
+    manifest.oauth2Permissions?.forEach((oauth2Permission) => {
+      if (oauth2Permission.value === "access_as_user") {
+        scopeId = oauth2Permission.id;
+        findAccessAsUser = true;
+      }
+    });
+
+    if (!findAccessAsUser) {
+      throw ResultFactory.UserError(
+        AADManifestMissingScopeIdForTeamsApp.name,
+        AADManifestMissingScopeIdForTeamsApp.message()
+      );
+    }
+
+    return scopeId;
   }
 
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {

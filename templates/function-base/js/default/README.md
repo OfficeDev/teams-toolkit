@@ -2,6 +2,8 @@
 
 Azure Functions are a great way to add server-side behaviors to any Teams application.
 
+> After adding function to your project, SSO will also be enabled. You can follow this [document](https://aka.ms/teamsfx-add-sso) to update your tab or bot code to include SSO.
+
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/)

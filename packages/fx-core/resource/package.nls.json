@@ -267,7 +267,7 @@
   "plugins.apiConnector.getQuestion.appType.title": "Select an AAD app registration you want to use.",
   "plugins.apiConnector.getQuestion.apiKeyLocation.title": "Select the API Key position in request.",
   "plugins.apiConnector.getQuestion.apiKeyName.title": "Enter an API Key name.",
-  "plugins.apiConnector.getQuestion.apiKeyName.placeholder": "API Key name will be added to local app setting.",
+  "plugins.apiConnector.getQuestion.apiKeyName.placeholder": "We will add the key name to generated file.",
   "plugins.apiConnector.whichService.title": "Select component(s) to invoke the API.",
   "plugins.apiConnector.whichService.placeholder": "We will import packages and add app settings.",
   "plugins.apiConnector.whichAuthType.title": "Select an API authentication type.",

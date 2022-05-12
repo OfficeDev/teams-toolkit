@@ -597,7 +597,7 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
 
   // If at least one env are not all-existing, return true.
   for (const envName of envProfilesResult.value) {
-    if (existingInstance.existence.has(envName) && !existingInstance.existence.get(envName)) {
+    if (existingInstance.notExisting(envName)) {
       return true;
     }
   }

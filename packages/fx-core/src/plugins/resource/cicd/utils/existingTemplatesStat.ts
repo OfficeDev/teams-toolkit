@@ -37,6 +37,11 @@ export class ExistingTemplatesStat {
     this.projectPath = projectPath;
   }
 
+  public notExisting(...args: string[]): boolean {
+    const key = ExistingTemplatesStat.genKey(...args);
+    return !this.existence.get(key);
+  }
+
   public async scan() {
     // (envName, provider, template) -> existing (true or false)
     // (envName,) -> allExisting (true or false)

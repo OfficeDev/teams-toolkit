@@ -129,9 +129,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
           // Remove the env items in which all combinations of templates are scaffolded/existing.
           const filteredEnvs = envProfilesResult.value.filter((envName: string) => {
-            return (
-              existingInstance.existence.has(envName) && !existingInstance.existence.get(envName)
-            );
+            return existingInstance.notExisting(envName);
           });
 
           return filteredEnvs.map((envName) => {
@@ -144,8 +142,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
         const envName = inputs[questionNames.Environment];
         return [githubOption, azdoOption, jenkinsOption].filter((provider) => {
-          const key = ExistingTemplatesStat.genKey(envName, provider.id);
-          return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
+          return existingInstance.notExisting(envName, provider.id);
         });
       };
 
@@ -153,8 +150,7 @@ export class CICDPluginV2 implements ResourcePlugin {
         const envName = inputs[questionNames.Environment];
         const provider = inputs[questionNames.Provider];
         return [ciOption, provisionOption, cdOption, publishOption].filter((template) => {
-          const key = ExistingTemplatesStat.genKey(envName, provider, template.id);
-          return existingInstance.existence.has(key) && !existingInstance.existence.get(key);
+          return existingInstance.notExisting(envName, provider, template.id);
         });
       };
 

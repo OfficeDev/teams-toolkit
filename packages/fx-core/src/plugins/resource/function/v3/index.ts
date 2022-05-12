@@ -42,13 +42,7 @@ import {
   FunctionPluginPathInfo,
   RegularExpr,
 } from "../constants";
-import {
-  FunctionConfigKey,
-  FunctionEvent,
-  FunctionLanguage,
-  NodeVersion,
-  QuestionKey,
-} from "../enums";
+import { FunctionConfigKey, FunctionEvent, FunctionLanguage, QuestionKey } from "../enums";
 import { FunctionDeploy } from "../ops/deploy";
 import { FunctionProvision } from "../ops/provision";
 import { FunctionScaffold } from "../ops/scaffold";
@@ -68,7 +62,6 @@ import { AzureClientFactory, AzureLib } from "../utils/azure-client";
 import { funcDepsHelper } from "../utils/depsChecker/funcHelper";
 import { funcDepsLogger } from "../utils/depsChecker/funcPluginLogger";
 import { funcDepsTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
-import { getNodeVersion } from "../utils/node-version";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import {
   ConfigFunctionAppError,
@@ -346,6 +339,12 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok([BuiltInFeaturePluginNames.identity]);
   }
+
+  private needConfigure(ctx: v2.Context, envInfo: v3.EnvInfoV3): boolean {
+    const apimConfig = envInfo.state[BuiltInFeaturePluginNames.apim] as v3.APIM;
+    return this.isPluginEnabled(ctx.projectSetting, BuiltInFeaturePluginNames.apim) && !!apimConfig;
+  }
+
   private getFunctionAppName(): string {
     return getSiteNameFromResourceId(
       this.checkAndGet(this.config.functionAppResourceId, FunctionConfigKey.functionAppResourceId)
@@ -362,16 +361,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
       this.checkAndGet(this.config.functionAppResourceId, FunctionConfigKey.functionAppResourceId)
     );
   }
-  private async getValidNodeVersion(projectPath: string): Promise<NodeVersion> {
-    const currentNodeVersion = await getNodeVersion(this.getFunctionProjectRootPath(projectPath));
-    const candidateNodeVersions = Object.values(NodeVersion);
-    return (
-      candidateNodeVersions.find((v: NodeVersion) => v === currentNodeVersion) ??
-      DefaultValues.nodeVersion
-    );
-  }
   private async getSite(
-    projectPath: string,
     client: WebSiteManagementClient,
     resourceGroupName: string,
     functionAppName: string
@@ -380,17 +370,10 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     if (!site) {
       throw new FindAppError();
     } else {
-      const nodeVersion = await this.getValidNodeVersion(projectPath);
-      FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
       return site;
     }
   }
   private collectFunctionAppSettings(ctx: v2.Context, envInfo: v3.EnvInfoV3, site: Site): void {
-    const functionEndpoint: string = this.checkAndGet(
-      this.config.functionEndpoint,
-      FunctionConfigKey.functionEndpoint
-    );
-
     const apimConfig = envInfo.state[BuiltInFeaturePluginNames.apim] as v3.APIM;
     if (this.isPluginEnabled(ctx.projectSetting, BuiltInFeaturePluginNames.apim) && apimConfig) {
       ctx.logProvider.info(InfoMessages.dependPluginDetected(BuiltInFeaturePluginNames.apim));
@@ -413,6 +396,9 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
+    if (!this.needConfigure(ctx, envInfo)) {
+      return ok(Void);
+    }
     await StepHelperFactory.postProvisionStepHelper.start(
       Object.entries(PostProvisionSteps).length,
       ctx.userInteraction
@@ -432,12 +418,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
 
-    const site = await this.getSite(
-      inputs.projectPath,
-      webSiteManagementClient,
-      resourceGroupName,
-      functionAppName
-    );
+    const site = await this.getSite(webSiteManagementClient, resourceGroupName, functionAppName);
 
     // We must query app settings from azure here, for two reasons:
     // 1. The site object returned by SDK may not contain app settings.

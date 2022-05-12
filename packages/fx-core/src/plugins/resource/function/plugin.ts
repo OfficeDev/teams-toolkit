@@ -43,7 +43,6 @@ import {
   FunctionConfigKey,
   FunctionEvent,
   FunctionLanguage,
-  NodeVersion,
   QuestionKey,
 } from "./enums";
 import { FunctionDeploy } from "./ops/deploy";
@@ -71,10 +70,8 @@ import { functionNameQuestion } from "./question";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
-import { getNodeVersion } from "./utils/node-version";
 
 type Site = WebSiteManagementModels.Site;
-type SiteAuthSettings = WebSiteManagementModels.SiteAuthSettings;
 
 export interface FunctionConfig {
   /* Config from solution */
@@ -310,15 +307,6 @@ export class FunctionPluginImpl {
     this.syncConfigToContext(ctx);
 
     return ResultFactory.Success();
-  }
-
-  private async getValidNodeVersion(ctx: PluginContext): Promise<NodeVersion> {
-    const currentNodeVersion = await getNodeVersion(this.getFunctionProjectRootPath(ctx));
-    const candidateNodeVersions = Object.values(NodeVersion);
-    return (
-      candidateNodeVersions.find((v: NodeVersion) => v === currentNodeVersion) ??
-      DefaultValues.nodeVersion
-    );
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
@@ -599,8 +587,6 @@ export class FunctionPluginImpl {
     if (!site) {
       throw new FindAppError();
     } else {
-      const nodeVersion = await this.getValidNodeVersion(ctx);
-      FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
       return site;
     }
   }

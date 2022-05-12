@@ -5,7 +5,7 @@
 
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { Correlator, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
@@ -20,6 +20,7 @@ import {
 } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
+let lastCorrelationId: string | undefined = undefined;
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -80,6 +81,7 @@ export namespace ExtTelemetry {
     measurements?: { [p: string]: number }
   ): void {
     setHasSentTelemetry(eventName);
+    lastCorrelationId = Correlator.getId();
     if (!properties) {
       properties = {};
     }
@@ -198,6 +200,7 @@ export namespace ExtTelemetry {
     const telemetryEvents = {
       eventName: eventName,
       properties: {
+        [TelemetryProperty.CorrelationId]: lastCorrelationId,
         [TelemetryProperty.ProjectId]: getProjectId(),
         [TelemetryProperty.Timestamp]: new Date().toISOString(),
         ...properties,

@@ -410,7 +410,7 @@ export function getIsM365(rootFolder: string | undefined): string | undefined {
   try {
     if (isWorkspaceSupported(rootFolder)) {
       const result = readSettingsFileSync(rootFolder);
-      if (result.isOk()) {
+      if (result.isOk() && result.value.isM365) {
         return `${result.value.isM365}`;
       }
     }

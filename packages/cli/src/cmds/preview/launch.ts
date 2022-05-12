@@ -17,7 +17,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
 import { Colors, LogLevel } from "@microsoft/teamsfx-api";
-import { getColorizedString } from "../../utils";
+import { getColorizedString, sleep } from "../../utils";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { TempFolderManager } from "./tempFolderManager";
 
@@ -114,7 +114,7 @@ export async function openUrlWithNewProfile(url: string): Promise<boolean> {
           });
           // NOTE: if app is not existing in the system, open will not throw but cp will exit immediately.
           // So we may assume that if cp does not exit after 3s, the app is launched successfully.
-          await delay(3000);
+          await sleep(3000);
           if (cp.exitCode !== null && cp.exitCode !== 0) {
             resolve(false);
           }
@@ -149,8 +149,4 @@ export async function openUrlWithNewProfile(url: string): Promise<boolean> {
     // ignore any error
     return false;
   }
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

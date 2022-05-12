@@ -617,6 +617,7 @@
   "error.aad.ListCollaboratorError": "Failed to list collaborator.",
   "error.aad.AadManifestLoadError": "Failed to load manifest file from %s, due to %s",
   "error.aad.AadManifestMissingName": "name property is empty or invalid in AAD manifest file",
+  "error.aad.AadManifestMissingScopeIdForTeamsApp": "oauth2Permissions property missing item which value should be access_as_user",
   "error.aad.AadManifestMissingObjectId": "id property is missing or invalid in AAD manifest file, you need to run provision or local debug first",
   "error.aad.AadManifestMissingReplyUrlsWithType": "replyUrlsWithType property is missing or invalid in AAD manifest file, you need to run provision or local debug first",
   "error.aad.AadManifestMissingIdentifierUris": "identifierUris property is missing or invalid in AAD manifest file, you need to run provision or local debug first",

@@ -37,6 +37,7 @@ import {
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
   AadManifestNotProvisioned,
+  AADManifestMissingScopeIdForTeamsApp,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -202,7 +203,7 @@ export class AadAppForTeamsImpl {
           telemetryMessage,
           manifest.id,
           config.password,
-          manifest.oauth2Permissions[0]?.id,
+          await this.getScopeIdForTeams(manifest),
           ctx.graphTokenProvider,
           ctx.envInfo.envName
         );
@@ -216,7 +217,7 @@ export class AadAppForTeamsImpl {
           AadManifestMissingName.message()
         );
       }
-      config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
+      config.oauth2PermissionScopeId = await this.getScopeIdForTeams(manifest);
       await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
@@ -239,6 +240,26 @@ export class AadAppForTeamsImpl {
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
+  }
+
+  private getScopeIdForTeams(manifest: AADManifest) {
+    let scopeId;
+    let findAccessAsUser;
+    manifest.oauth2Permissions?.forEach((oauth2Permission) => {
+      if (oauth2Permission.value === "access_as_user") {
+        scopeId = oauth2Permission.id;
+        findAccessAsUser = true;
+      }
+    });
+
+    if (!findAccessAsUser) {
+      throw ResultFactory.UserError(
+        AADManifestMissingScopeIdForTeamsApp.name,
+        AADManifestMissingScopeIdForTeamsApp.message()
+      );
+    }
+
+    return scopeId;
   }
 
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {

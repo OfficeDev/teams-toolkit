@@ -287,7 +287,7 @@ export class AadAppForTeamsImpl {
 
   public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
-      return await this.postProvisionUsingManifest(ctx);
+      return await this.postProvisionUsingManifest(ctx, isLocalDebug);
     }
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
@@ -345,13 +345,16 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public async postProvisionUsingManifest(ctx: PluginContext): Promise<AadResult> {
+  public async postProvisionUsingManifest(
+    ctx: PluginContext,
+    isLocalDebug = false
+  ): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.StartPostProvision,
       Messages.StartPostLocalDebug,
-      false
+      isLocalDebug
     );
 
     const skip = Utils.skipAADProvision(ctx, false);
@@ -368,7 +371,7 @@ export class AadAppForTeamsImpl {
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
 
     await AadAppClient.updateAadAppUsingManifest(
-      Messages.EndPostProvision.telemetry,
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       manifest,
       skip
     );
@@ -381,7 +384,7 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
-      false,
+      isLocalDebug,
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
 

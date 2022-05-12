@@ -191,6 +191,8 @@ export enum TelemetryEvent {
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
+
+  Deactivate = "deactivate",
 }
 
 export enum TelemetryProperty {

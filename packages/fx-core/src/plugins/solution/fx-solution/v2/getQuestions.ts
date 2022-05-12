@@ -603,7 +603,7 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [
       ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
-      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
+      ...[BotOptionItem],
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
@@ -680,6 +680,7 @@ export async function getQuestionsForAddCapability(
     if (isBotNotificationEnabled()) {
       options.push(CommandAndResponseOptionItem);
       options.push(NotificationOptionItem);
+      options.push(BotOptionItem);
     } else {
       options.push(BotOptionItem);
     }

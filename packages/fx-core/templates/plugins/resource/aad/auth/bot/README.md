@@ -44,11 +44,11 @@ These folder contains three files as reference for sso implementation:
 1. Execute the following commands under `bot/`: `npm install isomorphic-fetch`
 1. Execute the following commands under `bot/`: `npm install copyfiles` and replace following line in package.json:
     ```
-    "build": "tsc --build",
+    "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
     ```
     with:
     ```
-    "build": "tsc --build && copyfiles public/*.html lib/",
+    "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src && copyfiles src/public/*.html lib/",
     ```
     By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
 1. After adding the following files, you need to create a new `teamsSsoBot` instance in `bot/src/index` file. 

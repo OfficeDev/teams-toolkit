@@ -25,19 +25,22 @@ import * as utils from "../utils/common";
 import { HostTypeTriggerOptions } from "../question";
 import path from "path";
 import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFactory";
-import { isBotNotificationEnabled } from "../../../../common";
-import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  BotScenario,
+  M365SearchAppOptionItem,
+  MessageExtensionItem,
+} from "../../../solution/fx-solution/question";
 import {
   QuestionNames,
   TemplateProjectsConstants,
   TemplateProjectsScenarios,
   TriggerTemplateScenarioMappings,
 } from "../constants";
-import { PluginActRoles } from "../enums/pluginActRoles";
 import {
   BotTrigger,
   PluginBot,
-  QuestionBotScenarioToPluginActRoles,
   CommonStrings,
   Commands,
   HostType,
@@ -55,12 +58,11 @@ export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath: string;
     if (inputs.platform === Platform.VS) {
-      workingPath = path.join(inputs.projectPath ?? "", "bot");
+      workingPath = inputs.projectPath ?? "";
     } else {
       workingPath = path.join(inputs.projectPath ?? "", "bot");
     }
-    const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    const hostType = this.resolveHostType(hostTypeTriggers);
+    const hostType = this.resolveHostType(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
     const templates = this.getTemplates(ctx, inputs);
@@ -73,7 +75,8 @@ export class TeamsBotV2Impl {
     return ok(Void);
   }
 
-  private resolveHostType(hostTypeTriggers: string[]): HostType {
+  private resolveHostType(inputs: Inputs): HostType {
+    const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     let hostType;
     if (Array.isArray(hostTypeTriggers)) {
       const hostTypes = hostTypeTriggers.map(
@@ -175,15 +178,8 @@ export class TeamsBotV2Impl {
   }
 
   private getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
-    const actRoles = this.resolveActRoles(ctx, inputs);
-    const triggers = this.resolveTriggers(inputs);
-    const hostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
-      PluginBot.HOST_TYPE
-    ] as HostType;
     const lang = this.resolveProgrammingLanguage(ctx);
-    const isM365 = ctx.projectSetting?.isM365;
-
-    const scenarios = this.resolveScenarios(actRoles, triggers, hostType, isM365);
+    const scenarios = this.resolveScenarios(ctx, inputs);
 
     return scenarios.map((scenario) => {
       return {
@@ -218,7 +214,7 @@ export class TeamsBotV2Impl {
     const lang = this.resolveProgrammingLanguage(ctx);
     const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === "ts") {
-      //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
+      //Typescript needs tsc build before deploy because of windows app server. other languages don't need it.
       try {
         await utils.execute("npm install", packDir);
         await utils.execute("npm run build", packDir);
@@ -249,33 +245,6 @@ export class TeamsBotV2Impl {
     }
 
     throw new Error("Invalid programming language");
-  }
-
-  private resolveActRoles(ctx: Context, inputs: Inputs): PluginActRoles[] {
-    let actRoles: PluginActRoles[] = [];
-
-    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    // Null check solutionSettings
-    const capabilities = solutionSettings.capabilities;
-    if (capabilities?.includes(PluginActRoles.Bot)) {
-      const scenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
-      if (isBotNotificationEnabled() && Array.isArray(scenarios)) {
-        const scenarioActRoles = scenarios
-          .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
-          .filter((item): item is PluginActRoles => item !== undefined);
-        // dedup
-        actRoles = [...new Set([...actRoles, ...scenarioActRoles])];
-      } else {
-        // for legacy bot
-        actRoles.push(PluginActRoles.Bot);
-      }
-    }
-
-    if (capabilities?.includes(PluginActRoles.MessageExtension)) {
-      actRoles.push(PluginActRoles.MessageExtension);
-    }
-
-    return actRoles;
   }
 
   private resolveServiceType(ctx: Context): ServiceType {
@@ -319,39 +288,58 @@ export class TeamsBotV2Impl {
     throw new Error("Invalid programming language");
   }
 
-  private resolveScenarios(
-    actRoles: PluginActRoles[],
-    triggers: BotTrigger[],
-    hostType: HostType,
-    isM365: boolean | undefined
-  ): string[] {
-    const scenarios: string[] = [];
-    actRoles.map((actRole) => {
-      switch (actRole) {
-        case PluginActRoles.CommandAndResponse:
-          scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
-          break;
-        case PluginActRoles.Notification:
-          if (hostType === HostTypes.AZURE_FUNCTIONS) {
-            scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
-            triggers.map((trigger) => scenarios.push(TriggerTemplateScenarioMappings[trigger]));
-          }
-          if (hostType === HostTypes.APP_SERVICE) {
-            scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
-          }
-          break;
-        case PluginActRoles.Bot:
-        case PluginActRoles.MessageExtension:
+  private resolveScenarios(ctx: Context, inputs: Inputs): string[] {
+    let templateScenarios: string[] = [];
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    const isM365 = ctx.projectSetting?.isM365;
+    capabilities.map((capability: string) => {
+      switch (capability) {
+        case MessageExtensionItem.id:
           if (isM365) {
-            scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-          } else if (!scenarios.includes(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME)) {
-            scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+            templateScenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+          } else {
+            templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
           }
+          break;
+        case BotOptionItem.id:
+          templateScenarios = templateScenarios.concat(this.resolveScenariosForBot(inputs));
           break;
       }
     });
+    return templateScenarios;
+  }
 
-    return scenarios;
+  private resolveScenariosForBot(inputs: Inputs): string[] {
+    const templateScenarios: string[] = [];
+    const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+    if (!botScenarios) {
+      templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    } else {
+      botScenarios.map((scenario: string) => {
+        switch (scenario) {
+          case BotScenario.CommandAndResponseBot:
+            templateScenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+            break;
+          case BotScenario.NotificationBot:
+            const hostType = this.resolveHostType(inputs);
+            if (hostType === HostTypes.AZURE_FUNCTIONS) {
+              templateScenarios.push(
+                TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
+              );
+              const triggers = this.resolveTriggers(inputs);
+              triggers.map((trigger) =>
+                templateScenarios.push(TriggerTemplateScenarioMappings[trigger])
+              );
+            }
+            if (hostType === HostTypes.APP_SERVICE) {
+              templateScenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+            }
+            break;
+        }
+      });
+    }
+    return templateScenarios;
   }
 }
 

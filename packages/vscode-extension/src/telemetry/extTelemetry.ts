@@ -22,7 +22,6 @@ export namespace ExtTelemetry {
   /* eslint-disable prefer-const */
   export let isFromSample: boolean | undefined = undefined;
   export let settingsVersion: string | undefined = undefined;
-  export let isM365: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -94,9 +93,6 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
-    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -142,9 +138,6 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
-    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -175,9 +168,6 @@ export namespace ExtTelemetry {
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
-    }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();

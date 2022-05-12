@@ -11,7 +11,7 @@ import {
 } from "./cliTelemetryEvents";
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { getIsM365, getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -74,11 +74,6 @@ export class CliTelemetry {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
-    }
-
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)
       .sendTelemetryEvent(eventName, properties, measurements);
@@ -102,11 +97,6 @@ export class CliTelemetry {
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
@@ -140,11 +130,6 @@ export class CliTelemetry {
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     CliTelemetry.reporter

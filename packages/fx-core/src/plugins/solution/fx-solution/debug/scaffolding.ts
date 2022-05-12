@@ -63,7 +63,6 @@ export async function _scaffoldLocalDebugSettings(
   const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
   const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSetting);
-  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
   const isM365 = projectSetting.isM365;
 
@@ -74,8 +73,7 @@ export async function _scaffoldLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
-    "bot-capabilities": JSON.stringify(botCapabilities),
+    botHostType: includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);

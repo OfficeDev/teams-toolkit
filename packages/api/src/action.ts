@@ -87,12 +87,18 @@ export interface FunctionAction {
  * append: create a new file with the content if it does not exist; append the content to the end of the file if it already exists
  * delete: delete the file if it exists; skip if it does not exist;
  */
-export type FileOperation = "create" | "replace" | "append" | "delete";
+export type FileOperation =
+  | "create"
+  | "replace"
+  | "append"
+  | "delete"
+  | "skipCreate"
+  | "skipReplace";
 
 export interface FileEffect {
   type: "file";
   filePath: string | string[];
-  operate?: FileOperation;
+  operate: FileOperation;
   remarks?: string;
 }
 
@@ -103,4 +109,4 @@ export interface CallServiceEffect {
   response?: string;
 }
 
-export type Effect = string | FileEffect | CallServiceEffect | Bicep;
+export type Effect = string | FileEffect | CallServiceEffect | Bicep | ShellAction;

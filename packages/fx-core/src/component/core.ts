@@ -145,14 +145,7 @@ export class TeamsfxCore {
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
           }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
+          return ok(remarks);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;

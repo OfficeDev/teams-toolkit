@@ -856,5 +856,6 @@
   "depChecker.dotnetNotFound": "Cannot find @NameVersion. For the details why .NET SDK is needed, refer to @HelpLink",
   "depChecker.depsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.\n\nClick \"Install\" to install @InstallPackages.",
   "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies. \n\n(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)",
-  "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies."
+  "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
+  "error.ActionNotExist": "Action not exist: %s"
 }

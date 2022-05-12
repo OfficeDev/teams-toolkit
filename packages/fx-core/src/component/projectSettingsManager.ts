@@ -18,6 +18,7 @@ import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { LocalCrypto } from "../core/crypto";
+import { createFileEffect } from "./utils";
 
 @Service("project-settings")
 export class ProjectSettingsManager {
@@ -53,24 +54,13 @@ export class ProjectSettingsManager {
       type: "function",
       name: "project-settings.write",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "file",
-            filePath: getProjectSettingsPath(inputs.projectPath),
-            operate: "replace",
-          },
-        ]);
+        return ok([createFileEffect(getProjectSettingsPath(inputs.projectPath), "replace")]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const filePath = getProjectSettingsPath(inputs.projectPath);
+        const effect = createFileEffect(getProjectSettingsPath(inputs.projectPath), "replace");
         await fs.writeFile(filePath, JSON.stringify(context.projectSetting, null, 4));
-        return ok([
-          {
-            type: "file",
-            filePath: filePath,
-            operate: "replace",
-          },
-        ]);
+        return ok([effect]);
       },
     };
     return ok(action);

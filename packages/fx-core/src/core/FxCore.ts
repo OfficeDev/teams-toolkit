@@ -395,7 +395,8 @@ export class FxCore implements v3.ICore {
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
-    return ok(projectPath);
+    return ok("");
+    // return ok(projectPath);
   }
 
   /**

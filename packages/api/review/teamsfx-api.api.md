@@ -551,7 +551,7 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 export const DynamicPlatforms: Platform[];
 
 // @public (undocumented)
-export type Effect = string | FileEffect | CallServiceEffect | Bicep;
+export type Effect = string | FileEffect | CallServiceEffect | Bicep | ShellAction;
 
 // @public (undocumented)
 export class EmptyOptionError extends SystemError {
@@ -673,7 +673,7 @@ export interface FileEffect {
     // (undocumented)
     filePath: string | string[];
     // (undocumented)
-    operate?: FileOperation;
+    operate: FileOperation;
     // (undocumented)
     remarks?: string;
     // (undocumented)
@@ -681,7 +681,7 @@ export interface FileEffect {
 }
 
 // @public
-export type FileOperation = "create" | "replace" | "append" | "delete";
+export type FileOperation = "create" | "replace" | "append" | "delete" | "skipCreate" | "skipReplace";
 
 // @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {

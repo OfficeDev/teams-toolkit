@@ -19,6 +19,7 @@ import { Container, Service } from "typedi";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
+import { createFilesEffects } from "./utils";
 
 @Service("env-manager")
 export class EnvManager {
@@ -112,18 +113,23 @@ export class EnvManager {
             "states",
             `${context.envInfo.envName}.userdata`
           );
-          return ok([
-            {
-              type: "file",
-              filePath: [envStatePath, userDataPath],
-              remarks: "env state",
-            },
-          ]);
+          return ok(createFilesEffects([envStatePath, userDataPath], "replace", "env state"));
         }
         return ok([]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         if (context.envInfo?.state) {
+          const envStatePath = path.join(
+            inputs.projectPath,
+            "states",
+            `state.${context.envInfo.envName}.json`
+          );
+          const userDataPath = path.join(
+            inputs.projectPath,
+            "states",
+            `${context.envInfo.envName}.userdata`
+          );
+          const effects = createFilesEffects([envStatePath, userDataPath], "replace", "env state");
           for (const key of Object.keys(context.envInfo.state)) {
             if (key !== "solution") {
               const cloudResource = Container.get(key) as CloudResource;
@@ -137,11 +143,6 @@ export class EnvManager {
               }
             }
           }
-          const userDataPath = path.join(
-            inputs.projectPath,
-            "states",
-            `${context.envInfo.envName}.userdata`
-          );
           const writeEnvStateRes = await environmentManager.writeEnvState(
             context.envInfo.state,
             inputs.projectPath,
@@ -150,13 +151,7 @@ export class EnvManager {
             true
           );
           if (writeEnvStateRes.isErr()) return err(writeEnvStateRes.error);
-          return ok([
-            {
-              type: "file",
-              filePath: [writeEnvStateRes.value, userDataPath],
-              remarks: "env state",
-            },
-          ]);
+          return ok(effects);
         }
         return ok([]);
       },

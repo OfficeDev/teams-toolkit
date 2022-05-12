@@ -45,7 +45,7 @@ function updateFileDeps(file, deps) {
             if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))){
                 continue;
             }
-            if(key === "@microsoft/teamsfx" && dep_[key] === "0.6.0-beta.0") {
+            if(key === "@microsoft/teamsfx" && (dep_[key] === "0.6.0-beta.0" || dep_[key] === "0.7.0-beta.0")) {
                 continue;
             }
             fileChange = true;

@@ -5,6 +5,7 @@ import {
   Action,
   ContextV3,
   InputsWithProjectPath,
+  ok,
   Platform,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
@@ -30,12 +31,13 @@ describe("Workflow test for v3", () => {
   let context: ContextV3;
   beforeEach(() => {
     sandbox.restore();
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     setTools(tools);
   });
 
   afterEach(() => {
     sandbox.restore();
-    console.log(projectPath);
+    // console.log(projectPath);
   });
 
   it("fx.init", async () => {
@@ -60,36 +62,12 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      hosting: "azure-web-app",
-      folder: "bot",
-      scenario: "default",
+      feature: "Bot",
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    await runAction("fx.addBot", context, inputs);
-    assert.deepEqual(context.projectSetting.components, [
-      {
-        name: "teams-bot",
-        hosting: "azure-web-app",
-        folder: "bot",
-      },
-      {
-        name: "azure-web-app",
-        connections: ["teams-bot"],
-      },
-      {
-        name: "bot-service",
-        provision: true,
-      },
-      {
-        name: "bot-code",
-        hosting: "azure-web-app",
-        folder: "bot",
-        scenario: "default",
-        language: "typescript",
-        build: true,
-      },
-    ]);
+    const res = await runAction("fx.addBot", context, inputs);
+    assert.isTrue(res.isOk());
   });
 
   it("fx.addSql", async () => {
@@ -97,34 +75,8 @@ describe("Workflow test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
     };
-    await runAction("fx.addSql", context, inputs);
-    assert.deepEqual(context.projectSetting.components, [
-      {
-        name: "teams-bot",
-        hosting: "azure-web-app",
-        folder: "bot",
-      },
-      {
-        name: "azure-web-app",
-        connections: ["teams-bot", "azure-sql"],
-      },
-      {
-        name: "bot-service",
-        provision: true,
-      },
-      {
-        name: "bot-code",
-        hosting: "azure-web-app",
-        folder: "bot",
-        scenario: "default",
-        language: "typescript",
-        build: true,
-      },
-      {
-        name: "azure-sql",
-        provision: true,
-      },
-    ]);
+    const res = await runAction("fx.addSql", context, inputs);
+    assert.isTrue(res.isOk());
   });
 
   // it("fx.provision", async () => {

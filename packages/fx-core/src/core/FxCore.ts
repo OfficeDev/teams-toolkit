@@ -151,6 +151,7 @@ import { runAction } from "../component/workflow";
 import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
+import { BotFeatureIds } from "../plugins/solution/fx-solution/question";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -385,18 +386,16 @@ export class FxCore implements v3.ICore {
       inputs.projectPath = projectPath;
       await runAction("fx.init", context, inputs as InputsWithProjectPath);
       const feature = inputs.capabilities;
-      if (feature === BotOptionItem.id) {
-        inputs.hosting = "azure-web-app";
-        inputs.scenario = TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
-      }
       delete inputs.folder;
-      await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+      if (BotFeatureIds.includes(feature)) {
+        inputs.feature = feature;
+        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+      }
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
-    return ok("");
-    // return ok(projectPath);
+    return ok(projectPath);
   }
 
   /**

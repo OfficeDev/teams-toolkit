@@ -417,3 +417,10 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
     },
   };
 }
+
+export const BotFeatureIds = [
+  BotOptionItem.id,
+  NotificationOptionItem.id,
+  CommandAndResponseOptionItem.id,
+  MessageExtensionItem.id,
+];

@@ -44,11 +44,18 @@ import {
   fillInAzureConfigs,
   getM365TenantId,
 } from "../plugins/solution/fx-solution/v3/provision";
-import { SolutionError } from "../plugins";
+import { CommandAndResponseOptionItem, NotificationOptionItem, SolutionError } from "../plugins";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
+import { QuestionNames, TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
+import {
+  AppServiceOptionItem,
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
+} from "../plugins/resource/bot/question";
+import { scaffold } from "../plugins/resource/bot/v2/scaffold";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -118,6 +125,22 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
+
+  /**
+   *
+   *   capability = Notification
+   *     bot-host-type-trigger = http-restify
+   *       group=bot, scenario=notification-restify, host=app-service
+   *     bot-host-type-trigger = [http-functions, timer-functions]
+   *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
+   *   capability = command-bot:
+   *     group=bot, host=app-service, scenario=command-and-response
+   *   capability = Bot
+   *     group=bot, host=app-service, scenario=default
+   *   capability = MessagingExtension
+   *     group=bot, host=app-service, scenario=default
+   */
+
   /**
    * 1. config bot in project settings
    * 2. generate bot source code
@@ -130,6 +153,31 @@ export class TeamsfxCore {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
+    const feature = inputs.feature as string;
+    const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
+    inputs.hosting = "azure-web-app";
+    const scenarios: string[] = [];
+    if (feature === NotificationOptionItem.id) {
+      if (triggers.includes(AppServiceOptionItem.id)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+      } else {
+        inputs.hosting = "azure-function";
+        if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
+          scenarios.push(
+            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
+          );
+        }
+        if (triggers.includes(FunctionsTimerTriggerOptionItem.id)) {
+          scenarios.push(
+            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME
+          );
+        }
+      }
+    } else if (feature === CommandAndResponseOptionItem.id) {
+      scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+    } else {
+      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    }
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
@@ -153,7 +201,6 @@ export class TeamsfxCore {
           projectSettings.components.push({
             name: "teams-bot",
             hosting: inputs.hosting,
-            folder: inputs.folder,
           });
           // add hosting component
           const hostingComponent = {
@@ -191,6 +238,9 @@ export class TeamsfxCore {
         type: "call",
         required: true,
         targetAction: "bot-code.generate",
+        inputs: {
+          scenarios: scenarios,
+        },
       },
       {
         type: "call",

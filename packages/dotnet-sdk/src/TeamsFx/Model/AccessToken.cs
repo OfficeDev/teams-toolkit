@@ -15,9 +15,9 @@ internal class AccessToken
         ExpiresOn = expiresOn;
     }
 
-    public Azure.Core.AccessToken ToAzureAccessToken()
+    public global::Azure.Core.AccessToken ToAzureAccessToken()
     {
-        return new Azure.Core.AccessToken(Token, ExpiresOn);
+        return new global::Azure.Core.AccessToken(Token, ExpiresOn);
     }
 
     public bool NearExpiration()

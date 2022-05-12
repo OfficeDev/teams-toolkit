@@ -83,6 +83,7 @@ import {
 } from "../../../../core/question";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
+import { PluginBot } from "../../../resource/bot/resources/strings";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -602,7 +603,7 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [
       ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
-      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
+      ...[BotOptionItem],
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
@@ -679,6 +680,7 @@ export async function getQuestionsForAddCapability(
     if (isBotNotificationEnabled()) {
       options.push(CommandAndResponseOptionItem);
       options.push(NotificationOptionItem);
+      options.push(BotOptionItem);
     } else {
       options.push(BotOptionItem);
     }
@@ -841,8 +843,14 @@ async function getStaticOptionsForAddCapability(
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
-  // for the new bot, messaging extension and other bots are mutally exclusive
-  const isMEAddable = !meExceedRes.value && (!isBotNotificationEnabled() || isBotAddable);
+  // For the new bot, messaging extension and other bots are mutally exclusive.
+  // For the old bot, messaging extension can be added when bot exists.
+  const botCapabilities =
+    ctx.projectSetting.pluginSettings?.[PluginNames.BOT]?.[PluginBot.BOT_CAPABILITIES];
+  const hasNewBot = Array.isArray(botCapabilities) && botCapabilities.length > 0;
+  const isMEAddable = isBotNotificationEnabled()
+    ? !meExceedRes.value && !hasNewBot
+    : !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
@@ -942,13 +950,14 @@ export async function getQuestionsForAddFeature(
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
-      containsAny: [
+      enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
+        SingleSignOnOptionItem.id,
       ],
     };
     addFeatureNode.addChild(programmingLanguage);

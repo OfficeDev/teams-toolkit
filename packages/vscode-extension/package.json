@@ -1,6 +1,6 @@
 {
   "name": "ms-teams-vscode-extension",
-  "displayName": "Teams Toolkit (Preview)",
+  "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
   "version": "3.8.0",
   "publisher": "TeamsDevApp",
@@ -28,7 +28,7 @@
     "Azure",
     "M365"
   ],
-  "preview": true,
+  "preview": false,
   "categories": [
     "Azure",
     "Extension Packs",
@@ -66,7 +66,6 @@
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
-    "onView:teamsfx",
     "onView:teamsfx-accounts",
     "onView:teamsfx-environment",
     "onView:teamsfx-development",
@@ -920,23 +919,6 @@
     ],
     "configuration": [
       {
-        "title": "General",
-        "order": 1,
-        "properties": {
-          "fx-extension.defaultProjectRootDirectory": {
-            "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requires reload of VS Code)",
-            "default": "${homeDir}/TeamsApps"
-          },
-          "fx-extension.automaticNpmInstall": {
-            "type": "boolean",
-            "title": "Automatic NPM Install",
-            "description": "Automatically execute npm install command for your Teams application.",
-            "default": false
-          }
-        }
-      },
-      {
         "title": "Prerequisite Check",
         "order": 2,
         "properties": {
@@ -1203,6 +1185,7 @@
     "@microsoft/teamsfx-api": "^0.18.0",
     "@microsoft/teamsfx-core": "^1.8.0",
     "@npmcli/package-json": "^1.0.1",
+    "@vscode/extension-telemetry": "^0.5.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
@@ -1213,12 +1196,12 @@
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "open": "^8.4.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-extension-telemetry": "^0.2.9",
-    "vscode-tas-client": "^0.1.22",
+    "vscode-tas-client": "^0.1.47",
     "vscode-test": "^1.5.2"
   },
   "extensionDependencies": [

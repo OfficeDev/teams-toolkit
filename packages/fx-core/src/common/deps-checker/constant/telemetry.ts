@@ -5,6 +5,7 @@ export enum DepsCheckerEvent {
   clickLearnMore = "env-checker-click-learn-more",
   clickCancel = "env-checker-click-cancel",
 
+  nodeVersion = "node-version",
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
   nodeNotSupportedForSPFx = "node-not-supported-for-spfx",

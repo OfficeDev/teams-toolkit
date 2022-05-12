@@ -62,6 +62,10 @@ export abstract class NodeChecker implements DepsChecker {
       this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
       throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
     }
+    this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
+      "global-version": `${currentVersion.version}`,
+      "global-major-version": `${currentVersion.majorVersion}`,
+    });
 
     if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
       const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
@@ -175,7 +179,7 @@ export class AzureNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14", "16"];
+    return ["14", "16"];
   }
 }
 
@@ -188,6 +192,6 @@ export class FunctionNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14"];
+    return ["14", "16"];
   }
 }

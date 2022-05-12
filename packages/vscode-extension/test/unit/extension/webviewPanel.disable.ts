@@ -8,18 +8,6 @@ import { Commands } from "../../../src/controls/Commands";
 
 suite("WebviewPanel", () => {
   suite("createOrShow", () => {
-    test("will build quick start page for QuickStart", () => {
-      const mockConstructor = sinon.stub();
-      Object.setPrototypeOf(WebviewPanel, mockConstructor);
-
-      WebviewPanel.createOrShow(PanelType.QuickStart);
-
-      chai.expect(WebviewPanel.currentPanels.length).equals(1);
-      chai.expect(WebviewPanel.currentPanels[0]["panelType"]).equals(PanelType.QuickStart);
-      WebviewPanel.currentPanels = [];
-      sinon.restore();
-    });
-
     test("will build sample gallery page for Samples", () => {
       const mockConstructor = sinon.stub();
       Object.setPrototypeOf(WebviewPanel, mockConstructor);
@@ -32,29 +20,16 @@ suite("WebviewPanel", () => {
       sinon.restore();
     });
 
-    test("will not duplicate quick start page when open twice", () => {
-      const mockConstructor = sinon.stub();
-      Object.setPrototypeOf(WebviewPanel, mockConstructor);
-
-      WebviewPanel.createOrShow(PanelType.QuickStart);
-      WebviewPanel.createOrShow(PanelType.QuickStart);
-
-      chai.expect(WebviewPanel.currentPanels.length).equals(1);
-      chai.expect(WebviewPanel.currentPanels[0]["panelType"]).equals(PanelType.QuickStart);
-      WebviewPanel.currentPanels = [];
-      sinon.restore();
-    });
-
     test("can open both quick start and sample page", () => {
       const mockConstructor = sinon.stub();
       Object.setPrototypeOf(WebviewPanel, mockConstructor);
 
-      WebviewPanel.createOrShow(PanelType.QuickStart);
       WebviewPanel.createOrShow(PanelType.SampleGallery);
+      WebviewPanel.createOrShow(PanelType.Survey);
 
       chai.expect(WebviewPanel.currentPanels.length).equals(2);
-      chai.expect(WebviewPanel.currentPanels[0]["panelType"]).equals(PanelType.QuickStart);
-      chai.expect(WebviewPanel.currentPanels[1]["panelType"]).equals(PanelType.SampleGallery);
+      chai.expect(WebviewPanel.currentPanels[0]["panelType"]).equals(PanelType.SampleGallery);
+      chai.expect(WebviewPanel.currentPanels[1]["panelType"]).equals(PanelType.Survey);
       WebviewPanel.currentPanels = [];
       sinon.restore();
     });
@@ -65,7 +40,7 @@ suite("WebviewPanel", () => {
       sinon.stub(cp, "execSync").callsFake(() => {
         return new Buffer("*.b.5");
       });
-      WebviewPanel.createOrShow(PanelType.QuickStart);
+      WebviewPanel.createOrShow(PanelType.SampleGallery);
 
       chai.expect(WebviewPanel.currentPanels[0].isValidNode()).equals(false);
       WebviewPanel.currentPanels = [];
@@ -76,7 +51,7 @@ suite("WebviewPanel", () => {
       sinon.stub(cp, "execSync").callsFake(() => {
         return new Buffer("v9.5.2");
       });
-      WebviewPanel.createOrShow(PanelType.QuickStart);
+      WebviewPanel.createOrShow(PanelType.SampleGallery);
 
       chai.expect(WebviewPanel.currentPanels[0].isValidNode()).equals(false);
       WebviewPanel.currentPanels = [];
@@ -87,7 +62,7 @@ suite("WebviewPanel", () => {
       sinon.stub(cp, "execSync").callsFake(() => {
         return new Buffer("v10.23.1");
       });
-      WebviewPanel.createOrShow(PanelType.QuickStart);
+      WebviewPanel.createOrShow(PanelType.SampleGallery);
 
       chai.expect(WebviewPanel.currentPanels[0].isValidNode()).equals(true);
       WebviewPanel.currentPanels = [];

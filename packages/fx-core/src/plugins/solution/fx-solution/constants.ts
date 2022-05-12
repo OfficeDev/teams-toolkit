@@ -320,3 +320,7 @@ export class AddSsoParameters {
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
   static readonly AddSso = "addSso";
 }
+
+export class UserTaskFunctionName {
+  static readonly ConnectExistingApi = "connectExistingApi";
+}

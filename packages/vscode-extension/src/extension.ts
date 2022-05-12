@@ -10,9 +10,9 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  ProjectSettingsFileName,
   FxError,
   InputConfigsFolderName,
+  ProjectSettingsFileName,
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
@@ -31,8 +31,8 @@ import {
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
-  ProjectSettingsCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
+  ProjectSettingsCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import VsCodeLogInstance from "./commonlib/log";
@@ -51,7 +51,7 @@ import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   canUpgradeToArmAndMultiEnv,
   delay,
@@ -430,6 +430,39 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addSso);
 
+  const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
+    Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])
+  );
+  context.subscriptions.push(openTutorial);
+
+  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
+    Correlator.run(handlers.signinM365Callback, args)
+  );
+  context.subscriptions.push(signinM365);
+
+  const refreshSideloading = vscode.commands.registerCommand(
+    "fx-extension.refreshSideloading",
+    (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
+  );
+  context.subscriptions.push(refreshSideloading);
+
+  const checkSideloading = vscode.commands.registerCommand(
+    "fx-extension.checkSideloading",
+    (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
+  );
+  context.subscriptions.push(checkSideloading);
+
+  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
+    Correlator.run(handlers.signinAzureCallback, args)
+  );
+  context.subscriptions.push(signinAzure);
+
+  const specifySubscription = vscode.commands.registerCommand(
+    "fx-extension.specifySubscription",
+    (...args) => Correlator.run(handlers.selectSubscriptionCallback, args)
+  );
+  context.subscriptions.push(specifySubscription);
+
   const workspacePath = handlers.getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
@@ -661,6 +694,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
@@ -672,6 +706,7 @@ function initializeContextKey() {
   } else {
     vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
   }
+  vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {

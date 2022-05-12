@@ -8,7 +8,7 @@ import {
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { Separator, TextField } from "@fluentui/react";
-import TeamsIcon from "../../media/microsoft-teams.svg";
+import TeamsIcon from "../../img/webview/survey/microsoft-teams.svg";
 
 type QuestionChoice = { key: string; val: number };
 

@@ -51,6 +51,14 @@ export const NotificationOptionItem: OptionItem = {
   cliName: "notification",
   detail: getLocalizedString("core.NotificationOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-send-notification",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
@@ -61,6 +69,14 @@ export const CommandAndResponseOptionItem: OptionItem = {
   cliName: "command-bot",
   detail: getLocalizedString("core.CommandAndResponseOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-create-command",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const ExistingTabOptionItem: OptionItem = {
@@ -69,6 +85,14 @@ export const ExistingTabOptionItem: OptionItem = {
   cliName: "existing-tab",
   detail: getLocalizedString("core.ExistingTabOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-embed-existing-web",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const MessageExtensionItem: OptionItem = {
@@ -227,6 +251,14 @@ export const SingleSignOnOptionItem: OptionItem = {
   label: `$(unlock) ${getLocalizedString("core.SingleSignOnOption.label")}`,
   detail: getLocalizedString("core.SingleSignOnOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
+  data: "https://aka.ms/teamsfx-add-sso",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const ApiConnectionOptionItem: OptionItem = {
@@ -234,6 +266,14 @@ export const ApiConnectionOptionItem: OptionItem = {
   label: `$(arrow-swap) ${getLocalizedString("core.ApiConnectionOption.label")}`,
   detail: getLocalizedString("core.ApiConnectionOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
+  data: "https://aka.ms/teamsfx-connect-api",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const CicdOptionItem: OptionItem = {

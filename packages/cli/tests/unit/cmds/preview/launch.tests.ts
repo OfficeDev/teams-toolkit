@@ -3,6 +3,7 @@
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
+import proxyquire from "proxyquire";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import { openHubWebClient } from "../../../../src/cmds/preview/launch";
@@ -15,6 +16,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
+import { TempFolderManager } from "../../../../src/cmds/preview/tempFolderManager";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -108,6 +110,36 @@ describe("launch", () => {
         },
       ]);
       expect(sideloadingUrl).to.deep.equals(teamsUrl);
+    });
+  });
+
+  describe("openUrlWithNewProfile", () => {
+    it("happy path", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {},
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(true);
+    });
+
+    it("getTempFolderPath failed", async () => {
+      sandbox
+        .stub(TempFolderManager.prototype, "getTempFolderPath")
+        .returns(Promise.resolve(undefined));
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {},
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(false);
+    });
+
+    it("getTempFolderPath failed", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {
+          throw Error("");
+        },
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(false);
     });
   });
 });

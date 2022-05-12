@@ -29,6 +29,7 @@ import {
   CapabilityAddCommandAndResponse,
   CapabilityAddMessageExtension,
   CapabilityAddNotification,
+  CapabilityAddSSOTab,
   CapabilityAddTab,
 } from "./capability";
 import {
@@ -41,7 +42,7 @@ import {
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;
-  public readonly description = "Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins.";
+  public readonly description = "Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addCICDWorkflows");
@@ -146,7 +147,7 @@ export class AddExistingApiSubCommand extends AddExistingApiAuthBase {
 export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
   public readonly commandHead = `api-connection`;
   public readonly command = `${this.commandHead} [auth-type]`;
-  public readonly description = "Add connection to an API";
+  public readonly description = "Connect to an API with authentication support using TeamsFx SDK";
 
   public readonly subCommands: YargsCommand[] = [
     new AddExistingApiSubCommand("basic"),
@@ -167,10 +168,12 @@ export class AddExistingApiMainCommand extends AddExistingApiAuthBase {
     });
   }
 }
+
 export class AddSso extends YargsCommand {
   public readonly commandHead = `sso`;
   public readonly command = this.commandHead;
-  public readonly description = "Add Single Sign On for your project.";
+  public readonly description =
+    "Develop a Single Sign-On feature for Teams Launch pages and Bot capability";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addSso");
@@ -223,23 +226,25 @@ export default class Add extends YargsCommand {
       ? [
           // Category 1: Add Teams Capability
           ...(isBotNotificationEnabled()
-            ? [new CapabilityAddCommandAndResponse(), new CapabilityAddNotification()]
-            : [new CapabilityAddBot()]),
-          new CapabilityAddMessageExtension(),
+            ? [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]
+            : []),
+          new CapabilityAddSSOTab(),
           new CapabilityAddTab(),
+          new CapabilityAddBot(),
+          new CapabilityAddMessageExtension(),
 
           // Category 2: Add Cloud Resources
           new ResourceAddFunction(),
-          new ResourceAddSql(),
           new ResourceAddApim(),
+          new ResourceAddSql(),
           new ResourceAddKeyVault(),
         ]
       : []),
 
     // Category 3: Standalone features
-    new AddCICD(),
-    ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
     ...(isAadManifestEnabled() ? [new AddSso()] : []),
+    ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
+    new AddCICD(),
   ];
 
   public builder(yargs: Argv): Argv<any> {

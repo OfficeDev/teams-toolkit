@@ -102,6 +102,9 @@ function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
             description: option.description,
             detail: option.detail,
             data: option.data,
+            buttons: option.buttons?.map((button) => {
+              return { iconPath: new ThemeIcon(button.iconPath), tooltip: button.tooltip };
+            }),
           };
         })
       );
@@ -227,6 +230,27 @@ export class VsCodeUI implements UserInteraction {
               } else {
                 quickPick.selectedItems = quickPick.activeItems;
                 onDidAccept();
+              }
+            }),
+            quickPick.onDidTriggerItemButton((event) => {
+              const itemOptions: StaticOptions = option.options;
+              if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
+                return;
+              }
+              const triggerItem: OptionItem | undefined = (itemOptions as OptionItem[]).find(
+                (singleOption: string | OptionItem) => {
+                  if (typeof singleOption !== "string") {
+                    return (singleOption as OptionItem).id === event.item.id;
+                  }
+                }
+              );
+              if (triggerItem) {
+                const triggerButton = triggerItem.buttons?.find((button) => {
+                  return button.iconPath === (event.button.iconPath as ThemeIcon).id;
+                });
+                if (triggerButton) {
+                  commands.executeCommand(triggerButton.command, event.item);
+                }
               }
             })
           );

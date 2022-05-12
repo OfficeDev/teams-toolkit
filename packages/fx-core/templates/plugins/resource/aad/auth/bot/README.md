@@ -1,6 +1,6 @@
 # Enable single sign-on for bot applications
 
-Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit faciliates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high level APIs. This enalbes you to add single sign-on (SSO) features easily to your Teams application.
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
 
 For a bot application, SSO manifests as an Adaptive Card which the user can interact with to invoke the AAD consent flow.
 
@@ -12,8 +12,8 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 
 | Action | File | Description |
 | - | - | - |
-| Create| `aad.template.json` under `template\appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
-| Modify | `manifest.template.json` under `template\appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
+| Create| `aad.template.json` under `templates/appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
+| Modify | `manifest.template.json` under `templates/appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 | Create | `auth/bot` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
 # Update your code to add SSO
@@ -51,6 +51,7 @@ These folder contains three files as reference for sso implementation:
     "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src && copyfiles src/public/*.html lib/",
     ```
     By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
+
 1. After adding the following files, you need to create a new `teamsSsoBot` instance in `bot/src/index` file. 
 Please replace the following code:
     ```
@@ -95,6 +96,113 @@ Please replace the following code:
     const path = require("path");
     ```
 
+1. Register your command in the Teams app manifest. Open `templates/appPackage/manifest.template.json`, and add following lines under `command` in `commandLists` of your bot:
+
+    ```
+    {
+        "title": "show",
+        "description": "Show user profile using Single Sign On feature"
+    }
+    ```
+
+## (Optional) Add a new command to the bot
+
+After successfully add SSO in your project, you can also add a new command.
+
+1. Create a new file (e.g. `todo.ts` or `todo.js`) under `bot/src/` and add your own business logic to call Graph API:
+
+    ```TypeScript
+    // for TypeScript:
+    export async function showUserImage(
+        context: TurnContext,
+        ssoToken: string,
+        param: any[]
+    ): Promise<DialogTurnResult> {
+        await context.sendActivity("Retrieving user photo from Microsoft Graph ...");
+
+        // Init TeamsFx instance with SSO token
+        const teamsfx = new TeamsFx().setSsoToken(ssoToken);
+
+        // Update scope here. For example: Mail.Read, etc.
+        const graphClient = createMicrosoftGraphClient(teamsfx, param[0]);
+        
+        // You can add following code to get your photo:
+        // let photoUrl = "";
+        // try {
+        //   const photo = await graphClient.api("/me/photo/$value").get();
+        //   photoUrl = URL.createObjectURL(photo);
+        // } catch {
+        //   // Could not fetch photo from user's profile, return empty string as placeholder.
+        // }
+        // if (photoUrl) {
+        //   await context.sendActivity(
+        //     `You can find your photo here: ${photoUrl}`
+        //   );
+        // } else {
+        //   await context.sendActivity("Could not retrieve your photo from Microsoft Graph. Please make sure you have uploaded your photo.");
+        // }
+
+        return;
+    }
+    ```
+
+    ```javascript
+    // for JavaScript:
+    export async function showUserImage(context, ssoToken, param) {
+        await context.sendActivity("Retrieving user photo from Microsoft Graph ...");
+    
+        // Init TeamsFx instance with SSO token
+        const teamsfx = new TeamsFx().setSsoToken(ssoToken);
+    
+        // Update scope here. For example: Mail.Read, etc.
+        const graphClient = createMicrosoftGraphClient(teamsfx, param[0]);
+        
+        // You can add following code to get your photo:
+        // let photoUrl = "";
+        // try {
+        //   const photo = await graphClient.api("/me/photo/$value").get();
+        //   photoUrl = URL.createObjectURL(photo);
+        // } catch {
+        //   // Could not fetch photo from user's profile, return empty string as placeholder.
+        // }
+        // if (photoUrl) {
+        //   await context.sendActivity(
+        //     `You can find your photo here: ${photoUrl}`
+        //   );
+        // } else {
+        //   await context.sendActivity("Could not retrieve your photo from Microsoft Graph. Please make sure you have uploaded your photo.");
+        // }
+    
+        return;
+    }
+    ```
+
+1. Register a new command using `addCommand` in `teamsSsoBot`:
+
+    Find the following line:
+
+    ```
+    this.dialog.addCommand("ShowUserProfile", "show", showUserInfo);
+    ```
+
+    and add following lines after the above line to register a new command `photo` and hook up with method `showUserImage` added above:
+
+    ```
+    // As shown here, you can add your own parameter into the `showUserImage` method
+    // You can also use regular expression for the command here
+    const scope = ["User.Read"];
+    this.dialog.addCommand("ShowUserPhoto", new RegExp("photo\s*.*"), showUserImage, scope);
+    ```
+
+1. Register your command in the Teams app manifest. Open 'templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+
+    ```
+    {
+        "title": "photo",
+        "description": "Show user photo using Single Sign On feature"
+    }
+    ```
+
 # Debug your application
 
 You can debug your application by pressing F5.
@@ -108,3 +216,5 @@ To learn more about Teams Toolkit local debug functionalities, refer to this [do
 The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.
+
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.

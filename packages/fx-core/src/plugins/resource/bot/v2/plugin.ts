@@ -29,7 +29,6 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   BotScenario,
-  M365SearchAppOptionItem,
   MessageExtensionItem,
 } from "../../../solution/fx-solution/question";
 import {

@@ -25,9 +25,6 @@
     "fx-resource-aad-app-for-teams": {
       ...
     },
-    "fx-resource-simple-auth": {
-      ...
-    },
     "fx-resource-bot": {
         ...
     }
@@ -108,17 +105,6 @@ functionAppName|string|Output. The function app name.
 functionEndpoint|string|Output. The function app endpoint. `https://${functionAppName}.azurewebsites.net`
 storageAccountName|string|Output. The name of the Azure Storage Account used by the function app.
 appServicePlanName|string|Output. The name of the Azure App Service Plan used by the function app.
-
-## Configuration schema for simple auth
-
-This section is to describe configuration items in `fx-resource-simple-auth` section of `.fx/states/state.{envName}.json`.
-
-Config Name | Config Type | Description
-------|------|------
-filePath|string|Output. The zip file path of Runtime Connector in local computer. `E:\FooBar\runtimeConnector\resources\TeamsRuntimeConnector.zip`
-environmentVariableParams|string|Output. CLI parameters of environment variable. `CLIENT_ID="aaa" clientSecret="123"`
-endpoint|string|Output. The endpoint of Runtime Connector. https://domain.com 
-
 
 ## Configuration schema for Azure Active Directory
 

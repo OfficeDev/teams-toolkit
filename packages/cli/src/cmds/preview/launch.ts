@@ -127,16 +127,16 @@ export async function openUrlWithNewProfile(url: string): Promise<boolean> {
 
     const apps = [
       {
-        name: open.apps.firefox,
-        arguments: ["-profile", profileFolderPath],
-      },
-      {
         name: open.apps.chrome,
         arguments: [`--user-data-dir=${profileFolderPath}`],
       },
       {
         name: open.apps.edge,
         arguments: [`--user-data-dir=${profileFolderPath}`],
+      },
+      {
+        name: open.apps.firefox,
+        arguments: ["-profile", profileFolderPath],
       },
     ];
     for (const app of apps) {

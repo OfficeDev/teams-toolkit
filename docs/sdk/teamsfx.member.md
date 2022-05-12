@@ -24,7 +24,7 @@ It's recommended to get members from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, account)](./teamsfx.member._constructor_.md) |  | <b><i>(BETA)</i></b> Constuctor. |
+|  [(constructor)(parent, account)](./teamsfx.member._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor. |
 
 ## Properties
 

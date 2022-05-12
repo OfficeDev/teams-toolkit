@@ -254,6 +254,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
     ExtTelemetry.isM365 = await getIsM365();
+    await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.

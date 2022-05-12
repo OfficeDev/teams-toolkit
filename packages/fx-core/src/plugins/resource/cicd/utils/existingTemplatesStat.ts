@@ -9,11 +9,14 @@ import {
   ciOption,
   githubOption,
   jenkinsOption,
+  providerOptions,
   provisionOption,
   publishOption,
+  templateOptions,
 } from "../questions";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { OptionItem } from "@microsoft/teamsfx-api";
 
 export class ExistingTemplatesStat {
   public static instance: ExistingTemplatesStat;
@@ -42,6 +45,28 @@ export class ExistingTemplatesStat {
     return !this.existence.get(key);
   }
 
+  public availableEnvOptions(): OptionItem[] {
+    return this.envNames
+      .filter((envName) => !this.existence.get(envName))
+      .map((envName) => {
+        return { id: envName, label: envName };
+      });
+  }
+
+  public availableProviderOptions(envName: string): OptionItem[] {
+    return providerOptions.filter((providerOption) => {
+      return !this.existence.get(ExistingTemplatesStat.genKey(envName, providerOption.id));
+    });
+  }
+
+  public availableTemplateOptions(envName: string, provider: string): OptionItem[] {
+    return templateOptions.filter((templateOption) => {
+      return !this.existence.get(
+        ExistingTemplatesStat.genKey(envName, provider, templateOption.id)
+      );
+    });
+  }
+
   public async scan() {
     // (envName, provider, template) -> existing (true or false)
     // (envName,) -> allExisting (true or false)
@@ -49,25 +74,28 @@ export class ExistingTemplatesStat {
     this.existence.clear();
     for (const envName of this.envNames) {
       let envAllExisting = true;
-      for (const provider of [githubOption.id, azdoOption.id, jenkinsOption.id]) {
-        const providerInstance = CICDProviderFactory.create(provider as ProviderKind);
+      for (const provider of providerOptions) {
+        const providerInstance = CICDProviderFactory.create(provider.id as ProviderKind);
         let providerAllExisting = true;
-        for (const template of [ciOption.id, provisionOption.id, cdOption.id, publishOption.id]) {
+        for (const template of templateOptions) {
           const existing = await fs.pathExists(
             path.join(
               this.projectPath,
               providerInstance.scaffoldTo,
-              providerInstance.targetTemplateName!(template, envName)
+              providerInstance.targetTemplateName!(template.id, envName)
             )
           );
-          this.existence.set(ExistingTemplatesStat.genKey(envName, provider, template), existing);
+          this.existence.set(
+            ExistingTemplatesStat.genKey(envName, provider.id, template.id),
+            existing
+          );
 
           if (!existing) {
             providerAllExisting = false;
           }
         }
 
-        this.existence.set(ExistingTemplatesStat.genKey(envName, provider), providerAllExisting);
+        this.existence.set(ExistingTemplatesStat.genKey(envName, provider.id), providerAllExisting);
 
         if (!providerAllExisting) {
           envAllExisting = false;

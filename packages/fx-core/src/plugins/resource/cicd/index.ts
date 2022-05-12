@@ -118,8 +118,8 @@ export class CICDPluginV2 implements ResourcePlugin {
         inputs.projectPath!,
         envProfilesResult.value
       );
-      // Refresh status at the beginning of questions.
-      await existingInstance.scan();
+      // Mute this scan before there's initial scan on upper layers.
+      // await existingInstance.scan();
 
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
@@ -128,44 +128,27 @@ export class CICDPluginV2 implements ResourcePlugin {
         staticOptions: [],
         dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
           // Remove the env items in which all combinations of templates are scaffolded/existing.
-          const filteredEnvs = envProfilesResult.value.filter((envName: string) => {
-            return existingInstance.notExisting(envName);
-          });
-
-          return filteredEnvs.map((envName) => {
-            return { id: envName, label: envName };
-          });
+          return existingInstance.availableEnvOptions();
         },
         skipSingleOption: true,
       };
 
       whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
         const envName = inputs[questionNames.Environment];
-        return [githubOption, azdoOption, jenkinsOption].filter((provider) => {
-          return existingInstance.notExisting(envName, provider.id);
-        });
+        return existingInstance.availableProviderOptions(envName);
       };
 
       whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
         const envName = inputs[questionNames.Environment];
         const provider = inputs[questionNames.Provider];
-        return [ciOption, provisionOption, cdOption, publishOption].filter((template) => {
-          return existingInstance.notExisting(envName, provider, template.id);
-        });
+        return existingInstance.availableTemplateOptions(envName, provider);
       };
 
-      // Link question nodes as a tree.
-      const whichProviderNode = new QTreeNode(whichProvider);
-      whichProviderNode.addChild(new QTreeNode(whichTemplate));
-      const whichEnvironmentNode = new QTreeNode(whichEnvironment);
-      whichEnvironmentNode.addChild(whichProviderNode);
-
-      cicdWorkflowQuestions.addChild(whichEnvironmentNode);
-    } else {
-      // For inputs.platform === CLI or CLI_HELP
-      cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
-      cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));
+      cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
     }
+
+    cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
+    cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));
 
     return ok(cicdWorkflowQuestions);
   }

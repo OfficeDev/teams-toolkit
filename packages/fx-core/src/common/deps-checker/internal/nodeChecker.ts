@@ -179,7 +179,7 @@ export class AzureNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14", "16"];
+    return ["14", "16"];
   }
 }
 
@@ -192,6 +192,6 @@ export class FunctionNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14"];
+    return ["14", "16"];
   }
 }

@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
+export const validationSettingsHelpLink =
+  "https://aka.ms/teamsfx-envchecker-help#teams-toolkit-validation-settings";
 
 export const nodeNotFoundHelpLink = `${defaultHelpLink}#nodenotfound`;
 export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupportedazure-hosting`;

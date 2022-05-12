@@ -4,6 +4,7 @@
 "use strict";
 
 import * as path from "path";
+import * as os from "os";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
@@ -43,6 +44,7 @@ import {
   NodeNotSupportedError,
   isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
+  validationSettingsHelpLink,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -1289,6 +1291,7 @@ export default class Preview extends YargsCommand {
           helpLink = nodeStatus.error.helpLink;
         }
         if (nodeStatus.error instanceof NodeNotSupportedError) {
+          const node12Version = "v12";
           const supportedVersions = nodeStatus?.details.supportedVersions
             .map((v) => "v" + v)
             .join(" ,");
@@ -1296,6 +1299,16 @@ export default class Preview extends YargsCommand {
             .join(nodeStatus?.details.installVersion)
             .split("@SupportedVersions")
             .join(supportedVersions);
+
+          if (nodeStatus.details.installVersion?.includes(node12Version)) {
+            const bypass =
+              hasBackend || hasFuncHostedBot
+                ? doctorResult.BypassNode12AndFunction
+                : doctorResult.BypassNode12;
+            summaryMsg = `${summaryMsg}${os.EOL}${bypass
+              .split("@Link")
+              .join(validationSettingsHelpLink)}`;
+          }
         }
       }
     } catch (err) {

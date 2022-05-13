@@ -85,7 +85,7 @@ export interface NotificationTargetStorage {
   write(key: string, object: { [key: string]: unknown }): Promise<void>;
 
   /**
-   * Delete one notificaton target by its key.
+   * Delete one notification target by its key.
    *
    * @param key - the key of a notification target.
    *
@@ -122,7 +122,7 @@ export interface NotificationOptions {
 export type TriggerPatterns = string | RegExp | (string | RegExp)[];
 
 /**
- * Interface for a command messagge that can handled in a command handler.
+ * Interface for a command message that can handled in a command handler.
  */
 export interface CommandMessage {
   /**
@@ -153,7 +153,7 @@ export interface TeamsFxBotCommandHandler {
    * @param context The bot context.
    * @param message The command message the user types from Teams.
    * @returns A `Promise` representing an activity or text to send as the command response.
-   * Or no return value if developers want to send the response activity by themself in this method.
+   * Or no return value if developers want to send the response activity by themselves in this method.
    */
   handleCommandReceived(
     context: TurnContext,

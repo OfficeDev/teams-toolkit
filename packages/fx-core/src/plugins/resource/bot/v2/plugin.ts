@@ -274,18 +274,16 @@ export class TeamsBotV2Impl {
   }
 
   private resolveScenarios(ctx: Context, inputs: Inputs): string[] {
-    let templateScenarios: string[] = [];
+    const templateScenarios: string[] = [];
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
     capabilities.map((capability: string) => {
       switch (capability) {
         case MessageExtensionItem.id:
-          templateScenarios = templateScenarios.concat(
-            this.resolveScenariosForMessageExtension(ctx, inputs)
-          );
+          templateScenarios.push(...this.resolveScenariosForMessageExtension(ctx, inputs));
           break;
         case BotOptionItem.id:
-          templateScenarios = templateScenarios.concat(this.resolveScenariosForBot(inputs));
+          templateScenarios.push(...this.resolveScenariosForBot(inputs));
           break;
       }
     });

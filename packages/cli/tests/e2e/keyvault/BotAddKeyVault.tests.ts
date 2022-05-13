@@ -48,13 +48,9 @@ describe("Test Azure Key Vault", function () {
     {
       const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
       // Validate Bot
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
 
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);

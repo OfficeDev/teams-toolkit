@@ -92,7 +92,13 @@ export class TeamsManifestResource implements CloudResource {
       name: "teams-manifest.provision",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["register teams app"]);
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "register teams app",
+          },
+        ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
@@ -104,6 +110,34 @@ export class TeamsManifestResource implements CloudResource {
             type: "service",
             name: "teams.microsoft.com",
             remarks: "register teams app",
+          },
+        ]);
+      },
+    };
+    return ok(action);
+  }
+  configure(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "teams-manifest.configure",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "update teams app",
+          },
+        ]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "update teams app",
           },
         ]);
       },

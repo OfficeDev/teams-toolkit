@@ -57,7 +57,7 @@ export class MessageBuilder {
    * @beta
    */
   public static attachAdaptiveCard<TData extends Record<string, unknown>>(
-    cardTemplate: any,
+    cardTemplate: unknown,
     data: TData
   ): Partial<Activity> {
     return {
@@ -73,7 +73,7 @@ export class MessageBuilder {
    *
    * @beta
    */
-  public static attachAdaptiveCardWithoutData(card: any): Partial<Activity> {
+  public static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity> {
     return {
       attachments: [CardFactory.adaptiveCard(AdaptiveCards.declareWithoutData(card).render())],
     };

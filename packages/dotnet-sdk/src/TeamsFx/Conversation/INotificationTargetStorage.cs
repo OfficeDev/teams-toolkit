@@ -32,7 +32,7 @@
         Task Write(string key, ConversationReference reference, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Delete one notificaton target by its key.
+        /// Delete one notification target by its key.
         /// </summary>
         /// <param name="key">The target key.</param>
         /// <param name="cancellationToken">The cancellation token.</param>

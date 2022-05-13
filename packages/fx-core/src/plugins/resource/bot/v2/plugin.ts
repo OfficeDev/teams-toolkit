@@ -191,19 +191,15 @@ export class TeamsBotV2Impl {
   }
 
   private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
-    const lang = this.resolveProgrammingLanguage(ctx);
-
+    const languageMapping: { [key: string]: string } = {
+      js: "node",
+      ts: "node",
+      csharp: "dotnet",
+    };
     const bicepConfigs: BicepConfigs = [];
-
-    if (lang === "js" || lang === "ts") {
-      bicepConfigs.push("node");
-    }
-    if (lang === "csharp") {
-      bicepConfigs.push("dotnet");
-    }
-
+    const lang = this.resolveProgrammingLanguage(ctx);
+    bicepConfigs.push(languageMapping[lang]);
     bicepConfigs.push("running-on-azure");
-
     return bicepConfigs;
   }
 

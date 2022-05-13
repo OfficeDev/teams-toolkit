@@ -15,6 +15,11 @@ namespace Microsoft.TeamsFx.Conversation
         /// <inheritdoc/>
         public CommandTriggerType TriggerType => CommandTriggerType.String;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringTrigger"/> class.
+        /// </summary>
+        /// <param name="pattern">The string used to compare with the input.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="pattern"/>is null.</exception>
         public StringTrigger(string pattern)
         { 
             Pattern = pattern ?? throw new ArgumentNullException(nameof(pattern));

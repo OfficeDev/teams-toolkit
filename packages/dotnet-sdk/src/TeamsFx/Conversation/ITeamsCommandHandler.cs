@@ -38,4 +38,3 @@ namespace Microsoft.TeamsFx.Conversation
         Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default);
     }
 }
-

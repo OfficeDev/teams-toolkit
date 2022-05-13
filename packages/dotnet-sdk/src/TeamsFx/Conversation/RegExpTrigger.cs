@@ -17,6 +17,11 @@ namespace Microsoft.TeamsFx.Conversation
         /// <inheritdoc/>
         public CommandTriggerType TriggerType => CommandTriggerType.RegExp;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegExpTrigger"/> class.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern string.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="pattern"/> is null.</exception>
         public RegExpTrigger(string pattern)
         {
             Pattern = pattern ?? throw new ArgumentNullException(nameof(pattern));

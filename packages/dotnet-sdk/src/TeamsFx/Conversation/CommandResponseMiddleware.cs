@@ -51,10 +51,10 @@ namespace Microsoft.TeamsFx.Conversation
 
                     if (shouldTrigger)
                     {
-                        var response = await command.HandleCommandAsync(turnContext, commandMessaage, cancellationToken);
+                        var response = await command.HandleCommandAsync(turnContext, commandMessaage, cancellationToken).ConfigureAwait(false);
                         if (response != null)
                         {
-                            await response.SendResponseAsync(turnContext, cancellationToken);
+                            await response.SendResponseAsync(turnContext, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -77,12 +77,11 @@ namespace Microsoft.TeamsFx.Conversation
 
         private static (bool, MatchCollection) ShouldTrigger(string input, ITriggerPattern[] triggerPatterns)
         {
-            bool shouldTrigger = false;
+            var shouldTrigger = false;
             MatchCollection matches = null;
 
             foreach (var triggerPattern in triggerPatterns)
             {
-                
                 if (triggerPattern.ShouldTrigger(input))
                 {
                     shouldTrigger = true;

@@ -14,7 +14,7 @@ namespace Microsoft.TeamsFx.Conversation
         private readonly CommandResponseMiddleware _middleware;
 
         /// <summary>
-        /// Initialize a new instance of <see cref="CommandBot"/>.
+        /// Initializes a new instance of the <see cref="CommandBot"/> class.
         /// </summary>
         /// <param name="adapter"></param>
         /// <param name="options"></param>

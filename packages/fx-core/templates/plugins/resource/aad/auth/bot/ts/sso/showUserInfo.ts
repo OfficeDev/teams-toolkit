@@ -1,6 +1,6 @@
 // This file implements a function to call Graph API with TeamsFx SDK to get user profile with SSO token.
 // You can modify this file to add your business with SSO token.
-// See auth/bot/README.md to learn more about adding new command to your bot.
+// See https://aka.ms/teamsfx-add-sso to learn more about adding new command to your bot.
 
 import { createMicrosoftGraphClient, TeamsFx } from "@microsoft/teamsfx";
 import { TurnContext } from "botbuilder";

@@ -100,7 +100,7 @@ Refer to [How to install Node.js?](#how-to-install-nodejs) to install `Node.js`.
 
 ### NodeNotSupported(Azure hosting) 
 
-> Node.js (*node_version*) is not in the supported version list (v14, v16). 
+> Node.js (*node_version*) is not in the supported version list (v14, v16).
 
 When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed. 
 
@@ -110,7 +110,7 @@ Refer to [How to install Node.js?](#how-to-install-nodejs) to install the suppor
 
 ### NodeNotSupported(Azure Functions) 
 
-> Node.js (*node_version*) is not in the supported version list (v14, v16). 
+> Node.js (*node_version*) is not in the supported version list (v14, v16).
 
 When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed. 
 
@@ -150,7 +150,7 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 
 ### <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound 
 
-> Cannot find .NET Core SDK (v3.1 or v5.0). Teams Toolkit requires these dependencies. 
+> Cannot find .NET Core SDK (v3.1 or v5.0). For the details why .NET SDK is needed, refer to https://aka.ms/teamsfx-envchecker-help
 
 #### Mitigation 
 

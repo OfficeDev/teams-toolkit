@@ -14,7 +14,7 @@
     public class Member : INotificationTarget
     {
         /// <summary>
-        /// Constuctor.
+        /// Constructor.
         /// </summary>
         /// <param name="parent">The parent <see cref="TeamsBotInstallation"/> where this member is created from.</param>
         /// <param name="account">Detailed member account information.</param>

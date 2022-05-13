@@ -1,173 +1,218 @@
-# Teams Toolkit Environment Checker FAQ
+# Teams Toolkit Environment Checker FAQ 
 
-## Overall
+Teams Toolkit checks the following prerequisites during the debug process: 
 
-Teams Toolkit will help to check if the required dependencies are installed.
-
-Current required dependencies:
-
-* [Node.js](https://nodejs.org/en/about/releases/).
-* [.NET SDK](https://dotnet.microsoft.com/download/): To start simpleAuth service for local debugging and install the customized function binding extension.
-
-Please Note:
-- For `Node.js`, Teams Toolkit will check its existence, and provide with the link to users where and how to install.
-- For `.NET SDK`, Teams Toolkit will try to install it for users if it cannot be found. `.NET SDK` will be installed with the official provided [dotnet-install script](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script). The script will download the portable version of `.NET Core SDK 3.1` and save it into under directory `%userprofile%/.fx/bin/dotnet` (on Windows) or `~/.fx/bin/dotnet` (on macOS/Linux), which is designed for Teams Toolkit's usage only and won't affect user's development environment. In addition, it's only needed to be installed once.
-
-## How to install Node.js?
-
-Please refer to [the official site](https://nodejs.org/en/about/releases/) to download and install the supported versions:
-
-| Project type | Node.js LTS versions | Details |
-| -- | -- | -- |
-| Azure hosting projects without Functions | 14, **16 (recommended)** | All Node.js LTS [versions](#nodenotsupportedazure-hosting) |
-| Azure hosting projects with Functions | 14, **16 (recommended)** | Refer to the details [here](#nodenotsupportedazure-functions) |
-| SPFx hosting projects | 10, 12, **14 (recommended)** | Refer to the details [here](#nodenotsupportedspfx-hosting) |
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-## How to install .NET SDK?
-
-Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions:
-
-| Platform | .NET versions |
-| -- | -- |
-| Windows, macOS (x64), Linux | **.NET Core 3.1 SDK (recommended)**, .NET 5.0 SDK, .NET 6.0 SDK  |
-| macOS (arm64) | .NET 6.0 SDK |
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-## How to install Azure Functions Core Tools?
-
-Please refer to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the supported versions: `Azure Functions Core Tools v4 `.
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-## How to install Bicep CLI?
-
-Please refer to [the official website](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/install#install-manually) to install the supported versions: `Bicep CLI v4 `.
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-## NodeNotFound
-### Notification Message
-> Cannot find Node.js. Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).
-
-As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
-
-### Mitigation
-Please refer to [the official website](https://nodejs.org/about/releases/) to install the right version: currently only LTS versions (v14, v16) are supported by Teams Toolkit that does not containing Azure Functions or SPFx, and `Node v16` would be recommended to be installed.
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-### Mitigation
-Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v14, v16) are supported by Teams Toolkit for projects containing Azure Functions and `Node v16` would be recommended to be installed.
-
-**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-## NodeNotSupported(Azure hosting)
-### Notification Message
-> Node.js (*node_version*) is not in the supported version list (v14, v16).
-
-When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v14, v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed.
-
-### Mitigation
-Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
-
-## NodeNotSupported(Azure Functions)
-### Notification Message
-> Node.js (*node_version*) is not in the supported version list (v14, v16).
-
-When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v14, v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed.
-
-### Mitigation
-Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
-
-## NodeNotSupported(SPFx hosting)
-### Notification Message
-> Node.js (*node_version*) is not in the supported version list (v10, v12, v14).
+* Node.js, applicable for the following project types: 
+  |Project type|Node.js LTS version| 
+  | --- | --- |
+  |Tab | 14, **16 (recommended)** | 
+  |SPFx Tab | 12, **14 (recommended)**| 
+  |Bot |  14, **16 (recommended)** | 
+  |Message extension | 14, **16 (recommended)** | 
   
-The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
-- Node.js v10.13.0+ (Dubnium)
-- Node.js v12.13.0+ (Erbium)
-- Node.js v14.15.0+ (Fermium) 
+* Microsoft 365 account with valid credentials, the Teams toolkit prompts you to sign in to Microsoft 365 account, if you haven't signed in.
+
+* Custom app uploading or sideloading for your developer tenant is turned on, if not then the local debug terminates .
+
+* Ngrok binary version 2.3 is applicable for bot and message extension, if Ngrok isn't installed or the version doesn't match the requirement, the Teams toolkit installs Ngrok NPM package `ngrok@4.2.2` in `~/.fx/bin/ngrok`. The Ngrok binary is managed by Ngrok NPM package in `/.fx/bin/ngrok/node modules/ngrok/bin`. 
+
+* Azure Functions Core Tools version 4, if Azure Functions Core Tools is'nt installed or the version doesn't match the requirement, the Teams Toolkit installs Azure Functions Core Tools NPM package, azure-functions-core-tools@4 for **Windows** and for **macOs** in  `~/.fx/bin/func`. The Azure Functions Core Tools NPM package in  `~/.fx/bin/func/node_modules/azure-functions-core-tools/bin` manages Azure Functions Core Tools binary. For Linux, the local debug terminates. 
+
+* .NET Core SDK version applicable for Azure Functions, if .NET Core SDK is'nt installed or the version  doesn't match the requirement, the Teams Toolkit installs .NET Core SDK for Windows and MacOS in `~/.fx/bin/dotnet`. For Linux, the local debug terminates. 
+
+  The following table lists the .NET Core versions: 
+  | Platform  | Software| 
+  | --- | --- | 
+  |Windows, macOs (x64), and Linux | **3.1 (recommended)**, 5.0, 6.0 | 
+  |macOs (arm64) |6.0 | 
+
+* Development certificate, if the development certificate for localhost is'nt installed for tab in Windows or macOS, the Teams toolkit prompts you to install it.
+
+* Azure Functions binding extensions defined in `api/extensions.csproj`, if Azure Functions binding extensions is not installed, the Teams Toolkit installs Azure Functions binding extensions 
+
+* NPM packages, applicable for tab app, bot app, message extension app, and Azure Functions. If NPM is'nt installed, the Teams Toolkit installs all NPM packages 
+
+* Bot and message extension, the Teams Toolkit starts Ngrok to create an HTTP tunnel for bot and message extension 
+
+* Ports available, if tab, bot, message extension, and Azure Functions ports are unavailable, the local debug terminates 
+
+  The following table lists the ports available for components: 
+
+  | Component  | Port | 
+  | --- | --- | 
+  | Tab | 53000 | 
+  | Bot or message extension | 3978 | 
+  | Node inspector for bot or message extension | 9239 | 
+  | Azure Functions | 7071 | 
+  | Node inspector for Azure Functions | 9229 | 
+
+## Install dependencies manually 
+
+In case the Teams Toolkit fails to install dependencies, you can install manually following the guidelines below: 
+
+### How to install Node.js? 
+
+Go to [the official site](https://nodejs.org/en/about/releases/) to download and install the node.js applicable for the following project types: 
+
+  |Project type|Node.js LTS version| 
+  | --- | --- | 
+  |Tab | 14, **16 (recommended)** | 
+  |SPFx Tab | 12, **14 (recommended)**| 
+  |Bot |  14, **16 (recommended)** | 
+  |Message extension | 14, **16 (recommended)** | 
  
-And **the latest version of Node.js LTS v14** would be recommended to be installed. For details, please refer to: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished. 
 
-### Mitigation
-Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
+### How to install .NET SDK? 
 
-## <a name="functionDepsCheckerfailtoinstalldotnet"></a>FailToInstallDotnet
-### Notification Message
-> Failed to install .NET Core SDK (v3.1). Install .NET Core SDK (v3.1) manually and restart Visual Studio Code.
+Go to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: 
 
-It might be caused by timeout issue (longer than 3 minutes), the process to install `.NET SDK` is killed, or other unknown issues.
+| Platform | .NET versions | 
+| --- | --- | 
+| Windows, macOS (x64), Linux | **.NET Core 3.1 SDK (recommended)**, .NET 5.0 SDK, .NET 6.0 SDK  | 
+| macOS (arm64) | .NET 6.0 SDK | 
 
-### Mitigation
-* Retry the operation (local debugging or Function app deployment).
-* Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished. 
 
-**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
+### How to install Azure Functions Core Tools? 
 
-## <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound
-### Notification Message
-> Cannot find .NET Core SDK (v3.1 or v5.0). Teams Toolkit requires these dependencies.
+Go to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the `Azure Functions Core Tools v4 `. 
 
-### Mitigation
-Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished. 
 
-## <a name="functionDepsCheckerdotnetnotsupporttargetversion"></a>DotnetNotSupportTargetVersion
-### Notification Message
-> NETSDK1045: The current .NET SDK does not support 'newer version' as a target.
+### How to install Bicep CLI? 
 
-### Mitigation
-Please refer to [the guide](https://docs.microsoft.com/dotnet/core/tools/sdk-errors/netsdk1045#globaljson-file) to check your `global.json` file in the root folder in your project and up the directory chain to the root of the volume, since it can be anywhere in the folder structure. If it contains an SDK version, delete the sdk node and all its children, or update it to the desired newer .NET Core version (`.NET 5` or `.NET Core 3.1` ).
+Go to [the official website](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/install#install-manually) to install the `Bicep CLI v4 `. 
 
-The `global.json` file is not required, so if it doesn't contain anything other than the sdk node, you can delete the whole file.
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished. 
 
-## FailToInstallNgrok
-### Notification Message
-> Failed to install ngrok@4.2.2. Install ngrok@4.2.2 manually.
+## FAQ 
 
-### Mitigation
-Since Bot and Messaging Extension require public address as bot endpoint, Teams Toolkit by default uses a built-in ngrok to create a tunnel connection forwarding localhost address to public address.
+### NodeNotFound 
 
-To use your own tunneling service,you should skip built-in ngrok installation, set the following configurations in *.fx/configs/config.local.json* under the project root, then start debugging.
+> Cannot find Node.js. Teams Toolkit requires Node.js; the recommended version is v16. 
 
-To skip the ngrok installation and startup, you should close the ngrok validation.
+As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local.  
 
-For VSCode, you should set the setting `fx-extension.prerequisiteCheck.skipNgrok` to be false.
-![VSCode skip ngrok](../images/fx-core/localdebug/vsc-skip-ngrok.jpg)
-For CLI, you should run command `teamsfx config set validate-ngrok off`.
+#### Mitigation 
 
-The configurations in *.fx/configs/config.local.json* are like:
+Refer to [How to install Node.js?](#how-to-install-nodejs) to install `Node.js`. 
 
-``` json
-    "bot": {
-        "siteEndpoint": "https://767787237c6b.ngrok.io"
-    }
-```
+### NodeNotSupported(Azure hosting) 
 
-Note that the `botEndpoint` should use https protocol.
+> Node.js (*node_version*) is not in the supported version list (v14, v16). 
 
-## Teams Toolkit Validation Settings
+When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed. 
 
-There are some settings to turn on/off Prerequistes Check(Node.js, .NET SDK, Azure Functions Core Tools, Bicep CLI, Ngrok, Development Certificate), and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies check and would like to install the dependencies by yourself.
+#### Mitigation 
 
-To open your user and workspace settings, use the following Visual Studio Code menu command:
+Refer to [How to install Node.js?](#how-to-install-nodejs) to install the supported version of `Node.js`. 
 
-* On Windows/Linux - **File > Preferences > Settings > Extensions > Teams Toolkit**
-* On macOS - **Code > Preferences > Settings > Extensions > Teams Toolkit**
+### NodeNotSupported(Azure Functions) 
 
-![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
+> Node.js (*node_version*) is not in the supported version list (v14, v16). 
 
-For CLI, you should run command as follows:
-+ Node.js: `teamsfx config set validate-node off`
-+ .NET SDK: `teamsfx config set validate-dotnet-sdk off`
-+ Azure Functions Core Tools: `teamsfx config set validate-func-core-tools off`
-+ Ngrok: `teamsfx config set validate-ngrok off`
-+ Development Certificate: `teamsfx config set trust-development-certificate off`
-+ Bicep CLI: Set `TEAMSFX_BICEP_ENV_CHECKER_ENABLE=false` to your environment variables.
+When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed. 
 
-## <a name="functionDepsCheckerreport-issues"></a>Report issues 
+#### Mitigation 
 
-If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".
+Refer to [How to install Node.js?](#how-to-install-nodejs) to install the supported version of `Node.js`. 
+
+### NodeNotSupported(SPFx hosting) 
+
+> Node.js (*node_version*) is not in the supported version list (v12, v14). 
+
+The SharePoint Framework v1.12.1 is supported on the following Node.js versions: 
+
+- Node.js v10.13.0+ (Dubnium) 
+- Node.js v12.13.0+ (Erbium) 
+- Node.js v14.15.0+ (Fermium)  
+
+And **the latest version of Node.js LTS v14** would be recommended to be installed. For details, please refer to: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs 
+
+#### Mitigation 
+
+Refer to [How to install Node.js?](#how-to-install-nodejs) to install the supported version of `Node.js`. 
+
+### <a name="functionDepsCheckerfailtoinstalldotnet"></a>FailToInstallDotnet 
+
+> Failed to install .NET Core SDK (v3.1). Install .NET Core SDK (v3.1) manually and restart Visual Studio Code. 
+
+It might be caused by timeout issue (longer than 3 minutes), the process to install `.NET SDK` is killed, or other unknown issues. 
+
+#### Mitigation 
+
+* Retry the operation (local debugging or Function app deployment). 
+
+* Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually. 
+
+**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)). 
+
+### <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound 
+
+> Cannot find .NET Core SDK (v3.1 or v5.0). Teams Toolkit requires these dependencies. 
+
+#### Mitigation 
+
+Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually. 
+
+### <a name="functionDepsCheckerdotnetnotsupporttargetversion"></a>DotnetNotSupportTargetVersion 
+
+> NETSDK1045: The current .NET SDK does not support 'newer version' as a target. 
+
+#### Mitigation 
+
+Please refer to [the guide](https://docs.microsoft.com/dotnet/core/tools/sdk-errors/netsdk1045#globaljson-file) to check your `global.json` file in the root folder in your project and up the directory chain to the root of the volume, since it can be anywhere in the folder structure. If it contains an SDK version, delete the sdk node and all its children, or update it to the desired newer .NET Core version (`.NET 5` or `.NET Core 3.1` ). 
+
+
+The `global.json` file is not required, so if it doesn't contain anything other than the sdk node, you can delete the whole file. 
+
+### FailToInstallNgrok 
+
+> Failed to install ngrok@4.2.2. Install ngrok@4.2.2 manually. 
+
+#### Mitigation 
+
+Since Bot and Messaging Extension require public address as bot endpoint, Teams Toolkit by default uses a built-in ngrok to create a tunnel connection forwarding localhost address to public address. 
+
+To use your own tunneling service,you should skip built-in ngrok installation, set the following configurations in *.fx/configs/config.local.json* under the project root, then start debugging. 
+
+
+To skip the ngrok installation and startup, you should close the ngrok validation. 
+
+For VSCode, you should set the setting `fx-extension.prerequisiteCheck.skipNgrok` to be false. 
+
+![VSCode skip ngrok](../images/fx-core/localdebug/vsc-skip-ngrok.jpg) 
+
+For CLI, you should run command `teamsfx config set validate-ngrok off`. 
+
+The configurations in *.fx/configs/config.local.json* are like: 
+
+
+``` json 
+
+    "bot": { 
+
+        "siteEndpoint": "https://767787237c6b.ngrok.io" 
+
+    } 
+
+``` 
+
+Note that the `botEndpoint` should use https protocol. 
+
+## Teams Toolkit Validation Settings 
+
+There are settings to turn on/off the prerequisite check (Visual Studio Code Settings -> Teams Toolkit -> Prerequisite Check). You are able to uncheck the box if you do not need the dependencies validation and would like to install the dependencies by yourself.  
+
+To open your user and workspace settings, use the following Visual Studio Code menu command: 
+
+* On Windows/Linux - **File > Preferences > Settings > Extensions > Teams Toolkit** 
+
+* On macOS - **Code > Preferences > Settings > Extensions > Teams Toolkit** 
+
+![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png) 
+
+## <a name="functionDepsCheckerreport-issues"></a>Report issues  
+
+If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit". 

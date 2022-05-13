@@ -32,7 +32,7 @@ describe("Deploy to customized resource group", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 
   it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {

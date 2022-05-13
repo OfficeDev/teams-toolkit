@@ -13,10 +13,9 @@ import {
   v3,
   SystemError,
 } from "@microsoft/teamsfx-api";
-import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
-import { PathNotExistError } from "../../../../../core";
+import { PathNotExistError } from "../../../../../core/error";
 import { LocalCrypto } from "../../../../../core/crypto";
-import { environmentManager, newEnvInfo } from "../../../../../core/environment";
+import { environmentManager } from "../../../../../core/environment";
 import { PluginNames, SolutionError, SolutionSource } from "../../constants";
 import { BotOptionItem } from "../../question";
 import { TunnelInfo } from "./microsoftTunnelingManager";

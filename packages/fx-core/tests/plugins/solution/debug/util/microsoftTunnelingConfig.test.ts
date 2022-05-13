@@ -6,6 +6,9 @@ import * as sinon from "sinon";
 import mockFs from "mock-fs";
 import * as chai from "chai";
 import fs from "fs-extra";
+import path from "path";
+import * as uuid from "uuid";
+import { ProjectSettings } from "@microsoft/teamsfx-api";
 import {
   loadTunnelInfo,
   storeTunnelInfo,
@@ -13,13 +16,10 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/debug/util/microsoftTunnelingConfig";
 import { environmentManager } from "../../../../../src/core/environment";
 import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
-import { ProjectSettings } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
 import {
   BotOptionItem,
   TabOptionItem,
 } from "../../../../../src/plugins/solution/fx-solution/question";
-import path from "path";
 
 const localEnvConfig = {
   $schema: "https://aka.ms/teamsfx-env-config-schema",

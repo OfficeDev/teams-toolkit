@@ -255,7 +255,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.publishDescription"),
         "fx-extension.publish",
         "publish",
-        { name: "publish", custom: true }
+        { name: "export", custom: false }
       ),
     ];
 
@@ -316,7 +316,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
         "fx-extension.openWelcome",
         undefined,
-        { name: "lightningBolt", custom: true },
+        { name: "symbol-event", custom: false },
         TreeCategory.GettingStarted
       ),
     ];
@@ -327,7 +327,7 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
           "fx-extension.selectTutorials",
           undefined,
-          { name: "tutorial", custom: true },
+          { name: "tasklist", custom: false },
           TreeCategory.GettingStarted
         )
       );

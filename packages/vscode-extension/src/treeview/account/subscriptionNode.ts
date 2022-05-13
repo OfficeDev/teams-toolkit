@@ -13,7 +13,7 @@ import { ext } from "../../extensionVariables";
 import { getWorkspacePath } from "../../handlers";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { infoIcon } from "./common";
+import { infoIcon, keyIcon } from "./common";
 
 export class SubscriptionNode extends DynamicNode {
   private subscription?: SubscriptionInfo;
@@ -30,22 +30,7 @@ export class SubscriptionNode extends DynamicNode {
       this.label = this.subscription.subscriptionName;
       this.tooltip = this.subscription.subscriptionName;
       this.contextValue = "selectSubscription";
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "subscriptionSelected-light.svg"
-        ),
-        dark: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "subscriptionSelected-dark.svg"
-        ),
-      };
+      this.iconPath = keyIcon;
     }
     return this;
   }

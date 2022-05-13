@@ -125,6 +125,14 @@ export const QuestionRootFolder: FolderQuestion = {
   title: "Workspace folder",
 };
 
+export const ProgrammingLanguageQuestionForDotNet: SingleSelectQuestion = {
+  name: CoreQuestionNames.ProgrammingLanguage,
+  title: "Programming Language",
+  type: "singleSelect",
+  staticOptions: [{ id: "csharp", label: "C#" }],
+  skipSingleOption: true,
+};
+
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: CoreQuestionNames.ProgrammingLanguage,
   title: "Programming Language",

@@ -22,7 +22,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 ## Set up the AAD redirects
 
-1. Copy the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
 2. Modify your `bot/src/index.ts` to add the appropriate `restify` routes to these pages.
 
 ## Update your business logic
@@ -31,10 +31,10 @@ The sample business logic provides a function `showUserInfo` that requires an AA
 
 To make this work in your application:
 
-1. Copy `auth/bot/public` folder to `bot/src`. 
+1. Move `auth/bot/public` folder to `bot/src`.
 These folder contains HTML pages used for auth redirect, please note that you need to modify `bot/src/index` file to add routing to these pages.
 
-1. Copy `auth/bot/sso` folder to `bot/src`.
+1. Move `auth/bot/sso` folder to `bot/src`.
 These folder contains three files as reference for sso implementation:
     * `showUserInfo`: This implements a function to get user info with SSO token. You can follow this method and create your own method that requires SSO token.
     * `ssoDialog`: This creates a [ComponentDialog](https://docs.microsoft.com/en-us/javascript/api/botbuilder-dialogs/componentdialog?view=botbuilder-ts-latest) that used for SSO.

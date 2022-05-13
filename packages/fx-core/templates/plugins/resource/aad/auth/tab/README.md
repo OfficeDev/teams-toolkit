@@ -18,10 +18,10 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 
 As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
-1. Copy `auth-start.html` and `auth-end.html` in `auth/public` folder to `tabs/public/`.
+1. Move `auth-start.html` and `auth-end.html` in `auth/public` folder to `tabs/public/`.
 These two HTML files are used for auth redirects.
 
-1. Copy `sso` folder under `auth/tab` to `tabs/src/sso/`.
+1. Move `sso` folder under `auth/tab` to `tabs/src/sso/`.
 
     `InitTeamsFx`: This file implements a function that initialize TeamsFx SDK and will open `GetUserProfile` component after SDK is initialized.
 

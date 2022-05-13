@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
 import * as vscode from "vscode";
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import AzureAccountManager from "../../commonlib/azureLogin";
-import { ext } from "../../extensionVariables";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { AccountItemStatus, loadingIcon } from "./common";
+import { AccountItemStatus, azureIcon, loadingIcon } from "./common";
 import { SubscriptionNode } from "./subscriptionNode";
 
 export class AzureAccountNode extends DynamicNode {
@@ -72,22 +70,7 @@ export class AzureAccountNode extends DynamicNode {
     if (this.status === AccountItemStatus.SigningIn) {
       this.iconPath = loadingIcon;
     } else {
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "azure-light.svg"
-        ),
-        dark: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "azure-dark.svg"
-        ),
-      };
+      this.iconPath = azureIcon;
     }
     if (this.status === AccountItemStatus.SignedIn) {
       this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;

@@ -10,3 +10,5 @@ export enum AccountItemStatus {
 }
 
 export const loadingIcon = new vscode.ThemeIcon("loading~spin");
+export const infoIcon = new vscode.ThemeIcon("info");
+export const azureIcon = new vscode.ThemeIcon("azure");

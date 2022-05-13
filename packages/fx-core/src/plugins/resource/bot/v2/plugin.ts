@@ -260,20 +260,6 @@ export class TeamsBotV2Impl {
     throw new Error("Invalid host type");
   }
 
-  private resolveTriggers(inputs: Inputs): BotTrigger[] {
-    const rawHostTypeTriggers = inputs?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    if (!Array.isArray(rawHostTypeTriggers)) {
-      return [];
-    }
-    // convert HostTypeTrigger question to trigger name
-    return rawHostTypeTriggers
-      .map((hostTypeTrigger) => {
-        const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
-        return option?.trigger;
-      })
-      .filter((item): item is BotTrigger => item !== undefined);
-  }
-
   private resolveProgrammingLanguage(ctx: Context): string {
     const lang = ctx.projectSetting.programmingLanguage;
     switch (lang?.toLocaleLowerCase()) {
@@ -291,7 +277,6 @@ export class TeamsBotV2Impl {
     let templateScenarios: string[] = [];
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
-    const isM365 = ctx.projectSetting?.isM365;
     capabilities.map((capability: string) => {
       switch (capability) {
         case MessageExtensionItem.id:
@@ -348,6 +333,20 @@ export class TeamsBotV2Impl {
       });
     }
     return templateScenarios;
+  }
+
+  private resolveTriggers(inputs: Inputs): BotTrigger[] {
+    const rawHostTypeTriggers = inputs?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
+    if (!Array.isArray(rawHostTypeTriggers)) {
+      return [];
+    }
+    // convert HostTypeTrigger question to trigger name
+    return rawHostTypeTriggers
+      .map((hostTypeTrigger) => {
+        const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
+        return option?.trigger;
+      })
+      .filter((item): item is BotTrigger => item !== undefined);
   }
 }
 

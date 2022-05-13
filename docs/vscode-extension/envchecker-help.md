@@ -1,4 +1,4 @@
-# Teams Toolkit Environment Checker FAQ 
+# Teams Toolkit Prerequisites Checker 
 
 Teams Toolkit checks the following prerequisites during the debug process: 
 
@@ -86,7 +86,7 @@ Go to [the official website](https://docs.microsoft.com/en-us/azure/azure-resour
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished. 
 
-## FAQ 
+## Troubleshooting 
 
 ### NodeNotFound 
 

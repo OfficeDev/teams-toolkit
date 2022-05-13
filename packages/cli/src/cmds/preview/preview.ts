@@ -1270,6 +1270,10 @@ export default class Preview extends YargsCommand {
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    if (!(await CliDepsChecker.isEnabled(node))) {
+      return ok(null);
+    }
+
     const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
     await nodeBar.start(ProgressMessage[node]);
 

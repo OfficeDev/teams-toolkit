@@ -54,41 +54,47 @@ export class BotCodeProvider implements SourceCodeProvider {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const language =
           inputs.language || context.projectSetting.programmingLanguage || "javascript";
-        const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
+        const botFolder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         const component: Component = {
           name: "bot-code",
           hosting: inputs.hosting,
           build: true,
           language: language,
-          folder: folder,
-          scenario: inputs.scenario,
+          folder: botFolder,
+          scenarios: inputs.scenarios,
         };
         projectSettings.components.push(component);
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         const lang = convertToLangKey(language);
-        const workingDir = path.join(inputs.projectPath, folder);
-        await scaffoldFromTemplates({
-          group: group_name,
-          lang: lang,
-          scenario: inputs.scenario,
-          dst: workingDir,
-          onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
-            switch (action.name) {
-              case ScaffoldActionName.FetchTemplatesUrlWithTag:
-              case ScaffoldActionName.FetchTemplatesZipFromUrl:
-                break;
-              case ScaffoldActionName.FetchTemplateZipFromLocal:
-                throw new TemplateZipFallbackError();
-              case ScaffoldActionName.Unzip:
-                throw new UnzipError(context.dst);
-              default:
-                throw new Error(error.message);
-            }
-          },
-        });
+        const workingDir = path.join(inputs.projectPath, botFolder);
+        for (const scenario of inputs.scenarios as string[]) {
+          await scaffoldFromTemplates({
+            group: group_name,
+            lang: lang,
+            scenario: scenario,
+            dst: workingDir,
+            onActionError: async (
+              action: ScaffoldAction,
+              context: ScaffoldContext,
+              error: Error
+            ) => {
+              switch (action.name) {
+                case ScaffoldActionName.FetchTemplatesUrlWithTag:
+                case ScaffoldActionName.FetchTemplatesZipFromUrl:
+                  break;
+                case ScaffoldActionName.FetchTemplateZipFromLocal:
+                  throw new TemplateZipFallbackError();
+                case ScaffoldActionName.Unzip:
+                  throw new UnzipError(context.dst);
+                default:
+                  throw new Error(error.message);
+              }
+            },
+          });
+        }
         return ok([
           "add component 'bot-code' in projectSettings",
-          `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
+          `scaffold bot source code in folder: ${path.join(inputs.projectPath, botFolder)}`,
         ]);
       },
     };

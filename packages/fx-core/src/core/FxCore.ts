@@ -152,6 +152,7 @@ import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import { BotFeatureIds } from "../plugins/solution/fx-solution/question";
+import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -349,7 +350,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));

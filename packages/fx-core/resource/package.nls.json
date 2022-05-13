@@ -256,7 +256,7 @@
   "plugins.cicd.result.scaffold.skipped": "You have already created template(s) of %s using %s for %s environment, please customize it or remove it to create a new one.",
   "plugins.cicd.suggestions.checkPermission": "Please check if you got sufficient permission.",
   "plugins.cicd.suggestions.createProjectOrOpenExisting": "You can create a new project or open an existing one.",
-  "error.cicd.FailedToListMultiEnv": "Failed to list multi env.",
+  "error.cicd.FailedToListMultiEnv": "Failed to list multi env: %s.",
   "error.cicd.PreconditionNotMet": "Some preconditions of inputs are not met.",
   "error.cicd.NoProjectOpened.details": "No project opened.",
   "plugins.apiConnector.getQuestionApiName.title": "Enter a friendly name for your API.",

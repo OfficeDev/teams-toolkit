@@ -6,6 +6,7 @@ import {
   Bicep,
   Component,
   ContextV3,
+  Effect,
   err,
   FunctionAction,
   FxError,
@@ -18,6 +19,7 @@ import {
   ProjectSettingsV3,
   Question,
   Result,
+  SystemError,
   traverse,
   UserError,
   UserInteraction,
@@ -26,7 +28,7 @@ import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
-import { merge } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import {
   fileEffectPlanStrings,
   persistBicep,
@@ -34,6 +36,8 @@ import {
   serviceEffectPlanString,
 } from "./utils";
 import fs from "fs-extra";
+import { getProjectSettingsPath } from "../core/middleware";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export async function getAction(
   name: string,
@@ -190,56 +194,203 @@ export async function resolveAction(
   return action;
 }
 
-export async function planAction(
+export async function askQuestionForAction(
   action: Action,
   context: ContextV3,
   inputs: InputsWithProjectPath
-): Promise<void> {
-  if (!inputs.step) inputs.step = 1;
+): Promise<Result<undefined, FxError>> {
   if (action.type === "function") {
-    if (action.plan) {
-      let plans: string[] = [];
-      const planRes = await action.plan(context, inputs);
-      if (planRes.isOk()) {
-        for (const effect of planRes.value) {
-          if (typeof effect === "string") {
-            plans.push(effect);
-          } else if (effect.type === "file") {
-            plans = plans.concat(fileEffectPlanStrings(effect));
-          } else if (effect.type === "service") {
-            plans.push(serviceEffectPlanString(effect));
-          } else if (effect.type === "bicep") {
-            plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
-          }
-        }
+    // ask question before plan
+    if (action.question) {
+      const getQuestionRes = await action.question(context, inputs);
+      if (getQuestionRes.isErr()) return err(getQuestionRes.error);
+      const node = getQuestionRes.value;
+      if (node) {
+        const questionRes = await traverse(
+          node,
+          inputs,
+          context.userInteraction,
+          context.telemetryReporter
+        );
+        if (questionRes.isErr()) return err(questionRes.error);
       }
-      let subStep = 1;
-      for (const plan of plans) {
-        console.log(`---- plan [${inputs.step}.${subStep++}]: [${action.name}] - ${plan}`);
-      }
-      inputs.step++;
     }
   } else if (action.type === "shell") {
-    console.log(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
+    //TODO
+    context.logProvider.info(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
     const targetAction = await getAction(action.targetAction, context, inputs);
     if (action.required && !targetAction) {
-      throw new Error("targetAction not exist: " + action.targetAction);
+      return err(new ActionNotExist(action.targetAction));
     }
     if (targetAction) {
-      await planAction(targetAction, context, inputs);
+      return await askQuestionForAction(targetAction, context, inputs);
     }
   } else {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
     for (const act of action.actions) {
-      await planAction(act, context, inputs);
+      const res = await askQuestionForAction(act, context, inputs);
+      if (res.isErr()) return err(res.error);
     }
   }
+  return ok(undefined);
+}
+
+export class ActionNotExist extends SystemError {
+  constructor(action: string) {
+    super({
+      source: "fx",
+      message: getDefaultString("error.ActionNotExist", action),
+      displayMessage: getLocalizedString("error.ActionNotExist", action),
+    });
+  }
+}
+
+export async function showPlanAndConfirm(
+  title: string,
+  effects: Effect[],
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+) {
+  let plans: string[] = [];
+  for (const effect of effects) {
+    if (typeof effect === "string") {
+      plans.push(effect);
+    } else if (effect.type === "file") {
+      plans = plans.concat(fileEffectPlanStrings(effect));
+    } else if (effect.type === "service") {
+      plans.push(serviceEffectPlanString(effect));
+    } else if (effect.type === "bicep") {
+      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+    } else if (effect.type === "shell") {
+      plans.push(`shell command: ${effect.description}`);
+    }
+  }
+  // const res = await context.userInteraction.selectOption({
+  //   name: "confirm",
+  //   title: title + "\n" + plans.join("\n"),
+  //   options: ["Confirm", "Cancel"],
+  // });
+  // if (res.isOk() && res.value.type === "success" && res.value.result === "Confirm") {
+  //   return true;
+  // }
+  const res = await context.userInteraction.showMessage(
+    "info",
+    title + "\n" + plans.join("\n"),
+    true,
+    "Confirm"
+  );
+  if (res.isOk() && res.value === "Confirm") {
+    return true;
+  }
+  return false;
+}
+
+export async function showSummary(
+  title: string,
+  effects: Effect[],
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+) {
+  let plans: string[] = [];
+  for (const effect of effects) {
+    if (typeof effect === "string") {
+      plans.push(effect);
+    } else if (effect.type === "file") {
+      plans = plans.concat(fileEffectPlanStrings(effect));
+    } else if (effect.type === "service") {
+      plans.push(serviceEffectPlanString(effect));
+    } else if (effect.type === "bicep") {
+      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+    } else if (effect.type === "shell") {
+      plans.push(`shell command: ${effect.description}`);
+    }
+  }
+  context.logProvider.info(title);
+  plans.forEach((p) => context.logProvider.info(p));
+}
+
+export async function planAction(
+  action: Action,
+  context: ContextV3,
+  inputs: InputsWithProjectPath,
+  effects: Effect[]
+): Promise<Result<undefined, FxError>> {
+  if (action.type === "function") {
+    if (action.plan) {
+      const planRes = await action.plan(context, inputs);
+      if (planRes.isErr()) return err(planRes.error);
+      planRes.value.forEach((e) => effects.push(e));
+    }
+  } else if (action.type === "shell") {
+    effects.push(action);
+  } else if (action.type === "call") {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    const targetAction = await getAction(action.targetAction, context, inputs);
+    if (action.required && !targetAction) {
+      return err(new ActionNotExist(action.targetAction));
+    }
+    if (targetAction) {
+      await planAction(targetAction, context, inputs, effects);
+    }
+  } else {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    for (const act of action.actions) {
+      const res = await planAction(act, context, inputs, effects);
+      if (res.isErr()) return err(res.error);
+    }
+  }
+  return ok(undefined);
+}
+
+export async function executeAction(
+  action: Action,
+  context: ContextV3,
+  inputs: InputsWithProjectPath,
+  effects: Effect[]
+): Promise<Result<undefined, FxError>> {
+  if (action.type === "function") {
+    return await executeFunctionAction(action, context, inputs, effects);
+  } else if (action.type === "shell") {
+    effects.push(`shell executed: ${action.command}`);
+  } else if (action.type === "call") {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    const targetAction = await getAction(action.targetAction, context, inputs);
+    if (action.required && !targetAction) {
+      return err(new ActionNotExist(action.targetAction));
+    }
+    if (targetAction) {
+      await executeAction(targetAction, context, inputs, effects);
+    }
+  } else {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    if (action.mode === "parallel") {
+      const promises = action.actions.map((a) => executeAction(a, context, inputs, effects));
+      const results = await Promise.all(promises);
+      for (const result of results) {
+        if (result.isErr()) return err(result.error);
+      }
+    } else {
+      for (const act of action.actions) {
+        const res = await executeAction(act, context, inputs, effects);
+        if (res.isErr()) return err(res.error);
+      }
+    }
+  }
+  return ok(undefined);
 }
 
 export class ValidationError extends UserError {
@@ -273,11 +424,13 @@ export async function validateQuestion(
 export async function executeFunctionAction(
   action: FunctionAction,
   context: ContextV3,
-  inputs: InputsWithProjectPath
-): Promise<void> {
+  inputs: InputsWithProjectPath,
+  effects: Effect[]
+): Promise<Result<undefined, FxError>> {
+  // validate inputs
   if (action.question) {
     const getQuestionRes = await action.question(context, inputs);
-    if (getQuestionRes.isErr()) throw new Error(`get question error: ${action.name}`);
+    if (getQuestionRes.isErr()) return err(getQuestionRes.error);
     const node = getQuestionRes.value;
     if (node) {
       const validationRes = await traverse(
@@ -287,62 +440,28 @@ export async function executeFunctionAction(
         context.telemetryReporter,
         validateQuestion
       );
-      if (validationRes.isErr()) throw validationRes.error;
+      if (validationRes.isErr()) err(validationRes.error);
     }
   }
   const res = await action.execute(context, inputs);
-  if (res.isOk()) {
-    if (res.value) {
-      //persist bicep files for bicep effects
-      for (const effect of res.value) {
-        if (typeof effect !== "string" && effect.type === "bicep") {
-          const bicep = effect as Bicep;
-          if (bicep) {
-            await persistBicep(inputs.projectPath, bicep);
-          }
+  if (res.isErr()) return err(res.error);
+  if (res.value) {
+    //persist bicep files for bicep effects
+    for (const effect of res.value) {
+      if (typeof effect !== "string" && effect.type === "bicep") {
+        const bicep = effect as Bicep;
+        if (bicep) {
+          const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
+          bicepPlans.forEach((p) => effects.push(p));
+          await persistBicep(inputs.projectPath, bicep);
         }
-      }
-    }
-  } else {
-    throw res.error;
-  }
-  console.log(`##### executed [${inputs.step++}]: [${action.name}]`);
-}
-
-export async function executeAction(
-  action: Action,
-  context: ContextV3,
-  inputs: InputsWithProjectPath
-): Promise<void> {
-  if (!inputs.step) inputs.step = 1;
-  if (action.type === "function") {
-    await executeFunctionAction(action, context, inputs);
-  } else if (action.type === "shell") {
-    console.log(`##### shell executed [${inputs.step++}]: ${action.command}`);
-  } else if (action.type === "call") {
-    if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
-    }
-    const targetAction = await getAction(action.targetAction, context, inputs);
-    if (action.required && !targetAction) {
-      throw new Error("action not exist: " + action.targetAction);
-    }
-    if (targetAction) {
-      await executeAction(targetAction, context, inputs);
-    }
-  } else {
-    if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
-    }
-    if (action.mode === "parallel") {
-      const promises = action.actions.map((a) => executeAction(a, context, inputs));
-      await Promise.all(promises);
-    } else {
-      for (const act of action.actions) {
-        await executeAction(act, context, inputs);
+      } else {
+        effects.push(effect);
       }
     }
   }
+  context.logProvider.info(`##### executed [${action.name}]`);
+  return ok(undefined);
 }
 
 export function getComponent(
@@ -352,4 +471,37 @@ export function getComponent(
   if (!projectSettings.components) return undefined;
   const results = projectSettings.components.filter((r) => r.name === resourceType);
   return results[0];
+}
+
+export async function runAction(
+  actionName: string,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  context.logProvider.info(
+    `------------------------run action: ${actionName} start!------------------------`
+  );
+  const action = await getAction(actionName, context, inputs);
+  if (action) {
+    const questionRes = await askQuestionForAction(action, context, inputs);
+    if (questionRes.isErr()) return err(questionRes.error);
+    const planEffects: Effect[] = [];
+    await planAction(action, context, cloneDeep(inputs), planEffects);
+    const confirm = await showPlanAndConfirm(
+      `action: ${actionName} will do the following changes:`,
+      planEffects,
+      context,
+      inputs
+    );
+    if (confirm) {
+      const execEffects: Effect[] = [];
+      const execRes = await executeAction(action, context, inputs, execEffects);
+      if (execRes.isErr()) return execRes;
+      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+    }
+  }
+  context.logProvider.info(
+    `------------------------run action: ${actionName} finish!------------------------`
+  );
+  return ok(undefined);
 }

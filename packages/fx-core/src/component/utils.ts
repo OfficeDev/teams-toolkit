@@ -6,11 +6,13 @@ import {
   Bicep,
   CallServiceEffect,
   ConfigurationBicep,
+  ContextV3,
   err,
   FileEffect,
   FileOperation,
   FxError,
   ok,
+  ProjectSettingsV3,
   ProvisionBicep,
   Result,
   UserError,
@@ -20,8 +22,13 @@ import os from "os";
 import * as path from "path";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
+import { TOOLS } from "../core/globalVars";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import * as uuid from "uuid";
+import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
+import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -58,11 +65,8 @@ export function persistProvisionBicepPlans(
       const value = provisionBicep.Modules[module];
       if (value) {
         const filePath = path.join(templateFolder, "provision", `${module}.bicep`);
-        const plan = fileEffectPlanString(
-          filePath,
-          "replace",
-          `provision module bicep for ${module}`
-        );
+        const effect = appendFileEffect(filePath, `provision module bicep for ${module}`);
+        const plan = fileEffectPlanString(effect);
         if (plan) {
           plans.push(plan);
         }
@@ -71,7 +75,8 @@ export function persistProvisionBicepPlans(
   }
   if (provisionBicep.Orchestration) {
     const filePath = path.join(templateFolder, "provision.bicep");
-    const plan = fileEffectPlanString(filePath, "append", "provision orchestration bicep");
+    const effect = appendFileEffect(filePath, "provision orchestration bicep");
+    const plan = fileEffectPlanString(effect);
     if (plan) {
       plans.push(plan);
     }
@@ -114,11 +119,12 @@ export function persistConfigBicepPlans(
       const value = provisionBicep.Modules[module];
       if (value) {
         const filePath = path.join(templateFolder, "teamsFx", `${module}.bicep`);
-        const plan = fileEffectPlanString(
+        const effect = createFileEffect(
           filePath,
           "replace",
           `configuration module bicep for ${module}`
         );
+        const plan = fileEffectPlanString(effect);
         if (plan) {
           plans.push(plan);
         }
@@ -127,7 +133,8 @@ export function persistConfigBicepPlans(
   }
   if (provisionBicep.Orchestration) {
     const filePath = path.join(templateFolder, "provision.bicep");
-    const plan = fileEffectPlanString(filePath, "append", "configuration orchestration bicep");
+    const effect = appendFileEffect(filePath, "configuration orchestration bicep");
+    const plan = fileEffectPlanString(effect);
     if (plan) {
       plans.push(plan);
     }
@@ -157,7 +164,8 @@ export function persistParamsBicepPlans(
   for (const env of remoteEnvNames) {
     const parameterFileName = `azure.parameters.${env}.json`;
     const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    const plan = fileEffectPlanString(parameterEnvFilePath, "append");
+    const effect = createFileEffect(parameterEnvFilePath, "replace");
+    const plan = fileEffectPlanString(effect);
     if (plan) plans.push(plan);
   }
   return plans;
@@ -251,17 +259,22 @@ export function persistBicepPlans(projectPath: string, bicep: Bicep): string[] {
     const res = persistProvisionBicepPlans(projectPath, bicep.Parameters);
     plans = plans.concat(res);
   }
-  return plans;
+  return plans.filter(Boolean);
 }
 
 export function fileEffectPlanStrings(fileEffect: FileEffect): string[] {
-  const operation = fileEffect.operate || "create";
   const plans = [];
   if (typeof fileEffect.filePath === "string") {
-    plans.push(fileEffectPlanString(fileEffect.filePath, operation, fileEffect.remarks));
+    plans.push(fileEffectPlanString(fileEffect));
   } else {
     for (const file of fileEffect.filePath) {
-      plans.push(fileEffectPlanString(file, operation, undefined));
+      plans.push(
+        fileEffectPlanString({
+          ...fileEffect,
+          filePath: file,
+          remarks: undefined,
+        })
+      );
     }
   }
   return plans.filter((p) => p !== undefined) as string[];
@@ -271,27 +284,124 @@ export function serviceEffectPlanString(serviceEffect: CallServiceEffect): strin
   return `call cloud service: ${serviceEffect.name} (${serviceEffect.remarks})`;
 }
 
-export function fileEffectPlanString(
-  file: string,
-  operation: FileOperation,
+export function createFilesEffects(
+  files: string[],
+  operateIfExists: "replace" | "skip" = "replace",
   remarks?: string
-): string | undefined {
+): FileEffect[] {
+  const effects: FileEffect[] = [];
+  for (const file of files) {
+    if (fs.pathExistsSync(file)) {
+      if (operateIfExists === "replace") {
+        effects.push({
+          type: "file",
+          filePath: file,
+          operate: "replace",
+          remarks: remarks,
+        });
+      } else {
+        effects.push({
+          type: "file",
+          filePath: file,
+          operate: "skipCreate",
+          remarks: remarks,
+        });
+      }
+    } else {
+      effects.push({
+        type: "file",
+        filePath: file,
+        operate: "create",
+        remarks: remarks,
+      });
+    }
+  }
+  return effects;
+}
+
+export function createFileEffect(
+  file: string,
+  operateIfExists: "replace" | "skip" | "append" = "replace",
+  remarks?: string
+): FileEffect {
   if (fs.pathExistsSync(file)) {
-    if (operation === "create") return undefined;
-    if (operation === "append") {
-      return remarks
-        ? `append ${remarks} content to the end of file: '${file}'`
-        : `append to the end of file: '${file}'`;
-    }
-    if (operation === "replace") {
-      return remarks ? `replace file: '${file}' (${remarks})` : `replace file: '${file}'`;
-    }
-    if (operation === "delete") {
-      return `delete file: '${file}'`;
+    if (operateIfExists === "replace") {
+      return {
+        type: "file",
+        filePath: file,
+        operate: "replace",
+        remarks: remarks,
+      };
+    } else if (operateIfExists === "skip") {
+      return {
+        type: "file",
+        filePath: file,
+        operate: "skipCreate",
+        remarks: remarks,
+      };
+    } else {
+      return {
+        type: "file",
+        filePath: file,
+        operate: "append",
+        remarks: remarks,
+      };
     }
   } else {
-    if (operation === "create" || operation === "append" || operation === "replace")
-      return remarks ? `create file: ${file} (${remarks})` : `create file: ${file}`;
-    else return undefined;
+    return {
+      type: "file",
+      filePath: file,
+      operate: "create",
+      remarks: remarks,
+    };
   }
+}
+
+export function appendFileEffect(file: string, remarks?: string): FileEffect {
+  if (fs.pathExistsSync(file)) {
+    return {
+      type: "file",
+      filePath: file,
+      operate: "append",
+      remarks: remarks,
+    };
+  } else {
+    return {
+      type: "file",
+      filePath: file,
+      operate: "create",
+      remarks: remarks,
+    };
+  }
+}
+
+export function fileEffectPlanString(effect: FileEffect): string | undefined {
+  if (effect.operate.startsWith("skip")) return undefined;
+  return effect.remarks
+    ? `${effect.operate} file: '${effect.filePath}' (${effect.remarks})`
+    : `${effect.operate} file: '${effect.filePath}'`;
+}
+
+export function newProjectSettingsV3(): ProjectSettingsV3 {
+  const projectSettings: ProjectSettingsV3 = {
+    appName: "test",
+    projectId: uuid.v4(),
+    version: getProjectSettingsVersion(),
+    components: [],
+  };
+  return projectSettings;
+}
+
+export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 {
+  if (!projectSettings) projectSettings = newProjectSettingsV3();
+  const context: ContextV3 = {
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    cryptoProvider: new LocalCrypto(projectSettings?.projectId),
+    permissionRequestProvider: TOOLS.permissionRequest,
+    projectSetting: projectSettings,
+    manifestProvider: new DefaultManifestProvider(),
+  };
+  return context;
 }

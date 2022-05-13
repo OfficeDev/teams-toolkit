@@ -91,9 +91,7 @@ out
 bin
 obj
 appsettings.json
-
-# ignore local.settings.json if it contains your own credentials
-# local.settings.json
+local.settings.json
 
 # tests artifacts
 localNuget/

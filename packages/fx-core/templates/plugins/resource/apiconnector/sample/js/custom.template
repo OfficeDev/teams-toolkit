@@ -1,7 +1,7 @@
 const teamsfxSdk = require("@microsoft/teamsfx");
 
 // A custom authProvider implements the `AuthProvider` interface.
-// This sample authProvider implementation will set custom a property in the request header
+// This sample authProvider implementation will set a custom property in the request header
 class CustomAuthProvider {
   customProperty;
   customValue;

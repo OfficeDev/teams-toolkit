@@ -2,7 +2,7 @@ import { TeamsFx, createApiClient, AuthProvider } from "@microsoft/teamsfx";
 import { AxiosRequestConfig } from "axios";
 
 // A custom authProvider implements the `AuthProvider` interface.
-// This sample authProvider implementation will set custom a property in the request header
+// This sample authProvider implementation will set a custom property in the request header
 class CustomAuthProvider implements AuthProvider {
   customProperty: string;
   customValue: string;

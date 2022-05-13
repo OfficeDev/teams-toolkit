@@ -1,7 +1,5 @@
 import * as React from "react";
 import "./tree.scss";
-import publish_dark from "../../../media/treeview/command/publish-dark.svg";
-import publish_light from "../../../media/treeview/command/publish-light.svg";
 import developerPortal_dark from "../../../media/treeview/command/developerPortal-dark.svg";
 import developerPortal_light from "../../../media/treeview/command/developerPortal-light.svg";
 import { getCurrentTheme, Theme } from "./theme";
@@ -75,7 +73,7 @@ export class DeploymentView extends React.Component<any, any> {
         <TreeItem
           label="Publish to Teams"
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.publishDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? publish_dark : publish_light}
+          icon="codicon codicon-export"
           customized={true}
           disable={this.state.locked}
           command="fx-extension.publish"

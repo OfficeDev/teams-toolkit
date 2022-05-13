@@ -12,7 +12,7 @@ import {
   ReceiptCard,
   ThumbnailCard,
 } from "botbuilder";
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 
 /**
  * Provides utility method to build bot message with cards that supported in Teams.
@@ -56,7 +56,10 @@ export class MessageBuilder {
    *
    * @beta
    */
-  public static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity> {
+  public static attachAdaptiveCard<TData extends Record<string, unknown>>(
+    cardTemplate: any,
+    data: TData
+  ): Partial<Activity> {
     return {
       attachments: [CardFactory.adaptiveCard(AdaptiveCards.declare(cardTemplate).render(data))],
     };

@@ -229,7 +229,7 @@ export class Member implements NotificationTarget {
 // @public
 export class MessageBuilder {
     // @beta
-    static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity_2>;
+    static attachAdaptiveCard<TData extends Record<string, unknown>>(cardTemplate: any, data: TData): Partial<Activity_2>;
     // @beta
     static attachAdaptiveCardWithoutData(card: any): Partial<Activity_2>;
     // @beta

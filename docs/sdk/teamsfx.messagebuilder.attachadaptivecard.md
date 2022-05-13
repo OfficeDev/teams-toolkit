@@ -12,7 +12,7 @@ Build a bot message activity attached with adaptive card.
 <b>Signature:</b>
 
 ```typescript
-static attachAdaptiveCard<TData extends Record<string, unknown>>(cardTemplate: unknown, data: TData): Partial<Activity>;
+static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity>;
 ```
 
 ## Parameters

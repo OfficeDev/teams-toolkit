@@ -1579,10 +1579,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
   );
   return Promise.resolve(ok(data));
 }

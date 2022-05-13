@@ -56,7 +56,7 @@ export class MessageBuilder {
    *
    * @beta
    */
-  public static attachAdaptiveCard<TData extends Record<string, unknown>>(
+  public static attachAdaptiveCard<TData extends object>(
     cardTemplate: unknown,
     data: TData
   ): Partial<Activity> {

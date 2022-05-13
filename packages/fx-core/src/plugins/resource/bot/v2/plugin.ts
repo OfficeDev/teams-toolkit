@@ -295,17 +295,26 @@ export class TeamsBotV2Impl {
     capabilities.map((capability: string) => {
       switch (capability) {
         case MessageExtensionItem.id:
-          if (isM365) {
-            templateScenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-          } else {
-            templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-          }
+          templateScenarios = templateScenarios.concat(
+            this.resolveScenariosForMessageExtension(ctx, inputs)
+          );
           break;
         case BotOptionItem.id:
           templateScenarios = templateScenarios.concat(this.resolveScenariosForBot(inputs));
           break;
       }
     });
+    return templateScenarios;
+  }
+
+  private resolveScenariosForMessageExtension(ctx: Context, inputs: Inputs): string[] {
+    const templateScenarios: string[] = [];
+    const isM365 = ctx.projectSetting?.isM365;
+    if (isM365) {
+      templateScenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+    } else {
+      templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    }
     return templateScenarios;
   }
 

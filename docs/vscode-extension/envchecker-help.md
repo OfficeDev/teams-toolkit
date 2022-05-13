@@ -19,8 +19,8 @@ Please refer to [the official site](https://nodejs.org/en/about/releases/) to do
 
 | Project type | Node.js LTS versions | Details |
 | -- | -- | -- |
-| Azure hosting projects without Functions | 10, 12, **14 (recommended)**, 16 | All Node.js LTS [versions](#nodenotsupportedazure-hosting) |
-| Azure hosting projects with Functions | 10, 12, **14 (recommended)** | Refer to the details [here](#nodenotsupportedazure-functions) |
+| Azure hosting projects without Functions | 14, **16 (recommended)** | All Node.js LTS [versions](#nodenotsupportedazure-hosting) |
+| Azure hosting projects with Functions | 14, **16 (recommended)** | Refer to the details [here](#nodenotsupportedazure-functions) |
 | SPFx hosting projects | 10, 12, **14 (recommended)** | Refer to the details [here](#nodenotsupportedspfx-hosting) |
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
@@ -38,7 +38,7 @@ Please refer to [the official website](https://dotnet.microsoft.com/download) to
 
 ## How to install Azure Functions Core Tools?
 
-Please refer to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the supported versions: `Azure Functions Core Tools v3 `.
+Please refer to [the official website](https://github.com/Azure/azure-functions-core-tools) to install the supported versions: `Azure Functions Core Tools v4 `.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
@@ -50,34 +50,34 @@ Please refer to [the official website](https://docs.microsoft.com/en-us/azure/az
 
 ## NodeNotFound
 ### Notification Message
-> Cannot find Node.js. Teams Toolkit requires Node.js; the recommended version is v14.
+> Cannot find Node.js. Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).
 
 As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
 
 ### Mitigation
-Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v10, v12, v14 and v16) are supported by Teams Toolkit that does not containing Azure Functions or SPFx, and `Node v14` would be recommended to be installed.
+Please refer to [the official website](https://nodejs.org/about/releases/) to install the right version: currently only LTS versions (v14, v16) are supported by Teams Toolkit that does not containing Azure Functions or SPFx, and `Node v16` would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
 ### Mitigation
-Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by Teams Toolkit for projects containing Azure Functions and `Node v14` would be recommended to be installed.
+Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v14, v16) are supported by Teams Toolkit for projects containing Azure Functions and `Node v16` would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
 ## NodeNotSupported(Azure hosting)
 ### Notification Message
-> Node.js (*node_version*) is not in the supported version list (v10, v12, v14, v16).
+> Node.js (*node_version*) is not in the supported version list (v14, v16).
 
-When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v10, v12, v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v14, v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
 
 ## NodeNotSupported(Azure Functions)
 ### Notification Message
-> Node.js (*node_version*) is not in the supported version list (v10, v12, v14).
+> Node.js (*node_version*) is not in the supported version list (v14, v16).
 
-When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v10, v12 and v14) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v14, v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v16 (LTS)** would be recommended to be installed.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
@@ -151,7 +151,7 @@ Note that the `botEndpoint` should use https protocol.
 
 ## Teams Toolkit Validation Settings
 
-There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](#how-to-install-nodejs) and [.NET SDK installation guide](#how-to-install-net-sdk).
+There are some settings to turn on/off Prerequistes Check(Node.js, .NET SDK, Azure Functions Core Tools, Bicep CLI, Ngrok, Development Certificate), and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies check and would like to install the dependencies by yourself.
 
 To open your user and workspace settings, use the following Visual Studio Code menu command:
 
@@ -159,6 +159,14 @@ To open your user and workspace settings, use the following Visual Studio Code m
 * On macOS - **Code > Preferences > Settings > Extensions > Teams Toolkit**
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
+
+For CLI, you should run command as follows:
++ Node.js: `teamsfx config set validate-node off`
++ .NET SDK: `teamsfx config set validate-dotnet-sdk off`
++ Azure Functions Core Tools: `teamsfx config set validate-func-core-tools off`
++ Ngrok: `teamsfx config set validate-ngrok off`
++ Development Certificate: `teamsfx config set trust-development-certificate off`
++ Bicep CLI: Set `TEAMSFX_BICEP_ENV_CHECKER_ENABLE=false` to your environment variables.
 
 ## <a name="functionDepsCheckerreport-issues"></a>Report issues 
 

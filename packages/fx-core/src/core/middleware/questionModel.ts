@@ -48,6 +48,7 @@ import {
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
   ProgrammingLanguageQuestion,
+  ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
   RuntimeOptionDotNet,
   RuntimeOptionNodeJs,
@@ -500,14 +501,16 @@ async function getQuestionsForCreateProjectWithDotNet(
     runtimeNode.addChild(node);
   }
 
-  const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
-  dotnetCapNode.condition = {
+  const dotnetNode = new QTreeNode({ type: "group" });
+  dotnetNode.condition = {
     equals: RuntimeOptionDotNet.id,
   };
-  runtimeNode.addChild(dotnetCapNode);
+  runtimeNode.addChild(dotnetNode);
+  const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
+  dotnetNode.addChild(dotnetCapNode);
+  dotnetNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
 
   inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
-  inputs[CoreQuestionNames.ProgrammingLanguage] = "csharp";
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {

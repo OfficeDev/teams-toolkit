@@ -65,7 +65,7 @@ describe("Deploy to customized resource group", function () {
 
       // Validate Bot
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
       await bot.validateDeploy();
     }
 

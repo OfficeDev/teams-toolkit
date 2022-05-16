@@ -1650,10 +1650,10 @@ export async function openReadMeHandler(args: any[]) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (isSPFxProject(workspacePath)) {
-      targetFolder = `${workspacePath}/SPFx`;
-    } else if (await getIsFromSample()) {
+    if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
+    } else if (isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);

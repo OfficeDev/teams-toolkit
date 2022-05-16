@@ -90,7 +90,7 @@
                                     var error = response.Content ?? string.Empty;
                                     if (status == HttpStatusCode.Forbidden && error.Contains("BotNotInConversationRoster"))
                                     {
-                                        // bot in uninstalled
+                                        // bot is uninstalled
                                         valid = false;
                                     }
                                 }

@@ -52,6 +52,7 @@ import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ResourcePlugins } from "../../../../common/constants";
+import { languageMapping } from "./constants";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -97,10 +98,10 @@ export class TeamsBotV2Impl {
       configs: bicepConfigs,
     };
 
-    const hostTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
+    const serviceTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
-      hostTypes.map((hostType) => {
-        const hosting = AzureHostingFactory.createHosting(hostType);
+      serviceTypes.map((serviceType) => {
+        const hosting = AzureHostingFactory.createHosting(serviceType);
         return hosting.generateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -122,10 +123,10 @@ export class TeamsBotV2Impl {
       configs: bicepConfigs,
     };
 
-    const hostTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
+    const serviceTypes = [this.resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
-      hostTypes.map((hostType) => {
-        const hosting = AzureHostingFactory.createHosting(hostType);
+      serviceTypes.map((serviceType) => {
+        const hosting = AzureHostingFactory.createHosting(serviceType);
         return hosting.updateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -216,11 +217,6 @@ export class TeamsBotV2Impl {
   }
 
   private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
-    const languageMapping: { [key: string]: string } = {
-      js: "node",
-      ts: "node",
-      csharp: "dotnet",
-    };
     const bicepConfigs: BicepConfigs = [];
     const lang = this.resolveProgrammingLanguage(ctx);
     bicepConfigs.push(languageMapping[lang]);

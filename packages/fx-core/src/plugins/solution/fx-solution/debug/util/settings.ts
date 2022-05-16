@@ -2,13 +2,28 @@
 // Licensed under the MIT license.
 "use strict";
 
-export function generateSettings(includeFunctions: boolean): Record<string, unknown> {
+import { isAadManifestEnabled } from "../../../../../common";
+
+export function generateSettings(
+  includeFunctions: boolean,
+  isSpfx: boolean
+): Record<string, unknown> {
   /**
    * Default settings for extensions
    */
   const settings: Record<string, unknown> = {
     "debug.onTaskErrors": "abort",
   };
+
+  if (!isSpfx && isAadManifestEnabled()) {
+    settings["json.schemas"] = [
+      {
+        fileMatch: ["/aad.*.json"],
+        schema: {},
+      },
+    ];
+  }
+
   if (includeFunctions) {
     // Ensure that Azure Function Extension does not kill the backend process
     settings["azureFunctions.stopFuncTaskPostDebug"] = false;
@@ -16,4 +31,20 @@ export function generateSettings(includeFunctions: boolean): Record<string, unkn
     settings["csharp.suppressDotnetRestoreNotification"] = true;
   }
   return settings;
+}
+
+export function mergeSettings(
+  existingData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> {
+  const mergedData = {} as Record<string, unknown>;
+  Object.assign(mergedData, existingData);
+
+  if (newData !== undefined) {
+    for (const newSetting of Object.entries(newData)) {
+      mergedData[newSetting[0]] = newSetting[1];
+    }
+  }
+
+  return mergedData;
 }

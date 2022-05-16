@@ -24,13 +24,9 @@ describe("Provision to Azure with SQL", function () {
 
   it(`Provision multi databases`, async function () {
     // new a project ( tab + function + sql )
-    await CliHelper.createProjectWithCapability(
-      appName,
-      testFolder,
-      Capability.Tab,
-      process.env,
-      "--azure-resources function sql"
-    );
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
     // provision

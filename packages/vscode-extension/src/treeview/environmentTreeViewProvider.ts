@@ -48,6 +48,19 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
     });
   }
 
+  public refreshRemoteEnvWarning() {
+    // TODO: remove the dependency of child number.
+    // Reload the whole treeview because collapsible state need to be recalculated.
+    this.reloadEnvironments();
+
+    // for (const node of this.environments) {
+    //   const envNode = node as EnvironmentNode;
+    //   if (envNode?.identifier !== LocalEnvironmentName) {
+    //     this._onDidChangeTreeData.fire(envNode);
+    //   }
+    // }
+  }
+
   public getTreeItem(element: DynamicNode): Thenable<vscode.TreeItem> | vscode.TreeItem {
     return element.getTreeItem();
   }

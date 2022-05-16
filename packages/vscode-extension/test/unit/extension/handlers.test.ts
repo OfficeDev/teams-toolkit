@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as handlers from "../../../src/handlers";
-import * as StringResources from "../../../src/resources/Strings.json";
+import * as StringResources from "../../../package.nls.json";
 import {
   Inputs,
   Platform,
@@ -23,12 +23,12 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
-import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
+import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
@@ -42,7 +42,7 @@ suite("handlers", () => {
     let setStatusChangeMap: any;
 
     this.beforeAll(() => {
-      sandbox.stub(accountTree, "registerAccountTreeHandler");
+      sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       setStatusChangeMap = sandbox.stub(AzureAccountManager.prototype, "setStatusChangeMap");
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
@@ -139,6 +139,20 @@ suite("handlers", () => {
       await handlers.publishHandler();
 
       sinon.assert.calledOnce(publishApplication);
+      sinon.restore();
+    });
+
+    test("buildPackageHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
+      const showMessage = sinon.spy(vscode.window, "showErrorMessage");
+
+      await handlers.buildPackageHandler();
+
+      // should show error for invalid project
+      sinon.assert.calledOnce(showMessage);
       sinon.restore();
     });
   });
@@ -309,7 +323,7 @@ suite("handlers", () => {
     sinon.assert.calledOnceWithExactly(
       executeCommands,
       "workbench.action.openWalkthrough",
-      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
     );
     executeCommands.restore();
     sendTelemetryEvent.restore();
@@ -511,7 +525,9 @@ suite("handlers", () => {
       const showWarningMessage = sinon
         .stub(vscode.window, "showWarningMessage")
         .callsFake((message: string): any => {
-          chai.expect(message).equal(StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant);
+          chai
+            .expect(message)
+            .equal(StringResources["teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"]);
         });
       await handlers.listCollaborator("env");
 

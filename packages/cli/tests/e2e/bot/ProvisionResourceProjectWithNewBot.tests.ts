@@ -8,7 +8,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, BotValidator } from "../../commonlib";
+import { BotValidator } from "../../commonlib";
 
 import {
   execAsync,
@@ -16,13 +16,10 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setBotSkuNameToB1,
   cleanUp,
-  readContext,
   setBotSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
@@ -67,13 +64,9 @@ describe("Provision", function () {
       // Get context
       const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
       // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
     }
 
     // deploy
@@ -122,6 +115,6 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 });

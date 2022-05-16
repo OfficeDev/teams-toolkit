@@ -29,7 +29,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 
   it(`bot + sql`, async function () {
@@ -50,7 +50,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
       // Validate Function App
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
     }
   });
 });

@@ -20,6 +20,7 @@ import {
 import {
   environmentManager,
   initializePreviewFeatureFlags,
+  isExistingTabApp as isExistingTabAppCore,
   isValidProject,
   PluginNames,
 } from "@microsoft/teamsfx-core";
@@ -28,7 +29,7 @@ import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
 import { execSync } from "child_process";
 import * as versionUtil from "./versionUtil";
-import { TelemetryTiggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { TelemetryTriggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -131,10 +132,10 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
 
   if (await fs.pathExists(projectSettingsPath)) {
     const projectSettings = await fs.readJson(projectSettingsPath);
-    return !projectSettings.solutionSettings;
-  } else {
-    return false;
+    return isExistingTabAppCore(projectSettings);
   }
+
+  return false;
 }
 
 export async function isM365Project(workspacePath: string): Promise<boolean> {
@@ -246,19 +247,11 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
-    ConfigurationKey.RootDirectory
-  ).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();
   process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.generatorEnvCheckerEnable
-  ).toString();
-
-  process.env["TEAMSFX_PREVIEW"] = getConfiguration(
-    ConfigurationKey.EnablePreviewFeatures
   ).toString();
 
   initializePreviewFeatureFlags();
@@ -471,8 +464,8 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   if (!args || (args && args.length === 0)) {
     return false;
   } else if (
-    args[0].toString() === TelemetryTiggerFrom.WalkThrough ||
-    args[0].toString() === TelemetryTiggerFrom.Notification
+    args[0].toString() === TelemetryTriggerFrom.WalkThrough ||
+    args[0].toString() === TelemetryTriggerFrom.Notification
   ) {
     return true;
   }
@@ -485,29 +478,33 @@ export function getTriggerFromProperty(args?: any[]) {
   // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
   // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
   if (!args || (args && args.length === 0)) {
-    return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
+    return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 
   switch (args[0].toString()) {
-    case TelemetryTiggerFrom.TreeView:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
-    case TelemetryTiggerFrom.Webview:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
-    case TelemetryTiggerFrom.CodeLens:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
-    case TelemetryTiggerFrom.EditorTitle:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
-    case TelemetryTiggerFrom.SideBar:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
-    case TelemetryTiggerFrom.Notification:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Notification };
-    case TelemetryTiggerFrom.WalkThrough:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.WalkThrough };
-    case TelemetryTiggerFrom.Auto:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Auto };
-    case TelemetryTiggerFrom.Other:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
+    case TelemetryTriggerFrom.TreeView:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
+    case TelemetryTriggerFrom.ViewTitleNavigation:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ViewTitleNavigation };
+    case TelemetryTriggerFrom.QuickPick:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.QuickPick };
+    case TelemetryTriggerFrom.Webview:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview };
+    case TelemetryTriggerFrom.CodeLens:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CodeLens };
+    case TelemetryTriggerFrom.EditorTitle:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.EditorTitle };
+    case TelemetryTriggerFrom.SideBar:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideBar };
+    case TelemetryTriggerFrom.Notification:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification };
+    case TelemetryTriggerFrom.WalkThrough:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThrough };
+    case TelemetryTriggerFrom.Auto:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto };
+    case TelemetryTriggerFrom.Other:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other };
     default:
-      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Unknow };
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }
 }

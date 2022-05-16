@@ -10,6 +10,7 @@ import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/
 import {
   AzureSolutionQuestionNames as Names,
   isBotNotificationEnabled,
+  isPreviewFeaturesEnabled,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
@@ -105,7 +106,26 @@ abstract class CapabilityAddBase extends YargsCommand {
 export class CapabilityAddTab extends CapabilityAddBase {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a tab.";
+  public readonly description = isPreviewFeaturesEnabled()
+    ? "Hello world webpages embedded in Microsoft Teams"
+    : "Teams identity aware webpages embedded in Microsoft Teams";
+  public readonly yargsHelp = isPreviewFeaturesEnabled()
+    ? "addCapability-TabNonSso"
+    : "addCapability-Tab";
+
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
+    return {
+      excludeFrontend: ProjectSettingsHelper.includeFrontend(settings),
+      excludeBackend: true,
+      excludeBot: true,
+    };
+  }
+}
+
+export class CapabilityAddSSOTab extends CapabilityAddBase {
+  public readonly commandHead = `sso-tab`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Teams identity aware webpages embedded in Microsoft Teams";
   public readonly yargsHelp = "addCapability-Tab";
 
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
@@ -130,28 +150,29 @@ abstract class CapabilityAddBotBase extends CapabilityAddBase {
 export class CapabilityAddBot extends CapabilityAddBotBase {
   public readonly commandHead = `bot`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add a bot.";
+  public readonly description = "Hello world chatbot to run simple and repetitive tasks by user";
   public readonly yargsHelp = "addCapability-Bot";
 }
 
 export class CapabilityAddMessageExtension extends CapabilityAddBotBase {
-  public readonly commandHead = `messaging-extension`;
+  public readonly commandHead = `message-extension`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add Messaging Extensions.";
+  public readonly description =
+    "Hello world message extension allowing interactions via buttons and forms";
   public readonly yargsHelp = "addCapability-MessagingExtension";
 }
 
 export class CapabilityAddNotification extends CapabilityAddBotBase {
   public readonly commandHead = "notification";
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add notification.";
+  public readonly description = "Send notification to Microsoft Teams via various triggers";
   public readonly yargsHelp = "addCapability-Notification";
 }
 
 export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
   public readonly commandHead = "command-and-response";
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add command and response.";
+  public readonly description = "Respond to simple commands in Microsoft Teams chat";
   public readonly yargsHelp = "addCapability-CommandAndResponse";
 }
 

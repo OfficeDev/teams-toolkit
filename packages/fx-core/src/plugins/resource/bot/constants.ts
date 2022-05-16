@@ -147,7 +147,7 @@ export class Retry {
 }
 
 export class DeployStatus {
-  public static readonly RETRY_TIMES = 60;
+  public static readonly RETRY_TIMES = 120; // Timeout: 20 min
   public static readonly BACKOFF_TIME_S = 10;
 }
 
@@ -306,6 +306,7 @@ export class BotBicep {
 
 export const CustomizedTasks = {
   addCapability: "addCapability",
+  addFeature: "addFeature",
 } as const;
 
 export type CustomizedTask = typeof CustomizedTasks[keyof typeof CustomizedTasks];

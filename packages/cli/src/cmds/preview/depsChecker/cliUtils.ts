@@ -3,6 +3,8 @@
 
 import { CliConfigEnvChecker, CliConfigOptions, UserSettings } from "../../../userSetttings";
 import CLIUIInstance from "../../../userInteraction";
+import { DepsCheckerEvent } from "@microsoft/teamsfx-core";
+import { cliEnvCheckerTelemetry } from "./cliTelemetry";
 import * as os from "os";
 
 export function isWindows(): boolean {
@@ -24,11 +26,21 @@ export async function isDotnetCheckerEnabled(): Promise<boolean> {
 }
 
 export async function isFuncCoreToolsEnabled(): Promise<boolean> {
-  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools);
+  const isFuncCoreToolsEnabled = await checkerEnabled(
+    CliConfigOptions.EnvCheckerValidateFuncCoreTools
+  );
+  if (!isFuncCoreToolsEnabled) {
+    cliEnvCheckerTelemetry.sendEvent(DepsCheckerEvent.funcCheckSkipped);
+  }
+  return isFuncCoreToolsEnabled;
 }
 
 export async function isNodeCheckerEnabled(): Promise<boolean> {
-  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
+  const isNodeCheckerEnabled = await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
+  if (!isNodeCheckerEnabled) {
+    cliEnvCheckerTelemetry.sendEvent(DepsCheckerEvent.nodeCheckSkipped);
+  }
+  return isNodeCheckerEnabled;
 }
 
 export async function isNgrokCheckerEnabled(): Promise<boolean> {
